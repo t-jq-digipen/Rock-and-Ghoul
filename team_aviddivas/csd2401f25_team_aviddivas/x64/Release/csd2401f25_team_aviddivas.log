@@ -1,0 +1,8 @@
+﻿  glapp.cpp
+C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\team_aviddivas\csd2401f25_team_aviddivas\include\glapp.h(22,10): error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+  (compiling source file 'src/glapp.cpp')
+  
+  main.cpp
+C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\team_aviddivas\csd2401f25_team_aviddivas\include\glapp.h(22,10): error C1083: Cannot open include file: 'GL/glew.h': No such file or directory
+  (compiling source file 'src/main.cpp')
+  
