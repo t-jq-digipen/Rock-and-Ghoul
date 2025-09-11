@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/glm-populate"
+		},
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/7cf7236b9e90e56f878313fbebe079f4/glm-populate.rule"
+		},
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/188b827e843d2874ce01ca9fa803a08b/glm-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/4b3bc2068ac37eefb9a040dd020e2775/glm-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/4b3bc2068ac37eefb9a040dd020e2775/glm-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/4b3bc2068ac37eefb9a040dd020e2775/glm-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/4b3bc2068ac37eefb9a040dd020e2775/glm-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/4b3bc2068ac37eefb9a040dd020e2775/glm-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/4b3bc2068ac37eefb9a040dd020e2775/glm-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/4b3bc2068ac37eefb9a040dd020e2775/glm-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-subbuild/CMakeFiles/4b3bc2068ac37eefb9a040dd020e2775/glm-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"glm-populate"
+		],
+		"name" : "glm-populate"
+	}
+}

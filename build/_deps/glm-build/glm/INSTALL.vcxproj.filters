@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\CMakeFiles\3d662a0c5886af93996d7ae555732eb0\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{3A54ECFD-18C1-3F5D-8DEF-775409CA2B31}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

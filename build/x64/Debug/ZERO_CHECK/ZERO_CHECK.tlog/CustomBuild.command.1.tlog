@@ -1,0 +1,10 @@
+^C:\USERS\REGINE\SOURCE\REPOS\CSD2401F25_TEAM_AVIDDIVAS\BUILD\CMAKEFILES\26E81AA8D847803BE8B40460E063B197\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Regine/source/repos/csd2401f25_team_aviddivas -BC:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/team_aviddivas.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
