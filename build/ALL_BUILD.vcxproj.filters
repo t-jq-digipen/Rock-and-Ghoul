@@ -1,13 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\CMakeLists.txt">
-      <Filter>Other</Filter>
-    </CustomBuild>
+    <CustomBuild Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Other">
-      <UniqueIdentifier>{782ED52A-F273-3FCE-B7F6-DEF4717279F5}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
 </Project>

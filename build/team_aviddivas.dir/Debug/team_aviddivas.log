@@ -1,14 +1,5 @@
-﻿  Camera.cpp
-  Collision.cpp
-  Export.cpp
-  FilePath.cpp
-  FrameRateController.cpp
-  GameStateManager.cpp
-  Graphics.cpp
-  Input.cpp
-  Math.cpp
-  Physics.cpp
-  Sprite.cpp
-  Transform.cpp
+﻿  Building Custom Rule C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/CMakeLists.txt
+  glapp.cpp
+  main.cpp
   Generating Code...
   team_aviddivas.vcxproj -> C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\Debug\team_aviddivas.exe

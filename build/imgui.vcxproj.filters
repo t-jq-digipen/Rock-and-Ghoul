@@ -2,35 +2,33 @@
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\imgui-src\imgui.cpp">
-      <Filter>Other</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\imgui-src\imgui_demo.cpp">
-      <Filter>Other</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\imgui-src\imgui_draw.cpp">
-      <Filter>Other</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\imgui-src\imgui_tables.cpp">
-      <Filter>Other</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\imgui-src\imgui_widgets.cpp">
-      <Filter>Other</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\imgui-src\backends\imgui_impl_glfw.cpp">
-      <Filter>Other</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\imgui-src\backends\imgui_impl_opengl3.cpp">
-      <Filter>Other</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\CMakeLists.txt">
-      <Filter>Other</Filter>
-    </CustomBuild>
+    <CustomBuild Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Other">
-      <UniqueIdentifier>{782ED52A-F273-3FCE-B7F6-DEF4717279F5}</UniqueIdentifier>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{627FFCEA-BE90-35E1-ACFD-B15FE2350F8E}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
