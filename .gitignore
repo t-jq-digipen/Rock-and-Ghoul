@@ -116,3 +116,4 @@ Release
 *.json
 *.html
 /build
+/build/_deps

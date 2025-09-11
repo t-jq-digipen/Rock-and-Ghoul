@@ -67,5 +67,54 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # ======================= Optional: Organize files in IDE ============
 # This creates nice folder structure in Visual Studio/Xcode
-source_group("Header Files" FILES ${HEADERS})
-source_group("Source Files" FILES ${SOURCES})
+source_group("Main" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+)
+source_group("Engine" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/glapp.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/glapp.h
+)
+
+source_group("Audio" FILES 
+       ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
+)
+source_group("Export" FILES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
+)
+source_group("FrameRateController" FILES 
+       ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
+)
+source_group("Graphics" FILES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
+)
+source_group("Input" FILES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
+)
+source_group("Math" FILES 
+       ${CMAKE_CURRENT_SOURCE_DIR}/include/Math.h
+)
+
+source_group("Physics" FILES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
+)
+source_group("GameStateManager" FILES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
+)
+source_group("Camera" FILES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h
+)
+source_group("Collision" FILES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
+)
+
+source_group("Transform" FILES 
+       ${CMAKE_CURRENT_SOURCE_DIR}/include/Transform.h
+)
+
+source_group("Sprite" FILES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
+)
+
+source_group("FilePath" FILES 
+       ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
+)
