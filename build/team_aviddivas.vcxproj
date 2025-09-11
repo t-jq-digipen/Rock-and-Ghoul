@@ -336,6 +336,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Audio.cpp" />
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\glapp.cpp" />
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\main.cpp" />
     <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Audio.h" />

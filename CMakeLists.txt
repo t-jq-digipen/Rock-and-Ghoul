@@ -76,6 +76,7 @@ source_group("Engine" FILES
 )
 
 source_group("Audio" FILES 
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
        ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
 )
 source_group("Export" FILES 
