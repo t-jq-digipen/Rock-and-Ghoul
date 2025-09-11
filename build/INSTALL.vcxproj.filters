@@ -2,12 +2,12 @@
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <CustomBuild Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\CMakeFiles\26e81aa8d847803be8b40460e063b197\INSTALL_force.rule">
-      <Filter>CMake Rules</Filter>
+      <Filter>Other</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="CMake Rules">
-      <UniqueIdentifier>{3A54ECFD-18C1-3F5D-8DEF-775409CA2B31}</UniqueIdentifier>
+    <Filter Include="Other">
+      <UniqueIdentifier>{782ED52A-F273-3FCE-B7F6-DEF4717279F5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

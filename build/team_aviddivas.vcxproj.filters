@@ -1,27 +1,149 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\glapp.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Audio.cpp">
+      <Filter>Audio</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\main.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Camera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Collision.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Export.cpp">
+      <Filter>Export</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\FilePath.cpp">
+      <Filter>FilePath</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\FrameRateController.cpp">
+      <Filter>FrameRateController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\GameStateManager.cpp">
+      <Filter>GameStateManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Graphics.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Input.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Math.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Physics.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Sprite.cpp">
+      <Filter>Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Transform.cpp">
+      <Filter>Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\WinMain.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\glapp.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Audio.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Camera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Collision.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Export.h">
+      <Filter>Export</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\FilePath.h">
+      <Filter>FilePath</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\FrameRateController.h">
+      <Filter>FrameRateController</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\GameStateManager.h">
+      <Filter>GameStateManager</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Graphics.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Input.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Math.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Physics.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Sprite.h">
+      <Filter>Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Transform.h">
+      <Filter>Transform</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\glapp.h">
-      <Filter>Header Files</Filter>
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\CMakeLists.txt">
+      <Filter>Other</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{713B6F65-54AE-3354-AAD4-4267C1680C14}</UniqueIdentifier>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{BBC0D00A-9D47-3D18-A5D8-139E8AB113DC}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{627FFCEA-BE90-35E1-ACFD-B15FE2350F8E}</UniqueIdentifier>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{07C52837-625C-33FE-B738-0AD87A91440D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{BB210D2D-C539-353D-B770-2359684E2C5A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{37638E1D-3B63-346A-8A4D-15B86DFB4707}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Export">
+      <UniqueIdentifier>{0F354AB5-FEA9-3DD9-83F2-0945C37C92F2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FilePath">
+      <UniqueIdentifier>{1B25BA27-561A-3B7B-AE50-C2C6FD5BDEC0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FrameRateController">
+      <UniqueIdentifier>{D2C14793-DC61-39B2-8BDD-603DDBD1F545}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameStateManager">
+      <UniqueIdentifier>{7C6E53D7-A5BA-3392-8378-13B5AB8B574D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{029B10D1-3D9F-3B14-92B2-E0CB921AE52C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{CCD39450-362F-35DA-8C10-CB669F2DAFEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{D1344B42-1CC9-398D-8C07-00005E35EAE9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{087EB00D-DD01-3FEB-AA28-CC21C11F3FD6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Other">
+      <UniqueIdentifier>{782ED52A-F273-3FCE-B7F6-DEF4717279F5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{F4D97D73-FA09-36EE-BFDD-7B3431A228B2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sprite">
+      <UniqueIdentifier>{EA6BAD82-2FE5-3198-8191-27720F29F057}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Transform">
+      <UniqueIdentifier>{550CC52A-5104-3C8E-94EA-F0F50126A86D}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
