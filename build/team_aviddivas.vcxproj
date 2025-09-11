@@ -336,8 +336,34 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Audio.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Camera.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Collision.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Export.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\FilePath.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\FrameRateController.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\GameStateManager.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Graphics.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Input.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Math.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Physics.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Sprite.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Transform.cpp" />
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\WinMain.cpp" />
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\glapp.cpp" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Audio.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Camera.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Collision.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Export.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\FilePath.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\FrameRateController.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\GameStateManager.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Graphics.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Input.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Math.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Physics.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Sprite.h" />
+    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Transform.h" />
     <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\glapp.h" />
   </ItemGroup>
   <ItemGroup />

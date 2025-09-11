@@ -67,37 +67,69 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Virtual folders based on filename patterns
 # Virtual folders based on filename patterns
 
-source_group("Main" REGULAR_EXPRESSION "(?i).*(WinMain).*")
-source_group("Audio" REGULAR_EXPRESSION "(?i).*(audio|sound|music|speaker|volume|wav|mp3).*")
+source_group("Main" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/WinMain.cpp
+)
+source_group("Engine" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/glapp.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/glapp.h
+)
+source_group("Audio" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
+)
+source_group("Export" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
+)
+source_group("FrameRateController" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
+)
+source_group("Graphics" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
+)
+source_group("Input" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
+)
+source_group("Math" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Math.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Math.h
+)
 
-source_group("Engine" REGULAR_EXPRESSION "(?i).*(engine|core|file|transform|glapp).*")
+source_group("Physics" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
+)
+source_group("GameStateManager" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
+)
+source_group("Camera" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h
+)
+source_group("Collision" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
+)
 
-source_group("Export" REGULAR_EXPRESSION "(?i).*(export|save|load|file|import|data).*")
+source_group("Transform" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Transform.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Transform.h
+)
 
-source_group("Framerate" REGULAR_EXPRESSION "(?i).*(framerate|fps|frame|time|delta|clock|timer).*")
+source_group("Sprite" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
+)
 
-source_group("Graphics" REGULAR_EXPRESSION "(?i).*(render|graphics|shader|mesh|texture|draw|vertex|fragment|opengl|buffer).*")
-
-source_group("Input" REGULAR_EXPRESSION "(?i).*(input|keyboard|mouse|controller|key|button|joystick).*")
-
-source_group("Math" REGULAR_EXPRESSION "(?i).*(math|calculate|algorithm|matrix).*")
-
-source_group("Vector" REGULAR_EXPRESSION "(?i).*(vector|vec2|vec3|vec4|point|coordinate|position).*")
-
-source_group("System" REGULAR_EXPRESSION "(?i).*(system|manager|handler|service).*")
-
-source_group("Types" REGULAR_EXPRESSION "(?i).*(type|struct|class|enum|define|typedef).*")
-
-source_group("Util" REGULAR_EXPRESSION "(?i).*(util|utility|helper|tool|common).*")
-
-source_group("Physics" REGULAR_EXPRESSION "(?i).*(physics|collision|rigidbody|force|gravity|mass|velocity).*")
-
-source_group("Gamestate" REGULAR_EXPRESSION "(?i).*(gamestate|state|scene|level|menu|pause).*")
-
-source_group("Camera" REGULAR_EXPRESSION "(?i).*(camera|view|projection|viewport|look).*")
-
-source_group("Movement" REGULAR_EXPRESSION "(?i).*(movement|move|walk|run|jump|speed|motion).*")
-
+source_group("FilePath" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
+)
 
 
 
