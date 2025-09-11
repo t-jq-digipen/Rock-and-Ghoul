@@ -19,6 +19,7 @@ to OpenGL implementations.
 #include <sstream>
 #include <iomanip>
 
+
 // Before asking GLFW to create an OpenGL context, we specify the minimum constraints
 // in that context:
 #define GL_MINOR 5

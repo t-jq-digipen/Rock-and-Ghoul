@@ -34,9 +34,6 @@ file(GLOB_RECURSE HEADERS
     "include/*.hpp"
 )
 
-# Debug output to verify files are found
-message(STATUS "Auto-discovered source files: ${SOURCES}")
-message(STATUS "Auto-discovered header files: ${HEADERS}")
 
 # ======================= Executable =========================
 add_executable(${CMAKE_PROJECT_NAME}
@@ -67,5 +64,42 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # ======================= Optional: Organize files in IDE ============
 # This creates nice folder structure in Visual Studio/Xcode
-source_group("Header Files" FILES ${HEADERS})
-source_group("Source Files" FILES ${SOURCES})
+# Virtual folders based on filename patterns
+# Virtual folders based on filename patterns
+
+source_group("Main" REGULAR_EXPRESSION "(?i).*(WinMain).*")
+source_group("Audio" REGULAR_EXPRESSION "(?i).*(audio|sound|music|speaker|volume|wav|mp3).*")
+
+source_group("Engine" REGULAR_EXPRESSION "(?i).*(engine|core|file|transform|glapp).*")
+
+source_group("Export" REGULAR_EXPRESSION "(?i).*(export|save|load|file|import|data).*")
+
+source_group("Framerate" REGULAR_EXPRESSION "(?i).*(framerate|fps|frame|time|delta|clock|timer).*")
+
+source_group("Graphics" REGULAR_EXPRESSION "(?i).*(render|graphics|shader|mesh|texture|draw|vertex|fragment|opengl|buffer).*")
+
+source_group("Input" REGULAR_EXPRESSION "(?i).*(input|keyboard|mouse|controller|key|button|joystick).*")
+
+source_group("Math" REGULAR_EXPRESSION "(?i).*(math|calculate|algorithm|matrix).*")
+
+source_group("Vector" REGULAR_EXPRESSION "(?i).*(vector|vec2|vec3|vec4|point|coordinate|position).*")
+
+source_group("System" REGULAR_EXPRESSION "(?i).*(system|manager|handler|service).*")
+
+source_group("Types" REGULAR_EXPRESSION "(?i).*(type|struct|class|enum|define|typedef).*")
+
+source_group("Util" REGULAR_EXPRESSION "(?i).*(util|utility|helper|tool|common).*")
+
+source_group("Physics" REGULAR_EXPRESSION "(?i).*(physics|collision|rigidbody|force|gravity|mass|velocity).*")
+
+source_group("Gamestate" REGULAR_EXPRESSION "(?i).*(gamestate|state|scene|level|menu|pause).*")
+
+source_group("Camera" REGULAR_EXPRESSION "(?i).*(camera|view|projection|viewport|look).*")
+
+source_group("Movement" REGULAR_EXPRESSION "(?i).*(movement|move|walk|run|jump|speed|motion).*")
+
+
+
+
+# Catch-all for files that don't match any pattern
+source_group("Other" REGULAR_EXPRESSION ".*")
