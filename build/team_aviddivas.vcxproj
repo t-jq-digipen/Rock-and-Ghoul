@@ -337,6 +337,18 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Audio.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Camera.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Collision.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Export.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\FilePath.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\FrameRateController.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\GameStateManager.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Graphics.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Input.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Math.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Physics.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Sprite.cpp" />
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Transform.cpp" />
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\glapp.cpp" />
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\main.cpp" />
     <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Audio.h" />

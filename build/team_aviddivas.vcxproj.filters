@@ -4,6 +4,42 @@
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Audio.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Camera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Collision.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Export.cpp">
+      <Filter>Export</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\FilePath.cpp">
+      <Filter>FilePath</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\FrameRateController.cpp">
+      <Filter>FrameRateController</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\GameStateManager.cpp">
+      <Filter>GameStateManager</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Graphics.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Input.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Math.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Physics.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Sprite.cpp">
+      <Filter>Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Transform.cpp">
+      <Filter>Transform</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\glapp.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
