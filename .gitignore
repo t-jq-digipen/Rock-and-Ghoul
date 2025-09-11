@@ -115,3 +115,4 @@ Release
 *.vcxproj.filters
 *.json
 *.html
+/build
