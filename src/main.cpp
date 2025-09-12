@@ -1,4 +1,4 @@
-/*!
+﻿/*!
 @file    	main.cpp
 @author  	pghali@digipen.edu
 @co-author  parminder.singh@digipen.edu
@@ -16,7 +16,7 @@ context and implement a game loop.
 #include <iostream>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
+#include "fmod.hpp"
 /*                                                   type declarations
 ----------------------------------------------------------------------------- */
 
@@ -25,7 +25,7 @@ context and implement a game loop.
 static void draw();
 static void update();
 static void init();
-
+static bool test_fmod();
 /*                                                   objects with file scope
 ----------------------------------------------------------------------------- */
 
@@ -42,7 +42,43 @@ Indicates how the program existed. Normal exit is signaled by a return value of
 0. Abnormal termination is signaled by a non-zero return value.
 Note that the C++ compiler will insert a return 0 statement if one is missing.
 */
+static bool test_fmod() {
+    FMOD_SYSTEM* system = nullptr;
+    FMOD_RESULT result;
+
+    std::cout << "Testing FMOD initialization..." << std::endl;
+
+    // Create FMOD system (C API)
+    result = FMOD_System_Create(&system, FMOD_VERSION);
+    if (result != FMOD_OK) {
+        std::cout << "FMOD Error: Failed to create system (" << result << ")" << std::endl;
+        return false;
+    }
+
+    // Initialize FMOD system
+    result = FMOD_System_Init(system, 32, FMOD_INIT_NORMAL, nullptr);
+    if (result != FMOD_OK) {
+        std::cout << "FMOD Error: Failed to initialize system (" << result << ")" << std::endl;
+        FMOD_System_Release(system);
+        return false;
+    }
+
+    std::cout << "FMOD initialized successfully!" << std::endl;
+
+    // Cleanup
+    result = FMOD_System_Release(system);
+    if (result != FMOD_OK) {
+        std::cout << "FMOD Warning: Error during cleanup (" << result << ")" << std::endl;
+    }
+
+    return true;
+}
+
 int main() {
+    // Test FMOD first
+    if (!test_fmod()) {
+        std::cout << "FMOD test failed - continuing anyway..." << std::endl;
+    }
   // start with a 16:9 aspect ratio
   if (!GLApp::init(2400, 1350, "Tutorial 0 | Setting up OpenGL 4.5")) {
       std::cout << "Unable to create OpenGL context" << std::endl;

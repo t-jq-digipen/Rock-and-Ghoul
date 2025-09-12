@@ -22,6 +22,7 @@ set(ALL_LIBS
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 
+
 # ======================= Auto-discover Source Files =================
 # Automatically find all .cpp files in src/
 file(GLOB_RECURSE SOURCES 
@@ -50,6 +51,57 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     ${ALL_LIBS}
 )
 
+# ======================= FMOD Setup =========================
+# Use the correct FMOD path structure
+set(FMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/deps/fmod")
+
+# Check if FMOD exists
+if(NOT EXISTS "${FMOD_DIR}")
+    message(WARNING "FMOD not found at ${FMOD_DIR}. Audio features may not work.")
+else()
+    message(STATUS "FMOD found at: ${FMOD_DIR}")
+endif()
+
+include_directories(${FMOD_DIR}/inc)
+
+# Set architecture-specific lib directory
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    # 64-bit build
+    set(FMOD_LIB_DIR "${FMOD_DIR}/lib/x64")
+    set(FMOD_LIBRARY_PATH "${FMOD_LIB_DIR}/fmod_vc.lib")
+    message(STATUS "Using 64-bit FMOD libraries from: ${FMOD_LIB_DIR}")
+else()
+    # 32-bit build
+    set(FMOD_LIB_DIR "${FMOD_DIR}/lib/x86")
+    set(FMOD_LIBRARY_PATH "${FMOD_LIB_DIR}/fmod_vc.lib")
+    message(STATUS "Using 32-bit FMOD libraries from: ${FMOD_LIB_DIR}")
+endif()
+
+# Verify the library file exists
+if(EXISTS "${FMOD_LIBRARY_PATH}")
+    message(STATUS "✓ Found fmod_vc.lib at: ${FMOD_LIBRARY_PATH}")
+else()
+    message(WARNING "✗ fmod_vc.lib NOT found at: ${FMOD_LIBRARY_PATH}")
+endif()
+
+# Link FMOD libraries using absolute path
+target_link_libraries(${CMAKE_PROJECT_NAME}
+    ${ALL_LIBS}
+    "${FMOD_LIBRARY_PATH}"
+)
+
+# Copy FMOD DLLs on Windows
+if(WIN32)
+    # Copy main FMOD DLL
+    if(EXISTS "${FMOD_LIB_DIR}/fmod.dll")
+        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${FMOD_LIB_DIR}/fmod.dll
+            $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>
+        )
+        message(STATUS "Will copy fmod.dll from: ${FMOD_LIB_DIR}")
+    endif()
+endif()
 # ======================= Set C++ Standard ===========================
 set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 

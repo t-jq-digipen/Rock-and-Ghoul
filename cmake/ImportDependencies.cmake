@@ -105,6 +105,26 @@ macro(import_freetype)
     endif()
 endmacro()
 
+macro(import_fmod)
+    if(NOT TARGET fmod)
+        # Adjust to where you put FMOD headers + libs
+        set(FMOD_ROOT ${CMAKE_SOURCE_DIR}/deps/fmod)
+
+        # Add FMOD headers
+        include_directories(${FMOD_ROOT}/include)
+
+        # Define imported target
+        add_library(fmod INTERFACE)
+        target_include_directories(fmod INTERFACE ${FMOD_ROOT}/include)
+
+        if (WIN32)
+            target_link_libraries(fmod INTERFACE
+                ${FMOD_ROOT}/lib/fmod_vc.lib
+            )
+        endif()
+    endif()
+endmacro()
+
 # Macro to import all dependencies
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")
@@ -125,5 +145,6 @@ macro(importDependencies)
     import_imgui()
     message(STATUS "ImGui imported successfully.")
     import_freetype()
+    import_fmod()
     message(STATUS "All dependencies have been imported successfully.")
 endmacro()
