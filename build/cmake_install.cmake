@@ -37,6 +37,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/build/_deps/glfw-src/cmake_install.cmake")
   include("C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glm-build/cmake_install.cmake")
   include("C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glew-build/cmake_install.cmake")
+  include("C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/freetype-build/cmake_install.cmake")
 
 endif()
 

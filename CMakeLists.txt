@@ -14,9 +14,10 @@ add_definitions(-DGLEW_STATIC)
 add_definitions(-DUSE_CSD3151_AUTOMATION=0)
 
 set(ALL_LIBS
-    PRIVATE glfw
-    PRIVATE libglew_static
-    PRIVATE imgui
+    glfw
+    libglew_static
+    imgui
+    freetype
 )
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
@@ -94,10 +95,7 @@ source_group("Input" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
 )
-source_group("Math" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Math.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Math.h
-)
+
 
 source_group("Physics" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp

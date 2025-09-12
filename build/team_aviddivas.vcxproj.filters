@@ -28,9 +28,6 @@
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Input.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Math.cpp">
-      <Filter>Math</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\src\Physics.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
@@ -74,9 +71,6 @@
     </ClInclude>
     <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Input.h">
       <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Math.h">
-      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\include\Physics.h">
       <Filter>Physics</Filter>
@@ -127,9 +121,6 @@
     </Filter>
     <Filter Include="Main">
       <UniqueIdentifier>{D1344B42-1CC9-398D-8C07-00005E35EAE9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Math">
-      <UniqueIdentifier>{087EB00D-DD01-3FEB-AA28-CC21C11F3FD6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Physics">
       <UniqueIdentifier>{F4D97D73-FA09-36EE-BFDD-7B3431A228B2}</UniqueIdentifier>

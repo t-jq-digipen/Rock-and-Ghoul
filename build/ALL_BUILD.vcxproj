@@ -27,7 +27,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{88CA5D2C-A751-3F8F-896B-618FDF6158E3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
     <Platform>x64</Platform>
     <ProjectName>ALL_BUILD</ProjectName>
     <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
@@ -69,7 +69,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glfw-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glm-src;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glew-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glfw-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glm-src;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glew-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\freetype-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -79,7 +79,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glfw-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glm-src;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glew-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glfw-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glm-src;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glew-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\freetype-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -89,7 +89,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glfw-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glm-src;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glew-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glfw-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glm-src;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glew-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\freetype-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -99,7 +99,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glfw-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glm-src;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glew-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glfw-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glm-src;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\glew-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\freetype-src\include;C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -173,6 +173,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\_deps\freetype-build\freetype.vcxproj">
+      <Project>{8EE1D9BB-3A55-3E59-9138-F936F6E030CB}</Project>
+      <Name>freetype</Name>
     </ProjectReference>
     <ProjectReference Include="C:\Users\Regine\source\repos\csd2401f25_team_aviddivas\build\build\_deps\glfw-src\src\glfw.vcxproj">
       <Project>{B48B88CA-639E-344E-8B00-53D742722147}</Project>

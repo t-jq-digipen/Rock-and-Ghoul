@@ -90,6 +90,21 @@ macro(import_imgui)
     endif()
 endmacro()
 
+# Macro to import FreeType
+macro(import_freetype)
+    if(NOT TARGET freetype)  # Guard to prevent multiple inclusion
+        FetchContent_Declare(
+            freetype
+            GIT_REPOSITORY https://github.com/freetype/freetype.git
+            GIT_TAG master
+        )
+        FetchContent_MakeAvailable(freetype)
+        
+        # Include directories
+        include_directories(${freetype_SOURCE_DIR}/include)
+    endif()
+endmacro()
+
 # Macro to import all dependencies
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")
@@ -109,6 +124,6 @@ macro(importDependencies)
     message(STATUS "Importing ImGui...")
     import_imgui()
     message(STATUS "ImGui imported successfully.")
-
+    import_freetype()
     message(STATUS "All dependencies have been imported successfully.")
 endmacro()
