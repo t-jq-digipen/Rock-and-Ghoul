@@ -14,6 +14,8 @@ context and implement a game loop.
 // Extension loader library's header must be included before GLFW's header!!!
 #include "../include/glapp.h"
 #include <iostream>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 /*                                                   type declarations
 ----------------------------------------------------------------------------- */
