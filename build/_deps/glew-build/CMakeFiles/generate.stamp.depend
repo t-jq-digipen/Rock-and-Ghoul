@@ -1,6 +1,0 @@
-# CMake generation dependency list for this directory.
-C:/Program Files/CMake/share/cmake-4.0/Modules/FindOpenGL.cmake
-C:/Program Files/CMake/share/cmake-4.0/Modules/FindPackageHandleStandardArgs.cmake
-C:/Program Files/CMake/share/cmake-4.0/Modules/FindPackageMessage.cmake
-C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glew-src/CMakeLists.txt
-C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glew-src/GeneratePkgConfig.cmake

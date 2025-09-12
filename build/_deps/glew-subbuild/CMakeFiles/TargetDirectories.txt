@@ -1,3 +1,0 @@
-C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glew-subbuild/CMakeFiles/glew-populate.dir
-C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glew-subbuild/CMakeFiles/ALL_BUILD.dir
-C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/build/_deps/glew-subbuild/CMakeFiles/ZERO_CHECK.dir
