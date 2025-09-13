@@ -142,6 +142,8 @@ source_group("FrameRateController" FILES
 source_group("Graphics" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
 )
 source_group("Input" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp

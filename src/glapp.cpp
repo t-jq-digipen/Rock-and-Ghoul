@@ -18,7 +18,7 @@ to OpenGL implementations.
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include "Input.h"
+#include "Input.h" 
 
 // Before asking GLFW to create an OpenGL context, we specify the minimum constraints
 // in that context:
@@ -177,6 +177,7 @@ void GLApp::update() {
       clear_color[2] = 1.0f;
       clear_color[3] = 1.0f;
   }
+
 
 }
 
@@ -408,13 +409,7 @@ of the window in pixels.
 void GLApp::fbsize_cb(GLFWwindow *ptr_win, int width, int height) {
   // use the entire framebuffer as drawing region
   glViewport(0, 0, width, height);
-  // Set projection to match window pixels
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glOrtho(0, width, 0, height, -1, 1);
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+  // later, if working in 3D, we'll have to set the projection matrix here ...
 }
 
 /*  _________________________________________________________________________*/
