@@ -17,6 +17,7 @@ context and implement a game loop.
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "fmod.hpp"
+#include "Input.h"
 /*                                                   type declarations
 ----------------------------------------------------------------------------- */
 
