@@ -133,4 +133,5 @@ static void update() {
 
   // animate scene
   GLApp::update();
+  Input::Update();
 }
