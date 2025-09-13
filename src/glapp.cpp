@@ -18,6 +18,7 @@ to OpenGL implementations.
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include "Input.h"
 
 // Before asking GLFW to create an OpenGL context, we specify the minimum constraints
 // in that context:
@@ -97,10 +98,10 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
   // set callback for events associated with window size changes; keyboard;
  // mouse buttons, cursor position, and scroller
   glfwSetFramebufferSizeCallback(GLApp::ptr_window, GLApp::fbsize_cb);
-  glfwSetKeyCallback(GLApp::ptr_window, GLApp::key_cb);
-  glfwSetMouseButtonCallback(GLApp::ptr_window, GLApp::mousebutton_cb);
-  glfwSetCursorPosCallback(GLApp::ptr_window, GLApp::mousepos_cb);
-  glfwSetScrollCallback(GLApp::ptr_window, GLApp::mousescroll_cb);
+  glfwSetKeyCallback(GLApp::ptr_window, Input::KeyCallback);
+  glfwSetMouseButtonCallback(GLApp::ptr_window, Input::MouseButtonCallback);
+  glfwSetCursorPosCallback(GLApp::ptr_window, Input::MousePosCallback);
+  glfwSetScrollCallback(GLApp::ptr_window, Input::MouseScrollCallback);
 
   // this is the default setting ...
   glfwSetInputMode(GLApp::ptr_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -407,7 +408,13 @@ of the window in pixels.
 void GLApp::fbsize_cb(GLFWwindow *ptr_win, int width, int height) {
   // use the entire framebuffer as drawing region
   glViewport(0, 0, width, height);
-  // later, if working in 3D, we'll have to set the projection matrix here ...
+  // Set projection to match window pixels
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, width, 0, height, -1, 1);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
 }
 
 /*  _________________________________________________________________________*/

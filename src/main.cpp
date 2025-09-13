@@ -18,6 +18,7 @@ context and implement a game loop.
 #include FT_FREETYPE_H
 #include "fmod.hpp"
 #include "Input.h"
+#include "Player.h"
 /*                                                   type declarations
 ----------------------------------------------------------------------------- */
 
@@ -27,6 +28,7 @@ static void draw();
 static void update();
 static void init();
 static bool test_fmod();
+
 /*                                                   objects with file scope
 ----------------------------------------------------------------------------- */
 
@@ -80,19 +82,36 @@ int main() {
     if (!test_fmod()) {
         std::cout << "FMOD test failed - continuing anyway..." << std::endl;
     }
-  // start with a 16:9 aspect ratio
-  if (!GLApp::init(2400, 1350, "Tutorial 0 | Setting up OpenGL 4.5")) {
-      std::cout << "Unable to create OpenGL context" << std::endl;
-    std::exit(EXIT_FAILURE);
-  }
 
-  // window's close flag is set by clicking close widget or Alt+F4
-  while (!glfwWindowShouldClose(GLApp::ptr_window)) {
-    draw();
-    update();
-  }
-  
-  GLApp::cleanup();
+    // Start with a 16:9 aspect ratio
+    if (!GLApp::init(2400, 1350, "Rock & Ghoul")) {
+        std::cout << "Unable to create OpenGL context" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    // Create the player AFTER OpenGL context exists
+    Player player(200.0f, 200.0f);
+
+    double lastTime = glfwGetTime();
+
+    // Game loop
+    while (!glfwWindowShouldClose(GLApp::ptr_window)) {
+        double currentTime = glfwGetTime();
+        float dt = static_cast<float>(currentTime - lastTime);
+        lastTime = currentTime;
+
+        draw();
+        update();
+
+        // update player movement
+        player.Update(dt);
+
+        // debug print
+        player.Draw();
+    }
+
+    GLApp::cleanup();
+    return 0;
 }
 
 /*  _________________________________________________________________________ */
@@ -106,12 +125,12 @@ Call application to draw and then swap front and back frame buffers ...
 Uses GLHelper::GLFWWindow* to get handle to OpenGL context.
 */
 static void draw() {
-  // render scene
-  GLApp::draw();
+    glClear(GL_COLOR_BUFFER_BIT);   // clear screen
+    glLoadIdentity();               // reset transforms
 
-  // swap buffers: front <-> back
-  // GLApp::ptr_window is handle to window that defines the OpenGL context
-  glfwSwapBuffers(GLApp::ptr_window); 
+    // Don't forget: Player::Draw() gets called from main loop
+
+    glfwSwapBuffers(GLApp::ptr_window);
 }
 
 /*  _________________________________________________________________________ */
