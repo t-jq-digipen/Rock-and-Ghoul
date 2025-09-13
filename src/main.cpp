@@ -79,6 +79,7 @@ static bool test_fmod() {
 
 int main() {
     // Test FMOD first
+
     if (!test_fmod()) {
         std::cout << "FMOD test failed - continuing anyway..." << std::endl;
     }
@@ -100,14 +101,18 @@ int main() {
         float dt = static_cast<float>(currentTime - lastTime);
         lastTime = currentTime;
 
-        draw();
+        // Clear screen
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
         update();
 
-        // update player movement
+        // update and draw player
         player.Update(dt);
-
-        // debug print
         player.Draw();
+
+        // show frame
+        glfwSwapBuffers(GLApp::ptr_window);
     }
 
     GLApp::cleanup();
@@ -125,10 +130,9 @@ Call application to draw and then swap front and back frame buffers ...
 Uses GLHelper::GLFWWindow* to get handle to OpenGL context.
 */
 static void draw() {
-    glClear(GL_COLOR_BUFFER_BIT);   // clear screen
-    glLoadIdentity();               // reset transforms
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // black background
+    glClear(GL_COLOR_BUFFER_BIT);
 
-    // Don't forget: Player::Draw() gets called from main loop
 
     glfwSwapBuffers(GLApp::ptr_window);
 }

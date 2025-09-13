@@ -1,14 +1,20 @@
-
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "Player.h"
 #include "Input.h"
+#include "Render.h"
 
-#include <iostream>
+
+static Render renderer;
+static bool rendererInitialized = false;
 
 Player::Player(float startX, float startY)
-    : x(startX), y(startY), size(50.0f), speed(200.0f) {}
+    : x(startX), y(startY), size(50.0f), speed(200.0f) {
+    if (!rendererInitialized) {
+        renderer.Init(); // will grab GLApp::width/height
+        rendererInitialized = true;
+    }
+}
 
 void Player::Update(float dt) {
     float dx = 0.0f, dy = 0.0f;
@@ -23,14 +29,5 @@ void Player::Update(float dt) {
 }
 
 void Player::Draw() {
-    // Simple square centered at (x,y)
-    float half = size / 2.0f;
-
-    glColor3f(1.0f, 0.0f, 0.0f); // red player
-    glBegin(GL_QUADS);
-    glVertex2f(x - half, y - half);
-    glVertex2f(x + half, y - half);
-    glVertex2f(x + half, y + half);
-    glVertex2f(x - half, y + half);
-    glEnd();
+    renderer.DrawSquare({ x, y }, size, { 1.0f, 0.0f, 0.0f });
 }

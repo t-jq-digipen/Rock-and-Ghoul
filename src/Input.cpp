@@ -75,6 +75,9 @@ void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
     else if (action == GLFW_REPEAT) {
         keys[key] = KeyState::HELD;
     }
+    if (key == GLFW_KEY_ESCAPE) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
 }
 
 void Input::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
