@@ -180,3 +180,15 @@ source_group("FilePath" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
 )
+
+source_group("GameLogic" FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Player.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Enemy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Enemy.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Projectile.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Projectile.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Spells.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Spells.h
+)
+
