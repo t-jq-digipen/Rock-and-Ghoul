@@ -20,6 +20,7 @@ context and implement a game loop.
 #include "Input.h"
 #include "Player.h"
 #include "Audio.h"
+#include "Collision.h"
 /*                                                   type declarations
 ----------------------------------------------------------------------------- */
 
@@ -79,8 +80,21 @@ int main() {
         update();
         
         // update and draw player
+        // 1. Compute intended movement
         for (auto& p : players) {
-            p.Update(dt);
+            p.ComputeInput(dt);
+        }
+
+        // 2. Collision check
+        if (CollisionIntersection_RectRect_Static(players[0].GetFutureAABB(), players[1].GetFutureAABB())) { //where the player will be next frame if they move.
+            std::cout << "Collision detected! Players stop." << std::endl;
+            players[0].CancelMove();
+            players[1].CancelMove();
+        }
+
+        // 3. Apply movement + draw
+        for (auto& p : players) {
+            p.ApplyMove();
             p.Draw();
         }
 

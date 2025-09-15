@@ -1,24 +1,21 @@
 #include "MovementController.h"
 
 MovementController::MovementController(ControlScheme scheme, float speed)
-    : controlScheme(scheme), speed(speed) {}
+    : controlScheme(scheme), speed(speed), dx(0.0f), dy(0.0f) {}
 
-void MovementController::Update(float& x, float& y, float dt) {
-    float dx = 0.0f, dy = 0.0f;
+void MovementController::ComputeInput(float dt) {
+    dx = dy = 0.0f;
 
     if (controlScheme == ControlScheme::WASD) {
-        if (Input::IsKeyHeld(GLFW_KEY_W)) dy += speed;
-        if (Input::IsKeyHeld(GLFW_KEY_S)) dy -= speed;
-        if (Input::IsKeyHeld(GLFW_KEY_A)) dx -= speed;
-        if (Input::IsKeyHeld(GLFW_KEY_D)) dx += speed;
+        if (Input::IsKeyHeld(GLFW_KEY_W)) dy += speed * dt;
+        if (Input::IsKeyHeld(GLFW_KEY_S)) dy -= speed * dt;
+        if (Input::IsKeyHeld(GLFW_KEY_A)) dx -= speed * dt;
+        if (Input::IsKeyHeld(GLFW_KEY_D)) dx += speed * dt;
     }
     else if (controlScheme == ControlScheme::Arrows) {
-        if (Input::IsKeyHeld(GLFW_KEY_UP))    dy += speed;
-        if (Input::IsKeyHeld(GLFW_KEY_DOWN))  dy -= speed;
-        if (Input::IsKeyHeld(GLFW_KEY_LEFT))  dx -= speed;
-        if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) dx += speed;
+        if (Input::IsKeyHeld(GLFW_KEY_UP))    dy += speed * dt;
+        if (Input::IsKeyHeld(GLFW_KEY_DOWN))  dy -= speed * dt;
+        if (Input::IsKeyHeld(GLFW_KEY_LEFT))  dx -= speed * dt;
+        if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) dx += speed * dt;
     }
-
-    x += dx * dt;
-    y += dy * dt;
 }

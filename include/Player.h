@@ -1,4 +1,5 @@
 #include "MovementController.h"
+#include "Collision.h"
 
 class Player {
 public:
@@ -6,12 +7,21 @@ public:
 
     Player(const Player& other);
 
-    void Update(float dt);
+    void ComputeInput(float dt);
+    void ApplyMove();
+    void CancelMove();
     void Draw();
     void SetPosition(float newX, float newY);
+    
+    AABB GetAABB() const;
+    AABB GetFutureAABB() const;
+
 
 private:
     float x, y;
     float size;
     MovementController controller; // each player has its own controller
+    float nextX, nextY;
 };
+
+

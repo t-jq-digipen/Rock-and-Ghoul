@@ -20,10 +20,21 @@ Player::Player(const Player& other)
     }
 }
 
-void Player::Update(float dt) {
-    controller.Update(x, y, dt);
+void Player::ComputeInput(float dt) {
+    controller.ComputeInput(dt);
+    nextX = x + controller.GetDX();
+    nextY = y + controller.GetDY();
+}
+void Player::ApplyMove() {
+    x = nextX;
+    y = nextY;
 }
 
+void Player::CancelMove() {
+    nextX = x;
+    nextY = y;
+    controller.Reset();
+}
 void Player::Draw() {
     renderer.DrawSquare({ x, y }, size, { 1.0f, 0.0f, 0.0f });
 }
@@ -31,4 +42,13 @@ void Player::Draw() {
 void Player::SetPosition(float newX, float newY) {
     x = newX;
     y = newY;
+}
+AABB Player::GetAABB() const {
+    return { { x - size * 0.5f, y - size * 0.5f },
+             { x + size * 0.5f, y + size * 0.5f } };
+}
+
+AABB Player::GetFutureAABB() const {
+    return { { nextX - size * 0.5f, nextY - size * 0.5f },
+             { nextX + size * 0.5f, nextY + size * 0.5f } };
 }
