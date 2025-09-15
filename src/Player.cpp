@@ -11,7 +11,16 @@ static bool rendererInitialized = false;
 Player::Player(float startX, float startY)
     : x(startX), y(startY), size(50.0f), speed(200.0f) {
     if (!rendererInitialized) {
-        renderer.Init(); // will grab GLApp::width/height
+        renderer.Init();
+        rendererInitialized = true;
+    }
+}
+
+// Copy constructor
+Player::Player(const Player& other)
+    : x(other.x), y(other.y), size(other.size), speed(other.speed) {
+    if (!rendererInitialized) {
+        renderer.Init();
         rendererInitialized = true;
     }
 }

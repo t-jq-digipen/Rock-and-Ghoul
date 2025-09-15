@@ -182,6 +182,10 @@ source_group("FilePath" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
 )
+source_group("Movement" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementController.h
+)
 
 source_group("GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp

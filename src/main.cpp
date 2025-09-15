@@ -28,7 +28,6 @@ context and implement a game loop.
 static void draw();
 static void update();
 static void init();
-static bool test_fmod();
 
 /*                                                   objects with file scope
 ----------------------------------------------------------------------------- */
@@ -61,8 +60,10 @@ int main() {
     FMOD::Sound* bgm = AudioSystem::LoadSound("../Assets/music/bgm.mp3", true);
     AudioSystem::PlaySound(bgm);
     // Create the player AFTER OpenGL context exists
-    Player player(200.0f, 200.0f);
-
+    std::vector<Player> players;
+    players.emplace_back(200.0f, 200.0f);
+    players.push_back(players[0]);
+    players[1] = Player(400.0f, 200.0f);
     double lastTime = glfwGetTime();
 
     // Game loop
@@ -78,8 +79,10 @@ int main() {
         update();
         
         // update and draw player
-        player.Update(dt);
-        player.Draw();
+        for (auto& p : players) {
+            p.Update(dt);
+            p.Draw();
+        }
 
         // show frame
         glfwSwapBuffers(GLApp::ptr_window);
