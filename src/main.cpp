@@ -19,6 +19,7 @@ context and implement a game loop.
 #include "fmod.hpp"
 #include "Input.h"
 #include "Player.h"
+#include "Audio.h"
 /*                                                   type declarations
 ----------------------------------------------------------------------------- */
 
@@ -45,43 +46,11 @@ Indicates how the program existed. Normal exit is signaled by a return value of
 0. Abnormal termination is signaled by a non-zero return value.
 Note that the C++ compiler will insert a return 0 statement if one is missing.
 */
-static bool test_fmod() {
-    FMOD_SYSTEM* system = nullptr;
-    FMOD_RESULT result;
-
-    std::cout << "Testing FMOD initialization..." << std::endl;
-
-    // Create FMOD system (C API)
-    result = FMOD_System_Create(&system, FMOD_VERSION);
-    if (result != FMOD_OK) {
-        std::cout << "FMOD Error: Failed to create system (" << result << ")" << std::endl;
-        return false;
-    }
-
-    // Initialize FMOD system
-    result = FMOD_System_Init(system, 32, FMOD_INIT_NORMAL, nullptr);
-    if (result != FMOD_OK) {
-        std::cout << "FMOD Error: Failed to initialize system (" << result << ")" << std::endl;
-        FMOD_System_Release(system);
-        return false;
-    }
-
-    std::cout << "FMOD initialized successfully!" << std::endl;
-
-    // Cleanup
-    result = FMOD_System_Release(system);
-    if (result != FMOD_OK) {
-        std::cout << "FMOD Warning: Error during cleanup (" << result << ")" << std::endl;
-    }
-
-    return true;
-}
 
 int main() {
     // Test FMOD first
-
-    if (!test_fmod()) {
-        std::cout << "FMOD test failed - continuing anyway..." << std::endl;
+    if (!AudioSystem::Init()) {
+        std::cout << "FMOD init failed!" << std::endl;
     }
 
     // Start with a 16:9 aspect ratio
@@ -89,7 +58,8 @@ int main() {
         std::cout << "Unable to create OpenGL context" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-
+    FMOD::Sound* bgm = AudioSystem::LoadSound("../Assets/music/bgm.mp3", true);
+    AudioSystem::PlaySound(bgm);
     // Create the player AFTER OpenGL context exists
     Player player(200.0f, 200.0f);
 
@@ -106,7 +76,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         update();
-
+        
         // update and draw player
         player.Update(dt);
         player.Draw();
@@ -114,7 +84,7 @@ int main() {
         // show frame
         glfwSwapBuffers(GLApp::ptr_window);
     }
-
+    AudioSystem::Close();
     GLApp::cleanup();
     return 0;
 }
@@ -158,4 +128,5 @@ static void update() {
   // animate scene
   GLApp::update();
   Input::Update();
+  AudioSystem::Update();
 }
