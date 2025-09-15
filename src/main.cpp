@@ -59,11 +59,11 @@ int main() {
     }
     FMOD::Sound* bgm = AudioSystem::LoadSound("../Assets/music/bgm.mp3", true);
     AudioSystem::PlaySound(bgm);
-    // Create the player AFTER OpenGL context exists
+
     std::vector<Player> players;
-    players.emplace_back(200.0f, 200.0f);
-    players.push_back(players[0]);
-    players[1] = Player(400.0f, 200.0f);
+    players.emplace_back(200.0f, 200.0f, ControlScheme::WASD);   // Player 1
+    players.emplace_back(400.0f, 200.0f, ControlScheme::Arrows); // Player 2
+
     double lastTime = glfwGetTime();
 
     // Game loop

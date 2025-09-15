@@ -1,21 +1,17 @@
-#pragma once
-#ifndef PLAYER_H
-#define PLAYER_H
+#include "MovementController.h"
 
 class Player {
 public:
-    Player(float startX, float startY);
+    Player(float startX, float startY, ControlScheme controls);
 
-    // Copy constructor (for cloning)
     Player(const Player& other);
 
     void Update(float dt);
     void Draw();
+    void SetPosition(float newX, float newY);
 
 private:
     float x, y;
     float size;
-    float speed;
+    MovementController controller; // each player has its own controller
 };
-
-#endif // PLAYER_H

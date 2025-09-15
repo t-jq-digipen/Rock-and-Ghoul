@@ -1,24 +1,19 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include "Player.h"
-#include "Input.h"
 #include "Render.h"
-
 
 static Render renderer;
 static bool rendererInitialized = false;
 
-Player::Player(float startX, float startY)
-    : x(startX), y(startY), size(50.0f), speed(200.0f) {
+Player::Player(float startX, float startY, ControlScheme controls)
+    : x(startX), y(startY), size(50.0f), controller(controls, 200.0f) {
     if (!rendererInitialized) {
         renderer.Init();
         rendererInitialized = true;
     }
 }
 
-// Copy constructor
 Player::Player(const Player& other)
-    : x(other.x), y(other.y), size(other.size), speed(other.speed) {
+    : x(other.x), y(other.y), size(other.size), controller(other.controller) {
     if (!rendererInitialized) {
         renderer.Init();
         rendererInitialized = true;
@@ -26,17 +21,14 @@ Player::Player(const Player& other)
 }
 
 void Player::Update(float dt) {
-    float dx = 0.0f, dy = 0.0f;
-
-    if (Input::IsKeyHeld(GLFW_KEY_W)) dy += speed;
-    if (Input::IsKeyHeld(GLFW_KEY_S)) dy -= speed;
-    if (Input::IsKeyHeld(GLFW_KEY_A)) dx -= speed;
-    if (Input::IsKeyHeld(GLFW_KEY_D)) dx += speed;
-
-    x += dx * dt;
-    y += dy * dt;
+    controller.Update(x, y, dt);
 }
 
 void Player::Draw() {
     renderer.DrawSquare({ x, y }, size, { 1.0f, 0.0f, 0.0f });
+}
+
+void Player::SetPosition(float newX, float newY) {
+    x = newX;
+    y = newY;
 }
