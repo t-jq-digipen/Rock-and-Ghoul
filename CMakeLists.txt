@@ -87,6 +87,7 @@ endif()
 # Link FMOD libraries using absolute path
 target_link_libraries(${CMAKE_PROJECT_NAME}
     ${ALL_LIBS}
+	stb
     "${FMOD_LIBRARY_PATH}"
 )
 

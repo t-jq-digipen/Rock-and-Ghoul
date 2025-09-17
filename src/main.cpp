@@ -21,6 +21,7 @@ context and implement a game loop.
 #include "Player.h"
 #include "Audio.h"
 #include "Collision.h"
+#include "Render.h"
 /*                                                   type declarations
 ----------------------------------------------------------------------------- */
 
@@ -60,6 +61,10 @@ int main() {
     }
     FMOD::Sound* bgm = AudioSystem::LoadSound("../Assets/music/bgm.mp3", true);
     AudioSystem::PlaySound(bgm);
+    Render renderer;
+    renderer.Init();
+    GLuint fretboardTex = Render::LoadTexture("../Assets/fretboard.jpg");
+    
 
     std::vector<Player> players;
     players.emplace_back(200.0f, 200.0f, ControlScheme::WASD);   // Player 1
@@ -91,7 +96,7 @@ int main() {
             players[0].CancelMove();
             players[1].CancelMove();
         }
-
+        renderer.DrawTexturedQuad({ 1200.0f, 200.0f }, { 1000.0f, 200.0f }, fretboardTex);
         // 3. Apply movement + draw
         for (auto& p : players) {
             p.ApplyMove();
