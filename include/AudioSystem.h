@@ -9,12 +9,12 @@ public:
     void Update(float) override { AudioSystem::Update(); }
     void Shutdown() override { AudioSystem::Close(); }
 
-    // Helper: load a sound (music or SFX)
+    // helper: load a sound (music or SFX)
     FMOD::Sound* Load(const std::string& path, bool loop = false) {
         return AudioSystem::LoadSound(path, loop);
     }
 
-    // Helper: play a sound
+    // helper: play a sound
     void Play(FMOD::Sound* sound) {
         AudioSystem::PlaySound(sound);
     }

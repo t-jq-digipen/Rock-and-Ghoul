@@ -15,23 +15,29 @@ public:
     }
 
     void Update(float dt) override {
+        // Step 1: compute intended input
         for (auto& p : players) p.ComputeInput(dt);
-        for (auto& p : players) p.ApplyMove();
 
+        // Step 2: check collisions before applying
         for (size_t i = 0; i < players.size(); ++i) {
             for (size_t j = i + 1; j < players.size(); ++j) {
                 if (CollisionIntersection_RectRect_Static(
                     players[i].GetFutureAABB(),
                     players[j].GetFutureAABB())) {
-                    std::cout << "Collision detected!\n";
+
                     players[i].CancelMove();
                     players[j].CancelMove();
                 }
             }
         }
 
+        // Step 3: apply safe movement
+        for (auto& p : players) p.ApplyMove();
+
+        // Step 4: draw
         for (auto& p : players) p.Draw();
     }
+
 
     void Shutdown() override {}
 };
