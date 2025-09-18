@@ -187,7 +187,10 @@ source_group("Movement" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementController.h
 )
-
+source_group("Math" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
+)
 source_group("GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Player.h
