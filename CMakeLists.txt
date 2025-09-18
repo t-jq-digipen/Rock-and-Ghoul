@@ -127,6 +127,8 @@ source_group("Main" FILES
 source_group("Engine" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/glapp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/glapp.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Engine.h
 )
 source_group("Audio" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
