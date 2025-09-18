@@ -1,3 +1,20 @@
+#pragma once
+#ifndef GAMESTATEMANAGER_H
+#define GAMESTATEMANAGER_H
+
+class GSM
+{
+public:
+    // Initialize Game State Manager
+    static void Init(int gameState);
+
+    // Shutdown Game State Manager
+    static void Close();
+
+    // Update Game State Manager
+    static void Update();
+};
+
 // ----------------------------------------------------------------------------
 // Enumeration for game state types
 // ----------------------------------------------------------------------------
@@ -6,6 +23,7 @@ enum GameStates
 {
 	GS_MAIN_MENU = 0,
 	GS_LEVEL1,
+    GS_RESTART,
 	GS_QUIT
 };
 
@@ -24,12 +42,4 @@ extern int currentState, previousState, nextState;
 // ----------------------------------------------------------------------------
 extern FP fpLoad, fpInitialize, fpUpdate, fpDraw, fpFree, fpUnload;
 
-// ----------------------------------------------------------------------------
-// Initialize the game state manager
-// ----------------------------------------------------------------------------
-void GSM_Initialize(int gameState);
-
-// ----------------------------------------------------------------------------
-// Update the game state manager
-// ----------------------------------------------------------------------------
-void GSM_Update();
+#endif // GAMESTATEMANAGER_H

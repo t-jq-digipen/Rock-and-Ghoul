@@ -1,29 +1,22 @@
-// ----------------------------------------------------------------------------
-// Loads the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Load();
+#pragma once
+#ifndef MAINMENU_H
+#define MAINMENU_H
 
-// ----------------------------------------------------------------------------
-// Initializes the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Initialize();
+class MainMenu
+{
+public:
+	// Loads main menu
+	static void Load();
+	// Initializes main menu
+	static void Init();
+	// Updates main menu
+	static void Update();
+	// Draws main menu
+	static void Draw();
+	// Frees main menu
+	static void Free();
+	// Unloads main menu
+	static void Unload();
+};
 
-// ----------------------------------------------------------------------------
-// Updates the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Update();
-
-// ----------------------------------------------------------------------------
-// Draws the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Draw();
-
-// ----------------------------------------------------------------------------
-// Frees the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Free();
-
-// ----------------------------------------------------------------------------
-// Unloads the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Unload();
+#endif // MAINMENU_H

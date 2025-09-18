@@ -22,6 +22,7 @@ context and implement a game loop.
 #include "Audio.h"
 #include "Collision.h"
 #include "Render.h"
+#include "GameStateManager.h"
 /*                                                   type declarations
 ----------------------------------------------------------------------------- */
 
@@ -65,6 +66,8 @@ int main() {
     renderer.Init();
     GLuint fretboardTex = Render::LoadTexture("../Assets/fretboard.jpg");
     
+    // Initialize main menu state
+    GSM::Init(GS_MAIN_MENU);
 
     std::vector<Player> players;
     players.emplace_back(200.0f, 200.0f, ControlScheme::WASD);   // Player 1
@@ -73,7 +76,7 @@ int main() {
     double lastTime = glfwGetTime();
 
     // Game loop
-    while (!glfwWindowShouldClose(GLApp::ptr_window)) {
+    while (!glfwWindowShouldClose(GLApp::ptr_window) || currentState != GS_QUIT) {
         double currentTime = glfwGetTime();
         float dt = static_cast<float>(currentTime - lastTime);
         lastTime = currentTime;
@@ -82,7 +85,31 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        update();
+        if (currentState != GS_RESTART)
+        {
+            update();
+            GSM::Update();
+            fpLoad();
+        }
+        else
+        {
+            nextState = currentState;
+            currentState = previousState;
+        }
+        fpInitialize();
+        while (nextState == currentState)
+        {
+            if (currentState == GS_MAIN_MENU)
+            {
+                std::cout << "In the main menu!!!" << std::endl;
+            }
+            else if (currentState == GS_LEVEL1)
+            {
+                std::cout << "Playing Level 1!!!" << std::endl;
+            }
+            fpUpdate();
+            fpDraw();
+        }
         
         // update and draw player
         // 1. Compute intended movement
@@ -105,8 +132,17 @@ int main() {
 
         // show frame
         glfwSwapBuffers(GLApp::ptr_window);
+
+        fpFree();
+        if (nextState != GS_RESTART)
+        {
+            fpUnload();
+        }
+        previousState = currentState;
+        currentState = nextState;
     }
     AudioSystem::Close();
+    GSM::Close();
     GLApp::cleanup();
     return 0;
 }
