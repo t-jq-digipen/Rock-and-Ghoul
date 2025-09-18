@@ -1,6 +1,7 @@
 #include "CoreEngine.h"
 #include "System.h"
 #include "glapp.h"
+#include "Input.h"
 #include <GLFW/glfw3.h>
 
 CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
@@ -21,7 +22,9 @@ void CoreEngine::Run() {
         lastFrame = now;
 
         glfwPollEvents();
+        
         for (auto s : systems) s->Update(dt);
+        Input::Update();
         glfwSwapBuffers(GLApp::ptr_window);
     }
 }

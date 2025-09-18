@@ -3,6 +3,7 @@
 #include "System.h"
 #include "Player.h"
 #include "Collision.h"
+#include "Input.h"
 #include <vector>
 #include <iostream>
 
@@ -30,7 +31,18 @@ public:
                 }
             }
         }
+        if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+            double mx = Input::GetMouseX();
+            double my = GLApp::height - Input::GetMouseY(); // flip Y
 
+            for (auto& p : players) {
+                AABB box = p.GetAABB();
+                if (mx >= box.min.x && mx <= box.max.x &&
+                    my >= box.min.y && my <= box.max.y) {
+                    p.ChangeColor();
+                }
+            }
+        }
         // Step 3: apply safe movement
         for (auto& p : players) p.ApplyMove();
 

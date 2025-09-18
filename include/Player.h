@@ -1,5 +1,6 @@
 #include "MovementController.h"
 #include "Collision.h"
+#include <glm/glm.hpp>
 
 class Player {
 public:
@@ -12,7 +13,7 @@ public:
     void CancelMove();
     void Draw();
     void SetPosition(float newX, float newY);
-    
+    void ChangeColor();
     AABB GetAABB() const;
     AABB GetFutureAABB() const;
 
@@ -22,6 +23,8 @@ private:
     float size;
     MovementController controller; // each player has its own controller
     float nextX, nextY;
+    glm::vec3 color;
+    bool isRed = true;
 };
 
 
