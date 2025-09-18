@@ -65,76 +65,91 @@ int main() {
     Render renderer;
     renderer.Init();
     GLuint fretboardTex = Render::LoadTexture("../Assets/fretboard.jpg");
-    
-    // Initialize main menu state
-    GSM::Init(GS_MAIN_MENU);
 
     std::vector<Player> players;
     players.emplace_back(200.0f, 200.0f, ControlScheme::WASD);   // Player 1
     players.emplace_back(400.0f, 200.0f, ControlScheme::Arrows); // Player 2
-
     double lastTime = glfwGetTime();
 
+    // Initialize main menu state
+    GSM::Init(GS_MAIN_MENU);
+    
+    // Modified game loop (check for game state change)
+    int lastEnteredState = -1;
+
     // Game loop
-    while (!glfwWindowShouldClose(GLApp::ptr_window) || currentState != GS_QUIT) {
+    while (!glfwWindowShouldClose(GLApp::ptr_window) && currentState != GS_QUIT) {
+
         double currentTime = glfwGetTime();
-        float dt = static_cast<float>(currentTime - lastTime);
+        //float dt = static_cast<float>(currentTime-lastTime);
+        float dt = static_cast<float>(0.00166f); // placeholder dt
         lastTime = currentTime;
 
-        // Clear screen
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        if (currentState != lastEnteredState)
+        {
+            if (fpLoad) fpLoad();
+            if (fpInitialize) fpInitialize();
+            lastEnteredState = currentState;
+        }
 
-        if (currentState != GS_RESTART)
+        if (currentState == GS_RESTART)
         {
-            update();
-            GSM::Update();
-            fpLoad();
-        }
-        else
-        {
-            nextState = currentState;
+            nextState = previousState;
             currentState = previousState;
+            continue;
         }
-        fpInitialize();
+
+        GSM::Update();
+
         while (nextState == currentState)
         {
-            if (currentState == GS_MAIN_MENU)
+            // Clear screen
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            update();
+
+            if (fpUpdate) fpUpdate();
+            if (fpDraw) fpDraw();
+
+            // Game state management (testing)
+            if (Input::IsKeyHeld(GLFW_KEY_SPACE) && currentState == GS_MAIN_MENU)
             {
-                std::cout << "In the main menu!!!" << std::endl;
+                nextState = GS_LEVEL1;
             }
-            else if (currentState == GS_LEVEL1)
+            if (Input::IsKeyHeld(GLFW_KEY_SPACE) && currentState == GS_LEVEL1)
             {
-                std::cout << "Playing Level 1!!!" << std::endl;
+                nextState = GS_MAIN_MENU;
             }
-            fpUpdate();
-            fpDraw();
-        }
-        
-        // update and draw player
-        // 1. Compute intended movement
-        for (auto& p : players) {
-            p.ComputeInput(dt);
+
+            if (currentState == GS_LEVEL1)
+            {
+                // update and draw player
+                // 1. Compute intended movement
+                for (auto& p : players) {
+                    p.ComputeInput(dt);
+                }
+
+                // 2. Collision check
+                if (CollisionIntersection_RectRect_Static(players[0].GetFutureAABB(), players[1].GetFutureAABB())) { //where the player will be next frame if they move.
+                    std::cout << "Collision detected! Players stop." << std::endl;
+                    players[0].CancelMove();
+                    players[1].CancelMove();
+                }
+                renderer.DrawTexturedQuad({ 1200.0f, 200.0f }, { 1000.0f, 200.0f }, fretboardTex);
+                // 3. Apply movement + draw
+                for (auto& p : players) {
+                    p.ApplyMove();
+                    p.Draw();
+                }
+            }
+
+            // show frame
+            glfwSwapBuffers(GLApp::ptr_window);
         }
 
-        // 2. Collision check
-        if (CollisionIntersection_RectRect_Static(players[0].GetFutureAABB(), players[1].GetFutureAABB())) { //where the player will be next frame if they move.
-            std::cout << "Collision detected! Players stop." << std::endl;
-            players[0].CancelMove();
-            players[1].CancelMove();
-        }
-        renderer.DrawTexturedQuad({ 1200.0f, 200.0f }, { 1000.0f, 200.0f }, fretboardTex);
-        // 3. Apply movement + draw
-        for (auto& p : players) {
-            p.ApplyMove();
-            p.Draw();
-        }
-
-        // show frame
-        glfwSwapBuffers(GLApp::ptr_window);
-
-        fpFree();
-        if (nextState != GS_RESTART)
+        if (fpFree) fpFree();
+        if (nextState != GS_RESTART && fpUnload)
         {
             fpUnload();
         }
