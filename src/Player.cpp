@@ -48,13 +48,13 @@ void Player::Draw() {
     float vy = controller.GetDY();
 
     if (vx != 0.0f || vy != 0.0f) {
-        // Normalize the velocity to get direction only
+        // normalize the velocity to get direction only
         float length = sqrt(vx * vx + vy * vy);
         if (length > 0.0f) {
             glm::vec2 direction(vx / length, vy / length);
 
             // Fixed line length regardless of speed/framerate
-            float lineLength = 100.0f; // Consistent length
+            float lineLength = 100.0f;
             glm::vec2 start(x, y);
             glm::vec2 end(x + direction.x * lineLength, y + direction.y * lineLength);
 
