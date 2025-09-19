@@ -90,6 +90,8 @@ void Render::Init() {
     glDeleteShader(vsh);
     glDeleteShader(fsh);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // Setup projection
     projection = glm::ortho(
         0.0f, static_cast<float>(GLApp::width),
