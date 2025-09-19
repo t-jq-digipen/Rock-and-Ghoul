@@ -6,12 +6,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+//commented out is original code
+
 // stb_image
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 // Vertex + Fragment shaders
-const char* vertexSrc = R"(
+/*const char* vertexSrc = R"(
 #version 450 core
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aTex;
@@ -27,7 +29,24 @@ void main() {
     gl_Position = uProjection * vec4(scaled, 0.0, 1.0);
     TexCoord = aTex;
 }
+)";*/
+
+const char* vertexSrc = R"(
+#version 450 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec2 aTex;
+
+uniform mat4 uProjection;
+uniform mat4 uModel;
+
+out vec2 TexCoord;
+
+void main() {
+    gl_Position = uProjection * uModel * vec4(aPos, 0.0, 1.0);
+    TexCoord = aTex;
+}
 )";
+
 
 const char* fragmentSrc = R"(
 #version 450 core
@@ -99,7 +118,7 @@ void Render::Init() {
 }
 
 void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color) {
-    glUseProgram(shaderProgram);
+    /*glUseProgram(shaderProgram);
 
     // upload projection
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
@@ -117,11 +136,17 @@ void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
 
-    glUseProgram(0);
+    glUseProgram(0);*/
+
+    glm::mat4 model(1.0f);
+    model = glm::translate(model, { pos.x, pos.y, 0.0f });
+    model = glm::scale(model, { size, size, 1.0f });
+
+    DrawSquare(model, color);
 }
 
 void Render::DrawTexturedQuad(const glm::vec2& pos, const glm::vec2& scale, GLuint texture) {
-    glUseProgram(shaderProgram);
+    /*glUseProgram(shaderProgram);
 
     // upload projection
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
@@ -140,6 +165,28 @@ void Render::DrawTexturedQuad(const glm::vec2& pos, const glm::vec2& scale, GLui
     glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
 
     // draw
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glBindVertexArray(0);
+
+    glUseProgram(0);*/
+
+    glUseProgram(shaderProgram);
+
+    // uniforms
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]);
+
+    glm::mat4 model(1.0f);
+    model = glm::translate(model, { pos.x, pos.y, 0.0f });
+    model = glm::scale(model, { scale.x, scale.y, 1.0f });
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uModel"), 1, GL_FALSE, &model[0][0]);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_TRUE);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
@@ -211,7 +258,7 @@ GLuint Render::LinkProgram(GLuint vertexShader, GLuint fragmentShader) {
     return program;
 }
 void Render::DrawLine(const glm::vec2& start, const glm::vec2& end, const glm::vec3& color) {
-    GLfloat vertices[4] = {
+    /*GLfloat vertices[4] = {
         start.x, start.y,
         end.x,   end.y
     };
@@ -248,5 +295,66 @@ void Render::DrawLine(const glm::vec2& start, const glm::vec2& end, const glm::v
     glDeleteBuffers(1, &vboLine);
     glDeleteVertexArrays(1, &vaoLine);
 
+    glUseProgram(0);*/
+
+    GLfloat vertices[4] = { start.x, start.y, end.x, end.y };
+
+    GLuint vboLine, vaoLine;
+    glGenVertexArrays(1, &vaoLine);
+    glGenBuffers(1, &vboLine);
+
+    glBindVertexArray(vaoLine);
+    glBindBuffer(GL_ARRAY_BUFFER, vboLine);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glUseProgram(shaderProgram);
+
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]);
+    glm::mat4 identity(1.0f);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uModel"), 1, GL_FALSE, &identity[0][0]); // <-- add this
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
+
+    glDrawArrays(GL_LINES, 0, 2);
+
+    glDisableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glDeleteBuffers(1, &vboLine);
+    glDeleteVertexArrays(1, &vaoLine);
+
     glUseProgram(0);
+}
+
+void Render::DrawSquare(const glm::mat4& model, const glm::vec3& color) {
+    glUseProgram(shaderProgram);                              // your sprite shader
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uModel"), 1, GL_FALSE, &model[0][0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "uColor"), 1, &color[0]);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]); // your ortho
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE); //disable texture
+
+    glBindVertexArray(vao);                               // your 2-tri quad
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+void Render::DrawBackground(GLuint tex, int texW, int texH, BgFit fit) {
+    const float W = (float)GLApp::width, H = (float)GLApp::height;
+    float drawW = W, drawH = H;
+
+    if (fit != BgFit::Stretch) {
+        const float screenAR = W / H;
+        const float imageAR = (float)texW / (float)texH;
+        if (fit == BgFit::Contain) {
+            if (screenAR > imageAR) { drawH = H; drawW = H * imageAR; }
+            else { drawW = W; drawH = W / imageAR; }
+        }
+        else { // Cover
+            if (screenAR > imageAR) { drawW = W; drawH = W / imageAR; }
+            else { drawH = H; drawW = H * imageAR; }
+        }
+    }
+    DrawTexturedQuad({ W * 0.5f, H * 0.5f }, { drawW, drawH }, tex);
 }

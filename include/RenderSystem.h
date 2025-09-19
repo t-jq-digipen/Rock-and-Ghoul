@@ -18,6 +18,11 @@ public:
 
         if (fretboardTexture) {
             renderer.DrawTexturedQuad({ 1200.0f, 200.0f }, { 1000.0f, 200.0f }, fretboardTexture);
+            /*int bgW = 0, bgH = 0;
+            glBindTexture(GL_TEXTURE_2D, fretboardTexture);
+            glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &bgW);
+            glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &bgH);
+            renderer.DrawBackground(fretboardTexture, bgW, bgH, BgFit::Cover);*/
         }
     }
 
