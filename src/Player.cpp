@@ -7,6 +7,7 @@ static bool rendererInitialized = false;
 Player::Player(float startX, float startY, ControlScheme controls)
     : x(startX), y(startY), size(50.0f), controller(controls, 200.0f),
     nextX(startX), nextY(startY),
+    velocityY(0.0f), inJumpState(false), jumpStartY(startY), // physics
     color(1.0f, 0.0f, 0.0f), // start red
     isRed(true), textureID(0), useTexture(false), spriteScale(size, size) {
     if (!rendererInitialized) {

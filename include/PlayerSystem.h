@@ -4,22 +4,41 @@
 #include "Player.h"
 #include "Collision.h"
 #include "Input.h"
+#include "physics.h"
 #include <vector>
 #include <iostream>
-
 class PlayerSystem : public ISystem {
+private:
     std::vector<Player> players;
+    //std::vector<AABB> enemyStomp; // potentially can use jumping as a means to stun?
+
 public:
     void Initialize() override {
         players.emplace_back(500.0f, 400.0f, ControlScheme::WASD);
         players.emplace_back(800.0f, 400.0f, ControlScheme::Arrows);
-
         players[0].SetTextureFromFile("../Assets/Rock_FightingPose_2048px.png", { 400.0f, 400.0f });
-    }
 
+        // initialise physics state: for 2.5D, player always moves freely
+        players[0].SetVelocityY(0.0f);
+        players[0].SetInJumpState(false);
+    }
     void Update(float dt) override {
-        // Step 1: compute intended input
-        for (auto& p : players) p.ComputeInput(dt);
+        // Step 1: compute intended input (but don't apply Y movement for player 0 if jumping)
+        for (auto& p : players) {
+            if (&p == &players[0] && p.IsInJumpState()) {
+                // For jumping player, only compute X input
+                p.GetController().ComputeInput(dt);
+                p.SetNextX(p.GetX() + p.GetController().GetDX());
+                p.SetNextY(p.GetY()); // Initialize nextY to current Y for physics
+                // Y position will be handled by physics
+            }
+            else {
+                p.ComputeInput(dt);
+            }
+        }
+
+        // PHYSICS: jumping input & physics
+        HandlePlayerPhysics(dt);
 
         // Step 2: check collisions before applying
         for (size_t i = 0; i < players.size(); ++i) {
@@ -27,7 +46,6 @@ public:
                 if (CollisionIntersection_RectRect_Static(
                     players[i].GetFutureAABB(),
                     players[j].GetFutureAABB())) {
-
                     players[i].CancelMove();
                     players[j].CancelMove();
                 }
@@ -36,7 +54,6 @@ public:
         if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
             double mx = Input::GetMouseX();
             double my = GLApp::height - Input::GetMouseY(); // flip Y
-
             for (auto& p : players) {
                 AABB box = p.GetAABB();
                 if (mx >= box.min.x && mx <= box.max.x &&
@@ -47,11 +64,45 @@ public:
         }
         // Step 3: apply safe movement
         for (auto& p : players) p.ApplyMove();
-
         // Step 4: draw
         for (auto& p : players) p.Draw();
     }
-
-
     void Shutdown() override {}
+
+private:
+    // PHYSICS: Use physics.cpp functions for jumping logic
+    void HandlePlayerPhysics(float dt) {
+        Player& platformer = players[0];
+
+        // GET current state
+        bool jumpPressed = Input::IsKeyPressed(GLFW_KEY_SPACE);
+        float velocityY = platformer.GetVelocityY();
+        bool jumpState = platformer.IsInJumpState();
+        float jumpStartY = platformer.GetJumpStartY();
+        float currentY = platformer.GetY();
+        float nextY = platformer.GetNextY();
+
+        // store new states for TryJump output
+        bool newJumpState = jumpState;
+        float newJumpStartY = jumpStartY;
+
+        // trying to jump
+        if (TryJump(jumpPressed, jumpState, velocityY, newJumpState, currentY, newJumpStartY)) {
+            platformer.SetVelocityY(velocityY);
+            platformer.SetInJumpState(newJumpState);
+            platformer.SetJumpStartY(newJumpStartY);
+
+            // Update local variables after changes from TryJump
+            jumpState = newJumpState;
+            jumpStartY = newJumpStartY;
+        }
+
+        // apply only if in jump state
+        ApplyJumpPhysics(jumpState, velocityY, nextY, currentY, jumpStartY, jumpState, dt);
+
+        // updating for jump
+        platformer.SetVelocityY(velocityY);
+        platformer.SetInJumpState(jumpState);
+        platformer.SetNextY(nextY);
+    }
 };

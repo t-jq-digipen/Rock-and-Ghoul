@@ -27,3 +27,4 @@ void MovementController::ComputeInput(float dt) {
         double my = GLApp::height - Input::GetMouseY();
     }
 }
+
