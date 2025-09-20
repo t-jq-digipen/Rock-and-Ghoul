@@ -124,11 +124,41 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 source_group("Main" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
-source_group("Engine" FILES 
+source_group("BaseEngine\\Engine" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/glapp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/glapp.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
 )
-source_group("Audio" FILES 
+
+source_group("BaseEngine\\CoreEngine" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CoreEngine.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/CoreEngine.h
+)
+
+source_group("BaseEngine\\Headers" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
+
+)
+source_group("BaseEngine\\Debug" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/DebugTool.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/DebugTool.h
+)
+source_group("BaseEngine\\FilePath" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
+)
+source_group("BaseEngine\\Serialization" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Serialization.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Serialization.h
+)
+source_group("BaseEngine\\Transform" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Transform.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Transform.h
+)
+
+source_group("Systems\\Audio" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
 )
@@ -136,57 +166,49 @@ source_group("Export" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
 )
-source_group("FrameRateController" FILES 
+source_group("Systems\\FrameRateController" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
 )
-source_group("Graphics" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
+source_group("Graphics\\Render" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
 )
-source_group("Input" FILES 
+source_group("Graphics\\System" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
+)
+source_group("Systems\\Input" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
 )
 
 
-source_group("Physics" FILES 
+source_group("Physics\\System" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
+)
+
+source_group("Physics\\Collision" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
+)
+source_group("Physics\\Movement" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementController.h
 )
 source_group("GameStateManager" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
 )
-source_group("Camera" FILES 
+source_group("Graphics\\Components" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h
-)
-source_group("Collision" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
-)
-
-source_group("Transform" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Transform.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Transform.h
-)
-
-source_group("Sprite" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
 )
 
-source_group("FilePath" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
-)
-source_group("Movement" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementController.h
-)
+
 source_group("Math" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h

@@ -1,3 +1,6 @@
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include "glapp.h"
 #include "MovementController.h"
 
 MovementController::MovementController(ControlScheme scheme, float speed)
@@ -17,5 +20,10 @@ void MovementController::ComputeInput(float dt) {
         if (Input::IsKeyHeld(GLFW_KEY_DOWN))  dy -= speed * dt;
         if (Input::IsKeyHeld(GLFW_KEY_LEFT))  dx -= speed * dt;
         if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) dx += speed * dt;
+    }
+
+    if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+        double mx = Input::GetMouseX();
+        double my = GLApp::height - Input::GetMouseY();
     }
 }
