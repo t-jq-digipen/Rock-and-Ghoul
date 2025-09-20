@@ -1,49 +1,33 @@
 #include "Level1.h"
+#include "GameStateManager.h"
+#include "Input.h"
 
-// ----------------------------------------------------------------------------
-// Loads the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Load()
+void Level1::Load()
 {
-
+	std::cout << "Level 1 Loaded!!!" << std::endl;
 }
 
-// ----------------------------------------------------------------------------
-// Initializes the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Initialize()
+void Level1::Init()
 {
-
+	std::cout << "Level 1 Initialized!!!" << std::endl;
 }
 
-// ----------------------------------------------------------------------------
-// Updates the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Update()
+void Level1::Update()
 {
-
+	std::cout << "Level 1 Updating!!!" << std::endl;
 }
 
-// ----------------------------------------------------------------------------
-// Draws the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Draw()
+void Level1::Draw()
 {
-
+	std::cout << "Level 1 Drawing!!!" << std::endl;
 }
 
-// ----------------------------------------------------------------------------
-// Frees the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Free()
+void Level1::Free()
 {
-
+	std::cout << "Level 1 Freed!!!" << std::endl;
 }
 
-// ----------------------------------------------------------------------------
-// Unloads the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Unload()
+void Level1::Unload()
 {
-
+	std::cout << "Level 1 Unloaded!!!" << std::endl;
 }

@@ -1,49 +1,34 @@
 #include "MainMenu.h"
+#include "GameStateManager.h"
+#include "Input.h"
 
-// ----------------------------------------------------------------------------
-// Loads the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Load()
+
+void MainMenu::Load()
 {
-
+	std::cout << "Main Menu Loaded!!!" << std::endl;
 }
 
-// ----------------------------------------------------------------------------
-// Initializes the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Initialize()
+void MainMenu::Init()
 {
-
+	std::cout << "Main Menu Initialized!!!" << std::endl;
 }
 
-// ----------------------------------------------------------------------------
-// Updates the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Update()
+void MainMenu::Update()
 {
-
+	std::cout << "Main Menu Updating!!!" << std::endl;
 }
 
-// ----------------------------------------------------------------------------
-// Draws the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Draw()
+void MainMenu::Draw()
 {
-
+	std::cout << "Main Menu Drawing!!!" << std::endl;
 }
 
-// ----------------------------------------------------------------------------
-// Frees the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Free()
+void MainMenu::Free()
 {
-
+	std::cout << "Main Menu Freed!!!" << std::endl;
 }
 
-// ----------------------------------------------------------------------------
-// Unloads the main menu elements
-// ----------------------------------------------------------------------------
-void MainMenu_Unload()
+void MainMenu::Unload()
 {
-
+	std::cout << "Main Menu Unloaded!!!" << std::endl;
 }

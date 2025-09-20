@@ -1,29 +1,23 @@
-// ----------------------------------------------------------------------------
-// Loads the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Load();
+#pragma once
+#include <iostream>
+#ifndef LEVEL1_H
+#define LEVEL1_H
 
-// ----------------------------------------------------------------------------
-// Initializes the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Initialize();
+class Level1
+{
+public:
+	// Loads main menu
+	static void Load();
+	// Initializes main menu
+	static void Init();
+	// Updates main menu
+	static void Update();
+	// Draws main menu
+	static void Draw();
+	// Frees main menu
+	static void Free();
+	// Unloads main menu
+	static void Unload();
+};
 
-// ----------------------------------------------------------------------------
-// Updates the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Update();
-
-// ----------------------------------------------------------------------------
-// Draws the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Draw();
-
-// ----------------------------------------------------------------------------
-// Frees the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Free();
-
-// ----------------------------------------------------------------------------
-// Unloads the Level 1 elements
-// ----------------------------------------------------------------------------
-void Level1_Unload();
+#endif // LEVEL1_H
