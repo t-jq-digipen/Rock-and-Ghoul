@@ -6,22 +6,17 @@
 class Level1
 {
 public:
-	// Loads level
+	// Loads main menu
 	static void Load();
-
-	// Initializes level
+	// Initializes main menu
 	static void Init();
-
-	// Updates level
+	// Updates main menu
 	static void Update();
-
-	// Draws level
+	// Draws main menu
 	static void Draw();
-
-	// Frees level
+	// Frees main menu
 	static void Free();
-
-	// Unloads level
+	// Unloads main menu
 	static void Unload();
 };
 
