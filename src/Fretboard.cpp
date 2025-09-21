@@ -17,6 +17,9 @@ FretBoard::FretBoard(float x, float y, float length, float width) {
     // segment spacing
     float spacing = width / 3.0f;
 
+    notesPlayed = 0;
+    waitingForInput = false;
+
 
     // top string
     strings[0].start.x = x;                    // left edge of fretboard
@@ -82,38 +85,38 @@ void FretBoard::PlayerInput() {
     switch (currNote.direction) {
     case 1:
         if (Input::IsKeyPressed(GLFW_KEY_UP)) {
-            printf("Correct key pressed! YAY!\n");
+            std::cout << "Correct key pressed! YAY!\n";
             break;
         }
         else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_DOWN) || Input::IsKeyPressed(GLFW_KEY_LEFT)) {
-            printf("Wrong key pressed! GRRR!\n");
+            std::cout << "Wrong key pressed! GRRR!\n";
             break;
         }
     case 2:
         if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) {
-            printf("Correct key pressed! YAY!\n");
+            std::cout << "Correct key pressed! YAY!\n";
             break;
         }
         else if (Input::IsKeyPressed(GLFW_KEY_UP) || Input::IsKeyPressed(GLFW_KEY_DOWN) || Input::IsKeyPressed(GLFW_KEY_LEFT)) {
-            printf("Wrong key pressed! GRRR!\n");
+            std::cout << "Wrong key pressed! GRRR!\n";
             break;
         }
     case 3:
         if (Input::IsKeyPressed(GLFW_KEY_DOWN)) {
-            printf("Correct key pressed! YAY!\n");
+            std::cout << "Correct key pressed! YAY!\n";
             break;
         }
         else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_UP) || Input::IsKeyPressed(GLFW_KEY_LEFT)) {
-            printf("Wrong key pressed! GRRR!\n");
+            std::cout << "Wrong key pressed! GRRR!\n";
             break;
         }
     case 4:
         if (Input::IsKeyPressed(GLFW_KEY_LEFT)) {
-            printf("Correct key pressed! YAY!\n");
+            std::cout << "Correct key pressed! YAY!\n";
             break;
         }
         else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_DOWN) || Input::IsKeyPressed(GLFW_KEY_UP)) {
-            printf("Wrong key pressed! GRRR!\n");
+            std::cout << "Wrong key pressed! GRRR!\n";
             break;
         }
     }
@@ -126,13 +129,13 @@ void FretBoard::PlayerInput() {
         NewNote();  // create the next note in the sequence
     }
     else {    
-        printf("Game Over! \n");
+        std::cout << "Game Over! \n";
     }
 
 }
 
 bool FretBoard::Continue() {
-
+    // sequence of 5 notes played
     return notesPlayed < 5;
 
 }
@@ -143,7 +146,7 @@ void FretBoard::StartGame() {
     waitingForInput = false;
     currNote.isActive = false;
 
-    printf("Starting Game\n");
+    std::cout << "Starting Game\n";
     printf("1 = Up, 2 = Right, 3 = Down, 4 = Left\n");
 
     NewNote();

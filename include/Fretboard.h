@@ -3,6 +3,7 @@
 #define FRETBOARD_H
 
 #include "Collision.h"
+#include <iostream>
 
 // idt i need this for now until i figure out a way to tie it to input stuff 
 enum ArrowKeys {
