@@ -4,58 +4,41 @@
 #include <unordered_map>
 #include <glm/glm.hpp>
 
-using Entity = uint32_t;
-static constexpr Entity kInvalidEntity = 0;
-
-// -------------------------------
-// Component: Transform2D
-// -------------------------------
-struct Transform2D {
-
-    // Authoring data (local space)
-    glm::vec2 position{ 0.0f, 0.0f };  // x, y translation
-    float     rotationRad{ 0.0f };     // rotation about +Z in radians
-    glm::vec2 scale{ 1.0f, 1.0f };     // non-uniform XY scale
-    glm::vec2 pivot{ 0.0f, 0.0f };     // rotation/scale origin (e.g., sprite center)
-
-    // Hierarchy
-    Entity parent{ kInvalidEntity };
-    std::vector<Entity> children;
-
-    // Cached transforms (column-major, GLM style)
-    glm::mat3 local{ 1.0f };           // local 2D affine
-    glm::mat3 world{ 1.0f };           // world 2D affine
-    bool dirty{ true };                 // mark true when TRS changes
-
-    // Convenience setters (mark dirty)
-    inline void SetPosition(glm::vec2 p) { position = p; dirty = true; }
-    inline void SetRotationRad(float r) { rotationRad = r; dirty = true; }
-    inline void SetRotationDeg(float d) { rotationRad = d * 0.017453292519943295f; dirty = true; }
-    inline void SetScale(glm::vec2 s) { scale = s; dirty = true; }
-    inline void SetPivot(glm::vec2 p) { pivot = p; dirty = true; }
-};
-
-// -------------------------------
-// System: Transform2DSystem
-// -------------------------------
-class Transform2DSystem {
+class Transform2D {
 public:
+    // Transform properties
+    glm::vec2 position{ 0.0f, 0.0f };
+    float rotationRad{ 0.0f };
+    glm::vec2 scale{ 1.0f, 1.0f };
+    glm::vec2 pivot{ 0.0f, 0.0f };
 
-    Transform2D& Create(Entity e);
-    Transform2D* Get(Entity e);
-    bool         Has(Entity e) const;
+    // Constructors
+    Transform2D() = default;
+    Transform2D(glm::vec2 pos);
+    Transform2D(glm::vec2 pos, float rotation, glm::vec2 scale = { 1.0f, 1.0f });
 
-    void SetParent(Entity child, Entity parent);
-    void Update();                                // recompute world matrices from roots
+    //setters
+    void SetPosition(glm::vec2 pos);
+    void SetRotationDeg(float degrees);
+    void SetRotationRad(float radians);
+    void SetScale(glm::vec2 scale);
+    void SetScale(float uniformScale);
+    void SetPivot(glm::vec2 pivot);
 
-    // If your shader expects mat4, expand the 2D affine:
-    static glm::mat4 ToMat4(const glm::mat3& m);
+    // getters
+    float GetRotationDeg() const;
+    glm::vec2 GetPosition() const;
+    glm::vec2 GetScale() const;
+    glm::vec2 GetPivot() const;
 
-    static glm::mat4 BuildModelNoHierarchy(const Transform2D& t);
+    // Transform operations
+    void Translate(glm::vec2 offset);
+    void Rotate(float radians);
+    void RotateDeg(float degrees);
+    void ScaleBy(glm::vec2 factor);
+    void ScaleBy(float factor);
 
-private:
-    std::unordered_map<Entity, Transform2D> mStore;
-
-    static glm::mat3 BuildLocal(const Transform2D& t); // T(pos)*T(pivot)*R*S*T(-pivot)
-    void UpdateRecursive(Entity e);
+    // Matrix generation
+    glm::mat4 GetMatrix() const;
+    glm::mat3 GetMatrix3() const;  // If 3x3 matrices
 };

@@ -4,6 +4,7 @@
 static Render renderer;
 static bool rendererInitialized = false;
 
+//original commented out code in case compare
 /*Player::Player(float startX, float startY, ControlScheme controls)
     : x(startX), y(startY), size(50.0f), controller(controls, 200.0f),
     nextX(startX), nextY(startY),
@@ -132,11 +133,11 @@ void Player::CancelMove() {
 }
 
 void Player::Draw() {
-    // NEW: draw with a model matrix (supports rotation/scale)
-    glm::mat4 model = Transform2DSystem::BuildModelNoHierarchy(transform);
-    renderer.DrawSquare(model, color);   // <-- new overload (see step 3)
+    //Use the basic Transform2D's GetMatrix() method
+    glm::mat4 model = transform.GetMatrix();
+    renderer.DrawSquare(model, color);
 
-    // draw velocity direction (unchanged, but read from transform)
+    // Draw velocity direction (unchanged, but read from transform)
     float vx = controller.GetDX();
     float vy = controller.GetDY();
     if (vx != 0.0f || vy != 0.0f) {
@@ -144,7 +145,7 @@ void Player::Draw() {
         if (len > 0.0f) {
             glm::vec2 dir(vx / len, vy / len);
             float lineLength = 100.0f;
-            glm::vec2 start = transform.position;
+            glm::vec2 start = transform.GetPosition(); // Use getter method
             glm::vec2 end = start + dir * lineLength;
             renderer.DrawLine(start, end, { 1.0f, 1.0f, 0.0f });
         }
