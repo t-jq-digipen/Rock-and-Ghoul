@@ -15,6 +15,7 @@ public:
 
     void DrawLine(const glm::vec2& start, const glm::vec2& end, const glm::vec3& color);
     static GLuint LoadTexture(const std::string& path);
+    void DrawCircle(const glm::vec2& center, float radius, const glm::vec3& color, int segments);
 
 private:
     GLuint vao, vbo, shaderProgram;
