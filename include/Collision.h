@@ -1,10 +1,7 @@
 #pragma once
 #ifndef COLLISION_H
 #define COLLISION_H
-
-struct Vec2 {
-    float x, y;
-};
+#include "Remath.h"
 
 struct AABB {
     Vec2 min; // bottom-left corner
