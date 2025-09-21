@@ -15,17 +15,17 @@ void Input::Update() {
         if (state == KeyState::PRESSED)
             state = KeyState::HELD;
         else if (state == KeyState::RELEASED)
-            state = KeyState::RELEASED; // stays released
+            state = KeyState::RELEASED; // stays released for one frame
     }
 
     for (auto& [button, state] : mouseButtons) {
         if (state == KeyState::PRESSED)
             state = KeyState::HELD;
         else if (state == KeyState::RELEASED)
-            state = KeyState::RELEASED;
+            state = KeyState::RELEASED; // Remove this line or change logic
     }
 
-    // Reset scroll each frame so it only reflects last tick’s scroll
+    // Reset scroll each frame so it only reflects last tick's scroll
     scrollX = 0.0;
     scrollY = 0.0;
 }

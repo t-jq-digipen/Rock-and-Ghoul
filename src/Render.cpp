@@ -90,6 +90,8 @@ void Render::Init() {
     glDeleteShader(vsh);
     glDeleteShader(fsh);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // Setup projection
     projection = glm::ortho(
         0.0f, static_cast<float>(GLApp::width),
@@ -209,4 +211,44 @@ GLuint Render::LinkProgram(GLuint vertexShader, GLuint fragmentShader) {
         std::cerr << "Shader link error: " << infoLog << std::endl;
     }
     return program;
+}
+void Render::DrawLine(const glm::vec2& start, const glm::vec2& end, const glm::vec3& color) {
+    GLfloat vertices[4] = {
+        start.x, start.y,
+        end.x,   end.y
+    };
+
+    GLuint vboLine, vaoLine;
+    glGenVertexArrays(1, &vaoLine);
+    glGenBuffers(1, &vboLine);
+
+    glBindVertexArray(vaoLine);
+    glBindBuffer(GL_ARRAY_BUFFER, vboLine);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glUseProgram(shaderProgram);
+
+    // Set required uniforms
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
+
+    // Set pos and scale to neutral values so vertices pass through unchanged
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
+
+    glDrawArrays(GL_LINES, 0, 2);
+
+    // cleanup
+    glDisableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glDeleteBuffers(1, &vboLine);
+    glDeleteVertexArrays(1, &vaoLine);
+
+    glUseProgram(0);
 }

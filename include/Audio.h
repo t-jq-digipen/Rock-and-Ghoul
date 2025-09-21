@@ -10,7 +10,7 @@ public:
     // Initialize FMOD
     static bool Init();
 
-    // Shutdown FMOD
+    // Close FMOD
     static void Close();
 
     // Update FMOD (must be called every frame)
