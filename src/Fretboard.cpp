@@ -37,26 +37,17 @@ FretBoard::FretBoard(float x, float y, float length, float width) {
 }
 
 Vec2 FretBoard::CalculateNotePosition(int stringIndex, int segmentIndex) {
-    // Get the specific string we're working with
-    // This gives us the start and end points that define the string's path
+
     String& spawnString = strings[stringIndex];
 
-    // Here's the mathematical heart of positioning notes within segments
-    // We want notes in the CENTER of each segment, not at the boundaries
-    // The formula (segmentIndex * 2 + 1) / (segments * 2) achieves this elegantly
-    // For 3 segments: segment 0 gets 1/6, segment 1 gets 3/6, segment 2 gets 5/6
-    // This places notes at 16.7%, 50%, and 83.3% along the string - perfect centers!
+// i used claude for this... basically to center the circles
     float segmentProgress = (float)(segmentIndex * 2 + 1) / (float)(segments * 2);
 
-    // Calculate the direction vector that describes the string's orientation
-    // For horizontal strings, this will be purely in the X direction
     Vec2 stringDirection = {
-        spawnString.end.x - spawnString.start.x,  // Horizontal distance
-        spawnString.end.y - spawnString.start.y   // Vertical distance (should be 0)
+        spawnString.end.x - spawnString.start.x,  
+        spawnString.end.y - spawnString.start.y  
     };
 
-    // Use linear interpolation to find the exact position along the string
-    // Start at the string's beginning, then move the calculated percentage toward the end
     Vec2 notePos = {
         spawnString.start.x + stringDirection.x * segmentProgress,
         spawnString.start.y + stringDirection.y * segmentProgress
@@ -141,31 +132,19 @@ void FretBoard::PlayerInput() {
 }
 
 bool FretBoard::Continue() {
-    // For now, we'll play exactly 5 notes then stop
-    // This provides a manageable game session that's neither too short nor too long
+
     return notesPlayed < 5;
 
-    // You could enhance this with more sophisticated end conditions:
-    // - End after a certain number of mistakes
-    // - End when reaching a target score
-    // - End based on time elapsed
-    // - Continue indefinitely until player chooses to quit
 }
 
 void FretBoard::StartGame() {
-    // Reset all tracking variables to ensure we start with a clean slate
-    // This is important if someone wants to play multiple games in succession
+
     notesPlayed = 0;
     waitingForInput = false;
     currNote.isActive = false;
 
-    // Provide clear instructions to help the player understand the game
-    printf("Starting Fretboard Game!\n");
-    printf("Press arrow keys to match the note directions:\n");
+    printf("Starting Game\n");
     printf("1 = Up, 2 = Right, 3 = Down, 4 = Left\n");
-    printf("Good luck!\n\n");
 
-    // Create the very first note to get the game started
-    // This begins the cycle of challenge and response that drives your game
     NewNote();
 }

@@ -4,6 +4,7 @@
 
 #include "Collision.h"
 
+// idt i need this for now until i figure out a way to tie it to input stuff 
 enum ArrowKeys {
 	UP_ARROW = 1,
 	RIGHT_ARROW,
