@@ -50,7 +50,7 @@ void CoreEngine::Run() {
             if (currentState != GS_MAIN_MENU)
             {
                 if (Input::IsKeyPressed(GLFW_KEY_1)) nextState = GS_LEVEL1;             // go to level 1 state
-                else if (Input::IsKeyPressed(GLFW_KEY_2)) nextState = GS_LEVEL2;        // go to level 2 state
+                //else if (Input::IsKeyPressed(GLFW_KEY_2)) nextState = GS_LEVEL2;        // go to level 2 state
                 else if (Input::IsKeyPressed(GLFW_KEY_M)) nextState = GS_MAIN_MENU;     // go to main menu state
                 else if (Input::IsKeyPressed(GLFW_KEY_R)) nextState = GS_RESTART;       // restart state
                 else if (Input::IsKeyPressed(GLFW_KEY_Q)) nextState = GS_QUIT;          // quit program

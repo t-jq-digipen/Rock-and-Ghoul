@@ -1,5 +1,6 @@
 #include "Collision.h"
-
+#include <math.h>
+#include "Remath.h"
 // Static collision
 bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2)
 {
@@ -62,4 +63,88 @@ bool CollisionIntersection_RectRect_Dynamic(const AABB& aabb1,
 
     firstTimeOfCollision = tFirst;
     return (tFirst >= 0.0f && tFirst <= 0.016f);
+}
+
+// Circle Collision
+bool CollisionIntersection_CC_Static(const Circle& c1, const Circle& c2) {
+    float dx = c2.x - c1.x;
+    float dy = c2.y - c1.y;
+    float d2 = (dx * dx) + (dy * dy);
+
+    float radSum = c1.rad + c2.rad;
+    float rad2 = radSum * radSum; // MIGHT BE WRONG CHECK LATER 
+
+    return (d2 <= rad2);
+}
+
+bool CollisionIntersection_CC_Dynamic(const Circle& c1,
+    const Vec2& vel1,
+    const Circle& c2,
+    const Vec2& vel2,
+    float& firstTimeOfCollision) {
+
+    if (CollisionIntersection_CC_Static(c1, c2)) {
+        firstTimeOfCollision = 0.0f;
+        return true;
+    }
+
+    Vec2 relVel = { vel1.x - vel2.x, vel1.y - vel2.y };
+
+    float tFirst = 0.0f;
+    float tLast = 0.016f;
+
+    // speed at which circles are schmovinnnn
+    float relSpeed = sqrt((relVel.x * relVel.x) + (relVel.y * relVel.y)); // USING MATH LIBRARY REMOVE LATER AND USE CUSTOM MATH ENGINE
+    if (relSpeed == 0.0f) {
+        return false;
+    }
+
+    // vec of diff between c1 and c2
+    Vec2 centerDiff = { c2.x - c1.x, c2.y - c1.y };
+
+    // project the vec onto the direction that circle is going??? 
+    float proj = (centerDiff.x * relVel.x + centerDiff.y * relVel.y) / relSpeed;
+    if (proj <= 0) {
+        return false;
+    }
+
+    float distance = (centerDiff.x * centerDiff.x + centerDiff.y * centerDiff.y) - (proj * proj);
+
+    float radSum = c1.rad + c2.rad;
+    float rad2 = radSum * radSum;
+
+    if (radSum < distance) {
+        return false;
+    }
+}
+
+bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& line) {
+        // starting from point on line to center of circle
+        Vec2 linecircle = Subtract({ circle.x, circle.y }, line.start);
+
+        // dir vector of line
+        Vec2 vecDir = Subtract(line.end, line.start);
+
+        // squared length of the line segment
+        float lineLengthSquared = DotProduct(vecDir, vecDir);
+
+        //// Handle degenerate case (line segment is actually a point)
+        //if (lineLengthSquared == 0.0f) {
+        //    return DistanceSquared({ circle.x, circle.y }, line.start) <= (circle.rad * circle.rad);
+        //}
+
+        // circle center projected on line segment
+        float t = DotProduct(linecircle, vecDir) / lineLengthSquared;
+
+        // clamp t to [0, 1] to stay within the line segment
+        t = (t < 0.0f) ? 0.0f : (t > 1.0f) ? 1.0f : t;
+
+        // find the closest point on the line segment for collision and scale with the clamp
+        Vec2 closestPoint = Add(line.start, Scale(vecDir, t));
+
+        // check if circle intersects with the closest point
+        float distanceSquared = DistanceSquared({ circle.x, circle.y }, closestPoint);
+
+        return distanceSquared <= (circle.rad * circle.rad);
+    
 }
