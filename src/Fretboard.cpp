@@ -37,6 +37,11 @@ FretBoard::FretBoard(float x, float y, float length, float width) {
 
     srand((unsigned int)time(nullptr));
 
+    arrowUpTex = Render::LoadTexture("../Assets/up.png");
+    arrowRightTex = Render::LoadTexture("../Assets/right.png");
+    arrowDownTex = Render::LoadTexture("../Assets/down.png");
+    arrowLeftTex = Render::LoadTexture("../Assets/left.png");
+
 }
 
 Vec2 FretBoard::CalculateNotePosition(int stringIndex, int segmentIndex) {
@@ -150,4 +155,21 @@ void FretBoard::StartGame() {
     printf("1 = Up, 2 = Right, 3 = Down, 4 = Left\n");
 
     NewNote();
+}
+void FretBoard::Draw(Render& renderer) {
+    if (!currNote.isActive) return;
+
+    GLuint tex = 0;
+    switch (currNote.direction) {
+    case 1: tex = arrowUpTex; break;
+    case 2: tex = arrowRightTex; break;
+    case 3: tex = arrowDownTex; break;
+    case 4: tex = arrowLeftTex; break;
+    }
+
+    if (tex != 0) {
+        glm::vec2 pos(currNote.circle.x, currNote.circle.y);
+        glm::vec2 size(40.0f, 40.0f); // adjust to match PNG scale
+        renderer.DrawTexturedQuad(pos, size, tex);
+    }
 }

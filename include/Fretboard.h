@@ -4,6 +4,7 @@
 
 #include "Collision.h"
 #include <iostream>
+#include "Render.h"
 
 // idt i need this for now until i figure out a way to tie it to input stuff 
 enum ArrowKeys {
@@ -41,7 +42,13 @@ private:
 	int segments;
 	bool waitingForInput;   // waiting for player response
 
+	GLuint arrowUpTex;
+	GLuint arrowRightTex;
+	GLuint arrowDownTex;
+	GLuint arrowLeftTex;
+
 public:
+
 	FretBoard(float x, float y, float length, float width);
 	void NewNote();
 	Vec2 CalculateNotePosition(int stringIndex, int segmentIndex);
@@ -55,5 +62,7 @@ public:
 	const FretFrame& GetFretboard() const { return fretframe; }
 	
 	bool WaitingForInput() const { return waitingForInput; }
+
+	void Draw(Render& renderer);
 };
 #endif
