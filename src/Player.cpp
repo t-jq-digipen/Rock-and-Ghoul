@@ -49,7 +49,7 @@ void Player::Draw() {
     }
     else {
         // draw colored square
-        renderer.DrawSquare({ x, y }, size, color);
+        renderer.DrawCircle({ x, y }, size * 0.5f, color, 64);
     }
 
 

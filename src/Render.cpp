@@ -252,3 +252,56 @@ void Render::DrawLine(const glm::vec2& start, const glm::vec2& end, const glm::v
 
     glUseProgram(0);
 }
+
+void Render::DrawCircle(const glm::vec2& center, float radius, const glm::vec3& color, int segments) {
+    // vertices for a circle
+    std::vector<GLfloat> vertices;
+    vertices.reserve((segments + 2) * 2);
+
+    //ctr point
+    vertices.push_back(center.x);
+    vertices.push_back(center.y);
+
+
+    for (int i = 0; i <= segments; i++) {
+        float angle = (2.0f * 3.1415 * i) / segments;
+        float x = center.x + radius * cos(angle);
+        float y = center.y + radius * sin(angle);
+        vertices.push_back(x);
+        vertices.push_back(y);
+    }
+
+    GLuint vaoCircle, vboCircle;
+    glGenVertexArrays(1, &vaoCircle);
+    glGenBuffers(1, &vboCircle);
+
+    glBindVertexArray(vaoCircle);
+    glBindBuffer(GL_ARRAY_BUFFER, vboCircle);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
+
+    glUseProgram(shaderProgram);
+
+    // Upload uniforms
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
+
+    // Neutral transform (circle already has actual coords)
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
+
+    // circle using TRIANGLE_FAN
+    glDrawArrays(GL_TRIANGLE_FAN, 0, segments + 2);
+
+    glDisableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glDeleteBuffers(1, &vboCircle);
+    glDeleteVertexArrays(1, &vaoCircle);
+
+    glUseProgram(0);
+}

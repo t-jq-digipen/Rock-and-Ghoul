@@ -231,4 +231,6 @@ source_group("Game\\GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Spells.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fretboard.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fretboard.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
 )
