@@ -137,7 +137,6 @@ source_group("BaseEngine\\ECS" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Component.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Component.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp
 
@@ -147,6 +146,7 @@ source_group("BaseEngine\\ECS" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ComponentManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/SystemManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SystemManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
 )
 
 source_group("BaseEngine\\Headers" FILES 
