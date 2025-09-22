@@ -1,6 +1,4 @@
 #pragma once
-#ifndef REMATH_H
-#define REMATH_H
 
 struct Vec2 {
     float x, y;
@@ -16,5 +14,3 @@ Vec2 Subtract(const Vec2& a, const Vec2& b);
 // Scaling a vector
 Vec2 Scale(const Vec2& v, float scalar);
 
-
-#endif

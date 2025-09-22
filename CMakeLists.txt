@@ -127,12 +127,18 @@ source_group("Main" FILES
 source_group("BaseEngine\\Engine" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/glapp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/glapp.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
 )
 
 source_group("BaseEngine\\CoreEngine" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CoreEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CoreEngine.h
+)
+source_group("BaseEngine\\ECS" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Component.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp
 )
 
 source_group("BaseEngine\\Headers" FILES 
@@ -162,6 +168,11 @@ source_group("Systems\\Audio" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
 )
+source_group("Systems\\Input" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
+)
+
 source_group("Export" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
@@ -178,10 +189,6 @@ source_group("Graphics\\System" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
 )
-source_group("Systems\\Input" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
-)
 
 
 source_group("Physics\\System" FILES 
@@ -197,7 +204,7 @@ source_group("Physics\\Movement" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementController.h
 )
-source_group("GameStateManager" FILES 
+source_group("Game\\GameStateManager" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
 )
@@ -213,7 +220,7 @@ source_group("Math" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
 )
-source_group("GameLogic" FILES
+source_group("Game\\GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Player.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Enemy.cpp
@@ -222,5 +229,6 @@ source_group("GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Projectile.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Spells.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Spells.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fretboard.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
 )
-

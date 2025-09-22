@@ -23,7 +23,7 @@ bool CollisionIntersection_RectRect_Dynamic(const AABB& aabb1,
     }
 
     // Step 2: relative velocity
-    Vec2 relVel = { vel1.x - vel2.x, vel1.y - vel2.y };
+    Vec2 relVel = Vec2{ vel1.x - vel2.x, vel1.y - vel2.y };
 
     float tFirst = 0.0f;
     float tLast = 0.016f; // simulate within one frame (60 FPS)
@@ -88,7 +88,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
         return true;
     }
 
-    Vec2 relVel = { vel1.x - vel2.x, vel1.y - vel2.y };
+    Vec2 relVel = Vec2{ vel1.x - vel2.x, vel1.y - vel2.y };
 
     float tFirst = 0.0f;
     float tLast = 0.016f;
@@ -100,7 +100,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     }
 
     // vec of diff between c1 and c2
-    Vec2 centerDiff = { c2.x - c1.x, c2.y - c1.y };
+    Vec2 centerDiff = Vec2{ c2.x - c1.x, c2.y - c1.y };
 
     // project the vec onto the direction that circle is going??? 
     float proj = (centerDiff.x * relVel.x + centerDiff.y * relVel.y) / relSpeed;
@@ -120,7 +120,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
 
 bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& line) {
         // starting from point on line to center of circle
-        Vec2 linecircle = Subtract({ circle.x, circle.y }, line.start);
+        Vec2 linecircle = Subtract(Vec2{ circle.x, circle.y }, line.start);
 
         // dir vector of line
         Vec2 vecDir = Subtract(line.end, line.start);
@@ -143,7 +143,7 @@ bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& li
         Vec2 closestPoint = Add(line.start, Scale(vecDir, t));
 
         // check if circle intersects with the closest point
-        float distanceSquared = DistanceSquared({ circle.x, circle.y }, closestPoint);
+        float distanceSquared = DistanceSquared(Vec2{ circle.x, circle.y }, closestPoint);
 
         return distanceSquared <= (circle.rad * circle.rad);
     

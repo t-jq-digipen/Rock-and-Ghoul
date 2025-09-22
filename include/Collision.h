@@ -1,10 +1,7 @@
 #pragma once
-#ifndef COLLISION_H
-#define COLLISION_H
+#include "Remath.h"
+#include <math.h>
 
-struct Vec2 {
-    float x, y;
-};
 
 struct AABB {
     Vec2 min; // bottom-left corner
@@ -57,4 +54,3 @@ bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& li
 //    float& firstTimeOfCollision);
 
 
-#endif // COLLISION_H
