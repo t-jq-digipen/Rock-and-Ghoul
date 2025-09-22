@@ -7,6 +7,12 @@
 #include "glapp.h"
 #include "MovementController.h"
 
+glm::vec2 arrowPositions[4] = {
+    {300.0f, 900.0f}, // LEFT
+    {400.0f, 900.0f}, // DOWN
+    {500.0f, 900.0f}, // UP
+    {600.0f, 900.0f}  // RIGHT
+};
 FretBoard::FretBoard(float x, float y, float length, float width) {
     fretframe.x = x;
     fretframe.y = y;
@@ -37,11 +43,6 @@ FretBoard::FretBoard(float x, float y, float length, float width) {
 
     srand((unsigned int)time(nullptr));
 
-    arrowUpTex = Render::LoadTexture("../Assets/up.png");
-    arrowRightTex = Render::LoadTexture("../Assets/right.png");
-    arrowDownTex = Render::LoadTexture("../Assets/down.png");
-    arrowLeftTex = Render::LoadTexture("../Assets/left.png");
-
 }
 
 Vec2 FretBoard::CalculateNotePosition(int stringIndex, int segmentIndex) {
@@ -66,78 +67,83 @@ Vec2 FretBoard::CalculateNotePosition(int stringIndex, int segmentIndex) {
 
 // spawning note
 void FretBoard::NewNote() {
-    // will be either string 1 or 2
-    int spawnString = rand() % 2;
+    // direction of note (1=Up, 2=Right, 3=Down, 4=Left)
+    int spawnDir = (rand() % 4) + 1;
 
-    // which segment the note will spawn in
-    int spawnSegment = rand() % segments;
-
-    // direction of note (1, 2, 3, 4)
-    int spawnDir = (rand() % 4) + 1; 
-
-    Vec2 notePos = CalculateNotePosition(spawnString, spawnSegment);
-
-    currNote.circle.x = notePos.x;
-    currNote.circle.y = notePos.y;
-    currNote.circle.rad = 20.0f;
     currNote.direction = spawnDir;
-    currNote.stringIndex = spawnString;
-    currNote.segmentIndex = spawnSegment;
+    currNote.circle.x = arrowPositions[spawnDir - 1].x;
+    currNote.circle.y = arrowPositions[spawnDir - 1].y;
+    currNote.circle.rad = 20.0f;
     currNote.isActive = true;
+
+    std::cout << "Spawned note dir = " << currNote.direction
+        << " at (" << currNote.circle.x << ", " << currNote.circle.y << ")\n";
 }
 
 void FretBoard::PlayerInput() {
-    switch (currNote.direction) {
-    case 1:
-        if (Input::IsKeyPressed(GLFW_KEY_UP)) {
-            std::cout << "Correct key pressed! YAY!\n";
-            break;
+    if (!currNote.isActive) return;   // no note to check
+
+    bool keyPressed = false;
+    bool correct = false;
+
+    // Check the current expected arrow
+    if (currNote.direction == 1) {            // UP
+        if (Input::IsKeyPressed(GLFW_KEY_UP)) { 
+            correct = true; keyPressed = true; 
         }
         else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_DOWN) || Input::IsKeyPressed(GLFW_KEY_LEFT)) {
-            std::cout << "Wrong key pressed! GRRR!\n";
-            break;
+            keyPressed = true;
         }
-    case 2:
-        if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) {
-            std::cout << "Correct key pressed! YAY!\n";
-            break;
+    }
+    else if (currNote.direction == 2) {       // RIGHT
+        if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) { 
+            correct = true; keyPressed = true; 
         }
-        else if (Input::IsKeyPressed(GLFW_KEY_UP) || Input::IsKeyPressed(GLFW_KEY_DOWN) || Input::IsKeyPressed(GLFW_KEY_LEFT)) {
-            std::cout << "Wrong key pressed! GRRR!\n";
-            break;
+        else if (Input::IsKeyPressed(GLFW_KEY_UP) || Input::IsKeyPressed(GLFW_KEY_DOWN) ||Input::IsKeyPressed(GLFW_KEY_LEFT)) {
+            keyPressed = true;
         }
-    case 3:
-        if (Input::IsKeyPressed(GLFW_KEY_DOWN)) {
-            std::cout << "Correct key pressed! YAY!\n";
-            break;
+    }
+    else if (currNote.direction == 3) {       // DOWN
+        if (Input::IsKeyPressed(GLFW_KEY_DOWN)) { 
+            correct = true; keyPressed = true; 
         }
         else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_UP) || Input::IsKeyPressed(GLFW_KEY_LEFT)) {
-            std::cout << "Wrong key pressed! GRRR!\n";
-            break;
+            keyPressed = true;
         }
-    case 4:
-        if (Input::IsKeyPressed(GLFW_KEY_LEFT)) {
-            std::cout << "Correct key pressed! YAY!\n";
-            break;
+    }
+    else if (currNote.direction == 4) {       // LEFT
+        if (Input::IsKeyPressed(GLFW_KEY_LEFT)) { 
+            correct = true; keyPressed = true; 
         }
-        else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_DOWN) || Input::IsKeyPressed(GLFW_KEY_UP)) {
-            std::cout << "Wrong key pressed! GRRR!\n";
-            break;
+        else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_DOWN) ||Input::IsKeyPressed(GLFW_KEY_UP)) {
+            keyPressed = true;
         }
     }
 
-    currNote.isActive = false;        // remove the note from the screen
-    waitingForInput = false;          // allow new notes to spawn
-    notesPlayed++;                    // increase count of notes
+    if (!keyPressed) return;   // wait until a key is pressed
 
-    if (Continue()) {
-        NewNote();  // create the next note in the sequence
-    }
-    else {    
-        std::cout << "Game Over! \n";
-    }
+    if (correct) {
+        std::cout << "Correct key pressed! YAY!\n";
+        currNote.isActive = false;
+        notesPlayed++;
 
+        if (Continue()) {
+            NewNote();              // spawn next
+            std::cout << "Next note dir = " << currNote.direction << "\n"; // debug
+        }
+        else {
+            std::cout << "Sequence finished! (5 notes correct)\n";
+        }
+    }
+    else {
+        // wrong key ends the game immediately
+        std::cout << "Wrong key pressed! GAME OVER!\n";
+        currNote.isActive = false;
+        notesPlayed = 5;   // force end
+    }
 }
+
+
 
 bool FretBoard::Continue() {
     // sequence of 5 notes played
@@ -146,7 +152,6 @@ bool FretBoard::Continue() {
 }
 
 void FretBoard::StartGame() {
-
     notesPlayed = 0;
     waitingForInput = false;
     currNote.isActive = false;
@@ -155,7 +160,9 @@ void FretBoard::StartGame() {
     printf("1 = Up, 2 = Right, 3 = Down, 4 = Left\n");
 
     NewNote();
+    waitingForInput = true;
 }
+
 void FretBoard::Draw(Render& renderer) {
     if (!currNote.isActive) return;
 
@@ -169,7 +176,14 @@ void FretBoard::Draw(Render& renderer) {
 
     if (tex != 0) {
         glm::vec2 pos(currNote.circle.x, currNote.circle.y);
-        glm::vec2 size(40.0f, 40.0f); // adjust to match PNG scale
+        glm::vec2 size(60.0f, 60.0f);
         renderer.DrawTexturedQuad(pos, size, tex);
     }
+}
+
+void FretBoard::LoadTextures() {
+    arrowUpTex = Render::LoadTexture("../Assets/up.png");
+    arrowRightTex = Render::LoadTexture("../Assets/right.png");
+    arrowDownTex = Render::LoadTexture("../Assets/down.png");
+    arrowLeftTex = Render::LoadTexture("../Assets/left.png");
 }

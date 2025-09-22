@@ -64,5 +64,6 @@ public:
 	bool WaitingForInput() const { return waitingForInput; }
 
 	void Draw(Render& renderer);
+	void LoadTextures();
 };
 #endif

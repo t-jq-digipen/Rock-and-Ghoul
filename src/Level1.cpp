@@ -1,7 +1,14 @@
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include "Level1.h"
 #include "GameStateManager.h"
 #include "Input.h"
+#include "Fretboard.h"
+#include "Render.h"
 
+static Render renderer;
+static FretBoard fretboard(200.0f, 200.0f, 800.0f, 200.0f);
 void Level1::Load()
 {
 	std::cout << "Level 1 Loaded!!!" << std::endl;
@@ -10,6 +17,9 @@ void Level1::Load()
 void Level1::Init()
 {
 	std::cout << "Level 1 Initialized!!!" << std::endl;
+	renderer.Init();
+	fretboard.LoadTextures();
+	fretboard.StartGame();
 }
 
 void Level1::Update()
@@ -26,11 +36,13 @@ void Level1::Update()
 		nextState = GS_RESTART;       // restart state
 		std::cout << "Level 1 Restarted!!!" << std::endl;
 	}
+	fretboard.PlayerInput();
 }
 
 void Level1::Draw()
 {
 	//std::cout << "Level 1 Drawing!!!" << std::endl;
+	fretboard.Draw(renderer);
 }
 
 void Level1::Free()

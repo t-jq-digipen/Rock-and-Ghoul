@@ -16,7 +16,7 @@ private:
 public:
     void Initialize() override {
         players.emplace_back(500.0f, 400.0f, ControlScheme::WASD);
-        players.emplace_back(800.0f, 400.0f, ControlScheme::Arrows);
+        players.emplace_back(800.0f, 400.0f, ControlScheme::WASD);
         players[0].SetTextureFromFile("../Assets/Rock_FightingPose_2048px.png", { 400.0f, 400.0f });
 
         // initialise physics state: for 2.5D, player always moves freely
