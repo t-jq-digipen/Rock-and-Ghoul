@@ -7,6 +7,7 @@
 #include "physics.h"
 #include <vector>
 #include <iostream>
+#include "GameStateManager.h"
 class PlayerSystem : public ISystem {
 private:
     std::vector<Player> players;
@@ -23,49 +24,52 @@ public:
         players[0].SetInJumpState(false);
     }
     void Update(float dt) override {
-        // Step 1: compute intended input (but don't apply Y movement for player 0 if jumping)
-        for (auto& p : players) {
-            if (&p == &players[0] && p.IsInJumpState()) {
-                // For jumping player, only compute X input
-                p.GetController().ComputeInput(dt);
-                p.SetNextX(p.GetX() + p.GetController().GetDX());
-                p.SetNextY(p.GetY()); // Initialize nextY to current Y for physics
-                // Y position will be handled by physics
-            }
-            else {
-                p.ComputeInput(dt);
-            }
-        }
-
-        // PHYSICS: jumping input & physics
-        HandlePlayerPhysics(dt);
-
-        // Step 2: check collisions before applying
-        for (size_t i = 0; i < players.size(); ++i) {
-            for (size_t j = i + 1; j < players.size(); ++j) {
-                if (CollisionIntersection_RectRect_Static(
-                    players[i].GetFutureAABB(),
-                    players[j].GetFutureAABB())) {
-                    players[i].CancelMove();
-                    players[j].CancelMove();
-                }
-            }
-        }
-        if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
-            double mx = Input::GetMouseX();
-            double my = GLApp::height - Input::GetMouseY(); // flip Y
+        if (currentState == GS_LEVEL1)
+        {
+            // Step 1: compute intended input (but don't apply Y movement for player 0 if jumping)
             for (auto& p : players) {
-                AABB box = p.GetAABB();
-                if (mx >= box.min.x && mx <= box.max.x &&
-                    my >= box.min.y && my <= box.max.y) {
-                    p.ChangeColor();
+                if (&p == &players[0] && p.IsInJumpState()) {
+                    // For jumping player, only compute X input
+                    p.GetController().ComputeInput(dt);
+                    p.SetNextX(p.GetX() + p.GetController().GetDX());
+                    p.SetNextY(p.GetY()); // Initialize nextY to current Y for physics
+                    // Y position will be handled by physics
+                }
+                else {
+                    p.ComputeInput(dt);
                 }
             }
+
+            // PHYSICS: jumping input & physics
+            HandlePlayerPhysics(dt);
+
+            // Step 2: check collisions before applying
+            for (size_t i = 0; i < players.size(); ++i) {
+                for (size_t j = i + 1; j < players.size(); ++j) {
+                    if (CollisionIntersection_RectRect_Static(
+                        players[i].GetFutureAABB(),
+                        players[j].GetFutureAABB())) {
+                        players[i].CancelMove();
+                        players[j].CancelMove();
+                    }
+                }
+            }
+            if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+                double mx = Input::GetMouseX();
+                double my = GLApp::height - Input::GetMouseY(); // flip Y
+                for (auto& p : players) {
+                    AABB box = p.GetAABB();
+                    if (mx >= box.min.x && mx <= box.max.x &&
+                        my >= box.min.y && my <= box.max.y) {
+                        p.ChangeColor();
+                    }
+                }
+            }
+            // Step 3: apply safe movement
+            for (auto& p : players) p.ApplyMove();
+            // Step 4: draw
+            for (auto& p : players) p.Draw();
         }
-        // Step 3: apply safe movement
-        for (auto& p : players) p.ApplyMove();
-        // Step 4: draw
-        for (auto& p : players) p.Draw();
     }
     void Shutdown() override {}
 

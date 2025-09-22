@@ -305,3 +305,35 @@ void Render::DrawCircle(const glm::vec2& center, float radius, const glm::vec3& 
 
     glUseProgram(0);
 }
+
+void Render::DrawRect(const glm::vec2& pos, float width, float height, const glm::vec3& color) {
+    glUseProgram(shaderProgram);
+
+    // upload projection
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);
+
+    // upload pos, size (use size for both X and Y), color
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), width, height);
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
+
+    // no texture
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glBindVertexArray(0);
+
+    glUseProgram(0);
+}
+
+bool Render::IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height)
+{
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), areaPos.x, areaPos.y);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), width, height);
+    const glm::vec2 deltaPos = glm::abs(mousePos - areaPos);
+    const float hx = 0.5f * std::abs(width);
+    const float hy = 0.5f * std::abs(height);
+    return (deltaPos.x <= hx) && (deltaPos.y <= hy);
+}

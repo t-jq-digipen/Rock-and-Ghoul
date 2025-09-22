@@ -7,7 +7,7 @@
 #include "PlayerSystem.h"
 
 int main() {
-    if (!GLApp::init(2400, 1350, "Rock & Ghoul")) return -1;
+    if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
 
     CoreEngine engine;
 
