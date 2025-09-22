@@ -14,12 +14,23 @@ void Level1::Init()
 
 void Level1::Update()
 {
-	std::cout << "Level 1 Updating!!!" << std::endl;
+	//std::cout << "Level 1 Updating!!!" << std::endl;
+
+	// to test game state changes
+	if (Input::IsKeyPressed(GLFW_KEY_M))
+	{
+		nextState = GS_MAIN_MENU;     // go to main menu state
+	}
+	else if (Input::IsKeyPressed(GLFW_KEY_R)) 
+	{
+		nextState = GS_RESTART;       // restart state
+		std::cout << "Level 1 Restarted!!!" << std::endl;
+	}
 }
 
 void Level1::Draw()
 {
-	std::cout << "Level 1 Drawing!!!" << std::endl;
+	//std::cout << "Level 1 Drawing!!!" << std::endl;
 }
 
 void Level1::Free()

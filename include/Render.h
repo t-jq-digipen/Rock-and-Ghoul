@@ -17,6 +17,10 @@ public:
     static GLuint LoadTexture(const std::string& path);
     void DrawCircle(const glm::vec2& center, float radius, const glm::vec3& color, int segments);
 
+    void DrawRect(const glm::vec2& pos, float width, float height, const glm::vec3& color);
+
+    bool IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height);
+
 private:
     GLuint vao, vbo, shaderProgram;
     glm::mat4 projection;
