@@ -2,8 +2,10 @@
 #include "Collision.h"
 #include <string>
 #include <glm/glm.hpp>
+#include "Transform.h" //newly added
 
-class Player {
+//original commented out
+/*class Player {
 public:
     Player(float startX, float startY, ControlScheme controls);
 
@@ -57,6 +59,34 @@ private:
     GLuint textureID{ 0 };
     bool useTexture{ false };
     glm::vec2 spriteScale{ 100.0f, 100.0f };   // width,height in pixels when textured
+};
+*/
+
+class Player {
+public:
+    Player(float startX, float startY, ControlScheme controls);
+
+    Player(const Player& other);
+
+    void ComputeInput(float dt);
+    void ApplyMove();
+    void CancelMove();
+    void Draw();
+    void SetPosition(float newX, float newY);
+    void ChangeColor();
+    AABB GetAABB() const;
+    AABB GetFutureAABB() const;
+
+
+private:
+    //float x, y;
+    //float size;
+
+    Transform2D transform;
+    MovementController controller; // each player has its own controller
+    float nextX, nextY;
+    glm::vec3 color;
+    bool isRed = true;
 };
 
 
