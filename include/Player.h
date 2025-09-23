@@ -42,6 +42,11 @@ public:
     void SetTexture(GLuint tex, const Vec2& pixelSize);
     bool SetTextureFromFile(Render& renderer, const std::string& path, const Vec2& pixelSize);
 
+    void ScaleBy(float factor);
+    void SetScale(float uniform);
+    Vec2 GetScale() const;
+
+
 private:
     float x, y;
     float size;

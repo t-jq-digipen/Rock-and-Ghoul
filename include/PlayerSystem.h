@@ -39,6 +39,17 @@ public:
     void Update(float dt) override {
         if (currentState == GS_LEVEL1)
         {
+            if (Input::IsKeyHeld(GLFW_KEY_P)) {
+                for (auto& p : players) {
+                    p.ScaleBy(1.01f); // scale smoothly while held
+                }
+            }
+            if (Input::IsKeyHeld(GLFW_KEY_O)) {
+                for (auto& p : players) {
+                    p.ScaleBy(0.99f); // shrink smoothly while held
+                }
+            }
+
             // Step 1: compute intended input (but don't apply Y movement for player 0 if jumping)
             for (auto& p : players) {
                 if (&p == &players[0] && p.IsInJumpState()) {

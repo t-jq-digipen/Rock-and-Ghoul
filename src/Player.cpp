@@ -104,3 +104,22 @@ bool Player::SetTextureFromFile(Render& renderer, const std::string& path, const
     SetTexture(tex, pixelSize);
     return tex != 0;
 }
+
+void Player::ScaleBy(float num) {
+    spriteScale.x *= num;
+    spriteScale.y *= num;
+
+    const float minSize = 50.0f;
+    const float maxSize = 800.0f;
+    //clamp
+    if (spriteScale.x < minSize) spriteScale.x = minSize;
+    if (spriteScale.y < minSize) spriteScale.y = minSize;
+    if (spriteScale.x > maxSize) spriteScale.x = maxSize;
+    if (spriteScale.y > maxSize) spriteScale.y = maxSize;
+}
+void Player::SetScale(float uniform) {
+    spriteScale = { uniform, uniform };
+}
+Vec2 Player::GetScale() const {
+    return spriteScale;
+}
