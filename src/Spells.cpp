@@ -1,5 +1,5 @@
 #include "Spells.h"
-
+#include "Remath.h"
 SpellManager::SpellManager() {
     for (int i = 0; i < MAX_SLOTS; i++) {
         slots[i].isFilled = false;
@@ -23,11 +23,11 @@ void SpellManager::Draw(Render& renderer) {
     float baseY = 60.0f;
 
     for (int i = 0; i < MAX_SLOTS; i++) {
-        glm::vec2 pos(baseX - i * (slotSize + space), baseY);
+        Vec2 pos = { baseX - i * (slotSize + space), baseY };
+        Vec2 size = { slotSize, slotSize };
 
-        glm::vec2 size(slotSize, slotSize);
-
-        renderer.DrawRect(pos, size.x, size.y, glm::vec3(0.2f, 0.2f, 0.2f));
+        Vec3 grey = { 0.2f, 0.2f, 0.2f };
+        renderer.DrawRect(pos, size.x, size.y, grey);
 
         if (slots[i].isFilled && slots[i].iconTex != 0) {
             renderer.DrawTexturedQuad(pos, size, slots[i].iconTex);

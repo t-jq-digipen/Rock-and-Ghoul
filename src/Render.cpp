@@ -122,7 +122,7 @@ void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color
     glUseProgram(0);
 }
 
-void Render::DrawTexturedQuad(const glm::vec2& pos, const glm::vec2& scale, GLuint texture) {
+void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture) {
     glUseProgram(shaderProgram);
 
     // upload projection
@@ -255,7 +255,7 @@ void Render::DrawLine(const glm::vec2& start, const glm::vec2& end, const glm::v
     glUseProgram(0);
 }
 
-void Render::DrawCircle(const glm::vec2& center, float radius, const glm::vec3& color, int segments) {
+void Render::DrawCircle(const glm::vec2& center, float radius, const Vec3& color, int segments) {
     // vertices for a circle
     std::vector<GLfloat> vertices;
     vertices.reserve((segments + 2) * 2);
@@ -308,19 +308,17 @@ void Render::DrawCircle(const glm::vec2& center, float radius, const glm::vec3& 
     glUseProgram(0);
 }
 
-void Render::DrawRect(const glm::vec2& pos, float width, float height, const glm::vec3& color) {
+void Render::DrawRect(const Vec2& pos, float width, float height, const Vec3& color) {
     glUseProgram(shaderProgram);
 
     // upload projection
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
         1, GL_FALSE, &projection[0][0]);
 
-    // upload pos, size (use size for both X and Y), color
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), width, height);
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
 
-    // no texture
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
 
     glBindVertexArray(vao);
@@ -329,6 +327,7 @@ void Render::DrawRect(const glm::vec2& pos, float width, float height, const glm
 
     glUseProgram(0);
 }
+
 
 bool Render::IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height)
 {

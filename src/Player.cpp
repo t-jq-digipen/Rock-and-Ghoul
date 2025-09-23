@@ -8,8 +8,8 @@ Player::Player(float startX, float startY, ControlScheme controls)
     : x(startX), y(startY), size(50.0f), controller(controls, 200.0f),
     nextX(startX), nextY(startY),
     velocityY(0.0f), inJumpState(false), jumpStartY(startY), // physics
-    color(1.0f, 0.0f, 0.0f), // start red
-    isRed(true), textureID(0), useTexture(false), spriteScale(size, size) {
+    color{ 1.0f, 0.0f, 0.0f }, // start red
+    isRed(true), textureID(0), useTexture(false), spriteScale{ size, size } {
     if (!rendererInitialized) {
         renderer.Init();
         rendererInitialized = true;
@@ -89,20 +89,20 @@ AABB Player::GetFutureAABB() const {
 
 void Player::ChangeColor() {
     if (isRed) {
-        color = glm::vec3(0.0f, 0.0f, 1.0f);  // blue
+        color = { 0.0f, 0.0f, 1.0f };   // blue
     }
     else {
-        color = glm::vec3(1.0f, 0.0f, 0.0f);  // red
+        color = { 1.0f, 0.0f, 0.0f };  // red
     }
     isRed = !isRed; // toggle state
 }
-void Player::SetTexture(GLuint tex, const glm::vec2& pixelSize) {
+void Player::SetTexture(GLuint tex, const Vec2& pixelSize) {
     textureID = tex;
     spriteScale = pixelSize;
     useTexture = (textureID != 0);
 }
 
-bool Player::SetTextureFromFile(const std::string& path, const glm::vec2& pixelSize) {
+bool Player::SetTextureFromFile(const std::string& path, const Vec2& pixelSize) {
     GLuint tex = renderer.LoadTexture(path);
     SetTexture(tex, pixelSize);
     return tex != 0;

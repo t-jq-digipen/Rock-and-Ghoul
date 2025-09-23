@@ -176,8 +176,8 @@ void FretBoard::Draw(Render& renderer) {
     }
 
     if (tex != 0) {
-        glm::vec2 pos(currNote.circle.x, currNote.circle.y);
-        glm::vec2 size(60.0f, 60.0f);
+        Vec2 pos{ currNote.circle.x, currNote.circle.y };
+        Vec2 size{ 60.0f, 60.0f };
         renderer.DrawTexturedQuad(pos, size, tex);
     }
 }
