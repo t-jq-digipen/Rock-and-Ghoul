@@ -4,6 +4,16 @@
 #pragma once
 #include <bitset>
 
+// System notes:
+/*
+* Physics system
+* -> READS physics component
+* -> UPDATES physics component
+* -> WRITES into transform component
+* 
+* Render system
+* -> READS transform component
+*/
 
 // Define component types using enum
 enum ComponentTypeID
@@ -31,9 +41,8 @@ enum ComponentTypeID
 };
 
 
-// basically for faster reading
+// basically for faster reading, consider implementing later
 using ComponentMask = std::bitset<32>;
-
 
 class BaseComponent 
 {
@@ -42,29 +51,45 @@ class BaseComponent
 
 // BASE
 // COMP_1
-struct Transform {
-	Vec2 pos;
-	Vec2 rot;
-	Vec2 scale;
+struct TransformComponent {
+	// should these be vec3? i forget LOL
+	Vec2 pos;	// Position
+	Vec2 rot;	// Rotation
+	Vec2 scale;	// Scale
 };
 // BASE END
 
 // GRAPHICS
 // COMP_2
-struct Sprite {
+struct SpriteComponent {
 	// Texture* tex;	// texture file (to check w reg/kerv)
 	int frame;			// frame to display
 };
 
 // COMP_3
-struct Animator {
-	std::string State;	// probably change to an enum for animstate later on
+struct AnimatorComponent {
+	std::string State;	// probably change to an enum for animstate later on? depending on animation states available...
 	float time;			// for anim timers
 };
 // GRAPHICS END
 
 // PHYSICS
-struct Physics {
+struct PhysicsComponent {
 	Vec2 vel;
+	Vec2 accel;
+	//bool collide (maybe can use bitwise checking to see WHAT things it will collide with? to consider)
 	//aabb hitbox;
+};
+
+struct AudioComponent {
+	// Audiofile audio;
+};
+
+struct LifetimeComponent {
+	float time;
+};
+
+struct HealthComponent {
+	float currhp;
+	float maxhp;
 };

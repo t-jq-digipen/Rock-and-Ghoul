@@ -27,6 +27,7 @@ Entity EntityManager::createEntity()
 	if (alive.size() < next_entID)
 	{	alive.resize(next_entID, false);	}
 
+
 	alive[e] = true;		// set new entity to alive ^^
 	return e;
 }
@@ -41,6 +42,17 @@ void EntityManager::destroyEntity(Entity e)
 	// Check if entity is already dead
 	if (!alive[e]) { return; }
 
+	// Remove components
+	// TO DO (PSEUDO)
+	/*
+	for (component:componentslist)
+	{
+		if (componentmanager<component>.hasComponent(eID)
+		{
+			componentmanager<component>.removeComponent(eID);
+		}
+	}
+	*/
 
 	// Set alive flag to false, and add ID to list of free IDs
 	alive[e] = false;

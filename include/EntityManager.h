@@ -10,9 +10,9 @@ class EntityManager
 private:
 	Entity next_entID = 0;
 	// std::vector<ComponentMask> ent_masks;
-	// std::vector<Entity> ent_list;
-	std::vector<Entity> freeID;		// Recycle old IDs to prevent next_entID from increasing infinitely
-	std::vector<bool> alive;		// Track which ID is alive, vector grows as new entities are added
+	// std::vector<Entity>		entlist;	// List of all entity IDs
+	std::vector<Entity>		freeID;		// Recycle old IDs to prevent next_entID from increasing infinitely
+	std::vector<bool>		alive;		// Track which ID is alive, vector grows as new entities are added
 
 private:
 	// Private ctor for singleton
