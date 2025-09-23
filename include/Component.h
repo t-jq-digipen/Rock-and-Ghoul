@@ -3,6 +3,7 @@
 	
 #pragma once
 #include <bitset>
+#include "Remath.h"
 
 // System notes:
 /*
@@ -38,16 +39,13 @@ enum ComponentTypeID
 	// Game character specifics
 	CT_Health,		// 7 | Health, can be used for player, enemies, breakable objects, etc.
 
+	// Tag
+	CT_Tag,			// 8 | Tag enumeration (should i use std::string? idk, think again another time)
 };
 
 
 // basically for faster reading, consider implementing later
 using ComponentMask = std::bitset<32>;
-
-class BaseComponent 
-{
-
-};
 
 // BASE
 // COMP_1
@@ -92,4 +90,14 @@ struct LifetimeComponent {
 struct HealthComponent {
 	float currhp;
 	float maxhp;
+};
+
+enum C_TagID {
+	T_PLAYER,
+	T_ENEMY,
+	T_PROJECTILE,
+};
+
+struct TagComponent {
+	C_TagID tag;
 };

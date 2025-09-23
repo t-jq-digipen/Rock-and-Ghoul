@@ -16,7 +16,7 @@ public:
 	void		removeComponent(Entity eID);						// Remove a component from an entity
 	bool		hasComponent(Entity eID);							// Check if entity has component
 	Component&	getComponent(Entity eID);							// Return reference to component struct
-	Entity&		getEntityID(Component& cID);						// Return entity ID from component
+	//Entity&		getEntityID(Component& cID);						// Return entity ID from component (not necessary?)
 
 private:
 	// Map of ENTITY ID and COMPONENT

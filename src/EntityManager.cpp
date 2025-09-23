@@ -52,7 +52,9 @@ void EntityManager::destroyEntity(Entity e)
 			componentmanager<component>.removeComponent(eID);
 		}
 	}
-	*/
+
+	EDIT: now doing this in REGISTRY, DO NOT CALL DIRECTLY!
+	*/ 
 
 	// Set alive flag to false, and add ID to list of free IDs
 	alive[e] = false;

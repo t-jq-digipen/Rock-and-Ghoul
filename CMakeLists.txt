@@ -147,6 +147,9 @@ source_group("BaseEngine\\ECS" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/SystemManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SystemManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
 
 source_group("BaseEngine\\Headers" FILES 

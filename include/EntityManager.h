@@ -5,6 +5,7 @@
 #include "Component.h"
 
 
+// DO NOT CALL THIS DIRECTLY, GO THROUGH REGISTRY!!!
 class EntityManager
 {
 private:
