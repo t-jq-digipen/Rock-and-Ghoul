@@ -24,7 +24,7 @@ public:
     void Initialize() override {
         renderer.Init();
         players.emplace_back(500.0f, 400.0f, ControlScheme::WASD);
-        players.emplace_back(800.0f, 400.0f, ControlScheme::IJKL);
+        players.emplace_back(1000.0f, 400.0f, ControlScheme::IJKL);
         players[0].SetTextureFromFile(renderer, "../Assets/Rock_FightingPose_2048px.png", { 400.0f, 400.0f });
         players[1].SetTextureFromFile(renderer, "../Assets/Ghoul_2048px.png", { 400.0f, 400.0f });
 

@@ -17,7 +17,7 @@ public:
     }
 
     void Update(std::vector<Player>& players, Render& renderer) {
-        // Toggle on/off with key '1'
+        // Toggle on/off with 1
         if (Input::IsKeyPressed(GLFW_KEY_1)) {
             showHitboxes = !showHitboxes;
         }
@@ -49,9 +49,13 @@ public:
 
         for (size_t i = 0; i < players.size(); ++i) {
             AABB box = players[i].GetAABB();
+            float cx = (box.min.x + box.max.x) * 0.5f;
+            float cy = (box.min.y + box.max.y) * 0.5f;
             float cw = box.max.x - box.min.x;
             float ch = box.max.y - box.min.y;
-            renderer.DrawRect({ box.min.x, box.min.y }, cw, ch, hitboxColors[i]);
+
+            renderer.DrawRect({ cx, cy }, cw, ch, hitboxColors[i]);
+
         }
     }
 

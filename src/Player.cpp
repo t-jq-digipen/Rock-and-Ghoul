@@ -70,18 +70,16 @@ void Player::SetPosition(float newX, float newY) {
     y = newY;
 }
 AABB Player::GetAABB() const {
-    float width = (useTexture ? spriteScale.x : size) * 0.5f;
-    float height = (useTexture ? spriteScale.y : size) * 0.2f;
-
-    // Here (x, y) is the *center* of the sprite
-    // Convert to bottom-left corner
-    float minX = x - width * 0.5f;
-    float minY = y - (spriteScale.y * 0.5f);  // bottom of the sprite
+    float halfW = (useTexture ? spriteScale.x : size) * 0.5f * 0.8f;
+    float halfH = (useTexture ? spriteScale.y : size) * 0.5f * 0.2f;
+    float offsetY = -140.0f; // shift hitbox down
     return {
-        { minX, minY },
-        { minX + width, minY + height }
+        { x - halfW, y - halfH + offsetY },
+        { x + halfW, y + halfH + offsetY }
     };
 }
+
+
 AABB Player::GetFutureAABB() const {
     AABB box = GetAABB();
     float dx = nextX - x;
