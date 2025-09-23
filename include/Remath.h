@@ -4,8 +4,13 @@ struct Vec2 {
     float x, y;
 };
 struct Vec3 {
+    float x, y, z;
+};
+
+struct Colour3 {
     float r, g, b;
 };
+
 // Calculate squared distance between 2 points
 float DistanceSquared(const Vec2& p1, const Vec2& p2);
 // Calculate dot product between 2 vectors

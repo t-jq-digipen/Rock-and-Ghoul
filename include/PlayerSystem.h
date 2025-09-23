@@ -8,20 +8,33 @@
 #include <vector>
 #include <iostream>
 #include "GameStateManager.h"
+#include "DebugTool.h"
+
+
+
 class PlayerSystem : public ISystem {
 private:
     std::vector<Player> players;
     //std::vector<AABB> enemyStomp; // potentially can use jumping as a means to stun?
+    Render renderer;       // PlayerSystem owns renderer
+    DebugTool debugTool;   // debug tool not global anymore
+
 
 public:
     void Initialize() override {
+        renderer.Init();
         players.emplace_back(500.0f, 400.0f, ControlScheme::WASD);
-        players.emplace_back(800.0f, 400.0f, ControlScheme::WASD);
-        players[0].SetTextureFromFile("../Assets/Rock_FightingPose_2048px.png", { 400.0f, 400.0f });
+        players.emplace_back(800.0f, 400.0f, ControlScheme::IJKL);
+        players[0].SetTextureFromFile(renderer, "../Assets/Rock_FightingPose_2048px.png", { 400.0f, 400.0f });
+        players[1].SetTextureFromFile(renderer, "../Assets/Ghoul_2048px.png", { 400.0f, 400.0f });
 
         // initialise physics state: for 2.5D, player always moves freely
         players[0].SetVelocityY(0.0f);
         players[0].SetInJumpState(false);
+        players[1].SetVelocityY(0.0f);
+        players[1].SetInJumpState(false);
+
+        debugTool.Init(players.size()); //hitbox
     }
     void Update(float dt) override {
         if (currentState == GS_LEVEL1)
@@ -39,7 +52,6 @@ public:
                     p.ComputeInput(dt);
                 }
             }
-
             // PHYSICS: jumping input & physics
             HandlePlayerPhysics(dt);
 
@@ -54,21 +66,12 @@ public:
                     }
                 }
             }
-            if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
-                double mx = Input::GetMouseX();
-                double my = GLApp::height - Input::GetMouseY(); // flip Y
-                for (auto& p : players) {
-                    AABB box = p.GetAABB();
-                    if (mx >= box.min.x && mx <= box.max.x &&
-                        my >= box.min.y && my <= box.max.y) {
-                        p.ChangeColor();
-                    }
-                }
-            }
             // Step 3: apply safe movement
             for (auto& p : players) p.ApplyMove();
             // Step 4: draw
-            for (auto& p : players) p.Draw();
+            for (auto& p : players) p.Draw(renderer);
+
+            debugTool.Update(players, renderer);
         }
     }
     void Shutdown() override {}

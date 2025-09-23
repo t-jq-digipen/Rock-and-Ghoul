@@ -26,7 +26,7 @@ void SpellManager::Draw(Render& renderer) {
         Vec2 pos = { baseX - i * (slotSize + space), baseY };
         Vec2 size = { slotSize, slotSize };
 
-        Vec3 grey = { 0.2f, 0.2f, 0.2f };
+        Colour3 grey = { 0.2f, 0.2f, 0.2f };
         renderer.DrawRect(pos, size.x, size.y, grey);
 
         if (slots[i].isFilled && slots[i].iconTex != 0) {

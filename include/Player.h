@@ -1,20 +1,21 @@
+#pragma once
 #include "MovementController.h"
 #include "Collision.h"
-#include <string>
-#include <glm/glm.hpp>
 #include "Remath.h"
+#include "Render.h"
+#include <string>
 class Player {
 public:
     Player(float startX, float startY, ControlScheme controls);
-
     Player(const Player& other);
 
     void ComputeInput(float dt);
     void ApplyMove();
     void CancelMove();
-    void Draw();
+    void Draw(Render& renderer);
+
     void SetPosition(float newX, float newY);
-    void ChangeColor();
+
     AABB GetAABB() const;
     AABB GetFutureAABB() const;
     
@@ -39,15 +40,14 @@ public:
     float GetX() const { return x; }
 
     void SetTexture(GLuint tex, const Vec2& pixelSize);
-    bool SetTextureFromFile(const std::string& path, const Vec2& pixelSize);
+    bool SetTextureFromFile(Render& renderer, const std::string& path, const Vec2& pixelSize);
 
 private:
     float x, y;
     float size;
     MovementController controller; // each player has its own controller
     float nextX, nextY;
-    Vec3 color;
-    bool isRed = true;
+    Colour3 color;
 
     //physics
     float velocityY;

@@ -214,7 +214,7 @@ GLuint Render::LinkProgram(GLuint vertexShader, GLuint fragmentShader) {
     }
     return program;
 }
-void Render::DrawLine(const glm::vec2& start, const glm::vec2& end, const glm::vec3& color) {
+void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) {
     GLfloat vertices[4] = {
         start.x, start.y,
         end.x,   end.y
@@ -255,7 +255,7 @@ void Render::DrawLine(const glm::vec2& start, const glm::vec2& end, const glm::v
     glUseProgram(0);
 }
 
-void Render::DrawCircle(const glm::vec2& center, float radius, const Vec3& color, int segments) {
+void Render::DrawCircle(const glm::vec2& center, float radius, const Colour3& color, int segments) {
     // vertices for a circle
     std::vector<GLfloat> vertices;
     vertices.reserve((segments + 2) * 2);
@@ -308,7 +308,7 @@ void Render::DrawCircle(const glm::vec2& center, float radius, const Vec3& color
     glUseProgram(0);
 }
 
-void Render::DrawRect(const Vec2& pos, float width, float height, const Vec3& color) {
+void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3& color) {
     glUseProgram(shaderProgram);
 
     // upload projection

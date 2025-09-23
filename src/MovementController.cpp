@@ -15,6 +15,12 @@ void MovementController::ComputeInput(float dt) {
         if (Input::IsKeyHeld(GLFW_KEY_A)) dx -= speed * dt;
         if (Input::IsKeyHeld(GLFW_KEY_D)) dx += speed * dt;
     }
+    else if (controlScheme == ControlScheme::IJKL) {
+        if (Input::IsKeyHeld(GLFW_KEY_I)) dy += speed * dt;
+        if (Input::IsKeyHeld(GLFW_KEY_K)) dy -= speed * dt;
+        if (Input::IsKeyHeld(GLFW_KEY_J)) dx -= speed * dt;
+        if (Input::IsKeyHeld(GLFW_KEY_L)) dx += speed * dt;
+    }
 
     if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
         double mx = Input::GetMouseX();

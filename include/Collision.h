@@ -22,6 +22,15 @@ struct LineSegment {
     Vec2 start, end; // note segments for fretboard
 };
 
+struct AABB3D {
+    Vec3 min;
+    Vec3 max;
+};
+
+struct LineSegment3D {
+    Vec3 start, end;
+};
+
 // Static AABB check
 bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2);
 
@@ -52,5 +61,8 @@ bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& li
 //    const Line& line,
 //    const Vec2& vel2,
 //    float& firstTimeOfCollision);
+
+
+bool CollisionIntersection_AABB3D_Static(const AABB3D& a, const AABB3D& b);
 
 

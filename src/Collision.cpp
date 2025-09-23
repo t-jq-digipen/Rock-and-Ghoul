@@ -148,3 +148,10 @@ bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& li
         return distanceSquared <= (circle.rad * circle.rad);
     
 }
+
+bool CollisionIntersection_AABB3D_Static(const AABB3D& a, const AABB3D& b) {
+    if (a.max.x < b.min.x || a.min.x > b.max.x) return false;
+    if (a.max.y < b.min.y || a.min.y > b.max.y) return false;
+    if (a.max.z < b.min.z || a.min.z > b.max.z) return false;
+    return true;
+}
