@@ -1,0 +1,59 @@
+#include "Spells.h"
+
+SpellManager::SpellManager() {
+    for (int i = 0; i < MAX_SLOTS; i++) {
+        slots[i].isFilled = false;
+        slots[i].iconTex = 0;
+    }
+}
+
+void SpellManager::LoadTextures() {
+    barrierTex = Render::LoadTexture("../Assets/barrier.png");
+    shockwaveTex = Render::LoadTexture("../Assets/shockwave.png");
+    aoeTex = Render::LoadTexture("../Assets/aoe.png");
+    healTex = Render::LoadTexture("../Assets/heal.png");
+}
+
+void SpellManager::Draw(Render& renderer) {
+    float slotSize = 100.0f;
+    float space = 10.0f;
+
+    // Assuming 1280x720 resolution, bottom right corner
+    float baseX = 1280.0f - (slotSize + space);
+    float baseY = 60.0f;
+
+    for (int i = 0; i < MAX_SLOTS; i++) {
+        glm::vec2 pos(baseX - i * (slotSize + space), baseY);
+
+        glm::vec2 size(slotSize, slotSize);
+
+        renderer.DrawRect(pos, size.x, size.y, glm::vec3(0.2f, 0.2f, 0.2f));
+
+        if (slots[i].isFilled && slots[i].iconTex != 0) {
+            renderer.DrawTexturedQuad(pos, size, slots[i].iconTex);
+        }
+    }
+}
+
+void SpellManager::SaveSpell(int slotIndex, GLuint spellTex) {
+    if (slotIndex >= 0 && slotIndex < MAX_SLOTS) {
+        slots[slotIndex].iconTex = spellTex;
+        slots[slotIndex].isFilled = true;
+    }
+}
+
+void SpellManager::ClearSpell(int slotIndex) {
+    if (slotIndex >= 0 && slotIndex < MAX_SLOTS) {
+        slots[slotIndex].iconTex = 0;
+        slots[slotIndex].isFilled = false;
+    }
+}
+
+void SpellManager::GiveSpell(GLuint tex) {
+    for (int i = 0; i < MAX_SLOTS; i++) {
+        if (!slots[i].isFilled) {
+            SaveSpell(i, tex);
+            break;
+        }
+    }
+}

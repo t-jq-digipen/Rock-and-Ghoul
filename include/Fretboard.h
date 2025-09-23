@@ -5,6 +5,7 @@
 #include "Collision.h"
 #include <iostream>
 #include "Render.h"
+#include "Spells.h"
 
 // idt i need this for now until i figure out a way to tie it to input stuff 
 enum ArrowKeys {
@@ -46,10 +47,11 @@ private:
 	GLuint arrowRightTex;
 	GLuint arrowDownTex;
 	GLuint arrowLeftTex;
+	SpellManager& spellManager;
 
 public:
 
-	FretBoard(float x, float y, float length, float width);
+	FretBoard(float x, float y, float length, float width, SpellManager& sm);
 	void NewNote();
 	Vec2 CalculateNotePosition(int stringIndex, int segmentIndex);
 	void PlayerInput();

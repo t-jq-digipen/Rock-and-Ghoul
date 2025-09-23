@@ -6,9 +6,11 @@
 #include "Input.h"
 #include "Fretboard.h"
 #include "Render.h"
+#include "Spells.h"
 
 static Render renderer;
-static FretBoard fretboard(200.0f, 200.0f, 800.0f, 200.0f);
+static SpellManager spellManager;
+static FretBoard fretboard(0, 0, 800, 200, spellManager);
 void Level1::Load()
 {
 	std::cout << "Level 1 Loaded!!!" << std::endl;
@@ -20,6 +22,7 @@ void Level1::Init()
 	renderer.Init();
 	fretboard.LoadTextures();
 	fretboard.StartGame();
+	spellManager.LoadTextures();
 }
 
 void Level1::Update()
@@ -37,12 +40,14 @@ void Level1::Update()
 		std::cout << "Level 1 Restarted!!!" << std::endl;
 	}
 	fretboard.PlayerInput();
+
 }
 
 void Level1::Draw()
 {
 	//std::cout << "Level 1 Drawing!!!" << std::endl;
 	fretboard.Draw(renderer);
+	spellManager.Draw(renderer);
 }
 
 void Level1::Free()

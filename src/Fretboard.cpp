@@ -13,7 +13,7 @@ glm::vec2 arrowPositions[4] = {
     {500.0f, 900.0f}, // UP
     {600.0f, 900.0f}  // RIGHT
 };
-FretBoard::FretBoard(float x, float y, float length, float width) {
+FretBoard::FretBoard(float x, float y, float length, float width, SpellManager& sm) : spellManager(sm) {
     fretframe.x = x;
     fretframe.y = y;
     fretframe.length = length;
@@ -133,6 +133,7 @@ void FretBoard::PlayerInput() {
         }
         else {
             std::cout << "Sequence finished! (5 notes correct)\n";
+            spellManager.GiveSpell(spellManager.barrierTex);
         }
     }
     else {
