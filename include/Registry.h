@@ -57,6 +57,10 @@ private:
 	// CT_Health
 	ComponentManager<HealthComponent>		health;
 
+	// Tag
+	// CT_Tag
+	ComponentManager<TagComponent>			tag;
+
 public:
 	Entity Add_Entity();
 	void Remove_Entity(Entity eID);
@@ -69,6 +73,7 @@ public:
 	void Add_Component(Entity eID, AudioComponent const& comp);
 	void Add_Component(Entity eID, LifetimeComponent const& comp);
 	void Add_Component(Entity eID, HealthComponent const& comp);
+	void Add_Component(Entity eID, TagComponent const& comp);
 
 	// overloads for removal
 	void Remove_Component(Entity eID, ComponentTypeID cID);

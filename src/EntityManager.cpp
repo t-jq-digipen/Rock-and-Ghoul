@@ -1,5 +1,6 @@
 #include "EntityManager.h"
 #include <iostream>
+#include <string>
 
 // Singleton access
 EntityManager& EntityManager::get()
@@ -28,47 +29,35 @@ Entity EntityManager::createEntity()
 	{	alive.resize(next_entID, false);	}
 
 
-	alive[e] = true;		// set new entity to alive ^^
+	alive[e] = true;	// set new entity to alive ^^
 	return e;
 }
 
 // Destroy entity
-void EntityManager::destroyEntity(Entity e)
+void EntityManager::destroyEntity(Entity eID)
 {
 	// Check if out of scope
-	if (e < 0 || e >= alive.size())
-	{	std::cerr << "Sumtingwong ya this entity cannot be destroy! Why you want to destroy!?\n";	}
+	if (eID < 0 || eID >= alive.size())
+	{	throw std::runtime_error("Sumtingwong ya this entity" + std::to_string(eID) +  "cannot be destroy! Why you want to destroy!?\n");	}
 
 	// Check if entity is already dead
-	if (!alive[e]) { return; }
-
-	// Remove components
-	// TO DO (PSEUDO)
-	/*
-	for (component:componentslist)
-	{
-		if (componentmanager<component>.hasComponent(eID)
-		{
-			componentmanager<component>.removeComponent(eID);
-		}
-	}
-
-	EDIT: now doing this in REGISTRY, DO NOT CALL DIRECTLY!
-	*/ 
+	if (!alive[eID]) { return; }
 
 	// Set alive flag to false, and add ID to list of free IDs
-	alive[e] = false;
-	freeID.push_back(e);
+	alive[eID] = false;
+	freeID.push_back(eID);
+
+	// NOTE: COMPONENTS removed in REGISTRY
 }
 
 // Alive check!
-bool EntityManager::isAlive(Entity e) const
+bool EntityManager::isAlive(Entity eID) const
 {
 	// Check if out of scope
-	if (e < 0 || e >= alive.size())
-	{	std::cerr << "Sumtingwong ya this entity cannot be alive! check ur code!\n";	}
+	if (eID < 0 || eID >= alive.size())
+	{	throw std::runtime_error("Sumtingwong ya this entity cannot be alive! check ur code!\n");	}
 
 
 	// return if alive :) life is good
-	return alive[e];
+	return alive[eID];
 }

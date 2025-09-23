@@ -3,6 +3,7 @@
 	
 #pragma once
 #include <bitset>
+#include <list>
 #include "Remath.h"
 
 // System notes:
