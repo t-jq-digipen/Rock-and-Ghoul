@@ -5,7 +5,6 @@
 #include <GLFW/glfw3.h>
 #include "GameStateManager.h"
 
-#include "Registry.h"
 
 CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
 
@@ -18,7 +17,12 @@ void CoreEngine::Initialize() {
     lastFrame = glfwGetTime();
     GSM::Init(GS_MAIN_MENU);
 
-    Entity player = registry.AddEntity();
+
+    // ECS things
+    Entity player_ent = registry.Add_Entity();
+    registry.Add_Component(player_ent, TagComponent{ T_PLAYER });
+    //registry.Add_Component(player, SpriteComponent{ "player.png" });
+
 }
 
 void CoreEngine::Run() {
