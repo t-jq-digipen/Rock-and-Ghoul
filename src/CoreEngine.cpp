@@ -6,7 +6,7 @@
 #include "GameStateManager.h"
 
 
-CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
+CoreEngine::CoreEngine() : running(true), lastFrame(0.0), registry(), gsm(GameState::GS_MAIN_MENU, registry) {}
 
 void CoreEngine::AddSystem(ISystem* sys) {
     systems.push_back(sys);
@@ -15,36 +15,32 @@ void CoreEngine::AddSystem(ISystem* sys) {
 void CoreEngine::Initialize() {
     for (auto s : systems) s->Initialize();
     lastFrame = glfwGetTime();
-    GSM::Init(GS_MAIN_MENU);
+    gsm.Init(GameState::GS_MAIN_MENU);
 
 
-    // ECS things
-    Entity player_ent = registry.Add_Entity();
-    registry.Add_Component(player_ent, TagComponent{ T_PLAYER });
-    //registry.Add_Component(player, SpriteComponent{ "player.png" });
+    
 
 }
 
 void CoreEngine::Run() {
-    while (running && !glfwWindowShouldClose(GLApp::ptr_window) && currentState != GS_QUIT) {
+    while (running && !glfwWindowShouldClose(GLApp::ptr_window) && gsm.GetCurrentState() != GameState::GS_QUIT) {
         // Game State Manager
 
         // Load a game state
-        if (currentState != GS_RESTART)
+        if (gsm.GetCurrentState() != GameState::GS_RESTART)
         {
-            GSM::Update();  // Set the function pointers to the current game state
-            fpLoad();   // Call the current game state's Load() function
+            gsm.Update();  // Set the function pointers to the current game state
+            gsm.CallLoad();   // Call the current game state's Load() function
         }
         // Restart the current game state
         else
         {
-            nextState = previousState;
-            currentState = previousState;
+            gsm.Restart();
         }
-        fpInitialize(); // Call the current game state's Initialize() function
+        gsm.CallInit(); // Call the current game state's Initialize() function
 
         // While a game state is running
-        while (nextState == currentState)
+        while (gsm.GetNextState() == gsm.GetCurrentState())
         {
             double now = glfwGetTime();
             float dt = static_cast<float>(now - lastFrame);
@@ -52,25 +48,24 @@ void CoreEngine::Run() {
 
             glfwPollEvents();
             for (auto s : systems) s->Update(dt);
-            fpUpdate(); // Call the current game state's Update() function
-            fpDraw();   // Call the current game state's Draw() function
+            gsm.CallUpdate(); // Call the current game state's Update() function
+            gsm.CallDraw();   // Call the current game state's Draw() function
 
-            if (Input::IsKeyPressed(GLFW_KEY_ESCAPE)) nextState = GS_QUIT;              // quit program (shortcut)
+            if (Input::IsKeyPressed(GLFW_KEY_ESCAPE)) gsm.SetNextState(GameState::GS_QUIT);              // quit program (shortcut)
 
             Input::Update();
             glfwSwapBuffers(GLApp::ptr_window);
 
         }
-        fpFree();   // Call the current game state's Free() function
+        gsm.CallFree();   // Call the current game state's Free() function
 
         // When the game state has changed, unload the current game state
-        if (nextState != GS_RESTART)
+        if (gsm.GetNextState() != GameState::GS_RESTART)
         {
-            fpUnload(); // Call the current game state's Unload() function
+            gsm.CallUnload(); // Call the current game state's Unload() function
         }
         // Change the game state (by setting nextState)
-        previousState = currentState;
-        currentState = nextState;
+        gsm.ChangeNextState();
     }
 }
 
@@ -80,7 +75,7 @@ void CoreEngine::Shutdown() {
         delete systems[i];
     }
     systems.clear();
-    GSM::Close();   // To exit the game state manager
+    gsm.Close();   // To exit the game state manager
 }
 
 void CoreEngine::Quit() {

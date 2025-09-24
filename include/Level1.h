@@ -5,6 +5,8 @@
 
 class Level1
 {
+private:
+	GSM& gsm;
 public:
 	// Loads main menu
 	static void Load();

@@ -32,6 +32,7 @@ void Level1::Update()
 	// to test game state changes
 	if (Input::IsKeyPressed(GLFW_KEY_M))
 	{
+
 		nextState = GS_MAIN_MENU;     // go to main menu state
 	}
 	else if (Input::IsKeyPressed(GLFW_KEY_R)) 

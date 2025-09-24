@@ -4,6 +4,7 @@
 #include "System.h"
 
 #include "Registry.h"
+#include "GameStateManager.h"
 
 class CoreEngine {
     std::vector<ISystem*> systems;
@@ -13,10 +14,14 @@ class CoreEngine {
     // ECS
     Registry registry;
 
+    // GSM
+    GSM gsm;
+
     // Systems (e.g physics/render/transform yada yada)
 
 public:
     CoreEngine();
+
     void AddSystem(ISystem* sys);
     void Initialize();
     void Run();

@@ -6,6 +6,8 @@
 #include "glapp.h"
 #include "RenderSystem.h"
 
+#include "Registry.h"
+
 RenderSystem renderSystem;
 Render renderer;
 GLuint titleTexture{ 0 };
@@ -13,6 +15,7 @@ GLuint rockTexture{ 0 };
 GLuint ghoulTexture{ 0 };
 GLuint playTexture{ 0 };
 GLuint quitTexture{ 0 };
+
 
 // Convert GLFW/screen cords (origin: top-left) to render coords (origin: bottom-left)
 static inline glm::vec2 ScreenToRender(const glm::vec2& mouseScreen, float windowHeight)
@@ -35,6 +38,10 @@ void MainMenu::Init()
 {
 	std::cout << "Main Menu Initialized!!!" << std::endl;
     renderSystem.renderer.Init();
+
+    // ECS TEST
+    
+
 }
 
 void MainMenu::Update()
@@ -88,6 +95,7 @@ void MainMenu::Update()
         renderSystem.renderer.DrawRect({ GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f, { 1, 0, 0.5 });
         if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
+            
             nextState = GS_QUIT;
         }
     }
