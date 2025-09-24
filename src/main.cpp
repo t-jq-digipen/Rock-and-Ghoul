@@ -20,12 +20,16 @@ int main() {
 
     // initialize all systems (this sets up FMOD, OpenGL, etc.)
     engine.Initialize();
+    // broken here?
+    std::cout << "GETS PAST ENGINE INIT\n";
+
+    engine.Run();
+    std::cout << "GETS PAST ENGINE RUN\n";
 
     //load and play sounds
     FMOD::Sound* bgm = audio->Load("../Assets/music/bgm.mp3", true);
     audio->Play(bgm);
 
-    engine.Run();
 
     engine.Shutdown();
 

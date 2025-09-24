@@ -47,3 +47,6 @@ void GSM_SetPreviousState(GameState state);
 void GSM_SetCurrentState(GameState state);
 void GSM_SetNextState(GameState state);
 // ----------------------------------------
+
+// DEBUGGER
+std::ostream& operator<<(std::ostream& os, const GameState& state);

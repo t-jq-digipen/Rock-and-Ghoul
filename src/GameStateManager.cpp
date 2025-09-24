@@ -5,6 +5,17 @@
 #include "CoreEngine.h"
 
 
+// Function pointer
+typedef void(*FP)(void);
+
+// Function Pointers for gamestates
+FP fpLoad = nullptr;
+FP fpInitialize = nullptr;
+FP fpUpdate = nullptr;
+FP fpDraw = nullptr;
+FP fpFree = nullptr;
+FP fpUnload = nullptr;
+
 void GSM::Init(GameState gameState)
 {
 	currentState = nextState = previousState = gameState;
@@ -17,9 +28,11 @@ void GSM::Close()
 
 void GSM::Update()
 {
+	std::cout << "GSM Update state to ";
 	switch (currentState)
 	{
 	case GameState::GS_MAIN_MENU:
+		std::cout << "Main Menu\n";
 			fpLoad			= MainMenu::Load;
 			fpInitialize	= MainMenu::Init;
 			fpUpdate		= MainMenu::Update;
@@ -30,6 +43,7 @@ void GSM::Update()
 			// end case GS_MAIN_MENU
 
 	case GameState::GS_LEVEL1:
+		std::cout << "Level 1\n";
 			fpLoad			= Level1::Load;
 			fpInitialize	= Level1::Init;
 			fpUpdate		= Level1::Update;
@@ -59,19 +73,19 @@ void GSM::ChangeNextState()
 
 // STATE CALLERS
 // ----------------------------------------
-void GSM::CallLoad()	{ if (fpLoad)		{ fpLoad;		} }
-void GSM::CallInit()	{ if (fpInitialize) { fpInitialize; } }
-void GSM::CallUpdate()	{ if (fpUpdate)		{ fpUpdate;		} }
-void GSM::CallDraw()	{ if (fpDraw)		{ fpDraw;		} }
-void GSM::CallFree()	{ if (fpFree)		{ fpFree;		} }
-void GSM::CallUnload()	{ if (fpUnload)		{ fpUnload;		} }
+void GSM::CallLoad()	{ if (fpLoad)		{ fpLoad();			} }
+void GSM::CallInit()	{ if (fpInitialize) { fpInitialize();	} }
+void GSM::CallUpdate()	{ if (fpUpdate)		{ fpUpdate();		} }
+void GSM::CallDraw()	{ if (fpDraw)		{ fpDraw();			} }
+void GSM::CallFree()	{ if (fpFree)		{ fpFree();			} }
+void GSM::CallUnload()	{ if (fpUnload)		{ fpUnload();		} }
 // ----------------------------------------
 
 // GETTERS
 // ----------------------------------------
 const GameState& GSM::GetCurrentState() const	{ return currentState; }
-const GameState& GSM::GetNextState() const		{ return currentState; }
-const GameState& GSM::GetPreviousState() const	{ return currentState; }
+const GameState& GSM::GetNextState() const		{ return nextState; }
+const GameState& GSM::GetPreviousState() const	{ return previousState; }
 // ----------------------------------------
 
 // SETTERS

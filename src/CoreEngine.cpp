@@ -4,7 +4,8 @@
 #include "Input.h"
 #include <GLFW/glfw3.h>
 #include "GameStateManager.h"
-
+#include <iostream>
+#include <string>
 
 CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
 
@@ -24,14 +25,19 @@ void CoreEngine::Initialize() {
 }
 
 void CoreEngine::Run() {
-    while (running && !glfwWindowShouldClose(GLApp::ptr_window) && gsm.GetCurrentState() != GameState::GS_QUIT) {
+    std::cout << "EngRun\n";
+    while (running && !glfwWindowShouldClose(GLApp::ptr_window) && GSM_CurrentState() != GameState::GS_QUIT) {
         // Game State Manager
 
         // Load a game state
         if (gsm.GetCurrentState() != GameState::GS_RESTART)
         {
-            gsm.Update();  // Set the function pointers to the current game state
-            gsm.CallLoad();   // Call the current game state's Load() function
+
+            std::cout << "EngRunning, state = " << (GSM_CurrentState()) << std::endl;
+            gsm.Update();       // Set the function pointers to the current game state
+            std::cout << "Got past update\n";
+            gsm.CallLoad();     // Call the current game state's Load() function
+            std::cout << "Got past load\n";
         }
         // Restart the current game state
         else
@@ -52,7 +58,8 @@ void CoreEngine::Run() {
             gsm.CallUpdate(); // Call the current game state's Update() function
             gsm.CallDraw();   // Call the current game state's Draw() function
 
-            if (Input::IsKeyPressed(GLFW_KEY_ESCAPE)) gsm.SetNextState(GameState::GS_QUIT);              // quit program (shortcut)
+            if (Input::IsKeyPressed(GLFW_KEY_ESCAPE)) GSM_SetNextState(GameState::GS_QUIT);              // quit program (shortcut)
+
 
             Input::Update();
             glfwSwapBuffers(GLApp::ptr_window);
@@ -101,3 +108,32 @@ void GSM_SetPreviousState(GameState state)  { gsm.SetPreviousState(state); }
 void GSM_SetCurrentState(GameState state)   { gsm.SetCurrentState(state); }
 void GSM_SetNextState(GameState state)      { gsm.SetNextState(state); }
 // ----------------------------------------
+
+// DEBUGGER
+std::ostream& operator<<(std::ostream& os, const GameState& state)
+{
+    switch (state)
+    {
+    case GameState::GS_MAIN_MENU:
+    {
+        os << "Main Menu";
+        break;
+    }
+    case GameState::GS_LEVEL1:
+    {
+        os << "Level 1";
+        break;
+    }
+    case GameState::GS_RESTART:
+    {
+        os << "Restart";
+        break;
+    }
+    case GameState::GS_QUIT:
+    {
+        os << "Quit";
+        break;
+    }
+    }
+    return os;
+}

@@ -15,29 +15,19 @@ enum class GameState
 
 class GSM
 {
-public:
-    // Function pointer
-    using FP = void(*)(void);
-
 private:
-
-    // Function Pointers for gamestates
-    FP fpLoad       = nullptr; 
-    FP fpInitialize = nullptr; 
-    FP fpUpdate     = nullptr; 
-    FP fpDraw       = nullptr;
-    FP fpFree       = nullptr;
-    FP fpUnload     = nullptr;
-
-public:
     // Gamestate identifiers
     GameState currentState;
     GameState previousState;
     GameState nextState;
 
+public:
+
 #pragma region GSM LOGIC
     // ctor
-    GSM() = default;
+    GSM() {
+        currentState = previousState = nextState = GameState::GS_MAIN_MENU;
+    }
 
     // Life cycle
     void Init(GameState gameState); // Initialize
@@ -78,7 +68,7 @@ public:
     void SetPreviousState(GameState state);
 
 #pragma endregion ACCESSORS
-
+    
 };
 
 
