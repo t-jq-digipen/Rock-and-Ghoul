@@ -122,7 +122,7 @@ void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color
     glUseProgram(0);
 }
 
-void Render::DrawTexturedQuad(const glm::vec2& pos, const glm::vec2& scale, GLuint texture) {
+void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture) {
     glUseProgram(shaderProgram);
 
     // upload projection
@@ -153,7 +153,9 @@ GLuint Render::LoadTexture(const std::string& path) {
     int width, height, channels;
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-
+    std::cout << "Loading texture: " << path
+        << " (" << width << "x" << height
+        << ", channels=" << channels << ")" << std::endl;
     if (!data) {
         std::cerr << "Failed to load texture: " << path << std::endl;
         return 0;
@@ -212,7 +214,7 @@ GLuint Render::LinkProgram(GLuint vertexShader, GLuint fragmentShader) {
     }
     return program;
 }
-void Render::DrawLine(const glm::vec2& start, const glm::vec2& end, const glm::vec3& color) {
+void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) {
     GLfloat vertices[4] = {
         start.x, start.y,
         end.x,   end.y
@@ -253,7 +255,7 @@ void Render::DrawLine(const glm::vec2& start, const glm::vec2& end, const glm::v
     glUseProgram(0);
 }
 
-void Render::DrawCircle(const glm::vec2& center, float radius, const glm::vec3& color, int segments) {
+void Render::DrawCircle(const glm::vec2& center, float radius, const Colour3& color, int segments) {
     // vertices for a circle
     std::vector<GLfloat> vertices;
     vertices.reserve((segments + 2) * 2);
@@ -304,4 +306,35 @@ void Render::DrawCircle(const glm::vec2& center, float radius, const glm::vec3& 
     glDeleteVertexArrays(1, &vaoCircle);
 
     glUseProgram(0);
+}
+
+void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3& color) {
+    glUseProgram(shaderProgram);
+
+    // upload projection
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);
+
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), width, height);
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glBindVertexArray(0);
+
+    glUseProgram(0);
+}
+
+
+bool Render::IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height)
+{
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), areaPos.x, areaPos.y);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), width, height);
+    const glm::vec2 deltaPos = glm::abs(mousePos - areaPos);
+    const float hx = 0.5f * std::abs(width);
+    const float hy = 0.5f * std::abs(height);
+    return (deltaPos.x <= hx) && (deltaPos.y <= hy);
 }

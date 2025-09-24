@@ -8,7 +8,7 @@
 
 enum class ControlScheme {
     WASD,
-    Arrows
+    IJKL
 };
 
 class MovementController {

@@ -1,20 +1,21 @@
+#pragma once
 #include "MovementController.h"
 #include "Collision.h"
+#include "Remath.h"
+#include "Render.h"
 #include <string>
-#include <glm/glm.hpp>
-
 class Player {
 public:
     Player(float startX, float startY, ControlScheme controls);
-
     Player(const Player& other);
 
     void ComputeInput(float dt);
     void ApplyMove();
     void CancelMove();
-    void Draw();
+    void Draw(Render& renderer);
+
     void SetPosition(float newX, float newY);
-    void ChangeColor();
+
     AABB GetAABB() const;
     AABB GetFutureAABB() const;
     
@@ -38,16 +39,20 @@ public:
     void SetNextX(float newNextX) { nextX = newNextX; }
     float GetX() const { return x; }
 
-    void SetTexture(GLuint tex, const glm::vec2& pixelSize);
-    bool SetTextureFromFile(const std::string& path, const glm::vec2& pixelSize);
+    void SetTexture(GLuint tex, const Vec2& pixelSize);
+    bool SetTextureFromFile(Render& renderer, const std::string& path, const Vec2& pixelSize);
+
+    void ScaleBy(float factor);
+    void SetScale(float uniform);
+    Vec2 GetScale() const;
+
 
 private:
     float x, y;
     float size;
     MovementController controller; // each player has its own controller
     float nextX, nextY;
-    glm::vec3 color;
-    bool isRed = true;
+    Colour3 color;
 
     //physics
     float velocityY;
@@ -56,7 +61,7 @@ private:
 
     GLuint textureID{ 0 };
     bool useTexture{ false };
-    glm::vec2 spriteScale{ 100.0f, 100.0f };   // width,height in pixels when textured
+    Vec2 spriteScale{ 100.0f, 100.0f };   // width,height in pixels when textured
 };
 
 
