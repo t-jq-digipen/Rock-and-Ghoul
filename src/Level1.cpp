@@ -8,9 +8,12 @@
 #include "Render.h"
 #include "Spells.h"
 
+#include "GameStates.h"
+
 static Render renderer;
 static SpellManager spellManager;
 static FretBoard fretboard(0, 0, 800, 200, spellManager);
+
 void Level1::Load()
 {
 	std::cout << "Level 1 Loaded!!!" << std::endl;
@@ -59,4 +62,35 @@ void Level1::Free()
 void Level1::Unload()
 {
 	std::cout << "Level 1 Unloaded!!!" << std::endl;
+}
+
+
+void newLevel1::Load()
+{
+	std::cout << "newLevel1 Loaded!!!" << std::endl;
+}
+
+void newLevel1::Init()
+{
+	std::cout << "newLevel1 Initialized!!!" << std::endl;
+}
+
+void newLevel1::Update()
+{
+	std::cout << "newLevel1 Updating!!!" << std::endl;
+}
+
+void newLevel1::Draw()
+{
+	std::cout << "newLevel1 Drawing!!!" << std::endl;
+}
+
+void newLevel1::Free()
+{
+	std::cout << "newLevel1 Freed!!!" << std::endl;
+}
+
+void newLevel1::Unload()
+{
+	std::cout << "newLevel1 Unloaded!!!" << std::endl;
 }

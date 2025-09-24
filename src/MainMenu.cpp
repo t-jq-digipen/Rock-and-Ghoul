@@ -8,6 +8,8 @@
 
 #include "Registry.h"
 
+#include "GameStates.h"
+
 RenderSystem renderSystem;
 Render renderer;
 GLuint titleTexture{ 0 };
@@ -162,4 +164,35 @@ void MainMenu::Unload()
         glDeleteTextures(1, &quitTexture);
         quitTexture = 0;
     }
+}
+
+
+void newMainMenu::Load()
+{
+    std::cout << "newMainMenu Loaded!!!" << std::endl;
+}
+
+void newMainMenu::Init()
+{
+    std::cout << "newMainMenu Initialized!!!" << std::endl;
+}
+
+void newMainMenu::Update()
+{
+    std::cout << "newMainMenu Updating!!!" << std::endl;
+}
+
+void newMainMenu::Draw()
+{
+    std::cout << "newMainMenu Drawing!!!" << std::endl;
+}
+
+void newMainMenu::Free()
+{
+    std::cout << "newMainMenu Freed!!!" << std::endl;
+}
+
+void newMainMenu::Unload()
+{
+    std::cout << "newMainMenu Unloaded!!!" << std::endl;
 }

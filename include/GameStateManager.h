@@ -3,6 +3,7 @@
 #define GAMESTATEMANAGER_H
 
 #include "Registry.h"
+#include "GameStates.h"
 
 enum class GameState
 {
@@ -17,6 +18,10 @@ class GSM
 public:
     // Function pointer
     using FP = void(*)(void);
+
+    // Game states
+    newMainMenu newmainmenu;
+    newLevel1   newlevel1;
 
 private:
     // Gamestate identifiers
@@ -84,13 +89,7 @@ public:
 };
 
 
-class IGameState {
-protected:
-    GSM& gsm;
-private:
-    IGameState(GSM& gsmref) : gsm(gsmref) {}
-    ~IGameState() = default;
-};
+
 
 
 

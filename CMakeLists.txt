@@ -218,6 +218,9 @@ source_group("Physics\\Movement" FILES
 source_group("Game\\GameStateManager" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
+
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStates.h
 )
 source_group("Graphics\\Components" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
