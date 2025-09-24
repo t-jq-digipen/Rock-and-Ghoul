@@ -5,6 +5,7 @@
 #include <bitset>
 #include <list>
 #include "Remath.h"
+#include "Render.h"
 
 // System notes:
 /*
@@ -53,7 +54,7 @@ using ComponentMask = std::bitset<32>;
 struct TransformComponent {
 	// should these be vec3? i forget LOL
 	Vec2 pos;	// Position
-	Vec2 rot;	// Rotation
+	//Vec2 rot;	// Rotation
 	Vec2 scale;	// Scale
 };
 // BASE END
@@ -62,6 +63,7 @@ struct TransformComponent {
 // COMP_2
 struct SpriteComponent {
 	// Texture* tex;	// texture file (to check w reg/kerv)
+	GLuint texture;
 	int frame;			// frame to display
 };
 
@@ -75,7 +77,7 @@ struct AnimatorComponent {
 // PHYSICS
 struct PhysicsComponent {
 	Vec2 vel;
-	Vec2 accel;
+	//Vec2 accel;
 	//bool collide (maybe can use bitwise checking to see WHAT things it will collide with? to consider)
 	//aabb hitbox;
 };

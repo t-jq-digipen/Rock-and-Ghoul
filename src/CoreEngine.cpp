@@ -9,7 +9,6 @@
 
 CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
 
-Registry registry;
 
 GSM gsm;
 
@@ -87,8 +86,7 @@ void CoreEngine::Quit() {
 }
 
 // GAME STATE MANAGER
-
-// GSM functions
+// ================================================================================
 
 // STATE GETTERS
 // ----------------------------------------

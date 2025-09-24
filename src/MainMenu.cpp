@@ -169,34 +169,3 @@ void MainMenu::Unload()
         quitTexture = 0;
     }
 }
-
-
-void newMainMenu::Load()
-{
-    std::cout << "newMainMenu Loaded!!!" << std::endl;
-}
-
-void newMainMenu::Init()
-{
-    std::cout << "newMainMenu Initialized!!!" << std::endl;
-}
-
-void newMainMenu::Update()
-{
-    std::cout << "newMainMenu Updating!!!" << std::endl;
-}
-
-void newMainMenu::Draw()
-{
-    std::cout << "newMainMenu Drawing!!!" << std::endl;
-}
-
-void newMainMenu::Free()
-{
-    std::cout << "newMainMenu Freed!!!" << std::endl;
-}
-
-void newMainMenu::Unload()
-{
-    std::cout << "newMainMenu Unloaded!!!" << std::endl;
-}

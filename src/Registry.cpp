@@ -1,15 +1,55 @@
 #include "Registry.h"
 
 
+
+
+// COMPONENT MANAGERS
+// ================================================================================
+// CT_Transform
+ComponentManager<TransformComponent>	transform;
+
+// Graphics
+// CT_Sprite
+ComponentManager<SpriteComponent>		sprite;
+// CT_Animator
+ComponentManager<AnimatorComponent>		animator;
+
+// Physics
+// CT_Physics
+ComponentManager<PhysicsComponent>		physics;
+
+// Audio
+// CT_Audio
+ComponentManager<AudioComponent>		audio;
+
+// Timer
+// CT_Lifetime
+ComponentManager<LifetimeComponent>		lifetime;
+
+// Stats
+// CT_Health
+ComponentManager<HealthComponent>		health;
+
+// Tag
+// CT_Tag
+ComponentManager<TagComponent>			tag;
+
+
+// Entity manager (stores a REFERENCE to the singleton entity manager ^^)
+// ================================================================================
+EntityManager& entityManager = EntityManager::get();
+
 // ENTITY REGION
 #pragma region ENTITY
-Entity Registry::Add_Entity()
+
+Entity Create_Entity()
 {
+	std::cout << "Entity creating!\n";
 	return entityManager.createEntity();
 }
 
 
-void Registry::Remove_Entity(Entity eID)
+void Remove_Entity(Entity eID)
 {
 	// remove all components!
 	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_Audio, CT_Lifetime, CT_Health, CT_Tag });
@@ -37,43 +77,48 @@ COMPONENTS LIST:
 // ADD
 #pragma region ADD COMPONENT
 
-void Registry::Add_Component(Entity eID, TransformComponent const& comp)
+void Add_Component(Entity eID, TransformComponent const& comp)
 {
+	std::cout << "REGISTRY | ADDING COMPONENT | TRANSFORM | eID: " << eID << "\n";
 	transform.addComponent(eID, comp);
 }
 
-void Registry::Add_Component(Entity eID, SpriteComponent const& comp)
+void Add_Component(Entity eID, SpriteComponent const& comp)
 {
+	std::cout << "REGISTRY | ADDING COMPONENT | SPRITE    | eID: " << eID << "\n";
 	sprite.addComponent(eID, comp);
 }
 
-void Registry::Add_Component(Entity eID, AnimatorComponent const& comp)
+void Add_Component(Entity eID, AnimatorComponent const& comp)
 {
+	std::cout << "REGISTRY | ADDING COMPONENT | ANIM      | eID: " << eID << "\n";
 	animator.addComponent(eID, comp);
 }
 
-void Registry::Add_Component(Entity eID, PhysicsComponent const& comp)
+void Add_Component(Entity eID, PhysicsComponent const& comp)
 {
+	std::cout << "REGISTRY | ADDING COMPONENT | PHYSICS   | eID: " << eID << "\n";
 	physics.addComponent(eID, comp);
 }
 
-void Registry::Add_Component(Entity eID, AudioComponent const& comp)
+void Add_Component(Entity eID, AudioComponent const& comp)
 {
 	audio.addComponent(eID, comp);
 }
 
-void Registry::Add_Component(Entity eID, LifetimeComponent const& comp)
+void Add_Component(Entity eID, LifetimeComponent const& comp)
 {
 	lifetime.addComponent(eID, comp);
 }
 
-void Registry::Add_Component(Entity eID, HealthComponent const& comp)
+void Add_Component(Entity eID, HealthComponent const& comp)
 {
 	health.addComponent(eID, comp);
 }
 
-void Registry::Add_Component(Entity eID, TagComponent const& comp)
+void Add_Component(Entity eID, TagComponent const& comp)
 {
+	std::cout << "REGISTRY | ADDING COMPONENT | TAG       | eID: " << eID << "\n";
 	tag.addComponent(eID, comp);
 }
 
@@ -84,7 +129,7 @@ void Registry::Add_Component(Entity eID, TagComponent const& comp)
 
 // REMOVE
 
-void Registry::Remove_Component(Entity eID, ComponentTypeID cID)
+void Remove_Component(Entity eID, ComponentTypeID cID)
 {
 	switch (cID)
 	{
@@ -94,24 +139,28 @@ void Registry::Remove_Component(Entity eID, ComponentTypeID cID)
 	}
 	case (CT_Transform):
 	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | TRANSFORM | eID: " << eID << "\n";
 		transform.removeComponent(eID);
 	}
 	break;	// CT_Transform
 
 	case (CT_Sprite):
 	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | SPRITE    | eID: " << eID << "\n";
 		sprite.removeComponent(eID);
 	}
 	break;	// CT_Sprite
 
 	case (CT_Animator):
 	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | ANIM      | eID: " << eID << "\n";
 		animator.removeComponent(eID);
 	}
 	break;	// CT_Animator
 
 	case (CT_Physics):
 	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | PHYSICS   | eID: " << eID << "\n";
 		physics.removeComponent(eID);
 	}
 	break;	// CT_Physics
@@ -136,6 +185,7 @@ void Registry::Remove_Component(Entity eID, ComponentTypeID cID)
 
 	case (CT_Tag):
 	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | TAG       | eID: " << eID << "\n";
 		tag.removeComponent(eID);
 	}
 	break;	// CT_Tag
@@ -143,7 +193,7 @@ void Registry::Remove_Component(Entity eID, ComponentTypeID cID)
 }
 
 
-void Registry::Remove_Components(Entity eID, std::initializer_list<ComponentTypeID> cIDlist)
+void Remove_Components(Entity eID, std::initializer_list<ComponentTypeID> cIDlist)
 {
 	for (ComponentTypeID cID : cIDlist)
 	{

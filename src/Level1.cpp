@@ -13,6 +13,10 @@ static Render renderer;
 static SpellManager spellManager;
 static FretBoard fretboard(0, 0, 800, 200, spellManager);
 
+
+Entity ECSplayer{};
+
+
 void Level1::Load()
 {
 	std::cout << "Level 1 Loaded!!!" << std::endl;
@@ -25,6 +29,11 @@ void Level1::Init()
 	fretboard.LoadTextures();
 	fretboard.StartGame();
 	spellManager.LoadTextures();
+
+	ECSplayer = Create_Entity();
+	Add_Component(ECSplayer, TransformComponent{ {0.f, 0.f}, {50.f, 50.f} });
+	Add_Component(ECSplayer, PhysicsComponent{});
+	Add_Component(ECSplayer, TagComponent{ T_PLAYER });
 }
 
 void Level1::Update()
@@ -57,6 +66,8 @@ void Level1::Draw()
 void Level1::Free()
 {
 	std::cout << "Level 1 Freed!!!" << std::endl;
+
+	Remove_Entity(ECSplayer);
 }
 
 void Level1::Unload()
@@ -64,33 +75,3 @@ void Level1::Unload()
 	std::cout << "Level 1 Unloaded!!!" << std::endl;
 }
 
-
-void newLevel1::Load()
-{
-	std::cout << "newLevel1 Loaded!!!" << std::endl;
-}
-
-void newLevel1::Init()
-{
-	std::cout << "newLevel1 Initialized!!!" << std::endl;
-}
-
-void newLevel1::Update()
-{
-	std::cout << "newLevel1 Updating!!!" << std::endl;
-}
-
-void newLevel1::Draw()
-{
-	std::cout << "newLevel1 Drawing!!!" << std::endl;
-}
-
-void newLevel1::Free()
-{
-	std::cout << "newLevel1 Freed!!!" << std::endl;
-}
-
-void newLevel1::Unload()
-{
-	std::cout << "newLevel1 Unloaded!!!" << std::endl;
-}

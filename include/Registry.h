@@ -22,63 +22,23 @@ COMPONENTS LIST:
 	8 | CT_Tag
 */
 
-class Registry {
-private:
-	// masks? food for thought
-	std::vector<ComponentMask> entityMasks;
 
-	// Entity manager (stores a REFERENCE to the singleton entity manager ^^)
-	EntityManager& entityManager = EntityManager::get();
+// Entity functions
+Entity Create_Entity();
 
-	
+void Remove_Entity(Entity eID);
 
-	// CT_Transform
-	ComponentManager<TransformComponent>	transform;
 
-	// Graphics
-	// CT_Sprite
-	ComponentManager<SpriteComponent>		sprite;
-	// CT_Animator
-	ComponentManager<AnimatorComponent>		animator;
+// overloads for adding
+void Add_Component(Entity eID, TransformComponent const& comp);
+void Add_Component(Entity eID, SpriteComponent const& comp);
+void Add_Component(Entity eID, AnimatorComponent const& comp);
+void Add_Component(Entity eID, PhysicsComponent const& comp);
+void Add_Component(Entity eID, AudioComponent const& comp);
+void Add_Component(Entity eID, LifetimeComponent const& comp);
+void Add_Component(Entity eID, HealthComponent const& comp);
+void Add_Component(Entity eID, TagComponent const& comp);
 
-	// Physics
-	// CT_Physics
-	ComponentManager<PhysicsComponent>		physics;
-
-	// Audio
-	// CT_Audio
-	ComponentManager<AudioComponent>		audio;
-
-	// Timer
-	// CT_Lifetime
-	ComponentManager<LifetimeComponent>		lifetime;
-
-	// Stats
-	// CT_Health
-	ComponentManager<HealthComponent>		health;
-
-	// Tag
-	// CT_Tag
-	ComponentManager<TagComponent>			tag;
-
-public:
-	Registry() = default;
-
-	Entity Add_Entity();
-	void Remove_Entity(Entity eID);
-
-	// overloads for adding
-	void Add_Component(Entity eID, TransformComponent const& comp);
-	void Add_Component(Entity eID, SpriteComponent const& comp);
-	void Add_Component(Entity eID, AnimatorComponent const& comp);
-	void Add_Component(Entity eID, PhysicsComponent const& comp);
-	void Add_Component(Entity eID, AudioComponent const& comp);
-	void Add_Component(Entity eID, LifetimeComponent const& comp);
-	void Add_Component(Entity eID, HealthComponent const& comp);
-	void Add_Component(Entity eID, TagComponent const& comp);
-
-	// overloads for removal
-	void Remove_Component(Entity eID, ComponentTypeID cID);
-	void Remove_Components(Entity eID, std::initializer_list<ComponentTypeID> cIDlist);
-
-};
+// overloads for removal
+void Remove_Component(Entity eID, ComponentTypeID cID);
+void Remove_Components(Entity eID, std::initializer_list<ComponentTypeID> cIDlist);

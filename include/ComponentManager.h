@@ -35,6 +35,7 @@ public:
 		{
 			// create a new component element with eID key
 			components[eID] = comp;
+			std::cout << "Component created\n";
 		}
 	}
 
