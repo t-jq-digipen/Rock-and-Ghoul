@@ -37,7 +37,8 @@ public:
         debugTool.Init(players.size()); //hitbox
     }
     void Update(float dt) override {
-        if (currentState == GS_LEVEL1)
+        // if (currentState == GS_LEVEL1)
+        if (GSM_CurrentState() == GameState::GS_LEVEL1)
         {
             if (Input::IsKeyHeld(GLFW_KEY_P)) {
                 for (auto& p : players) {

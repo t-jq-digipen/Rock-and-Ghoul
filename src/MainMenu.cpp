@@ -10,6 +10,8 @@
 
 #include "GameStates.h"
 
+#include "CoreEngine.h"
+
 RenderSystem renderSystem;
 Render renderer;
 GLuint titleTexture{ 0 };
@@ -84,7 +86,8 @@ void MainMenu::Update()
         renderSystem.renderer.DrawRect({ GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f, { 0, 1, 0.5 });
         if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            nextState = GS_LEVEL1;
+            // nextState = GS_LEVEL1;
+            GSM_SetNextState(GameState::GS_LEVEL1);
         }
     }
     
@@ -97,8 +100,8 @@ void MainMenu::Update()
         renderSystem.renderer.DrawRect({ GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f, { 1, 0, 0.5 });
         if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            
-            nextState = GS_QUIT;
+            GSM_SetNextState(GameState::GS_QUIT);
+            // nextState = GS_QUIT;
         }
     }
 
@@ -118,7 +121,8 @@ void MainMenu::Update()
     // press space (or click play button) to enter level 1
     if (Input::IsKeyPressed(GLFW_KEY_SPACE))
     {
-        nextState = GS_LEVEL1;
+        GSM_SetNextState(GameState::GS_LEVEL1);
+        // nextState = GS_LEVEL1;
     }
 }
 

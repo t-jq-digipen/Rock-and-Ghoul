@@ -2,7 +2,7 @@
 #pragma once
 #include "System.h"
 #include "Render.h"
-#include "GameStateManager.h"
+#include "CoreEngine.h"
 
 class RenderSystem : public ISystem {
     GLuint fretboardTexture{ 0 };
@@ -17,7 +17,8 @@ public:
     }
 
     void Update(float) override {
-        if (currentState == GS_LEVEL1)
+        // if (currentState == GS_LEVEL1)
+        if (GSM_CurrentState() == GameState::GS_LEVEL1)
         {
             glClearColor(0, 0, 0, 1);
             glClear(GL_COLOR_BUFFER_BIT);

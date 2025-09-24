@@ -2,13 +2,8 @@
 #include "MainMenu.h"
 #include "Level1.h"
 
+#include "CoreEngine.h"
 
-GSM::GSM(GameState gameState, Registry& reg) :
-	currentState(gameState), 
-	nextState(gameState), 
-	previousState(gameState), 
-	registry(reg)
-{}
 
 void GSM::Init(GameState gameState)
 {
@@ -81,10 +76,7 @@ const GameState& GSM::GetPreviousState() const	{ return currentState; }
 
 // SETTERS
 // ----------------------------------------
-void GSM::SetNextState(GameState state)		{ nextState = state; }
+void GSM::SetCurrentState(GameState state)  { currentState	= state; }
+void GSM::SetNextState(GameState state)		{ nextState		= state; }
 void GSM::SetPreviousState(GameState state) { previousState = state; }
 // ----------------------------------------
-
-// ECS
-// ----------------------------------------
-Registry& GSM::GetRegistry() { return registry; }

@@ -19,15 +19,7 @@ public:
     // Function pointer
     using FP = void(*)(void);
 
-    // Game states
-    newMainMenu newmainmenu;
-    newLevel1   newlevel1;
-
 private:
-    // Gamestate identifiers
-    GameState currentState;
-    GameState previousState;
-    GameState nextState;
 
     // Function Pointers for gamestates
     FP fpLoad       = nullptr; 
@@ -37,14 +29,15 @@ private:
     FP fpFree       = nullptr;
     FP fpUnload     = nullptr;
 
-    // Registry reference to CoreEngine's registry
-    Registry& registry;
-
 public:
-    // ctor/initialize GSM
-    GSM(GameState gameState, Registry& reg);
+    // Gamestate identifiers
+    GameState currentState;
+    GameState previousState;
+    GameState nextState;
 
 #pragma region GSM LOGIC
+    // ctor
+    GSM() = default;
 
     // Life cycle
     void Init(GameState gameState); // Initialize
@@ -74,6 +67,8 @@ public:
 #pragma region ACCESSORS
     const GameState& GetCurrentState() const;
 
+    void SetCurrentState(GameState state);
+
     const GameState& GetNextState() const;
 
     void SetNextState(GameState state);
@@ -84,8 +79,6 @@ public:
 
 #pragma endregion ACCESSORS
 
-    // ECS things
-    Registry& GetRegistry();
 };
 
 

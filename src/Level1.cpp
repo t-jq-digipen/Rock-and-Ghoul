@@ -2,13 +2,12 @@
 #include <GLFW/glfw3.h>
 
 #include "Level1.h"
-#include "GameStateManager.h"
 #include "Input.h"
 #include "Fretboard.h"
 #include "Render.h"
 #include "Spells.h"
 
-#include "GameStates.h"
+#include "CoreEngine.h"
 
 static Render renderer;
 static SpellManager spellManager;
@@ -35,12 +34,13 @@ void Level1::Update()
 	// to test game state changes
 	if (Input::IsKeyPressed(GLFW_KEY_M))
 	{
-
-		nextState = GS_MAIN_MENU;     // go to main menu state
+		GSM_SetNextState(GameState::GS_MAIN_MENU);
+		//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
 	}
 	else if (Input::IsKeyPressed(GLFW_KEY_R)) 
 	{
-		nextState = GS_RESTART;       // restart state
+		GSM_SetNextState(GameState::GS_RESTART);
+		//nextState = GameState::GS_RESTART;       // restart state
 		std::cout << "Level 1 Restarted!!!" << std::endl;
 	}
 	fretboard.PlayerInput();

@@ -26,6 +26,7 @@ int main() {
     audio->Play(bgm);
 
     engine.Run();
+
     engine.Shutdown();
 
     GLApp::cleanup();

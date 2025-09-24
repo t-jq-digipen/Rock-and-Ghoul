@@ -11,12 +11,6 @@ class CoreEngine {
     bool running;
     double lastFrame;
 
-    // ECS
-    Registry registry;
-
-    // GSM
-    GSM gsm;
-
     // Systems (e.g physics/render/transform yada yada)
 
 public:
@@ -27,4 +21,29 @@ public:
     void Run();
     void Shutdown();
     void Quit();
+
+    // GSM functions
+    //static GameState& NextGS();   // Get next gamestate from GSM
+    static void SetNextGS(GameState state);    // Set next gamestate
+    const GameState& CurrGS(); // Get current gamestate from GSM
+    const GameState& PrevGS(); // Get prev gamestate from GSM
+
+
 };
+
+
+// GSM functions
+
+// STATE GETTERS
+// ----------------------------------------
+const GameState& GSM_PreviousState();
+const GameState& GSM_CurrentState();
+const GameState& GSM_NextState();
+// ----------------------------------------
+
+// SETTERS
+// ----------------------------------------
+void GSM_SetPreviousState(GameState state);
+void GSM_SetCurrentState(GameState state);
+void GSM_SetNextState(GameState state);
+// ----------------------------------------

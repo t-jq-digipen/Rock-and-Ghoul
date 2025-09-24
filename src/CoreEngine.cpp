@@ -6,7 +6,11 @@
 #include "GameStateManager.h"
 
 
-CoreEngine::CoreEngine() : running(true), lastFrame(0.0), registry(), gsm(GameState::GS_MAIN_MENU, registry) {}
+CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
+
+Registry registry;
+
+GSM gsm;
 
 void CoreEngine::AddSystem(ISystem* sys) {
     systems.push_back(sys);
@@ -16,9 +20,6 @@ void CoreEngine::Initialize() {
     for (auto s : systems) s->Initialize();
     lastFrame = glfwGetTime();
     gsm.Init(GameState::GS_MAIN_MENU);
-
-
-    
 
 }
 
@@ -81,3 +82,22 @@ void CoreEngine::Shutdown() {
 void CoreEngine::Quit() {
     running = false;
 }
+
+// GAME STATE MANAGER
+
+// GSM functions
+
+// STATE GETTERS
+// ----------------------------------------
+const GameState& GSM_PreviousState()    { return gsm.GetPreviousState(); }
+const GameState& GSM_CurrentState()     { return gsm.GetCurrentState(); }
+const GameState& GSM_NextState()        { return gsm.GetNextState(); }
+// ----------------------------------------
+
+
+// SETTERS
+// ----------------------------------------
+void GSM_SetPreviousState(GameState state)  { gsm.SetPreviousState(state); }
+void GSM_SetCurrentState(GameState state)   { gsm.SetCurrentState(state); }
+void GSM_SetNextState(GameState state)      { gsm.SetNextState(state); }
+// ----------------------------------------

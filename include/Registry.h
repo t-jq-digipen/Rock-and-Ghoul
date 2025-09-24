@@ -62,6 +62,8 @@ private:
 	ComponentManager<TagComponent>			tag;
 
 public:
+	Registry() = default;
+
 	Entity Add_Entity();
 	void Remove_Entity(Entity eID);
 
