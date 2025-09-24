@@ -32,12 +32,8 @@ void CoreEngine::Run() {
         // Load a game state
         if (gsm.GetCurrentState() != GameState::GS_RESTART)
         {
-
-            std::cout << "EngRunning, state = " << (GSM_CurrentState()) << std::endl;
             gsm.Update();       // Set the function pointers to the current game state
-            std::cout << "Got past update\n";
             gsm.CallLoad();     // Call the current game state's Load() function
-            std::cout << "Got past load\n";
         }
         // Restart the current game state
         else
