@@ -1,6 +1,8 @@
 #include "Spells.h"
 #include "Remath.h"
+#include <iostream>
 SpellManager::SpellManager() {
+    std::cout << "SpellManager constructed: " << this << "\n";
     for (int i = 0; i < MAX_SLOTS; i++) {
         slots[i].isFilled = false;
         slots[i].iconTex = 0;
@@ -15,6 +17,7 @@ void SpellManager::LoadTextures() {
 }
 
 void SpellManager::Draw(Render& renderer) {
+    //std::cout << "Drawing with SpellManager: " << this << "\n";
     float slotSize = 100.0f;
     float space = 10.0f;
 
@@ -50,9 +53,11 @@ void SpellManager::ClearSpell(int slotIndex) {
 }
 
 void SpellManager::GiveSpell(GLuint tex) {
+    std::cout << "GiveSpell CALLED!\n";
     for (int i = 0; i < MAX_SLOTS; i++) {
         if (!slots[i].isFilled) {
             SaveSpell(i, tex);
+            std::cout << "GiveSpell: tex = " << tex << "\n";
             break;
         }
     }

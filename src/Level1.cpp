@@ -12,26 +12,34 @@
 static Render renderer;
 static SpellManager spellManager;
 static FretBoard fretboard(0, 0, 800, 200, spellManager);
-GLuint bgTexture = 0;
 static RenderSystem renderSystem(renderer);
 
+GLuint bgTexture = 0;
 Entity ECSplayer{};
 
 
 void Level1::Load()
 {
 	std::cout << "Level 1 Loaded!!!" << std::endl;
+
 	bgTexture = Render::LoadTexture("../Assets/background.jpg");
+	spellManager.LoadTextures();
+
+	// Then fretboard arrows
+	fretboard.LoadTextures();
+
+	// Then start game (after both are ready)
+	fretboard.StartGame();
 }
 
 void Level1::Init()
 {
 	std::cout << "Level 1 Initialized!!!" << std::endl;
 	renderer.Init();
+
+	spellManager.LoadTextures();
 	fretboard.LoadTextures();
 	fretboard.StartGame();
-	spellManager.LoadTextures();
-
 
 	Entity player = Create_Entity();
 	Add_Component(player, TransformComponent{ {200.f, 200.f}, {100.f, 100.f} });
@@ -42,6 +50,7 @@ void Level1::Init()
 	// give it a sprite
 	GLuint playerTex = renderer.LoadTexture("../Assets/Rock_FightingPose_2048px.png");
 	Add_Component(player, SpriteComponent{ playerTex, {400.f, 400.f} });
+
 }
 
 void Level1::Update()

@@ -53,7 +53,7 @@ void MainMenu::Update()
 {
     //std::cout << "Main Menu Updating!!!" << std::endl;
 
-    std::cout << Input::GetMouseX() << ", " << Input::GetMouseY() << std::endl;
+    //std::cout << Input::GetMouseX() << ", " << Input::GetMouseY() << std::endl;
 
     // Clear background, add background color
     glClearColor(0.5, 0, 0.7, 1);

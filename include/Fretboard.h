@@ -14,6 +14,13 @@ enum ArrowKeys {
 	DOWN_ARROW,
 	LEFT_ARROW
 };
+
+enum SpellState {
+	SELECTION,
+	CASTING
+};
+
+
 struct FretFrame {
 	float x, y;
 	float length, width;
@@ -33,15 +40,26 @@ struct Note {
 	int segmentIndex;    // which segment (0, 1, or 2)
 	bool isActive;
 };
+struct Spell {
+	const char* name;
+	int sequence[5];
+	int length;		// how many arrows (because theyre diff)
+};
 
 class FretBoard {
 private:
 	FretFrame fretframe;
 	String strings[2];
-	Note currNote;
-	int notesPlayed; // count of notes
 	int segments;
-	bool waitingForInput;   // waiting for player response
+
+	Note currNote;
+	int currNoteIndex;
+
+	SpellState currSpellState;
+	Spell currSpell;
+	static const Spell spellList[4];
+	//bool waitingForInput;   // waiting for player response
+
 
 	GLuint arrowUpTex;
 	GLuint arrowRightTex;
@@ -52,18 +70,24 @@ private:
 public:
 
 	FretBoard(float x, float y, float length, float width, SpellManager& sm);
-	void NewNote();
+
+	/* SPELL FUNCTIONS */
+	void SpellMenu();
+	void HandleSpellSelection();
+	void HandleSpellCasting();
+	void StartSpell(int spellIndex);
+	void NextNote();
 	Vec2 CalculateNotePosition(int stringIndex, int segmentIndex);
 	void PlayerInput();
-	
+	/* */
+
 	void StartGame();
-	bool Continue();
 
 	const Note& GetcurrNote() const { return currNote; }
-	const String* GetStrings() const { return strings;  }
+	const String* GetStrings() const { return strings; }
 	const FretFrame& GetFretboard() const { return fretframe; }
-	
-	bool WaitingForInput() const { return waitingForInput; }
+	const char* GetCurrentSpellName() const { return currSpell.name; }
+	int GetSpellLength() const { return currSpell.length; }
 
 	void Draw(Render& renderer);
 	void LoadTextures();

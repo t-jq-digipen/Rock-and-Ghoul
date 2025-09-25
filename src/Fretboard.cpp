@@ -6,13 +6,21 @@
 #include <GLFW/glfw3.h>
 #include "glapp.h"
 #include "MovementController.h"
-
+#include "Spells.h"
 glm::vec2 arrowPositions[4] = {
     {300.0f, 900.0f}, // LEFT
     {400.0f, 900.0f}, // DOWN
     {500.0f, 900.0f}, // UP
     {600.0f, 900.0f}  // RIGHT
 };
+
+const Spell FretBoard::spellList[4] = {
+    {"BARRIER",              {4, 1, 2}, 3},  // < ^ >
+    {"DIRECTIONAL SHOCKWAVE", {2, 3, 2, 2}, 4},  // > v > > 
+    {"AOE BLAST",            {4, 3, 2, 1, 3}, 5},  // < v > ^ v
+    {"HEAL",                 {3, 4, 1}, 3}   // v < ^
+};
+
 FretBoard::FretBoard(float x, float y, float length, float width, SpellManager& sm) : spellManager(sm) {
     fretframe.x = x;
     fretframe.y = y;
@@ -22,10 +30,9 @@ FretBoard::FretBoard(float x, float y, float length, float width, SpellManager& 
     segments = 3;
     // segment spacing
     float spacing = width / 3.0f;
-
-    notesPlayed = 0;
-    waitingForInput = false;
-
+    currSpellState = SELECTION;
+    currNoteIndex = 0;
+    currNote.isActive = false;
 
     // top string
     strings[0].start.x = x;                    // left edge of fretboard
@@ -49,12 +56,12 @@ Vec2 FretBoard::CalculateNotePosition(int stringIndex, int segmentIndex) {
 
     String& spawnString = strings[stringIndex];
 
-// i used claude for this... basically to center the circles
+    // i used claude for this... basically to center the circles
     float segmentProgress = (float)(segmentIndex * 2 + 1) / (float)(segments * 2);
 
     Vec2 stringDirection = {
-        spawnString.end.x - spawnString.start.x,  
-        spawnString.end.y - spawnString.start.y  
+        spawnString.end.x - spawnString.start.x,
+        spawnString.end.y - spawnString.start.y
     };
 
     Vec2 notePos = {
@@ -66,102 +73,168 @@ Vec2 FretBoard::CalculateNotePosition(int stringIndex, int segmentIndex) {
 }
 
 // spawning note
-void FretBoard::NewNote() {
-    // direction of note (1=Up, 2=Right, 3=Down, 4=Left)
-    int spawnDir = (rand() % 4) + 1;
-
-    currNote.direction = spawnDir;
-    currNote.circle.x = arrowPositions[spawnDir - 1].x;
-    currNote.circle.y = arrowPositions[spawnDir - 1].y;
-    currNote.circle.rad = 20.0f;
-    currNote.isActive = true;
-
-    std::cout << "Spawned note dir = " << currNote.direction
-        << " at (" << currNote.circle.x << ", " << currNote.circle.y << ")\n";
+void FretBoard::SpellMenu() {
+    std::cout << "~~~~ CHOOSE YOUR SPELL ~~~~\n";
+    std::cout << "Input spell number: \n";
+    for (int i{ 0 }; i < 4; i++) {
+        std::cout << (i + 1) << ". " << spellList[i].name << "\n";
+    }
+    currSpellState = SELECTION;
 }
 
-void FretBoard::PlayerInput() {
-    if (!currNote.isActive) return;   // no note to check
+void FretBoard::HandleSpellSelection() {
+    if (Input::IsKeyPressed(GLFW_KEY_1)) {
+        StartSpell(0);
+    }
+    else if (Input::IsKeyPressed(GLFW_KEY_2)) {
+        StartSpell(1);
+    }
+    else if (Input::IsKeyPressed(GLFW_KEY_3)) {
+        StartSpell(2);
+    }
+    else if (Input::IsKeyPressed(GLFW_KEY_4)) {
+        StartSpell(3);
+    }
+}
 
-    bool keyPressed = false;
-    bool correct = false;
+void FretBoard::StartSpell(int spellIndex) {
+    currSpell = spellList[spellIndex];
+    currNoteIndex = 0;
+    currSpellState = CASTING;
 
-    // Check the current expected arrow
-    if (currNote.direction == 1) {            // UP
-        if (Input::IsKeyPressed(GLFW_KEY_UP)) { 
-            correct = true; keyPressed = true; 
+    std::cout << "\nSPELL NAME: " << currSpell.name << "\n";
+    NextNote();
+}
+
+void FretBoard::NextNote() {
+    if (currNoteIndex >= currSpell.length) {
+        std::cout << "SPELL COMPLETE! " << currSpell.name << " WAS CAST!!! YIPPEEEE \n\n";
+        if (std::strcmp(currSpell.name, "BARRIER") == 0) {
+            spellManager.GiveSpell(spellManager.barrierTex);
         }
+        else if (std::strcmp(currSpell.name, "DIRECTIONAL SHOCKWAVE") == 0) {
+            spellManager.GiveSpell(spellManager.shockwaveTex);
+        }
+        else if (std::strcmp(currSpell.name, "AOE BLAST") == 0) {
+            spellManager.GiveSpell(spellManager.aoeTex);
+        }
+        else if (std::strcmp(currSpell.name, "HEAL") == 0) {
+            spellManager.GiveSpell(spellManager.healTex);
+        }
+        SpellMenu();
+        return;
+    }
+
+    int requiredDirection = currSpell.sequence[currNoteIndex];
+    currNote.direction = requiredDirection;
+
+    int posIndex;
+    if (requiredDirection == 4) {
+        posIndex = 0; // LEFT
+    }
+    else if (requiredDirection == 3) {
+        posIndex = 1; // DOWN 
+    }
+    else if (requiredDirection == 1) {
+        posIndex = 2; // UP
+    }
+    else if (requiredDirection == 2) {
+        posIndex = 3; // RIGHT
+    }
+
+    currNote.circle.x = arrowPositions[posIndex].x;
+    currNote.circle.y = arrowPositions[posIndex].y;
+    currNote.circle.rad = 20.0f;
+    currNote.isActive = true;
+    std::cout << "\nARROW KEY: ";
+
+    switch (requiredDirection) {
+    case 1: std::cout << " ^ "; break;
+    case 2: std::cout << " > "; break;
+    case 3: std::cout << " v "; break;
+    case 4: std::cout << " < "; break;
+    }
+    std::cout << "\n";
+}
+
+void FretBoard::HandleSpellCasting() {
+    if (!currNote.isActive) {
+        return;
+    }
+    bool keyPressed{ false };
+    bool correct{ false };
+
+    if (currNote.direction == 1) {
+        if (Input::IsKeyPressed(GLFW_KEY_UP)) {
+            keyPressed = true;
+            correct = true;
+        }
+
         else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_DOWN) || Input::IsKeyPressed(GLFW_KEY_LEFT)) {
             keyPressed = true;
         }
     }
-    else if (currNote.direction == 2) {       // RIGHT
-        if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) { 
-            correct = true; keyPressed = true; 
-        }
-        else if (Input::IsKeyPressed(GLFW_KEY_UP) || Input::IsKeyPressed(GLFW_KEY_DOWN) ||Input::IsKeyPressed(GLFW_KEY_LEFT)) {
+
+    else if (currNote.direction == 2) {
+        if (Input::IsKeyPressed(GLFW_KEY_RIGHT)) {
             keyPressed = true;
+            correct = true;
         }
-    }
-    else if (currNote.direction == 3) {       // DOWN
-        if (Input::IsKeyPressed(GLFW_KEY_DOWN)) { 
-            correct = true; keyPressed = true; 
-        }
-        else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_UP) || Input::IsKeyPressed(GLFW_KEY_LEFT)) {
-            keyPressed = true;
-        }
-    }
-    else if (currNote.direction == 4) {       // LEFT
-        if (Input::IsKeyPressed(GLFW_KEY_LEFT)) { 
-            correct = true; keyPressed = true; 
-        }
-        else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_DOWN) ||Input::IsKeyPressed(GLFW_KEY_UP)) {
+        else if (Input::IsKeyPressed(GLFW_KEY_UP) || Input::IsKeyPressed(GLFW_KEY_DOWN) || Input::IsKeyPressed(GLFW_KEY_LEFT)) {
             keyPressed = true;
         }
     }
 
-    if (!keyPressed) return;   // wait until a key is pressed
+    else if (currNote.direction == 3) {
+        if (Input::IsKeyPressed(GLFW_KEY_DOWN)) {
+            keyPressed = true;
+            correct = true;
+        }
+        else if (Input::IsKeyPressed(GLFW_KEY_UP) || Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_LEFT)) {
+            keyPressed = true;
+        }
+    }
+
+    else if (currNote.direction == 4) {
+        if (Input::IsKeyPressed(GLFW_KEY_LEFT)) {
+            keyPressed = true;
+            correct = true;
+        }
+        else if (Input::IsKeyPressed(GLFW_KEY_RIGHT) || Input::IsKeyPressed(GLFW_KEY_DOWN) || Input::IsKeyPressed(GLFW_KEY_UP)) {
+            keyPressed = true;
+        }
+    }
+
+    if (!keyPressed) {
+        return;
+    }
 
     if (correct) {
-        std::cout << "Correct key pressed! YAY!\n";
+        std::cout << "NICE! ";
         currNote.isActive = false;
-        notesPlayed++;
+        currNoteIndex++;
 
-        if (Continue()) {
-            NewNote();              // spawn next
-            std::cout << "Next note dir = " << currNote.direction << "\n"; // debug
-        }
-        else {
-            std::cout << "Sequence finished! (5 notes correct)\n";
-            spellManager.GiveSpell(spellManager.barrierTex);
-        }
+        NextNote();
     }
     else {
-        // wrong key ends the game immediately
-        std::cout << "Wrong key pressed! GAME OVER!\n";
+        std::cout << "WRONG :( ";
+        currNoteIndex = 0;
         currNote.isActive = false;
-        notesPlayed = 5;   // force end
+
+        NextNote();
     }
 }
-
-
-
-bool FretBoard::Continue() {
-    // sequence of 5 notes played
-    return notesPlayed < 5;
-
+void FretBoard::PlayerInput() {
+    if (currSpellState == SELECTION) {
+        HandleSpellSelection();
+    }
+    else if (currSpellState == CASTING) {
+        HandleSpellCasting();
+    }
 }
-
 void FretBoard::StartGame() {
-    notesPlayed = 0;
-    waitingForInput = false;
     currNote.isActive = false;
-
-    std::cout << "Starting Game\n";
-    printf("1 = Up, 2 = Right, 3 = Down, 4 = Left\n");
-
-    NewNote();
-    waitingForInput = true;
+    SpellMenu();
 }
 
 void FretBoard::Draw(Render& renderer) {
