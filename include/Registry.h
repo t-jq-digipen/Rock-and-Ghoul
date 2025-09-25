@@ -102,3 +102,11 @@ inline bool HasComponent<BossGhoulComponent>(Entity e) { return bossghoul.hasCom
 template<>
 inline BossGhoulComponent& GetComponent<BossGhoulComponent>(Entity e) { return bossghoul.getComponent(e); }
 
+// Health
+template<>
+inline bool HasComponent<HealthComponent>(Entity e) { return health.hasComponent(e); }
+
+template<>
+inline HealthComponent& GetComponent<HealthComponent>(Entity e) { return health.getComponent(e); }
+
+

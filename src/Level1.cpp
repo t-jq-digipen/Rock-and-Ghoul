@@ -44,7 +44,7 @@ void Level1::Init()
 
 	// 5. Create entities
 	Entity rock = Create_Player(200.f, 500.f);
-	Entity ghoul = Create_Ghoul(500.f, 500.f);
+	Entity ghoul = Create_Ghoul(800.f, 500.f);
 
 
 }
