@@ -43,7 +43,8 @@ enum ComponentTypeID
 	CT_GhoulHealth,
 	// Tag
 	CT_Tag,			// 8 | Tag enumeration (should i use std::string? idk, think again another time)
-	CT_BossGhoul
+
+	CT_BossGhoul	// 9 | BossGhoul component, should be replaced with AI component
 };
 
 

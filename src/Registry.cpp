@@ -104,16 +104,19 @@ void Add_Component(Entity eID, PhysicsComponent const& comp)
 
 void Add_Component(Entity eID, AudioComponent const& comp)
 {
+	std::cout << "REGISTRY | ADDING COMPONENT | AUDIO     | eID: " << eID << "\n";
 	audio.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, LifetimeComponent const& comp)
 {
+	std::cout << "REGISTRY | ADDING COMPONENT | LIFETIME  | eID: " << eID << "\n";
 	lifetime.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, HealthComponent const& comp)
 {
+	std::cout << "REGISTRY | ADDING COMPONENT | HEALTH    | eID: " << eID << "\n";
 	health.addComponent(eID, comp);
 }
 
@@ -142,7 +145,7 @@ void Add_Component(Entity eID, BossGhoulComponent const& comp)
 
 // REMOVE
 
-void Remove_Component(Entity eID, ComponentTypeID cID)
+void Remove_Component(Entity eID, ComponentTypeID const& cID)
 {
 	switch (cID)
 	{
@@ -180,18 +183,21 @@ void Remove_Component(Entity eID, ComponentTypeID cID)
 
 	case (CT_Audio):
 	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | AUDIO     | eID: " << eID << "\n";
 		audio.removeComponent(eID);
 	}
 	break;	// CT_Audio
 
 	case (CT_Lifetime):
 	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | LIFETIME  | eID: " << eID << "\n";
 		lifetime.removeComponent(eID);
 	}
 	break;	// CT_Lifetime
 
 	case (CT_Health):
 	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | HEALTH    | eID: " << eID << "\n";
 		health.removeComponent(eID);
 	}
 	break;	// CT_Health
@@ -220,4 +226,119 @@ void Remove_Components(Entity eID, std::initializer_list<ComponentTypeID> cIDlis
 		Remove_Component(eID, cID);
 	}
 }
+
+bool Has_Component(Entity eID, ComponentTypeID const& cID)
+{
+
+	switch (cID)
+	{
+	case (CT_None):
+	{
+		return false;
+		break;
+	}
+	case (CT_Transform):
+	{
+		std::cout << "REGISTRY | HAS COMPONENT | TRANSFORM | eID: " << eID << "\n";
+		return transform.hasComponent(eID);
+	}
+	break;	// CT_Transform
+
+	case (CT_Sprite):
+	{
+		std::cout << "REGISTRY | HAS COMPONENT | SPRITE    | eID: " << eID << "\n";
+		return sprite.hasComponent(eID);
+	}
+	break;	// CT_Sprite
+
+	case (CT_Animator):
+	{
+		std::cout << "REGISTRY | HAS COMPONENT | ANIM      | eID: " << eID << "\n";
+		return animator.hasComponent(eID);
+	}
+	break;	// CT_Animator
+
+	case (CT_Physics):
+	{
+		std::cout << "REGISTRY | HAS COMPONENT | PHYSICS   | eID: " << eID << "\n";
+		return physics.hasComponent(eID);
+	}
+	break;	// CT_Physics
+
+	case (CT_Audio):
+	{
+		std::cout << "REGISTRY | HAS COMPONENT | AUDIO     | eID: " << eID << "\n";
+		return audio.hasComponent(eID);
+	}
+	break;	// CT_Audio
+
+	case (CT_Lifetime):
+	{
+		std::cout << "REGISTRY | HAS COMPONENT | LIFETIME  | eID: " << eID << "\n";
+		return lifetime.hasComponent(eID);
+	}
+	break;	// CT_Lifetime
+
+	case (CT_Health):
+	{
+		std::cout << "REGISTRY | HAS COMPONENT | HEALTH    | eID: " << eID << "\n";
+		return health.hasComponent(eID);
+	}
+	break;	// CT_Health
+
+	case (CT_Tag):
+	{
+		std::cout << "REGISTRY | HAS COMPONENT | TAG       | eID: " << eID << "\n";
+		return tag.hasComponent(eID);
+	}
+	break;	// CT_Tag
+
+	case (CT_BossGhoul):
+	{
+		std::cout << "REGISTRY | HAS COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
+		return bossghoul.hasComponent(eID);
+	}
+	break;
+	default:
+		return false;
+	}
+}
+
+
+// GET
+
+// Gets the component of the entity from the specified type
+TransformComponent& Get_TransformComponent(Entity eID)	{ return transform.getComponent(eID); }
+
+SpriteComponent&	Get_SpriteComponent(Entity eID)		{ return sprite.getComponent(eID); }
+
+AnimatorComponent&	Get_AnimatorComponent(Entity eID)	{ return animator.getComponent(eID); }
+
+PhysicsComponent&	Get_PhysicsComponent(Entity eID)	{ return physics.getComponent(eID); }
+
+AudioComponent&		Get_AudioComponent(Entity eID)		{ return audio.getComponent(eID); }
+
+LifetimeComponent&	Get_LifetimeComponent(Entity eID)	{ return lifetime.getComponent(eID); }
+
+HealthComponent&	Get_HealthComponent(Entity eID)		{ return health.getComponent(eID); }
+
+TagComponent&		Get_TagComponent(Entity eID)		{ return tag.getComponent(eID); }
+
+InputComponent&		Get_InputComponent(Entity eID)		{ return input.getComponent(eID); }
+
+BossGhoulComponent& Get_BossGhoulComponent(Entity eID)	{ return bossghoul.getComponent(eID); }
+
+
+// Manager accessors
+ComponentManager<TransformComponent>&	CM_Transform()	{ return transform; }
+ComponentManager<SpriteComponent>&		CM_Sprite()		{ return sprite; }
+ComponentManager<AnimatorComponent>&	CM_Animator()	{ return animator; }
+ComponentManager<PhysicsComponent>&		CM_Physics()	{ return physics; }
+ComponentManager<AudioComponent	>&		CM_Audio()		{ return audio; }
+ComponentManager<LifetimeComponent>&	CM_Lifetime()	{ return lifetime; }
+ComponentManager<HealthComponent>&		CM_Health()		{ return health; }
+ComponentManager<TagComponent>&			CM_Tag()		{ return tag; }
+ComponentManager<InputComponent>&		CM_Input()		{ return input; }
+ComponentManager<BossGhoulComponent>&	CM_BossGhoul()	{ return bossghoul; }
+
 #pragma endregion COMPONENT

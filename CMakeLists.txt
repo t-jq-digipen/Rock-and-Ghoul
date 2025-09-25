@@ -158,6 +158,7 @@ source_group("BaseEngine\\Headers" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PlayerSystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/BossGhoul.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp

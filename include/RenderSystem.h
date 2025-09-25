@@ -18,21 +18,21 @@ public:
 
         for (Entity e = 0; e < em.maxEntities(); ++e) {
             if (!em.isAlive(e)) continue;
-            if (!HasComponent<TransformComponent>(e) || !HasComponent<SpriteComponent>(e))
+            if (!Has_Component(e, CT_Transform) || !Has_Component(e, CT_Sprite))
                 continue;
 
-            auto& t = GetComponent<TransformComponent>(e);
-            auto& s = GetComponent<SpriteComponent>(e);
+            auto& t = Get_TransformComponent(e);
+            auto& s = Get_SpriteComponent(e);
 
             renderer.DrawTexturedQuad(t.pos, s.size, s.textureID);
         }
         for (Entity e = 0; e < em.maxEntities(); ++e) {
             if (!em.isAlive(e)) continue;
-            if (!HasComponent<BossGhoulComponent>(e) || !HasComponent<TransformComponent>(e))
+            if (!Has_Component(e, CT_BossGhoul) || !Has_Component(e, CT_Transform))
                 continue;
 
-            auto& ghoul = GetComponent<BossGhoulComponent>(e);
-            auto& transform = GetComponent<TransformComponent>(e);
+            auto& ghoul     = Get_BossGhoulComponent(e);
+            auto& transform = Get_TransformComponent(e);
 
             DrawBossGhoulHP(renderer, ghoul, transform);
         }

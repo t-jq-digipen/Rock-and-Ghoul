@@ -53,4 +53,9 @@ public:
 		throw std::runtime_error("Entity " + std::to_string(eID) + " does NOT have component\n");
 	}
 
+	// Reference to container
+	std::unordered_map<Entity, Component>& getComponents() { return components; }
+	const std::unordered_map<Entity, Component>& getComponents() const { return components; }
+
 };
+

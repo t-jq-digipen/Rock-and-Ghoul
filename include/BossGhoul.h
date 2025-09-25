@@ -29,10 +29,10 @@ class BossGhoulSystem : public ISystem {
 public:
     void Update(float dt) override {
         for (auto e : entities) {
-            if (!HasComponent<BossGhoulComponent>(e) || !HasComponent<TransformComponent>(e)) continue;
+            if (!Has_Component(e, CT_BossGhoul) || !Has_Component(e, CT_Transform)) continue;
 
-            auto& ghoul = GetComponent<BossGhoulComponent>(e);
-            auto& transform = GetComponent<TransformComponent>(e);
+            auto& ghoul     = Get_BossGhoulComponent(e);
+            auto& transform = Get_TransformComponent(e);
             
             if (ghoul.state == GHOUL_DEAD) continue;
 
@@ -85,10 +85,10 @@ public:
     }
     void Draw(Render& renderer) {
         for (auto e : entities) {
-            if (!HasComponent<BossGhoulComponent>(e) || !HasComponent<TransformComponent>(e)) continue;
-
-            auto& ghoul = GetComponent<BossGhoulComponent>(e);
-            auto& transform = GetComponent<TransformComponent>(e);
+            if (!Has_Component(e, CT_BossGhoul) || !Has_Component(e, CT_Transform)) continue;
+            
+            auto& ghoul     = Get_BossGhoulComponent(e);
+            auto& transform = Get_TransformComponent(e);
 
             DrawBossGhoulHP(renderer, ghoul, transform);
         }
