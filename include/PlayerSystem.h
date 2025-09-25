@@ -1,127 +1,51 @@
-// PlayerSystem.h
 #pragma once
 #include "System.h"
-#include "Player.h"
-#include "Collision.h"
+#include "Registry.h"      // HasComponent / GetComponent
+#include "Component.h"    // All component structs
 #include "Input.h"
-#include "physics.h"
-#include <vector>
-#include <iostream>
 #include "GameStateManager.h"
-#include "DebugTool.h"
-
-
+#include <iostream>
 
 class PlayerSystem : public ISystem {
-private:
-    std::vector<Player> players;
-    //std::vector<AABB> enemyStomp; // potentially can use jumping as a means to stun?
-    Render renderer;       // PlayerSystem owns renderer
-    DebugTool debugTool;   // debug tool not global anymore
-
-
 public:
-    void Initialize() override {
-        renderer.Init();
-        players.emplace_back(500.0f, 400.0f, ControlScheme::WASD);
-        players.emplace_back(1000.0f, 400.0f, ControlScheme::IJKL);
-        players[0].SetTextureFromFile(renderer, "../Assets/Rock_FightingPose_2048px.png", { 400.0f, 400.0f });
-        players[1].SetTextureFromFile(renderer, "../Assets/Ghoul_2048px.png", { 400.0f, 400.0f });
-
-        // initialise physics state: for 2.5D, player always moves freely
-        players[0].SetVelocityY(0.0f);
-        players[0].SetInJumpState(false);
-        players[1].SetVelocityY(0.0f);
-        players[1].SetInJumpState(false);
-
-        debugTool.Init(players.size()); //hitbox
-    }
     void Update(float dt) override {
-        // if (currentState == GS_LEVEL1)
-        if (GSM_CurrentState() == GameState::GS_LEVEL1)
-        {
-            if (Input::IsKeyHeld(GLFW_KEY_P)) {
-                for (auto& p : players) {
-                    p.ScaleBy(1.01f); // scale smoothly while held
-                }
-            }
-            if (Input::IsKeyHeld(GLFW_KEY_O)) {
-                for (auto& p : players) {
-                    p.ScaleBy(0.99f); // shrink smoothly while held
-                }
-            }
+        if (GSM_CurrentState() != GameState::GS_LEVEL1)
+            return;
 
-            // Step 1: compute intended input (but don't apply Y movement for player 0 if jumping)
-            for (auto& p : players) {
-                if (&p == &players[0] && p.IsInJumpState()) {
-                    // For jumping player, only compute X input
-                    p.GetController().ComputeInput(dt);
-                    p.SetNextX(p.GetX() + p.GetController().GetDX());
-                    p.SetNextY(p.GetY()); // Initialize nextY to current Y for physics
-                    // Y position will be handled by physics
-                }
-                else {
-                    p.ComputeInput(dt);
-                }
-            }
-            // PHYSICS: jumping input & physics
-            HandlePlayerPhysics(dt);
+        auto& em = EntityManager::get();
 
-            // Step 2: check collisions before applying
-            for (size_t i = 0; i < players.size(); ++i) {
-                for (size_t j = i + 1; j < players.size(); ++j) {
-                    if (CollisionIntersection_RectRect_Static(
-                        players[i].GetFutureAABB(),
-                        players[j].GetFutureAABB())) {
-                        players[i].CancelMove();
-                        players[j].CancelMove();
-                    }
-                }
-            }
-            // Step 3: apply safe movement
-            for (auto& p : players) p.ApplyMove();
-            // Step 4: draw
-            for (auto& p : players) p.Draw(renderer);
+        for (Entity e = 0; e < em.maxEntities(); ++e) {
+            if (!em.isAlive(e)) continue;
+            if (!HasComponent<TagComponent>(e) || !HasComponent<InputComponent>(e)) continue;
 
-            debugTool.Update(players, renderer);
+            auto& tag = GetComponent<TagComponent>(e);
+            if (tag.tag != T_PLAYER) continue;
+
+            auto& transform = GetComponent<TransformComponent>(e);
+            auto& physics = GetComponent<PhysicsComponent>(e);
+            auto& input = GetComponent<InputComponent>(e);
+
+            float speed = 200.0f;
+
+            switch (input.scheme) {
+            case CS_WASD:
+                if (Input::IsKeyHeld(GLFW_KEY_W)) transform.pos.y += speed * dt;
+                if (Input::IsKeyHeld(GLFW_KEY_S)) transform.pos.y -= speed * dt;
+                if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
+                if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
+                break;
+
+            case CS_IJKL:
+                if (Input::IsKeyHeld(GLFW_KEY_I)) transform.pos.y += speed * dt;
+                if (Input::IsKeyHeld(GLFW_KEY_K)) transform.pos.y -= speed * dt;
+                if (Input::IsKeyHeld(GLFW_KEY_J)) transform.pos.x -= speed * dt;
+                if (Input::IsKeyHeld(GLFW_KEY_L)) transform.pos.x += speed * dt;
+                break;
+            }
         }
     }
-    void Shutdown() override {}
 
-private:
-    // PHYSICS: Use physics.cpp functions for jumping logic
-    void HandlePlayerPhysics(float dt) {
-        Player& platformer = players[0];
-
-        // GET current state
-        bool jumpPressed = Input::IsKeyPressed(GLFW_KEY_SPACE);
-        float velocityY = platformer.GetVelocityY();
-        bool jumpState = platformer.IsInJumpState();
-        float jumpStartY = platformer.GetJumpStartY();
-        float currentY = platformer.GetY();
-        float nextY = platformer.GetNextY();
-
-        // store new states for TryJump output
-        bool newJumpState = jumpState;
-        float newJumpStartY = jumpStartY;
-
-        // trying to jump
-        if (TryJump(jumpPressed, jumpState, velocityY, newJumpState, currentY, newJumpStartY)) {
-            platformer.SetVelocityY(velocityY);
-            platformer.SetInJumpState(newJumpState);
-            platformer.SetJumpStartY(newJumpStartY);
-
-            // Update local variables after changes from TryJump
-            jumpState = newJumpState;
-            jumpStartY = newJumpStartY;
-        }
-
-        // apply only if in jump state
-        ApplyJumpPhysics(jumpState, velocityY, nextY, currentY, jumpStartY, jumpState, dt);
-
-        // updating for jump
-        platformer.SetVelocityY(velocityY);
-        platformer.SetInJumpState(jumpState);
-        platformer.SetNextY(nextY);
+    void Shutdown() override {
+        std::cout << "PlayerSystem Shutdown!\n";
     }
 };

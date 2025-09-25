@@ -12,8 +12,9 @@
 
 #include "CoreEngine.h"
 
-RenderSystem renderSystem;
 Render renderer;
+RenderSystem renderSystem(renderer);
+
 GLuint titleTexture{ 0 };
 GLuint rockTexture{ 0 };
 GLuint ghoulTexture{ 0 };
@@ -121,6 +122,7 @@ void MainMenu::Update()
     // press space (or click play button) to enter level 1
     if (Input::IsKeyPressed(GLFW_KEY_SPACE))
     {
+        std::cout << "PLAY CLICKED — switching to Level1\n";
         GSM_SetNextState(GameState::GS_LEVEL1);
         // nextState = GS_LEVEL1;
     }

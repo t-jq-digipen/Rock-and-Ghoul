@@ -1,53 +1,29 @@
 // RenderSystem.h
 #pragma once
 #include "System.h"
-#include "Render.h"
-#include "CoreEngine.h"
+#include "Registry.h"
+#include "Component.h"
+#include "glapp.h"
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 class RenderSystem : public ISystem {
-    GLuint fretboardTexture{ 0 };
-    GLuint backgroundTexture{ 0 };
 public:
-    Render renderer;
-public:
-    void Initialize() override {
-        renderer.Init();
-        backgroundTexture = Render::LoadTexture("../Assets/background.jpg");
-        fretboardTexture = Render::LoadTexture("../Assets/fretboard.jpg");
-    }
+    Render& renderer;
+    RenderSystem(Render& r) : renderer(r) {}
+    void Update(float dt) override {
+        auto& em = EntityManager::get();
 
-    void Update(float) override {
-        // if (currentState == GS_LEVEL1)
-        if (GSM_CurrentState() == GameState::GS_LEVEL1)
-        {
-            glClearColor(0, 0, 0, 1);
-            glClear(GL_COLOR_BUFFER_BIT);
-            if (backgroundTexture) {
-                renderer.DrawTexturedQuad(
-                    { GLApp::width * 0.5f, GLApp::height * 0.5f },
-                    { (float)GLApp::width, (float)GLApp::height },
-                    backgroundTexture
-                );
-            }
+        for (Entity e = 0; e < em.maxEntities(); ++e) {
+            if (!em.isAlive(e)) continue;
+            if (!HasComponent<TransformComponent>(e) || !HasComponent<SpriteComponent>(e))
+                continue;
 
-            if (fretboardTexture) {
-                renderer.DrawTexturedQuad({ 1200.0f, 200.0f }, { 1000.0f, 200.0f }, fretboardTexture);
-            }
-        }
+            auto& t = GetComponent<TransformComponent>(e);
+            auto& s = GetComponent<SpriteComponent>(e);
 
-    }
-
-    void Shutdown() override {
-        if (backgroundTexture) { 
-            glDeleteTextures(1, &backgroundTexture); 
-            backgroundTexture = 0; 
-        }
-
-        if (fretboardTexture) {
-            glDeleteTextures(1, &fretboardTexture);
-            fretboardTexture = 0;
+            renderer.DrawTexturedQuad(t.pos, s.size, s.textureID);
         }
     }
-
-    Render& GetRenderer() { return renderer; }
 };

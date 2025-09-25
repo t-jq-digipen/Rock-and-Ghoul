@@ -6,13 +6,14 @@
 #include "Fretboard.h"
 #include "Render.h"
 #include "Spells.h"
-
+#include "glapp.h"
 #include "CoreEngine.h"
-
+#include "RenderSystem.h"
 static Render renderer;
 static SpellManager spellManager;
 static FretBoard fretboard(0, 0, 800, 200, spellManager);
-
+GLuint bgTexture = 0;
+static RenderSystem renderSystem(renderer);
 
 Entity ECSplayer{};
 
@@ -20,6 +21,7 @@ Entity ECSplayer{};
 void Level1::Load()
 {
 	std::cout << "Level 1 Loaded!!!" << std::endl;
+	bgTexture = Render::LoadTexture("../Assets/background.jpg");
 }
 
 void Level1::Init()
@@ -30,10 +32,16 @@ void Level1::Init()
 	fretboard.StartGame();
 	spellManager.LoadTextures();
 
-	ECSplayer = Create_Entity();
-	Add_Component(ECSplayer, TransformComponent{ {0.f, 0.f}, {50.f, 50.f} });
-	Add_Component(ECSplayer, PhysicsComponent{});
-	Add_Component(ECSplayer, TagComponent{ T_PLAYER });
+
+	Entity player = Create_Entity();
+	Add_Component(player, TransformComponent{ {200.f, 200.f}, {100.f, 100.f} });
+	Add_Component(player, PhysicsComponent{});
+	Add_Component(player, InputComponent{ CS_WASD });
+	Add_Component(player, TagComponent{ T_PLAYER });
+
+	// give it a sprite
+	GLuint playerTex = renderer.LoadTexture("../Assets/Rock_FightingPose_2048px.png");
+	Add_Component(player, SpriteComponent{ playerTex, {400.f, 400.f} });
 }
 
 void Level1::Update()
@@ -57,10 +65,22 @@ void Level1::Update()
 }
 
 void Level1::Draw()
-{
+{	
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	if (bgTexture) {
+		renderer.DrawTexturedQuad(
+			{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
+			{ (float)GLApp::width, (float)GLApp::height },   // full screen size
+			bgTexture
+		);
+	}
+	renderSystem.Update(0.0f);
 	//std::cout << "Level 1 Drawing!!!" << std::endl;
 	fretboard.Draw(renderer);
 	spellManager.Draw(renderer);
+
+	
 }
 
 void Level1::Free()

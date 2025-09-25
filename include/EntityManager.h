@@ -37,5 +37,7 @@ public:
 	void destroyEntity(Entity e);
 
 	bool isAlive(Entity e) const;
+	size_t maxEntities() const { return alive.size(); }
+
 
 };

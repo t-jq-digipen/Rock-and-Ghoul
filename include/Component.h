@@ -53,9 +53,8 @@ using ComponentMask = std::bitset<32>;
 // COMP_1
 struct TransformComponent {
 	// should these be vec3? i forget LOL
-	Vec2 pos;	// Position
-	//Vec2 rot;	// Rotation
-	Vec2 scale;	// Scale
+	Vec2 pos{ 0.0f, 0.0f };
+	Vec2 scale{ 1.0f, 1.0f };
 };
 // BASE END
 
@@ -63,8 +62,9 @@ struct TransformComponent {
 // COMP_2
 struct SpriteComponent {
 	// Texture* tex;	// texture file (to check w reg/kerv)
-	GLuint texture;
-	int frame;			// frame to display
+	unsigned int textureID = 0;   // OpenGL texture handle
+	Vec2 size{ 50.0f, 50.0f }; // default size
+	Vec3 color{ 1.0f, 1.0f, 1.0f}; // white (no tint)
 };
 
 // COMP_3
@@ -103,4 +103,14 @@ enum C_TagID {
 
 struct TagComponent {
 	C_TagID tag;
+};
+
+enum ControlScheme {
+	CS_WASD,
+	CS_IJKL,
+	CS_ARROWS
+};
+
+struct InputComponent {
+	ControlScheme scheme;
 };

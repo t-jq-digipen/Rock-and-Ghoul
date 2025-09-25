@@ -25,52 +25,45 @@ void CoreEngine::Initialize() {
 
 void CoreEngine::Run() {
     std::cout << "EngRun\n";
+
     while (running && !glfwWindowShouldClose(GLApp::ptr_window) && GSM_CurrentState() != GameState::GS_QUIT) {
-        // Game State Manager
+        // --- 1. Bind function pointers for the new current state
+        gsm.Update();
 
-        // Load a game state
-        if (gsm.GetCurrentState() != GameState::GS_RESTART)
-        {
-            gsm.Update();       // Set the function pointers to the current game state
-            gsm.CallLoad();     // Call the current game state's Load() function
-        }
-        // Restart the current game state
-        else
-        {
-            gsm.Restart();
-        }
-        gsm.CallInit(); // Call the current game state's Initialize() function
+        // --- 2. Load + Init ONCE for this state
+        gsm.CallLoad();
+        gsm.CallInit();
 
-        // While a game state is running
-        while (gsm.GetNextState() == gsm.GetCurrentState())
-        {
+        // --- 3. Frame loop for this state
+        while (gsm.GetNextState() == gsm.GetCurrentState()) {
             double now = glfwGetTime();
             float dt = static_cast<float>(now - lastFrame);
             lastFrame = now;
 
             glfwPollEvents();
             for (auto s : systems) s->Update(dt);
-            gsm.CallUpdate(); // Call the current game state's Update() function
-            gsm.CallDraw();   // Call the current game state's Draw() function
 
-            if (Input::IsKeyPressed(GLFW_KEY_ESCAPE)) GSM_SetNextState(GameState::GS_QUIT);              // quit program (shortcut)
+            gsm.CallUpdate();
+            gsm.CallDraw();
 
+            if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+                GSM_SetNextState(GameState::GS_QUIT);
 
             Input::Update();
             glfwSwapBuffers(GLApp::ptr_window);
-
         }
-        gsm.CallFree();   // Call the current game state's Free() function
 
-        // When the game state has changed, unload the current game state
-        if (gsm.GetNextState() != GameState::GS_RESTART)
-        {
-            gsm.CallUnload(); // Call the current game state's Unload() function
+        // --- 4. Clean up the old state
+        gsm.CallFree();
+        if (gsm.GetNextState() != GameState::GS_RESTART) {
+            gsm.CallUnload();
         }
-        // Change the game state (by setting nextState)
+
+        // --- 5. Actually switch state
         gsm.ChangeNextState();
     }
 }
+
 
 void CoreEngine::Shutdown() {
     for (int i = (int)systems.size() - 1; i >= 0; --i) {

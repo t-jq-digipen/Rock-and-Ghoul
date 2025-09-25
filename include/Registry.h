@@ -7,7 +7,7 @@
 // Help systems find stuff in entities
 #include "ComponentManager.h"
 #include "EntityManager.h"
-
+#include "Component.h"
 
 constexpr size_t MAX_COMPONENT_TYPES = 8; // max number of components
 /*
@@ -38,7 +38,60 @@ void Add_Component(Entity eID, AudioComponent const& comp);
 void Add_Component(Entity eID, LifetimeComponent const& comp);
 void Add_Component(Entity eID, HealthComponent const& comp);
 void Add_Component(Entity eID, TagComponent const& comp);
+void Add_Component(Entity eID, InputComponent const& comp);
 
 // overloads for removal
 void Remove_Component(Entity eID, ComponentTypeID cID);
 void Remove_Components(Entity eID, std::initializer_list<ComponentTypeID> cIDlist);
+
+extern ComponentManager<TransformComponent> transform;
+extern ComponentManager<SpriteComponent>    sprite;
+extern ComponentManager<AnimatorComponent>  animator;
+extern ComponentManager<PhysicsComponent>   physics;
+extern ComponentManager<AudioComponent>     audio;
+extern ComponentManager<LifetimeComponent>  lifetime;
+extern ComponentManager<HealthComponent>    health;
+extern ComponentManager<TagComponent>       tag;
+extern ComponentManager<InputComponent>		input;
+
+template<typename T>
+bool HasComponent(Entity e);
+
+template<typename T>
+T& GetComponent(Entity e);
+
+// Transform
+template<>
+inline bool HasComponent<TransformComponent>(Entity e) { return transform.hasComponent(e); }
+
+template<>
+inline TransformComponent& GetComponent<TransformComponent>(Entity e) { return transform.getComponent(e); }
+
+// Physics
+template<>
+inline bool HasComponent<PhysicsComponent>(Entity e) { return physics.hasComponent(e); }
+
+template<>
+inline PhysicsComponent& GetComponent<PhysicsComponent>(Entity e) { return physics.getComponent(e); }
+
+// Sprite
+template<>
+inline bool HasComponent<SpriteComponent>(Entity e) { return sprite.hasComponent(e); }
+
+template<>
+inline SpriteComponent& GetComponent<SpriteComponent>(Entity e) { return sprite.getComponent(e); }
+
+// Tag
+template<>
+inline bool HasComponent<TagComponent>(Entity e) { return tag.hasComponent(e); }
+
+template<>
+inline TagComponent& GetComponent<TagComponent>(Entity e) { return tag.getComponent(e); }
+
+// Input
+template<>
+inline bool HasComponent<InputComponent>(Entity e) { return input.hasComponent(e); }
+
+template<>
+inline InputComponent& GetComponent<InputComponent>(Entity e) { return input.getComponent(e); }
+

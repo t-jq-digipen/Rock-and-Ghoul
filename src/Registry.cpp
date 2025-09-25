@@ -34,6 +34,8 @@ ComponentManager<HealthComponent>		health;
 // CT_Tag
 ComponentManager<TagComponent>			tag;
 
+ComponentManager<InputComponent>		input;
+
 
 // Entity manager (stores a REFERENCE to the singleton entity manager ^^)
 // ================================================================================
@@ -120,6 +122,11 @@ void Add_Component(Entity eID, TagComponent const& comp)
 {
 	std::cout << "REGISTRY | ADDING COMPONENT | TAG       | eID: " << eID << "\n";
 	tag.addComponent(eID, comp);
+}
+void Add_Component(Entity eID, InputComponent const& comp)
+{
+	std::cout << "REGISTRY | ADDING COMPONENT | INPUT     | eID: " << eID << "\n";
+	input.addComponent(eID, comp);
 }
 
 #pragma endregion

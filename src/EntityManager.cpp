@@ -61,3 +61,4 @@ bool EntityManager::isAlive(Entity eID) const
 	// return if alive :) life is good
 	return alive[eID];
 }
+
