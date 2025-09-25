@@ -40,9 +40,10 @@ enum ComponentTypeID
 
 	// Game character specifics
 	CT_Health,		// 7 | Health, can be used for player, enemies, breakable objects, etc.
-
+	CT_GhoulHealth,
 	// Tag
 	CT_Tag,			// 8 | Tag enumeration (should i use std::string? idk, think again another time)
+	CT_BossGhoul
 };
 
 
@@ -113,4 +114,19 @@ enum ControlScheme {
 
 struct InputComponent {
 	ControlScheme scheme;
+};
+
+enum GhoulState {
+	GHOUL_START,
+	GHOUL_ATTACKING,
+	GHOUL_DEAD
+};
+
+struct BossGhoulComponent {
+	float currhp = 0.f;
+	float maxhp = 100.f;
+	float speedX = 0.f;
+	float speedY = 0.f;
+	int moveDir = 0;
+	GhoulState state = GHOUL_START;
 };

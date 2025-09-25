@@ -2,7 +2,6 @@
 
 
 
-
 // COMPONENT MANAGERS
 // ================================================================================
 // CT_Transform
@@ -36,7 +35,7 @@ ComponentManager<TagComponent>			tag;
 
 ComponentManager<InputComponent>		input;
 
-
+ComponentManager<BossGhoulComponent> bossghoul;
 // Entity manager (stores a REFERENCE to the singleton entity manager ^^)
 // ================================================================================
 EntityManager& entityManager = EntityManager::get();
@@ -129,6 +128,13 @@ void Add_Component(Entity eID, InputComponent const& comp)
 	input.addComponent(eID, comp);
 }
 
+void Add_Component(Entity eID, BossGhoulComponent const& comp)
+{
+	std::cout << "REGISTRY | ADDING COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
+	bossghoul.addComponent(eID, comp);
+
+}
+
 #pragma endregion
 
 
@@ -196,6 +202,13 @@ void Remove_Component(Entity eID, ComponentTypeID cID)
 		tag.removeComponent(eID);
 	}
 	break;	// CT_Tag
+
+	case (CT_BossGhoul):
+	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
+		bossghoul.removeComponent(eID);
+	}
+	break;
 	}
 }
 

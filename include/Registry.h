@@ -39,7 +39,7 @@ void Add_Component(Entity eID, LifetimeComponent const& comp);
 void Add_Component(Entity eID, HealthComponent const& comp);
 void Add_Component(Entity eID, TagComponent const& comp);
 void Add_Component(Entity eID, InputComponent const& comp);
-
+void Add_Component(Entity eID, BossGhoulComponent const& comp);
 // overloads for removal
 void Remove_Component(Entity eID, ComponentTypeID cID);
 void Remove_Components(Entity eID, std::initializer_list<ComponentTypeID> cIDlist);
@@ -53,6 +53,7 @@ extern ComponentManager<LifetimeComponent>  lifetime;
 extern ComponentManager<HealthComponent>    health;
 extern ComponentManager<TagComponent>       tag;
 extern ComponentManager<InputComponent>		input;
+extern ComponentManager<BossGhoulComponent> bossghoul;
 
 template<typename T>
 bool HasComponent(Entity e);
@@ -94,4 +95,10 @@ inline bool HasComponent<InputComponent>(Entity e) { return input.hasComponent(e
 
 template<>
 inline InputComponent& GetComponent<InputComponent>(Entity e) { return input.getComponent(e); }
+
+template<>
+inline bool HasComponent<BossGhoulComponent>(Entity e) { return bossghoul.hasComponent(e); }
+
+template<>
+inline BossGhoulComponent& GetComponent<BossGhoulComponent>(Entity e) { return bossghoul.getComponent(e); }
 
