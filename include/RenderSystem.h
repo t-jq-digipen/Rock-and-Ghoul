@@ -4,6 +4,7 @@
 #include "Registry.h"
 #include "Component.h"
 #include "glapp.h"
+#include "BossGhoul.h"
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,6 +25,16 @@ public:
             auto& s = GetComponent<SpriteComponent>(e);
 
             renderer.DrawTexturedQuad(t.pos, s.size, s.textureID);
+        }
+        for (Entity e = 0; e < em.maxEntities(); ++e) {
+            if (!em.isAlive(e)) continue;
+            if (!HasComponent<BossGhoulComponent>(e) || !HasComponent<TransformComponent>(e))
+                continue;
+
+            auto& ghoul = GetComponent<BossGhoulComponent>(e);
+            auto& transform = GetComponent<TransformComponent>(e);
+
+            DrawBossGhoulHP(renderer, ghoul, transform);
         }
     }
 };

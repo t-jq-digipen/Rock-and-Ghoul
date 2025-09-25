@@ -65,12 +65,12 @@ private:
 	GLuint arrowRightTex;
 	GLuint arrowDownTex;
 	GLuint arrowLeftTex;
-	SpellManager& spellManager;
+	SpellManager spellManager; //fretboard owns spells.h
 
 public:
 
-	FretBoard(float x, float y, float length, float width, SpellManager& sm);
-
+	FretBoard(float x, float y, float length, float width);
+	SpellManager& GetSpellManager() { return spellManager; }
 	/* SPELL FUNCTIONS */
 	void SpellMenu();
 	void HandleSpellSelection();

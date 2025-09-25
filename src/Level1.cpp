@@ -12,9 +12,8 @@
 #include "BossGhoul.h"
 #include "EntityCreation.h"
 
-static SpellManager spellManager;
 static FretBoard* fretboard = nullptr;
-extern BossGhoulSystem* bossGhoulSystem;
+
 
 GLuint bgTexture = 0;
 Entity ECSplayer{};
@@ -22,6 +21,7 @@ Entity ECSplayer{};
 
 void Level1::Load()
 {
+
 	std::cout << "Level 1 Loaded!!!" << std::endl;
 }
 
@@ -34,11 +34,10 @@ void Level1::Init()
 
 	// 3. NOW load textures (OpenGL is ready)
 	bgTexture = renderer.LoadTexture("../Assets/background.jpg");
-	spellManager.LoadTextures();
 
 	// 4. Create FretBoard after OpenGL is ready
 	if (!fretboard) {
-		fretboard = new FretBoard(0, 0, 800, 200, spellManager);
+		fretboard = new FretBoard(0, 0, 800, 200);
 	}
 	fretboard->LoadTextures();
 	fretboard->StartGame();
@@ -85,14 +84,11 @@ void Level1::Draw()
 		);
 	}
 
-	if (bossGhoulSystem) {
-		bossGhoulSystem->Draw(renderer);
-	}
 
 	if (fretboard) {
 		fretboard->Draw(renderer);
+		fretboard->GetSpellManager().Draw(renderer);
 	}
-	spellManager.Draw(renderer);
 
 	
 }

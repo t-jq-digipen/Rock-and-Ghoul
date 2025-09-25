@@ -92,6 +92,10 @@ public:
 
             DrawBossGhoulHP(renderer, ghoul, transform);
         }
+
+    }
+    void DrawSystem(float dt, Render& renderer) {
+        Draw(renderer);
     }
 };
 

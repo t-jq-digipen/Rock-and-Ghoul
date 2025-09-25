@@ -21,7 +21,7 @@ const Spell FretBoard::spellList[4] = {
     {"HEAL",                 {3, 4, 1}, 3}   // v < ^
 };
 
-FretBoard::FretBoard(float x, float y, float length, float width, SpellManager& sm) : spellManager(sm) {
+FretBoard::FretBoard(float x, float y, float length, float width){
     fretframe.x = x;
     fretframe.y = y;
     fretframe.length = length;
@@ -49,6 +49,7 @@ FretBoard::FretBoard(float x, float y, float length, float width, SpellManager& 
     currNote.isActive = false;
 
     srand((unsigned int)time(nullptr));
+    spellManager.LoadTextures();
 
 }
 
