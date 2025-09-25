@@ -10,6 +10,7 @@
 #include "CoreEngine.h"
 #include "RenderSystem.h"
 #include "BossGhoul.h"
+#include "EntityCreation.h"
 static Render renderer;
 static SpellManager spellManager;
 static FretBoard fretboard(0, 0, 800, 200, spellManager);
@@ -44,25 +45,10 @@ void Level1::Init()
 	fretboard.LoadTextures();
 	fretboard.StartGame();
 
-	Entity rock = Create_Entity();
-	Add_Component(rock, TransformComponent{ {200.f, 500.f}, {100.f, 100.f} });
-	Add_Component(rock, PhysicsComponent{});
-	Add_Component(rock, InputComponent{ CS_WASD });
-	Add_Component(rock, TagComponent{ T_PLAYER });
 
-	// give it a sprite
-	GLuint rockTex = renderer.LoadTexture("../Assets/Rock_FightingPose_2048px.png");
-	Add_Component(rock, SpriteComponent{ rockTex, {400.f, 400.f} });
+	Entity rock = Create_Player(200.f, 500.f);
 
-	Entity ghoul = Create_Entity();
-	Add_Component(ghoul, TransformComponent{ {500.f, 500.f}, {100.f, 100.f} });
-	Add_Component(ghoul, BossGhoulComponent{ 100.f, 100.f, 0.f, 100.0f, 0, GHOUL_ATTACKING });
-	Add_Component(ghoul, TagComponent{ T_ENEMY });
-
-	// give it a sprite
-	GLuint ghoulTex = renderer.LoadTexture("../Assets/Ghoul_2048px.png");
-	Add_Component(ghoul, SpriteComponent{ ghoulTex, {400.f, 400.f} });
-	bossGhoulSystem->AddEntity(ghoul);
+	Entity ghoul = Create_Ghoul(500.f, 500.f);
 }
 
 void Level1::Update()
