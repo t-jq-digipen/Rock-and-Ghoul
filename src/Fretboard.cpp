@@ -256,8 +256,8 @@ void FretBoard::Draw(Render& renderer) {
 }
 
 void FretBoard::LoadTextures() {
-    arrowUpTex = Render::LoadTexture("../Assets/up.png");
-    arrowRightTex = Render::LoadTexture("../Assets/right.png");
-    arrowDownTex = Render::LoadTexture("../Assets/down.png");
-    arrowLeftTex = Render::LoadTexture("../Assets/left.png");
+    arrowUpTex = Render::GetInstance().LoadTexture("../Assets/up.png");
+    arrowRightTex = Render::GetInstance().LoadTexture("../Assets/right.png");
+    arrowDownTex = Render::GetInstance().LoadTexture("../Assets/down.png");
+    arrowLeftTex = Render::GetInstance().LoadTexture("../Assets/left.png");
 }

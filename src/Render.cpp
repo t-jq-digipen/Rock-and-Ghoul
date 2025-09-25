@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+Render* Render::instance = nullptr;
 
 // stb_image
 #define STB_IMAGE_IMPLEMENTATION

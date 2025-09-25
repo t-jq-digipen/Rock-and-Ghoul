@@ -12,8 +12,7 @@
 
 #include "CoreEngine.h"
 
-Render renderer;
-RenderSystem renderSystem(renderer);
+
 
 GLuint titleTexture{ 0 };
 GLuint rockTexture{ 0 };
@@ -32,17 +31,17 @@ static inline glm::vec2 ScreenToRender(const glm::vec2& mouseScreen, float windo
 void MainMenu::Load()
 {
 	std::cout << "Main Menu Loaded!!!" << std::endl;
-	titleTexture = Render::LoadTexture("../Assets/title.png");
-	rockTexture = Render::LoadTexture("../Assets/Rock_2048px.png");
-	ghoulTexture = Render::LoadTexture("../Assets/Ghoul_2048px.png");
-    playTexture = Render::LoadTexture("../Assets/play.png");
-    quitTexture = Render::LoadTexture("../Assets/quit.png");
+	titleTexture = Render::GetInstance().LoadTexture("../Assets/title.png");
+	rockTexture = Render::GetInstance().LoadTexture("../Assets/Rock_2048px.png");
+	ghoulTexture = Render::GetInstance().LoadTexture("../Assets/Ghoul_2048px.png");
+    playTexture = Render::GetInstance().LoadTexture("../Assets/play.png");
+    quitTexture = Render::GetInstance().LoadTexture("../Assets/quit.png");
 }
 
 void MainMenu::Init()
 {
 	std::cout << "Main Menu Initialized!!!" << std::endl;
-    renderSystem.renderer.Init();
+    Render::GetInstance().Init();
 
     // ECS TEST
     
@@ -52,7 +51,7 @@ void MainMenu::Init()
 void MainMenu::Update()
 {
     //std::cout << "Main Menu Updating!!!" << std::endl;
-
+    Render& renderer = Render::GetInstance();
     //std::cout << Input::GetMouseX() << ", " << Input::GetMouseY() << std::endl;
 
     // Clear background, add background color
@@ -64,27 +63,27 @@ void MainMenu::Update()
     // Game Title
     if (titleTexture)
     {
-        renderSystem.renderer.DrawTexturedQuad({ GLApp::width * 0.5f, GLApp::height * 0.8f }, { 1200.f, 300.f }, titleTexture);
+        renderer.DrawTexturedQuad({ GLApp::width * 0.5f, GLApp::height * 0.8f }, { 1200.f, 300.f }, titleTexture);
     }
 
     // ROCK
     if (rockTexture)
     {
-        renderSystem.renderer.DrawTexturedQuad({ GLApp::width * 0.3f, GLApp::height * 0.5f }, { 400.f, 400.f }, rockTexture);
+        renderer.DrawTexturedQuad({ GLApp::width * 0.3f, GLApp::height * 0.5f }, { 400.f, 400.f }, rockTexture);
     }
 
     // GHOUL (image is reversed)
     if (ghoulTexture)
     {
-        renderSystem.renderer.DrawTexturedQuad({ GLApp::width * 0.7f, GLApp::height * 0.5f }, { -400.f, 400.f }, ghoulTexture);
+        renderer.DrawTexturedQuad({ GLApp::width * 0.7f, GLApp::height * 0.5f }, { -400.f, 400.f }, ghoulTexture);
     }
 
     // draw play button
-    renderSystem.renderer.DrawRect({ GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f, { 0, 1, 0 });
-    if (renderSystem.renderer.IsAreaTouched(ScreenToRender({ Input::GetMouseX(), Input::GetMouseY() }, static_cast<float>(GLApp::height)),
+    renderer.DrawRect({ GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f, { 0, 1, 0 });
+    if (renderer.IsAreaTouched(ScreenToRender({ Input::GetMouseX(), Input::GetMouseY() }, static_cast<float>(GLApp::height)),
         { GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f))
     {
-        renderSystem.renderer.DrawRect({ GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f, { 0, 1, 0.5 });
+        renderer.DrawRect({ GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f, { 0, 1, 0.5 });
         if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             // nextState = GS_LEVEL1;
@@ -94,11 +93,11 @@ void MainMenu::Update()
     
 
     // draw quit button
-    renderSystem.renderer.DrawRect({ GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f, { 1, 0, 0 });
-    if (renderSystem.renderer.IsAreaTouched(ScreenToRender({ Input::GetMouseX(), Input::GetMouseY() }, static_cast<float>(GLApp::height)), 
+    renderer.DrawRect({ GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f, { 1, 0, 0 });
+    if (renderer.IsAreaTouched(ScreenToRender({ Input::GetMouseX(), Input::GetMouseY() }, static_cast<float>(GLApp::height)), 
         { GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f))
     {
-        renderSystem.renderer.DrawRect({ GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f, { 1, 0, 0.5 });
+        renderer.DrawRect({ GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f, { 1, 0, 0.5 });
         if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             GSM_SetNextState(GameState::GS_QUIT);
@@ -109,13 +108,13 @@ void MainMenu::Update()
     // PLAY text for button
     if (playTexture)
     {
-        renderSystem.renderer.DrawTexturedQuad({ GLApp::width * 0.3f, GLApp::height * 0.2f }, { 300.f, 150.f }, playTexture);
+        renderer.DrawTexturedQuad({ GLApp::width * 0.3f, GLApp::height * 0.2f }, { 300.f, 150.f }, playTexture);
     }
 
     // QUIT text for button
     if (quitTexture)
     {
-        renderSystem.renderer.DrawTexturedQuad({ GLApp::width * 0.7f, GLApp::height * 0.2f }, { 300.f, 150.f }, quitTexture);
+        renderer.DrawTexturedQuad({ GLApp::width * 0.7f, GLApp::height * 0.2f }, { 300.f, 150.f }, quitTexture);
     }
     
 

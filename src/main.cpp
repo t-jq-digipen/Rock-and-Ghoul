@@ -11,7 +11,7 @@ int main() {
     if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
 
     CoreEngine engine;
-    Render renderer;
+    Render& renderer = Render::GetInstance();
     // create 1 audio system and keep a pointer to it
     AudioManager* audio = new AudioManager();
     engine.AddSystem(audio);

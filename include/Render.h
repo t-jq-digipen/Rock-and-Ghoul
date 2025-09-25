@@ -6,7 +6,18 @@
 
 class Render {
 public:
-    Render();
+    static Render& GetInstance() {
+        if (!instance) {
+            instance = new Render();
+        }
+        return *instance;
+    }
+
+    static void DestroyInstance() {
+        delete instance;
+        instance = nullptr;
+    }
+
     ~Render();
 
     void Init();
@@ -14,7 +25,7 @@ public:
 
     void DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture);
     void DrawLine(const Vec2& start, const Vec2& end, const Colour3& color);
-    static GLuint LoadTexture(const std::string& path);
+    GLuint LoadTexture(const std::string& path);
     void DrawCircle(const glm::vec2& center, float radius, const Colour3& color, int segments);
 
     void DrawRect(const Vec2& pos, float width, float height, const Colour3& color);
@@ -22,6 +33,8 @@ public:
     bool IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height);
 
 private:
+    static Render* instance;
+    Render();
     GLuint vao, vbo, shaderProgram;
     glm::mat4 projection;
 

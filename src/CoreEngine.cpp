@@ -41,10 +41,15 @@ void CoreEngine::Run() {
             lastFrame = now;
 
             glfwPollEvents();
-            for (auto s : systems) s->Update(dt);
 
+            // 1. Update game state logic first
             gsm.CallUpdate();
+
+            // 2. Draw background/UI (this calls glClear)  
             gsm.CallDraw();
+
+            // 3. Then run systems (RenderSystem draws entities ON TOP)
+            for (auto s : systems) s->Update(dt);
 
             if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
                 GSM_SetNextState(GameState::GS_QUIT);

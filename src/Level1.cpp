@@ -11,12 +11,10 @@
 #include "RenderSystem.h"
 #include "BossGhoul.h"
 #include "EntityCreation.h"
-static Render renderer;
-static SpellManager spellManager;
-static FretBoard fretboard(0, 0, 800, 200, spellManager);
-static RenderSystem renderSystem(renderer);
-extern BossGhoulSystem* bossGhoulSystem;
 
+static SpellManager spellManager;
+static FretBoard* fretboard = nullptr;
+extern BossGhoulSystem* bossGhoulSystem;
 
 GLuint bgTexture = 0;
 Entity ECSplayer{};
@@ -25,30 +23,31 @@ Entity ECSplayer{};
 void Level1::Load()
 {
 	std::cout << "Level 1 Loaded!!!" << std::endl;
-
-	bgTexture = Render::LoadTexture("../Assets/background.jpg");
-	spellManager.LoadTextures();
-
-	// Then fretboard arrows
-	fretboard.LoadTextures();
-
-	// Then start game (after both are ready)
-	fretboard.StartGame();
 }
 
 void Level1::Init()
 {
 	std::cout << "Level 1 Initialized!!!" << std::endl;
+	Render& renderer = Render::GetInstance();
 	renderer.Init();
 
+
+	// 3. NOW load textures (OpenGL is ready)
+	bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 	spellManager.LoadTextures();
-	fretboard.LoadTextures();
-	fretboard.StartGame();
 
+	// 4. Create FretBoard after OpenGL is ready
+	if (!fretboard) {
+		fretboard = new FretBoard(0, 0, 800, 200, spellManager);
+	}
+	fretboard->LoadTextures();
+	fretboard->StartGame();
 
+	// 5. Create entities
 	Entity rock = Create_Player(200.f, 500.f);
-
 	Entity ghoul = Create_Ghoul(500.f, 500.f);
+
+
 }
 
 void Level1::Update()
@@ -67,12 +66,15 @@ void Level1::Update()
 		//nextState = GameState::GS_RESTART;       // restart state
 		std::cout << "Level 1 Restarted!!!" << std::endl;
 	}
-	fretboard.PlayerInput();
+	if (fretboard) {
+		fretboard->PlayerInput();
+	}
 
 }
 
 void Level1::Draw()
 {	
+	Render& renderer = Render::GetInstance();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	if (bgTexture) {
@@ -82,10 +84,14 @@ void Level1::Draw()
 			bgTexture
 		);
 	}
-	renderSystem.Update(0.0f);
-	bossGhoulSystem->Draw(renderer);
-	//std::cout << "Level 1 Drawing!!!" << std::endl;
-	fretboard.Draw(renderer);
+
+	if (bossGhoulSystem) {
+		bossGhoulSystem->Draw(renderer);
+	}
+
+	if (fretboard) {
+		fretboard->Draw(renderer);
+	}
 	spellManager.Draw(renderer);
 
 	
@@ -100,6 +106,12 @@ void Level1::Free()
 
 void Level1::Unload()
 {
+	delete fretboard;
+	fretboard = nullptr;
+	if (bgTexture) {
+		glDeleteTextures(1, &bgTexture);
+		bgTexture = 0;
+	}
 	std::cout << "Level 1 Unloaded!!!" << std::endl;
 }
 

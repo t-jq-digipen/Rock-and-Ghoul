@@ -10,10 +10,10 @@ SpellManager::SpellManager() {
 }
 
 void SpellManager::LoadTextures() {
-    barrierTex = Render::LoadTexture("../Assets/barrier.png");
-    shockwaveTex = Render::LoadTexture("../Assets/shockwave.png");
-    aoeTex = Render::LoadTexture("../Assets/aoe.png");
-    healTex = Render::LoadTexture("../Assets/heal.png");
+    barrierTex = Render::GetInstance().LoadTexture("../Assets/barrier.png");
+    shockwaveTex = Render::GetInstance().LoadTexture("../Assets/shockwave.png");
+    aoeTex = Render::GetInstance().LoadTexture("../Assets/aoe.png");
+    healTex = Render::GetInstance().LoadTexture("../Assets/heal.png");
 }
 
 void SpellManager::Draw(Render& renderer) {
