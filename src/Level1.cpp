@@ -3,39 +3,47 @@
 
 #include "Level1.h"
 #include "Input.h"
+#include "Fretboard.h"
+#include "Render.h"
+#include "Spells.h"
 #include "glapp.h"
 #include "CoreEngine.h"
-#include "Singleton.h"
+#include "RenderSystem.h"
+#include "BossGhoul.h"
 #include "EntityCreation.h"
+static Render renderer;
+static SpellManager spellManager;
+static FretBoard fretboard(0, 0, 800, 200, spellManager);
+static RenderSystem renderSystem(renderer);
+extern BossGhoulSystem* bossGhoulSystem;
 
+
+GLuint bgTexture = 0;
 Entity ECSplayer{};
 
 
 void Level1::Load()
 {
 	std::cout << "Level 1 Loaded!!!" << std::endl;
-	GameContext& ctx = GameContext::Get();
-	ctx.bgTexture = Render::LoadTexture("../Assets/background.jpg");
-	ctx.spellManager.LoadTextures();
 
-	if (ctx.currentFretboard) {
-		ctx.currentFretboard->LoadTextures();
-		ctx.currentFretboard->StartGame();
-	}
+	bgTexture = Render::LoadTexture("../Assets/background.jpg");
+	spellManager.LoadTextures();
+
+	// Then fretboard arrows
+	fretboard.LoadTextures();
+
+	// Then start game (after both are ready)
+	fretboard.StartGame();
 }
 
 void Level1::Init()
 {
 	std::cout << "Level 1 Initialized!!!" << std::endl;
-	GameContext& ctx = GameContext::Get();
+	renderer.Init();
 
-	ctx.renderer.Init();
-	ctx.spellManager.LoadTextures();
-
-	if (ctx.currentFretboard) {
-		ctx.currentFretboard->LoadTextures();
-		ctx.currentFretboard->StartGame();
-	}
+	spellManager.LoadTextures();
+	fretboard.LoadTextures();
+	fretboard.StartGame();
 
 
 	Entity rock = Create_Player(200.f, 500.f);
@@ -46,7 +54,7 @@ void Level1::Init()
 void Level1::Update()
 {
 	//std::cout << "Level 1 Updating!!!" << std::endl;
-	GameContext& ctx = GameContext::Get();
+
 	// to test game state changes
 	if (Input::IsKeyPressed(GLFW_KEY_M))
 	{
@@ -59,33 +67,26 @@ void Level1::Update()
 		//nextState = GameState::GS_RESTART;       // restart state
 		std::cout << "Level 1 Restarted!!!" << std::endl;
 	}
-	if (ctx.currentFretboard) {
-		ctx.currentFretboard->PlayerInput();
-	}
+	fretboard.PlayerInput();
 
 }
 
 void Level1::Draw()
 {	
-	GameContext& ctx = GameContext::Get();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	if (ctx.bgTexture) {
-		ctx.renderer.DrawTexturedQuad(
-			{ GLApp::width * 0.5f, GLApp::height * 0.5f },
-			{ (float)GLApp::width, (float)GLApp::height },
-			ctx.bgTexture
+	if (bgTexture) {
+		renderer.DrawTexturedQuad(
+			{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
+			{ (float)GLApp::width, (float)GLApp::height },   // full screen size
+			bgTexture
 		);
 	}
-	if (ctx.renderSystem) {
-		ctx.renderSystem->Update(0.0f);
-	}
-	ctx.bossGhoulSystem.Draw(ctx.renderer);
+	renderSystem.Update(0.0f);
+	bossGhoulSystem->Draw(renderer);
 	//std::cout << "Level 1 Drawing!!!" << std::endl;
-	if (ctx.currentFretboard) {
-		ctx.currentFretboard->Draw(ctx.renderer);
-	}
-	ctx.spellManager.Draw(ctx.renderer);
+	fretboard.Draw(renderer);
+	spellManager.Draw(renderer);
 
 	
 }

@@ -3,7 +3,6 @@
 #include "Registry.h"
 #include "Component.h"
 #include "Render.h"
-
 inline void DrawBossGhoulHP(Render& renderer,
     const BossGhoulComponent& ghoul,
     const TransformComponent& transform,

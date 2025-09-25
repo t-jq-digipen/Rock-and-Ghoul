@@ -158,8 +158,7 @@ source_group("BaseEngine\\Headers" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Singleton.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Singleton.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/BossGhoul.h
 
 )
 source_group("BaseEngine\\Debug" FILES 
