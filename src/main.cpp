@@ -5,19 +5,21 @@
 #include "AudioSystem.h"  // contains AudioManager
 #include "RenderSystem.h"
 #include "PlayerSystem.h"
-#include "BossGhoul.h"
-BossGhoulSystem* bossGhoulSystem = nullptr;
+#include "Singleton.h"
+
+
 int main() {
     if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
 
     CoreEngine engine;
-    Render renderer;
+    GameContext::Initialize();
+    GameContext& ctx = GameContext::Get();
     // create 1 audio system and keep a pointer to it
     AudioManager* audio = new AudioManager();
     engine.AddSystem(audio);
-    bossGhoulSystem = new BossGhoulSystem();
-    engine.AddSystem(bossGhoulSystem);
-    engine.AddSystem(new RenderSystem(renderer));
+
+    engine.AddSystem(&ctx.bossGhoulSystem);
+    engine.AddSystem(new RenderSystem(ctx.renderer));
     engine.AddSystem(new PlayerSystem());
 
     // initialize all systems (this sets up FMOD, OpenGL, etc.)
@@ -35,6 +37,7 @@ int main() {
 
     engine.Shutdown();
 
+    GameContext::Cleanup();
     GLApp::cleanup();
     return 0;
 }
