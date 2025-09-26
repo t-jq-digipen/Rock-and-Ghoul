@@ -82,4 +82,7 @@ Vec2 Add(const Vec2& a, const Vec2& b);
 Vec2 Subtract(const Vec2& a, const Vec2& b);
 // Scaling a vector
 Vec2 Scale(const Vec2& v, float scalar);
-
+// Linear interpolation
+Vec2 Lerp(const Vec2& a, const Vec2& b, float t);
+// Find the square root of a value
+float Sqrt(float x);

@@ -21,3 +21,36 @@ Vec2 Subtract(const Vec2& a, const Vec2& b) {
 Vec2 Scale(const Vec2& v, float scalar) {
     return { v.x * scalar, v.y * scalar };
 }
+
+// Linear interpolation: find where u are along a straight line
+Vec2 Lerp(const Vec2& a, const Vec2& b, float t) {
+    return Add(a, Scale(Subtract(b, a), t));
+}
+
+float Sqrt(float x) {
+    if (x < 0) { return 0; } // cannot sqrt -ve number
+
+    if (x == 0 || x == 1) { return x; } // special cases
+
+    float precision = 0.00001; // accurate to 5dp
+    float guess = x * 0.5f;
+    float abs;
+
+    for (int i = 0; i < 10; ++i) { // capping iterations
+        float newGuess = 0.5f * (guess + x / guess);
+
+        if ((newGuess - guess) < 0) {
+            abs = -(newGuess - guess);
+        }
+        else { abs = newGuess - guess; }
+
+        // if absolute value of difference between newGuess and Guess is negligible by precision, newGuess is good
+        if (abs < precision) {
+            return newGuess;
+        }
+
+        guess = newGuess; // trying again
+    }
+
+    return guess;
+}
