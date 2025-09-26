@@ -84,13 +84,13 @@ COMPONENTS LIST:
 
 void Add_Component(Entity eID, TransformComponent const& comp)
 {
-	std::cout << "REGISTRY | ADDING COMPONENT | TRANSFORM	| eID: " << eID << "\n";
+	//std::cout << "REGISTRY | ADDING COMPONENT | TRANSFORM	| eID: " << eID << "\n";
 	transform.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, SpriteComponent const& comp)
 {
-	std::cout << "REGISTRY | ADDING COMPONENT | SPRITE		| eID: " << eID << "\n";
+	//std::cout << "REGISTRY | ADDING COMPONENT | SPRITE		| eID: " << eID << "\n";
 	sprite.addComponent(eID, comp);
 }
 
@@ -149,7 +149,7 @@ void Add_Component(Entity eID, InputComponent const& comp)
 
 void Add_Component(Entity eID, BossGhoulComponent const& comp)
 {
-	std::cout << "REGISTRY | ADDING COMPONENT | BOSS GHOUL	| eID: " << eID << "\n";
+	//std::cout << "REGISTRY | ADDING COMPONENT | BOSS GHOUL	| eID: " << eID << "\n";
 	bossghoul.addComponent(eID, comp);
 
 }
@@ -171,14 +171,14 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	case (CT_Transform):
 	{
-		std::cout << "REGISTRY | REMOVING COMPONENT | TRANSFORM		| eID: " << eID << "\n";
+		//std::cout << "REGISTRY | REMOVING COMPONENT | TRANSFORM		| eID: " << eID << "\n";
 		transform.removeComponent(eID);
 	}
 	break;	// CT_Transform
 
 	case (CT_Sprite):
 	{
-		std::cout << "REGISTRY | REMOVING COMPONENT | SPRITE		| eID: " << eID << "\n";
+		//std::cout << "REGISTRY | REMOVING COMPONENT | SPRITE		| eID: " << eID << "\n";
 		sprite.removeComponent(eID);
 	}
 	break;	// CT_Sprite
@@ -227,7 +227,7 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 
 	case (CT_Health):
 	{
-		std::cout << "REGISTRY | REMOVING COMPONENT | HEALTH		| eID: " << eID << "\n";
+		//std::cout << "REGISTRY | REMOVING COMPONENT | HEALTH		| eID: " << eID << "\n";
 		health.removeComponent(eID);
 	}
 	break;	// CT_Health
@@ -241,7 +241,7 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 
 	case (CT_BossGhoul):
 	{
-		std::cout << "REGISTRY | REMOVING COMPONENT | BOSS GHOUL	| eID: " << eID << "\n";
+		//std::cout << "REGISTRY | REMOVING COMPONENT | BOSS GHOUL	| eID: " << eID << "\n";
 		bossghoul.removeComponent(eID);
 	}
 	break;
@@ -269,14 +269,14 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	case (CT_Transform):
 	{
-		std::cout << "REGISTRY | HAS COMPONENT | TRANSFORM | eID: " << eID << "\n";
+		//std::cout << "REGISTRY | HAS COMPONENT | TRANSFORM | eID: " << eID << "\n";
 		return transform.hasComponent(eID);
 	}
 	break;	// CT_Transform
 
 	case (CT_Sprite):
 	{
-		std::cout << "REGISTRY | HAS COMPONENT | SPRITE    | eID: " << eID << "\n";
+		//std::cout << "REGISTRY | HAS COMPONENT | SPRITE    | eID: " << eID << "\n";
 		return sprite.hasComponent(eID);
 	}
 	break;	// CT_Sprite
@@ -290,7 +290,7 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 
 	case (CT_Physics):
 	{
-		std::cout << "REGISTRY | HAS COMPONENT | PHYSICS   | eID: " << eID << "\n";
+		//std::cout << "REGISTRY | HAS COMPONENT | PHYSICS   | eID: " << eID << "\n";
 		return physics.hasComponent(eID);
 	}
 	break;	// CT_Physics
@@ -339,7 +339,7 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 
 	case (CT_BossGhoul):
 	{
-		std::cout << "REGISTRY | HAS COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
+		//std::cout << "REGISTRY | HAS COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
 		return bossghoul.hasComponent(eID);
 	}
 	break;

@@ -7,6 +7,7 @@
 #include "PlayerSystem.h"
 #include "BossGhoul.h"
 #include "PhysicsSystem.h"
+#include "CollisionSystem.h"
 BossGhoulSystem* bossGhoulSystem = nullptr;
 int main() {
     if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
@@ -21,6 +22,7 @@ int main() {
     engine.AddSystem(new RenderSystem(renderer));
     engine.AddSystem(new PlayerSystem());
     engine.AddSystem(new PhysicsSystem());
+    engine.AddSystem(new CollisionSystem());
     // initialize all systems (this sets up FMOD, OpenGL, etc.)
     engine.Initialize();
     // broken here?

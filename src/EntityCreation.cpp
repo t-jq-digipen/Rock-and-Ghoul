@@ -8,7 +8,7 @@ Entity Create_Player(float x, float y) {
     Entity player = Create_Entity();
     Add_Component(player, TransformComponent{ {x, y}, {100.f, 100.f} });
     Add_Component(player, PhysicsComponent{});
-    Add_Component(player, AABBComponent{});
+    Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
     Add_Component(player, InputComponent{ CS_WASD });
     Add_Component(player, TagComponent{ T_PLAYER });
     GLuint tex = Render::GetInstance().LoadTexture("../Assets/Rock_FightingPose_2048px.png");
@@ -31,7 +31,7 @@ Entity Create_Ghoul(float x, float y) {
         GHOUL_ATTACKING // starting state
         });
     Add_Component(ghoul, TagComponent{ T_ENEMY });
-
+    Add_Component(ghoul, AABBComponent{ true, {}, 200.0f, 200.0f });
     GLuint tex = Render::GetInstance().LoadTexture("../Assets/Ghoul_2048px.png");
     Add_Component(ghoul, SpriteComponent{ tex, {400.f, 400.f} });
     Add_Component(ghoul, PhysicsComponent{ {0.f, 0.f} });
