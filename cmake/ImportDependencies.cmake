@@ -139,17 +139,18 @@ macro(import_stb)
     endif()
 endmacro()
 # Macro to import JSON (nlohmann/json)
+
 macro(import_json)
-    if(NOT TARGET nlohmann_json)
+    if(NOT TARGET nlohmann_json::nlohmann_json)
         FetchContent_Declare(
             nlohmann_json
             GIT_REPOSITORY https://github.com/nlohmann/json.git
-            GIT_TAG v3.11.3   # or latest stable
+            GIT_TAG v3.11.3   # stable release
         )
         FetchContent_MakeAvailable(nlohmann_json)
-        # It's header-only, so no linking needed
     endif()
 endmacro()
+
 # Macro to import all dependencies
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")

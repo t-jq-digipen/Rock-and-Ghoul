@@ -77,8 +77,9 @@ void CollisionSystem::Update(float dt)
 void CollisionSystem::Shutdown() {
 	std::cout << "Collilisystem Shutdown!\n";
 }
-
+//helper function so not as much if else
 void CollisionSystem::CollisionType(Entity entity1, Entity entity2, C_TagID tag1, C_TagID tag2) {
+	//order independence w std::pair
 	std::pair<C_TagID, C_TagID> collisionPair = {
 		std::min(tag1, tag2), std::max(tag1, tag2)
 	};
