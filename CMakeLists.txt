@@ -182,6 +182,13 @@ source_group("BaseEngine\\BaseSystems\\Input" FILES
 )
 # ================================================= INPUT
 
+# BASE ENG SYSTEMS | DEBUG
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Debug" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Debug.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Debug.h
+)
+# ================================================= DEBUG
 
 # BASE ENG | MATH LIBRARY
 # =================================================
@@ -245,6 +252,8 @@ source_group("BaseEngine\\ECS\\System\\Physics" FILES
 source_group("BaseEngine\\ECS\\System\\Collision" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionSystem.h
 )
 # ================================================= ECS
 

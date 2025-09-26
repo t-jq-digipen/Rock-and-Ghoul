@@ -4,9 +4,8 @@
 #include "Render.h"
 
 class PhysicsSystem : public ISystem {
-    Render& renderer;
 public:
-    PhysicsSystem(Render& r) : renderer(r) {}
+    PhysicsSystem() {}
     void Initialize() override;
     void Update(float dt) override;
     void Shutdown() override;

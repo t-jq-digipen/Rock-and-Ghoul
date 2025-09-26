@@ -20,7 +20,7 @@ int main() {
     engine.AddSystem(bossGhoulSystem);
     engine.AddSystem(new RenderSystem(renderer));
     engine.AddSystem(new PlayerSystem());
-    engine.AddSystem(new PhysicsSystem(Render::GetInstance()));
+    engine.AddSystem(new PhysicsSystem());
     // initialize all systems (this sets up FMOD, OpenGL, etc.)
     engine.Initialize();
     // broken here?
