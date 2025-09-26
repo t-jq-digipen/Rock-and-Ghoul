@@ -44,7 +44,6 @@ void Add_Component(Entity eID, LifetimeComponent		const& comp);
 void Add_Component(Entity eID, HealthComponent			const& comp);
 void Add_Component(Entity eID, TagComponent				const& comp);
 void Add_Component(Entity eID, InputComponent			const& comp);
-void Add_Component(Entity eID, BossGhoulComponent		const& comp);
 
 // overloads for removal
 void Remove_Component(Entity eID, ComponentTypeID const& cID);
@@ -65,7 +64,6 @@ LifetimeComponent		& Get_LifetimeComponent(Entity eID);
 HealthComponent			& Get_HealthComponent(Entity eID);
 TagComponent			& Get_TagComponent(Entity eID);
 InputComponent			& Get_InputComponent(Entity eID);
-BossGhoulComponent		& Get_BossGhoulComponent(Entity eID);
 
 // Manager accessors
 ComponentManager<TransformComponent>		& CM_Transform();
@@ -79,5 +77,4 @@ ComponentManager<LifetimeComponent>			& CM_Lifetime();
 ComponentManager<HealthComponent>			& CM_Health();
 ComponentManager<TagComponent>				& CM_Tag();
 ComponentManager<InputComponent>			& CM_Input();
-ComponentManager<BossGhoulComponent>		& CM_BossGhoul();
 

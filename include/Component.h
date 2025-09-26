@@ -46,7 +46,6 @@ enum ComponentTypeID
 	// Tag					  
 	CT_Tag,				// 10	| Tag enumeration (should i use std::string? idk, think again another time)
 							  
-	CT_BossGhoul		// 11	| BossGhoul component, should be replaced with AI component
 };
 
 
@@ -84,6 +83,10 @@ struct PhysicsComponent {
 	Vec2 accel	{ 0.f,0.f };
 	//bool collide (maybe can use bitwise checking to see WHAT things it will collide with? to consider)
 	//aabb hitbox;
+};
+
+struct MovementComponent {
+	Vec2 vel{ 0.f, 0.f };
 };
 
 struct AABBComponent {
@@ -131,17 +134,3 @@ struct InputComponent {
 	ControlScheme scheme;
 };
 
-enum GhoulState {
-	GHOUL_START,
-	GHOUL_ATTACKING,
-	GHOUL_DEAD
-};
-
-struct BossGhoulComponent {
-	float currhp = 0.f;
-	float maxhp = 100.f;
-	float speedX = 0.f;
-	float speedY = 0.f;
-	int moveDir = 0;
-	GhoulState state = GHOUL_START;
-};

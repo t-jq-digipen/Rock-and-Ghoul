@@ -9,7 +9,6 @@
 #include "glapp.h"
 #include "CoreEngine.h"
 #include "RenderSystem.h"
-#include "BossGhoul.h"
 #include "EntityCreation.h"
 
 static FretBoard* fretboard = nullptr;
@@ -44,7 +43,6 @@ void Level1::Init()
 
 	// 5. Create entities
 	Entity rock = Create_Player(200.f, 500.f);
-	Entity ghoul = Create_Ghoul(800.f, 500.f);
 
 
 }

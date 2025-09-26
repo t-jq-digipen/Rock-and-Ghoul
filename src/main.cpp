@@ -5,10 +5,9 @@
 #include "AudioSystem.h"  // contains AudioManager
 #include "RenderSystem.h"
 #include "PlayerSystem.h"
-#include "BossGhoul.h"
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
-BossGhoulSystem* bossGhoulSystem = nullptr;
+
 int main() {
     if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
 
@@ -17,8 +16,6 @@ int main() {
     // create 1 audio system and keep a pointer to it
     AudioManager* audio = new AudioManager();
     engine.AddSystem(audio);
-    bossGhoulSystem = new BossGhoulSystem();
-    engine.AddSystem(bossGhoulSystem);
     engine.AddSystem(new RenderSystem(renderer));
     engine.AddSystem(new PlayerSystem());
     engine.AddSystem(new PhysicsSystem());

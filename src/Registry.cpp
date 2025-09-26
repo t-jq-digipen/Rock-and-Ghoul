@@ -39,7 +39,6 @@ ComponentManager<TagComponent>				tag;
 
 ComponentManager<InputComponent>			input;
 
-ComponentManager<BossGhoulComponent>		bossghoul;
 // Entity manager (stores a REFERENCE to the singleton entity manager ^^)
 // ================================================================================
 EntityManager& entityManager = EntityManager::get();
@@ -147,12 +146,6 @@ void Add_Component(Entity eID, InputComponent const& comp)
 	input.addComponent(eID, comp);
 }
 
-void Add_Component(Entity eID, BossGhoulComponent const& comp)
-{
-	//std::cout << "REGISTRY | ADDING COMPONENT | BOSS GHOUL	| eID: " << eID << "\n";
-	bossghoul.addComponent(eID, comp);
-
-}
 
 #pragma endregion
 
@@ -239,12 +232,6 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	break;	// CT_Tag
 
-	case (CT_BossGhoul):
-	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | BOSS GHOUL	| eID: " << eID << "\n";
-		bossghoul.removeComponent(eID);
-	}
-	break;
 	}
 }
 
@@ -337,12 +324,6 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	break;	// CT_Tag
 
-	case (CT_BossGhoul):
-	{
-		//std::cout << "REGISTRY | HAS COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
-		return bossghoul.hasComponent(eID);
-	}
-	break;
 	default:
 		return false;
 	}
@@ -374,8 +355,6 @@ TagComponent&				Get_TagComponent(Entity eID)			{ return tag.getComponent(eID); 
 
 InputComponent&				Get_InputComponent(Entity eID)			{ return input.getComponent(eID); }
 
-BossGhoulComponent&			Get_BossGhoulComponent(Entity eID)		{ return bossghoul.getComponent(eID); }
-
 
 // Manager accessors
 ComponentManager<TransformComponent>&		CM_Transform()		{ return transform; }
@@ -389,6 +368,5 @@ ComponentManager<LifetimeComponent>&		CM_Lifetime()		{ return lifetime; }
 ComponentManager<HealthComponent>&			CM_Health()			{ return health; }
 ComponentManager<TagComponent>&				CM_Tag()			{ return tag; }
 ComponentManager<InputComponent>&			CM_Input()			{ return input; }
-ComponentManager<BossGhoulComponent>&		CM_BossGhoul()		{ return bossghoul; }
 
 #pragma endregion COMPONENT
