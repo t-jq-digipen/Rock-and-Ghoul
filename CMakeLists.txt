@@ -133,38 +133,36 @@ source_group("BaseEngine\\CoreEngine" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CoreEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CoreEngine.h
 )
-source_group("BaseEngine\\ECS" FILES 
+
+source_group("BaseEngine\\ECS\\Entity" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Component.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp
-
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/ComponentManager.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ComponentManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/SystemManager.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/SystemManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityCreation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityCreation.h
+)
+source_group("BaseEngine\\ECS\\Component" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Component.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ComponentManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ComponentManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
+)
 
+source_group("BaseEngine\\ECS\\System" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/SystemManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
 
-source_group("BaseEngine\\Headers" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PlayerSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/BossGhoul.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
-
-
+source_group("BaseEngine\\ECS\\Registry" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
+
+
 source_group("BaseEngine\\Debug" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/DebugTool.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/DebugTool.h
@@ -185,25 +183,31 @@ source_group("BaseEngine\\Transform" FILES
 source_group("Systems\\Audio" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
 )
 source_group("Systems\\Input" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
 )
 
-source_group("Export" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
+source_group("Systems\\Graphics\\Components" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
 )
+
+
 source_group("Systems\\FrameRateController" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
 )
-source_group("Graphics\\Render" FILES 
+source_group("Systems\\Graphics\\Render" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
 )
-source_group("Graphics\\System" FILES 
+source_group("Systems\\Graphics" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
 )
@@ -212,9 +216,11 @@ source_group("Graphics\\System" FILES
 source_group("Physics\\System" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
 )
 
-source_group("Physics\\Collision" FILES 
+source_group("Physics\\System\\Collision" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
 )
@@ -222,18 +228,31 @@ source_group("Physics\\Movement" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementController.h
 )
-source_group("Game\\GameStateManager" FILES 
+source_group("Game\\State" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
-
-    
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStates.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStates.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Level1.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Level2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MainMenu.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Level1.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Level2.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MainMenu.h
+
+
 )
-source_group("Graphics\\Components" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
+source_group("Game\\GameLogic" FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PlayerSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/BossGhoul.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Projectile.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Projectile.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Spells.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Spells.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fretboard.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Enemy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
 )
 
 
@@ -241,17 +260,7 @@ source_group("Math" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
 )
-source_group("Game\\GameLogic" FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Player.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Enemy.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Enemy.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Projectile.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Projectile.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Spells.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Spells.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fretboard.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fretboard.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
+source_group("Export" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
 )
