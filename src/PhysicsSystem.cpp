@@ -40,7 +40,6 @@ void PhysicsSystem::Update(float dt) {
             transform.pos.x += phyComp.vel.x * dt;
             transform.pos.y += phyComp.vel.y * dt;
         }
-
     }
 
     // Check if should draw hitboxes

@@ -124,6 +124,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 source_group("Main" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
+
 source_group("BaseEngine\\Engine" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/glapp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/glapp.h
@@ -134,6 +135,72 @@ source_group("BaseEngine\\CoreEngine" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CoreEngine.h
 )
 
+
+# BASE ENG SYSTEMS | FRAMERATE
+# =================================================
+source_group("BaseEngine\\BaseSystems\\FrameRateController" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
+)
+# ================================================= FRAMERATE
+
+# BASE ENG SYSTEMS | AUDIO
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Audio" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
+)
+# ================================================= AUDIO
+
+# BASE ENG SYSTEMS | GRAPHICS
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Graphics" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
+)
+# ================================================= GRAPHICS
+
+# BASE ENG SYSTEMS | INPUT
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Input" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
+)
+# ================================================= INPUT
+
+
+# BASE ENG | MATH LIBRARY
+# =================================================
+source_group("BaseEngine\\Math" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
+)
+# ================================================= MATH
+
+# BASE ENG | EXPORT
+# =================================================
+source_group("Export" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
+)
+# ================================================= EXPORT
+
+# GSM
+# =================================================
+source_group("BaseEngine\\GSM" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
+)
+# ================================================= GSM
+
+# ECS
+# =================================================
+source_group("BaseEngine\\ECS\\Registry" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
+)
+# E
 source_group("BaseEngine\\ECS\\Entity" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp
@@ -142,26 +209,31 @@ source_group("BaseEngine\\ECS\\Entity" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityCreation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityCreation.h
 )
+# C
 source_group("BaseEngine\\ECS\\Component" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Component.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ComponentManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ComponentManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
 )
-
+# S
 source_group("BaseEngine\\ECS\\System" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SystemManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/SystemManager.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
-
-source_group("BaseEngine\\ECS\\Registry" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
+# S -> PHYSICS
+source_group("BaseEngine\\ECS\\System\\Physics" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
 )
+# S -> COLLILI
+source_group("BaseEngine\\ECS\\System\\Collision" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
+)
+# ================================================= ECS
 
 
 source_group("BaseEngine\\Debug" FILES 
@@ -181,15 +253,14 @@ source_group("BaseEngine\\Transform" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Transform.h
 )
 
-source_group("Systems\\Audio" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
+
+# EDITOR
+# =================================================
+source_group("Editor" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Editor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Editor.h
 )
-source_group("Systems\\Input" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
-)
+# ================================================= FRAMERATE
 
 source_group("Systems\\Graphics\\Components" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
@@ -198,40 +269,17 @@ source_group("Systems\\Graphics\\Components" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
 )
 
-
-source_group("Systems\\FrameRateController" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
-)
 source_group("Systems\\Graphics\\Render" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
 )
-source_group("Systems\\Graphics" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
-)
 
-
-source_group("Physics\\System" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
-)
-
-source_group("Physics\\System\\Collision" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
-)
 source_group("Physics\\Movement" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementController.h
 )
 source_group("Game\\State\\GameStates" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStates.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStates.cpp
 )
@@ -246,6 +294,7 @@ source_group("Game\\State\\MainMenu" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MainMenu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MainMenu.h
 )
+
 source_group("Game\\GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PlayerSystem.cpp
@@ -260,12 +309,3 @@ source_group("Game\\GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
 )
 
-
-source_group("Math" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
-)
-source_group("Export" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
-)
