@@ -46,6 +46,7 @@ enum ComponentTypeID
 	// Tag					  
 	CT_Tag,				// 10	| Tag enumeration (should i use std::string? idk, think again another time)
 							  
+	CT_Input
 };
 
 

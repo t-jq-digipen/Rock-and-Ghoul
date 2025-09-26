@@ -16,7 +16,7 @@ static FretBoard* fretboard = nullptr;
 
 GLuint bgTexture = 0;
 Entity ECSplayer{};
-
+Entity rock;
 
 void Level1::Load()
 {
@@ -42,7 +42,7 @@ void Level1::Init()
 	fretboard->StartGame();
 
 	// 5. Create entities
-	Entity rock = Create_Player(200.f, 500.f);
+	rock = Create_Player(200.f, 500.f);
 
 
 }
@@ -94,7 +94,7 @@ void Level1::Draw()
 void Level1::Free()
 {
 	std::cout << "Level 1 Freed!!!" << std::endl;
-
+	Remove_Entity(rock);
 	Remove_Entity(ECSplayer);
 }
 

@@ -86,3 +86,5 @@ Vec2 Scale(const Vec2& v, float scalar);
 Vec2 Lerp(const Vec2& a, const Vec2& b, float t);
 // Find the square root of a value
 float Sqrt(float x);
+// Clamp a value between two values
+void Clamp(float& val, float const& min, float const& max);

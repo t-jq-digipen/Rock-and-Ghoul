@@ -248,6 +248,8 @@ source_group("BaseEngine\\ECS\\System" FILES
 source_group("BaseEngine\\ECS\\System\\Physics" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
 )
 # S -> COLLILI
 source_group("BaseEngine\\ECS\\System\\Collision" FILES 

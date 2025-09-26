@@ -324,6 +324,13 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	break;	// CT_Tag
 
+	case (CT_Input):
+	{
+		std::cout << "REGISTRY | HAS COMPONENT | TAG       | eID: " << eID << "\n";
+		return input.hasComponent(eID);
+	}
+	break;	// CT_Tag
+
 	default:
 		return false;
 	}

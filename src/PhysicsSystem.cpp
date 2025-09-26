@@ -29,10 +29,7 @@ void PhysicsSystem::Update(float dt) {
         }
     }
 
-    // Check if should draw hitboxes
-    bool drawHitboxes = Input::IsKeyHeld(GLFW_KEY_0);
 
-    // Step 2: Collision checks
 
 
 }
