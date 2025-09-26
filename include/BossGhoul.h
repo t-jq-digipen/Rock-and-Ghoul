@@ -29,13 +29,12 @@ inline void DrawBossGhoulHP(Render& renderer,
 class BossGhoulSystem : public ISystem {
 public:
     void Initialize() {
-        // Initialize any system-specific data here
     }
 
     void Update(float dt) override {
-        // Iterate through all BossGhoul components like PlayerSystem does with Tag components
+        //  all BossGhoul components
         for (auto& [entity, ghoul] : CM_BossGhoul().getComponents()) {
-            // Check if entity has required components
+            // if entity has components
             if (!Has_Component(entity, CT_Transform)) continue;
 
             auto& transform = Get_TransformComponent(entity);
@@ -72,23 +71,19 @@ public:
                 else {
                     ghoul.currhp = 0.f;
                     ghoul.state = GHOUL_DEAD;
-                    continue; // Skip to next entity
+                    continue;
                 }
 
-                // Move the boss up and down
+                // Move up and down
                 float moveDirection = (ghoul.moveDir == 0) ? 1.f : -1.f;
                 transform.pos.y += baseSpeed * moveDirection * dt * 60.f;
 
-                // Boundary checking and direction switching
+                // checking and direction switching
                 if (ghoul.moveDir == 0 && transform.pos.y >= 700.f) {
                     ghoul.moveDir = 1;
-                    // Note: speedY is being modified but not used in movement calculation
-                    // Consider removing this line or using speedY in the movement
-                    ghoul.speedY *= -1;
                 }
                 else if (ghoul.moveDir == 1 && transform.pos.y <= 200.f) {
                     ghoul.moveDir = 0;
-                    ghoul.speedY *= -1;
                 }
             }
         }
