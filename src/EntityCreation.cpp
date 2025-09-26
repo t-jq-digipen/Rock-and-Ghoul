@@ -8,7 +8,7 @@ Entity Create_Player(float x, float y) {
     Entity player = Create_Entity();
     Add_Component(player, TransformComponent{ {x, y}, {100.f, 100.f} });
     Add_Component(player, PhysicsComponent{});
-    Add_Component(player, ColliderComponent{});
+    Add_Component(player, AABBComponent{});
     Add_Component(player, InputComponent{ CS_WASD });
     Add_Component(player, TagComponent{ T_PLAYER });
     GLuint tex = Render::GetInstance().LoadTexture("../Assets/Rock_FightingPose_2048px.png");

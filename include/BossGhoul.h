@@ -3,6 +3,7 @@
 #include "Registry.h"
 #include "Component.h"
 #include "Render.h"
+
 inline void DrawBossGhoulHP(Render& renderer,
     const BossGhoulComponent& ghoul,
     const TransformComponent& transform,
@@ -11,15 +12,15 @@ inline void DrawBossGhoulHP(Render& renderer,
 {
     if (ghoul.state == GHOUL_DEAD) return;
 
-    float ratio = ghoul.currhp / ghoul.maxhp;
+    float ratio = ghoul.currhp / ghoul.maxhp; //percentage of health
     if (ratio < 0.f) ratio = 0.f;
     if (ratio > 1.f) ratio = 1.f;
 
-    // Background bar (grey)
+    //  bar (grey)
     renderer.DrawRect({ transform.pos.x, transform.pos.y + 250.f },
         width, height, { 0.2f, 0.2f, 0.2f });
 
-    // Foreground bar (red)
+    //  bar (red)
     renderer.DrawRect({ transform.pos.x - (width * (1 - ratio)) * 0.5f,
                         transform.pos.y + 250.f },
         width * ratio, height, { 1.f, 0.f, 0.f });
@@ -27,16 +28,21 @@ inline void DrawBossGhoulHP(Render& renderer,
 
 class BossGhoulSystem : public ISystem {
 public:
-    void Update(float dt) override {
-        for (auto e : entities) {
-            if (!Has_Component(e, CT_BossGhoul) || !Has_Component(e, CT_Transform)) continue;
+    void Initialize() {
+        // Initialize any system-specific data here
+    }
 
-            auto& ghoul     = Get_BossGhoulComponent(e);
-            auto& transform = Get_TransformComponent(e);
-            
+    void Update(float dt) override {
+        // Iterate through all BossGhoul components like PlayerSystem does with Tag components
+        for (auto& [entity, ghoul] : CM_BossGhoul().getComponents()) {
+            // Check if entity has required components
+            if (!Has_Component(entity, CT_Transform)) continue;
+
+            auto& transform = Get_TransformComponent(entity);
+
             if (ghoul.state == GHOUL_DEAD) continue;
 
-            // START
+            // START STATE
             if (ghoul.state == GHOUL_START) {
                 ghoul.currhp += 0.1f;
                 if (ghoul.currhp >= ghoul.maxhp) {
@@ -45,35 +51,39 @@ public:
                 }
             }
 
-            // ATTACKING
-            if (ghoul.state == GHOUL_ATTACKING) {
+            // ATTACKING STATE
+            else if (ghoul.state == GHOUL_ATTACKING) {
                 ghoul.currhp -= 5.0f * dt;
-                float baseSpeed;
-                if (ghoul.currhp >= 66.f && ghoul.currhp <= 100.f)
-                {
-                    baseSpeed = 0.2f; // Boss normal speed
-                }
-                // PHASE 2
-                else if (ghoul.currhp >= 33.f && ghoul.currhp < 66.f)
-                {
-                    baseSpeed = 0.5f; // Boss becomes faster
-                }
-                // PHASE 3
-                else if (ghoul.currhp > 0.f && ghoul.currhp < 33.f)
-                {
-                    baseSpeed = 1.0f; // BOSS GOES NYOOM
-                }
 
+                float baseSpeed;
+                // PHASE 1 (100-66% HP)
+                if (ghoul.currhp >= 66.f) {
+                    baseSpeed = 0.2f;
+                }
+                // PHASE 2 (66-33% HP)
+                else if (ghoul.currhp >= 33.f) {
+                    baseSpeed = 0.5f;
+                }
+                // PHASE 3 (33-0% HP)
+                else if (ghoul.currhp > 0.f) {
+                    baseSpeed = 1.0f;
+                }
+                // DEAD
                 else {
                     ghoul.currhp = 0.f;
                     ghoul.state = GHOUL_DEAD;
-                    return;
+                    continue; // Skip to next entity
                 }
-                transform.pos.y += baseSpeed * (ghoul.moveDir == 0 ? 1.f : -1.f) * dt * 60.f;
 
+                // Move the boss up and down
+                float moveDirection = (ghoul.moveDir == 0) ? 1.f : -1.f;
+                transform.pos.y += baseSpeed * moveDirection * dt * 60.f;
 
+                // Boundary checking and direction switching
                 if (ghoul.moveDir == 0 && transform.pos.y >= 700.f) {
                     ghoul.moveDir = 1;
+                    // Note: speedY is being modified but not used in movement calculation
+                    // Consider removing this line or using speedY in the movement
                     ghoul.speedY *= -1;
                 }
                 else if (ghoul.moveDir == 1 && transform.pos.y <= 200.f) {
@@ -83,19 +93,18 @@ public:
             }
         }
     }
-    void Draw(Render& renderer) {
-        for (auto e : entities) {
-            if (!Has_Component(e, CT_BossGhoul) || !Has_Component(e, CT_Transform)) continue;
-            
-            auto& ghoul     = Get_BossGhoulComponent(e);
-            auto& transform = Get_TransformComponent(e);
 
+    void Draw(Render& renderer) {
+        // Draw HP bars for all boss ghouls
+        for (auto& [entity, ghoul] : CM_BossGhoul().getComponents()) {
+            if (!Has_Component(entity, CT_Transform)) continue;
+
+            auto& transform = Get_TransformComponent(entity);
             DrawBossGhoulHP(renderer, ghoul, transform);
         }
-
     }
+
     void DrawSystem(float dt, Render& renderer) {
         Draw(renderer);
     }
 };
-
