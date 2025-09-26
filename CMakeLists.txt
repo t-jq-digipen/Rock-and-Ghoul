@@ -159,6 +159,19 @@ source_group("BaseEngine\\BaseSystems\\Graphics" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
 )
+
+source_group("BaseEngine\\BaseSystems\\Graphics\\Components" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
+)
+
+source_group("BaseEngine\\BaseSystems\\Graphics\\Render" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
+)
 # ================================================= GRAPHICS
 
 # BASE ENG SYSTEMS | INPUT
@@ -262,18 +275,6 @@ source_group("Editor" FILES
 )
 # ================================================= FRAMERATE
 
-source_group("Systems\\Graphics\\Components" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
-)
-
-source_group("Systems\\Graphics\\Render" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
-)
 
 source_group("Physics\\Movement" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
