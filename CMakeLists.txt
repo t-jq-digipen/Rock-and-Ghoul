@@ -153,6 +153,7 @@ source_group("BaseEngine\\ECS\\System" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SystemManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/SystemManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
@@ -252,6 +253,7 @@ source_group("Game\\GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Spells.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fretboard.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Enemy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Enemy.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
 )
 
