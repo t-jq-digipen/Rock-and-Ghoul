@@ -229,7 +229,7 @@ source_group("Physics\\Movement" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementController.h
 )
-source_group("Game\\State" FILES 
+source_group("Game\\State\\GameStates" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStates.h
