@@ -21,6 +21,13 @@ void PhysicsSystem::Update(float dt) {
 
     for (auto& [entID, phyComp] : CM_Physics().getComponents())
     {
+        // for Force force : ForceList(std::vector?)
+        /*
+        * {
+        *   phyComp.vel.x += force.vel.x * dt;
+        *   phyComp.vel.y += force.vel.y * dt;
+        * }
+        */
         if (Has_Component(entID, CT_Transform))
         {
             TransformComponent& transform = Get_TransformComponent(entID);

@@ -6,6 +6,8 @@
 #include "Registry.h"
 #include "GameStateManager.h"
 
+extern float g_dt;
+
 class CoreEngine {
     std::vector<ISystem*> systems;
     bool running;

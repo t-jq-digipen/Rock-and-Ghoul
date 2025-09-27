@@ -11,6 +11,7 @@ CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
 
 
 GSM gsm;
+float g_dt; // Global dt
 
 void CoreEngine::AddSystem(ISystem* sys) {
     systems.push_back(sys);
@@ -38,6 +39,7 @@ void CoreEngine::Run() {
         while (gsm.GetNextState() == gsm.GetCurrentState()) {
             double now = glfwGetTime();
             float dt = static_cast<float>(now - lastFrame);
+            g_dt = dt;
             lastFrame = now;
 
             glfwPollEvents();

@@ -84,6 +84,8 @@ Vec2 Subtract(const Vec2& a, const Vec2& b);
 Vec2 Scale(const Vec2& v, float scalar);
 // Linear interpolation
 Vec2 Lerp(const Vec2& a, const Vec2& b, float t);
+// Unit Vector
+Vec2 Normalize(const Vec2 a);
 // Find the square root of a value
 float Sqrt(float x);
 // Clamp a value between two values

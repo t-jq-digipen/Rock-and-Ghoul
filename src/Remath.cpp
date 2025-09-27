@@ -1,4 +1,5 @@
 #include "Remath.h"
+#include <cmath>
 
 float DistanceSquared(const Vec2& p1, const Vec2& p2) {
     float dx = p2.x - p1.x;
@@ -25,6 +26,17 @@ Vec2 Scale(const Vec2& v, float scalar) {
 // Linear interpolation: find where u are along a straight line
 Vec2 Lerp(const Vec2& a, const Vec2& b, float t) {
     return Add(a, Scale(Subtract(b, a), t));
+}
+
+// Normalize
+Vec2 Normalize(const Vec2 a)
+{
+    const float len = std::sqrt(a.x * a.x + a.y * a.y);
+
+    if (len>0.f)
+    { return { a.x / len, a.y / len }; }
+
+    return { 0.f,0.f };
 }
 
 float Sqrt(float x) {
