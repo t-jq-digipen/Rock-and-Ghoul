@@ -6,7 +6,7 @@ namespace Physics {
 	// Ctor
 	ForceComp::ForceComp() : dir{ 0.f,0.f }, mag{ 0.f }, vel{ 0.f,0.f }, age{}, lifetime{} {}
 	
-	ForceComp::ForceComp(Vec2 direction, float magnitude, float duration = 0) : dir{ direction }, mag{ magnitude }, vel{ 0.f,0.f }, age{}, lifetime{duration}
+	ForceComp::ForceComp(Vec2 direction, float magnitude, float duration) : dir{ direction }, mag{ magnitude }, vel{ 0.f,0.f }, age{}, lifetime{duration}
 	{
 		dir = Normalize(direction);
 		vel = Scale(dir, mag);

@@ -10,7 +10,7 @@ void WASD_Movement(Entity eID, float& dt)
     auto& physics = Get_PhysicsComponent(eID);
 
 	// very crude brake this shit gotta change
-	if (!(Input::IsKeyHeld(GLFW_KEY_W) || Input::IsKeyHeld(GLFW_KEY_S)))
+	/*if (!(Input::IsKeyHeld(GLFW_KEY_W) || Input::IsKeyHeld(GLFW_KEY_S)))
 	{ 
 		if (physics.vel.y >= 20.f)
 		{
@@ -39,7 +39,7 @@ void WASD_Movement(Entity eID, float& dt)
 		{
 			physics.vel.x = 0.f;
 		}
-	}
+	}*/
 
     if (Input::IsKeyHeld(GLFW_KEY_W)) physics.vel.y += accel * dt;
     if (Input::IsKeyHeld(GLFW_KEY_S)) physics.vel.y -= accel * dt;

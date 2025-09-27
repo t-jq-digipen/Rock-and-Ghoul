@@ -19,7 +19,7 @@ namespace Physics {
 		float lifetime;			// Lifetime of force (if 0, means it just applies instantly for one frame then disappears)
 	public:
 		ForceComp();
-		ForceComp(Vec2 direction, float magnitude, float lifetime = 0);
+		ForceComp(Vec2 direction, float magnitude, float duration = 0);
 		~ForceComp() = default;		// should be ok... if using normal types without assigned memory
 
 		void Update();				
@@ -42,7 +42,10 @@ namespace Physics {
 	// Physics Component
 	class PhysicsComp {
 		Vec2 vel;
+		float decay;
 
+		AABB aabb;
+		Circle circle;
 	};
 }
 
