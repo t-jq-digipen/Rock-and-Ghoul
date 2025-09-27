@@ -141,7 +141,7 @@ void MainMenu::Free()
 void MainMenu::Unload()
 {
 	std::cout << "Main Menu Unloaded!!!" << std::endl;
-    if (titleTexture)
+    /*if (titleTexture)
     {
         glDeleteTextures(1, &titleTexture);
         titleTexture = 0;
@@ -169,6 +169,12 @@ void MainMenu::Unload()
     {
         glDeleteTextures(1, &quitTexture);
         quitTexture = 0;
-    }
+    }*/
+    Render::GetInstance().UnloadTexture(titleTexture);
+    Render::GetInstance().UnloadTexture(rockTexture);
+    Render::GetInstance().UnloadTexture(ghoulTexture);
+    Render::GetInstance().UnloadTexture(playTexture);
+    Render::GetInstance().UnloadTexture(quitTexture);
+    //Render::GetInstance().ClearAllTextures(); //alternatively can use this
 
 }

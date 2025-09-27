@@ -37,6 +37,9 @@ public:
 
     //Image/Texture actions (texture caching maybe)
     GLuint LoadTexture(const std::string& path);
+    void UnloadTexture(const std::string& path); //if want use file path instead
+    void UnloadTexture(GLuint textureID); //to follow current 
+    void ClearAllTextures(); //can use this in the unload of each state etc.mainmenu unload, level1 unload
     
 
     
@@ -54,5 +57,8 @@ private:
     std::string readTextFile(const std::string& path);
     GLuint CompileShaderFromFile(const std::string& path, GLenum type);
     GLuint CreateProgramFromFiles(const std::string& vertPath, const std::string& fragPath);
+
+    //texture cache (allow multiple to share common sprite)
+    std::unordered_map<std::string, GLuint> textureCache;
 
 };

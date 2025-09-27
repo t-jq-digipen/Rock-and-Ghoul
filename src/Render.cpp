@@ -18,6 +18,7 @@ Render::~Render() {
     if (vao) glDeleteVertexArrays(1, &vao);
     if (vbo) glDeleteBuffers(1, &vbo);
     if (shaderProgram) glDeleteProgram(shaderProgram);
+    ClearAllTextures();
 }
 
 void Render::Init() {
@@ -119,6 +120,13 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
 
 GLuint Render::LoadTexture(const std::string& path) {
 
+    // Check if texture already exists
+    auto it = textureCache.find(path);
+    if (it != textureCache.end()) {
+        std::cout << "Found in cache: " << path << " ID: " << it->second << std::endl;
+        return it->second; // Return cached texture
+    }
+
     int width, height, channels;
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
@@ -151,7 +159,40 @@ GLuint Render::LoadTexture(const std::string& path) {
 
     stbi_image_free(data);
 
+    // Cache it
+    textureCache[path] = textureID;
+
     return textureID;
+}
+
+void Render::UnloadTexture(const std::string& path) {
+    auto it = textureCache.find(path);
+    if (it != textureCache.end()) {
+        glDeleteTextures(1, &it->second);
+        textureCache.erase(it);
+    }
+}
+
+void Render::UnloadTexture(GLuint textureID) {
+    // Find the texture in the cache
+    for (auto it = textureCache.begin(); it != textureCache.end(); ++it) {
+        if (it->second == textureID) {
+            std::cout << "Unloading texture ID: " << textureID << " from path: " << it->first << std::endl;
+            glDeleteTextures(1, &textureID);
+            glBindTexture(GL_TEXTURE_2D, 0); // Unbind any texture
+            textureCache.erase(it);
+            std::cout << "Texture unloaded successfully" << std::endl;
+            return; // Found and removed, exit
+        }
+    }
+    std::cout << "Warning: Texture ID " << textureID << " not found in cache" << std::endl;
+}
+
+void Render::ClearAllTextures() {
+    for (auto& pair : textureCache) {
+        glDeleteTextures(1, &pair.second);
+    }
+    textureCache.clear();
 }
 
 
