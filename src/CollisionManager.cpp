@@ -99,7 +99,7 @@ void CollisionManager::CheckCollisions() {
             auto& transB = Get_TransformComponent(b);
             compB.UpdateHitboxes(transB.pos);
 
-            // Determine collision shapes based on sprite textureID
+            // collision shapes based on sprite textureID
             bool aIsCircle = false, bIsCircle = false;
 
             if (Has_Component(a, CT_Sprite)) {
