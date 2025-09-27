@@ -12,11 +12,29 @@ layout (location = 1) in vec2 aTex;
 uniform mat4 uProjection;
 uniform vec2 uPos;
 uniform vec2 uScale;
+uniform float uRotation;
 
 out vec2 TexCoord;
 
 void main() {
-    vec2 scaled = aPos * uScale + uPos;
-    gl_Position = uProjection * vec4(scaled, 0.0, 1.0);
+
+    // Apply scaling first
+    vec2 scaled = aPos * uScale;
+    
+    // Create rotation matrix
+    float cosR = cos(uRotation);
+    float sinR = sin(uRotation);
+    mat2 rotationMatrix = mat2(cosR, -sinR, sinR,  cosR);
+    
+    // Apply rotation around center (0,0)
+    vec2 rotated = rotationMatrix * scaled;
+    
+    // Apply translation
+    vec2 transformed = rotated + uPos;
+    
+    gl_Position = uProjection * vec4(transformed, 0.0, 1.0);
+    
+    
     TexCoord = aTex;
+    
 }
