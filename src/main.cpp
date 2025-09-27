@@ -7,8 +7,33 @@
 #include "PlayerSystem.h"
 #include "BossGhoul.h"
 #include "PhysicsSystem.h"
+// testing json
+#include "JsonLoad.h"
+#include "FilePath.h"
+#include <iostream>
+
 BossGhoulSystem* bossGhoulSystem = nullptr;
 int main() {
+
+    // json testing
+    GameSettings settings;
+    settings.volume = 0.5f;
+    settings.resolutionHeight = 1080;
+    settings.resolutionWidth = 1920;
+
+    if (JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings)) {
+        std::cout << "Settings saved successfully yippee!" << std::endl;
+    }
+    else { std::cout << "IT FAILED BOOOOOO" << std::endl; }
+
+    // loading it
+    auto loaded = JsonLoad::LoadSettings(FilePath::SETTINGS_FILE);
+    if (loaded) {
+        std::cout << "Settings loaded. Volume: " << loaded->volume << std::endl;
+    }
+    else { std::cout << "Fail" << std::endl; }
+    // end of json testing
+
     if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
 
     CoreEngine engine;
