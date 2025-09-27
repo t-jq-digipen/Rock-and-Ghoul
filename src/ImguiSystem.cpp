@@ -49,10 +49,10 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     // count active colliders
     int activeAABBs = 0;
     int totalAABBs = 0;
-    for (auto& [entity, aabb] : CM_AABB().getComponents()) { //loop all aabb
-        totalAABBs++; 
-        if (aabb.active) activeAABBs++;
-    }
+    //for (auto& [entity, aabb] : CM_AABB().getComponents()) { //loop all aabb
+    //    totalAABBs++; 
+    //    if (aabb.active) activeAABBs++;
+    //}
 
     ImGui::Text("AABB Colliders: %d / %d active", activeAABBs, totalAABBs);
 

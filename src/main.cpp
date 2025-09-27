@@ -7,7 +7,6 @@
 #include "PlayerSystem.h"
 #include "BossGhoul.h"
 #include "PhysicsSystem.h"
-#include "CollisionSystem.h"
 #include "ImguiSystem.h"
 BossGhoulSystem* bossGhoulSystem = nullptr;
 int main() {
@@ -22,7 +21,7 @@ int main() {
     engine.AddSystem(new RenderSystem(renderer));
     engine.AddSystem(new PlayerSystem());
     engine.AddSystem(new PhysicsSystem());
-    engine.AddSystem(new CollisionSystem());
+
     engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
     // initialize all systems (this sets up FMOD, OpenGL, etc.)
     engine.Initialize();

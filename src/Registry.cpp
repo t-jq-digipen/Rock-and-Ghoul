@@ -17,7 +17,7 @@ ComponentManager<AnimatorComponent>			animator;
 // CT_Physics
 ComponentManager<PhysicsComponent>			physics;
 // CT_AABB
-ComponentManager<AABBComponent>				aabb;
+//ComponentManager<AABBComponent>				aabb;
 // CT_CircleCollider
 ComponentManager<CircleColliderComponent>	circlecollider;
 
@@ -106,11 +106,11 @@ void Add_Component(Entity eID, PhysicsComponent const& comp)
 	physics.addComponent(eID, comp);
 }
 
-void Add_Component(Entity eID, AABBComponent const& comp)
-{
-	std::cout << "REGISTRY | ADDING COMPONENT | AABB		| eID: " << eID << "\n";
-	aabb.addComponent(eID, comp);
-}
+//void Add_Component(Entity eID, AABBComponent const& comp)
+//{
+//	std::cout << "REGISTRY | ADDING COMPONENT | AABB		| eID: " << eID << "\n";
+//	aabb.addComponent(eID, comp);
+//}
 
 void Add_Component(Entity eID, CircleColliderComponent const& comp)
 {
@@ -197,12 +197,12 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	break;	// CT_Physics
 
-	case (CT_AABB):
-	{
-		std::cout << "REGISTRY | REMOVING COMPONENT | AABB			| eID: " << eID << "\n";
-		aabb.removeComponent(eID);
-	}
-	break;	// CT_AABB
+	//case (CT_AABB):
+	//{
+	//	std::cout << "REGISTRY | REMOVING COMPONENT | AABB			| eID: " << eID << "\n";
+	//	aabb.removeComponent(eID);
+	//}
+	//break;	// CT_AABB
 
 	case (CT_CircleCollider):
 	{
@@ -295,12 +295,12 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	break;	// CT_Physics
 
-	case (CT_AABB):
-	{
-		std::cout << "REGISTRY | HAS COMPONENT | COLLIDER  | eID: " << eID << "\n";
-		return aabb.hasComponent(eID);
-	}
-	break;	// CT_AABB
+	//case (CT_AABB):
+	//{
+	//	std::cout << "REGISTRY | HAS COMPONENT | COLLIDER  | eID: " << eID << "\n";
+	//	return aabb.hasComponent(eID);
+	//}
+	//break;	// CT_AABB
 
 	case (CT_CircleCollider):
 	{
@@ -360,7 +360,7 @@ AnimatorComponent&			Get_AnimatorComponent(Entity eID)		{ return animator.getCom
 
 PhysicsComponent&			Get_PhysicsComponent(Entity eID)		{ return physics.getComponent(eID); }
 
-AABBComponent&				Get_AABBComponent(Entity eID)			{ return aabb.getComponent(eID); }
+//AABBComponent&				Get_AABBComponent(Entity eID)			{ return aabb.getComponent(eID); }
 
 CircleColliderComponent&	Get_CircleColliderComponent(Entity eID)	{ return circlecollider.getComponent(eID); }
 
@@ -382,7 +382,7 @@ ComponentManager<TransformComponent>&		CM_Transform()		{ return transform; }
 ComponentManager<SpriteComponent>&			CM_Sprite()			{ return sprite; }
 ComponentManager<AnimatorComponent>&		CM_Animator()		{ return animator; }
 ComponentManager<PhysicsComponent>&			CM_Physics()		{ return physics; }
-ComponentManager<AABBComponent>&			CM_AABB()			{ return aabb; }
+//ComponentManager<AABBComponent>&			CM_AABB()			{ return aabb; }
 ComponentManager<CircleColliderComponent>&	CM_CircleCollider()	{ return circlecollider; }
 ComponentManager<AudioComponent	>&			CM_Audio()			{ return audio; }
 ComponentManager<LifetimeComponent>&		CM_Lifetime()		{ return lifetime; }

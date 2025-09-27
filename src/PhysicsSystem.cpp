@@ -4,7 +4,8 @@
 #include "Collision.h"
 #include "Input.h"
 #include <iostream>
-
+#include "CollisionManager.h"
+static CollisionManager collisionManager;
 // EntityManager& em;
 //ComponentManager<TransformComponent>& transformManager;
 //ComponentManager<PhysicsComponent>& physicsManager;
@@ -44,7 +45,9 @@ void PhysicsSystem::Update(float dt) {
 
     // Check if should draw hitboxes
     bool drawHitboxes = Input::IsKeyHeld(GLFW_KEY_0);
-
+    collisionManager.Clear();
+    collisionManager.CheckCollisions();
+    collisionManager.ProcessEvents();
     // Step 2: Collision checks
 
     // old
