@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include "Remath.h"
+#include <fstream>
 
 class Render {
 public:
@@ -38,6 +39,10 @@ private:
     GLuint vao, vbo, shaderProgram;
     glm::mat4 projection;
 
-    GLuint CompileShader(const char* source, GLenum type);
-    GLuint LinkProgram(GLuint vertexShader, GLuint fragmentShader);
+
+    //compile,link,validate shaders into program from file
+    std::string readTextFile(const std::string& path);
+    GLuint CompileShaderFromFile(const std::string& path, GLenum type);
+    GLuint CreateProgramFromFiles(const std::string& vertPath, const std::string& fragPath);
+
 };

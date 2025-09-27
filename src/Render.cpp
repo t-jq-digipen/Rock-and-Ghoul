@@ -11,43 +11,7 @@ Render* Render::instance = nullptr;
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-// Vertex + Fragment shaders
-const char* vertexSrc = R"(
-#version 450 core
-layout (location = 0) in vec2 aPos;
-layout (location = 1) in vec2 aTex;
-
-uniform mat4 uProjection;
-uniform vec2 uPos;
-uniform vec2 uScale;
-
-out vec2 TexCoord;
-
-void main() {
-    vec2 scaled = aPos * uScale + uPos;
-    gl_Position = uProjection * vec4(scaled, 0.0, 1.0);
-    TexCoord = aTex;
-}
-)";
-
-const char* fragmentSrc = R"(
-#version 450 core
-out vec4 FragColor;
-
-uniform vec3 uColor;
-uniform sampler2D uTexture;
-uniform bool uUseTexture;
-
-in vec2 TexCoord;
-
-void main() {
-    if (uUseTexture)
-        FragColor = texture(uTexture, TexCoord);
-    else
-        FragColor = vec4(uColor, 1.0);
-}
-)";
-
+// Vertex + Fragment shaders loaded from file in Assets
 
 Render::Render() : vao(0), vbo(0), shaderProgram(0) {}
 Render::~Render() {
@@ -84,12 +48,10 @@ void Render::Init() {
     glBindVertexArray(0);
 
     // Shaders
-    GLuint vsh = CompileShader(vertexSrc, GL_VERTEX_SHADER);
-    GLuint fsh = CompileShader(fragmentSrc, GL_FRAGMENT_SHADER);
-    shaderProgram = LinkProgram(vsh, fsh);
-
-    glDeleteShader(vsh);
-    glDeleteShader(fsh);
+    shaderProgram = CreateProgramFromFiles(
+        "../Assets/vertexSrc.vert",
+        "../Assets/fragmentSrc.frag"
+    );
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -185,7 +147,7 @@ GLuint Render::LoadTexture(const std::string& path) {
     return textureID;
 }
 
-GLuint Render::CompileShader(const char* source, GLenum type) {
+/*GLuint Render::CompileShader(const char* source, GLenum type) {
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, nullptr);
     glCompileShader(shader);
@@ -214,7 +176,89 @@ GLuint Render::LinkProgram(GLuint vertexShader, GLuint fragmentShader) {
         std::cerr << "Shader link error: " << infoLog << std::endl;
     }
     return program;
+}*/
+std::string Render::readTextFile(const std::string& path) {
+
+    std::ifstream ifs(path, std::ios::in | std::ios::binary);
+
+    if (!ifs) {
+        /*
+        std::cout << "cwd = " << std::filesystem::current_path() << "\n";
+        std::cout << "trying to open: " << path << "\n";
+        std::cout << "exists? " << std::filesystem::exists(path) << "\n";*/
+        throw std::runtime_error("Cannot open file: " + path);
+
+    }
+
+    std::string s;
+    ifs.seekg(0, std::ios::end);
+    s.resize(static_cast<size_t>(ifs.tellg()));
+    ifs.seekg(0, std::ios::beg);
+    ifs.read(&s[0], s.size());
+
+    return s;
 }
+
+
+GLuint Render::CompileShaderFromFile(const std::string& path, GLenum type) {
+
+    const std::string src = readTextFile(path);
+    const char* csrc = src.c_str();
+
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &csrc, nullptr);
+    glCompileShader(shader);
+
+    GLint ok = GL_FALSE;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
+
+    if (!ok) {
+        char log[2048];
+        glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
+        std::cerr << "Shader compile error in \"" << path << "\":\n" << log << std::endl;
+        glDeleteShader(shader);
+        return 0;
+    }
+
+    return shader;
+}
+
+GLuint Render::CreateProgramFromFiles(const std::string& vertPath, const std::string& fragPath) {
+
+    GLuint vsh = CompileShaderFromFile(vertPath, GL_VERTEX_SHADER);
+    GLuint fsh = CompileShaderFromFile(fragPath, GL_FRAGMENT_SHADER);
+    if (!vsh || !fsh) { 
+        if (vsh) {
+            glDeleteShader(vsh);
+        }
+        if (fsh) {
+            glDeleteShader(fsh);
+        } 
+        return 0;
+    }
+
+    GLuint prog = glCreateProgram();
+    glAttachShader(prog, vsh);
+    glAttachShader(prog, fsh);
+    glLinkProgram(prog);
+
+    glDeleteShader(vsh);
+    glDeleteShader(fsh);
+
+    GLint ok = GL_FALSE;
+
+    glGetProgramiv(prog, GL_LINK_STATUS, &ok);
+    if (!ok) {
+        char log[2048];
+        glGetProgramInfoLog(prog, sizeof(log), nullptr, log);
+        std::cerr << "Program link error:\n" << log << std::endl;
+        glDeleteProgram(prog);
+        return 0;
+    }
+
+    return prog;
+}
+
 void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) {
     GLfloat vertices[4] = {
         start.x, start.y,
