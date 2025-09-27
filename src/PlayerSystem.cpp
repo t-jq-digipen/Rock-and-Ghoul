@@ -2,8 +2,9 @@
 
 
 
-constexpr float accel = .1f;
+constexpr float dash = 10.f;
 constexpr float maxspeed = 10.f;
+constexpr float speed = 500.f;
 
 void WASD_Movement(Entity eID, float& dt)
 {
@@ -53,10 +54,30 @@ void WASD_Movement(Entity eID, float& dt)
 	auto& physics = Get_PhysicsComponent(eID);
 	const Vec2& vel = physics.Get_Vel();
 
-	if (Input::IsKeyHeld(GLFW_KEY_W) && vel.y < maxspeed) physics.AddForce({ 0.f,1.f }, accel);
+	auto& transform = Get_TransformComponent(eID);
+
+
+	if (Input::IsKeyHeld(GLFW_KEY_W)) transform.pos.y += speed * dt;
+	if (Input::IsKeyHeld(GLFW_KEY_S)) transform.pos.y -= speed * dt;
+	if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
+	if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
+
+	// knockback test
+	int vert{0};
+	int hor{0};
+	if (Input::IsKeyHeld(GLFW_KEY_W)) vert += 1;
+	if (Input::IsKeyHeld(GLFW_KEY_S)) vert -= 1;
+	if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
+	if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+
+	Vec2 dir{ (float)hor, (float)vert };
+
+	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) physics.AddForce(dir, dash);
+
+	/*if (Input::IsKeyHeld(GLFW_KEY_W) && vel.y < maxspeed) physics.AddForce({ 0.f,1.f }, accel);
 	if (Input::IsKeyHeld(GLFW_KEY_S) && vel.y > -maxspeed) physics.AddForce({ 0.f,-1.f }, accel);
 	if (Input::IsKeyHeld(GLFW_KEY_A) && vel.x > -maxspeed) physics.AddForce({ -1.f,0.f }, accel);
-	if (Input::IsKeyHeld(GLFW_KEY_D) && vel.x < maxspeed) physics.AddForce({ 1.f,0.f }, accel);
+	if (Input::IsKeyHeld(GLFW_KEY_D) && vel.x < maxspeed) physics.AddForce({ 1.f,0.f }, accel);*/
 
 	
 

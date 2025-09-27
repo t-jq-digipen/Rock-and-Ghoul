@@ -59,7 +59,6 @@ namespace Physics {
 	{
 		if (force.IsImpulse())
 		{
-			std::cout << "IsImpulse passed\n";
 			return force.GetForce();
 		}
 		return Scale(force.GetForce(), g_dt);
@@ -125,7 +124,6 @@ namespace Physics {
 	// FORCES
 	void PhysicsComp::AddForce(Vec2 const& direction, float magnitude, float duration)
 	{
-		std::cout << "ForceAdded\n";
 		ForceComp temp(direction, magnitude, duration);
 		forcelist.Add_Force(temp);
 	}
@@ -134,7 +132,6 @@ namespace Physics {
 	{
 		forcelist.Update();
 		vel = Add(vel, forcelist.Get_NetVel());
-		std::cout << "force net val = " << forcelist.Get_NetVel().x << "," << forcelist.Get_NetVel().y << '\n';
 	}
 
 
