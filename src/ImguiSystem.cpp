@@ -1,6 +1,7 @@
 #include "ImGuiSystem.h"
 #include "Registry.h"
 #include "glapp.h"
+#include "CoreEngine.h"
 void ImGuiSystem::InitializeImGui(GLFWwindow* window) {
     IMGUI_CHECKVERSION(); //checks version compatibility
     ImGui::CreateContext();
@@ -38,7 +39,26 @@ void ImGuiSystem::Render() {
 void ImGuiSystem::ShowEngineDebugWindow() {
     ImGui::Begin("Engine Info");
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-    ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+    ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate); //ms
+    CoreEngine& engine = CoreEngine::GetInstance(); // however you access it
+    auto& timings = engine.GetTimings();
+
+    // Calculate total frame time
+    double total = 0.0;
+    for (auto& [name, t] : timings) total += t.ms;
+
+    ImGui::Separator();
+    ImGui::Text("System Timings:");
+    // Loop through each system and display its timing
+    for (auto& [name, t] : timings) { //gets reference to the real map
+        // Calculate percentage of total frame time this system used
+        double percent = (total > 0.0) ? (t.ms / total) * 100.0 : 0.0;
+        // Show system name, elapsed time in ms, and percentage of total frame
+        ImGui::Text("%s: %.3f ms (%.1f%%)", name.c_str(), t.ms, percent);
+
+        //visual bar
+        ImGui::ProgressBar((float)(percent / 100.0f), ImVec2(-1, 0), (std::to_string((int)percent) + "%").c_str());
+    }
     ImGui::End();
 }
 

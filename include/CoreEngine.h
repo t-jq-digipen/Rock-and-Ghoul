@@ -5,23 +5,34 @@
 
 #include "Registry.h"
 #include "GameStateManager.h"
+#include <chrono>
+#include <unordered_map>
+#include <string>
 
+struct SystemTiming {
+    double ms = 0.0; // milliseconds per frame
+};
 class CoreEngine {
     std::vector<ISystem*> systems;
+    std::unordered_map<std::string, SystemTiming> timings;
     bool running;
     double lastFrame;
 
     // Systems (e.g physics/render/transform yada yada)
-
-public:
     CoreEngine();
+public:
+    //for in game perf imgui
+    static CoreEngine& GetInstance() {
+        static CoreEngine instance;
+        return instance;
+    }
 
     void AddSystem(ISystem* sys);
     void Initialize();
     void Run();
     void Shutdown();
     void Quit();
-
+    std::unordered_map<std::string, SystemTiming>& GetTimings() { return timings; }
 };
 
 
