@@ -11,7 +11,7 @@ Render* Render::instance = nullptr;
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-// Vertex + Fragment shaders loaded from file in Assets
+// Vertex + Fragment shaders loaded from file in Assets, any changes to shader code to be done inside those fiels
 
 Render::Render() : vao(0), vbo(0), shaderProgram(0) {}
 Render::~Render() {
@@ -61,6 +61,11 @@ void Render::Init() {
         0.0f, static_cast<float>(GLApp::height),
         -1.0f, 1.0f
     );
+}
+
+void Render::ClearBackground(const Colour4& color) {
+    glClearColor(color.r, color.g, color.b, color.a);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color) {
@@ -113,6 +118,7 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
 }
 
 GLuint Render::LoadTexture(const std::string& path) {
+
     int width, height, channels;
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
@@ -144,39 +150,11 @@ GLuint Render::LoadTexture(const std::string& path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
+
     return textureID;
 }
 
-/*GLuint Render::CompileShader(const char* source, GLenum type) {
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &source, nullptr);
-    glCompileShader(shader);
 
-    GLint success;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-        std::cerr << "Shader compile error: " << infoLog << std::endl;
-    }
-    return shader;
-}
-
-GLuint Render::LinkProgram(GLuint vertexShader, GLuint fragmentShader) {
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-    glLinkProgram(program);
-
-    GLint success;
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetProgramInfoLog(program, 512, nullptr, infoLog);
-        std::cerr << "Shader link error: " << infoLog << std::endl;
-    }
-    return program;
-}*/
 std::string Render::readTextFile(const std::string& path) {
 
     std::ifstream ifs(path, std::ios::in | std::ios::binary);

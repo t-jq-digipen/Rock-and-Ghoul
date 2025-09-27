@@ -55,8 +55,9 @@ void MainMenu::Update()
     //std::cout << Input::GetMouseX() << ", " << Input::GetMouseY() << std::endl;
 
     // Clear background, add background color
-    glClearColor(0.5, 0, 0.7, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+    //glClearColor(0.5, 0, 0.7, 1);
+    //glClear(GL_COLOR_BUFFER_BIT);
+    renderer.ClearBackground({ 0.5, 0, 0.7, 1 });
 
     // Render main menu textures (placeholders rn)
 
@@ -169,4 +170,5 @@ void MainMenu::Unload()
         glDeleteTextures(1, &quitTexture);
         quitTexture = 0;
     }
+
 }

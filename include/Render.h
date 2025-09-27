@@ -5,6 +5,8 @@
 #include "Remath.h"
 #include <fstream>
 
+
+
 class Render {
 public:
     static Render& GetInstance() {
@@ -22,14 +24,22 @@ public:
     ~Render();
 
     void Init();
-    void DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color);
 
+    void ClearBackground(const Colour4& color); //use this to clear background, then set your background color
+
+    //Draw actions
+    void DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color); //draw square/point depending on size
+    void DrawRect(const Vec2& pos, float width, float height, const Colour3& color);
     void DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture);
     void DrawLine(const Vec2& start, const Vec2& end, const Colour3& color);
-    GLuint LoadTexture(const std::string& path);
     void DrawCircle(const glm::vec2& center, float radius, const Colour3& color, int segments);
 
-    void DrawRect(const Vec2& pos, float width, float height, const Colour3& color);
+
+    //Image/Texture actions (texture caching maybe)
+    GLuint LoadTexture(const std::string& path);
+    
+
+    
 
     bool IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height);
 
