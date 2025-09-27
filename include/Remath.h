@@ -1,7 +1,3 @@
-
-
-
-
 #ifndef RG_MATH_H
 #define RG_MATH_H
 // --------------------------------------------------
@@ -13,69 +9,111 @@
 
 */
 
-#include "math.h"
+#include <cmath>
+// ==============================================
+// CONSTANTS
+// ==============================================
+#define RG_PI       3.14159265358979323846
+#define RG_PI_2     1.57079632679489661923
+#define RG_2PI      6.28318530717958647692
 
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif //__cplusplus
-	// note: need to figure out #define RG_API   __declspec(dllexport) for export.h
+//#ifdef __cplusplus
+//extern "C"
+//{
+//#endif //__cplusplus
+//	// note: need to figure out #define RG_API   __declspec(dllexport) for export.h
 
 // TRIGO
 // ==================================================
 #pragma region TRIGO
-	float RGDegToRad(float x);
 
-	float RGRadToDeg(float x);
+	// ==============================================
+	// HELPER FUNCTIONS
+	// ==============================================
+	template <typename T>
+	T RG_GetPI();
 
-	float RGSin		(float x);
+	// ==============================================
+	// ANGLE CONVERSION
+	// ==============================================
+	template <typename T>
+	T RG_DegToRad(T x);
 
-	float RGCos		(float x);
+	template <typename T>
+	T RG_RadToDeg(T x);
 
-	float RGTan		(float x);
+	// ==============================================
+	// TRIGO FUNCTIONS (Radians)
+	// ==============================================
+	template<typename T>
+	T RG_Sin(T x);
 
-	float RGASin	(float x);
+	template<typename T>
+	T RG_Cos(T x);
 
-	float RGACos	(float x);
+	template<typename T>
+	T RG_Tan(T x);
 
-	float RGATan	(float x);
+	template<typename T>
+	T RG_ASin(T x);
 
+	template<typename T>
+	T RG_ACos(T x);
+
+	template<typename T>
+	T RG_ATan(T x);
+
+	template<typename T>
+	T RG_ATan2(T y, T x);
+
+	// ==============================================
 	// DEGREE VARIANTS
-	#define RGSinDeg(x)     RGSin(AEDegToRad(x))
-	#define RGCosDeg(x)     RGCos(AEDegToRad(x))
-	#define RGTanDeg(x)     RGTan(AEDegToRad(x))
-	#define RGASinDeg(x)    RGRadToDeg(AEASin(x))
-	#define RGACosDeg(x)    RGRadToDeg(AEACos(x))
-	#define RGATanDeg(x)    RGRadToDeg(AEATan(x))
+	// ==============================================
+	template<typename T>
+	T RG_SinDeg(T x);
+
+	template<typename T>
+	T RG_CosDeg(T x);
+
+	template<typename T>
+	T RG_TanDeg(T x);
+
+	template<typename T>
+	T RG_ASinDeg(T x);
+
+	template<typename T>
+	T RG_ACosDeg(T x);
+
+	template<typename T>
+	T RG_ATanDeg(T x);
 
 #pragma endregion TRIGO
 // ==================================================
 
 	
 
-#ifdef __cplusplus 
-}
-#endif //__cplusplus
+//#ifdef __cplusplus 
+//}
+//#endif //__cplusplus
 
 #endif // RG_MATH_H
 #pragma once
-
-struct Vec2 {
-    float x, y;
-};
-struct Vec3 {
-    float x, y, z;
-};
 
 struct Colour3 {
     float r, g, b;
 };
 
+// 2D VECTORS
+// ==================================================
+#pragma region 2DVectors
+
+struct Vec2 {
+	float x, y;
+};
 // Calculate squared distance between 2 points
-float DistanceSquared(const Vec2& p1, const Vec2& p2);
+float RG_DistanceSquared(const Vec2& p1, const Vec2& p2);
 // Calculate dot product between 2 vectors
-float DotProduct(const Vec2& a, const Vec2& b);
+float RG_DotProduct(const Vec2& a, const Vec2& b);
 // Addition between 2 vectors
 Vec2 Add(const Vec2& a, const Vec2& b);
 // Subtraction between 2 vectors
@@ -84,5 +122,17 @@ Vec2 Subtract(const Vec2& a, const Vec2& b);
 Vec2 Scale(const Vec2& v, float scalar);
 // Linear interpolation
 Vec2 Lerp(const Vec2& a, const Vec2& b, float t);
+// ==================================================
+
+#pragma endregion 2DVectors
+
+// 3D VECTORS
+// ==================================================
+struct Vec3 {
+	float x, y, z;
+};
+
+// ==================================================
+
 // Find the square root of a value
 float Sqrt(float x);
