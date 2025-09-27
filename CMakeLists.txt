@@ -255,8 +255,8 @@ source_group("BaseEngine\\ECS\\System\\Physics" FILES
 source_group("BaseEngine\\ECS\\System\\Collision" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionManager.h
 )
 
 source_group("BaseEngine\\ECS\\System\\Imgui" FILES 

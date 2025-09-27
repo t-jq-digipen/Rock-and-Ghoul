@@ -7,8 +7,6 @@
 #include "PlayerSystem.h"
 #include "PhysicsSystem.h"
 #include "ImguiSystem.h"
-BossGhoulSystem* bossGhoulSystem = nullptr;
-#include "CollisionSystem.h"
 
 int main() {
     if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;

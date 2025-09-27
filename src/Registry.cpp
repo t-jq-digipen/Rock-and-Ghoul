@@ -16,10 +16,6 @@ ComponentManager<AnimatorComponent>			animator;
 // Physics
 // CT_Physics
 ComponentManager<PhysicsComponent>			physics;
-// CT_AABB
-//ComponentManager<AABBComponent>				aabb;
-// CT_CircleCollider
-ComponentManager<CircleColliderComponent>	circlecollider;
 
 // Audio
 // CT_Audio
@@ -56,7 +52,7 @@ Entity Create_Entity()
 void Remove_Entity(Entity eID)
 {
 	// remove all components!
-	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_AABB, CT_CircleCollider, CT_Audio, CT_Lifetime, CT_Health, CT_Tag });
+	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_AABB, CT_CircleCollider, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input });
 
 	// remove entity ID!
 	entityManager.destroyEntity(eID);
