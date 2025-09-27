@@ -1,6 +1,6 @@
 #pragma once
 #include "DataDefs.h"
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include <optional>
 #include <vector>
 
