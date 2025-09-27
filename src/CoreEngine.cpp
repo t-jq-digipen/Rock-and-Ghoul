@@ -6,7 +6,7 @@
 #include "GameStateManager.h"
 #include <iostream>
 #include <string>
-
+#include "ImguiSystem.h"
 CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
 
 
@@ -51,6 +51,15 @@ void CoreEngine::Run() {
             // 3. Then run systems (RenderSystem draws entities ON TOP)
             for (auto s : systems) s->Update(dt);
 
+
+            for (auto s : systems) {
+                // checks if the current system is an ImGuiSystem
+                if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s)) {
+                    //alls the specific render function 
+                    imguiSystem->Render();
+                    break; // Only one ImGuiSystem
+                }
+            }
             if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
                 GSM_SetNextState(GameState::GS_QUIT);
 

@@ -8,10 +8,10 @@
 #include "BossGhoul.h"
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
+#include "ImguiSystem.h"
 BossGhoulSystem* bossGhoulSystem = nullptr;
 int main() {
     if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
-
     CoreEngine engine;
     Render& renderer = Render::GetInstance();
     // create 1 audio system and keep a pointer to it
@@ -23,6 +23,7 @@ int main() {
     engine.AddSystem(new PlayerSystem());
     engine.AddSystem(new PhysicsSystem());
     engine.AddSystem(new CollisionSystem());
+    engine.AddSystem(new ImGuiSystem());
     // initialize all systems (this sets up FMOD, OpenGL, etc.)
     engine.Initialize();
     // broken here?
@@ -34,7 +35,6 @@ int main() {
     //load and play sounds
     FMOD::Sound* bgm = audio->Load("../Assets/music/bgm.mp3", true);
     audio->Play(bgm);
-
 
     engine.Shutdown();
 
