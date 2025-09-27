@@ -68,6 +68,9 @@ void PhysicsSystem::Update(float dt) {
         
         // Collili checks!!(or different place?)
         // Collili reaction!!!
+        collisionManager.Clear();
+        collisionManager.CheckCollisions();
+        collisionManager.ProcessEvents();
     }
 
 

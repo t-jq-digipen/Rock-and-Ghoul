@@ -41,10 +41,10 @@ void WASD_Movement(Entity eID, float& dt)
 	}*/
 
 
-    /*if (Input::IsKeyHeld(GLFW_KEY_W)) physics.vel.y += accel * dt;
-    if (Input::IsKeyHeld(GLFW_KEY_S)) physics.vel.y -= accel * dt;
-    if (Input::IsKeyHeld(GLFW_KEY_A)) physics.vel.x -= accel * dt;
-    if (Input::IsKeyHeld(GLFW_KEY_D)) physics.vel.x += accel * dt;
+	/*if (Input::IsKeyHeld(GLFW_KEY_W)) physics.vel.y += accel * dt;
+	if (Input::IsKeyHeld(GLFW_KEY_S)) physics.vel.y -= accel * dt;
+	if (Input::IsKeyHeld(GLFW_KEY_A)) physics.vel.x -= accel * dt;
+	if (Input::IsKeyHeld(GLFW_KEY_D)) physics.vel.x += accel * dt;
 
 	if (physics.vel.x > 300.f) { physics.vel.x = 300.f; }
 	if (physics.vel.x < -300.f) { physics.vel.x = -300.f; }
@@ -56,11 +56,33 @@ void WASD_Movement(Entity eID, float& dt)
 
 	auto& transform = Get_TransformComponent(eID);
 
+	if (!Has_Component(eID, CT_Input)) {
+		return; // No input component, skip movement
+	}
+	auto& input = Get_InputComponent(eID);
 
-	if (Input::IsKeyHeld(GLFW_KEY_W)) transform.pos.y += speed * dt;
-	if (Input::IsKeyHeld(GLFW_KEY_S)) transform.pos.y -= speed * dt;
-	if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
-	if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
+	// Handle movement based on control scheme
+	switch (input.scheme) {
+	case CS_WASD:
+		if (Input::IsKeyHeld(GLFW_KEY_W)) transform.pos.y += speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_S)) transform.pos.y -= speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
+		break;
+
+	case CS_IJKL:
+		if (Input::IsKeyHeld(GLFW_KEY_I)) transform.pos.y += speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_K)) transform.pos.y -= speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_J)) transform.pos.x -= speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_L)) transform.pos.x += speed * dt;
+		break;
+	case CS_ARROWS:
+		if (Input::IsKeyHeld(GLFW_KEY_UP)) transform.pos.y += speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_DOWN)) transform.pos.y -= speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_LEFT)) transform.pos.x -= speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) transform.pos.x += speed * dt;
+		break;
+	}
 
 	// knockback test
 	int vert{0};

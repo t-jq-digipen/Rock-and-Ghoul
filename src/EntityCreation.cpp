@@ -22,7 +22,41 @@ Entity Create_Player(float x, float y) {
     return player;
 }
 
+Entity Create_Square(float x, float y) {
+    Entity square = Create_Entity();
+    Add_Component(square, TransformComponent{ {x, y}, {100.f, 100.f} });
 
+    {
+        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
+        Circle circle = { {x,y},200.f };
+        Physics::PhysicsComp temp(0.015f, true, aabb, circle);
+        Add_Component(square, temp);
+    }
+
+    //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
+    Add_Component(square, InputComponent{ CS_IJKL });
+    Add_Component(square, TagComponent{ T_PLAYER });
+    Add_Component(square, SpriteComponent{ 0, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
+    Add_Component(square, HealthComponent{ 100.f, 100.f });
+    return square;
+}
+
+Entity Create_Circle(float x, float y) {
+    Entity round = Create_Entity();
+    Add_Component(round, TransformComponent{ {x, y}, {100.f, 100.f} });
+    {
+        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
+        Circle circle = { {x,y},200.f };  // Changed variable name from 'round' to 'circle'
+        Physics::PhysicsComp temp(0.015f, true, aabb, circle);
+        Add_Component(round, temp);  // Now 'round' clearly refers to the entity
+    }
+
+    Add_Component(round, InputComponent{ CS_ARROWS }); // Changed to arrows to avoid conflict with square
+    Add_Component(round, TagComponent{ T_PLAYER });
+    Add_Component(round, SpriteComponent{ 1, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} }); // textureID=1 for circle, green color
+    Add_Component(round, HealthComponent{ 100.f, 100.f });
+    return round;
+}
 //Entity Create_Ghoul(float x, float y) {oe
 //    Entity ghoul = Create_Entity();
 //

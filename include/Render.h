@@ -45,7 +45,7 @@ public:
     void DrawRect(const Vec2& pos, float width, float height, const Colour3& color);
     void DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture, float rotation = 0.0f); //added additional rotation (no rotate by defauklt)
     void DrawLine(const Vec2& start, const Vec2& end, const Colour3& color);
-    void DrawCircle(const glm::vec2& center, float radius, const Colour3& color, int segments);
+    void DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments);
 
 
     //Image/Texture

@@ -17,7 +17,8 @@ static FretBoard* fretboard = nullptr;
 GLuint bgTexture = 0;
 Entity ECSplayer{};
 Entity rock;
-
+Entity square;
+Entity roundy;
 void Level1::Load()
 {
 
@@ -43,8 +44,8 @@ void Level1::Init()
 
 	// 5. Create entities
 	rock = Create_Player(200.f, 500.f);
-
-
+	square = Create_Square(800.f, 500.f);
+	roundy = Create_Circle(500.f, 500.f);
 }
 
 void Level1::Update()

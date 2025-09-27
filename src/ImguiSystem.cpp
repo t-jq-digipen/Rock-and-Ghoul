@@ -70,24 +70,50 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::Begin("Collision Debug");
 
     // count active colliders
-    int activeAABBs = 0;
-    int totalAABBs = 0;
-    //for (auto& [entity, aabb] : CM_AABB().getComponents()) { //loop all aabb
-    //    totalAABBs++; 
-    //    if (aabb.active) activeAABBs++;
-    //}
+    int activeColliders = 0;
+    int totalColliders = 0;
 
-    ImGui::Text("AABB Colliders: %d / %d active", activeAABBs, totalAABBs);
+    for (auto& [entity, physics] : CM_Physics().getComponents()) {
+        totalColliders++;
+        if (physics.CollisionActive()) { // Use the physics component's collision active check
+            activeColliders++;
+        }
+    }
 
-    // show entity positions
+    ImGui::Text("AABB Colliders: %d / %d active", activeColliders, totalColliders);
+
+    // colili
+    if (ImGui::CollapsingHeader("Physics Components")) {
+        for (auto& [entity, physics] : CM_Physics().getComponents()) {
+            if (Has_Component(entity, CT_Transform) && Has_Component(entity, CT_Tag)) {
+                // oni process entities that have Transform and Tag components
+                TransformComponent& transform = Get_TransformComponent(entity);
+                TagComponent& tag = Get_TagComponent(entity);
+                // udate collision shapes (AABB and Circle) to match current position
+                physics.UpdateHitboxes(transform.pos);
+
+                const char* tagName = (tag.tag == T_PLAYER) ? "Player" :(tag.tag == T_ENEMY) ? "Enemy" :(tag.tag == T_PROJECTILE) ? "Projectile" : "Unknown";
+
+                AABB aabb = physics.Get_AABB();
+                Circle circle = physics.Get_Circle();
+
+                ImGui::Text("%s %d:", tagName, entity);
+                ImGui::Text("  Position: (%.1f, %.1f)", transform.pos.x, transform.pos.y);
+                ImGui::Text("  AABB: (%.1f, %.1f) to (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
+                ImGui::Text("  Circle: center(%.1f, %.1f) radius %.1f", circle.pos.x, circle.pos.y, circle.rad);
+                ImGui::Text("  Collision Active: %s", physics.CollisionActive() ? "Yes" : "No");
+                ImGui::Separator();
+            }
+        }
+    }
+
+    //enityt
     if (ImGui::CollapsingHeader("Entity Positions")) {
         for (auto& [entity, tag] : CM_Tag().getComponents()) {
             if (Has_Component(entity, CT_Transform)) {
                 TransformComponent& transform = Get_TransformComponent(entity);
-                //tag enum to readable string
-                const char* tagName = (tag.tag == T_PLAYER) ? "Player" : (tag.tag == T_ENEMY) ? "Enemy" : "Unknown";
-                //entity type, ID, and current position
-                ImGui::Text("%s %d: (%.1f, %.1f)", tagName, entity,transform.pos.x, transform.pos.y);
+                const char* tagName = (tag.tag == T_PLAYER) ? "Player" :(tag.tag == T_ENEMY) ? "Enemy" :(tag.tag == T_PROJECTILE) ? "Projectile" : "Unknown";
+                ImGui::Text("%s %d: (%.1f, %.1f)", tagName, entity, transform.pos.x, transform.pos.y);
             }
         }
     }

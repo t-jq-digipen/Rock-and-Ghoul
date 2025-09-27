@@ -23,7 +23,34 @@ public:
             auto& t = Get_TransformComponent(e);
             auto& s = Get_SpriteComponent(e);
 
-            renderer.DrawTexturedQuad(t.pos, s.size, s.textureID);
+            if (s.textureID == 0) {
+                // Render as colored rectangle (no texture)
+                Colour3 color = { s.color.x, s.color.y, s.color.z };
+                renderer.DrawRect(
+                    t.pos,
+                    s.size.x,
+                    s.size.y,
+                    color
+                );
+            }
+            else if (s.textureID == 1) {
+                // Render as colored circle
+                Colour3 color = { s.color.x, s.color.y, s.color.z };
+                float radius = (s.size.x + s.size.y) / 4.0f; // Average of width and height, divided by 2
+                renderer.DrawCircle(
+                    { t.pos.x, t.pos.y },
+                    radius,
+                    color, 32
+                );
+            }
+            else {
+                // Render as textured quad
+                renderer.DrawTexturedQuad(
+                    t.pos,
+                    s.size,
+                    s.textureID
+                );
+            }
         }
 
     }
