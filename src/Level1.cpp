@@ -102,10 +102,13 @@ void Level1::Unload()
 {
 	delete fretboard;
 	fretboard = nullptr;
-	if (bgTexture) {
+	/*if (bgTexture) {
 		glDeleteTextures(1, &bgTexture);
 		bgTexture = 0;
-	}
+	}*/
+
+	Render::GetInstance().UnloadTexture(bgTexture);
+	//Render::GetInstance().ClearAllTextures();
 	std::cout << "Level 1 Unloaded!!!" << std::endl;
 }
 

@@ -21,6 +21,7 @@ GLuint playTexture{ 0 };
 GLuint quitTexture{ 0 };
 
 
+
 // Convert GLFW/screen cords (origin: top-left) to render coords (origin: bottom-left)
 static inline glm::vec2 ScreenToRender(const glm::vec2& mouseScreen, float windowHeight)
 {
@@ -36,6 +37,7 @@ void MainMenu::Load()
 	ghoulTexture = Render::GetInstance().LoadTexture("../Assets/Ghoul_2048px.png");
     playTexture = Render::GetInstance().LoadTexture("../Assets/play.png");
     quitTexture = Render::GetInstance().LoadTexture("../Assets/quit.png");
+
 }
 
 void MainMenu::Init()
@@ -55,11 +57,13 @@ void MainMenu::Update()
     //std::cout << Input::GetMouseX() << ", " << Input::GetMouseY() << std::endl;
 
     // Clear background, add background color
-    glClearColor(0.5, 0, 0.7, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+    //glClearColor(0.5, 0, 0.7, 1);
+    //glClear(GL_COLOR_BUFFER_BIT);
+    renderer.ClearBackground({ 0.5f, 0.f, 0.7f, 1.f });
 
     // Render main menu textures (placeholders rn)
-
+    //renderer.DrawImage(titleImage, 100.f, 100.f);
+ 
     // Game Title
     if (titleTexture)
     {
@@ -140,7 +144,7 @@ void MainMenu::Free()
 void MainMenu::Unload()
 {
 	std::cout << "Main Menu Unloaded!!!" << std::endl;
-    if (titleTexture)
+    /*if (titleTexture)
     {
         glDeleteTextures(1, &titleTexture);
         titleTexture = 0;
@@ -168,5 +172,13 @@ void MainMenu::Unload()
     {
         glDeleteTextures(1, &quitTexture);
         quitTexture = 0;
-    }
+    }*/
+    Render::GetInstance().UnloadTexture(titleTexture);
+    Render::GetInstance().UnloadTexture(rockTexture);
+    Render::GetInstance().UnloadTexture(ghoulTexture);
+    Render::GetInstance().UnloadTexture(playTexture);
+    Render::GetInstance().UnloadTexture(quitTexture);
+    //Render::GetInstance().ClearAllImages();
+    //Render::GetInstance().ClearAllTextures(); //alternatively can use this
+
 }

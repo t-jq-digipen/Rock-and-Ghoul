@@ -72,6 +72,10 @@ struct Colour3 {
     float r, g, b;
 };
 
+struct Colour4 {
+	float r, g, b, a;
+};
+
 // Calculate squared distance between 2 points
 float DistanceSquared(const Vec2& p1, const Vec2& p2);
 // Calculate dot product between 2 vectors
