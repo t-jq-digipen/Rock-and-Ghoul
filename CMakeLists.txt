@@ -171,6 +171,12 @@ source_group("BaseEngine\\Debug" FILES
 source_group("BaseEngine\\FilePath" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FileIO.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FileIO.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/DataDefs.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonAdapt.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/JsonLoad.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonLoad.h
 )
 source_group("BaseEngine\\Serialization" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Serialization.cpp
