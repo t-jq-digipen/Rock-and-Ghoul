@@ -123,7 +123,13 @@ void CollisionManager::CheckCollisions() {
                 collision = CollisionIntersection_CC_Static(compA.Get_Circle(), compB.Get_Circle());
             }
             else {
-
+                //// Circle vs AABB (mixed collision)
+                //if (aIsCircle) {
+                //    collision = CollisionIntersection_CircleRect_Static(compA.Get_Circle(), compB.Get_AABB());
+                //}
+                //else {
+                //    collision = CollisionIntersection_CircleRect_Static(compB.Get_Circle(), compA.Get_AABB());
+                //}
             }
 
             if (collision) {
