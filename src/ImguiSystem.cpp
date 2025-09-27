@@ -2,6 +2,7 @@
 #include "Registry.h"
 #include "glapp.h"
 #include "CoreEngine.h"
+#include "EntityCreation.h"
 void ImGuiSystem::InitializeImGui(GLFWwindow* window) {
     IMGUI_CHECKVERSION(); //checks version compatibility
     ImGui::CreateContext();
@@ -117,9 +118,13 @@ void ImGuiSystem::ShowEntityDebugWindow() {
     //        }
     //    }
     //}
+    if (ImGui::Button("Add New Player")) {
+        Entity newPlayer = Create_Player(100.f, 100.f);
+    }
 
 
     if (ImGui::CollapsingHeader("Entity Edit")) {
+        std::vector<Entity> toDelete;
         for (auto& [entity, tag] : CM_Tag().getComponents()) { //loop through enity tag
             if (Has_Component(entity, CT_Transform)) { //only entities w xform
                 //need get ref to change xform
@@ -138,10 +143,20 @@ void ImGuiSystem::ShowEntityDebugWindow() {
                 //typing values
                 // ImGui::InputFloat("X", &transform.pos.x);
                 // ImGui::InputFloat("Y", &transform.pos.y);
+                if (ImGui::Button("Delete Entity")) {
+                    // allow deleting players only if more than 1 remain
+                    if (tag.tag == T_PLAYER && playerCount > 1) {
+                        toDelete.push_back(entity);
+                    }
+                }
 
                 ImGui::PopID(); // end unique ID scope
                 ImGui::Separator(); // visual separator between entities
             }
+
+        }
+        for (Entity e : toDelete) {
+            Remove_Entity(e);
         }
     }
 
