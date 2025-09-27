@@ -144,6 +144,7 @@ void ImGuiSystem::ShowEntityDebugWindow() {
             }
         }
     }
+
     ImGui::End();
 }
 
