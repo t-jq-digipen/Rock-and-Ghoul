@@ -23,7 +23,7 @@ int main() {
     engine.AddSystem(new PlayerSystem());
     engine.AddSystem(new PhysicsSystem());
     engine.AddSystem(new CollisionSystem());
-    engine.AddSystem(new ImGuiSystem());
+    engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
     // initialize all systems (this sets up FMOD, OpenGL, etc.)
     engine.Initialize();
     // broken here?
