@@ -6,7 +6,7 @@
 #include "GameStateManager.h"
 #include <iostream>
 #include <string>
-
+#include "ImguiSystem.h"
 CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
 
 
@@ -47,11 +47,30 @@ void CoreEngine::Run() {
             // 1. Update game state logic first
             gsm.CallUpdate();
 
-            // 2. Draw background/UI (this calls glClear)  
+            // 2. Draw background/UI (this calls glClear)
             gsm.CallDraw();
 
-            // 3. Then run systems (RenderSystem draws entities ON TOP)
-            for (auto s : systems) s->Update(dt);
+            //loop through all systems managed by the engine
+            for (auto s : systems) {
+                //high-resolution clock
+                using clock = std::chrono::high_resolution_clock;
+                // Record the starting timestamp before running the system update
+                auto start = clock::now();
+                // Call the system's update function, passing delta time for this frame
+                s->Update(dt);
+                // Record the ending timestamp immediately after update finishes
+                auto end = clock::now();
+                //how long the update took in milliseconds
+                double elapsedMs = std::chrono::duration<double, std::milli>(end - start).count();
+                // Get the system's type name (like "class PhysicsSystem") as a string
+                std::string sysName = typeid(*s).name();
+                timings[sysName].ms = elapsedMs;
+
+                // call Render() immediately after Update()
+                if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s)) {
+                    imguiSystem->Render();
+                }
+            }
 
             if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
                 GSM_SetNextState(GameState::GS_QUIT);
@@ -59,6 +78,7 @@ void CoreEngine::Run() {
             Input::Update();
             glfwSwapBuffers(GLApp::ptr_window);
         }
+
 
         // --- 4. Clean up the old state
         gsm.CallFree();

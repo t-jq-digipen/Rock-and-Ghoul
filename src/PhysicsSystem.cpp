@@ -5,7 +5,8 @@
 #include "Input.h"
 #include "Remath.h"
 #include <iostream>
-
+#include "CollisionManager.h"
+static CollisionManager collisionManager;
 // EntityManager& em;
 //ComponentManager<TransformComponent>& transformManager;
 //ComponentManager<PhysicsComponent>& physicsManager;

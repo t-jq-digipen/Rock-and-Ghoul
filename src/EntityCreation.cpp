@@ -5,8 +5,9 @@
 Entity Create_Player(float x, float y) {
     Entity player = Create_Entity();
     Add_Component(player, TransformComponent{ {x, y}, {100.f, 100.f} });
-    Add_Component(player, PhysicsComponent{});
-    Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
+    Add_Component(player, PhysicsComponent{ {0.f, 0.f}, {0.f, 0.f}, true, 200.f, 200.f });
+
+    //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
     Add_Component(player, InputComponent{ CS_WASD });
     Add_Component(player, TagComponent{ T_PLAYER });
     GLuint tex = Render::GetInstance().LoadTexture("../Assets/Rock_FightingPose_2048px.png");

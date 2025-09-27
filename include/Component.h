@@ -84,6 +84,9 @@ struct PhysicsComponent {
 	Vec2 accel	{ 0.f,0.f };
 	//bool collide (maybe can use bitwise checking to see WHAT things it will collide with? to consider)
 	//aabb hitbox;
+	bool active { false };
+	float width{ 0.f };
+	float height{ 0.f };
 };
 
 struct MovementComponent {
