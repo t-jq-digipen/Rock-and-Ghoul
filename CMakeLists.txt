@@ -256,6 +256,12 @@ source_group("BaseEngine\\ECS\\System\\Collision" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionSystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionSystem.h
 )
+
+source_group("BaseEngine\\ECS\\System\\Imgui" FILES 
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImguiSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ImguiSystem.h
+)
 # ================================================= ECS
 
 

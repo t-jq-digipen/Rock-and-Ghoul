@@ -54,6 +54,7 @@ void CoreEngine::Run() {
 
             for (auto s : systems) {
                 // checks if the current system is an ImGuiSystem
+                //imgui have own render
                 if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s)) {
                     //alls the specific render function 
                     imguiSystem->Render();
