@@ -5,7 +5,13 @@
 Entity Create_Player(float x, float y) {
     Entity player = Create_Entity();
     Add_Component(player, TransformComponent{ {x, y}, {100.f, 100.f} });
-    Add_Component(player, PhysicsComponent{ {0.f, 0.f}, {0.f, 0.f}, true, 200.f, 200.f });
+
+    {
+        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
+        Circle circle = { {x,y},200.f };
+        Physics::PhysicsComp temp(0.015f, true, aabb, circle);
+        Add_Component(player, temp);
+    }
 
     //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
     Add_Component(player, InputComponent{ CS_WASD });
@@ -17,7 +23,7 @@ Entity Create_Player(float x, float y) {
 }
 
 
-//Entity Create_Ghoul(float x, float y) {
+//Entity Create_Ghoul(float x, float y) {oe
 //    Entity ghoul = Create_Entity();
 //
 //    Add_Component(ghoul, TransformComponent{ {x, y}, {100.f, 100.f} });

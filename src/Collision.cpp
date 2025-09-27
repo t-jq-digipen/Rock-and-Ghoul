@@ -1,6 +1,24 @@
 #include "Collision.h"
 #include <math.h>
 #include "Remath.h"
+
+// AABB setter helper
+AABB Set_AABB(Vec2 const& pos, Vec2 const& size)
+{
+    AABB temp;
+    temp.dim = size;
+    temp.min = { pos.x - size.x / 2.f, pos.y - size.y / 2.f };
+    temp.max = { pos.x + size.x / 2.f, pos.y + size.y / 2.f };
+    return temp;
+}
+
+// AABB updater
+void Update_AABB(AABB& aabb, Vec2 const& pos)
+{
+    aabb.min = { pos.x - aabb.dim.x / 2.f, pos.y - aabb.dim.y / 2.f };
+    aabb.max = { pos.x + aabb.dim.x / 2.f, pos.y + aabb.dim.y / 2.f };
+}
+
 // Static collision
 bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2)
 {
@@ -67,8 +85,8 @@ bool CollisionIntersection_RectRect_Dynamic(const AABB& aabb1,
 
 // Circle Collision
 bool CollisionIntersection_CC_Static(const Circle& c1, const Circle& c2) {
-    float dx = c2.x - c1.x;
-    float dy = c2.y - c1.y;
+    float dx = c2.pos.x - c1.pos.x;
+    float dy = c2.pos.y - c1.pos.y;
     float d2 = (dx * dx) + (dy * dy);
 
     float radSum = c1.rad + c2.rad;
@@ -100,7 +118,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     }
 
     // vec of diff between c1 and c2
-    Vec2 centerDiff = Vec2{ c2.x - c1.x, c2.y - c1.y };
+    Vec2 centerDiff = Vec2{ c2.pos.x - c1.pos.x, c2.pos.y - c1.pos.y };
 
     // project the vec onto the direction that circle is going??? 
     float proj = (centerDiff.x * relVel.x + centerDiff.y * relVel.y) / relSpeed;
@@ -120,7 +138,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
 
 bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& line) {
         // starting from point on line to center of circle
-        Vec2 linecircle = Subtract(Vec2{ circle.x, circle.y }, line.start);
+        Vec2 linecircle = Subtract(Vec2{ circle.pos.x, circle.pos.y }, line.start);
 
         // dir vector of line
         Vec2 vecDir = Subtract(line.end, line.start);
@@ -143,7 +161,7 @@ bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& li
         Vec2 closestPoint = Add(line.start, Scale(vecDir, t));
 
         // check if circle intersects with the closest point
-        float distanceSquared = DistanceSquared(Vec2{ circle.x, circle.y }, closestPoint);
+        float distanceSquared = DistanceSquared(Vec2{ circle.pos.x, circle.pos.y }, closestPoint);
 
         return distanceSquared <= (circle.rad * circle.rad);
     

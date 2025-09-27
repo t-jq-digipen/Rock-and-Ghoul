@@ -34,37 +34,43 @@ void CollisionManager::CheckCollisions() {
     for (auto itA = physicsComps.begin(); itA != physicsComps.end(); ++itA) {
         // a = entity ID, compA = PhysicsComponent
         Entity a = itA->first;
-        PhysicsComponent& compA = itA->second;
+        Physics::PhysicsComp& compA = itA->second;
 
         // skip if not active or entity has no Transform
-        if (!compA.active || !Has_Component(a, CT_Transform)) continue;
+        if (!compA.CollisionActive() || !Has_Component(a, CT_Transform)) continue;
 
         // get transform of entity A
         auto& transA = Get_TransformComponent(a);
 
         // build AABB for entity A using transform pos + size
-        AABB boxA{
+        // OLD REGCODE
+        /*AABB boxA{
             { transA.pos.x - compA.width * 0.5f, transA.pos.y - compA.height * 0.5f },
             { transA.pos.x + compA.width * 0.5f, transA.pos.y + compA.height * 0.5f }
-        };
+        };*/
+        // NEW JQCODE
+        compA.UpdateHitboxes(transA.pos);
 
         //check collisions with all entities B
         for (auto itB = std::next(itA); itB != physicsComps.end(); ++itB) {
             Entity b = itB->first;
-            PhysicsComponent& compB = itB->second;
+            Physics::PhysicsComp& compB = itB->second;
 
             // skip if not active or no Transform
-            if (!compB.active || !Has_Component(b, CT_Transform)) continue;
+            if (!compB.CollisionActive() || !Has_Component(b, CT_Transform)) continue;
 
             auto& transB = Get_TransformComponent(b);
 
-            AABB boxB{
+            // OLD REGCODE
+            /*AABB boxB{
                 { transB.pos.x - compB.width * 0.5f, transB.pos.y - compB.height * 0.5f },
                 { transB.pos.x + compB.width * 0.5f, transB.pos.y + compB.height * 0.5f }
-            };
+            };*/
+            // NEW JQCODE
+            compB.UpdateHitboxes(transB.pos);
 
             // AABB vs AABB
-            if (CollisionIntersection_RectRect_Static(boxA, boxB)) {
+            if (CollisionIntersection_RectRect_Static(compA.Get_AABB(), compB.Get_AABB())) {
                 // store event for processing later
                 AddEvent(a, b);
             }

@@ -143,8 +143,8 @@ void FretBoard::NextNote() {
         posIndex = 3; // RIGHT
     }
 
-    currNote.circle.x = arrowPositions[posIndex].x;
-    currNote.circle.y = arrowPositions[posIndex].y;
+    currNote.circle.pos.x = arrowPositions[posIndex].x;
+    currNote.circle.pos.y = arrowPositions[posIndex].y;
     currNote.circle.rad = 20.0f;
     currNote.isActive = true;
     std::cout << "\nARROW KEY: ";
@@ -250,7 +250,7 @@ void FretBoard::Draw(Render& renderer) {
     }
 
     if (tex != 0) {
-        Vec2 pos{ currNote.circle.x, currNote.circle.y };
+        Vec2 pos{ currNote.circle.pos.x, currNote.circle.pos.y };
         Vec2 size{ 60.0f, 60.0f };
         renderer.DrawTexturedQuad(pos, size, tex);
     }

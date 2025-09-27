@@ -6,6 +6,8 @@
 #include "Remath.h"
 #include <iostream>
 #include "CollisionManager.h"
+#include "Physics.h"
+
 static CollisionManager collisionManager;
 // EntityManager& em;
 //ComponentManager<TransformComponent>& transformManager;
@@ -16,51 +18,57 @@ void PhysicsSystem::Initialize() {
     physicsManager = CM_Physics();*/
 }
 
-// Apply a damping force
-/*
-* F = m * a     | Force = Mass x Accel
-* a = v / t     | Accel = speed / time
-* 
-* To modify velocity by damping, apply v = v * damp ^ dt
-* 
-*/
-const float dampval = 0.05f; // Const decay value
-
-// Maybe need to be specific value for each fella, idk
-void Damping(Vec2& vec, float dt) {
-    vec = Scale(vec, std::pow(dampval, dt));
-}
 
 void PhysicsSystem::Update(float dt) {
 
     // Step 1: Move entities
 
+    //for (auto& [entID, phyComp] : CM_Physics().getComponents())
+    //{
+    //    // for Force force : ForceList(std::vector?)
+    //    /*
+    //    * {
+    //    *   phyComp.vel.x += force.vel.x * dt;
+    //    *   phyComp.vel.y += force.vel.y * dt;
+    //    * }
+    //    */
+
+
+    //    // Apply forces
+
+    //    // Apply damping
+    //    Damping(phyComp.vel, dt);
+
+    //    // Update positions
+    //    if (Has_Component(entID, CT_Transform))
+    //    {
+    //        TransformComponent& transform = Get_TransformComponent(entID);
+    //        transform.pos.x += phyComp.vel.x * dt;
+    //        transform.pos.y += phyComp.vel.y * dt;
+    //    }
+
+
+
+    //}
+
+    // for new physics component
     for (auto& [entID, phyComp] : CM_Physics().getComponents())
     {
-        // for Force force : ForceList(std::vector?)
-        /*
-        * {
-        *   phyComp.vel.x += force.vel.x * dt;
-        *   phyComp.vel.y += force.vel.y * dt;
-        * }
-        */
-        // Apply forces
+        // Get transform component (you gonna need it!)
+        TransformComponent& transComp = Get_TransformComponent(entID);
 
-        // Apply damping
-        Damping(phyComp.vel, dt);
+        // Update physics component
+        phyComp.Update();
 
-        // Update positions
-        if (Has_Component(entID, CT_Transform))
-        {
-            TransformComponent& transform = Get_TransformComponent(entID);
-            transform.pos.x += phyComp.vel.x * dt;
-            transform.pos.y += phyComp.vel.y * dt;
-        }
+        // Update transform positions
+        transComp.pos = Add(transComp.pos, phyComp.Get_Vel());
 
-
-
+        // updatehitboxes w transform position
+        phyComp.UpdateHitboxes(transComp.pos);
+        
+        // Collili checks!!(or different place?)
+        // Collili reaction!!!
     }
-
 
 
 

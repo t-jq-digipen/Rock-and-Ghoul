@@ -3,6 +3,8 @@
 #include "glapp.h"
 #include "CoreEngine.h"
 #include "EntityCreation.h"
+
+
 void ImGuiSystem::InitializeImGui(GLFWwindow* window) {
     IMGUI_CHECKVERSION(); //checks version compatibility
     ImGui::CreateContext();

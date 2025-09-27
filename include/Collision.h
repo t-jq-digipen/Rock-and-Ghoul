@@ -4,14 +4,19 @@
 
 
 struct AABB {
-    Vec2 min; // bottom-left corner
-    Vec2 max; // top-right corner
+    Vec2 min;   // bottom-left corner
+    Vec2 max;   // top-right corner
+    Vec2 dim;   // width/height
 };
+
+AABB Set_AABB(Vec2 const& pos, Vec2 const& size);
+
+void Update_AABB(AABB& aabb, Vec2 const& pos);
 
 
 
 struct Circle {
-    float x, y; // centre of circle
+    Vec2 pos;
     float rad; // radius of circle
 };
 

@@ -8,6 +8,7 @@
 #include "ComponentManager.h"
 #include "EntityManager.h"
 #include "Component.h"
+#include "Physics.h"
 
 // constexpr size_t MAX_COMPONENT_TYPES = 11; // max number of components TIS SHI NOT EVEN BEING USED
 
@@ -33,17 +34,15 @@ void Remove_Entity(Entity eID);
 
 
 // overloads for adding
-void Add_Component(Entity eID, TransformComponent		const& comp);
-void Add_Component(Entity eID, SpriteComponent			const& comp);
-void Add_Component(Entity eID, AnimatorComponent		const& comp);
-void Add_Component(Entity eID, PhysicsComponent			const& comp);
-//void Add_Component(Entity eID, AABBComponent			const& comp);
-void Add_Component(Entity eID, CircleColliderComponent	const& comp);
-void Add_Component(Entity eID, AudioComponent			const& comp);
-void Add_Component(Entity eID, LifetimeComponent		const& comp);
-void Add_Component(Entity eID, HealthComponent			const& comp);
-void Add_Component(Entity eID, TagComponent				const& comp);
-void Add_Component(Entity eID, InputComponent			const& comp);
+void Add_Component(Entity eID, TransformComponent	const& comp);
+void Add_Component(Entity eID, SpriteComponent		const& comp);
+void Add_Component(Entity eID, AnimatorComponent	const& comp);
+void Add_Component(Entity eID, Physics::PhysicsComp	const& comp);
+void Add_Component(Entity eID, AudioComponent		const& comp);
+void Add_Component(Entity eID, LifetimeComponent	const& comp);
+void Add_Component(Entity eID, HealthComponent		const& comp);
+void Add_Component(Entity eID, TagComponent			const& comp);
+void Add_Component(Entity eID, InputComponent		const& comp);
 
 // overloads for removal
 void Remove_Component(Entity eID, ComponentTypeID const& cID);
@@ -56,9 +55,7 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID);
 TransformComponent		& Get_TransformComponent(Entity eID);
 SpriteComponent			& Get_SpriteComponent(Entity eID);
 AnimatorComponent		& Get_AnimatorComponent(Entity eID);
-PhysicsComponent		& Get_PhysicsComponent(Entity eID);
-//AABBComponent			& Get_AABBComponent(Entity eID);
-CircleColliderComponent	& Get_CircleColliderComponent(Entity eID);
+Physics::PhysicsComp	& Get_PhysicsComponent(Entity eID);
 AudioComponent			& Get_AudioComponent(Entity eID);
 LifetimeComponent		& Get_LifetimeComponent(Entity eID);
 HealthComponent			& Get_HealthComponent(Entity eID);
@@ -66,15 +63,14 @@ TagComponent			& Get_TagComponent(Entity eID);
 InputComponent			& Get_InputComponent(Entity eID);
 
 // Manager accessors
-ComponentManager<TransformComponent>		& CM_Transform();
-ComponentManager<SpriteComponent>			& CM_Sprite();
-ComponentManager<AnimatorComponent>			& CM_Animator();
-ComponentManager<PhysicsComponent>			& CM_Physics();
-//ComponentManager<AABBComponent>				& CM_AABB();
-ComponentManager<CircleColliderComponent>	& CM_CircleCollider();
-ComponentManager<AudioComponent	>			& CM_Audio();
-ComponentManager<LifetimeComponent>			& CM_Lifetime();
-ComponentManager<HealthComponent>			& CM_Health();
-ComponentManager<TagComponent>				& CM_Tag();
-ComponentManager<InputComponent>			& CM_Input();
+ComponentManager<TransformComponent>	& CM_Transform();
+ComponentManager<SpriteComponent>		& CM_Sprite();
+ComponentManager<AnimatorComponent>		& CM_Animator();
+ComponentManager<Physics::PhysicsComp>	& CM_Physics();
+ComponentManager<AudioComponent>		& CM_Audio();
+ComponentManager<LifetimeComponent>		& CM_Lifetime();
+ComponentManager<HealthComponent>		& CM_Health();
+ComponentManager<TagComponent>			& CM_Tag();
+ComponentManager<InputComponent>		& CM_Input();
 
+// Component list accessor?

@@ -1,64 +1,182 @@
 #include "Physics.h"
+#include "CoreEngine.h"
 
 namespace Physics {
 	// Force Component
 
 	// Ctor
-	ForceComp::ForceComp() : dir{ 0.f,0.f }, mag{ 0.f }, vel{ 0.f,0.f }, age{}, lifetime{} {}
+	ForceComp::ForceComp() : dir{ 0.f,0.f }, mag{ 0.f }, force{ 0.f,0.f }, age{}, lifetime{} {}
 	
-	ForceComp::ForceComp(Vec2 direction, float magnitude, float duration) : dir{ direction }, mag{ magnitude }, vel{ 0.f,0.f }, age{}, lifetime{duration}
+	ForceComp::ForceComp(Vec2 direction, float magnitude, float duration) : dir{ direction }, mag{ magnitude }, force{ 0.f,0.f }, age{}, lifetime{duration}
 	{
 		dir = Normalize(direction);
-		vel = Scale(dir, mag);
+		force = Scale(dir, mag);
 	}
 
 	void ForceComp::Update()
 	{
-		vel = Scale(dir, mag);
+		force = Scale(dir, mag);
 		if (lifetime)
 		{ age += g_dt; }
 	}
 
-	Vec2 ForceComp::GetVel()
+	Vec2 ForceComp::GetForce()
 	{
-		return vel;
+		return force;
 	}
 
-	// Set dir
-	// Set mag
+	void ForceComp::Set_Dir(Vec2 direction)
+	{
+		dir = Normalize(direction);
+	}
+
+	void ForceComp::Set_Magnitude(float magnitude)
+	{
+		mag = magnitude;
+	}
+	
+	bool ForceComp::IsImpulse()
+	{
+		return lifetime == 0.f;
+	}
 
 	bool ForceComp::Expired()
 	{
-		return (age > lifetime);
+		return (age >= lifetime);
 	}
+
 
 
 	// Force List Management
+
+	// Add Force to ForceList
+	void ForceList::Add_Force(ForceComp force)
+	{
+		forces.push_back(force);
+	}
+
+	Vec2 ForceList::Update_NetVel(ForceComp force)
+	{
+		if (force.IsImpulse())
+		{
+			std::cout << "IsImpulse passed\n";
+			return force.GetForce();
+		}
+		return Scale(force.GetForce(), g_dt);
+	}
+
+	// Update ForceList
 	void ForceList::Update()
 	{
-		// Update forces
-		for (ForceComp& force : forcelist)
+		// Reset net_vel to 0
+		net_vel = { 0.f,0.f };
+
+		if (HasForces())
 		{
-			force.Update();
-		}
-
-		// Remove expired
-		for (auto force = forcelist.begin(); force != forcelist.end();)
-		{
-			if (force->Expired())
+			// Update force time and magnitude!!!
+			for (ForceComp& forcecomp : forces)
 			{
-				// Erase, return to next valid iterator
-				force = forcelist.erase(force);
+				forcecomp.Update();
+				// Update net_vel change!
+				net_vel = Add(net_vel,Update_NetVel(forcecomp));
 			}
-			else
+
+			// Remove expired
+			for (auto forcecomp = forces.begin(); forcecomp != forces.end();)
 			{
-				// Go to next iterator if not erased
-				force++;
+				if (forcecomp->Expired())
+				{
+					// Erase, return to next valid iterator
+					forcecomp = forces.erase(forcecomp);
+				}
+				else
+				{
+					// Go to next iterator if not erased
+					forcecomp++;
+				}
 			}
 		}
-
-		// Add final
-
-		
 	}
+
+	// Check if list has forces
+	bool ForceList::HasForces()
+	{ return !forces.empty(); }
+
+	// Get net velocity change
+	const Vec2& ForceList::Get_NetVel() const
+	{ return net_vel; }
+
+	// Reset ForceList
+	void ForceList::Reset()
+	{ forces.clear(); }
+
+
+
+
+	// PHYSICS COMPONENT
+	// ================================================================================
+
+	// ctors hehe
+	PhysicsComp::PhysicsComp() : vel{ 0.f,0.f }, decay{ 0.f }, willCollide{ false }, aabbhitbox{ { 0.f, 0.f }, { 0.f,0.f }, {0.f,0.f} }, circlehitbox{ {0.f,0.f}, 0.f } {}
+
+	PhysicsComp::PhysicsComp(float decayval, bool solid, AABB& aabbref, Circle& circleref) : vel{ 0.f,0.f }, decay{ decayval }, willCollide{ solid }, aabbhitbox{ aabbref }, circlehitbox{ circleref } {}
+
+
+	// FORCES
+	void PhysicsComp::AddForce(Vec2 const& direction, float magnitude, float duration)
+	{
+		std::cout << "ForceAdded\n";
+		ForceComp temp(direction, magnitude, duration);
+		forcelist.Add_Force(temp);
+	}
+
+	void PhysicsComp::UpdateForces()
+	{
+		forcelist.Update();
+		vel = Add(vel, forcelist.Get_NetVel());
+		std::cout << "force net val = " << forcelist.Get_NetVel().x << "," << forcelist.Get_NetVel().y << '\n';
+	}
+
+
+
+	// COMPONENT STUFF
+	void PhysicsComp::Update()
+	{
+		Damping();
+		UpdateForces();
+	}
+
+	void PhysicsComp::UpdateHitboxes(Vec2 const& pos)
+	{
+		Update_AABB(aabbhitbox, pos);
+		circlehitbox.pos = pos;
+	}
+
+	void PhysicsComp::Damping()
+	{
+		if (decay)
+		{ vel = Scale(vel, std::pow(decay, g_dt)); }
+	}
+
+	// GETTERS
+	const Vec2& PhysicsComp::Get_Vel() const
+	{ return vel; }
+
+	const AABB& PhysicsComp::Get_AABB() const
+	{ return aabbhitbox; }
+
+	const Circle& PhysicsComp::Get_Circle() const
+	{ return circlehitbox; }
+
+	const bool& PhysicsComp::CollisionActive() const
+	{ return willCollide; }
+
+	// SETTERS
+	// set vel by ?? seems dangerous
+	// set aabb by size
+	// set circle by radius
+
+	void PhysicsComp::Set_Collision(bool set)
+	{ willCollide = set; }
+
 }

@@ -15,7 +15,8 @@ ComponentManager<AnimatorComponent>			animator;
 
 // Physics
 // CT_Physics
-ComponentManager<PhysicsComponent>			physics;
+ComponentManager<Physics::PhysicsComp>		physics;
+
 
 // Audio
 // CT_Audio
@@ -52,7 +53,7 @@ Entity Create_Entity()
 void Remove_Entity(Entity eID)
 {
 	// remove all components!
-	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_AABB, CT_CircleCollider, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input });
+	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input });
 
 	// remove entity ID!
 	entityManager.destroyEntity(eID);
@@ -79,13 +80,13 @@ COMPONENTS LIST:
 
 void Add_Component(Entity eID, TransformComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | TRANSFORM	| eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | TRANSFORM	| eID: " << eID << "\n";
 	transform.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, SpriteComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | SPRITE		| eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | SPRITE		| eID: " << eID << "\n";
 	sprite.addComponent(eID, comp);
 }
 
@@ -95,22 +96,10 @@ void Add_Component(Entity eID, AnimatorComponent const& comp)
 	animator.addComponent(eID, comp);
 }
 
-void Add_Component(Entity eID, PhysicsComponent const& comp)
+void Add_Component(Entity eID, Physics::PhysicsComp const& comp)
 {
 	std::cout << "REGISTRY | ADDING COMPONENT | PHYSICS		| eID: " << eID << "\n";
 	physics.addComponent(eID, comp);
-}
-
-//void Add_Component(Entity eID, AABBComponent const& comp)
-//{
-//	std::cout << "REGISTRY | ADDING COMPONENT | AABB		| eID: " << eID << "\n";
-//	aabb.addComponent(eID, comp);
-//}
-
-void Add_Component(Entity eID, CircleColliderComponent const& comp)
-{
-	std::cout << "REGISTRY | ADDING COMPONENT | CRCCOLLIDER	| eID: " << eID << "\n";
-	circlecollider.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, AudioComponent const& comp)
@@ -160,14 +149,14 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	case (CT_Transform):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | TRANSFORM		| eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | TRANSFORM		| eID: " << eID << "\n";
 		transform.removeComponent(eID);
 	}
 	break;	// CT_Transform
 
 	case (CT_Sprite):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | SPRITE		| eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | SPRITE		| eID: " << eID << "\n";
 		sprite.removeComponent(eID);
 	}
 	break;	// CT_Sprite
@@ -186,20 +175,6 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	break;	// CT_Physics
 
-	//case (CT_AABB):
-	//{
-	//	std::cout << "REGISTRY | REMOVING COMPONENT | AABB			| eID: " << eID << "\n";
-	//	aabb.removeComponent(eID);
-	//}
-	//break;	// CT_AABB
-
-	case (CT_CircleCollider):
-	{
-		std::cout << "REGISTRY | REMOVING COMPONENT | CRCCOLLIDER	| eID: " << eID << "\n";
-		circlecollider.removeComponent(eID);
-	}
-	break;	// CT_CircleCollider
-
 	case (CT_Audio):
 	{
 		std::cout << "REGISTRY | REMOVING COMPONENT | AUDIO			| eID: " << eID << "\n";
@@ -216,7 +191,7 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 
 	case (CT_Health):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | HEALTH		| eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | HEALTH		| eID: " << eID << "\n";
 		health.removeComponent(eID);
 	}
 	break;	// CT_Health
@@ -228,6 +203,12 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	break;	// CT_Tag
 
+	case (CT_Input):
+	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | INPUT			| eID: " << eID << "\n";
+		input.removeComponent(eID);
+	}
+	break;	// CT_Tag
 	}
 }
 
@@ -252,77 +233,54 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	case (CT_Transform):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | TRANSFORM | eID: " << eID << "\n";
 		return transform.hasComponent(eID);
 	}
 	break;	// CT_Transform
 
 	case (CT_Sprite):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | SPRITE    | eID: " << eID << "\n";
 		return sprite.hasComponent(eID);
 	}
 	break;	// CT_Sprite
 
 	case (CT_Animator):
 	{
-		std::cout << "REGISTRY | HAS COMPONENT | ANIM      | eID: " << eID << "\n";
 		return animator.hasComponent(eID);
 	}
 	break;	// CT_Animator
 
 	case (CT_Physics):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | PHYSICS   | eID: " << eID << "\n";
 		return physics.hasComponent(eID);
 	}
 	break;	// CT_Physics
 
-	//case (CT_AABB):
-	//{
-	//	std::cout << "REGISTRY | HAS COMPONENT | COLLIDER  | eID: " << eID << "\n";
-	//	return aabb.hasComponent(eID);
-	//}
-	//break;	// CT_AABB
-
-	case (CT_CircleCollider):
-	{
-		std::cout << "REGISTRY | HAS COMPONENT | COLLIDER  | eID: " << eID << "\n";
-		return circlecollider.hasComponent(eID);
-	}
-	break;	// CT_CircleCollider
-
 	case (CT_Audio):
 	{
-		std::cout << "REGISTRY | HAS COMPONENT | AUDIO     | eID: " << eID << "\n";
 		return audio.hasComponent(eID);
 	}
 	break;	// CT_Audio
 
 	case (CT_Lifetime):
 	{
-		std::cout << "REGISTRY | HAS COMPONENT | LIFETIME  | eID: " << eID << "\n";
 		return lifetime.hasComponent(eID);
 	}
 	break;	// CT_Lifetime
 
 	case (CT_Health):
 	{
-		std::cout << "REGISTRY | HAS COMPONENT | HEALTH    | eID: " << eID << "\n";
 		return health.hasComponent(eID);
 	}
 	break;	// CT_Health
 
 	case (CT_Tag):
 	{
-		std::cout << "REGISTRY | HAS COMPONENT | TAG       | eID: " << eID << "\n";
 		return tag.hasComponent(eID);
 	}
 	break;	// CT_Tag
 
 	case (CT_Input):
 	{
-		std::cout << "REGISTRY | HAS COMPONENT | TAG       | eID: " << eID << "\n";
 		return input.hasComponent(eID);
 	}
 	break;	// CT_Tag
@@ -342,11 +300,7 @@ SpriteComponent&			Get_SpriteComponent(Entity eID)			{ return sprite.getComponen
 
 AnimatorComponent&			Get_AnimatorComponent(Entity eID)		{ return animator.getComponent(eID); }
 
-PhysicsComponent&			Get_PhysicsComponent(Entity eID)		{ return physics.getComponent(eID); }
-
-//AABBComponent&				Get_AABBComponent(Entity eID)			{ return aabb.getComponent(eID); }
-
-CircleColliderComponent&	Get_CircleColliderComponent(Entity eID)	{ return circlecollider.getComponent(eID); }
+Physics::PhysicsComp&		Get_PhysicsComponent(Entity eID)		{ return physics.getComponent(eID); }
 
 AudioComponent&				Get_AudioComponent(Entity eID)			{ return audio.getComponent(eID); }
 
@@ -363,9 +317,7 @@ InputComponent&				Get_InputComponent(Entity eID)			{ return input.getComponent(
 ComponentManager<TransformComponent>&		CM_Transform()		{ return transform; }
 ComponentManager<SpriteComponent>&			CM_Sprite()			{ return sprite; }
 ComponentManager<AnimatorComponent>&		CM_Animator()		{ return animator; }
-ComponentManager<PhysicsComponent>&			CM_Physics()		{ return physics; }
-//ComponentManager<AABBComponent>&			CM_AABB()			{ return aabb; }
-ComponentManager<CircleColliderComponent>&	CM_CircleCollider()	{ return circlecollider; }
+ComponentManager<Physics::PhysicsComp>&		CM_Physics()		{ return physics; }
 ComponentManager<AudioComponent	>&			CM_Audio()			{ return audio; }
 ComponentManager<LifetimeComponent>&		CM_Lifetime()		{ return lifetime; }
 ComponentManager<HealthComponent>&			CM_Health()			{ return health; }

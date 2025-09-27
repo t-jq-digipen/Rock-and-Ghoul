@@ -32,8 +32,6 @@ enum ComponentTypeID
 						  
 	// Physics			  
 	CT_Physics,			// 4	| Velocity, acceleration
-	CT_AABB,			// 5	| AABB Collision hitbox
-	CT_CircleCollider,	// 6	| CirleCollider hitbox
 						  
 	// Audio			  
 	CT_Audio,			// 7	| Audio...
@@ -79,30 +77,18 @@ struct AnimatorComponent {
 // GRAPHICS END
 
 // PHYSICS
-struct PhysicsComponent {
-	Vec2 vel	{ 0.f,0.f };
-	Vec2 accel	{ 0.f,0.f };
-	//bool collide (maybe can use bitwise checking to see WHAT things it will collide with? to consider)
-	//aabb hitbox;
-	bool active { false };
-	float width{ 0.f };
-	float height{ 0.f };
-};
+//struct PhysicsComponent {
+//	Vec2 vel	{ 0.f,0.f };
+//	Vec2 accel	{ 0.f,0.f };
+//	//bool collide (maybe can use bitwise checking to see WHAT things it will collide with? to consider)
+//	//aabb hitbox;
+//	bool active { false };
+//	float width{ 0.f };
+//	float height{ 0.f };
+//};
 
 struct MovementComponent {
 	Vec2 vel{ 0.f, 0.f };
-};
-
-struct AABBComponent {
-	bool active	{ false };
-	AABB aabb	{ {0.f,0.f},{0.f,0.f} };// For aabb collili
-	float width	{ 0.f };
-	float height{ 0.f };
-};
-
-struct CircleColliderComponent {
-	bool active	{ false };
-	float radius{ 0.f };
 };
 
 struct AudioComponent {
