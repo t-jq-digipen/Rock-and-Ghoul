@@ -4,6 +4,9 @@
 #include <glm/glm.hpp>
 #include "Remath.h"
 #include <fstream>
+#include <map>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 // Image structure to hold texture data 
 struct Image {
@@ -18,6 +21,14 @@ struct Image {
     }
 
     bool IsValid() const { return textureID != 0; }
+};
+
+//struct for each individual text
+struct Character {
+    unsigned int TextureID;  // ID handle of the glyph texture
+    glm::ivec2   Size;       // Size of glyph
+    glm::ivec2   Bearing;    // Offset from baseline to left/top of glyph
+    unsigned int Advance;    // Offset to advance to next glyph
 };
 
 class Render {
@@ -72,7 +83,9 @@ public:
     void ClearAllTextures(); //can use this in the unload of each state etc.mainmenu unload, level1 unload
     
     //draw_font maybe later
-
+    void InitTextRendering();
+    void DrawText(std::string text, float x, float y, float scale, const Colour3& color); //use: text, position, size, color
+    //maybe set_font 
     
 
     bool IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height);
@@ -81,6 +94,7 @@ private:
     static Render* instance;
     Render();
     GLuint vao, vbo, shaderProgram;
+    GLuint textVAO, textVBO; //text vaovbos
     glm::mat4 projection;
 
 
@@ -92,6 +106,7 @@ private:
     //texture cache (allow multiple to share common sprite)
     std::unordered_map<std::string, GLuint> textureCache;
     std::unordered_map<std::string, Image> imageCache;
+    std::map<char, Character> Characters;
 
     Image CreateImageFromTexture(GLuint textureID, int width, int height, const std::string& path);
     
