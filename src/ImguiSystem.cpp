@@ -4,6 +4,8 @@
 #include "CoreEngine.h"
 #include "EntityCreation.h"
 
+bool ImGuiSystem::showColliders = false;
+bool ImGuiSystem::showVelocity = false;
 
 void ImGuiSystem::InitializeImGui(GLFWwindow* window) {
     IMGUI_CHECKVERSION(); //checks version compatibility
@@ -83,30 +85,31 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::Text("AABB Colliders: %d / %d active", activeColliders, totalColliders);
 
     // colili
-    if (ImGui::CollapsingHeader("Physics Components")) {
-        for (auto& [entity, physics] : CM_Physics().getComponents()) {
-            if (Has_Component(entity, CT_Transform) && Has_Component(entity, CT_Tag)) {
-                // oni process entities that have Transform and Tag components
-                TransformComponent& transform = Get_TransformComponent(entity);
-                TagComponent& tag = Get_TagComponent(entity);
-                // udate collision shapes (AABB and Circle) to match current position
-                physics.UpdateHitboxes(transform.pos);
+    //if (ImGui::CollapsingHeader("Physics Components")) {
+    //    for (auto& [entity, physics] : CM_Physics().getComponents()) {
+    //        if (Has_Component(entity, CT_Transform) && Has_Component(entity, CT_Tag)) {
+    //            // oni process entities that have Transform and Tag components
+    //            TransformComponent& transform = Get_TransformComponent(entity);
+    //            TagComponent& tag = Get_TagComponent(entity);
+    //            // udate collision shapes (AABB and Circle) to match current position
+    //            physics.UpdateHitboxes(transform.pos);
 
-                const char* tagName = (tag.tag == T_PLAYER) ? "Player" :(tag.tag == T_ENEMY) ? "Enemy" :(tag.tag == T_PROJECTILE) ? "Projectile" : "Unknown";
+    //            const char* tagName = (tag.tag == T_PLAYER) ? "Player" :(tag.tag == T_ENEMY) ? "Enemy" :(tag.tag == T_PROJECTILE) ? "Projectile" : "Unknown";
 
-                AABB aabb = physics.Get_AABB();
-                Circle circle = physics.Get_Circle();
+    //            AABB aabb = physics.Get_AABB();
+    //            Circle circle = physics.Get_Circle();
 
-                ImGui::Text("%s %d:", tagName, entity);
-                ImGui::Text("  Position: (%.1f, %.1f)", transform.pos.x, transform.pos.y);
-                ImGui::Text("  AABB: (%.1f, %.1f) to (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
-                ImGui::Text("  Circle: center(%.1f, %.1f) radius %.1f", circle.pos.x, circle.pos.y, circle.rad);
-                ImGui::Text("  Collision Active: %s", physics.CollisionActive() ? "Yes" : "No");
-                ImGui::Separator();
-            }
-        }
-    }
-
+    //            ImGui::Text("%s %d:", tagName, entity);
+    //            ImGui::Text("  Position: (%.1f, %.1f)", transform.pos.x, transform.pos.y);
+    //            ImGui::Text("  AABB: (%.1f, %.1f) to (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
+    //            ImGui::Text("  Circle: center(%.1f, %.1f) radius %.1f", circle.pos.x, circle.pos.y, circle.rad);
+    //            ImGui::Text("  Collision Active: %s", physics.CollisionActive() ? "Yes" : "No");
+    //            ImGui::Separator();
+    //        }
+    //    }
+    //}
+    ImGui::Checkbox("Show Colliders", &showColliders);
+    ImGui::Checkbox("Show Velocity", &showVelocity);
     //enityt
     if (ImGui::CollapsingHeader("Entity Positions")) {
         for (auto& [entity, tag] : CM_Tag().getComponents()) {

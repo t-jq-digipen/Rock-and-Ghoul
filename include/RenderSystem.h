@@ -9,6 +9,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Debug.h"
 #include "Input.h"
+#include "ImguiSystem.h"
 class RenderSystem : public ISystem {
 public:
     Render& renderer;
@@ -56,7 +57,7 @@ public:
                 );
             }
 
-            if (showDebug && Has_Component(e, CT_Physics) && Has_Component(e, CT_Tag)) {
+            if (ImGuiSystem::showVelocity && Has_Component(e, CT_Physics) && Has_Component(e, CT_Tag)) {
                 auto& tag = Get_TagComponent(e);
                 if (tag.tag == T_PLAYER) {
                     DebugDraw::DrawVelocity(e, t, renderer, dt);
@@ -64,7 +65,7 @@ public:
             }
             // Debug drawing (AABB + hotspot)
 
-            if (showDebug && Has_Component(e, CT_Physics)) {
+            if (ImGuiSystem::showColliders && Has_Component(e, CT_Physics)) {
                 auto& p = Get_PhysicsComponent(e);
 
                 DebugDraw::DrawAABB(p.Get_AABB(), renderer);

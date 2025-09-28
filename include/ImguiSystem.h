@@ -1,5 +1,6 @@
 #pragma once
 #include "System.h"
+#include "Debug.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -13,6 +14,8 @@ public:
 
     static void InitializeImGui(GLFWwindow* window);
     static void ShutdownImGui();
+    static bool showColliders;
+    static bool showVelocity;
 
 private:
     void ShowEngineDebugWindow();
