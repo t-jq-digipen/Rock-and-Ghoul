@@ -17,7 +17,7 @@ int main() {
 
     // json testing
     GameSettings settings;
-    settings.volume = 0.5f;
+    settings.volume = 10.0f;
     settings.resolutionHeight = 1080;
     settings.resolutionWidth = 1920;
 
