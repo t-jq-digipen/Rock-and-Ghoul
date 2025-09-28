@@ -20,6 +20,7 @@
 */
 
 #include "Debug.h"
+#include <unordered_map>
 
 void DebugDraw::DrawAABB(const AABB& box, Render& renderer) {
     Vec2 topLeft{ box.min.x, box.max.y };
@@ -43,22 +44,25 @@ void DebugDraw::DrawHotspot(const Vec2& pos, Render& renderer) {
     renderer.DrawLine({ pos.x, pos.y - r }, { pos.x, pos.y + r }, color);
 }
 
-void DebugDraw::DrawEntityHotspots(const TransformComponent& t, Render& renderer) {
-    Vec2 half = { t.scale.x * 0.5f, t.scale.y * 0.5f };
 
-    // Center
-    DrawHotspot(t.pos, renderer);
+void DebugDraw::DrawVelocity(Entity e, const TransformComponent& t, Render& renderer, float dt){
+    static std::unordered_map<Entity, Vec2> lastPos;
+    static std::unordered_map<Entity, Vec2> smoothVel;
 
-    // Corners
-    DrawHotspot({ t.pos.x - half.x, t.pos.y - half.y }, renderer); // bottom-left
-    DrawHotspot({ t.pos.x + half.x, t.pos.y - half.y }, renderer); // bottom-right
-    DrawHotspot({ t.pos.x - half.x, t.pos.y + half.y }, renderer); // top-left
-    DrawHotspot({ t.pos.x + half.x, t.pos.y + half.y }, renderer); // top-right
+    Vec2 pos = t.pos;
 
-    // Optional: mid-edges
-    DrawHotspot({ t.pos.x, t.pos.y - half.y }, renderer); // bottom
-    DrawHotspot({ t.pos.x, t.pos.y + half.y }, renderer); // top
-    DrawHotspot({ t.pos.x - half.x, t.pos.y }, renderer); // left
-    DrawHotspot({ t.pos.x + half.x, t.pos.y }, renderer); // right
+    // compute delta velocity
+    Vec2 rawVel = (pos - lastPos[e]) / dt;
+    lastPos[e] = pos;
+
+    // smooth
+    smoothVel[e] = smoothVel[e] * 0.8f + rawVel * 0.2f;
+
+    // scale line for visibility
+    float scale = 0.05f;
+    Vec2 end = pos + smoothVel[e] * scale;
+
+    renderer.DrawLine(pos, end, { 1.f, 0.f, 0.f });
 }
+
 

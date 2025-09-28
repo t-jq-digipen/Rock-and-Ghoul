@@ -59,21 +59,7 @@ public:
             if (Has_Component(e, CT_Physics) && Has_Component(e, CT_Tag)) {
                 auto& tag = Get_TagComponent(e);
                 if (tag.tag == T_PLAYER) {
-                    auto& p = Get_PhysicsComponent(e);
-                    static std::unordered_map<Entity, Vec2> lastPos;
-                    static std::unordered_map<Entity, Vec2> smoothVel;
-
-                    Vec2 pos = t.pos;
-                    Vec2 rawVel = (pos - lastPos[e]) / dt;   // delta per second
-                    lastPos[e] = pos;
-
-                    // low-pass filter (smoothing)
-                    smoothVel[e] = smoothVel[e] * 0.8f + rawVel * 0.2f;
-
-                    float scale = 0.05f; // tune until visible
-                    Vec2 end = pos + smoothVel[e] * scale;
-
-                    renderer.DrawLine(pos, end, { 1.f, 0.f, 0.f });
+                    DebugDraw::DrawVelocity(e, t, renderer, dt);
                 }
             }
             // Debug drawing (AABB + hotspot)
@@ -82,7 +68,7 @@ public:
                 auto& p = Get_PhysicsComponent(e);
 
                 DebugDraw::DrawAABB(p.Get_AABB(), renderer);
-                DebugDraw::DrawEntityHotspots(t, renderer);
+                DebugDraw::DrawHotspot(t.pos, renderer);
             }
 
         }
