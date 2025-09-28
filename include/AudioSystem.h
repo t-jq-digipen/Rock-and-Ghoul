@@ -2,7 +2,6 @@
 #pragma once
 #include "System.h"
 #include "Audio.h"   // use your FMOD wrapper
-#include <iostream> //debug
 
 class AudioManager : public ISystem {
 public:
@@ -15,9 +14,6 @@ public:
 
         // Crossfade logic
         if (crossfadeActive) {
-            std::cout << "CROSSFADE ACTIVE - Time: " << crossfadeTime
-                << "/" << crossfadeDuration << std::endl;
-
             crossfadeTime += dt;
             float t = crossfadeTime / crossfadeDuration;
             if (t > 1.0f) t = 1.0f;
@@ -32,7 +28,6 @@ public:
                 currentChannel = nextChannel;
                 nextChannel = nullptr;
                 crossfadeActive = false;
-                std::cout << "CROSSFADE COMPLETED\n";
             }
         }
     }
@@ -44,13 +39,6 @@ public:
     // helper: load a sound (music or SFX)
     FMOD::Sound* Load(const std::string& path, bool loop = false) {
         return AudioSystem::LoadSound(path, loop);
-    }
-
-    // ADDED: Unload a sound to prevent memory leaks
-    void Unload(FMOD::Sound* sound) {
-        if (sound) {
-            sound->release();
-        }
     }
 
     // helper: play a sound
@@ -88,10 +76,6 @@ public:
 
     // NEW: play and store the current music channel
     void PlayMusic(FMOD::Sound* track, bool paused = false) {
-        // Stop previous music if playing
-        if (currentChannel) {
-            currentChannel->stop();
-        }
         currentChannel = PlayGetChannel(track, paused);
         if (currentChannel && !paused)
             currentChannel->setVolume(1.0f);
@@ -100,11 +84,6 @@ public:
     // NEW: crossfade to a new track over time
     void CrossfadeTo(FMOD::Sound* newTrack, float duration) {
         if (!newTrack) return;
-
-        // Stop any existing crossfade
-        if (crossfadeActive && nextChannel) {
-            nextChannel->stop();
-        }
 
         nextChannel = PlayGetChannel(newTrack, true); // start paused
         if (!nextChannel) return;

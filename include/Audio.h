@@ -35,9 +35,6 @@ public:
     // NEW: pause/unpause a channel
     static void SetChannelPaused(FMOD::Channel* channel, bool paused);
 
-    // ADDED: Unload sound to free memory
-    static void UnloadSound(FMOD::Sound* sound);
-
 private:
     static FMOD::System* mSystem;
 };

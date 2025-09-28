@@ -80,60 +80,60 @@ COMPONENTS LIST:
 
 void Add_Component(Entity eID, TransformComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | TRANSFORM | eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | TRANSFORM | eID: " << eID << "\n";
 	transform.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, SpriteComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | SPRITE    | eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | SPRITE    | eID: " << eID << "\n";
 	sprite.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, AnimatorComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | ANIM      | eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | ANIM      | eID: " << eID << "\n";
 	animator.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, PhysicsComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | PHYSICS   | eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | PHYSICS   | eID: " << eID << "\n";
 	physics.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, AudioComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | AUDIO     | eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | AUDIO     | eID: " << eID << "\n";
 	audio.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, LifetimeComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | LIFETIME  | eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | LIFETIME  | eID: " << eID << "\n";
 	lifetime.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, HealthComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | HEALTH    | eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | HEALTH    | eID: " << eID << "\n";
 	health.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, TagComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | TAG       | eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | TAG       | eID: " << eID << "\n";
 	tag.addComponent(eID, comp);
 }
 void Add_Component(Entity eID, InputComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | INPUT     | eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | INPUT     | eID: " << eID << "\n";
 	input.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, BossGhoulComponent const& comp)
 {
-	//std::cout << "REGISTRY | ADDING COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
 	bossghoul.addComponent(eID, comp);
 
 }
@@ -155,63 +155,63 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	case (CT_Transform):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | TRANSFORM | eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | TRANSFORM | eID: " << eID << "\n";
 		transform.removeComponent(eID);
 	}
 	break;	// CT_Transform
 
 	case (CT_Sprite):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | SPRITE    | eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | SPRITE    | eID: " << eID << "\n";
 		sprite.removeComponent(eID);
 	}
 	break;	// CT_Sprite
 
 	case (CT_Animator):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | ANIM      | eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | ANIM      | eID: " << eID << "\n";
 		animator.removeComponent(eID);
 	}
 	break;	// CT_Animator
 
 	case (CT_Physics):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | PHYSICS   | eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | PHYSICS   | eID: " << eID << "\n";
 		physics.removeComponent(eID);
 	}
 	break;	// CT_Physics
 
 	case (CT_Audio):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | AUDIO     | eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | AUDIO     | eID: " << eID << "\n";
 		audio.removeComponent(eID);
 	}
 	break;	// CT_Audio
 
 	case (CT_Lifetime):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | LIFETIME  | eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | LIFETIME  | eID: " << eID << "\n";
 		lifetime.removeComponent(eID);
 	}
 	break;	// CT_Lifetime
 
 	case (CT_Health):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | HEALTH    | eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | HEALTH    | eID: " << eID << "\n";
 		health.removeComponent(eID);
 	}
 	break;	// CT_Health
 
 	case (CT_Tag):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | TAG       | eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | TAG       | eID: " << eID << "\n";
 		tag.removeComponent(eID);
 	}
 	break;	// CT_Tag
 
 	case (CT_BossGhoul):
 	{
-		//std::cout << "REGISTRY | REMOVING COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
+		std::cout << "REGISTRY | REMOVING COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
 		bossghoul.removeComponent(eID);
 	}
 	break;
@@ -239,63 +239,63 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 	}
 	case (CT_Transform):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | TRANSFORM | eID: " << eID << "\n";
+		std::cout << "REGISTRY | HAS COMPONENT | TRANSFORM | eID: " << eID << "\n";
 		return transform.hasComponent(eID);
 	}
 	break;	// CT_Transform
 
 	case (CT_Sprite):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | SPRITE    | eID: " << eID << "\n";
+		std::cout << "REGISTRY | HAS COMPONENT | SPRITE    | eID: " << eID << "\n";
 		return sprite.hasComponent(eID);
 	}
 	break;	// CT_Sprite
 
 	case (CT_Animator):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | ANIM      | eID: " << eID << "\n";
+		std::cout << "REGISTRY | HAS COMPONENT | ANIM      | eID: " << eID << "\n";
 		return animator.hasComponent(eID);
 	}
 	break;	// CT_Animator
 
 	case (CT_Physics):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | PHYSICS   | eID: " << eID << "\n";
+		std::cout << "REGISTRY | HAS COMPONENT | PHYSICS   | eID: " << eID << "\n";
 		return physics.hasComponent(eID);
 	}
 	break;	// CT_Physics
 
 	case (CT_Audio):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | AUDIO     | eID: " << eID << "\n";
+		std::cout << "REGISTRY | HAS COMPONENT | AUDIO     | eID: " << eID << "\n";
 		return audio.hasComponent(eID);
 	}
 	break;	// CT_Audio
 
 	case (CT_Lifetime):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | LIFETIME  | eID: " << eID << "\n";
+		std::cout << "REGISTRY | HAS COMPONENT | LIFETIME  | eID: " << eID << "\n";
 		return lifetime.hasComponent(eID);
 	}
 	break;	// CT_Lifetime
 
 	case (CT_Health):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | HEALTH    | eID: " << eID << "\n";
+		std::cout << "REGISTRY | HAS COMPONENT | HEALTH    | eID: " << eID << "\n";
 		return health.hasComponent(eID);
 	}
 	break;	// CT_Health
 
 	case (CT_Tag):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | TAG       | eID: " << eID << "\n";
+		std::cout << "REGISTRY | HAS COMPONENT | TAG       | eID: " << eID << "\n";
 		return tag.hasComponent(eID);
 	}
 	break;	// CT_Tag
 
 	case (CT_BossGhoul):
 	{
-		//std::cout << "REGISTRY | HAS COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
+		std::cout << "REGISTRY | HAS COMPONENT | BOSS GHOUL | eID: " << eID << "\n";
 		return bossghoul.hasComponent(eID);
 	}
 	break;

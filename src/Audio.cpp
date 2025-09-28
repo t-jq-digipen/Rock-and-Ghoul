@@ -52,13 +52,6 @@ FMOD::Sound* AudioSystem::LoadSound(const std::string& filename, bool loop) {
     return sound;
 }
 
-// ADDED: Unload sound implementation
-void AudioSystem::UnloadSound(FMOD::Sound* sound) {
-    if (sound) {
-        sound->release();
-    }
-}
-
 void AudioSystem::PlaySound(FMOD::Sound* sound) {
     if (!mSystem || !sound) return;
     FMOD::Channel* channel = nullptr;

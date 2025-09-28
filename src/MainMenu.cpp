@@ -1,6 +1,3 @@
-#include "AudioSystem.h"   // for AudioManager
-#include <fmod.hpp>        // for FMOD::Sound and FMOD types
-
 #include "Render.h"
 #include "MainMenu.h"
 #include "GameStateManager.h"
@@ -15,10 +12,6 @@
 
 #include "CoreEngine.h"
 
-// Add extern declarations for audio manager and music sounds
-extern AudioManager* audio;       // <<<< ADDED
-extern FMOD::Sound* menuMusic;    // <<<< ADDED
-extern FMOD::Sound* gameMusic;    // <<<< ADDED
 
 
 GLuint titleTexture{ 0 };
@@ -37,21 +30,21 @@ static inline glm::vec2 ScreenToRender(const glm::vec2& mouseScreen, float windo
 
 void MainMenu::Load()
 {
-    std::cout << "Main Menu Loaded!!!" << std::endl;
-    titleTexture = Render::GetInstance().LoadTexture("../Assets/title.png");
-    rockTexture = Render::GetInstance().LoadTexture("../Assets/Rock_2048px.png");
-    ghoulTexture = Render::GetInstance().LoadTexture("../Assets/Ghoul_2048px.png");
+	std::cout << "Main Menu Loaded!!!" << std::endl;
+	titleTexture = Render::GetInstance().LoadTexture("../Assets/title.png");
+	rockTexture = Render::GetInstance().LoadTexture("../Assets/Rock_2048px.png");
+	ghoulTexture = Render::GetInstance().LoadTexture("../Assets/Ghoul_2048px.png");
     playTexture = Render::GetInstance().LoadTexture("../Assets/play.png");
     quitTexture = Render::GetInstance().LoadTexture("../Assets/quit.png");
 }
 
 void MainMenu::Init()
 {
-    std::cout << "Main Menu Initialized!!!" << std::endl;
+	std::cout << "Main Menu Initialized!!!" << std::endl;
     Render::GetInstance().Init();
 
     // ECS TEST
-
+    
 
 }
 
@@ -93,21 +86,22 @@ void MainMenu::Update()
         renderer.DrawRect({ GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f, { 0, 1, 0.5 });
         if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            // REMOVED: Crossfade call from here - let GSM handle it
+            // nextState = GS_LEVEL1;
             GSM_SetNextState(GameState::GS_LEVEL1);
         }
     }
-
+    
 
     // draw quit button
     renderer.DrawRect({ GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f, { 1, 0, 0 });
-    if (renderer.IsAreaTouched(ScreenToRender({ Input::GetMouseX(), Input::GetMouseY() }, static_cast<float>(GLApp::height)),
+    if (renderer.IsAreaTouched(ScreenToRender({ Input::GetMouseX(), Input::GetMouseY() }, static_cast<float>(GLApp::height)), 
         { GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f))
     {
         renderer.DrawRect({ GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f, { 1, 0, 0.5 });
         if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             GSM_SetNextState(GameState::GS_QUIT);
+            // nextState = GS_QUIT;
         }
     }
 
@@ -122,30 +116,30 @@ void MainMenu::Update()
     {
         renderer.DrawTexturedQuad({ GLApp::width * 0.7f, GLApp::height * 0.2f }, { 300.f, 150.f }, quitTexture);
     }
-
+    
 
     // press space (or click play button) to enter level 1
     if (Input::IsKeyPressed(GLFW_KEY_SPACE))
     {
         std::cout << "PLAY CLICKED — switching to Level1\n";
-        // REMOVED: Crossfade call from here - let GSM handle it
         GSM_SetNextState(GameState::GS_LEVEL1);
+        // nextState = GS_LEVEL1;
     }
 }
 
 void MainMenu::Draw()
 {
-    // std::cout << "Main Menu Drawing!!!" << std::endl;
+	// std::cout << "Main Menu Drawing!!!" << std::endl;
 }
 
 void MainMenu::Free()
 {
-    std::cout << "Main Menu Freed!!!" << std::endl;
+	std::cout << "Main Menu Freed!!!" << std::endl;
 }
 
 void MainMenu::Unload()
 {
-    std::cout << "Main Menu Unloaded!!!" << std::endl;
+	std::cout << "Main Menu Unloaded!!!" << std::endl;
     if (titleTexture)
     {
         glDeleteTextures(1, &titleTexture);
