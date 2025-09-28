@@ -14,7 +14,7 @@ FrameRateController::FrameRateController(int targetFPS)
 }
 
 void FrameRateController::StartFrame() {
-    // nothing fancy yet, just placeholder
+    //just placeholder
 }
 
 void FrameRateController::EndFrame() {
