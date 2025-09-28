@@ -113,7 +113,6 @@ T RG_ATanDeg(T x) {
     return RG_RadToDeg(RG_ATan(x));
 }
 
-
 float RG_DistanceSquared(const Vec2& p1, const Vec2& p2) {
     float dx = p2.x - p1.x;
     float dy = p2.y - p1.y;

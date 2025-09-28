@@ -118,6 +118,35 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     }
 }
 
+// Circle-AABB Static
+bool CollisionIntersection_CA_Static(const Circle& circle, const AABB& aabb)
+{
+    // find closest point on AABB to circle center
+    float closestX = circle.x;
+    // clamping
+    if (closestX < aabb.min.x) {
+        closestX = aabb.min.x;
+    }
+    else if (closestX > aabb.max.x) {
+        closestX = aabb.max.x;
+    }
+
+    float closestY = circle.y;
+    if (closestY < aabb.min.y) {
+        closestY = aabb.min.y;
+    }
+    else if (closestY > aabb.max.y) {
+        closestY = aabb.max.y;
+    }
+
+    // compute squared distance between circle center and closest point (not using rg_distancesquared for now)
+    float dx = circle.x - closestX;
+    float dy = circle.y - closestY;
+    float dist2 = dx * dx + dy * dy;
+
+    return dist2 <= (circle.rad * circle.rad);
+}
+
 bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& line) {
         // starting from point on line to center of circle
         Vec2 linecircle = Subtract(Vec2{ circle.x, circle.y }, line.start);
@@ -126,7 +155,7 @@ bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& li
         Vec2 vecDir = Subtract(line.end, line.start);
 
         // squared length of the line segment
-        float lineLengthSquared = DotProduct(vecDir, vecDir);
+        float lineLengthSquared = RG_DotProduct(vecDir, vecDir);
 
         //// Handle degenerate case (line segment is actually a point)
         //if (lineLengthSquared == 0.0f) {
@@ -134,7 +163,7 @@ bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& li
         //}
 
         // circle center projected on line segment
-        float t = DotProduct(linecircle, vecDir) / lineLengthSquared;
+        float t = RG_DotProduct(linecircle, vecDir) / lineLengthSquared;
 
         // clamp t to [0, 1] to stay within the line segment
         t = (t < 0.0f) ? 0.0f : (t > 1.0f) ? 1.0f : t;
@@ -143,7 +172,7 @@ bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& li
         Vec2 closestPoint = Add(line.start, Scale(vecDir, t));
 
         // check if circle intersects with the closest point
-        float distanceSquared = DistanceSquared(Vec2{ circle.x, circle.y }, closestPoint);
+        float distanceSquared = RG_DistanceSquared(Vec2{ circle.x, circle.y }, closestPoint);
 
         return distanceSquared <= (circle.rad * circle.rad);
     
