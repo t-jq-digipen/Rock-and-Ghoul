@@ -12,9 +12,14 @@
 #include "FilePath.h"
 #include <iostream>
 
-BossGhoulSystem* bossGhoulSystem = nullptr;
-int main() {
+// ADD: Global audio pointers for GSM to use
+AudioManager* audio = nullptr;        // CHANGED: Make global
+FMOD::Sound* menuMusic = nullptr;     // ADD: Main menu music
+FMOD::Sound* gameMusic = nullptr;     // ADD: Game level music
 
+BossGhoulSystem* bossGhoulSystem = nullptr;
+
+int main() {
     // json testing
     GameSettings settings;
     settings.volume = 10.0f;
@@ -38,27 +43,47 @@ int main() {
 
     CoreEngine engine;
     Render& renderer = Render::GetInstance();
-    // create 1 audio system and keep a pointer to it
-    AudioManager* audio = new AudioManager();
+
+    // CHANGED: Create audio system and assign to global pointer
+    audio = new AudioManager();  // Now assigns to global 'audio'
     engine.AddSystem(audio);
+
     bossGhoulSystem = new BossGhoulSystem();
     engine.AddSystem(bossGhoulSystem);
     engine.AddSystem(new RenderSystem(renderer));
     engine.AddSystem(new PlayerSystem());
     engine.AddSystem(new PhysicsSystem(Render::GetInstance()));
+
     // initialize all systems (this sets up FMOD, OpenGL, etc.)
     engine.Initialize();
-    // broken here?
+
     std::cout << "GETS PAST ENGINE INIT\n";
+
+    // CHANGED: Load both music tracks for crossfading
+    menuMusic = audio->Load("../Assets/music/sniffmyBalls.wav", true);  // ADD: Load menu music
+    gameMusic = audio->Load("../Assets/music/sniffmyBallsAgain.wav", true);  // ADD: Load game music
+
+    // CHANGED: Play menu music initially (not bgm)
+    if (menuMusic) {
+        audio->PlayMusic(menuMusic, false);
+        std::cout << "Started menu music\n";
+    }
+    else {
+        std::cout << "Failed to load menu music\n";
+    }
 
     std::cout << "GETS PAST ENGINE RUN\n";
 
-    //load and play sounds
-    FMOD::Sound* bgm = audio->Load("../Assets/music/bgm.mp3", true);
-    audio->Play(bgm);
-
     engine.Run();
     engine.Shutdown();
+
+    // ADD: Cleanup audio resources
+    if (audio) {
+        if (menuMusic) audio->Unload(menuMusic);
+        if (gameMusic) audio->Unload(gameMusic);
+        delete audio;
+        audio = nullptr;
+    }
 
     GLApp::cleanup();
     return 0;
