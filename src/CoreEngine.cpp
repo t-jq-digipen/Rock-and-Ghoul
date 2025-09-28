@@ -7,8 +7,10 @@
 #include <iostream>
 #include <string>
 #include "ImguiSystem.h"
+#include "FrameRateController.h"
+#include <algorithm>
 CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
-
+FrameRateController frameRate(60);
 
 GSM gsm;
 float g_dt; // Global dt
@@ -19,7 +21,6 @@ void CoreEngine::AddSystem(ISystem* sys) {
 
 void CoreEngine::Initialize() {
     for (auto s : systems) s->Initialize();
-    lastFrame = glfwGetTime();
     gsm.Init(GameState::GS_MAIN_MENU);
 
 }
@@ -29,6 +30,7 @@ void CoreEngine::Run() {
 
     while (running && !glfwWindowShouldClose(GLApp::ptr_window) && GSM_CurrentState() != GameState::GS_QUIT) {
         // --- 1. Bind function pointers for the new current state
+
         gsm.Update();
 
         // --- 2. Load + Init ONCE for this state
@@ -37,13 +39,12 @@ void CoreEngine::Run() {
 
         // --- 3. Frame loop for this state
         while (gsm.GetNextState() == gsm.GetCurrentState()) {
-            double now = glfwGetTime();
-            float dt = static_cast<float>(now - lastFrame);
-            g_dt = dt;
-            lastFrame = now;
-
+            frameRate.StartFrame();
+            
             glfwPollEvents();
-
+            float dt = static_cast<float>(frameRate.GetDeltaTime());
+            g_dt = std::clamp(dt, 0.0f, 0.05f);
+            
             // 1. Update game state logic first
             gsm.CallUpdate();
 
@@ -57,7 +58,7 @@ void CoreEngine::Run() {
                 // Record the starting timestamp before running the system update
                 auto start = clock::now();
                 // Call the system's update function, passing delta time for this frame
-                s->Update(dt);
+                s->Update(g_dt);
                 // Record the ending timestamp immediately after update finishes
                 auto end = clock::now();
                 //how long the update took in milliseconds
@@ -77,6 +78,7 @@ void CoreEngine::Run() {
 
             Input::Update();
             glfwSwapBuffers(GLApp::ptr_window);
+            frameRate.EndFrame();
         }
 
 
