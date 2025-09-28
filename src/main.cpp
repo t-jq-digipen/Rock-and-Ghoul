@@ -54,7 +54,7 @@ int main() {
     std::cout << "GETS PAST ENGINE RUN\n";
 
     //load and play sounds
-    FMOD::Sound* bgm = audio->Load("../Assets/music/bgm.mp3", true);
+    FMOD::Sound* bgm = audio->Load("../Assets/music/sniffmyBallsAgain.wav", true);
     audio->Play(bgm);
 
     engine.Run();
