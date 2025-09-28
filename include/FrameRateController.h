@@ -9,7 +9,7 @@ public:
     void StartFrame();
     void EndFrame();
 
-    // Getters
+    // getters
     double GetDeltaTime() const { return m_deltaTime; }   // seconds
     double GetFPS() const { return m_fps; }         // frames per second
     int    GetFrameCount() const { return m_frameCount; }

@@ -113,6 +113,21 @@ struct Colour4 {
 
 struct Vec2 {
 	float x, y;
+
+	Vec2 operator*(float scalar) const {
+		return Vec2(x * scalar, y * scalar);
+	}
+	Vec2 operator+(const Vec2& rhs) const {
+		return Vec2(x + rhs.x, y + rhs.y);
+	}
+	Vec2 operator-(const Vec2& rhs) const {
+		return Vec2(x - rhs.x, y - rhs.y);
+	}
+	Vec2 operator/(float scalar) const {
+		return Vec2(x / scalar, y / scalar);
+	}
+
+
 };
 // Calculate squared distance between 2 points
 float RG_DistanceSquared(const Vec2& p1, const Vec2& p2);

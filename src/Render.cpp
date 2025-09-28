@@ -151,7 +151,7 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
 
     glDrawArrays(GL_LINES, 0, 2);
-
+    glLineWidth(3.0f);
     // cleanup
     glDisableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
