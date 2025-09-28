@@ -7,14 +7,18 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include "Debug.h"
+#include "Input.h"
 class RenderSystem : public ISystem {
 public:
     Render& renderer;
     RenderSystem(Render& r) : renderer(r) {}
     void Update(float dt) override {
         auto& em = EntityManager::get();
-
+        static bool showDebug = false;
+        if (Input::IsKeyPressed(GLFW_KEY_5)) {
+            showDebug = !showDebug;
+        }
         for (Entity e = 0; e < em.maxEntities(); ++e) {
             if (!em.isAlive(e)) continue;
             if (!Has_Component(e, CT_Transform) || !Has_Component(e, CT_Sprite))
@@ -71,6 +75,14 @@ public:
 
                     renderer.DrawLine(pos, end, { 1.f, 0.f, 0.f });
                 }
+            }
+            // Debug drawing (AABB + hotspot)
+
+            if (showDebug && Has_Component(e, CT_Physics)) {
+                auto& p = Get_PhysicsComponent(e);
+
+                DebugDraw::DrawAABB(p.Get_AABB(), renderer);
+                DebugDraw::DrawEntityHotspots(t, renderer);
             }
 
         }
