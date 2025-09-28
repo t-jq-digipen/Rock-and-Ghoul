@@ -23,6 +23,18 @@ public:
     // Stop all sounds
     static void StopAll();
 
+    // NEW: play sound and return channel
+    static FMOD::Channel* PlaySoundGetChannel(FMOD::Sound* sound, bool paused = false);
+
+    // NEW: set channel playback position
+    static void SetChannelPosition(FMOD::Channel* channel, unsigned int ms);
+
+    // NEW: get channel playback position
+    static unsigned int GetChannelPosition(FMOD::Channel* channel);
+
+    // NEW: pause/unpause a channel
+    static void SetChannelPaused(FMOD::Channel* channel, bool paused);
+
 private:
     static FMOD::System* mSystem;
 };

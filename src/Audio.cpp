@@ -63,3 +63,36 @@ void AudioSystem::StopAll() {
     mSystem->close(); // stop all
     mSystem->init(32, FMOD_INIT_NORMAL, nullptr);
 }
+
+FMOD::Channel* AudioSystem::PlaySoundGetChannel(FMOD::Sound* sound, bool paused) {
+    if (!mSystem || !sound) return nullptr;
+
+    FMOD::Channel* channel = nullptr;
+    FMOD_RESULT result = mSystem->playSound(sound, nullptr, paused, &channel);
+    if (result != FMOD_OK) {
+        std::cerr << "FMOD Error: Failed to play sound with channel\n";
+        return nullptr;
+    }
+
+    return channel;
+}
+
+void AudioSystem::SetChannelPosition(FMOD::Channel* channel, unsigned int ms) {
+    if (channel) {
+        channel->setPosition(ms, FMOD_TIMEUNIT_MS);
+    }
+}
+
+unsigned int AudioSystem::GetChannelPosition(FMOD::Channel* channel) {
+    unsigned int pos = 0;
+    if (channel) {
+        channel->getPosition(&pos, FMOD_TIMEUNIT_MS);
+    }
+    return pos;
+}
+
+void AudioSystem::SetChannelPaused(FMOD::Channel* channel, bool paused) {
+    if (channel) {
+        channel->setPaused(paused);
+    }
+}
