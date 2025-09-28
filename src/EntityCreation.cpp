@@ -46,12 +46,12 @@ Entity Create_Circle(float x, float y) {
     Add_Component(round, TransformComponent{ {x, y}, {100.f, 100.f} });
     {
         AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
-        Circle circle = { {x,y},200.f };  // Changed variable name from 'round' to 'circle'
+        Circle circle = { {x,y},100.f };
         Physics::PhysicsComp temp(0.015f, true, aabb, circle);
-        Add_Component(round, temp);  // Now 'round' clearly refers to the entity
+        Add_Component(round, temp);  // round refers to the entity
     }
 
-    Add_Component(round, InputComponent{ CS_ARROWS }); // Changed to arrows to avoid conflict with square
+    Add_Component(round, InputComponent{ CS_ARROWS });
     Add_Component(round, TagComponent{ T_PLAYER });
     Add_Component(round, SpriteComponent{ 1, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} }); // textureID=1 for circle, green color
     Add_Component(round, HealthComponent{ 100.f, 100.f });
