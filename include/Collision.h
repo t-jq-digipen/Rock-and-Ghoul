@@ -58,6 +58,9 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     const Vec2& vel2,
     float& firstTimeOfCollision);
 
+// Static Circle-AABB collision check
+bool CollisionIntersection_CA_Static(const Circle& circle, const AABB& aabb);
+
 // Static Circle-Line collision check
 bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& line);
 
