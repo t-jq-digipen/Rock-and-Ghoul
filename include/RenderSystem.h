@@ -56,7 +56,7 @@ public:
                 );
             }
 
-            if (Has_Component(e, CT_Physics) && Has_Component(e, CT_Tag)) {
+            if (showDebug && Has_Component(e, CT_Physics) && Has_Component(e, CT_Tag)) {
                 auto& tag = Get_TagComponent(e);
                 if (tag.tag == T_PLAYER) {
                     DebugDraw::DrawVelocity(e, t, renderer, dt);

@@ -50,7 +50,15 @@ void DebugDraw::DrawVelocity(Entity e, const TransformComponent& t, Render& rend
     static std::unordered_map<Entity, Vec2> smoothVel;
 
     Vec2 pos = t.pos;
-
+    // initialize first frame
+    //first load, your lastPos map is empty for each entity.
+    //C++ will default - construct lastPos[e] (0, 0)
+    //    So it calculates pos - (0, 0) instead of pos - prevPos, and then divides by dt.
+    if (!lastPos.count(e)) {
+        lastPos[e] = pos;   // first time store pos
+        smoothVel[e] = { 0.f, 0.f };
+        return;
+    }
     // compute delta velocity
     Vec2 rawVel = (pos - lastPos[e]) / dt;
     lastPos[e] = pos;
