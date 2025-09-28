@@ -76,6 +76,11 @@ namespace Physics {
 		const bool& CollisionActive() const;
 
 		void Damping();
+
+
+		void Set_Vel(const Vec2& v) { vel = v; }
+		void StopX() { vel.x = 0.f; }
+		void StopY() { vel.y = 0.f; }
 	};
 }
 

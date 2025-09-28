@@ -77,6 +77,24 @@ void CollisionManager::ProcessEvents() {
 //        }
 //    }
 //}
+void CollisionManager::ActionStop(Entity a, Entity b) {
+    auto& transA = Get_TransformComponent(a);
+    auto& physA = Get_PhysicsComponent(a);
+    auto& transB = Get_TransformComponent(b);
+    auto& physB = Get_PhysicsComponent(b);
+
+    // rollback
+    transA.pos = transA.Prevpos;
+    transB.pos = transB.Prevpos;
+
+    // stop
+    physA.Set_Vel({ 0.f, 0.f });
+    physB.Set_Vel({ 0.f, 0.f });
+}
+
+
+
+
 
 void CollisionManager::CheckCollisions() {
     auto& physicsComps = CM_Physics().getComponents();
@@ -111,29 +129,32 @@ void CollisionManager::CheckCollisions() {
                 auto& spriteB = Get_SpriteComponent(b);
                 bIsCircle = (spriteB.textureID == 1); // textureID 1 = circle
             }
-
-            bool collision = false;
-
+            // collision n action
             if (!aIsCircle && !bIsCircle) {
-                // AABB vs AABB (rectangle vs rectangle)
-                collision = CollisionIntersection_RectRect_Static(compA.Get_AABB(), compB.Get_AABB());
+                if (CollisionIntersection_RectRect_Static(compA.Get_AABB(), compB.Get_AABB())) {
+                    AddEvent(a, b);
+                    ActionStop(a, b);
+                }
             }
             else if (aIsCircle && bIsCircle) {
-                // Circle vs Circle
-                collision = CollisionIntersection_CC_Static(compA.Get_Circle(), compB.Get_Circle());
+                if (CollisionIntersection_CC_Static(compA.Get_Circle(), compB.Get_Circle())) {
+                    AddEvent(a, b);
+                    ActionStop(a, b);
+                }
             }
             else {
-                // Circle vs AABB (mixed collision)
                 if (aIsCircle) {
-                   collision = CollisionIntersection_CA_Static(compA.Get_Circle(), compB.Get_AABB());
+                    if (CollisionIntersection_CA_Static(compA.Get_Circle(), compB.Get_AABB())) {
+                        AddEvent(a, b);
+                        ActionStop(a, b);
+                    }
                 }
                 else {
-                    collision = CollisionIntersection_CA_Static(compB.Get_Circle(), compA.Get_AABB());
+                    if (CollisionIntersection_CA_Static(compB.Get_Circle(), compA.Get_AABB())) {
+                        AddEvent(a, b);
+                        ActionStop(a, b);
+                    }
                 }
-            }
-
-            if (collision) {
-                AddEvent(a, b);
             }
         }
     }
