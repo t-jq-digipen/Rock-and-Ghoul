@@ -1,3 +1,20 @@
+/* ========================================================
+ * @file	Registry.cpp
+ * @author	Tan Jun Quan
+ * @date	29 SEP 2025
+ *
+ * @brief	Registry for ECS management
+ *
+ * This registry functions as the connection between the
+ * entities and components, and is the medium for the systems
+ * to interact with entitites and their components.
+ *
+ *
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "Registry.h"
 
 
@@ -9,13 +26,15 @@ ComponentManager<TransformComponent>		transform;
 
 // Graphics
 // CT_Sprite
-ComponentManager<SpriteComponent>			sprite;
+ComponentManager<SpriteComponent>			sprite_old;
+ComponentManager<Sprite::SpriteComponent>	sprite;
+
 // CT_Animator
 ComponentManager<AnimatorComponent>			animator;
 
 // Physics
 // CT_Physics
-ComponentManager<Physics::PhysicsComp>		physics;
+ComponentManager<Physics::PhysicsComponent>		physics;
 
 
 // Audio
@@ -87,7 +106,7 @@ void Add_Component(Entity eID, TransformComponent const& comp)
 void Add_Component(Entity eID, SpriteComponent const& comp)
 {
 	std::cout << "REGISTRY | ADDING COMPONENT | SPRITE		| eID: " << eID << "\n";
-	sprite.addComponent(eID, comp);
+	sprite_old.addComponent(eID, comp);
 }
 
 void Add_Component(Entity eID, AnimatorComponent const& comp)
@@ -96,7 +115,7 @@ void Add_Component(Entity eID, AnimatorComponent const& comp)
 	animator.addComponent(eID, comp);
 }
 
-void Add_Component(Entity eID, Physics::PhysicsComp const& comp)
+void Add_Component(Entity eID, Physics::PhysicsComponent const& comp)
 {
 	std::cout << "REGISTRY | ADDING COMPONENT | PHYSICS		| eID: " << eID << "\n";
 	physics.addComponent(eID, comp);
@@ -157,7 +176,7 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 	case (CT_Sprite):
 	{
 		std::cout << "REGISTRY | REMOVING COMPONENT | SPRITE		| eID: " << eID << "\n";
-		sprite.removeComponent(eID);
+		sprite_old.removeComponent(eID);
 	}
 	break;	// CT_Sprite
 
@@ -239,7 +258,7 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 
 	case (CT_Sprite):
 	{
-		return sprite.hasComponent(eID);
+		return sprite_old.hasComponent(eID);
 	}
 	break;	// CT_Sprite
 
@@ -296,11 +315,11 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 // Gets the component of the entity from the specified type
 TransformComponent&			Get_TransformComponent(Entity eID)		{ return transform.getComponent(eID); }
 
-SpriteComponent&			Get_SpriteComponent(Entity eID)			{ return sprite.getComponent(eID); }
+SpriteComponent&			Get_SpriteComponent(Entity eID)			{ return sprite_old.getComponent(eID); }
 
 AnimatorComponent&			Get_AnimatorComponent(Entity eID)		{ return animator.getComponent(eID); }
 
-Physics::PhysicsComp&		Get_PhysicsComponent(Entity eID)		{ return physics.getComponent(eID); }
+Physics::PhysicsComponent&	Get_PhysicsComponent(Entity eID)		{ return physics.getComponent(eID); }
 
 AudioComponent&				Get_AudioComponent(Entity eID)			{ return audio.getComponent(eID); }
 
@@ -314,14 +333,14 @@ InputComponent&				Get_InputComponent(Entity eID)			{ return input.getComponent(
 
 
 // Manager accessors
-ComponentManager<TransformComponent>&		CM_Transform()		{ return transform; }
-ComponentManager<SpriteComponent>&			CM_Sprite()			{ return sprite; }
-ComponentManager<AnimatorComponent>&		CM_Animator()		{ return animator; }
-ComponentManager<Physics::PhysicsComp>&		CM_Physics()		{ return physics; }
-ComponentManager<AudioComponent	>&			CM_Audio()			{ return audio; }
-ComponentManager<LifetimeComponent>&		CM_Lifetime()		{ return lifetime; }
-ComponentManager<HealthComponent>&			CM_Health()			{ return health; }
-ComponentManager<TagComponent>&				CM_Tag()			{ return tag; }
-ComponentManager<InputComponent>&			CM_Input()			{ return input; }
+ComponentManager<TransformComponent>&			CM_Transform()		{ return transform; }
+ComponentManager<SpriteComponent>&				CM_Sprite()			{ return sprite_old; }
+ComponentManager<AnimatorComponent>&			CM_Animator()		{ return animator; }
+ComponentManager<Physics::PhysicsComponent>&	CM_Physics()		{ return physics; }
+ComponentManager<AudioComponent>&				CM_Audio()			{ return audio; }
+ComponentManager<LifetimeComponent>&			CM_Lifetime()		{ return lifetime; }
+ComponentManager<HealthComponent>&				CM_Health()			{ return health; }
+ComponentManager<TagComponent>&					CM_Tag()			{ return tag; }
+ComponentManager<InputComponent>&				CM_Input()			{ return input; }
 
 #pragma endregion COMPONENT

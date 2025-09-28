@@ -88,9 +88,6 @@ struct AnimatorComponent {
 //	float height{ 0.f };
 //};
 
-struct MovementComponent {
-	Vec2 vel{ 0.f, 0.f };
-};
 
 struct AudioComponent {
 	// Audiofile audio;

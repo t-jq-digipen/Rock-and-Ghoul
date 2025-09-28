@@ -1,3 +1,18 @@
+/* ========================================================
+ * @file	Physics.cpp
+ * @author	Tan Jun Quan
+ * @date	29 SEP 2025
+ *
+ * @brief	Physics component for ECS
+ *
+ * Physics things (BRIEF TO BE DONE)
+ *
+ *
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "Physics.h"
 #include "CoreEngine.h"
 
@@ -21,29 +36,19 @@ namespace Physics {
 	}
 
 	Vec2 ForceComp::GetForce()
-	{
-		return force;
-	}
+	{ return force; }
 
 	void ForceComp::Set_Dir(Vec2 direction)
-	{
-		dir = Normalize(direction);
-	}
+	{ dir = Normalize(direction); }
 
 	void ForceComp::Set_Magnitude(float magnitude)
-	{
-		mag = magnitude;
-	}
+	{ mag = magnitude; }
 	
 	bool ForceComp::IsImpulse()
-	{
-		return lifetime == 0.f;
-	}
+	{ return lifetime == 0.f; }
 
 	bool ForceComp::Expired()
-	{
-		return (age >= lifetime);
-	}
+	{ return (age >= lifetime); }
 
 
 
@@ -51,9 +56,7 @@ namespace Physics {
 
 	// Add Force to ForceList
 	void ForceList::Add_Force(ForceComp force)
-	{
-		forces.push_back(force);
-	}
+	{ forces.push_back(force); }
 
 	Vec2 ForceList::Update_NetVel(ForceComp force)
 	{
@@ -116,19 +119,19 @@ namespace Physics {
 	// ================================================================================
 
 	// ctors hehe
-	PhysicsComp::PhysicsComp() : vel{ 0.f,0.f }, decay{ 0.f }, willCollide{ false }, aabbhitbox{ { 0.f, 0.f }, { 0.f,0.f }, {0.f,0.f} }, circlehitbox{ {0.f,0.f}, 0.f } {}
+	PhysicsComponent::PhysicsComponent() : vel{ 0.f,0.f }, decay{ 0.f }, willCollide{ false }, aabbhitbox{ { 0.f, 0.f }, { 0.f,0.f }, {0.f,0.f} }, circlehitbox{ {0.f,0.f}, 0.f } {}
 
-	PhysicsComp::PhysicsComp(float decayval, bool solid, AABB& aabbref, Circle& circleref) : vel{ 0.f,0.f }, decay{ decayval }, willCollide{ solid }, aabbhitbox{ aabbref }, circlehitbox{ circleref } {}
+	PhysicsComponent::PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref) : vel{ 0.f,0.f }, decay{ decayval }, willCollide{ solid }, aabbhitbox{ aabbref }, circlehitbox{ circleref } {}
 
 
 	// FORCES
-	void PhysicsComp::AddForce(Vec2 const& direction, float magnitude, float duration)
+	void PhysicsComponent::AddForce(Vec2 const& direction, float magnitude, float duration)
 	{
 		ForceComp temp(direction, magnitude, duration);
 		forcelist.Add_Force(temp);
 	}
 
-	void PhysicsComp::UpdateForces()
+	void PhysicsComponent::UpdateForces()
 	{
 		forcelist.Update();
 		vel = Add(vel, forcelist.Get_NetVel());
@@ -137,35 +140,35 @@ namespace Physics {
 
 
 	// COMPONENT STUFF
-	void PhysicsComp::Update()
+	void PhysicsComponent::Update()
 	{
 		Damping();
 		UpdateForces();
 	}
 
-	void PhysicsComp::UpdateHitboxes(Vec2 const& pos)
+	void PhysicsComponent::UpdateHitboxes(Vec2 const& pos)
 	{
 		Update_AABB(aabbhitbox, pos);
 		circlehitbox.pos = pos;
 	}
 
-	void PhysicsComp::Damping()
+	void PhysicsComponent::Damping()
 	{
 		if (decay)
 		{ vel = Scale(vel, std::pow(decay, g_dt)); }
 	}
 
 	// GETTERS
-	const Vec2& PhysicsComp::Get_Vel() const
+	const Vec2& PhysicsComponent::Get_Vel() const
 	{ return vel; }
 
-	const AABB& PhysicsComp::Get_AABB() const
+	const AABB& PhysicsComponent::Get_AABB() const
 	{ return aabbhitbox; }
 
-	const Circle& PhysicsComp::Get_Circle() const
+	const Circle& PhysicsComponent::Get_Circle() const
 	{ return circlehitbox; }
 
-	const bool& PhysicsComp::CollisionActive() const
+	const bool& PhysicsComponent::CollisionActive() const
 	{ return willCollide; }
 
 	// SETTERS
@@ -173,7 +176,7 @@ namespace Physics {
 	// set aabb by size
 	// set circle by radius
 
-	void PhysicsComp::Set_Collision(bool set)
+	void PhysicsComponent::Set_Collision(bool set)
 	{ willCollide = set; }
 
 }

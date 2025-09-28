@@ -164,8 +164,6 @@ source_group("BaseEngine\\BaseSystems\\Graphics" FILES
 source_group("BaseEngine\\BaseSystems\\Graphics\\Components" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
 )
 
 source_group("BaseEngine\\BaseSystems\\Graphics\\Render" FILES 
@@ -236,6 +234,10 @@ source_group("BaseEngine\\ECS\\Component" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ComponentManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ComponentManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
 )
 # S
 source_group("BaseEngine\\ECS\\System" FILES 
@@ -248,8 +250,6 @@ source_group("BaseEngine\\ECS\\System" FILES
 source_group("BaseEngine\\ECS\\System\\Physics" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
 )
 # S -> COLLILI
 source_group("BaseEngine\\ECS\\System\\Collision" FILES 

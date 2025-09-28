@@ -34,7 +34,7 @@ void CollisionManager::ProcessEvents() {
 //    for (auto itA = physicsComps.begin(); itA != physicsComps.end(); ++itA) {
 //        // a = entity ID, compA = PhysicsComponent
 //        Entity a = itA->first;
-//        Physics::PhysicsComp& compA = itA->second;
+//        Physics::PhysicsComponent& compA = itA->second;
 //
 //        // skip if not active or entity has no Transform
 //        if (!compA.CollisionActive() || !Has_Component(a, CT_Transform)) continue;
@@ -54,7 +54,7 @@ void CollisionManager::ProcessEvents() {
 //        //check collisions with all entities B
 //        for (auto itB = std::next(itA); itB != physicsComps.end(); ++itB) {
 //            Entity b = itB->first;
-//            Physics::PhysicsComp& compB = itB->second;
+//            Physics::PhysicsComponent& compB = itB->second;
 //
 //            // skip if not active or no Transform
 //            if (!compB.CollisionActive() || !Has_Component(b, CT_Transform)) continue;
@@ -101,7 +101,7 @@ void CollisionManager::CheckCollisions() {
 
     for (auto itA = physicsComps.begin(); itA != physicsComps.end(); ++itA) {
         Entity a = itA->first;
-        Physics::PhysicsComp& compA = itA->second;
+        Physics::PhysicsComponent& compA = itA->second;
 
         if (!compA.CollisionActive() || !Has_Component(a, CT_Transform)) continue;
 
@@ -110,7 +110,7 @@ void CollisionManager::CheckCollisions() {
 
         for (auto itB = std::next(itA); itB != physicsComps.end(); ++itB) {
             Entity b = itB->first;
-            Physics::PhysicsComp& compB = itB->second;
+            Physics::PhysicsComponent& compB = itB->second;
 
             if (!compB.CollisionActive() || !Has_Component(b, CT_Transform)) continue;
 
