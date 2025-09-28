@@ -5,8 +5,12 @@
 
 class AudioManager : public ISystem {
 public:
-    void Initialize() override { AudioSystem::Init(); }
-    void Update(float) override { AudioSystem::Update(); }
+    void Initialize() override {
+        AudioSystem::Init();
+    }
+    void Update(float) override { 
+        AudioSystem::Update();
+    }
     void Shutdown() override { AudioSystem::Close(); }
 
     // helper: load a sound (music or SFX)
