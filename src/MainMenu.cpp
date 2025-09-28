@@ -11,7 +11,8 @@
 #include "GameStates.h"
 
 #include "CoreEngine.h"
-
+//#include "AudioSystem.h"
+AudioManager* MainMenu::audio = nullptr;
 
 
 GLuint titleTexture{ 0 };
@@ -84,11 +85,22 @@ void MainMenu::Update()
         { GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f))
     {
         renderer.DrawRect({ GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f, { 0, 1, 0.5 });
+        // SNIFF MY BALLS
         if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            // nextState = GS_LEVEL1;
+            if (audio) {
+                FMOD::Sound* newTrack = audio->Load("../Assets/music/sniffmyBallsAgain.wav", true);
+                if (newTrack) {
+                    audio->CrossfadeTo(newTrack, 5.0f);
+                    std::cout << "Crossfade started from MainMenu Play button!\n";
+                }
+                else {
+                    std::cout << "Failed to load new music track for crossfade!\n";
+                }
+            }
             GSM_SetNextState(GameState::GS_LEVEL1);
         }
+        // BALLS
     }
     
 

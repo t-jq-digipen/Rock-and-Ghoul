@@ -2,9 +2,18 @@
 #include <iostream>
 #ifndef MAINMENU_H
 #define MAINMENU_H
+#include "AudioSystem.h"
 
 class MainMenu
 {
+
+	// audiostuff
+private:
+	static AudioManager* audio;
+
+public:
+	static void SetAudioManager(AudioManager* audioMgr) { audio = audioMgr; }
+
 public:
 	// Loads main menu
 	static void Load();

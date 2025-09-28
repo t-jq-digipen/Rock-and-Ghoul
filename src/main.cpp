@@ -11,8 +11,10 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include <iostream>
+// audio
+#include "MainMenu.h"
 
-// --- New: Inline GameLogicSystem class ---
+// --- Inline GameLogicSystem class ---
 class GameLogicSystem : public ISystem {
     AudioManager* audio;
 public:
@@ -21,6 +23,8 @@ public:
     void Initialize() override {}
 
     void Update(float dt) override {
+        // Crossfade on C key press removed, no action here now
+        /*
         if (Input::IsKeyPressed(GLFW_KEY_C)) {
             static bool triggered = false;
             if (!triggered) {
@@ -33,20 +37,18 @@ public:
                 }
                 std::cout << "[Debug] Loaded new track: " << newTrack << "\n";
 
-                // CrossfadeTo returns void, so do NOT assign its result
                 audio->CrossfadeTo(newTrack, 5.0f);
                 std::cout << "Crossfade started from GameLogicSystem!\n";
 
                 triggered = true;
             }
         }
+        */
     }
-
-
 
     void Shutdown() override {}
 };
-// --- End new GameLogicSystem ---
+// --- End GameLogicSystem ---
 
 BossGhoulSystem* bossGhoulSystem = nullptr;
 
@@ -80,10 +82,12 @@ int main() {
     AudioManager* audio = new AudioManager();
     engine.AddSystem(audio);
 
-    // --- New: create and add the GameLogicSystem here ---
+    // audio manager BALLS
+    MainMenu::SetAudioManager(audio);
+
+    // create and add the GameLogicSystem here (no crossfade triggered in Update)
     GameLogicSystem* logicSystem = new GameLogicSystem(audio);
     engine.AddSystem(logicSystem);
-    // --- End new ---
 
     bossGhoulSystem = new BossGhoulSystem();
     engine.AddSystem(bossGhoulSystem);
