@@ -3,6 +3,7 @@
 #include "glapp.h"
 #include "CoreEngine.h"
 #include "AudioSystem.h"  // contains AudioManager
+#include "MainMenu.h"
 #include "RenderSystem.h"
 #include "PlayerSystem.h"
 #include "PhysicsSystem.h"
@@ -12,9 +13,10 @@ int main() {
     if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
     CoreEngine& engine = CoreEngine::GetInstance();
     Render& renderer = Render::GetInstance();
-    // create 1 audio system and keep a pointer to it
+    // Create audio manager
     AudioManager* audio = new AudioManager();
     engine.AddSystem(audio);
+    MainMenu::SetAudioManager(audio); //BUTTON CLICK SOUND
     engine.AddSystem(new RenderSystem(renderer));
     engine.AddSystem(new PlayerSystem());
     engine.AddSystem(new PhysicsSystem());

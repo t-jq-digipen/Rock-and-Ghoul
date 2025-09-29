@@ -1,10 +1,17 @@
 #pragma once
 #include <iostream>
+#include "AudioSystem.h"
 #ifndef MAINMENU_H
 #define MAINMENU_H
 
 class MainMenu
 {
+
+private:
+	static AudioManager* audio;
+public:
+	static void SetAudioManager(AudioManager* audioMgr);
+	static void PlayButtonClick();
 public:
 	// Loads main menu
 	static void Load();

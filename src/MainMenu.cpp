@@ -12,7 +12,20 @@
 
 #include "CoreEngine.h"
 
+AudioManager* MainMenu::audio = nullptr;
 
+void MainMenu::SetAudioManager(AudioManager* audioMgr) {
+    audio = audioMgr;
+}
+
+void MainMenu::PlayButtonClick() {
+    if (audio) {
+        FMOD::Sound* clickSound = audio->Load("../Assets/music/buttonclick.mp3", false);
+        if (clickSound) {
+            audio->Play(clickSound);
+        }
+    }
+}
 
 GLuint titleTexture{ 0 };
 GLuint rockTexture{ 0 };
@@ -91,6 +104,7 @@ void MainMenu::Update()
         if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             // nextState = GS_LEVEL1;
+            PlayButtonClick();
             GSM_SetNextState(GameState::GS_LEVEL1);
         }
     }
@@ -126,6 +140,7 @@ void MainMenu::Update()
     if (Input::IsKeyPressed(GLFW_KEY_SPACE))
     {
         std::cout << "PLAY CLICKED — switching to Level1\n";
+        PlayButtonClick();
         GSM_SetNextState(GameState::GS_LEVEL1);
         // nextState = GS_LEVEL1;
     }

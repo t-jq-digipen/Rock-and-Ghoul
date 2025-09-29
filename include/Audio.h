@@ -23,6 +23,13 @@ public:
     // Stop all sounds
     static void StopAll();
 
+    // here we go again
+    // After StopAll(), add these:
+    static FMOD::Channel* PlaySoundGetChannel(FMOD::Sound* sound, bool paused = false);
+    static void SetChannelPosition(FMOD::Channel* channel, unsigned int ms);
+    static unsigned int GetChannelPosition(FMOD::Channel* channel);
+    static void SetChannelPaused(FMOD::Channel* channel, bool paused);
+
 private:
     static FMOD::System* mSystem;
 };
