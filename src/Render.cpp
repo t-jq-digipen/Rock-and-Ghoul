@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 Render* Render::instance = nullptr;
 
 // stb_image
@@ -19,6 +20,7 @@ Render::~Render() {
     if (vbo) glDeleteBuffers(1, &vbo);
     if (shaderProgram) glDeleteProgram(shaderProgram);
     ClearAllTextures();
+    //ClearAllImages();
 }
 
 void Render::Init() {
@@ -36,7 +38,7 @@ void Render::Init() {
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //was GL_STATIC_DRAW previously
 
     // Position attrib
     glEnableVertexAttribArray(0);
@@ -62,6 +64,8 @@ void Render::Init() {
         0.0f, static_cast<float>(GLApp::height),
         -1.0f, 1.0f
     );
+
+    InitTextRendering();
 }
 
 void Render::ClearBackground(const Colour4& color) {
@@ -103,6 +107,7 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), scale.x, scale.y);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation); //added rotation
+    //glUniform4f(glGetUniformLocation(shaderProgram, "uUVRect"), 0.0f, 0.0f, 1.0f, 1.0f); 
     
 
     // enable texture
@@ -499,6 +504,53 @@ void Render::DrawImageRotated(const Image& image, float x, float y, float angleR
     glUseProgram(0);
 }
 
+void Render::DrawImageSub(const Image& Image,
+    float x, float y, float w, float h,
+    float u0, float v0, float u1, float v1)
+{
+    glUseProgram(shaderProgram);
+
+    //Projection
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, glm::value_ptr(projection));
+
+    //Position, scale, rotation uniforma
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), x, y);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), w, h);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f); // if you want no rotation
+
+    //Sub-image UV rectangle (normalize with texture size)
+    int texW, texH;
+    glBindTexture(GL_TEXTURE_2D, Image.textureID);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texW);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &texH);
+
+    float u0n = u0 / float(texW);
+    float v0n = v0 / float(texH);
+    float u1n = u1 / float(texW);
+    float v1n = v1 / float(texH);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseSubImage"), true); //tell shader i want to use sub image mode
+    glUniform4f(glGetUniformLocation(shaderProgram, "uUVRect"), u0n, v0n, u1n, v1n); //sub mode uses this uniform
+
+    //Texture binding
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, Image.textureID);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+
+    // Tell shader we’re using texture mode
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), true);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), false);
+
+    // Draw quad (VAO should be a unit quad with aPos and aTex in [0,1])
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glBindVertexArray(0);
+
+    //Important, to make sure the cache doesnt use the cropped version, cus if u use the sub image previously, the cache will store the sub image everyth will become cropped
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseSubImage"), false); //tell shader ok i am done using sub image mode
+}
+
 
 
 int Render::GetImageWidth(const Image& image) const {
@@ -539,4 +591,182 @@ void Render::ClearAllImages() {
 
 Image Render::CreateImageFromTexture(GLuint textureID, int width, int height, const std::string& path) {
     return Image(textureID, width, height, path);
+}
+
+
+//text rendering
+void Render::InitTextRendering() {
+
+    // FreeType
+    // --------
+    FT_Library ft;
+    // All functions return a value different than 0 whenever an error occurred
+    if (FT_Init_FreeType(&ft))
+    {
+        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+        return;
+    }
+
+    // find path to font (leave this here first after filepath is implemented
+    /*std::string font_name = FilePath::getPath("resources/fonts/Antonio-Bold.ttf");
+    if (font_name.empty())
+    {
+        std::cout << "ERROR::FREETYPE: Failed to load font_name" << std::endl;
+        return;
+    }*/
+
+    FT_Face face;
+    if (FT_New_Face(ft, "../Assets/Antonio-Bold.ttf", 0, &face)) //for now use this direct full file path name, note to download and add the font type inside Assets,
+        //thinking maybe can haev set_font function to pull path (basically the above commented stuff
+    {
+        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+        return;
+        //exit(0);
+    }
+    else {
+        // set size to load glyphs as
+        FT_Set_Pixel_Sizes(face, 0, 48);
+
+        // disable byte-alignment restriction
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        // load first 128 characters of ASCII set, if want arrow or smth need increase the chars i think
+        for (unsigned char c = 0; c < 128; c++)
+        {
+            // Load character glyph 
+            if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+            {
+                std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+                continue;
+            }
+
+            // generate texture
+            unsigned int texture;
+            glGenTextures(1, &texture);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RED,
+                face->glyph->bitmap.width,
+                face->glyph->bitmap.rows,
+                0,
+                GL_RED,
+                GL_UNSIGNED_BYTE,
+                face->glyph->bitmap.buffer
+            );
+
+            // set texture options
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            // now store character for later use
+
+            Character character = {
+                texture,
+                glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+                glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+                static_cast<unsigned int>(face->glyph->advance.x)
+            };
+
+            Characters.insert(std::pair<char, Character>(c, character));
+        }
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+    }
+
+    // destroy FreeType once we're finished
+    FT_Done_Face(face);
+    FT_Done_FreeType(ft);
+
+    //glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+
+    // configure VAO/VBO for texture quads
+    // -----------------------------------
+    //GLuint textVAO, textVBO;
+    glGenVertexArrays(1, &textVAO);
+    glGenBuffers(1, &textVBO);
+    glBindVertexArray(textVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    //glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0); <--- doesnt matches the vert shader aTex, aPos, x,y,u,v
+    // Fix vertex attributes
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+
+    //===========================================================================
+
+
+}
+
+void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color) {
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // activate render state	
+    glUseProgram(shaderProgram);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]); //set projection val, using the one previously defined in init
+    glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+
+    // For text, we don't use transformation uniforms, so set them to defaults
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(textVAO);
+
+
+    // iterate through all characters
+    std::string::const_iterator c;
+
+    for (c = text.begin(); c != text.end(); c++)
+    {
+        Character ch = Characters[*c];
+
+        float xpos = x + ch.Bearing.x * scale;
+        float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+
+        float w = ch.Size.x * scale;
+        float h = ch.Size.y * scale;
+        // update VBO for each character
+        float vertices[6][4] = {
+            { xpos,     ypos + h,   0.0f, 0.0f },
+            { xpos,     ypos,       0.0f, 1.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+
+            { xpos,     ypos + h,   0.0f, 0.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+            { xpos + w, ypos + h,   1.0f, 0.0f }
+        };
+        // render glyph texture over quad
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+        // update content of VBO memory
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
+
+        // Make sure vertex attributes are set correctly
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // render quad
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+        x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+    }
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //REMEMBER TO SET THIS BACK TO FALSE, CUS REM U SET IT TO TRUE TO TRIGGER uUseText in the beginning
 }

@@ -26,6 +26,7 @@ GLuint rockTexture{ 0 };
 GLuint ghoulTexture{ 0 };
 GLuint playTexture{ 0 };
 GLuint quitTexture{ 0 };
+//Image titleImage;
 
 // Convert GLFW/screen cords (origin: top-left) to render coords (origin: bottom-left)
 static inline glm::vec2 ScreenToRender(const glm::vec2& mouseScreen, float windowHeight)
@@ -41,6 +42,9 @@ void MainMenu::Load()
     ghoulTexture = Render::GetInstance().LoadTexture("../Assets/Ghoul_2048px.png");
     playTexture = Render::GetInstance().LoadTexture("../Assets/play.png");
     quitTexture = Render::GetInstance().LoadTexture("../Assets/quit.png");
+
+    //titleImage = Render::GetInstance().LoadImage("../Assets/quit.png");
+
 }
 
 void MainMenu::Init()
@@ -56,7 +60,13 @@ void MainMenu::Update()
     // Clear background, add background color
     renderer.ClearBackground({ 0.5f, 0.f, 0.7f, 1.f });
 
-    // Render main menu textures
+    // Render main menu textures (placeholders rn)
+    
+    //just testing stuff for rendering (can delete)
+    //renderer.DrawImage(titleImage, 400.f, 400.f);
+    //renderer.DrawImageRotated(titleImage, 400.f, 400.f, 1.57f);
+    //renderer.DrawImageSub(titleImage, 400.f, 400.f, 100.f, 400.f, 0.f, 0.f, 256.f, 256.f);
+ 
     // Game Title
     if (titleTexture)
     {
@@ -127,7 +137,7 @@ void MainMenu::Update()
     // press space (or click play button) to enter level 1
     if (Input::IsKeyPressed(GLFW_KEY_SPACE))
     {
-        std::cout << "PLAY CLICKED — switching to Level1\n";
+        std::cout << "PLAY CLICKED ï¿½ switching to Level1\n";
         if (audio) {
             audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
         }

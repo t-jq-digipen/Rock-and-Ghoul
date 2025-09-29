@@ -14,6 +14,10 @@ uniform vec2 uPos;
 uniform vec2 uScale;
 uniform float uRotation;
 
+//sub-image UV rectangle (u0, v0, u1, v1)
+uniform vec4 uUVRect;
+uniform bool uUseSubImage;
+
 out vec2 TexCoord;
 
 void main() {
@@ -35,6 +39,11 @@ void main() {
     gl_Position = uProjection * vec4(transformed, 0.0, 1.0);
     
     
-    TexCoord = aTex;
-    
+    if (uUseSubImage) {
+    	TexCoord = mix(uUVRect.xy, uUVRect.zw, aTex);
+    } else {
+        TexCoord = aTex;
+    }
+    //TexCoord = aTex;
+    //TexCoord = mix(uUVRect.xy, uUVRect.zw, aTex);
 }
