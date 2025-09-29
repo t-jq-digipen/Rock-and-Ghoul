@@ -18,6 +18,7 @@ set(ALL_LIBS
     libglew_static
     imgui
     freetype
+    nlohmann_json::nlohmann_json
 )
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
@@ -46,11 +47,6 @@ add_executable(${CMAKE_PROJECT_NAME}
     ${HEADERS}
 )
 
-# ======================= Link Libraries =============================
-target_link_libraries(${CMAKE_PROJECT_NAME}
-    ${ALL_LIBS}
-)
-
 # ======================= FMOD Setup =========================
 # Use the correct FMOD path structure
 set(FMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/deps/fmod")
@@ -77,21 +73,27 @@ else()
     message(STATUS "Using 32-bit FMOD libraries from: ${FMOD_LIB_DIR}")
 endif()
 
-# Verify the library file exists
 if(EXISTS "${FMOD_LIBRARY_PATH}")
     message(STATUS "✓ Found fmod_vc.lib at: ${FMOD_LIBRARY_PATH}")
 else()
     message(WARNING "✗ fmod_vc.lib NOT found at: ${FMOD_LIBRARY_PATH}")
 endif()
 
-# Link FMOD libraries using absolute path
-target_link_libraries(${CMAKE_PROJECT_NAME}
-    ${ALL_LIBS}
-	stb
-    "${FMOD_LIBRARY_PATH}"
-	nlohmann_json::nlohmann_json
-)
-
+# Link FMOD only if present
+if(EXISTS "${FMOD_LIBRARY_PATH}")
+    target_link_libraries(${CMAKE_PROJECT_NAME}
+        PRIVATE
+            ${ALL_LIBS}
+            stb
+            "${FMOD_LIBRARY_PATH}"
+    )
+else()
+    target_link_libraries(${CMAKE_PROJECT_NAME}
+        PRIVATE
+            ${ALL_LIBS}
+            stb
+    )
+endif()
 # Copy FMOD DLLs on Windows
 if(WIN32)
     # Copy main FMOD DLL
@@ -125,7 +127,6 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 source_group("Main" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
-
 source_group("BaseEngine\\Engine" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/glapp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/glapp.h
@@ -136,90 +137,6 @@ source_group("BaseEngine\\CoreEngine" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CoreEngine.h
 )
 
-
-# BASE ENG SYSTEMS | FRAMERATE
-# =================================================
-source_group("BaseEngine\\BaseSystems\\FrameRateController" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
-)
-# ================================================= FRAMERATE
-
-# BASE ENG SYSTEMS | AUDIO
-# =================================================
-source_group("BaseEngine\\BaseSystems\\Audio" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
-)
-# ================================================= AUDIO
-
-# BASE ENG SYSTEMS | GRAPHICS
-# =================================================
-source_group("BaseEngine\\BaseSystems\\Graphics" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
-)
-
-source_group("BaseEngine\\BaseSystems\\Graphics\\Components" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
-)
-
-source_group("BaseEngine\\BaseSystems\\Graphics\\Render" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
-)
-# ================================================= GRAPHICS
-
-# BASE ENG SYSTEMS | INPUT
-# =================================================
-source_group("BaseEngine\\BaseSystems\\Input" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
-)
-# ================================================= INPUT
-
-# BASE ENG SYSTEMS | DEBUG
-# =================================================
-source_group("BaseEngine\\BaseSystems\\Debug" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Debug.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Debug.h
-)
-# ================================================= DEBUG
-
-# BASE ENG | MATH LIBRARY
-# =================================================
-source_group("BaseEngine\\Math" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
-)
-# ================================================= MATH
-
-# BASE ENG | EXPORT
-# =================================================
-source_group("Export" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
-)
-# ================================================= EXPORT
-
-# GSM
-# =================================================
-source_group("BaseEngine\\GSM" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
-)
-# ================================================= GSM
-
-# ECS
-# =================================================
-source_group("BaseEngine\\ECS\\Registry" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
-)
-# E
 source_group("BaseEngine\\ECS\\Entity" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp
@@ -228,43 +145,26 @@ source_group("BaseEngine\\ECS\\Entity" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityCreation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityCreation.h
 )
-# C
 source_group("BaseEngine\\ECS\\Component" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Component.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ComponentManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ComponentManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
 )
-# S
+
 source_group("BaseEngine\\ECS\\System" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SystemManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/SystemManager.h
-)
-# S -> PHYSICS
-source_group("BaseEngine\\ECS\\System\\Physics" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
-)
-# S -> COLLILI
-source_group("BaseEngine\\ECS\\System\\Collision" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
 
-source_group("BaseEngine\\ECS\\System\\Imgui" FILES 
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImguiSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/ImguiSystem.h
+source_group("BaseEngine\\ECS\\Registry" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
-# ================================================= ECS
 
 
 source_group("BaseEngine\\Debug" FILES 
@@ -274,6 +174,12 @@ source_group("BaseEngine\\Debug" FILES
 source_group("BaseEngine\\FilePath" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FileIO.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FileIO.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/DataDefs.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonAdapt.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/JsonLoad.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonLoad.h
 )
 source_group("BaseEngine\\Serialization" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Serialization.cpp
@@ -284,21 +190,57 @@ source_group("BaseEngine\\Transform" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Transform.h
 )
 
-
-# EDITOR
-# =================================================
-source_group("Editor" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Editor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Editor.h
+source_group("Systems\\Audio" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
 )
-# ================================================= FRAMERATE
+source_group("Systems\\Input" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
+)
+
+source_group("Systems\\Graphics\\Components" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
+)
 
 
+source_group("Systems\\FrameRateController" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
+)
+source_group("Systems\\Graphics\\Render" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
+)
+source_group("Systems\\Graphics" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
+)
+
+
+source_group("Physics\\System" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
+)
+
+source_group("Physics\\System\\Collision" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
+)
 source_group("Physics\\Movement" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementController.h
 )
 source_group("Game\\State\\GameStates" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStates.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStates.cpp
 )
@@ -313,7 +255,6 @@ source_group("Game\\State\\MainMenu" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MainMenu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MainMenu.h
 )
-
 source_group("Game\\GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PlayerSystem.cpp
@@ -328,3 +269,48 @@ source_group("Game\\GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
 )
 
+
+source_group("Math" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
+)
+source_group("Export" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
+)
+
+# ======================= Runtime Data (saves folder) =========================
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
+)
+
+
+file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/saves/*.json")
+foreach(save_file ${SAVE_FILES})
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${save_file}
+        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
+    )
+endforeach()
+
+# ======================= Install target =========================
+
+# Install the executable
+install(TARGETS ${CMAKE_PROJECT_NAME}
+    RUNTIME DESTINATION bin
+)
+
+# Install the saves folder (all json files)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/saves
+    DESTINATION bin
+    FILES_MATCHING PATTERN "*.json"
+)
+
+# Install FMOD DLL (Windows only)
+if(WIN32 AND EXISTS "${FMOD_LIB_DIR}/fmod.dll")
+    install(FILES "${FMOD_LIB_DIR}/fmod.dll"
+        DESTINATION bin
+    )
+endif()
