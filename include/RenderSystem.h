@@ -35,7 +35,7 @@ public:
                     t.pos,
                     s.size.x,
                     s.size.y,
-                    color
+                    color, t.rot
                 );
             }
             else if (s.textureID == 1) {
@@ -45,7 +45,7 @@ public:
                 renderer.DrawCircle(
                     { t.pos.x, t.pos.y },
                     radius,
-                    color, 32
+                    color, 32, t.rot
                 );
             }
             else {
@@ -53,7 +53,8 @@ public:
                 renderer.DrawTexturedQuad(
                     t.pos,
                     s.size,
-                    s.textureID
+                    s.textureID,
+                    t.rot
                 );
             }
 

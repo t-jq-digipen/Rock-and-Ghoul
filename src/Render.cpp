@@ -74,7 +74,7 @@ void Render::ClearBackground(const Colour4& color) {
 }
 
 //draw stuff
-void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color) {
+void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color, float rotation) {
     glUseProgram(shaderProgram);
 
     // upload projection
@@ -84,6 +84,7 @@ void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color
     // upload pos, size (use size for both X and Y), color
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), size, size);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation);
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
 
     // no texture
@@ -147,7 +148,7 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
         1, GL_FALSE, &projection[0][0]);
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
-
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
     // Set pos and scale to neutral values so vertices pass through unchanged
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
@@ -167,7 +168,7 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
     glUseProgram(0);
 }
 
-void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments) {
+void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments,float rotation) {
     // vertices for a circle
     std::vector<GLfloat> vertices;
     vertices.reserve((segments + 2) * 2);
@@ -175,10 +176,11 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     //ctr point
     vertices.push_back(center.x);
     vertices.push_back(center.y);
-
+    float rot = rotation;
 
     for (int i = 0; i <= segments; i++) {
         float angle = (2.0f * 3.1415 * i) / static_cast<float>(segments);
+        float ang = angle + rot;
         float x = center.x + radius * cos(angle);
         float y = center.y + radius * sin(angle);
         vertices.push_back(x);
@@ -200,7 +202,7 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
         1, GL_FALSE, &projection[0][0]);
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
-
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
     // Neutral transform (circle already has actual coords)
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
@@ -220,7 +222,7 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     glUseProgram(0);
 }
 
-void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3& color) {
+void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3& color, float rotation) {
     glUseProgram(shaderProgram);
 
     // upload projection
@@ -230,7 +232,7 @@ void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3&
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), width, height);
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
-
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
 
     glBindVertexArray(vao);

@@ -212,6 +212,7 @@ void ImGuiSystem::ShowInspectorWindow() {
         if (ImGui::TreeNode("Transform")) {
             ImGui::SliderFloat("X", &t.pos.x, 0.f, 1920.f);
             ImGui::SliderFloat("Y", &t.pos.y, 0.f, 1080.f);
+            ImGui::SliderAngle("Rotation", &t.rot, -360.0f, 360.0f);
             ImGui::TreePop();
         }
     }

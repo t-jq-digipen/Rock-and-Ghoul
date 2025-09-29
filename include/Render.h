@@ -52,11 +52,11 @@ public:
     void ClearBackground(const Colour4& color); //use this to clear background, then set your background color
 
     //Draw actions
-    void DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color); //draw square/point/hotspots depending on size
-    void DrawRect(const Vec2& pos, float width, float height, const Colour3& color);
+    void DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color, float rotation = 0.0f); //draw square/point/hotspots depending on size
+    void DrawRect(const Vec2& pos, float width, float height, const Colour3& color, float rotation = 0.0f);
     void DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture, float rotation = 0.0f); //added additional rotation (no rotate by defauklt)
     void DrawLine(const Vec2& start, const Vec2& end, const Colour3& color);
-    void DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments);
+    void DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments,float rotation = 0.0f);
 
 
     //Image/Texture
