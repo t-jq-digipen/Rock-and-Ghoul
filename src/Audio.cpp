@@ -6,6 +6,10 @@
 // Static members
 FMOD::System* AudioSystem::mSystem = nullptr;
 
+// ===== ADDED: Button sound storage =====
+std::unordered_map<AudioSystem::ButtonType, FMOD::Sound*> AudioSystem::buttonSounds;
+// ===== END ADDED =====
+
 bool AudioSystem::Init() {
     FMOD_RESULT result;
 
@@ -21,11 +25,72 @@ bool AudioSystem::Init() {
         return false;
     }
 
+    // ===== ADDED: Load default button sounds =====
+    LoadDefaultButtonSounds();
+    // ===== END ADDED =====
+
     std::cout << "FMOD Audio initialized successfully!" << std::endl;
     return true;
 }
 
+// ===== ADDED: Flexible Button SFX Implementation =====
+void AudioSystem::LoadDefaultButtonSounds() {
+    // Register default button sounds based on your ButtonType enum
+    RegisterButtonSound(ButtonType::PLAY, "../Assets/music/playclick.mp3");
+    RegisterButtonSound(ButtonType::QUIT, "../Assets/music/quitclick.mp3");
+
+    std::cout << "Default button sounds loaded!" << std::endl;
+}
+
+void AudioSystem::PlayButtonSound(ButtonType type) {
+    auto it = buttonSounds.find(type);
+    if (it != buttonSounds.end() && it->second) {
+        PlaySound(it->second);
+        std::cout << "Playing button sound for type: " << static_cast<int>(type) << std::endl;
+    }
+    else {
+        std::cerr << "Warning: Button sound not found for type " << static_cast<int>(type) << std::endl;
+
+        // Fallback: try to play PLAY sound if the requested type isn't found
+        if (type != ButtonType::PLAY) {
+            auto playIt = buttonSounds.find(ButtonType::PLAY);
+            if (playIt != buttonSounds.end() && playIt->second) {
+                PlaySound(playIt->second);
+            }
+        }
+    }
+}
+
+void AudioSystem::RegisterButtonSound(ButtonType type, const std::string& soundPath) {
+    FMOD::Sound* sound = LoadSound(soundPath, false);
+    if (sound) {
+        buttonSounds[type] = sound;
+        std::cout << "Registered button sound for type " << static_cast<int>(type)
+            << " from: " << soundPath << std::endl;
+    }
+    else {
+        std::cerr << "Failed to load button sound: " << soundPath << std::endl;
+    }
+}
+
+void AudioSystem::RegisterButtonSound(ButtonType type, FMOD::Sound* sound) {
+    if (sound) {
+        buttonSounds[type] = sound;
+        std::cout << "Registered button sound for type " << static_cast<int>(type) << std::endl;
+    }
+}
+// ===== END ADDED =====
+
 void AudioSystem::Close() {
+    // ===== ADDED: Clean up button sounds =====
+    for (auto& pair : buttonSounds) {
+        if (pair.second) {
+            pair.second->release();
+        }
+    }
+    buttonSounds.clear();
+    // ===== END ADDED =====
+
     if (mSystem) {
         mSystem->close();
         mSystem->release();
@@ -108,6 +173,10 @@ void AudioManager::Initialize() {
     mainMenuMusic = Load("../Assets/music/sniffmyBalls.wav", true);
     level1Music = Load("../Assets/music/sniffmyBallsAgain.wav", true);
 
+    // ===== REMOVED: No need to manually load button sounds =====
+    // Button sounds are now automatically loaded in AudioSystem::Init()
+    // ===== END REMOVED =====
+
     // start main menu music
     if (mainMenuMusic) {
         PlayMusic(mainMenuMusic);
@@ -154,7 +223,7 @@ void AudioManager::HandleMusicForState(GameState currentState, GameState previou
     if (currentState == GameState::GS_LEVEL1 && previousState != GameState::GS_LEVEL1) {
         std::cout << "[AudioManager] Level 1 started - crossfading music...\n";
         if (level1Music) {
-            CrossfadeTo(level1Music, 2.0f);
+            CrossfadeTo(level1Music, 4.0f);
         }
         else {
             std::cerr << "[AudioManager] Error: Level 1 music not loaded!\n";

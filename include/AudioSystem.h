@@ -34,6 +34,12 @@ public:
     // crossfade to a new track over time
     void CrossfadeTo(FMOD::Sound* newTrack, float duration);
 
+    // ===== UPDATED: Unified Button Sound System =====
+    void PlayButtonSound(AudioSystem::ButtonType type) {
+        AudioSystem::PlayButtonSound(type);
+    }
+    // ===== END UPDATED =====
+
 private:
     float musicVol = 0.1f;
     FMOD::Channel* currentChannel = nullptr;
@@ -45,6 +51,10 @@ private:
     // Music tracks
     FMOD::Sound* mainMenuMusic = nullptr;
     FMOD::Sound* level1Music = nullptr;
+
+    // ===== REMOVED: Individual button sound members =====
+    // (Now handled by AudioSystem's unified system)
+    // ===== END REMOVED =====
 
     // State tracking
     GameState lastState = GameState::GS_MAIN_MENU;
