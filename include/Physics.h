@@ -1,3 +1,20 @@
+/* ========================================================
+ * @file	Physics.h
+ * @author	Tan Jun Quan
+ * @date	29 SEP 2025
+ *
+ * @brief	Physics component for ECS
+ *
+ * Physics things (BRIEF TO BE DONE)
+ *
+ *
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
+
+
 #pragma once
 #include "Remath.h"
 #include <vector>
@@ -45,7 +62,7 @@ namespace Physics {
 
 
 	// Physics Component
-	class PhysicsComp {
+	class PhysicsComponent {
 		Vec2 vel;
 		float decay;
 
@@ -56,8 +73,8 @@ namespace Physics {
 		
 		void UpdateForces();
 	public:
-		PhysicsComp();
-		PhysicsComp(float decayval, bool solid, AABB& aabbref, Circle& circleref);
+		PhysicsComponent();
+		PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref);
 
 		void AddForce(Vec2 const& direction, float magnitude, float duration = 0);
 

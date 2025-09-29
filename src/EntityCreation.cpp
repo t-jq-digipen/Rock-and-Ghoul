@@ -9,7 +9,7 @@ Entity Create_Player(float x, float y) {
     {
         AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
         Circle circle = { {x,y},200.f };
-        Physics::PhysicsComp temp(0.015f, true, aabb, circle);
+        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
         Add_Component(player, temp);
     }
 
@@ -29,7 +29,7 @@ Entity Create_Square(float x, float y) {
     {
         AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
         Circle circle = { {x,y},200.f };
-        Physics::PhysicsComp temp(0.015f, true, aabb, circle);
+        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
         Add_Component(square, temp);
     }
 
@@ -47,7 +47,7 @@ Entity Create_Circle(float x, float y) {
     {
         AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
         Circle circle = { {x,y},100.f };
-        Physics::PhysicsComp temp(0.015f, true, aabb, circle);
+        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
         Add_Component(round, temp);  // round refers to the entity
     }
 

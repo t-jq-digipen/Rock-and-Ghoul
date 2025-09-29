@@ -1,5 +1,24 @@
+/* ========================================================
+ * @file	Registry.h
+ * @author	Tan Jun Quan
+ * @date	29 SEP 2025
+ * 
+ * @brief	Registry for ECS management
+ *
+ * This registry functions as the connection between the
+ * entities and components, and is the medium for the systems
+ * to interact with entitites and their components.
+ * 
+ * 
+ * 
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
+// IMPORTANT!!! DO NOT AMEND ANYTHING IN THIS FILES WITHOUT ASKING ME!!!!!!!
 #pragma once
 // Tis shid the glue between the E the C and the S so u could call it registry == ECS lololol
+
 
 // Use entity manager
 // Attach components to entities
@@ -8,7 +27,8 @@
 #include "ComponentManager.h"
 #include "EntityManager.h"
 #include "Component.h"
-#include "Physics.h"
+#include "Physics.h"		// Physics Component
+#include "Sprite.h"			// Sprite Component
 
 // constexpr size_t MAX_COMPONENT_TYPES = 11; // max number of components TIS SHI NOT EVEN BEING USED
 
@@ -34,15 +54,15 @@ void Remove_Entity(Entity eID);
 
 
 // overloads for adding
-void Add_Component(Entity eID, TransformComponent	const& comp);
-void Add_Component(Entity eID, SpriteComponent		const& comp);
-void Add_Component(Entity eID, AnimatorComponent	const& comp);
-void Add_Component(Entity eID, Physics::PhysicsComp	const& comp);
-void Add_Component(Entity eID, AudioComponent		const& comp);
-void Add_Component(Entity eID, LifetimeComponent	const& comp);
-void Add_Component(Entity eID, HealthComponent		const& comp);
-void Add_Component(Entity eID, TagComponent			const& comp);
-void Add_Component(Entity eID, InputComponent		const& comp);
+void Add_Component(Entity eID, TransformComponent			const& comp);
+void Add_Component(Entity eID, SpriteComponent				const& comp);
+void Add_Component(Entity eID, AnimatorComponent			const& comp);
+void Add_Component(Entity eID, Physics::PhysicsComponent	const& comp);
+void Add_Component(Entity eID, AudioComponent				const& comp);
+void Add_Component(Entity eID, LifetimeComponent			const& comp);
+void Add_Component(Entity eID, HealthComponent				const& comp);
+void Add_Component(Entity eID, TagComponent					const& comp);
+void Add_Component(Entity eID, InputComponent				const& comp);
 
 // overloads for removal
 void Remove_Component(Entity eID, ComponentTypeID const& cID);
@@ -52,25 +72,25 @@ void Remove_Components(Entity eID, std::initializer_list<ComponentTypeID> cIDlis
 bool Has_Component(Entity eID, ComponentTypeID const& cID);
 
 // Gets the component of the entity from the specified type
-TransformComponent		& Get_TransformComponent(Entity eID);
-SpriteComponent			& Get_SpriteComponent(Entity eID);
-AnimatorComponent		& Get_AnimatorComponent(Entity eID);
-Physics::PhysicsComp	& Get_PhysicsComponent(Entity eID);
-AudioComponent			& Get_AudioComponent(Entity eID);
-LifetimeComponent		& Get_LifetimeComponent(Entity eID);
-HealthComponent			& Get_HealthComponent(Entity eID);
-TagComponent			& Get_TagComponent(Entity eID);
-InputComponent			& Get_InputComponent(Entity eID);
+TransformComponent			& Get_TransformComponent(Entity eID);
+SpriteComponent				& Get_SpriteComponent(Entity eID);
+AnimatorComponent			& Get_AnimatorComponent(Entity eID);
+Physics::PhysicsComponent	& Get_PhysicsComponent(Entity eID);
+AudioComponent				& Get_AudioComponent(Entity eID);
+LifetimeComponent			& Get_LifetimeComponent(Entity eID);
+HealthComponent				& Get_HealthComponent(Entity eID);
+TagComponent				& Get_TagComponent(Entity eID);
+InputComponent				& Get_InputComponent(Entity eID);
 
 // Manager accessors
-ComponentManager<TransformComponent>	& CM_Transform();
-ComponentManager<SpriteComponent>		& CM_Sprite();
-ComponentManager<AnimatorComponent>		& CM_Animator();
-ComponentManager<Physics::PhysicsComp>	& CM_Physics();
-ComponentManager<AudioComponent>		& CM_Audio();
-ComponentManager<LifetimeComponent>		& CM_Lifetime();
-ComponentManager<HealthComponent>		& CM_Health();
-ComponentManager<TagComponent>			& CM_Tag();
-ComponentManager<InputComponent>		& CM_Input();
+ComponentManager<TransformComponent>		& CM_Transform();
+ComponentManager<SpriteComponent>			& CM_Sprite();
+ComponentManager<AnimatorComponent>			& CM_Animator();
+ComponentManager<Physics::PhysicsComponent>	& CM_Physics();
+ComponentManager<AudioComponent>			& CM_Audio();
+ComponentManager<LifetimeComponent>			& CM_Lifetime();
+ComponentManager<HealthComponent>			& CM_Health();
+ComponentManager<TagComponent>				& CM_Tag();
+ComponentManager<InputComponent>			& CM_Input();
 
 // Component list accessor?
