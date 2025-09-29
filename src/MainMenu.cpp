@@ -19,6 +19,7 @@ GLuint rockTexture{ 0 };
 GLuint ghoulTexture{ 0 };
 GLuint playTexture{ 0 };
 GLuint quitTexture{ 0 };
+//Image titleImage;
 
 
 
@@ -37,6 +38,8 @@ void MainMenu::Load()
 	ghoulTexture = Render::GetInstance().LoadTexture("../Assets/Ghoul_2048px.png");
     playTexture = Render::GetInstance().LoadTexture("../Assets/play.png");
     quitTexture = Render::GetInstance().LoadTexture("../Assets/quit.png");
+
+    //titleImage = Render::GetInstance().LoadImage("../Assets/quit.png");
 
 }
 
@@ -62,7 +65,11 @@ void MainMenu::Update()
     renderer.ClearBackground({ 0.5f, 0.f, 0.7f, 1.f });
 
     // Render main menu textures (placeholders rn)
-    //renderer.DrawImage(titleImage, 100.f, 100.f);
+    
+    //just testing stuff for rendering (can delete)
+    //renderer.DrawImage(titleImage, 400.f, 400.f);
+    //renderer.DrawImageRotated(titleImage, 400.f, 400.f, 1.57f);
+    //renderer.DrawImageSub(titleImage, 400.f, 400.f, 100.f, 400.f, 0.f, 0.f, 256.f, 256.f);
  
     // Game Title
     if (titleTexture)

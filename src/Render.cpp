@@ -5,12 +5,12 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 Render* Render::instance = nullptr;
 
 // stb_image
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <glm/gtc/type_ptr.hpp>
 
 // Vertex + Fragment shaders loaded from file in Assets, any changes to shader code to be done inside those fiels
 
@@ -38,7 +38,7 @@ void Render::Init() {
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //was GL_STATIC_DRAW previously
 
     // Position attrib
     glEnableVertexAttribArray(0);
@@ -107,6 +107,7 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), scale.x, scale.y);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation); //added rotation
+    //glUniform4f(glGetUniformLocation(shaderProgram, "uUVRect"), 0.0f, 0.0f, 1.0f, 1.0f); 
     
 
     // enable texture
@@ -501,6 +502,53 @@ void Render::DrawImageRotated(const Image& image, float x, float y, float angleR
     glBindVertexArray(0);
 
     glUseProgram(0);
+}
+
+void Render::DrawImageSub(const Image& Image,
+    float x, float y, float w, float h,
+    float u0, float v0, float u1, float v1)
+{
+    glUseProgram(shaderProgram);
+
+    //Projection
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, glm::value_ptr(projection));
+
+    //Position, scale, rotation uniforma
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), x, y);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), w, h);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f); // if you want no rotation
+
+    //Sub-image UV rectangle (normalize with texture size)
+    int texW, texH;
+    glBindTexture(GL_TEXTURE_2D, Image.textureID);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texW);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &texH);
+
+    float u0n = u0 / float(texW);
+    float v0n = v0 / float(texH);
+    float u1n = u1 / float(texW);
+    float v1n = v1 / float(texH);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseSubImage"), true); //tell shader i want to use sub image mode
+    glUniform4f(glGetUniformLocation(shaderProgram, "uUVRect"), u0n, v0n, u1n, v1n); //sub mode uses this uniform
+
+    //Texture binding
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, Image.textureID);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+
+    // Tell shader we’re using texture mode
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), true);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), false);
+
+    // Draw quad (VAO should be a unit quad with aPos and aTex in [0,1])
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glBindVertexArray(0);
+
+    //Important, to make sure the cache doesnt use the cropped version, cus if u use the sub image previously, the cache will store the sub image everyth will become cropped
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseSubImage"), false); //tell shader ok i am done using sub image mode
 }
 
 
