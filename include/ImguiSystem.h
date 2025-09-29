@@ -11,7 +11,7 @@ public:
     void Update(float dt) override;
     void Render();
     void Shutdown() override;
-
+    static Entity selectedEntity;
     static void InitializeImGui(GLFWwindow* window);
     static void ShutdownImGui();
     static bool showColliders;
@@ -21,4 +21,6 @@ private:
     void ShowEngineDebugWindow();
     void ShowCollisionDebugWindow();
     void ShowEntityDebugWindow();
+    void ShowHierarchyWindow();
+    void ShowInspectorWindow();
 };
