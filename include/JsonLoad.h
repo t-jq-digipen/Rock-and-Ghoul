@@ -31,16 +31,18 @@ private:
 
     // Component loaders
     static void Load_Transform(Entity eID, const std::string& data);
-    static void Load_Sprite(Entity eID, const std::string& data);
+    //static void Load_Sprite(Entity eID, const std::string& data);
     static void Load_Physics(Entity eID, const std::string& data);
+    static void Load_Shape(Entity eID, const std::string& data);
     static void Load_Health(Entity eID, const std::string& data);
     static void Load_Tag(Entity eID, const std::string& data);
     static void Load_Input(Entity eID, const std::string& data);
 
     // Component savers
     static std::string Save_Transform(Entity eID);
-    static std::string Save_Sprite(Entity eID);
+    //static std::string Save_Sprite(Entity eID);
     static std::string Save_Physics(Entity eID);
+    static std::string Save_Shape(Entity eID);
     static std::string Save_Health(Entity eID);
     static std::string Save_Tag(Entity eID);
     static std::string Save_Input(Entity eID);

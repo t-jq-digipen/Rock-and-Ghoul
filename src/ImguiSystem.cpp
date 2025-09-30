@@ -33,7 +33,21 @@ namespace {
             else if (s.textureID == 1) name += "  [Circle]";
             else                       name += "  [Textured]";
         }*/
-
+        if (Has_Component(e, CT_Shape)) {
+            auto& s = Get_ShapeComponent(e);
+            if (s.shape == SHAPE_RECTANGLE) {
+                name += "  [Square]";
+            }
+            else if (s.shape == SHAPE_CIRCLE) {
+                name += "  [Circle]";
+            }
+        }
+        else if (Has_Component(e, CT_Sprite)) {
+            // Try to identify sprite type by name or other properties
+            std::string entName = GetEntityName(e);
+            name += "  [Textured]";
+        
+        }
         return name;
     }
 
@@ -212,19 +226,19 @@ void ImGuiSystem::ShowHierarchyWindow() {
     }
 
     // JQ COMMENT OUT HAHAHA
-    /*ImGui::Separator();
+    ImGui::Separator();
     ImGui::Text("Create:");
     if (ImGui::Button("Add Player")) {
         selectedEntity = Create_Player(200.f, 200.f);
     }
     ImGui::SameLine();
-    if (ImGui::Button("Add Square")) {
-        selectedEntity = Create_Square(400.f, 200.f);
+    if (ImGui::Button("Add Rectangle")) {
+        selectedEntity = Create_Shape(400.f, 200.f, SHAPE_RECTANGLE, CS_IJKL);
     }
     ImGui::SameLine();
     if (ImGui::Button("Add Circle")) {
-        selectedEntity = Create_Circle(600.f, 200.f);
-    }*/
+        selectedEntity = Create_Shape(600.f, 200.f, SHAPE_CIRCLE, CS_ARROWS);
+    }
 
     ImGui::End();
 }
@@ -267,7 +281,19 @@ void ImGuiSystem::ShowInspectorWindow() {
             ImGui::TreePop();
         }
     }*/
-
+    if (Has_Component(selectedEntity, CT_Shape)) {
+        auto& s = Get_ShapeComponent(selectedEntity);
+        if (ImGui::TreeNode("Shape")) {
+            const char* shapeTypes[] = { "Rectangle", "Circle" };
+            int currentShape = static_cast<int>(s.shape);
+            if (ImGui::Combo("Shape Type", &currentShape, shapeTypes, 2)) {
+                s.shape = static_cast<ShapeType>(currentShape);
+            }
+            ImGui::DragFloat2("Dimensions", &s.dimensions.x, 1.0f, 10.0f, 1000.0f);
+            ImGui::ColorEdit3("Color", &s.color.x);
+            ImGui::TreePop();
+        }
+    }
     // --- Physics ---
     if (Has_Component(selectedEntity, CT_Physics)) {
         auto& p = Get_PhysicsComponent(selectedEntity);
@@ -318,8 +344,6 @@ void ImGuiSystem::ShowInspectorWindow() {
         }
     }
 
-    ImGui::Separator();
-
     // JQ COMMENT OUT HAHAHA
     /*if (ImGui::Button("Clone")) {
         if (Has_Component(selectedEntity, CT_Sprite)) {
@@ -332,12 +356,78 @@ void ImGuiSystem::ShowInspectorWindow() {
             selectedEntity = Create_Player(200.f, 200.f);
         }
     }*/
-    ImGui::SameLine();
-    if (ImGui::Button("Delete")) {
-        Remove_Entity(selectedEntity);
-        selectedEntity = INVALID_ENTITY;
+
+    ImGui::Separator();
+    if (ImGui::Button("Clone")) {
+        Entity clone = Create_Entity();
+
+        // Copy Transform
+        if (Has_Component(selectedEntity, CT_Transform)) {
+            auto& t = Get_TransformComponent(selectedEntity);
+            TransformComponent newT = t;
+            newT.pos.x += 50.f;  // so it's not exactly on top
+            Add_Component(clone, newT);
+        }
+
+        // Copy Physics
+        if (Has_Component(selectedEntity, CT_Physics)) {
+            auto& p = Get_PhysicsComponent(selectedEntity);
+            auto aabb = p.Get_AABB();
+            auto circle = p.Get_Circle();
+            Physics::PhysicsComponent newP(0.015f, p.CollisionActive(), aabb, circle);
+            Add_Component(clone, newP);
+        }
+
+        // Copy Shape
+        if (Has_Component(selectedEntity, CT_Shape)) {
+            auto& s = Get_ShapeComponent(selectedEntity);
+            Add_Component(clone, ShapeComponent{ s.shape, s.dimensions, s.color });
+        }
+
+        // Copy Sprite
+        if (Has_Component(selectedEntity, CT_Sprite)) {
+            auto& s = Get_SpriteComponent(selectedEntity);
+            Add_Component(clone, s);  // Copy entire sprite component
+        }
+
+        // Copy Tag
+        if (Has_Component(selectedEntity, CT_Tag)) {
+            auto& tag = Get_TagComponent(selectedEntity);
+            Add_Component(clone, tag);
+        }
+
+        // Copy Input
+        if (Has_Component(selectedEntity, CT_Input)) {
+            auto& inp = Get_InputComponent(selectedEntity);
+            Add_Component(clone, inp);
+        }
+
+        //// Copy Health
+        //if (Has_Component(selectedEntity, CT_Health)) {
+        //    auto& h = Get_HealthComponent(selectedEntity);
+        //    Add_Component(clone, h);
+        //}
+
+        selectedEntity = clone;  // Select the new clone
     }
 
+    ImGui::SameLine();
+    if (ImGui::Button("Delete")) {
+        if (selectedEntity <= 3) {
+            ImGui::OpenPopup("Protected Entity");
+        }
+        else {
+            Remove_Entity(selectedEntity);
+            selectedEntity = INVALID_ENTITY;
+        }
+    }
+    if (ImGui::BeginPopup("Protected Entity")) {
+        ImGui::Text("Cannot delete original Entities!");
+        if (ImGui::Button("OK")) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
     ImGui::End();
 }
 

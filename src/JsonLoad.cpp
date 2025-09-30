@@ -16,23 +16,35 @@ std::string JsonLoad::Save_Transform(Entity eID) {
     return j.dump();
 }
 
-std::string JsonLoad::Save_Sprite(Entity eID) {
-    auto& s = Get_SpriteComponent(eID);
-
-    // Get texture path
-    std::string texPath = "";
-    if (s.textureID != 0) {
-        texPath = Render::GetInstance().GetTexturePath(s.textureID);
-    }
-
+//std::string JsonLoad::Save_Sprite(Entity eID) {
+//    auto& s = Get_SpriteComponent(eID);
+//
+//    // Get texture path
+//    std::string texPath = "";
+//    if (s.textureID != 0) {
+//        texPath = Render::GetInstance().GetTexturePath(s.textureID);
+//    }
+//
+//    json j = {
+//        {"texturePath", texPath},
+//        {"sizeX", s.size.x},
+//        {"sizeY", s.size.y},
+//        {"colorX", s.color.x},
+//        {"colorY", s.color.y},
+//        {"colorZ", s.color.z},
+//        { "shape", static_cast<int>(s.shape) }
+//    };
+//    return j.dump();
+//}
+std::string JsonLoad::Save_Shape(Entity eID) {
+    auto& s = Get_ShapeComponent(eID);
     json j = {
-        {"texturePath", texPath},
-        {"sizeX", s.size.x},
-        {"sizeY", s.size.y},
+        {"shapeType", static_cast<int>(s.shape)},
+        {"dimX", s.dimensions.x},
+        {"dimY", s.dimensions.y},
         {"colorX", s.color.x},
         {"colorY", s.color.y},
-        {"colorZ", s.color.z},
-        { "shape", static_cast<int>(s.shape) }
+        {"colorZ", s.color.z}
     };
     return j.dump();
 }
@@ -104,33 +116,46 @@ void JsonLoad::Load_Transform(Entity eID, const std::string& data) {
     t.scale.y = j["scaleY"];
     Add_Component(eID, t);
 }
-
-void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
+void JsonLoad::Load_Shape(Entity eID, const std::string& data) {
     json j = json::parse(data);
-    SpriteComponent s;
+    ShapeComponent s;
 
-    // Reload texture from path
-    std::string texPath = j["texturePath"];
-    if (!texPath.empty()) {
-        s.textureID = Render::GetInstance().LoadTexture(texPath);
-    }
-    else {
-        s.textureID = 0;
-    }
-
-    s.size.x = j["sizeX"];
-    s.size.y = j["sizeY"];
+    s.shape = static_cast<ShapeType>(static_cast<int>(j["shapeType"]));
+    s.dimensions.x = j["dimX"];
+    s.dimensions.y = j["dimY"];
     s.color.x = j["colorX"];
     s.color.y = j["colorY"];
     s.color.z = j["colorZ"];
-    if (j.contains("shape")) {
-        s.shape = static_cast<ShapeType>(static_cast<int>(j["shape"]));
-    }
-    else {
-        s.shape = (s.textureID == 0) ? SHAPE_RECT : SHAPE_TEXTURED;
-    }
+
     Add_Component(eID, s);
 }
+
+//void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
+//    json j = json::parse(data);
+//    SpriteComponent s;
+//
+//    // Reload texture from path
+//    std::string texPath = j["texturePath"];
+//    if (!texPath.empty()) {
+//        s.textureID = Render::GetInstance().LoadTexture(texPath);
+//    }
+//    else {
+//        s.textureID = 0;
+//    }
+//
+//    s.size.x = j["sizeX"];
+//    s.size.y = j["sizeY"];
+//    s.color.x = j["colorX"];
+//    s.color.y = j["colorY"];
+//    s.color.z = j["colorZ"];
+//    if (j.contains("shape")) {
+//        s.shape = static_cast<ShapeType>(static_cast<int>(j["shape"]));
+//    }
+//    else {
+//        s.shape = (s.textureID == 0) ? SHAPE_RECT : SHAPE_TEXTURED;
+//    }
+//    Add_Component(eID, s);
+//}
 
 void JsonLoad::Load_Physics(Entity eID, const std::string& data) {
     json j = json::parse(data);
@@ -197,9 +222,9 @@ SavedEntity JsonLoad::EntityToSaved(Entity eID) {
         saved.componentData[CT_Transform] = Save_Transform(eID);
     }
 
-    if (Has_Component(eID, CT_Sprite)) {
+    /*if (Has_Component(eID, CT_Sprite)) {
         saved.componentData[CT_Sprite] = Save_Sprite(eID);
-    }
+    }*/
 
     if (Has_Component(eID, CT_Physics)) {
         saved.componentData[CT_Physics] = Save_Physics(eID);
@@ -211,6 +236,9 @@ SavedEntity JsonLoad::EntityToSaved(Entity eID) {
 
     if (Has_Component(eID, CT_Tag)) {
         saved.componentData[CT_Tag] = Save_Tag(eID);
+    }
+    if (Has_Component(eID, CT_Shape)) {  // ADD THIS
+        saved.componentData[CT_Shape] = Save_Shape(eID);
     }
 
     if (Has_Component(eID, CT_Input)) {
@@ -233,9 +261,9 @@ Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
             Load_Transform(e, data);
             break;
 
-        case CT_Sprite:
+       /* case CT_Sprite:
             Load_Sprite(e, data);
-            break;
+            break;*/
 
         case CT_Physics:
             Load_Physics(e, data);
@@ -251,6 +279,9 @@ Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
 
         case CT_Input:
             Load_Input(e, data);
+            break;
+        case CT_Shape:  // ADD THIS CASE
+            Load_Shape(e, data);
             break;
 
         default:
@@ -280,6 +311,7 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
         case CT_Health: componentName = "Health"; break;
         case CT_Tag: componentName = "Tag"; break;
         case CT_Input: componentName = "Input"; break;
+        case CT_Shape: componentName = "Shape"; break;
         default: componentName = "Unknown"; break;
         }
 
@@ -304,6 +336,7 @@ void JsonLoad::from_json(const json& j, SavedEntity& e) {
         else if (componentName == "Physics") componentType = CT_Physics;
         else if (componentName == "Health") componentType = CT_Health;
         else if (componentName == "Tag") componentType = CT_Tag;
+        else if (componentName == "Shape") componentType = CT_Shape;
         else if (componentName == "Input") componentType = CT_Input;
 
         if (componentType != CT_None) {

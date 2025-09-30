@@ -53,6 +53,8 @@ void Level1::Init()
 	roundy = Create_Circle(500.f, 500.f);*/
 	waffle = Create_Waffle(400.f, 400.f);
 	rock = Create_Player(200.f, 500.f);
+	square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
+	roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
 }
 
 void Level1::Update()
@@ -76,8 +78,8 @@ void Level1::Update()
 			std::cout << "Failed to load scene!" << std::endl;
 			// Recreate default entities if load failed
 			rock = Create_Player(200.f, 500.f);
-			square = Create_Square(800.f, 500.f);
-			roundy = Create_Circle(500.f, 500.f);
+			square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
+			roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
 		}
 	}
 	// to test game state changes
