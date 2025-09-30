@@ -303,6 +303,20 @@ void ImGuiSystem::ShowInspectorWindow() {
             ImGui::TreePop();
         }
     }
+    if (Has_Component(selectedEntity, CT_Shape)) {
+        auto& s = Get_ShapeComponent(selectedEntity);
+        if (ImGui::TreeNode("Shape")) {
+            const char* shapeTypes[] = { "Rectangle", "Circle" };
+            int currentShape = static_cast<int>(s.shape);
+            if (ImGui::Combo("Shape Type", &currentShape, shapeTypes, 2)) {
+                s.shape = static_cast<ShapeType>(currentShape);
+            }
+            ImGui::DragFloat2("Dimensions", &s.dimensions.x, 1.0f, 10.0f, 1000.0f);
+            ImGui::ColorEdit3("Color", &s.color.x);
+            ImGui::TreePop();
+        }
+    }
+
     // --- Physics ---
     if (Has_Component(selectedEntity, CT_Physics)) {
         auto& p = Get_PhysicsComponent(selectedEntity);
