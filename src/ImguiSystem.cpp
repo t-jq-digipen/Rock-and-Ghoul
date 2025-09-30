@@ -27,9 +27,9 @@ namespace {
         // If it has a sprite, append a hint (textured / square / circle)
         if (Has_Component(e, CT_Sprite)) {
             auto& s = Get_SpriteComponent(e);
-            if (s.textureID == 0)      name += "  [Square]";
-            else if (s.textureID == 1) name += "  [Circle]";
-            else                       name += "  [Textured]";
+            if (s.shape == SHAPE_RECT)      name += "  [Square]";
+            else if (s.shape == SHAPE_CIRCLE) name += "  [Circle]";
+            else if (s.shape == SHAPE_TEXTURED) name += "  [Textured]";
         }
 
         return name;
@@ -288,8 +288,8 @@ void ImGuiSystem::ShowInspectorWindow() {
     if (ImGui::Button("Clone")) {
         if (Has_Component(selectedEntity, CT_Sprite)) {
             auto& s = Get_SpriteComponent(selectedEntity);
-            if (s.textureID == 0)      selectedEntity = Create_Square(400.f, 200.f);
-            else if (s.textureID == 1) selectedEntity = Create_Circle(600.f, 200.f);
+            if (s.shape == SHAPE_RECT)      selectedEntity = Create_Square(400.f, 200.f);
+            else if (s.shape == SHAPE_CIRCLE) selectedEntity = Create_Circle(600.f, 200.f);
             else                       selectedEntity = Create_Player(200.f, 200.f);
         }
         else {

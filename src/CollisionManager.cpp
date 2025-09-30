@@ -122,12 +122,12 @@ void CollisionManager::CheckCollisions() {
 
             if (Has_Component(a, CT_Sprite)) {
                 auto& spriteA = Get_SpriteComponent(a);
-                aIsCircle = (spriteA.textureID == 1); // textureID 1 = circle
+                aIsCircle = (spriteA.shape == SHAPE_CIRCLE); // textureID 1 = circle
             }
 
             if (Has_Component(b, CT_Sprite)) {
                 auto& spriteB = Get_SpriteComponent(b);
-                bIsCircle = (spriteB.textureID == 1); // textureID 1 = circle
+                bIsCircle = (spriteB.shape == SHAPE_CIRCLE); // textureID 1 = circle
             }
             // collision n action
             if (!aIsCircle && !bIsCircle) {

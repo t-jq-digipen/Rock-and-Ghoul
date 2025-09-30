@@ -109,7 +109,7 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), scale.x, scale.y);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation); //added rotation
     //glUniform4f(glGetUniformLocation(shaderProgram, "uUVRect"), 0.0f, 0.0f, 1.0f, 1.0f); 
-    
+
 
     // enable texture
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_TRUE);
@@ -168,7 +168,7 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
     glUseProgram(0);
 }
 
-void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments,float rotation) {
+void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments, float rotation) {
     // vertices for a circle
     std::vector<GLfloat> vertices;
     vertices.reserve((segments + 2) * 2);
@@ -203,6 +203,11 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
+
+    // Unbind texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     // Neutral transform (circle already has actual coords)
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
@@ -220,7 +225,7 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     glDeleteVertexArrays(1, &vaoCircle);
 
     glUseProgram(0);
-}
+}  // <-- Make sure this closing brace is here!
 
 void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3& color, float rotation) {
     glUseProgram(shaderProgram);
@@ -388,13 +393,13 @@ GLuint Render::CreateProgramFromFiles(const std::string& vertPath, const std::st
 
     GLuint vsh = CompileShaderFromFile(vertPath, GL_VERTEX_SHADER);
     GLuint fsh = CompileShaderFromFile(fragPath, GL_FRAGMENT_SHADER);
-    if (!vsh || !fsh) { 
+    if (!vsh || !fsh) {
         if (vsh) {
             glDeleteShader(vsh);
         }
         if (fsh) {
             glDeleteShader(fsh);
-        } 
+        }
         return 0;
     }
 
@@ -487,7 +492,7 @@ void Render::Draw_SpecImage(const Image& image, float x, float y, float w, float
 void Render::DrawImageScaled(const Image& image, float x, float y, float scaleX, float scaleY) {
     if (!image.IsValid()) {
         return;
-    
+
     }
 
     float w = image.width * scaleX;

@@ -25,34 +25,21 @@ public:
             auto& t = Get_TransformComponent(e);
             auto& s = Get_SpriteComponent(e);
 
-            if (s.textureID == 0) {
-                // Render as colored rectangle (no texture)
+
+            if (s.shape == SHAPE_RECT || (s.shape == SHAPE_TEXTURED && s.textureID == 0)) {
+                // Draw rectangle
                 Colour3 color = { s.color.x, s.color.y, s.color.z };
-                renderer.DrawRect(
-                    t.pos,
-                    s.size.x,
-                    s.size.y,
-                    color, t.rot
-                );
+                renderer.DrawRect(t.pos, s.size.x, s.size.y, color, t.rot);
             }
-            else if (s.textureID == 1) {
-                // Render as colored circle
+            else if (s.shape == SHAPE_CIRCLE) {
+                // Draw circle
+                float radius = (s.size.x + s.size.y) / 4.0f;
                 Colour3 color = { s.color.x, s.color.y, s.color.z };
-                float radius = (s.size.x + s.size.y) / 4.0f; // Average of width and height, divided by 2
-                renderer.DrawCircle(
-                    { t.pos.x, t.pos.y },
-                    radius,
-                    color, 32, t.rot
-                );
+                renderer.DrawCircle({ t.pos.x, t.pos.y }, radius, color, 32, t.rot);
             }
             else {
-                // Render as textured quad
-                renderer.DrawTexturedQuad(
-                    t.pos,
-                    s.size,
-                    s.textureID,
-                    t.rot
-                );
+                // Draw textured quad
+                renderer.DrawTexturedQuad(t.pos, s.size, s.textureID, t.rot);
             }
 
             if (ImGuiSystem::showVelocity && Has_Component(e, CT_Physics) && Has_Component(e, CT_Tag)) {
@@ -67,6 +54,7 @@ public:
                 auto& p = Get_PhysicsComponent(e);
 
                 DebugDraw::DrawAABB(p.Get_AABB(), renderer);
+
                 DebugDraw::DrawHotspot(t.pos, renderer);
             }
 

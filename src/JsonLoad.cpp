@@ -31,7 +31,8 @@ std::string JsonLoad::Save_Sprite(Entity eID) {
         {"sizeY", s.size.y},
         {"colorX", s.color.x},
         {"colorY", s.color.y},
-        {"colorZ", s.color.z}
+        {"colorZ", s.color.z},
+        { "shape", static_cast<int>(s.shape) }
     };
     return j.dump();
 }
@@ -122,6 +123,12 @@ void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
     s.color.x = j["colorX"];
     s.color.y = j["colorY"];
     s.color.z = j["colorZ"];
+    if (j.contains("shape")) {
+        s.shape = static_cast<ShapeType>(static_cast<int>(j["shape"]));
+    }
+    else {
+        s.shape = (s.textureID == 0) ? SHAPE_RECT : SHAPE_TEXTURED;
+    }
     Add_Component(eID, s);
 }
 

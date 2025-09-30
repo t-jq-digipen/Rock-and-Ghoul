@@ -39,7 +39,7 @@ Entity Create_Square(float x, float y, const std::string& name) {
     //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
     Add_Component(square, InputComponent{ CS_IJKL });
     Add_Component(square, TagComponent{ T_PLAYER });
-    Add_Component(square, SpriteComponent{ 0, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
+    Add_Component(square, SpriteComponent{ 0, {200.f, 200.f}, {1.0f, 0.0f, 0.0f}, SHAPE_RECT });
     Add_Component(square, HealthComponent{ 100.f, 100.f });
 
     // store the name
@@ -60,7 +60,7 @@ Entity Create_Circle(float x, float y, const std::string& name) {
 
     Add_Component(round, InputComponent{ CS_ARROWS });
     Add_Component(round, TagComponent{ T_PLAYER });
-    Add_Component(round, SpriteComponent{ 1, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} }); // textureID=1 for circle, green color
+    Add_Component(round, SpriteComponent{ 0, {200.f, 200.f}, {0.0f, 1.0f, 0.0f}, SHAPE_CIRCLE }); // textureID=1 for circle, green color
     Add_Component(round, HealthComponent{ 100.f, 100.f });
     
     // store the name
