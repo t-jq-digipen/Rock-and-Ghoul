@@ -281,16 +281,25 @@ void ImGuiSystem::ShowInspectorWindow() {
             ImGui::TreePop();
         }
     }*/
-    if (Has_Component(selectedEntity, CT_Shape)) {
-        auto& s = Get_ShapeComponent(selectedEntity);
-        if (ImGui::TreeNode("Shape")) {
-            const char* shapeTypes[] = { "Rectangle", "Circle" };
-            int currentShape = static_cast<int>(s.shape);
-            if (ImGui::Combo("Shape Type", &currentShape, shapeTypes, 2)) {
-                s.shape = static_cast<ShapeType>(currentShape);
+    // --- Sprite ---
+    if (Has_Component(selectedEntity, CT_Sprite)) {
+        auto& s = Get_SpriteComponent(selectedEntity);
+        if (ImGui::TreeNode("Sprite")) {
+            // Display texture path (read-only)
+            std::string texPath = s.Get_TexturePath();
+            ImGui::Text("Texture: %s", texPath.c_str());
+
+            //scale/dimensions
+            Vec2 scale = s.Get_Scale();
+            if (ImGui::DragFloat2("Scale", &scale.x, 0.01f, 0.01f, 10.0f)) {
+                s.Set_Size(scale);
             }
-            ImGui::DragFloat2("Dimensions", &s.dimensions.x, 1.0f, 10.0f, 1000.0f);
-            ImGui::ColorEdit3("Color", &s.color.x);
+
+            // if animated
+            bool animated = s.IsAnimated();
+            ImGui::Checkbox("Animated", &animated);
+            s.Set_Animated(animated);
+
             ImGui::TreePop();
         }
     }

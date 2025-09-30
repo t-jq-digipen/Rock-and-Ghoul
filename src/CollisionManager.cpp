@@ -121,15 +121,15 @@ void CollisionManager::CheckCollisions() {
             bool aIsCircle = false, bIsCircle = false;
 
             // JQ COMMENT OUT HAHAHA
-            //if (Has_Component(a, CT_Sprite)) {
-            //    auto& spriteA = Get_SpriteComponent(a);
-            //    aIsCircle = (spriteA.textureID == 1); // textureID 1 = circle
-            //}
+            if (Has_Component(a, CT_Shape)) {
+                auto& shapeA = Get_ShapeComponent(a);
+                aIsCircle = (shapeA.shape == SHAPE_CIRCLE);
+            }
 
-            //if (Has_Component(b, CT_Sprite)) {
-            //    auto& spriteB = Get_SpriteComponent(b);
-            //    bIsCircle = (spriteB.textureID == 1); // textureID 1 = circle
-            //}
+            if (Has_Component(b, CT_Shape)) {
+                auto& shapeB = Get_ShapeComponent(b);
+                bIsCircle = (shapeB.shape == SHAPE_CIRCLE);
+            }
             
             // collision n action
             if (!aIsCircle && !bIsCircle) {
