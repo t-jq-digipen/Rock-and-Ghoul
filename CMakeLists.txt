@@ -290,6 +290,8 @@ source_group("Systems\\Graphics\\Components" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Animator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Animator.h
 )
 
 

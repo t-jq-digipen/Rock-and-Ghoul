@@ -15,9 +15,9 @@
  * components sorted by Major and Minor:
  * 
  * MAJOR COMPONENTS:
- * - Physics
- * - Sprite
- * - Animator
+ * - Physics		| Physics.cpp + Physics.h	| Velocity, damping, forces
+ * - Sprite			| Sprite.cpp + Sprite.h		|
+ * - Animator		| 
  * 
  * MINOR COMPONENTS:
  * - Transform		|  Position, Rotation, Scale, Positional changes
@@ -100,12 +100,12 @@ struct TransformComponent {
 //};
 
 // COMP_3
-struct AnimatorComponent {
-	unsigned int total_cols, total_rows;
-	unsigned int curr_col, curr_row;
-
-	std::string state;
-};
+//struct AnimatorComponent {
+//	unsigned int total_cols, total_rows;
+//	unsigned int curr_col, curr_row;
+//
+//	std::string state;
+//};
 // GRAPHICS END
 
 // PHYSICS

@@ -29,6 +29,7 @@
 #include "Component.h"
 #include "Physics.h"		// Physics Component
 #include "Sprite.h"			// Sprite Component
+#include "Animator.h"		// Animator Component
 
 // constexpr size_t MAX_COMPONENT_TYPES = 11; // max number of components TIS SHI NOT EVEN BEING USED
 
@@ -57,7 +58,7 @@ void Remove_Entity(Entity eID);
 // overloads for adding
 void Add_Component(Entity eID, TransformComponent			const& comp);
 void Add_Component(Entity eID, Sprite::SpriteComponent		const& comp);
-void Add_Component(Entity eID, AnimatorComponent			const& comp);
+void Add_Component(Entity eID, Animator::AnimatorComponent	const& comp);
 void Add_Component(Entity eID, Physics::PhysicsComponent	const& comp);
 void Add_Component(Entity eID, AudioComponent				const& comp);
 void Add_Component(Entity eID, LifetimeComponent			const& comp);
@@ -76,7 +77,7 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID);
 // Gets the component of the entity from the specified type
 TransformComponent			& Get_TransformComponent(Entity eID);
 Sprite::SpriteComponent		& Get_SpriteComponent(Entity eID);
-AnimatorComponent			& Get_AnimatorComponent(Entity eID);
+Animator::AnimatorComponent	& Get_AnimatorComponent(Entity eID);
 Physics::PhysicsComponent	& Get_PhysicsComponent(Entity eID);
 AudioComponent				& Get_AudioComponent(Entity eID);
 LifetimeComponent			& Get_LifetimeComponent(Entity eID);
@@ -86,16 +87,16 @@ InputComponent				& Get_InputComponent(Entity eID);
 ShapeComponent				& Get_ShapeComponent(Entity eID);
 
 // Manager accessors
-ComponentManager<TransformComponent>		& CM_Transform();
-ComponentManager<Sprite::SpriteComponent>	& CM_Sprite();
-ComponentManager<AnimatorComponent>			& CM_Animator();
-ComponentManager<Physics::PhysicsComponent>	& CM_Physics();
-ComponentManager<AudioComponent>			& CM_Audio();
-ComponentManager<LifetimeComponent>			& CM_Lifetime();
-ComponentManager<HealthComponent>			& CM_Health();
-ComponentManager<TagComponent>				& CM_Tag();
-ComponentManager<InputComponent>			& CM_Input();
-ComponentManager<ShapeComponent>			& CM_Shape();
+ComponentManager<TransformComponent>			& CM_Transform();
+ComponentManager<Sprite::SpriteComponent>		& CM_Sprite();
+ComponentManager<Animator::AnimatorComponent>	& CM_Animator();
+ComponentManager<Physics::PhysicsComponent>		& CM_Physics();
+ComponentManager<AudioComponent>				& CM_Audio();
+ComponentManager<LifetimeComponent>				& CM_Lifetime();
+ComponentManager<HealthComponent>				& CM_Health();
+ComponentManager<TagComponent>					& CM_Tag();
+ComponentManager<InputComponent>				& CM_Input();
+ComponentManager<ShapeComponent>				& CM_Shape();
 
 // Component list accessor?
 

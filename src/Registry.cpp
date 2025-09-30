@@ -15,6 +15,7 @@
  * ========================================================
  */
 
+// IMPORTANT!!! DO NOT AMEND ANYTHING IN THIS FILES WITHOUT ASKING ME!!!!!!!
 #include "Registry.h"
 
 
@@ -22,14 +23,14 @@
 // COMPONENT MANAGERS
 // ================================================================================
 // CT_Transform
-ComponentManager<TransformComponent>		transform;
+ComponentManager<TransformComponent>			transform;
 
 // Graphics
 // CT_Sprite
-ComponentManager<Sprite::SpriteComponent>	sprite;
+ComponentManager<Sprite::SpriteComponent>		sprite;
 
 // CT_Animator
-ComponentManager<AnimatorComponent>			animator;
+ComponentManager<Animator::AnimatorComponent>	animator;
 
 // Physics
 // CT_Physics
@@ -38,27 +39,27 @@ ComponentManager<Physics::PhysicsComponent>		physics;
 
 // Audio
 // CT_Audio
-ComponentManager<AudioComponent>			audio;
+ComponentManager<AudioComponent>				audio;
 
 // Timer
 // CT_Lifetime
-ComponentManager<LifetimeComponent>			lifetime;
+ComponentManager<LifetimeComponent>				lifetime;
 
 // Stats
 // CT_Health
-ComponentManager<HealthComponent>			health;
+ComponentManager<HealthComponent>				health;
 
 // Tag
 // CT_Tag
-ComponentManager<TagComponent>				tag;
+ComponentManager<TagComponent>					tag;
 
 // Input
 // CT_Input
-ComponentManager<InputComponent>			input;
+ComponentManager<InputComponent>				input;
 
 // Shape
 // CT_Shape
-ComponentManager<ShapeComponent>			shape;
+ComponentManager<ShapeComponent>				shape;
 
 // Entity manager (stores a REFERENCE to the singleton entity manager ^^)
 // ================================================================================
@@ -114,7 +115,7 @@ void Add_Component(Entity eID, Sprite::SpriteComponent const& comp)
 	sprite.addComponent(eID, comp);
 }
 
-void Add_Component(Entity eID, AnimatorComponent const& comp)
+void Add_Component(Entity eID, Animator::AnimatorComponent const& comp)
 {
 	std::cout << "REGISTRY | ADDING COMPONENT | ANIM		| eID: " << eID << "\n";
 	animator.addComponent(eID, comp);
@@ -314,31 +315,31 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 // GET
 
 // Gets the component of the entity from the specified type
-TransformComponent&			Get_TransformComponent(Entity eID)		{ return transform.getComponent(eID); }
+TransformComponent&				Get_TransformComponent(Entity eID)		{ return transform.getComponent(eID); }
 
-Sprite::SpriteComponent&	Get_SpriteComponent(Entity eID)			{ return sprite.getComponent(eID); }
+Sprite::SpriteComponent&		Get_SpriteComponent(Entity eID)			{ return sprite.getComponent(eID); }
 
-AnimatorComponent&			Get_AnimatorComponent(Entity eID)		{ return animator.getComponent(eID); }
+Animator::AnimatorComponent&	Get_AnimatorComponent(Entity eID)		{ return animator.getComponent(eID); }
 
-Physics::PhysicsComponent&	Get_PhysicsComponent(Entity eID)		{ return physics.getComponent(eID); }
+Physics::PhysicsComponent&		Get_PhysicsComponent(Entity eID)		{ return physics.getComponent(eID); }
 
-AudioComponent&				Get_AudioComponent(Entity eID)			{ return audio.getComponent(eID); }
+AudioComponent&					Get_AudioComponent(Entity eID)			{ return audio.getComponent(eID); }
 
-LifetimeComponent&			Get_LifetimeComponent(Entity eID)		{ return lifetime.getComponent(eID); }
+LifetimeComponent&				Get_LifetimeComponent(Entity eID)		{ return lifetime.getComponent(eID); }
 
-HealthComponent&			Get_HealthComponent(Entity eID)			{ return health.getComponent(eID); }
+HealthComponent&				Get_HealthComponent(Entity eID)			{ return health.getComponent(eID); }
 
-TagComponent&				Get_TagComponent(Entity eID)			{ return tag.getComponent(eID); }
+TagComponent&					Get_TagComponent(Entity eID)			{ return tag.getComponent(eID); }
 
-InputComponent&				Get_InputComponent(Entity eID)			{ return input.getComponent(eID); }
+InputComponent&					Get_InputComponent(Entity eID)			{ return input.getComponent(eID); }
 
-ShapeComponent&				Get_ShapeComponent(Entity eID)			{ return shape.getComponent(eID); }
+ShapeComponent&					Get_ShapeComponent(Entity eID)			{ return shape.getComponent(eID); }
 
 
 // Manager accessors
 ComponentManager<TransformComponent>&			CM_Transform()		{ return transform; }
 ComponentManager<Sprite::SpriteComponent>&		CM_Sprite()			{ return sprite; }
-ComponentManager<AnimatorComponent>&			CM_Animator()		{ return animator; }
+ComponentManager<Animator::AnimatorComponent>&	CM_Animator()		{ return animator; }
 ComponentManager<Physics::PhysicsComponent>&	CM_Physics()		{ return physics; }
 ComponentManager<AudioComponent>&				CM_Audio()			{ return audio; }
 ComponentManager<LifetimeComponent>&			CM_Lifetime()		{ return lifetime; }

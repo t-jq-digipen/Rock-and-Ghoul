@@ -1,5 +1,6 @@
 #include "EntityCreation.h"
 #include "Render.h"
+#include "Animator.h"
 
 Entity Create_Player(float const& x, float const& y) {
     Entity player = Create_Entity();
@@ -42,9 +43,15 @@ Entity Create_Waffle(float const& x, float const& y) {
     Add_Component(player, InputComponent{ CS_IJKL });
     Add_Component(player, TagComponent{ T_PLAYER });
 
-    Image temp = CreateImage("../Assets/Waffle_Sprites.png");
-    Add_Component(player, Sprite::SpriteComponent{ temp, {1.f,1.f } });
-
+    {
+        Image temp = CreateImage("../Assets/Waffle_Sprites.png");
+        Add_Component(player, Sprite::SpriteComponent{ temp, {10.f,10.f }, true });
+    }
+    {
+        
+        Animator::AnimatorComponent temp(3, 6, {0,0,0}, 0.f);
+        Add_Component(player, temp);
+    }
     Add_Component(player, HealthComponent{ 100.f, 100.f });
     return player;
 }
