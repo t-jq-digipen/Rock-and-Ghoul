@@ -8,4 +8,5 @@
 //Entity Create_Circle(float x, float y);
 // Entity Create_Ghoul(float x, float y);
 
+Entity Create_Player(float const& spawnx, float const& spawny);
 Entity Create_Waffle(float const& spawnx, float const& spawny);

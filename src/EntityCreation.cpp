@@ -2,25 +2,27 @@
 #include "EntityCreation.h"
 #include "Render.h"
 
-//Entity Create_Player(float x, float y) {
-//    Entity player = Create_Entity();
-//    Add_Component(player, TransformComponent{ {x, y}, {100.f, 100.f} });
-//
-//    {
-//        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
-//        Circle circle = { {x,y},200.f };
-//        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-//        Add_Component(player, temp);
-//    }
-//
-//    //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
-//    Add_Component(player, InputComponent{ CS_WASD });
-//    Add_Component(player, TagComponent{ T_PLAYER });
-//    GLuint tex = Render::GetInstance().LoadTexture("../Assets/Rock_FightingPose_2048px.png");
-//    Add_Component(player, SpriteComponent{ tex, {400.f, 400.f} });
-//    Add_Component(player, HealthComponent{ 100.f, 100.f });
-//    return player;
-//}
+Entity Create_Player(float const& x, float const& y) {
+    Entity player = Create_Entity();
+    Add_Component(player, TransformComponent{ {x, y}, {100.f, 100.f} });
+
+    {
+        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
+        Circle circle = { {x,y},200.f };
+        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
+        Add_Component(player, temp);
+    }
+
+    //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
+    Add_Component(player, InputComponent{ CS_WASD });
+    Add_Component(player, TagComponent{ T_PLAYER });
+
+    Image temp = CreateImage("../Assets/Rock_FightingPose_2048px.png");
+    Add_Component(player, Sprite::SpriteComponent{ temp, {.1f,.1f } });
+
+    Add_Component(player, HealthComponent{ 100.f, 100.f });
+    return player;
+}
 
 Entity Create_Waffle(float const& x, float const& y) {
     Entity player = Create_Entity();
@@ -34,7 +36,7 @@ Entity Create_Waffle(float const& x, float const& y) {
     }
 
     //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
-    Add_Component(player, InputComponent{ CS_WASD });
+    Add_Component(player, InputComponent{ CS_IJKL });
     Add_Component(player, TagComponent{ T_PLAYER });
 
     Image temp = CreateImage("../Assets/Waffle_Sprites.png");

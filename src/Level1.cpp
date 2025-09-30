@@ -49,6 +49,7 @@ void Level1::Init()
 	square = Create_Square(800.f, 500.f);
 	roundy = Create_Circle(500.f, 500.f);*/
 	waffle = Create_Waffle(400.f, 400.f);
+	rock = Create_Player(200.f, 500.f);
 }
 
 void Level1::Update()
