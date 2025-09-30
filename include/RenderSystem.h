@@ -16,10 +16,7 @@ public:
     RenderSystem(Render& r) : renderer(r) {}
     void Update(float dt) override {
         auto& em = EntityManager::get();
-        static bool showDebug = false;
-        if (Input::IsKeyPressed(GLFW_KEY_5)) {
-            showDebug = !showDebug;
-        }
+
         for (Entity e = 0; e < em.maxEntities(); ++e) {
             if (!em.isAlive(e)) continue;
             if (!Has_Component(e, CT_Transform) || !Has_Component(e, CT_Sprite))
