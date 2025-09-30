@@ -16,11 +16,11 @@ public:
     static void ShutdownImGui();
     static bool showColliders;
     static bool showVelocity;
+    static bool guiEnabled;
 
 private:
     void ShowEngineDebugWindow();
     void ShowCollisionDebugWindow();
-    void ShowEntityDebugWindow();
     void ShowHierarchyWindow();
     void ShowInspectorWindow();
 };

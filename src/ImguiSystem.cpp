@@ -3,10 +3,12 @@
 #include "glapp.h"
 #include "CoreEngine.h"
 #include "EntityCreation.h"
+#include "Input.h"
 
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
+bool ImGuiSystem::guiEnabled = false;
 
 namespace {
     // A small helper to name an entity for the Hierarchy list
@@ -58,20 +60,35 @@ void ImGuiSystem::Initialize() {
 }
 
 void ImGuiSystem::Update(float dt) {
-    //start a frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    if (Input::IsKeyPressed(GLFW_KEY_F1)) {
+        guiEnabled = !guiEnabled; // toggle on/off
+    }
+    ////start a frame
+    //ImGui_ImplOpenGL3_NewFrame();
+    //ImGui_ImplGlfw_NewFrame();
+    //ImGui::NewFrame();
 
-    //all windows
-    ShowEngineDebugWindow(); //engine fps n shii
-    ShowCollisionDebugWindow(); //collision n entity loc
-    ShowHierarchyWindow();   // NEW
-    ShowInspectorWindow();
+    ////all windows
+    //ShowEngineDebugWindow(); //engine fps n shii
+    //ShowCollisionDebugWindow(); //collision n entity loc
+    //ShowHierarchyWindow();   // NEW
+    //ShowInspectorWindow();
+
+    if (guiEnabled) {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ShowEngineDebugWindow();
+        ShowCollisionDebugWindow();
+        ShowHierarchyWindow();
+        ShowInspectorWindow();
+    }
 }
 // called every frame after Update() to actually render ImGui to screen
 //  MUSTTT be called after NewFrame() and before buffer swap
 void ImGuiSystem::Render() {
+    if (!guiEnabled) return; //skip if GUI is off
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); //draw to screen
 }
