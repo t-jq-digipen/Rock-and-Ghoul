@@ -49,9 +49,9 @@ void Level1::Init()
 	if (!JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
 		
 		// Create with names (updated for json)
-		rock = Create_Player(200.f, 500.f, "Rock");
-		square = Create_Square(800.f, 500.f, "RedSquare");
-		roundy = Create_Circle(500.f, 500.f, "GreenCircle");
+		rock = Create_Player(200.f, 500.f);
+		square = Create_Square(800.f, 500.f);
+		roundy = Create_Circle(500.f, 500.f);
 	}
 }
 

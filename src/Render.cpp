@@ -299,14 +299,6 @@ std::string Render::GetTexturePath(GLuint texID) const {
     }
     return "";
 }
-// ====================
-void Render::UnloadTexture(const std::string& path) {
-    auto it = textureCache.find(path);
-    if (it != textureCache.end()) {
-        glDeleteTextures(1, &it->second);
-        textureCache.erase(it);
-    }
-}
 
 void Render::UnloadTexture(GLuint textureID) {
     // Find the texture in the cache
@@ -317,7 +309,7 @@ void Render::UnloadTexture(GLuint textureID) {
             glBindTexture(GL_TEXTURE_2D, 0); // Unbind any texture
             textureCache.erase(it);
             std::cout << "Texture unloaded successfully" << std::endl;
-            return; // Found and removed, exit
+            return;
         }
     }
     std::cout << "Warning: Texture ID " << textureID << " not found in cache" << std::endl;
