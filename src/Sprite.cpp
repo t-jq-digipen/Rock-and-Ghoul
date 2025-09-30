@@ -58,5 +58,6 @@ namespace Sprite {
 	bool SpriteComponent::IsAnimated()
 	{ return m_anim; }
 
-
+	std::string SpriteComponent::Get_TexturePath()
+	{ return Render::GetInstance().Get_TexturePath(m_image.textureID); }
 }

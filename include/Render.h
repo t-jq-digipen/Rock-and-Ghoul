@@ -104,7 +104,8 @@ public:
     void InitTextRendering();
     void DrawText(std::string text, float x, float y, float scale, const Colour3& color); //use: text, position, size, color
     //maybe set_font 
-    
+
+    std::string Get_TexturePath(const GLuint& imgID);
 
     bool IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height);
 

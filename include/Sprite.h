@@ -38,6 +38,7 @@ namespace Sprite {
 		const Vec2& Get_Scale() const;
 		bool IsAnimated();
 		
+		std::string Get_TexturePath();
 	};
 
 }
