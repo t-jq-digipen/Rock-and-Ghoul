@@ -54,7 +54,12 @@ public:
                 auto& p = Get_PhysicsComponent(e);
 
                 DebugDraw::DrawAABB(p.Get_AABB(), renderer);
-
+                if (Has_Component(e, CT_Sprite)) {
+                    auto& sprite = Get_SpriteComponent(e);
+                    if (sprite.shape == SHAPE_CIRCLE) {
+                        DebugDraw::DrawCircleCollider(p.Get_Circle(), renderer);
+                    }
+                }
                 DebugDraw::DrawHotspot(t.pos, renderer);
             }
 

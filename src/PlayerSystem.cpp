@@ -130,7 +130,7 @@ void PlayerSystem::Update(float dt)
 			if (Input::IsKeyHeld(GLFW_KEY_Q)) sprite.size.x += 100.f * dt;
 			if (Input::IsKeyHeld(GLFW_KEY_E)) sprite.size.x = std::max(10.f, sprite.size.x - 100.f * dt);
 
-			if (Input::IsKeyHeld(GLFW_KEY_R)) sprite.size.y += 100.f * dt;
+			if (Input::IsKeyHeld(GLFW_KEY_T)) sprite.size.y += 100.f * dt;
 			if (Input::IsKeyHeld(GLFW_KEY_F)) sprite.size.y = std::max(10.f, sprite.size.y - 100.f * dt);
 
 			if (Input::IsKeyHeld(GLFW_KEY_Z)) trans.rot -= 90.f * dt; // counter-clockwise

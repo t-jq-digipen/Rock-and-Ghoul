@@ -273,6 +273,19 @@ void ImGuiSystem::ShowInspectorWindow() {
             auto aabb = p.Get_AABB();
             auto circ = p.Get_Circle();
             ImGui::Checkbox("Collision Active", const_cast<bool*>(&p.CollisionActive())); // if your API allows toggling, change to setter
+            //Edit AABB size
+            Vec2 aabbSize = aabb.dim;
+            if (ImGui::DragFloat2("AABB Size", &aabbSize.x, 1.0f, 10.0f, 1000.0f)) {
+                auto& trans = Get_TransformComponent(selectedEntity);
+                AABB newAABB = Set_AABB(trans.pos, aabbSize);
+                p.Set_AABB(newAABB);
+            }
+            float circRad = circ.rad;
+            if (ImGui::DragFloat("Circle Radius", &circRad, 1.0f, 10.0f, 500.0f)) {
+                Circle newCircle = circ;
+                newCircle.rad = circRad;
+                p.Set_Circle(newCircle);
+            }
             ImGui::Text("AABB: (%.1f, %.1f) -> (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
             ImGui::Text("Circle: center(%.1f, %.1f), r=%.1f", circ.pos.x, circ.pos.y, circ.rad);
             ImGui::TreePop();

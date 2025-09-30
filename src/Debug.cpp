@@ -73,4 +73,8 @@ void DebugDraw::DrawVelocity(Entity e, const TransformComponent& t, Render& rend
     renderer.DrawLine(pos, end, { 1.f, 0.f, 0.f });
 }
 
+void DebugDraw::DrawCircleCollider(const Circle& circle, Render& renderer) {
+    Colour3 color{ 0.f, 1.f, 1.f }; // cyan
+    renderer.DrawCircle({ circle.pos.x, circle.pos.y }, circle.rad, color, 32, 0.0f);
+}
 

@@ -107,20 +107,6 @@ void CollisionManager::CheckCollisions() {
 
         auto& transA = Get_TransformComponent(a);
         compA.UpdateHitboxes(transA.pos);
-        //SCALING DYNAMICALLY
-        if (Has_Component(a, CT_Sprite)) {
-            auto& spriteA = Get_SpriteComponent(a);
-            AABB newAABB = Set_AABB(transA.pos, spriteA.size);
-            compA.Set_AABB(newAABB);
-
-            // Update circle radius if it's a circle
-            if (spriteA.shape == SHAPE_CIRCLE) {
-                Circle newCircle = compA.Get_Circle();
-                newCircle.pos = transA.pos;
-                newCircle.rad = (spriteA.size.x + spriteA.size.y) / 4.0f;
-                compA.Set_Circle(newCircle);
-            }
-        }
 
         for (auto itB = std::next(itA); itB != physicsComps.end(); ++itB) {
             Entity b = itB->first;
@@ -131,19 +117,6 @@ void CollisionManager::CheckCollisions() {
             auto& transB = Get_TransformComponent(b);
             compB.UpdateHitboxes(transB.pos);
 
-            if (Has_Component(b, CT_Sprite)) {
-                auto& spriteB = Get_SpriteComponent(b);
-                AABB newAABB = Set_AABB(transB.pos, spriteB.size);
-                compB.Set_AABB(newAABB);
-
-                // Update circle radius if it's a circle
-                if (spriteB.shape == SHAPE_CIRCLE) {
-                    Circle newCircle = compB.Get_Circle();
-                    newCircle.pos = transB.pos;
-                    newCircle.rad = (spriteB.size.x + spriteB.size.y) / 4.0f;
-                    compB.Set_Circle(newCircle);
-                }
-            }
             // collision shapes based on sprite textureID
             bool aIsCircle = false, bIsCircle = false;
 
