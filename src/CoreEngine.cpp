@@ -29,12 +29,19 @@ void CoreEngine::Run() {
     std::cout << "EngRun\n";
 
     while (running && !glfwWindowShouldClose(GLApp::ptr_window) && GSM_CurrentState() != GameState::GS_QUIT) {
-        // --- 1. Bind function pointers for the new current state
+        if (gsm.GetCurrentState() != GameState::GS_RESTART)
+        {
+            // --- 1. Bind function pointers for the new current state
+            gsm.Update();
 
-        gsm.Update();
+            // --- 2. Load + Init ONCE for this state
+            gsm.CallLoad();
+        }
+        else
+        {
+            gsm.Restart();
+        }
 
-        // --- 2. Load + Init ONCE for this state
-        gsm.CallLoad();
         gsm.CallInit();
 
         // --- 3. Frame loop for this state
