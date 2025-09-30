@@ -26,7 +26,6 @@ ComponentManager<TransformComponent>		transform;
 
 // Graphics
 // CT_Sprite
-// ComponentManager<SpriteComponent>			sprite_old;
 ComponentManager<Sprite::SpriteComponent>	sprite;
 
 // CT_Animator
@@ -53,7 +52,13 @@ ComponentManager<HealthComponent>			health;
 // CT_Tag
 ComponentManager<TagComponent>				tag;
 
+// Input
+// CT_Input
 ComponentManager<InputComponent>			input;
+
+// Shape
+// CT_Shape
+ComponentManager<ShapeComponent>			shape;
 
 // Entity manager (stores a REFERENCE to the singleton entity manager ^^)
 // ================================================================================
@@ -72,7 +77,7 @@ Entity Create_Entity()
 void Remove_Entity(Entity eID)
 {
 	// remove all components!
-	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input });
+	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input, CT_Shape });
 
 	// remove entity ID!
 	entityManager.destroyEntity(eID);
@@ -148,6 +153,11 @@ void Add_Component(Entity eID, InputComponent const& comp)
 {
 	std::cout << "REGISTRY | ADDING COMPONENT | INPUT		| eID: " << eID << "\n";
 	input.addComponent(eID, comp);
+}
+void Add_Component(Entity eID, ShapeComponent const& comp)
+{
+	std::cout << "REGISTRY | ADDING COMPONENT | SHAPE		| eID: " << eID << "\n";
+	shape.addComponent(eID, comp);
 }
 
 
@@ -228,6 +238,13 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 		input.removeComponent(eID);
 	}
 	break;	// CT_Tag
+
+	case (CT_Shape):
+	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | SHAPE			| eID: " << eID << "\n";
+		shape.removeComponent(eID);
+	}
+	break;	// CT_Shape
 	}
 }
 
@@ -284,6 +301,10 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 	{ return input.hasComponent(eID); }
 	break;	// CT_Tag
 
+	case (CT_Shape):
+	{ return shape.hasComponent(eID); }
+	break;	// CT_Tag
+
 	default:
 		return false;
 	}
@@ -311,6 +332,8 @@ TagComponent&				Get_TagComponent(Entity eID)			{ return tag.getComponent(eID); 
 
 InputComponent&				Get_InputComponent(Entity eID)			{ return input.getComponent(eID); }
 
+ShapeComponent&				Get_ShapeComponent(Entity eID)			{ return shape.getComponent(eID); }
+
 
 // Manager accessors
 ComponentManager<TransformComponent>&			CM_Transform()		{ return transform; }
@@ -322,5 +345,6 @@ ComponentManager<LifetimeComponent>&			CM_Lifetime()		{ return lifetime; }
 ComponentManager<HealthComponent>&				CM_Health()			{ return health; }
 ComponentManager<TagComponent>&					CM_Tag()			{ return tag; }
 ComponentManager<InputComponent>&				CM_Input()			{ return input; }
+ComponentManager<ShapeComponent>&				CM_Shape()			{ return shape; }
 
 #pragma endregion COMPONENT

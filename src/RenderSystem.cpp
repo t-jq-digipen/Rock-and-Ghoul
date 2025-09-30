@@ -23,6 +23,11 @@ void RenderSystem::Update(float dt) {
     }
 
 
+    for (auto& [entID, shapeComp] : CM_Shape().getComponents())
+    {
+        // shape drawing tings (REGINE PUT YO SHIT HERE)
+    }
+
     //auto& em = EntityManager::get();
     //static bool showDebug = false;
     //if (Input::IsKeyPressed(GLFW_KEY_5)) {

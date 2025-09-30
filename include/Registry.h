@@ -44,6 +44,7 @@ COMPONENTS LIST: (ENUM IN COMPONENT.H)
 	7 | CT_Lifetime
 	8 | CT_Health
 	9 | CT_Tag
+	10| CT_Shape
 */
 
 
@@ -63,6 +64,7 @@ void Add_Component(Entity eID, LifetimeComponent			const& comp);
 void Add_Component(Entity eID, HealthComponent				const& comp);
 void Add_Component(Entity eID, TagComponent					const& comp);
 void Add_Component(Entity eID, InputComponent				const& comp);
+void Add_Component(Entity eID, ShapeComponent				const& comp);
 
 // overloads for removal
 void Remove_Component(Entity eID, ComponentTypeID const& cID);
@@ -81,6 +83,7 @@ LifetimeComponent			& Get_LifetimeComponent(Entity eID);
 HealthComponent				& Get_HealthComponent(Entity eID);
 TagComponent				& Get_TagComponent(Entity eID);
 InputComponent				& Get_InputComponent(Entity eID);
+ShapeComponent				& Get_ShapeComponent(Entity eID);
 
 // Manager accessors
 ComponentManager<TransformComponent>		& CM_Transform();
@@ -92,5 +95,6 @@ ComponentManager<LifetimeComponent>			& CM_Lifetime();
 ComponentManager<HealthComponent>			& CM_Health();
 ComponentManager<TagComponent>				& CM_Tag();
 ComponentManager<InputComponent>			& CM_Input();
+ComponentManager<ShapeComponent>			& CM_Shape();
 
 // Component list accessor?

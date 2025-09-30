@@ -44,7 +44,9 @@ enum ComponentTypeID
 	// Tag					  
 	CT_Tag,				// 10	| Tag enumeration (should i use std::string? idk, think again another time)
 							  
-	CT_Input
+	CT_Input,
+
+	CT_Shape			//		| Shape enumeration for non-sprite drawing
 };
 
 
@@ -125,3 +127,13 @@ struct InputComponent {
 	ControlScheme scheme;
 };
 
+enum ShapeType {
+	SHAPE_RECTANGLE,
+	SHAPE_CIRCLE
+};
+
+struct ShapeComponent {
+	ShapeType shape;
+	Vec2 dimensions;	// default size
+	Vec3 color;			// white (no tint)
+};
