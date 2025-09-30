@@ -134,6 +134,8 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     if (radSum < distance) {
         return false;
     }
+    firstTimeOfCollision = tFirst; 
+    return true;
 }
 
 // Circle-AABB Static

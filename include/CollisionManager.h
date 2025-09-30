@@ -15,6 +15,7 @@ static const char* TagToString(C_TagID tag) {
     case T_PLAYER:     return "Player";
     case T_ENEMY:      return "Enemy";
     case T_PROJECTILE: return "Projectile";
+    default:           return "Unknown";
     }
 }
 class CollisionManager {
