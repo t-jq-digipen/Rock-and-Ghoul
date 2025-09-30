@@ -10,6 +10,7 @@
 #include "CoreEngine.h"
 #include "RenderSystem.h"
 #include "EntityCreation.h"
+#include "CrashHandler.h"
 
 static FretBoard* fretboard = nullptr;
 
@@ -19,97 +20,112 @@ Entity ECSplayer{};
 Entity rock;
 Entity square;
 Entity roundy;
+
 void Level1::Load()
 {
+	Render& renderer = Render::GetInstance();
+	CrashHandler::Safe("Level1", "Load", [&] {
+		CrashHandler::Log("Level1::Load start");
+		std::cout << "Level 1 Loaded!!!" << std::endl;
 
-	std::cout << "Level 1 Loaded!!!" << std::endl;
+		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
+		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
+	});
 }
 
 void Level1::Init()
 {
-	std::cout << "Level 1 Initialized!!!" << std::endl;
 	Render& renderer = Render::GetInstance();
-	renderer.Init();
+	CrashHandler::Safe("Level1", "Init", [&] {
+		CrashHandler::Log("Level1::Init start");
+		std::cout << "Level 1 Initialized!!!" << std::endl;
+		renderer.Init();
 
+		// 1. Create FretBoard after OpenGL is ready
+		if (!fretboard) {
+			fretboard = new FretBoard(0, 0, 800, 200);
+		}
+		fretboard->LoadTextures();
+		fretboard->StartGame();
 
-	// 3. NOW load textures (OpenGL is ready)
-	bgTexture = renderer.LoadTexture("../Assets/background.jpg");
+		// 2. Create entities
+		rock = Create_Player(200.f, 500.f);
+		square = Create_Square(800.f, 500.f);
+		roundy = Create_Circle(500.f, 500.f);
 
-	// 4. Create FretBoard after OpenGL is ready
-	if (!fretboard) {
-		fretboard = new FretBoard(0, 0, 800, 200);
-	}
-	fretboard->LoadTextures();
-	fretboard->StartGame();
-
-	// 5. Create entities
-	rock = Create_Player(200.f, 500.f);
-	square = Create_Square(800.f, 500.f);
-	roundy = Create_Circle(500.f, 500.f);
+		CrashHandler::Log("Level1::Init end");
+	});
 }
 
 void Level1::Update()
 {
 	//std::cout << "Level 1 Updating!!!" << std::endl;
-
-	// to test game state changes
-	if (Input::IsKeyPressed(GLFW_KEY_M))
-	{
-		GSM_SetNextState(GameState::GS_MAIN_MENU);
-		//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
-	}
-	else if (Input::IsKeyPressed(GLFW_KEY_R)) 
-	{
-		GSM_SetNextState(GameState::GS_RESTART);
-		//nextState = GameState::GS_RESTART;       // restart state
-		std::cout << "Level 1 Restarted!!!" << std::endl;
-	}
-	if (fretboard) {
-		fretboard->PlayerInput();
-	}
-
+	CrashHandler::Safe("Level1", "Update", [&] {
+		// to test game state changes
+		if (Input::IsKeyPressed(GLFW_KEY_M))
+		{
+			GSM_SetNextState(GameState::GS_MAIN_MENU);
+			//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
+		}
+		else if (Input::IsKeyPressed(GLFW_KEY_R))
+		{
+			GSM_SetNextState(GameState::GS_RESTART);
+			//nextState = GameState::GS_RESTART;       // restart state
+			std::cout << "Level 1 Restarted!!!" << std::endl;
+		}
+		if (fretboard) {
+			fretboard->PlayerInput();
+		}
+	});
 }
 
 void Level1::Draw()
 {	
 	Render& renderer = Render::GetInstance();
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	if (bgTexture) {
-		renderer.DrawTexturedQuad(
-			{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
-			{ (float)GLApp::width, (float)GLApp::height },   // full screen size
-			bgTexture
-		);
-	}
+	CrashHandler::Safe("Level1", "Draw", [&] {
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		if (bgTexture) {
+			renderer.DrawTexturedQuad(
+				{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
+				{ (float)GLApp::width, (float)GLApp::height },   // full screen size
+				bgTexture
+			);
+		}
 
 
-	if (fretboard) {
-		fretboard->Draw(renderer);
-		fretboard->GetSpellManager().Draw(renderer);
-	}
-
-	
+		if (fretboard) {
+			fretboard->Draw(renderer);
+			fretboard->GetSpellManager().Draw(renderer);
+		}
+	});
 }
 
 void Level1::Free()
 {
-	std::cout << "Level 1 Freed!!!" << std::endl;
-	Remove_Entity(rock);
-	Remove_Entity(ECSplayer);
+	CrashHandler::Safe("Level1", "Free", [&] {
+		std::cout << "Level 1 Freed!!!" << std::endl;
+		Remove_Entity(rock);
+		Remove_Entity(ECSplayer);
+		CrashHandler::Log("Level1::Free");
+	});
 }
 
 void Level1::Unload()
 {
-	delete fretboard;
-	fretboard = nullptr;
-	/*if (bgTexture) {
-		glDeleteTextures(1, &bgTexture);
-		bgTexture = 0;
-	}*/
+	Render& renderer = Render::GetInstance();
+	CrashHandler::Safe("Level1", "Unload", [&] {
+		delete fretboard;
+		fretboard = nullptr;
+		/*if (bgTexture) {
+			glDeleteTextures(1, &bgTexture);
+			bgTexture = 0;
+		}*/
 
-	Render::GetInstance().UnloadTexture(bgTexture);
-	//Render::GetInstance().ClearAllTextures();
-	std::cout << "Level 1 Unloaded!!!" << std::endl;
+		renderer.UnloadTexture(bgTexture);
+		//Render::GetInstance().ClearAllTextures();
+		std::cout << "Level 1 Unloaded!!!" << std::endl;
+		CrashHandler::Log("Level1::Unload");
+	});
 }
 

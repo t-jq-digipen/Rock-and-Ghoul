@@ -8,6 +8,7 @@
 #include "Registry.h"
 #include "GameStates.h"
 #include "CoreEngine.h"
+#include "CrashHandler.h"
 
 AudioManager* MainMenu::audio = nullptr;
 
@@ -26,6 +27,7 @@ GLuint rockTexture{ 0 };
 GLuint ghoulTexture{ 0 };
 GLuint playTexture{ 0 };
 GLuint quitTexture{ 0 };
+
 //Image titleImage;
 
 // Convert GLFW/screen cords (origin: top-left) to render coords (origin: bottom-left)
@@ -36,12 +38,29 @@ static inline glm::vec2 ScreenToRender(const glm::vec2& mouseScreen, float windo
 
 void MainMenu::Load()
 {
-    std::cout << "Main Menu Loaded!!!" << std::endl;
-    titleTexture = Render::GetInstance().LoadTexture("../Assets/title.png");
-    rockTexture = Render::GetInstance().LoadTexture("../Assets/Rock_2048px.png");
-    ghoulTexture = Render::GetInstance().LoadTexture("../Assets/Ghoul_2048px.png");
-    playTexture = Render::GetInstance().LoadTexture("../Assets/play.png");
-    quitTexture = Render::GetInstance().LoadTexture("../Assets/quit.png");
+    Render& renderer = Render::GetInstance();
+    CrashHandler::Safe("MainMenu", "Load", [&] {
+        CrashHandler::Log("MainMenu::Load start");
+        std::cout << "Main Menu Loaded!!!" << std::endl;
+
+        titleTexture = renderer.LoadTexture("../Assets/title.png");
+        CrashHandler::LogIfZeroTexture(titleTexture, "../Assets/title.png");
+
+        rockTexture = renderer.LoadTexture("../Assets/Rock_2048px.png");
+        CrashHandler::LogIfZeroTexture(rockTexture, "../Assets/title.png");
+
+        ghoulTexture = renderer.LoadTexture("../Assets/Ghoul_2048px.png");
+        CrashHandler::LogIfZeroTexture(ghoulTexture, "../Assets/title.png");
+
+        playTexture = renderer.LoadTexture("../Assets/play.png");
+        CrashHandler::LogIfZeroTexture(playTexture, "../Assets/title.png");
+
+        quitTexture = renderer.LoadTexture("../Assets/quit.png");
+        CrashHandler::LogIfZeroTexture(quitTexture, "../Assets/title.png");
+
+        CrashHandler::Log("MainMenu::Load end");
+    });
+
 
     //titleImage = Render::GetInstance().LoadImage("../Assets/quit.png");
 
@@ -49,16 +68,87 @@ void MainMenu::Load()
 
 void MainMenu::Init()
 {
-    std::cout << "Main Menu Initialized!!!" << std::endl;
-    Render::GetInstance().Init();
+    Render& renderer = Render::GetInstance();
+    CrashHandler::Safe("MainMenu", "Init", [&] {
+        CrashHandler::Log("MainMenu::Init start");
+        std::cout << "Main Menu Initialized!!!" << std::endl;
+        renderer.Init();
+        CrashHandler::Log("MainMenu::Init end");
+    });
 }
 
 void MainMenu::Update()
 {
     Render& renderer = Render::GetInstance();
+    CrashHandler::Safe("MainMenu", "Update", [&] {
+        // Clear background, add background color
+        renderer.ClearBackground({ 0.5f, 0.f, 0.7f, 1.f });
 
-    // Clear background, add background color
-    renderer.ClearBackground({ 0.5f, 0.f, 0.7f, 1.f });
+        // PLAY BUTTON
+        renderer.DrawRect({ GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f, { 0, 1, 0 });
+        if (renderer.IsAreaTouched(ScreenToRender({ Input::GetMouseX(), Input::GetMouseY() }, static_cast<float>(GLApp::height)),
+            { GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f))
+        {
+            if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+            {
+                if (audio) 
+                {
+                    audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
+                }
+                else
+                {
+                    CrashHandler::Log("AudioManager is null on PLAY click");
+                }
+                CrashHandler::Log("PLAY clicked -> GS_LEVEL1");
+                GSM_SetNextState(GameState::GS_LEVEL1);
+            }
+        }
+
+        // QUIT BUTTON
+        renderer.DrawRect({ GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f, { 1, 0, 0 });
+        if (renderer.IsAreaTouched(ScreenToRender({ Input::GetMouseX(), Input::GetMouseY() }, static_cast<float>(GLApp::height)),
+            { GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f))
+        {
+            if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+            {
+                if (audio) 
+                {
+                    audio->PlayButtonSound(AudioSystem::ButtonType::QUIT);
+                }
+                else
+                {
+                    CrashHandler::Log("AudioManager is null on QUIT click");
+                }
+
+                // Wait a bit for the sound to play before quitting
+                double startTime = glfwGetTime();
+                while (glfwGetTime() - startTime < 0.5) // Wait 500ms
+                {
+                    // Keep updating audio system during the wait
+                    AudioSystem::Update();
+                    glfwPollEvents();
+                }
+                CrashHandler::Log("QUIT clicked -> GS_QUIT");
+                GSM_SetNextState(GameState::GS_QUIT);
+            }
+        }
+
+        // press space (or click play button) to enter level 1
+        if (Input::IsKeyPressed(GLFW_KEY_SPACE))
+        {
+            std::cout << "PLAY CLICKED � switching to Level1\n";
+            if (audio) 
+            {
+                audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
+            }
+            else
+            {
+                CrashHandler::Log("AudioManager is null on SPACE press");
+            }
+            CrashHandler::Log("SPACE -> GS_LEVEL1");
+            GSM_SetNextState(GameState::GS_LEVEL1);
+        }
+    });
 
     // Render main menu textures (placeholders rn)
     
@@ -66,101 +156,83 @@ void MainMenu::Update()
     //renderer.DrawImage(titleImage, 400.f, 400.f);
     //renderer.DrawImageRotated(titleImage, 400.f, 400.f, 1.57f);
     //renderer.DrawImageSub(titleImage, 400.f, 400.f, 100.f, 400.f, 0.f, 0.f, 256.f, 256.f);
- 
-    // Game Title
-    if (titleTexture)
-    {
-        renderer.DrawTexturedQuad({ GLApp::width * 0.5f, GLApp::height * 0.8f }, { 1200.f, 300.f }, titleTexture);
-    }
-
-    // ROCK
-    if (rockTexture)
-    {
-        renderer.DrawTexturedQuad({ GLApp::width * 0.3f, GLApp::height * 0.5f }, { 400.f, 400.f }, rockTexture);
-    }
-
-    // GHOUL (image is reversed)
-    if (ghoulTexture)
-    {
-        renderer.DrawTexturedQuad({ GLApp::width * 0.7f, GLApp::height * 0.5f }, { -400.f, 400.f }, ghoulTexture);
-    }
-
-    // PLAY BUTTON
-    renderer.DrawRect({ GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f, { 0, 1, 0 });
-    if (renderer.IsAreaTouched(ScreenToRender({ Input::GetMouseX(), Input::GetMouseY() }, static_cast<float>(GLApp::height)),
-        { GLApp::width * 0.3f, GLApp::height * 0.2f }, 300.f, 150.f))
-    {
-        if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
-        {
-            if (audio) {
-                audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
-            }
-            GSM_SetNextState(GameState::GS_LEVEL1);
-        }
-    }
-
-    // QUIT BUTTON
-    renderer.DrawRect({ GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f, { 1, 0, 0 });
-    if (renderer.IsAreaTouched(ScreenToRender({ Input::GetMouseX(), Input::GetMouseY() }, static_cast<float>(GLApp::height)),
-        { GLApp::width * 0.7f, GLApp::height * 0.2f }, 300.f, 150.f))
-    {
-        if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
-        {
-            if (audio) {
-                audio->PlayButtonSound(AudioSystem::ButtonType::QUIT);
-            }
-
-            // Wait a bit for the sound to play before quitting
-            double startTime = glfwGetTime();
-            while (glfwGetTime() - startTime < 0.5) { // Wait 500ms
-                // Keep updating audio system during the wait
-                AudioSystem::Update();
-                glfwPollEvents();
-            }
-
-            GSM_SetNextState(GameState::GS_QUIT);
-        }
-    }
-
-    // PLAY text for button
-    if (playTexture)
-    {
-        renderer.DrawTexturedQuad({ GLApp::width * 0.3f, GLApp::height * 0.2f }, { 300.f, 150.f }, playTexture);
-    }
-
-    // QUIT text for button
-    if (quitTexture)
-    {
-        renderer.DrawTexturedQuad({ GLApp::width * 0.7f, GLApp::height * 0.2f }, { 300.f, 150.f }, quitTexture);
-    }
-
-    // press space (or click play button) to enter level 1
-    if (Input::IsKeyPressed(GLFW_KEY_SPACE))
-    {
-        std::cout << "PLAY CLICKED � switching to Level1\n";
-        if (audio) {
-            audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
-        }
-        GSM_SetNextState(GameState::GS_LEVEL1);
-    }
 }
 
 void MainMenu::Draw()
 {
-    // std::cout << "Main Menu Drawing!!!" << std::endl;
+    Render& renderer = Render::GetInstance();
+    CrashHandler::Safe("MainMenu", "Draw", [&] {
+        // Game Title
+        if (titleTexture)
+        {
+            renderer.DrawTexturedQuad({ GLApp::width * 0.5f, GLApp::height * 0.8f }, { 1200.f, 300.f }, titleTexture);
+        }
+        else
+        {
+            CrashHandler::Log("Title texture missing; skipping draw!");
+        }
+
+        // ROCK
+        if (rockTexture)
+        {
+            renderer.DrawTexturedQuad({ GLApp::width * 0.3f, GLApp::height * 0.5f }, { 400.f, 400.f }, rockTexture);
+        }
+        else
+        {
+            CrashHandler::Log("Rock texture missing; skipping draw!");
+        }
+
+        // GHOUL (image is reversed)
+        if (ghoulTexture)
+        {
+            renderer.DrawTexturedQuad({ GLApp::width * 0.7f, GLApp::height * 0.5f }, { -400.f, 400.f }, ghoulTexture);
+        }
+        else
+        {
+            CrashHandler::Log("Ghoul texture missing; skipping draw!");
+        }
+
+        // PLAY text for button
+        if (playTexture)
+        {
+            renderer.DrawTexturedQuad({ GLApp::width * 0.3f, GLApp::height * 0.2f }, { 300.f, 150.f }, playTexture);
+        }
+        else
+        {
+            CrashHandler::Log("PLAY button texture missing; skipping draw!");
+        }
+
+        // QUIT text for button
+        if (quitTexture)
+        {
+            renderer.DrawTexturedQuad({ GLApp::width * 0.7f, GLApp::height * 0.2f }, { 300.f, 150.f }, quitTexture);
+        }
+        else
+        {
+            CrashHandler::Log("QUIT button texture missing; skipping draw!");
+        }
+    });
 }
 
 void MainMenu::Free()
 {
-    std::cout << "Main Menu Freed!!!" << std::endl;
+    CrashHandler::Safe("MainMenu", "Free", [&] {
+        std::cout << "Main Menu Freed!!!" << std::endl;
+        CrashHandler::Log("MainMenu::Free");
+    });
 }
 
 void MainMenu::Unload()
 {
-    std::cout << "Main Menu Unloaded!!!" << std::endl;
-    Render::GetInstance().UnloadTexture(titleTexture);
-    Render::GetInstance().UnloadTexture(rockTexture);
-    Render::GetInstance().UnloadTexture(ghoulTexture);
-    Render::GetInstance().UnloadTexture(playTexture);
-    Render::GetInstance().UnloadTexture(quitTexture);
+    Render& renderer = Render::GetInstance();
+    CrashHandler::Safe("MainMenu", "Unload", [&] {
+        std::cout << "Main Menu Unloaded!!!" << std::endl;
+        renderer.UnloadTexture(titleTexture);
+        renderer.UnloadTexture(rockTexture);
+        renderer.UnloadTexture(ghoulTexture);
+        renderer.UnloadTexture(playTexture);
+        renderer.UnloadTexture(quitTexture);
+
+        CrashHandler::Log("MainMenu::Unload");
+    });
 }

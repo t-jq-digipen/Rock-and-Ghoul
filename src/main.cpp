@@ -8,32 +8,57 @@
 #include "PlayerSystem.h"
 #include "PhysicsSystem.h"
 #include "ImguiSystem.h"
+#include "CrashHandler.h"
 
 int main() {
-    if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
-    CoreEngine& engine = CoreEngine::GetInstance();
-    Render& renderer = Render::GetInstance();
+    CrashHandler::SetLogPath("rockandghoul_crash.log");
+    CrashHandler::Install();
+    CrashHandler::Log("=== Rock & Ghoul starting ===");
 
-    // Create audio manager
-    AudioManager* audio = new AudioManager();
-    engine.AddSystem(audio);
-    MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
+    const int rc = CrashHandler::RunProtected([&]
+    {
+        if (!GLApp::init(1920, 1080, "Rock & Ghoul"))
+        {
+            CrashHandler::Log("GLApp::init failed");
+            return;
+        }
 
-    engine.AddSystem(new RenderSystem(renderer));
-    engine.AddSystem(new PlayerSystem());
-    engine.AddSystem(new PhysicsSystem());
-    engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
+        struct Cleanup
+        {
+            ~Cleanup() noexcept
+            {
+                GLApp::cleanup();
+                CrashHandler::Log("GLApp cleaned up");
+            }
+        } cleanup_guard;
 
-    // initialize all systems (this sets up FMOD, OpenGL, etc.)
-    engine.Initialize();
+        CoreEngine& engine = CoreEngine::GetInstance();
+        Render& renderer = Render::GetInstance();
 
-    std::cout << "GETS PAST ENGINE INIT\n";
+        // Create audio manager
+        AudioManager* audio = new AudioManager();
+        engine.AddSystem(audio);
+        MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
 
-    engine.Run();
-    std::cout << "GETS PAST ENGINE RUN\n";
+        engine.AddSystem(new RenderSystem(renderer));
+        engine.AddSystem(new PlayerSystem());
+        engine.AddSystem(new PhysicsSystem());
+        engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
 
-    engine.Shutdown();
+        // initialize all systems (this sets up FMOD, OpenGL, etc.)
+        engine.Initialize();
+        CrashHandler::Log("Engine initialized");
+        std::cout << "GETS PAST ENGINE INIT\n";
 
-    GLApp::cleanup();
-    return 0;
+        engine.Run();
+        CrashHandler::Log("Engine run returned");
+        std::cout << "GETS PAST ENGINE RUN\n";
+
+        engine.Shutdown();
+        CrashHandler::Log("Engine shutdown complete");
+    });
+
+    CrashHandler::Logf("Exiting with code %d", rc);
+    CrashHandler::Uninstall();
+    return rc;
 }
