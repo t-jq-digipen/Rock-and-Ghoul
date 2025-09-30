@@ -29,10 +29,6 @@ struct GLApp
   */
 {
 
-  static GLboolean keystateR;
-  static GLboolean keystateG;
-  static GLboolean keystateB;
-
   static bool init(GLint w, GLint h, std::string t);
   static void update();
   static void draw();

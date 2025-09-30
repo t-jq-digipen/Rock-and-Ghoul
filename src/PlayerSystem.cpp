@@ -101,8 +101,6 @@ void WASD_Movement(Entity eID, float& dt)
 	if (Input::IsKeyHeld(GLFW_KEY_A) && vel.x > -maxspeed) physics.AddForce({ -1.f,0.f }, accel);
 	if (Input::IsKeyHeld(GLFW_KEY_D) && vel.x < maxspeed) physics.AddForce({ 1.f,0.f }, accel);*/
 
-	
-
 
 }
 
@@ -122,6 +120,15 @@ void PlayerSystem::Update(float dt)
 			trans.Prevpos = trans.pos;
 			WASD_Movement(entity, dt);
 
+		}
+		if (Has_Component(entity, CT_Sprite)) {
+			auto& sprite = Get_SpriteComponent(entity);
+
+			if (Input::IsKeyHeld(GLFW_KEY_Q)) sprite.size.x += 100.f * dt;
+			if (Input::IsKeyHeld(GLFW_KEY_E)) sprite.size.x = std::max(10.f, sprite.size.x - 100.f * dt);
+
+			if (Input::IsKeyHeld(GLFW_KEY_R)) sprite.size.y += 100.f * dt;
+			if (Input::IsKeyHeld(GLFW_KEY_F)) sprite.size.y = std::max(10.f, sprite.size.y - 100.f * dt);
 		}
 	}
 }
