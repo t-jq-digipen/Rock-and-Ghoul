@@ -62,6 +62,8 @@ namespace Animator {
 		// If anim_duration == 0, use a single frame for this state
 		if (anim_duration == 0)
 		{
+			m_current_row = frames.row;
+			m_current_col = frames.col_start;
 			return;
 		}
 

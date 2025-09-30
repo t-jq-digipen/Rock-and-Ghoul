@@ -49,7 +49,7 @@ Entity Create_Waffle(float const& x, float const& y) {
     }
     {
         
-        Animator::AnimatorComponent temp(3, 6, {0,0,0}, 0.f);
+        Animator::AnimatorComponent temp(3, 6, {0,0,1}, 1.f);
         Add_Component(player, temp);
     }
     Add_Component(player, HealthComponent{ 100.f, 100.f });
