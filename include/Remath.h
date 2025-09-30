@@ -159,3 +159,4 @@ struct Vec3 {
 float Sqrt(float x);
 // Clamp a value between two values
 void Clamp(float& val, float const& min, float const& max);
+

@@ -288,9 +288,25 @@ GLuint Render::LoadTexture(const std::string& path) {
     // Cache it
     textureCache[path] = textureID;
 
+    // json
+    texturePathMap[textureID] = path;
+
     return textureID;
 }
 
+// helpers for json
+void Render::RegisterTexturePath(GLuint texID, const std::string& path) {
+    texturePathMap[texID] = path;
+}
+
+std::string Render::GetTexturePath(GLuint texID) const {
+    auto it = texturePathMap.find(texID);
+    if (it != texturePathMap.end()) {
+        return it->second;
+    }
+    return "";
+}
+// ====================
 void Render::UnloadTexture(const std::string& path) {
     auto it = textureCache.find(path);
     if (it != textureCache.end()) {

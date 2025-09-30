@@ -87,6 +87,10 @@ public:
     void UnloadTexture(GLuint textureID); //to follow current 
     void ClearAllTextures(); //can use this in the unload of each state etc.mainmenu unload, level1 unload
     
+    // amended helper functions for json bc they load the wrong texture for rock
+    void RegisterTexturePath(GLuint texID, const std::string& path);
+    std::string GetTexturePath(GLuint texID) const;
+
     //draw_font maybe later
     void InitTextRendering();
     void DrawText(std::string text, float x, float y, float scale, const Colour3& color); //use: text, position, size, color
@@ -112,6 +116,8 @@ private:
     std::unordered_map<std::string, GLuint> textureCache;
     std::unordered_map<std::string, Image> imageCache;
     std::map<char, Character> Characters;
+    // to load for json
+    std::unordered_map<GLuint, std::string> texturePathMap;
 
     Image CreateImageFromTexture(GLuint textureID, int width, int height, const std::string& path);
     

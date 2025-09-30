@@ -344,3 +344,21 @@ ComponentManager<TagComponent>&					CM_Tag()			{ return tag; }
 ComponentManager<InputComponent>&				CM_Input()			{ return input; }
 
 #pragma endregion COMPONENT
+
+std::unordered_map<Entity, std::string>& GetEntityNameMap() {
+	static std::unordered_map<Entity, std::string> entityNames;
+	return entityNames;
+}
+
+void SetEntityName(Entity eID, const std::string& name) {
+	GetEntityNameMap()[eID] = name;
+}
+
+std::string GetEntityName(Entity eID) {
+	auto& nameMap = GetEntityNameMap();
+	auto it = nameMap.find(eID);
+	if (it != nameMap.end()) {
+		return it->second;
+	}
+	return "Entity_" + std::to_string(eID);
+}
