@@ -432,6 +432,16 @@ GLuint Render::CreateProgramFromFiles(const std::string& vertPath, const std::st
     return prog;
 }
 
+std::string Render::Get_TexturePath(const GLuint& imgID)
+{
+    auto it = pathCache.find(imgID);
+    if (it != pathCache.end())
+    {
+        return it->second;
+    }
+    throw std::runtime_error("NO TEXTURE PATH??? WTF GO ASK JQ\n");
+    return{};
+}
 
 
 bool Render::IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height)

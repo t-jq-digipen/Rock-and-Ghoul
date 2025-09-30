@@ -33,6 +33,7 @@ namespace Sprite {
 		void Set_Size(float const& width, float const& height);
 		void Set_Size(Vec2 const& dimensions);
 		void Set_Animated(bool set);
+		std::string Get_TexturePath();
 
 		const Image& Get_Image() const;
 		const Vec2& Get_Scale() const;

@@ -36,6 +36,22 @@ std::string JsonLoad::Save_Transform(Entity eID) {
 //    };
 //    return j.dump();
 //}
+
+std::string JsonLoad::Save_Sprite(Entity eID) {
+    auto& s = Get_SpriteComponent(eID);
+
+    // Get texture path from the image
+    std::string texPath = s.Get_TexturePath();
+
+    json j = {
+        {"texturePath", texPath},
+        {"scaleX", s.Get_Scale().x},
+        {"scaleY", s.Get_Scale().y},
+        {"animated", s.IsAnimated()}
+    };
+    return j.dump();
+}
+
 std::string JsonLoad::Save_Shape(Entity eID) {
     auto& s = Get_ShapeComponent(eID);
     json j = {
@@ -156,6 +172,21 @@ void JsonLoad::Load_Shape(Entity eID, const std::string& data) {
 //    }
 //    Add_Component(eID, s);
 //}
+void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
+    json j = json::parse(data);
+
+    std::string texPath = j["texturePath"];
+    Vec2 scale;
+    scale.x = j["scaleX"];
+    scale.y = j["scaleY"];
+    bool animated = j["animated"];
+
+    // Create sprite component with the loaded data
+    if (!texPath.empty()) {
+        Sprite::SpriteComponent s(texPath, scale, animated);
+        Add_Component(eID, s);
+    }
+}
 
 void JsonLoad::Load_Physics(Entity eID, const std::string& data) {
     json j = json::parse(data);
@@ -222,9 +253,9 @@ SavedEntity JsonLoad::EntityToSaved(Entity eID) {
         saved.componentData[CT_Transform] = Save_Transform(eID);
     }
 
-    /*if (Has_Component(eID, CT_Sprite)) {
+    if (Has_Component(eID, CT_Sprite)) {
         saved.componentData[CT_Sprite] = Save_Sprite(eID);
-    }*/
+    }
 
     if (Has_Component(eID, CT_Physics)) {
         saved.componentData[CT_Physics] = Save_Physics(eID);
@@ -261,9 +292,9 @@ Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
             Load_Transform(e, data);
             break;
 
-       /* case CT_Sprite:
+       case CT_Sprite:
             Load_Sprite(e, data);
-            break;*/
+            break;
 
         case CT_Physics:
             Load_Physics(e, data);
