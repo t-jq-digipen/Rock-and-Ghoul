@@ -6,6 +6,7 @@
 AABB Set_AABB(Vec2 const& pos, Vec2 const& size)
 {
     AABB temp;
+    // dimension = dim (for saving in json)
     temp.dim = size;
     temp.min = { pos.x - size.x / 2.f, pos.y - size.y / 2.f };
     temp.max = { pos.x + size.x / 2.f, pos.y + size.y / 2.f };

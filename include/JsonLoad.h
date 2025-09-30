@@ -2,64 +2,54 @@
 #include "DataDefs.h"
 #include <nlohmann/json.hpp>
 #include <optional>
-#include <vector>
-
-// files to include in json
-#include "Component.h" 
-#include "Registry.h"    // For Has_Component, Get_Component, etc.
 #include "Entity.h"
-#include "Physics.h"
 
 using json = nlohmann::json;
 
 class JsonLoad {
 public:
-    // entity functions
-    static std::optional<SavedEntity> LoadEntity(const std::string& filepath);
-    static std::optional<std::vector<SavedEntity>> LoadEntities(const std::string& filepath);
-    static bool SaveEntity(const std::string& filepath, const SavedEntity& entity);
-    static bool SaveEntities(const std::string& filepath, const std::vector<SavedEntity>& entities);
+    // ===== MAIN FUNCTIONS =====
+    // Save all current entities to a scene file
+    static bool SaveCurrentScene(const std::string& filepath, const std::string& sceneName);
+    
+    // Clear all entities before loading (no cloning)
+    static void ClearAllEntities();
 
-    // map functions
-    static std::optional<SavedMap> LoadMap(const std::string& filepath);
-    static bool SaveMap(const std::string& filepath, const SavedMap& map);
+    // Load scene and create all entities
+    static bool LoadScene(const std::string& filepath);
 
-    // settings functions
-    static std::optional<GameSettings> LoadSettings(const std::string& filepath);
+    // Save game settings
     static bool SaveSettings(const std::string& filepath, const GameSettings& settings);
-
-    // create entity from saved data
-    static Entity CreateEntityFromSave(const SavedEntity& savedEntity);
+    static std::optional<GameSettings> LoadSettings(const std::string& filepath);
 
 private:
-    // conversion helpers
+    // Convert ECS entity to SavedEntity
+    static SavedEntity EntityToSaved(Entity eID);
+
+    // Create ECS entity from SavedEntity
+    static Entity SavedToEntity(const SavedEntity& saved);
+
+    // Component loaders
+    static void Load_Transform(Entity eID, const std::string& data);
+    static void Load_Sprite(Entity eID, const std::string& data);
+    static void Load_Physics(Entity eID, const std::string& data);
+    static void Load_Health(Entity eID, const std::string& data);
+    static void Load_Tag(Entity eID, const std::string& data);
+    static void Load_Input(Entity eID, const std::string& data);
+
+    // Component savers
+    static std::string Save_Transform(Entity eID);
+    static std::string Save_Sprite(Entity eID);
+    static std::string Save_Physics(Entity eID);
+    static std::string Save_Health(Entity eID);
+    static std::string Save_Tag(Entity eID);
+    static std::string Save_Input(Entity eID);
+
+    // JSON serialization
     static void to_json(json& j, const SavedEntity& e);
     static void from_json(const json& j, SavedEntity& e);
-
-    static void to_json(json& j, const SavedMap& m);
-    static void from_json(const json& j, SavedMap& m);
-
+    static void to_json(json& j, const SavedScene& s);
+    static void from_json(const json& j, SavedScene& s);
     static void to_json(json& j, const GameSettings& s);
     static void from_json(const json& j, GameSettings& s);
-
-    static std::string SerializeComponent(Entity eID, ComponentTypeID type);
-    static void DeserializeComponent(Entity eID, ComponentTypeID type, const std::string& data);
-
-    // component-specific serialization
-    //static std::string Serialize_Transform(const TransformComponent& comp);
-    //static std::string Serialize_Sprite(const SpriteComponent& comp);
-    //static std::string Serialize_Physics(const PhysicsComponent& comp);
-    //static std::string Serialize_Health(const HealthComponent& comp);
-    //static std::string Serialize_Tag(const TagComponent& comp);
-    //static std::string Serialize_Input(const InputComponent& comp);
-    //static std::string Serialize_BossGhoul(const BossGhoulComponent& comp);
-    //
-    //// component-specific deserialization
-    //static TransformComponent Deserialize_Transform(const std::string& data);
-    //static SpriteComponent Deserialize_Sprite(const std::string& data);
-    //static PhysicsComponent Deserialize_Physics(const std::string& data);
-    //static HealthComponent Deserialize_Health(const std::string& data);
-    //static TagComponent Deserialize_Tag(const std::string& data);
-    //static InputComponent Deserialize_Input(const std::string& data);
-    //static BossGhoulComponent Deserialize_BossGhoul(const std::string& data);
 };

@@ -1,37 +1,39 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "Component.h"
 
-// component to load from json file
-struct ComponentData {
-    ComponentTypeID type;
-    std::string jsonData;  // serialized component data
-};
-
-// json entity struct
+// Simple entity save structure - just ID and component data as strings
 struct SavedEntity {
     int id;
     std::string name;
-    std::string type;
-    float x, y;
-    int health;
-    std::unordered_map<ComponentTypeID, std::string> components;
-    SavedEntity() : id(0), name(""), type(""), x(0.0f), y(0.0f), health(100) {}
+    std::unordered_map<ComponentTypeID, std::string> componentData;
+
+    SavedEntity() : id(0), name("") {}
 };
 
-// json map struct
-struct SavedMap {
-    std::string name;
-    int width;
-    int height;
-    std::vector<std::vector<int>> tiles;
+struct SavedPhysics {
+    float velX, velY;
+    float decay;
+    bool willCollide;
+    // AABB data (center + dim for Set_AABB)
+    float aabbCenterX, aabbCenterY;
+    float aabbDimX, aabbDimY;
+    // Circle data
+    float circlePosX, circlePosY;
+    float circleRad;
+};
+
+// Scene/Level
+struct SavedScene {
+    std::string sceneName;
     std::vector<SavedEntity> entities;
 
-    SavedMap() : name(""), width(0), height(0) {}
+    SavedScene() : sceneName("Level1") {}
 };
 
-// json game settings struct
+// Game settings
 struct GameSettings {
     float volume;
     int resolutionWidth;
