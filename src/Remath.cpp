@@ -245,29 +245,6 @@ Vec3 Lerp(const Vec3& a, const Vec3& b, float t) {
 // UTILITY FUNCTIONS
 // ==============================================
 
-float Sqrt(float x) {
-    if (x < 0) { return 0; }
-    if (x == 0 || x == 1) { return x; }
-
-    float precision = 0.00001f;
-    float guess = x * 0.5f;
-    float abs;
-
-    for (int i = 0; i < 10; ++i) {
-        float newGuess = 0.5f * (guess + x / guess);
-
-        abs = (newGuess - guess < 0) ? -(newGuess - guess) : (newGuess - guess);
-
-        if (abs < precision) {
-            return newGuess;
-        }
-
-        guess = newGuess;
-    }
-
-    return guess;
-}
-
 void Clamp(float& val, float const& min, float const& max) {
     if (val > max) {
         val = max;
