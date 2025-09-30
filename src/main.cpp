@@ -12,17 +12,17 @@
 int main() {
     if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
     CoreEngine& engine = CoreEngine::GetInstance();
-    Render& renderer = Render::GetInstance();
+    // Render& renderer = Render::GetInstance();
 
     // Create audio manager
     AudioManager* audio = new AudioManager();
     engine.AddSystem(audio);
     MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
 
-    engine.AddSystem(new RenderSystem(renderer));
     engine.AddSystem(new PlayerSystem());
     engine.AddSystem(new PhysicsSystem());
     engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
+    engine.AddSystem(new RenderSystem());
 
     // initialize all systems (this sets up FMOD, OpenGL, etc.)
     engine.Initialize();

@@ -22,6 +22,7 @@ Entity ECSplayer{};
 Entity rock;
 Entity square;
 Entity roundy;
+Entity waffle;
 void Level1::Load()
 {
 
@@ -45,14 +46,13 @@ void Level1::Init()
 	fretboard->LoadTextures();
 	fretboard->StartGame();
 
+	// JQ COMMENT OUT HAHAHA
 	// 5. Create entities
-	if (!JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
-		
-		// Create with names (updated for json)
-		rock = Create_Player(200.f, 500.f, "Rock");
-		square = Create_Square(800.f, 500.f, "RedSquare");
-		roundy = Create_Circle(500.f, 500.f, "GreenCircle");
-	}
+	/*rock = Create_Player(200.f, 500.f);
+	square = Create_Square(800.f, 500.f);
+	roundy = Create_Circle(500.f, 500.f);*/
+	waffle = Create_Waffle(400.f, 400.f);
+	rock = Create_Player(200.f, 500.f);
 }
 
 void Level1::Update()
@@ -124,6 +124,10 @@ void Level1::Free()
 {
 	std::cout << "Level 1 Freed!!!" << std::endl;
 	JsonLoad::ClearAllEntities();
+	Remove_Entity(rock);
+	Remove_Entity(ECSplayer);
+	Remove_Entity(waffle);
+
 }
 
 void Level1::Unload()

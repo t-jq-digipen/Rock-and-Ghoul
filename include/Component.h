@@ -44,7 +44,9 @@ enum ComponentTypeID
 	// Tag					  
 	CT_Tag,				// 10	| Tag enumeration (should i use std::string? idk, think again another time)
 							  
-	CT_Input
+	CT_Input,
+
+	CT_Shape			//		| Shape enumeration for non-sprite drawing
 };
 
 
@@ -64,25 +66,19 @@ struct TransformComponent {
 
 // GRAPHICS
 // COMP_2
-
-enum ShapeType {
-	SHAPE_RECT = 0,
-	SHAPE_CIRCLE = 1,
-	SHAPE_TEXTURED = 2
-};
-
-struct SpriteComponent {
-	// Texture* tex;	// texture file (to check w reg/kerv)
-	unsigned int textureID = 0;   // OpenGL texture handle
-	Vec2 size	{ 50.0f, 50.0f }; // default size
-	Vec3 color	{ 1.0f, 1.0f, 1.0f}; // white (no tint)
-	ShapeType shape = SHAPE_TEXTURED;
-};
+//struct SpriteComponent {
+//	// Texture* tex;	// texture file (to check w reg/kerv)
+//	unsigned int textureID = 0;   // OpenGL texture handle
+//	Vec2 size	{ 50.0f, 50.0f }; // default size
+//	Vec3 color	{ 1.0f, 1.0f, 1.0f}; // white (no tint)
+//};
 
 // COMP_3
 struct AnimatorComponent {
-	std::string State;	// probably change to an enum for animstate later on? depending on animation states available...
-	float time;			// for anim timers
+	unsigned int total_cols, total_rows;
+	unsigned int curr_col, curr_row;
+
+	std::string state;
 };
 // GRAPHICS END
 
@@ -131,3 +127,13 @@ struct InputComponent {
 	ControlScheme scheme;
 };
 
+enum ShapeType {
+	SHAPE_RECTANGLE,
+	SHAPE_CIRCLE
+};
+
+struct ShapeComponent {
+	ShapeType shape;
+	Vec2 dimensions;	// default size
+	Vec3 color;			// white (no tint)
+};

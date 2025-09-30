@@ -137,6 +137,91 @@ source_group("BaseEngine\\CoreEngine" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CoreEngine.h
 )
 
+
+# BASE ENG SYSTEMS | FRAMERATE
+# =================================================
+source_group("BaseEngine\\BaseSystems\\FrameRateController" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
+)
+# ================================================= FRAMERATE
+
+# BASE ENG SYSTEMS | AUDIO
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Audio" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
+)
+# ================================================= AUDIO
+
+# BASE ENG SYSTEMS | GRAPHICS
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Graphics" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
+)
+
+source_group("BaseEngine\\BaseSystems\\Graphics\\Components" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
+)
+
+source_group("BaseEngine\\BaseSystems\\Graphics\\Render" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.cpp
+)
+# ================================================= GRAPHICS
+
+# BASE ENG SYSTEMS | INPUT
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Input" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
+)
+# ================================================= INPUT
+
+# BASE ENG SYSTEMS | DEBUG
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Debug" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Debug.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Debug.h
+)
+# ================================================= DEBUG
+
+# BASE ENG | MATH LIBRARY
+# =================================================
+source_group("BaseEngine\\Math" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
+)
+# ================================================= MATH
+
+# BASE ENG | EXPORT
+# =================================================
+source_group("Export" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
+)
+# ================================================= EXPORT
+
+# GSM
+# =================================================
+source_group("BaseEngine\\GSM" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
+)
+# ================================================= GSM
+
+# ECS
+# =================================================
+source_group("BaseEngine\\ECS\\Registry" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
+)
+# E
 source_group("BaseEngine\\ECS\\Entity" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp

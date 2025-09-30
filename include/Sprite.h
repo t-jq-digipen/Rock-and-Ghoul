@@ -21,10 +21,11 @@ namespace Sprite {
 	class SpriteComponent {
 	private:
 		Image	m_image;	// Image struct
-		Vec2	m_dim;		// Dimensions (width,height)
+		Vec2	m_scale;	// Independant image scaling
 		bool	m_anim;		// Bool if sprite is animated or static
 	public:
 		SpriteComponent();
+		SpriteComponent(std::string const& path, Vec2 scale_offset, bool anim = false);
 		SpriteComponent(Image const& image, float const& width, float const& height, bool anim = false);
 		SpriteComponent(Image const& image, Vec2 const& dimensions, bool anim = false);
 
@@ -34,7 +35,7 @@ namespace Sprite {
 		void Set_Animated(bool set);
 
 		const Image& Get_Image() const;
-		const Vec2& Get_Dimensions() const;
+		const Vec2& Get_Scale() const;
 		bool IsAnimated();
 		
 	};

@@ -120,15 +120,17 @@ void CollisionManager::CheckCollisions() {
             // collision shapes based on sprite textureID
             bool aIsCircle = false, bIsCircle = false;
 
-            if (Has_Component(a, CT_Sprite)) {
-                auto& spriteA = Get_SpriteComponent(a);
-                aIsCircle = (spriteA.shape == SHAPE_CIRCLE); // textureID 1 = circle
-            }
+            // JQ COMMENT OUT HAHAHA
+            //if (Has_Component(a, CT_Sprite)) {
+            //    auto& spriteA = Get_SpriteComponent(a);
+            //    aIsCircle = (spriteA.textureID == 1); // textureID 1 = circle
+            //}
 
-            if (Has_Component(b, CT_Sprite)) {
-                auto& spriteB = Get_SpriteComponent(b);
-                bIsCircle = (spriteB.shape == SHAPE_CIRCLE); // textureID 1 = circle
-            }
+            //if (Has_Component(b, CT_Sprite)) {
+            //    auto& spriteB = Get_SpriteComponent(b);
+            //    bIsCircle = (spriteB.textureID == 1); // textureID 1 = circle
+            //}
+            
             // collision n action
             if (!aIsCircle && !bIsCircle) {
                 if (CollisionIntersection_RectRect_Static(compA.Get_AABB(), compB.Get_AABB())) {

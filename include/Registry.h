@@ -44,6 +44,7 @@ COMPONENTS LIST: (ENUM IN COMPONENT.H)
 	7 | CT_Lifetime
 	8 | CT_Health
 	9 | CT_Tag
+	10| CT_Shape
 */
 
 
@@ -55,7 +56,7 @@ void Remove_Entity(Entity eID);
 
 // overloads for adding
 void Add_Component(Entity eID, TransformComponent			const& comp);
-void Add_Component(Entity eID, SpriteComponent				const& comp);
+void Add_Component(Entity eID, Sprite::SpriteComponent		const& comp);
 void Add_Component(Entity eID, AnimatorComponent			const& comp);
 void Add_Component(Entity eID, Physics::PhysicsComponent	const& comp);
 void Add_Component(Entity eID, AudioComponent				const& comp);
@@ -63,6 +64,7 @@ void Add_Component(Entity eID, LifetimeComponent			const& comp);
 void Add_Component(Entity eID, HealthComponent				const& comp);
 void Add_Component(Entity eID, TagComponent					const& comp);
 void Add_Component(Entity eID, InputComponent				const& comp);
+void Add_Component(Entity eID, ShapeComponent				const& comp);
 
 // overloads for removal
 void Remove_Component(Entity eID, ComponentTypeID const& cID);
@@ -73,7 +75,7 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID);
 
 // Gets the component of the entity from the specified type
 TransformComponent			& Get_TransformComponent(Entity eID);
-SpriteComponent				& Get_SpriteComponent(Entity eID);
+Sprite::SpriteComponent		& Get_SpriteComponent(Entity eID);
 AnimatorComponent			& Get_AnimatorComponent(Entity eID);
 Physics::PhysicsComponent	& Get_PhysicsComponent(Entity eID);
 AudioComponent				& Get_AudioComponent(Entity eID);
@@ -81,10 +83,11 @@ LifetimeComponent			& Get_LifetimeComponent(Entity eID);
 HealthComponent				& Get_HealthComponent(Entity eID);
 TagComponent				& Get_TagComponent(Entity eID);
 InputComponent				& Get_InputComponent(Entity eID);
+ShapeComponent				& Get_ShapeComponent(Entity eID);
 
 // Manager accessors
 ComponentManager<TransformComponent>		& CM_Transform();
-ComponentManager<SpriteComponent>			& CM_Sprite();
+ComponentManager<Sprite::SpriteComponent>	& CM_Sprite();
 ComponentManager<AnimatorComponent>			& CM_Animator();
 ComponentManager<Physics::PhysicsComponent>	& CM_Physics();
 ComponentManager<AudioComponent>			& CM_Audio();
@@ -92,6 +95,7 @@ ComponentManager<LifetimeComponent>			& CM_Lifetime();
 ComponentManager<HealthComponent>			& CM_Health();
 ComponentManager<TagComponent>				& CM_Tag();
 ComponentManager<InputComponent>			& CM_Input();
+ComponentManager<ShapeComponent>			& CM_Shape();
 
 // Component list accessor?
 
