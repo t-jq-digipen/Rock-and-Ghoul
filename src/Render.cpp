@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 Render* Render::instance = nullptr;
 
+
 // stb_image
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -15,6 +16,7 @@ Render* Render::instance = nullptr;
 // Vertex + Fragment shaders loaded from file in Assets, any changes to shader code to be done inside those fiels
 
 Render::Render() : vao(0), vbo(0), shaderProgram(0) {}
+
 Render::~Render() {
     if (vao) glDeleteVertexArrays(1, &vao);
     if (vbo) glDeleteBuffers(1, &vbo);
@@ -261,6 +263,7 @@ GLuint Render::LoadTexture(const std::string& path) {
         << ", channels=" << channels << ")" << std::endl;
     if (!data) {
         std::cerr << "Failed to load texture: " << path << std::endl;
+        throw std::runtime_error("TEXTURE CANNOT LOAD LA BOBO\n");
         return 0;
     }
 
@@ -287,6 +290,7 @@ GLuint Render::LoadTexture(const std::string& path) {
 
     // Cache it
     textureCache[path] = textureID;
+    pathCache[textureID] = path;
 
     return textureID;
 }
@@ -294,6 +298,7 @@ GLuint Render::LoadTexture(const std::string& path) {
 void Render::UnloadTexture(const std::string& path) {
     auto it = textureCache.find(path);
     if (it != textureCache.end()) {
+        pathCache.erase(it->second);
         glDeleteTextures(1, &it->second);
         textureCache.erase(it);
     }
@@ -304,6 +309,7 @@ void Render::UnloadTexture(GLuint textureID) {
     for (auto it = textureCache.begin(); it != textureCache.end(); ++it) {
         if (it->second == textureID) {
             std::cout << "Unloading texture ID: " << textureID << " from path: " << it->first << std::endl;
+            pathCache.erase(it->second);
             glDeleteTextures(1, &textureID);
             glBindTexture(GL_TEXTURE_2D, 0); // Unbind any texture
             textureCache.erase(it);
@@ -318,6 +324,7 @@ void Render::ClearAllTextures() {
     for (auto& pair : textureCache) {
         glDeleteTextures(1, &pair.second);
     }
+    pathCache.clear();
     textureCache.clear();
 }
 
@@ -418,17 +425,44 @@ bool Render::IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, 
 
 
 
-//Image stuff
-Image Render::LoadImage(const std::string& path) {
-    // Check if already in image cache
-    auto it = imageCache.find(path);
-    if (it != imageCache.end()) {
-        std::cout << "Image found in cache: " << path << std::endl;
-        return it->second;
-    }
+////Image stuff
+//Image Render::LoadImage(const std::string& path) {
+//    // Check if already in image cache
+//    auto it = imageCache.find(path);
+//    if (it != imageCache.end()) {
+//        std::cout << "Image found in cache: " << path << std::endl;
+//        return it->second;
+//    }
+//
+//    // Load texture using existing method
+//    GLuint textureID = LoadTexture(path);
+//    if (textureID == 0) {
+//        std::cout << "Failed to load image: " << path << std::endl;
+//        return Image(); // Return invalid image
+//    }
+//
+//    // Get texture dimensions
+//    int width, height;
+//    glBindTexture(GL_TEXTURE_2D, textureID);
+//    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+//    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+//    glBindTexture(GL_TEXTURE_2D, 0);
+//
+//    Image image = CreateImageFromTexture(textureID, width, height, path);
+//    imageCache[path] = image; //store in cache
+//
+//    std::cout << "Loaded image: " << path << " (" << width << "x" << height << ")" << std::endl;
+//    return image;
+//}
 
-    // Load texture using existing method
-    GLuint textureID = LoadTexture(path);
+//Image stuff
+Image CreateImage(const std::string& path) {
+
+    // Load texture using existing method 
+    // Will give you existing GLuint if exists in cache,
+    // otherwise, creates a new GLuint, caches it and the path,
+    // then returns you the GLuint of the new texture
+    GLuint textureID = Render::GetInstance().LoadTexture(path);
     if (textureID == 0) {
         std::cout << "Failed to load image: " << path << std::endl;
         return Image(); // Return invalid image
@@ -441,11 +475,10 @@ Image Render::LoadImage(const std::string& path) {
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    Image image = CreateImageFromTexture(textureID, width, height, path);
-    imageCache[path] = image; //store in cache
+    Image temp = { textureID, width, height };
 
     std::cout << "Loaded image: " << path << " (" << width << "x" << height << ")" << std::endl;
-    return image;
+    return temp;
 }
 
 void Render::DrawImage(const Image& image, float x, float y) {
@@ -454,7 +487,7 @@ void Render::DrawImage(const Image& image, float x, float y) {
     }
 
     Vec2 pos(x, y);
-    Vec2 scale(static_cast<float>(image.width), static_cast<float>(image.height));
+    Vec2 scale(static_cast<float>(image.widthPixels), static_cast<float>(image.heightPixels));
     DrawTexturedQuad(pos, scale, image.textureID);
 }
 
@@ -474,8 +507,8 @@ void Render::DrawImageScaled(const Image& image, float x, float y, float scaleX,
     
     }
 
-    float w = image.width * scaleX;
-    float h = image.height * scaleY;
+    float w = image.widthPixels * scaleX;
+    float h = image.heightPixels * scaleY;
     Draw_SpecImage(image, x, y, w, h);
 }
 
@@ -492,7 +525,7 @@ void Render::DrawImageRotated(const Image& image, float x, float y, float angleR
 
     // upload transform
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), x, y);
-    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), (float)image.width, (float)image.height);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), (float)image.widthPixels, (float)image.heightPixels);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), angleRad);
 
     // bind texture + draw
@@ -556,44 +589,44 @@ void Render::DrawImageSub(const Image& Image,
 
 
 int Render::GetImageWidth(const Image& image) const {
-    return image.width;
+    return image.widthPixels;
 }
 
 int Render::GetImageHeight(const Image& image) const {
-    return image.height;
+    return image.heightPixels;
 }
 
-void Render::UnloadImage(Image& image) {
-    if (!image.IsValid()) {
-        return;
-    }
+//void Render::UnloadImage(Image& image) {
+//    if (!image.IsValid()) {
+//        return;
+//    }
+//
+//    // Remove from cache
+//    imageCache.erase(image.path);
+//
+//    // Unload the texture
+//    UnloadTexture(image.textureID);
+//
+//    // Invalidate the image
+//    image.textureID = 0;
+//    image.width = 0;
+//    image.height = 0;
+//    image.path.clear();
+//
+//    std::cout << "Unloaded image: " << image.path << std::endl;
+//}
 
-    // Remove from cache
-    imageCache.erase(image.path);
+//void Render::ClearAllImages() {
+//    for (auto& pair : imageCache) {
+//        UnloadTexture(pair.second.textureID);
+//    }
+//    imageCache.clear();
+//    std::cout << "All images cleared from cache" << std::endl;
+//}
 
-    // Unload the texture
-    UnloadTexture(image.textureID);
-
-    // Invalidate the image
-    image.textureID = 0;
-    image.width = 0;
-    image.height = 0;
-    image.path.clear();
-
-    std::cout << "Unloaded image: " << image.path << std::endl;
-}
-
-void Render::ClearAllImages() {
-    for (auto& pair : imageCache) {
-        UnloadTexture(pair.second.textureID);
-    }
-    imageCache.clear();
-    std::cout << "All images cleared from cache" << std::endl;
-}
-
-Image Render::CreateImageFromTexture(GLuint textureID, int width, int height, const std::string& path) {
-    return Image(textureID, width, height, path);
-}
+//Image Render::CreateImageFromTexture(GLuint textureID, int width, int height, const std::string& path) {
+//    return Image(textureID, width, height, path);
+//}
 
 
 //text rendering

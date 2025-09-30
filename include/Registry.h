@@ -55,7 +55,7 @@ void Remove_Entity(Entity eID);
 
 // overloads for adding
 void Add_Component(Entity eID, TransformComponent			const& comp);
-void Add_Component(Entity eID, SpriteComponent				const& comp);
+void Add_Component(Entity eID, Sprite::SpriteComponent		const& comp);
 void Add_Component(Entity eID, AnimatorComponent			const& comp);
 void Add_Component(Entity eID, Physics::PhysicsComponent	const& comp);
 void Add_Component(Entity eID, AudioComponent				const& comp);
@@ -73,7 +73,7 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID);
 
 // Gets the component of the entity from the specified type
 TransformComponent			& Get_TransformComponent(Entity eID);
-SpriteComponent				& Get_SpriteComponent(Entity eID);
+Sprite::SpriteComponent		& Get_SpriteComponent(Entity eID);
 AnimatorComponent			& Get_AnimatorComponent(Entity eID);
 Physics::PhysicsComponent	& Get_PhysicsComponent(Entity eID);
 AudioComponent				& Get_AudioComponent(Entity eID);
@@ -84,7 +84,7 @@ InputComponent				& Get_InputComponent(Entity eID);
 
 // Manager accessors
 ComponentManager<TransformComponent>		& CM_Transform();
-ComponentManager<SpriteComponent>			& CM_Sprite();
+ComponentManager<Sprite::SpriteComponent>	& CM_Sprite();
 ComponentManager<AnimatorComponent>			& CM_Animator();
 ComponentManager<Physics::PhysicsComponent>	& CM_Physics();
 ComponentManager<AudioComponent>			& CM_Audio();

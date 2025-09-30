@@ -11,17 +11,17 @@
 // Image structure to hold texture data 
 struct Image {
     GLuint textureID;
-    int width;
-    int height;
-    std::string path;
+    int widthPixels;
+    int heightPixels;
 
-    Image() : textureID(0), width(0), height(0) {}
-    Image(GLuint id, int w, int h, const std::string& p)
-        : textureID(id), width(w), height(h), path(p) {
-    }
+    Image() : textureID(0), widthPixels{ 0 }, heightPixels{ 0 } {}
+    Image(GLuint const& texID, int const& widthpx, int const& heightpx) : textureID(texID), widthPixels(widthpx), heightPixels(heightpx) {}
 
+    
     bool IsValid() const { return textureID != 0; }
 };
+
+Image CreateImage(const std::string& path);
 
 //struct for each individual text
 struct Character {
@@ -32,6 +32,14 @@ struct Character {
 };
 
 class Render {
+private:
+
+    /*Render();
+
+    Render(const Render&)               = delete;
+    Render& operator=(const Render&)    = delete;
+
+    ~Render();*/
 public:
     static Render& GetInstance() {
         if (!instance) {
@@ -39,6 +47,11 @@ public:
         }
         return *instance;
     }
+
+    /*static Render& GetInstance() {
+        static Render instance;
+        return instance;
+    }*/
 
     static void DestroyInstance() {
         delete instance;
@@ -60,7 +73,7 @@ public:
 
 
     //Image/Texture
-    Image LoadImage(const std::string& path);                    // something like CP_Image_Load
+    // Image LoadImage(const std::string& path);                    // something like CP_Image_Load
     void DrawImage(const Image& image, float x, float y);        // something like CP_Image_Draw
     void Draw_SpecImage(const Image& image, float x, float y, float w, float h); // draw image to given width, height
 
@@ -77,8 +90,8 @@ public:
     void DrawImageRotated(const Image& image, float x, float y, float angle); //note that angles u input must be in radians
     int GetImageWidth(const Image& image) const;                 // get the image width
     int GetImageHeight(const Image& image) const;                // get the height
-    void UnloadImage(Image& image);
-    void ClearAllImages();
+    /*void UnloadImage(Image& image);
+    void ClearAllImages();*/
 
 
     //Image/Texture actions (texture caching maybe)
@@ -95,6 +108,7 @@ public:
 
     bool IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height);
 
+
 private:
     static Render* instance;
     Render();
@@ -110,10 +124,11 @@ private:
 
     //texture cache (allow multiple to share common sprite)
     std::unordered_map<std::string, GLuint> textureCache;
-    std::unordered_map<std::string, Image> imageCache;
+    // std::unordered_map<std::string, Image> imageCache;
+    std::unordered_map<GLuint, std::string> pathCache;
     std::map<char, Character> Characters;
 
-    Image CreateImageFromTexture(GLuint textureID, int width, int height, const std::string& path);
+    // Image CreateImageFromTexture(GLuint textureID, int width, int height, const std::string& path);
     
 
 };

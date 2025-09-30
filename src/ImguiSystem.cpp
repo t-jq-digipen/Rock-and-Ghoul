@@ -24,13 +24,14 @@ namespace {
             name = std::string(tagName) + " " + std::to_string(e);
         }
 
+        // JQ COMMENT OUT HAHAHA
         // If it has a sprite, append a hint (textured / square / circle)
-        if (Has_Component(e, CT_Sprite)) {
+        /*if (Has_Component(e, CT_Sprite)) {
             auto& s = Get_SpriteComponent(e);
             if (s.textureID == 0)      name += "  [Square]";
             else if (s.textureID == 1) name += "  [Circle]";
             else                       name += "  [Textured]";
-        }
+        }*/
 
         return name;
     }
@@ -191,7 +192,8 @@ void ImGuiSystem::ShowHierarchyWindow() {
         }
     }
 
-    ImGui::Separator();
+    // JQ COMMENT OUT HAHAHA
+    /*ImGui::Separator();
     ImGui::Text("Create:");
     if (ImGui::Button("Add Player")) {
         selectedEntity = Create_Player(200.f, 200.f);
@@ -203,7 +205,7 @@ void ImGuiSystem::ShowHierarchyWindow() {
     ImGui::SameLine();
     if (ImGui::Button("Add Circle")) {
         selectedEntity = Create_Circle(600.f, 200.f);
-    }
+    }*/
 
     ImGui::End();
 }
@@ -234,8 +236,9 @@ void ImGuiSystem::ShowInspectorWindow() {
         }
     }
 
+    // JQ COMMENT OUT HAHAHA
     // --- Sprite ---
-    if (Has_Component(selectedEntity, CT_Sprite)) {
+    /*if (Has_Component(selectedEntity, CT_Sprite)) {
         auto& s = Get_SpriteComponent(selectedEntity);
         if (ImGui::TreeNode("Sprite")) {
             ImGui::Text("Texture ID: %u", s.textureID);
@@ -244,7 +247,7 @@ void ImGuiSystem::ShowInspectorWindow() {
             ImGui::ColorEdit3("Tint", &s.color.x);
             ImGui::TreePop();
         }
-    }
+    }*/
 
     // --- Physics ---
     if (Has_Component(selectedEntity, CT_Physics)) {
@@ -285,7 +288,8 @@ void ImGuiSystem::ShowInspectorWindow() {
 
     ImGui::Separator();
 
-    if (ImGui::Button("Clone")) {
+    // JQ COMMENT OUT HAHAHA
+    /*if (ImGui::Button("Clone")) {
         if (Has_Component(selectedEntity, CT_Sprite)) {
             auto& s = Get_SpriteComponent(selectedEntity);
             if (s.textureID == 0)      selectedEntity = Create_Square(400.f, 200.f);
@@ -295,7 +299,7 @@ void ImGuiSystem::ShowInspectorWindow() {
         else {
             selectedEntity = Create_Player(200.f, 200.f);
         }
-    }
+    }*/
     ImGui::SameLine();
     if (ImGui::Button("Delete")) {
         Remove_Entity(selectedEntity);

@@ -170,6 +170,7 @@ source_group("BaseEngine\\BaseSystems\\Graphics\\Render" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.cpp
 )
 # ================================================= GRAPHICS
 

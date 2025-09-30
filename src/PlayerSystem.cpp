@@ -124,17 +124,18 @@ void PlayerSystem::Update(float dt)
 			WASD_Movement(entity, dt);
 
 		}
-		if (Has_Component(entity, CT_Sprite)) {
-			auto& sprite = Get_SpriteComponent(entity);
+		// JQ COMMENT OUT HAHAHA
+		//if (Has_Component(entity, CT_Sprite)) {
+		//	auto& sprite = Get_SpriteComponent(entity);
 
-			if (Input::IsKeyHeld(GLFW_KEY_Q)) sprite.size.x += 100.f * dt;
-			if (Input::IsKeyHeld(GLFW_KEY_E)) sprite.size.x = std::max(10.f, sprite.size.x - 100.f * dt);
+		//	if (Input::IsKeyHeld(GLFW_KEY_Q)) sprite.size.x += 100.f * dt;
+		//	if (Input::IsKeyHeld(GLFW_KEY_E)) sprite.size.x = std::max(10.f, sprite.size.x - 100.f * dt);
 
-			if (Input::IsKeyHeld(GLFW_KEY_R)) sprite.size.y += 100.f * dt;
-			if (Input::IsKeyHeld(GLFW_KEY_F)) sprite.size.y = std::max(10.f, sprite.size.y - 100.f * dt);
+		//	if (Input::IsKeyHeld(GLFW_KEY_R)) sprite.size.y += 100.f * dt;
+		//	if (Input::IsKeyHeld(GLFW_KEY_F)) sprite.size.y = std::max(10.f, sprite.size.y - 100.f * dt);
 
-			if (Input::IsKeyHeld(GLFW_KEY_Z)) trans.rot -= 90.f * dt; // counter-clockwise
-			if (Input::IsKeyHeld(GLFW_KEY_X)) trans.rot += 90.f * dt; // clockwise
-		}
+		//	if (Input::IsKeyHeld(GLFW_KEY_Z)) trans.rot -= 90.f * dt; // counter-clockwise
+		//	if (Input::IsKeyHeld(GLFW_KEY_X)) trans.rot += 90.f * dt; // clockwise
+		//}
 	}
 }

@@ -2,7 +2,27 @@
 #include "EntityCreation.h"
 #include "Render.h"
 
-Entity Create_Player(float x, float y) {
+//Entity Create_Player(float x, float y) {
+//    Entity player = Create_Entity();
+//    Add_Component(player, TransformComponent{ {x, y}, {100.f, 100.f} });
+//
+//    {
+//        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
+//        Circle circle = { {x,y},200.f };
+//        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
+//        Add_Component(player, temp);
+//    }
+//
+//    //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
+//    Add_Component(player, InputComponent{ CS_WASD });
+//    Add_Component(player, TagComponent{ T_PLAYER });
+//    GLuint tex = Render::GetInstance().LoadTexture("../Assets/Rock_FightingPose_2048px.png");
+//    Add_Component(player, SpriteComponent{ tex, {400.f, 400.f} });
+//    Add_Component(player, HealthComponent{ 100.f, 100.f });
+//    return player;
+//}
+
+Entity Create_Waffle(float const& x, float const& y) {
     Entity player = Create_Entity();
     Add_Component(player, TransformComponent{ {x, y}, {100.f, 100.f} });
 
@@ -16,47 +36,50 @@ Entity Create_Player(float x, float y) {
     //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
     Add_Component(player, InputComponent{ CS_WASD });
     Add_Component(player, TagComponent{ T_PLAYER });
-    GLuint tex = Render::GetInstance().LoadTexture("../Assets/Rock_FightingPose_2048px.png");
-    Add_Component(player, SpriteComponent{ tex, {400.f, 400.f} });
+
+    Image temp = CreateImage("../Assets/Waffle_Sprites.png");
+    Add_Component(player, Sprite::SpriteComponent{ temp, {1.f,1.f } });
+
     Add_Component(player, HealthComponent{ 100.f, 100.f });
     return player;
 }
 
-Entity Create_Square(float x, float y) {
-    Entity square = Create_Entity();
-    Add_Component(square, TransformComponent{ {x, y}, {100.f, 100.f} });
+//Entity Create_Square(float x, float y) {
+//    Entity square = Create_Entity();
+//    Add_Component(square, TransformComponent{ {x, y}, {100.f, 100.f} });
+//
+//    {
+//        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
+//        Circle circle = { {x,y},200.f };
+//        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
+//        Add_Component(square, temp);
+//    }
+//
+//    //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
+//    Add_Component(square, InputComponent{ CS_IJKL });
+//    Add_Component(square, TagComponent{ T_PLAYER });
+//    Add_Component(square, SpriteComponent{ 0, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
+//    Add_Component(square, HealthComponent{ 100.f, 100.f });
+//    return square;
+//}
 
-    {
-        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
-        Circle circle = { {x,y},200.f };
-        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-        Add_Component(square, temp);
-    }
-
-    //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
-    Add_Component(square, InputComponent{ CS_IJKL });
-    Add_Component(square, TagComponent{ T_PLAYER });
-    Add_Component(square, SpriteComponent{ 0, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
-    Add_Component(square, HealthComponent{ 100.f, 100.f });
-    return square;
-}
-
-Entity Create_Circle(float x, float y) {
-    Entity round = Create_Entity();
-    Add_Component(round, TransformComponent{ {x, y}, {100.f, 100.f} });
-    {
-        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
-        Circle circle = { {x,y},100.f };
-        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-        Add_Component(round, temp);  // round refers to the entity
-    }
-
-    Add_Component(round, InputComponent{ CS_ARROWS });
-    Add_Component(round, TagComponent{ T_PLAYER });
-    Add_Component(round, SpriteComponent{ 1, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} }); // textureID=1 for circle, green color
-    Add_Component(round, HealthComponent{ 100.f, 100.f });
-    return round;
-}
+//Entity Create_Circle(float x, float y) {
+//    Entity round = Create_Entity();
+//    Add_Component(round, TransformComponent{ {x, y}, {100.f, 100.f} });
+//    {
+//        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
+//        Circle circle = { {x,y},100.f };
+//        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
+//        Add_Component(round, temp);  // round refers to the entity
+//    }
+//
+//    Add_Component(round, InputComponent{ CS_ARROWS });
+//    Add_Component(round, TagComponent{ T_PLAYER });
+//    Add_Component(round, SpriteComponent{ 1, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} }); // textureID=1 for circle, green color
+//    Add_Component(round, HealthComponent{ 100.f, 100.f });
+//    return round;
+//}
+// 
 //Entity Create_Ghoul(float x, float y) {oe
 //    Entity ghoul = Create_Entity();
 //
