@@ -113,10 +113,13 @@ void PlayerSystem::Update(float dt)
 {
 	for (auto& [entity, comp] : CM_Tag().getComponents())
 	{
+		if (!Has_Component(entity, CT_Transform))
+			continue;
+
+		auto& trans = Get_TransformComponent(entity);
 		if (comp.tag == T_PLAYER)
 		{
-			// THIS IS A PLAYER, DO PLAYER THINGS!
-			auto& trans = Get_TransformComponent(entity);
+			// THIS IS A PLAYER, DO PLAYER THINGS
 			trans.Prevpos = trans.pos;
 			WASD_Movement(entity, dt);
 
@@ -129,6 +132,9 @@ void PlayerSystem::Update(float dt)
 
 			if (Input::IsKeyHeld(GLFW_KEY_R)) sprite.size.y += 100.f * dt;
 			if (Input::IsKeyHeld(GLFW_KEY_F)) sprite.size.y = std::max(10.f, sprite.size.y - 100.f * dt);
+
+			if (Input::IsKeyHeld(GLFW_KEY_Z)) trans.rot -= 90.f * dt; // counter-clockwise
+			if (Input::IsKeyHeld(GLFW_KEY_X)) trans.rot += 90.f * dt; // clockwise
 		}
 	}
 }
