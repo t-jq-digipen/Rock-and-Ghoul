@@ -4,7 +4,8 @@
 #include "CoreEngine.h"
 #include "EntityCreation.h"
 #include "Input.h"
-
+#include "JsonLoad.h"
+#include "FilePath.h"
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
@@ -32,7 +33,21 @@ namespace {
             else if (s.textureID == 1) name += "  [Circle]";
             else                       name += "  [Textured]";
         }*/
-
+        if (Has_Component(e, CT_Shape)) {
+            auto& s = Get_ShapeComponent(e);
+            if (s.shape == SHAPE_RECTANGLE) {
+                name += "  [Square]";
+            }
+            else if (s.shape == SHAPE_CIRCLE) {
+                name += "  [Circle]";
+            }
+        }
+        else if (Has_Component(e, CT_Sprite)) {
+            // Try to identify sprite type by name or other properties
+            std::string entName = GetEntityName(e);
+            name += "  [Textured]";
+        
+        }
         return name;
     }
 
@@ -174,6 +189,24 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
         }
     }
 
+    ImGui::Separator();
+    ImGui::Text("Scene Management:");
+
+    if (ImGui::Button("Save Scene (F5)")) {
+        JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "Level1");
+        std::cout << "Scene saved from ImGui!" << std::endl;
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Load Scene (F9)")) {
+        JsonLoad::ClearAllEntities();
+        if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
+            std::cout << "Scene loaded from ImGui!" << std::endl;
+        }
+        else {
+            std::cout << "Failed to load scene!" << std::endl;
+        }
+    }
     ImGui::End();
 }
 
@@ -193,19 +226,19 @@ void ImGuiSystem::ShowHierarchyWindow() {
     }
 
     // JQ COMMENT OUT HAHAHA
-    /*ImGui::Separator();
+    ImGui::Separator();
     ImGui::Text("Create:");
     if (ImGui::Button("Add Player")) {
         selectedEntity = Create_Player(200.f, 200.f);
     }
     ImGui::SameLine();
-    if (ImGui::Button("Add Square")) {
-        selectedEntity = Create_Square(400.f, 200.f);
+    if (ImGui::Button("Add Rectangle")) {
+        selectedEntity = Create_Shape(400.f, 200.f, SHAPE_RECTANGLE, CS_IJKL);
     }
     ImGui::SameLine();
     if (ImGui::Button("Add Circle")) {
-        selectedEntity = Create_Circle(600.f, 200.f);
-    }*/
+        selectedEntity = Create_Shape(600.f, 200.f, SHAPE_CIRCLE, CS_ARROWS);
+    }
 
     ImGui::End();
 }
@@ -248,7 +281,28 @@ void ImGuiSystem::ShowInspectorWindow() {
             ImGui::TreePop();
         }
     }*/
+    // --- Sprite ---
+    if (Has_Component(selectedEntity, CT_Sprite)) {
+        auto& s = Get_SpriteComponent(selectedEntity);
+        if (ImGui::TreeNode("Sprite")) {
+            // Display texture path (read-only)
+            std::string texPath = s.Get_TexturePath();
+            ImGui::Text("Texture: %s", texPath.c_str());
 
+            //scale/dimensions
+            Vec2 scale = s.Get_Scale();
+            if (ImGui::DragFloat2("Scale", &scale.x, 0.01f, 0.01f, 10.0f)) {
+                s.Set_Size(scale);
+            }
+
+            // if animated
+            bool animated = s.IsAnimated();
+            ImGui::Checkbox("Animated", &animated);
+            s.Set_Animated(animated);
+
+            ImGui::TreePop();
+        }
+    }
     // --- Physics ---
     if (Has_Component(selectedEntity, CT_Physics)) {
         auto& p = Get_PhysicsComponent(selectedEntity);
@@ -257,6 +311,19 @@ void ImGuiSystem::ShowInspectorWindow() {
             auto aabb = p.Get_AABB();
             auto circ = p.Get_Circle();
             ImGui::Checkbox("Collision Active", const_cast<bool*>(&p.CollisionActive())); // if your API allows toggling, change to setter
+            //Edit AABB size
+            Vec2 aabbSize = aabb.dim;
+            if (ImGui::DragFloat2("AABB Size", &aabbSize.x, 1.0f, 10.0f, 1000.0f)) {
+                auto& trans = Get_TransformComponent(selectedEntity);
+                AABB newAABB = Set_AABB(trans.pos, aabbSize);
+                p.Set_AABB(newAABB);
+            }
+            float circRad = circ.rad;
+            if (ImGui::DragFloat("Circle Radius", &circRad, 1.0f, 10.0f, 500.0f)) {
+                Circle newCircle = circ;
+                newCircle.rad = circRad;
+                p.Set_Circle(newCircle);
+            }
             ImGui::Text("AABB: (%.1f, %.1f) -> (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
             ImGui::Text("Circle: center(%.1f, %.1f), r=%.1f", circ.pos.x, circ.pos.y, circ.rad);
             ImGui::TreePop();
@@ -286,26 +353,90 @@ void ImGuiSystem::ShowInspectorWindow() {
         }
     }
 
-    ImGui::Separator();
-
     // JQ COMMENT OUT HAHAHA
     /*if (ImGui::Button("Clone")) {
         if (Has_Component(selectedEntity, CT_Sprite)) {
             auto& s = Get_SpriteComponent(selectedEntity);
-            if (s.textureID == 0)      selectedEntity = Create_Square(400.f, 200.f);
-            else if (s.textureID == 1) selectedEntity = Create_Circle(600.f, 200.f);
+            if (s.shape == SHAPE_RECT)      selectedEntity = Create_Square(400.f, 200.f);
+            else if (s.shape == SHAPE_CIRCLE) selectedEntity = Create_Circle(600.f, 200.f);
             else                       selectedEntity = Create_Player(200.f, 200.f);
         }
         else {
             selectedEntity = Create_Player(200.f, 200.f);
         }
     }*/
-    ImGui::SameLine();
-    if (ImGui::Button("Delete")) {
-        Remove_Entity(selectedEntity);
-        selectedEntity = INVALID_ENTITY;
+
+    ImGui::Separator();
+    if (ImGui::Button("Clone")) {
+        Entity clone = Create_Entity();
+
+        // Copy Transform
+        if (Has_Component(selectedEntity, CT_Transform)) {
+            auto& t = Get_TransformComponent(selectedEntity);
+            TransformComponent newT = t;
+            newT.pos.x += 50.f;  // so it's not exactly on top
+            Add_Component(clone, newT);
+        }
+
+        // Copy Physics
+        if (Has_Component(selectedEntity, CT_Physics)) {
+            auto& p = Get_PhysicsComponent(selectedEntity);
+            auto aabb = p.Get_AABB();
+            auto circle = p.Get_Circle();
+            Physics::PhysicsComponent newP(0.015f, p.CollisionActive(), aabb, circle);
+            Add_Component(clone, newP);
+        }
+
+        // Copy Shape
+        if (Has_Component(selectedEntity, CT_Shape)) {
+            auto& s = Get_ShapeComponent(selectedEntity);
+            Add_Component(clone, ShapeComponent{ s.shape, s.dimensions, s.color });
+        }
+
+        // Copy Sprite
+        if (Has_Component(selectedEntity, CT_Sprite)) {
+            auto& s = Get_SpriteComponent(selectedEntity);
+            Add_Component(clone, s);  // Copy entire sprite component
+        }
+
+        // Copy Tag
+        if (Has_Component(selectedEntity, CT_Tag)) {
+            auto& tag = Get_TagComponent(selectedEntity);
+            Add_Component(clone, tag);
+        }
+
+        // Copy Input
+        if (Has_Component(selectedEntity, CT_Input)) {
+            auto& inp = Get_InputComponent(selectedEntity);
+            Add_Component(clone, inp);
+        }
+
+        //// Copy Health
+        //if (Has_Component(selectedEntity, CT_Health)) {
+        //    auto& h = Get_HealthComponent(selectedEntity);
+        //    Add_Component(clone, h);
+        //}
+
+        selectedEntity = clone;  // Select the new clone
     }
 
+    ImGui::SameLine();
+    if (ImGui::Button("Delete")) {
+        if (selectedEntity <= 3) {
+            ImGui::OpenPopup("Protected Entity");
+        }
+        else {
+            Remove_Entity(selectedEntity);
+            selectedEntity = INVALID_ENTITY;
+        }
+    }
+    if (ImGui::BeginPopup("Protected Entity")) {
+        ImGui::Text("Cannot delete original Entities!");
+        if (ImGui::Button("OK")) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
     ImGui::End();
 }
 

@@ -10,6 +10,9 @@
 #include "CoreEngine.h"
 #include "RenderSystem.h"
 #include "EntityCreation.h"
+#include "JsonLoad.h"
+#include "FilePath.h"
+
 
 static FretBoard* fretboard = nullptr;
 
@@ -50,12 +53,35 @@ void Level1::Init()
 	roundy = Create_Circle(500.f, 500.f);*/
 	waffle = Create_Waffle(400.f, 400.f);
 	rock = Create_Player(200.f, 500.f);
+	square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
+	roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
 }
 
 void Level1::Update()
 {
 	//std::cout << "Level 1 Updating!!!" << std::endl;
+	// Save scene on F5
+	if (Input::IsKeyPressed(GLFW_KEY_F5)) {
+		JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "Level1");
+		std::cout << "Scene saved!" << std::endl;
+	}
 
+	// Load scene on F9
+	if (Input::IsKeyPressed(GLFW_KEY_F9)) {
+		// IMPORTANT: Clear existing entities first
+		JsonLoad::ClearAllEntities();
+
+		if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
+			std::cout << "Scene loaded successfully!" << std::endl;
+		}
+		else {
+			std::cout << "Failed to load scene!" << std::endl;
+			// Recreate default entities if load failed
+			rock = Create_Player(200.f, 500.f);
+			square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
+			roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
+		}
+	}
 	// to test game state changes
 	if (Input::IsKeyPressed(GLFW_KEY_M))
 	{
@@ -99,6 +125,7 @@ void Level1::Draw()
 void Level1::Free()
 {
 	std::cout << "Level 1 Freed!!!" << std::endl;
+	JsonLoad::ClearAllEntities();
 	Remove_Entity(rock);
 	Remove_Entity(ECSplayer);
 	Remove_Entity(waffle);

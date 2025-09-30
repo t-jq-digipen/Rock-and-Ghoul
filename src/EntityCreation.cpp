@@ -1,9 +1,12 @@
-
 #include "EntityCreation.h"
 #include "Render.h"
 
 Entity Create_Player(float const& x, float const& y) {
     Entity player = Create_Entity();
+
+    //static std::unordered_map<Entity, std::string>& nameMap = GetEntityNameMap();
+    //nameMap[player] = name;
+
     Add_Component(player, TransformComponent{ {x, y}, {100.f, 100.f} });
 
     {
@@ -46,6 +49,42 @@ Entity Create_Waffle(float const& x, float const& y) {
     return player;
 }
 
+
+Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme controls) {
+    Entity shape = Create_Entity();
+    Add_Component(shape, TransformComponent{ {spawnx, spawny}, {100.f, 100.f} });
+
+    // Set dimensions and color based on shape type
+    Vec2 dimensions;
+    Vec3 color;
+    AABB aabb;
+    Circle circle;
+
+    if (shapeType == SHAPE_RECTANGLE) {
+        dimensions = { 200.f, 200.f };
+        color = { 1.0f, 0.0f, 0.0f };  // Red
+        aabb = Set_AABB({ spawnx, spawny }, dimensions);
+        circle = { {spawnx, spawny}, 200.f };
+    }
+    else if (shapeType == SHAPE_CIRCLE) {
+        dimensions = { 200.f, 200.f };
+        color = { 0.0f, 1.0f, 0.0f };  // Green
+        aabb = Set_AABB({ spawnx, spawny }, dimensions);
+        circle = { {spawnx, spawny}, 100.f };  // Smaller radius for circle
+    }
+
+    // Add physics component
+    Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
+    Add_Component(shape, phys);
+
+    // Add shape component
+    Add_Component(shape, ShapeComponent{ shapeType, dimensions, color });
+    Add_Component(shape, InputComponent{ controls });
+    Add_Component(shape, TagComponent{ T_PLAYER });
+    Add_Component(shape, HealthComponent{ 100.f, 100.f });
+
+    return shape;
+}
 //Entity Create_Square(float x, float y) {
 //    Entity square = Create_Entity();
 //    Add_Component(square, TransformComponent{ {x, y}, {100.f, 100.f} });

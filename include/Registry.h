@@ -98,3 +98,8 @@ ComponentManager<InputComponent>			& CM_Input();
 ComponentManager<ShapeComponent>			& CM_Shape();
 
 // Component list accessor?
+
+// Entity name management
+std::unordered_map<Entity, std::string>& GetEntityNameMap();
+void SetEntityName(Entity eID, const std::string& name);
+std::string GetEntityName(Entity eID);

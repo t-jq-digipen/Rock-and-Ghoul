@@ -113,7 +113,8 @@ struct Colour4 {
 
 struct Vec2 {
 	float x, y;
-
+	Vec2() : x(0.f), y(0.f) {}
+	Vec2(float _x, float _y) : x(_x), y(_y) {}
 	Vec2 operator*(float scalar) const {
 		return Vec2(x * scalar, y * scalar);
 	}
@@ -159,3 +160,4 @@ struct Vec3 {
 float Sqrt(float x);
 // Clamp a value between two values
 void Clamp(float& val, float const& min, float const& max);
+

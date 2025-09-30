@@ -179,4 +179,19 @@ namespace Physics {
 	void PhysicsComponent::Set_Collision(bool set)
 	{ willCollide = set; }
 
+	void PhysicsComponent::Set_Vel(Vec2 const& newVel)
+	{
+		vel = newVel;
+	}
+
+	void PhysicsComponent::Set_AABB(AABB const& newAABB)
+	{
+		aabbhitbox = newAABB;
+	}
+
+	void PhysicsComponent::Set_Circle(Circle const& newCircle)
+	{
+		circlehitbox = newCircle;
+	}
+
 }
