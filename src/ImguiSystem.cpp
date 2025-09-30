@@ -4,7 +4,8 @@
 #include "CoreEngine.h"
 #include "EntityCreation.h"
 #include "Input.h"
-
+#include "JsonLoad.h"
+#include "FilePath.h"
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
@@ -173,6 +174,24 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
         }
     }
 
+    ImGui::Separator();
+    ImGui::Text("Scene Management:");
+
+    if (ImGui::Button("Save Scene (F5)")) {
+        JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "Level1");
+        std::cout << "Scene saved from ImGui!" << std::endl;
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Load Scene (F9)")) {
+        JsonLoad::ClearAllEntities();
+        if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
+            std::cout << "Scene loaded from ImGui!" << std::endl;
+        }
+        else {
+            std::cout << "Failed to load scene!" << std::endl;
+        }
+    }
     ImGui::End();
 }
 

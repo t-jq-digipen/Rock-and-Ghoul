@@ -28,4 +28,5 @@ public:
     void ProcessEvents();
     void CheckCollisions(); // generic, entity vs entity
     void ActionStop(Entity a, Entity b);
+
 };

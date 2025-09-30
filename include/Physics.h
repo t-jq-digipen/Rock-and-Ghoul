@@ -83,7 +83,8 @@ namespace Physics {
 		void UpdateHitboxes(Vec2 const& pos);
 
 		void Set_Collision(bool set);
-
+		void Set_AABB(AABB const& newAABB);
+		void Set_Circle(Circle const& newCircle);
 		const Vec2& Get_Vel() const;
 
 		const AABB& Get_AABB() const;
@@ -95,7 +96,7 @@ namespace Physics {
 		void Damping();
 
 
-		void Set_Vel(const Vec2& v) { vel = v; }
+		void Set_Vel(Vec2 const& newVel);
 		void StopX() { vel.x = 0.f; }
 		void StopY() { vel.y = 0.f; }
 	};
