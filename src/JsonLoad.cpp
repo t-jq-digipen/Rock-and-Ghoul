@@ -61,12 +61,7 @@ std::string JsonLoad::Save_Animator(Entity eID) {
 
     json statesJson = json::object();
     for (const auto& [state, stateFrames] : stateMap) {
-        statesJson[std::to_string(state)] = {
-            {"row", stateFrames.row},
-            {"col_start", stateFrames.col_start},
-            {"col_end", stateFrames.col_end},
-            {"duration", stateFrames.duration}
-        };
+        statesJson[std::to_string(state)] = { {"row", stateFrames.row}, {"col_start", stateFrames.col_start}, {"col_end", stateFrames.col_end}, {"duration", stateFrames.duration} };
     }
 
     json j = {
@@ -76,7 +71,7 @@ std::string JsonLoad::Save_Animator(Entity eID) {
         {"frameRow", frames.row},
         {"frameColStart", frames.col_start},
         {"frameColEnd", frames.col_end},
-         {"currentState", a.GetCurrentState()},
+        {"currentState", a.GetCurrentState()},
         {"states", statesJson},
         {"u0", a.u0},
         {"v0", a.v0},
@@ -199,14 +194,7 @@ void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
     int imageHeight = sprite.Get_Image().heightPixels;
 
     // Create animator with saved parameters
-    Animator::AnimatorComponent anim(
-        j["totalRows"],
-        j["totalCols"],
-        imageWidth,
-        imageHeight,
-        frames,
-        j.value("animDuration", 1.0f)
-    );
+    Animator::AnimatorComponent anim( j["totalRows"], j["totalCols"], imageWidth, imageHeight, frames,j.value("animDuration", 1.0f));
 
 
     if (j.contains("states")) {
@@ -221,9 +209,7 @@ void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
             anim.AddState(stateID, stateFrames);
         }
     }
-    if (j.contains("currentState") && j["currentState"] != -1) {
-        anim.SetState(j["currentState"]);
-    }
+    if (j.contains("currentState") && j["currentState"] != -1) { anim.SetState(j["currentState"]); }
     Add_Component(eID, anim);
 }
 //void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {

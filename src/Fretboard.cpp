@@ -262,3 +262,11 @@ void FretBoard::LoadTextures() {
     arrowDownTex = Render::GetInstance().LoadTexture("../Assets/down.png");
     arrowLeftTex = Render::GetInstance().LoadTexture("../Assets/left.png");
 }
+FretBoard::~FretBoard() {
+    // Unload all spell button textures
+    if (arrowUpTex) Render::GetInstance().UnloadTexture(arrowUpTex);
+    if (arrowRightTex) Render::GetInstance().UnloadTexture(arrowRightTex);
+    if (arrowDownTex) Render::GetInstance().UnloadTexture(arrowDownTex);
+    if (arrowLeftTex) Render::GetInstance().UnloadTexture(arrowLeftTex);
+    spellManager.CleanupTextures();
+}

@@ -21,6 +21,7 @@ public:
     void ClearSpell(int slotIndex);
     GLuint barrierTex, shockwaveTex, aoeTex, healTex;
     void GiveSpell(GLuint tex);
+    void CleanupTextures();
 
 private:
     SpellSlot slots[MAX_SLOTS];

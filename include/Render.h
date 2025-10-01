@@ -32,34 +32,18 @@ struct Character {
 };
 
 class Render {
-private:
-
-    /*Render();
-
-    Render(const Render&)               = delete;
-    Render& operator=(const Render&)    = delete;
-
-    ~Render();*/
 public:
     static Render& GetInstance() {
-        if (!instance) {
-            instance = new Render();
-        }
-        return *instance;
+        static Render instance;
+        return instance;
     }
-
+  
     /*static Render& GetInstance() {
         static Render instance;
         return instance;
     }*/
-
-    static void DestroyInstance() {
-        delete instance;
-        instance = nullptr;
-    }
-
+    void Shutdown();
     ~Render();
-
     void Init();
 
     void ClearBackground(const Colour4& color); //use this to clear background, then set your background color
@@ -120,10 +104,11 @@ public:
 private:
     static Render* instance;
     Render();
+    Render(const Render&) = delete;
+    Render& operator=(const Render&) = delete;
     GLuint vao, vbo, shaderProgram;
     GLuint textVAO, textVBO; //text vaovbos
     glm::mat4 projection;
-
 
     //compile,link,validate shaders into program from file
     std::string readTextFile(const std::string& path);

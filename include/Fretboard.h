@@ -91,5 +91,6 @@ public:
 
 	void Draw(Render& renderer);
 	void LoadTextures();
+	~FretBoard();
 };
 #endif

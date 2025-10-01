@@ -2,7 +2,7 @@
 #include "Render.h"
 #include "Animator.h"
 
-extern Render& renderInstance = Render::GetInstance();
+Render& renderInstance = Render::GetInstance();
 
 void RenderSystem::Initialize() {
     // ? 
@@ -150,4 +150,5 @@ void RenderSystem::Update(float dt) {
 
 void RenderSystem::Shutdown() {
     // clear all image cache here? seems like a good place, if we only store not a lot of images
+    Render::GetInstance().ClearAllTextures();
 }

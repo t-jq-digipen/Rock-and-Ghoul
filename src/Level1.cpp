@@ -133,22 +133,27 @@ void Level1::Free()
 {
 	std::cout << "Level 1 Freed!!!" << std::endl;
 	JsonLoad::ClearAllEntities();
-	Remove_Entity(rock);
-	Remove_Entity(ECSplayer);
-	Remove_Entity(waffle);
+	Render::GetInstance().ClearAllTextures();
+	if (bgTexture) {
+		Render::GetInstance().UnloadTexture(bgTexture);
+		bgTexture = 0;
+	}
+	//Remove_Entity(rock);
+	//Remove_Entity(ECSplayer);
+	//Remove_Entity(waffle);
 
 }
 
 void Level1::Unload()
 {
-	delete fretboard;
-	fretboard = nullptr;
-	/*if (bgTexture) {
-		glDeleteTextures(1, &bgTexture);
-		bgTexture = 0;
-	}*/
-
-	Render::GetInstance().UnloadTexture(bgTexture);
+	if (fretboard) {
+		// FretBoard should clean its own textures before deletion
+		delete fretboard;
+		fretboard = nullptr;
+	}
+	// Clean up background texture
+	bgTexture = 0;
+	Render::GetInstance().ClearAllTextures();
 	//Render::GetInstance().ClearAllTextures();
 	std::cout << "Level 1 Unloaded!!!" << std::endl;
 }

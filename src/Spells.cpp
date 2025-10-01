@@ -62,3 +62,22 @@ void SpellManager::GiveSpell(GLuint tex) {
         }
     }
 }
+
+void SpellManager::CleanupTextures() {
+    if (barrierTex) {
+        Render::GetInstance().UnloadTexture(barrierTex);
+        barrierTex = 0;
+    }
+    if (shockwaveTex) {
+        Render::GetInstance().UnloadTexture(shockwaveTex);
+        shockwaveTex = 0;
+    }
+    if (aoeTex) {
+        Render::GetInstance().UnloadTexture(aoeTex);
+        aoeTex = 0;
+    }
+    if (healTex) {
+        Render::GetInstance().UnloadTexture(healTex);
+        healTex = 0;
+    }
+}

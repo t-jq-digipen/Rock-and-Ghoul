@@ -6,7 +6,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-Render* Render::instance = nullptr;
 
 
 // stb_image
@@ -18,11 +17,23 @@ Render* Render::instance = nullptr;
 Render::Render() : vao(0), vbo(0), shaderProgram(0) {}
 
 Render::~Render() {
+    // Clean up OpenGL resources
     if (vao) glDeleteVertexArrays(1, &vao);
     if (vbo) glDeleteBuffers(1, &vbo);
     if (shaderProgram) glDeleteProgram(shaderProgram);
+
+    // Clean up text rendering resources
+    if (textVAO) glDeleteVertexArrays(1, &textVAO);
+    if (textVBO) glDeleteBuffers(1, &textVBO);
+
+    // THIS IS THE KEY FIX - Clean up FreeType character textures
+    for (auto& [c, character] : Characters) {
+        glDeleteTextures(1, &character.TextureID);
+    }
+    Characters.clear();
+
+    // Clean up all cached textures
     ClearAllTextures();
-    //ClearAllImages();
 }
 
 void Render::Init() {
@@ -582,7 +593,7 @@ void Render::DrawImageSub(const Image& Image,
     //Position, scale, rotation uniforma
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), x, y);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), w, h);
-    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f); // if you want no rotation
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation); // if you want no rotation
 
     //Sub-image UV rectangle (normalize with texture size)
     int texW, texH;
@@ -660,118 +671,112 @@ int Render::GetImageHeight(const Image& image) const {
 
 
 //text rendering
+// text rendering
 void Render::InitTextRendering() {
+    // If InitTextRendering can be called multiple times,
+    // first clear any previous GPU objects it created.
+    if (!Characters.empty()) {
+        for (auto& [c, ch] : Characters) {
+            glDeleteTextures(1, &ch.TextureID);
+        }
+        Characters.clear();
+    }
+    if (textVAO) {
+        glDeleteVertexArrays(1, &textVAO);
+        textVAO = 0;
+    }
+    if (textVBO) {
+        glDeleteBuffers(1, &textVBO);
+        textVBO = 0;
+    }
 
-    // FreeType
-    // --------
-    FT_Library ft;
-    // All functions return a value different than 0 whenever an error occurred
-    if (FT_Init_FreeType(&ft))
-    {
+    // ---------- FreeType lifetime with single exit ----------
+    FT_Library ft = nullptr;
+    FT_Face face = nullptr;
+
+    auto cleanupFT = [&]() {
+        if (face) { FT_Done_Face(face); face = nullptr; }
+        if (ft) { FT_Done_FreeType(ft); ft = nullptr; }
+        };
+
+    if (FT_Init_FreeType(&ft)) {
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+        cleanupFT();
         return;
     }
 
-    // find path to font (leave this here first after filepath is implemented
-    /*std::string font_name = FilePath::getPath("resources/fonts/Antonio-Bold.ttf");
-    if (font_name.empty())
-    {
-        std::cout << "ERROR::FREETYPE: Failed to load font_name" << std::endl;
-        return;
-    }*/
-
-    FT_Face face;
-    if (FT_New_Face(ft, "../Assets/Antonio-Bold.ttf", 0, &face)) //for now use this direct full file path name, note to download and add the font type inside Assets,
-        //thinking maybe can haev set_font function to pull path (basically the above commented stuff
-    {
+    if (FT_New_Face(ft, "../Assets/Antonio-Bold.ttf", 0, &face)) {
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+        cleanupFT();
         return;
-        //exit(0);
     }
-    else {
-        // set size to load glyphs as
-        FT_Set_Pixel_Sizes(face, 0, 48);
 
-        // disable byte-alignment restriction
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    // Font size + unpack alignment for glyph textures
+    FT_Set_Pixel_Sizes(face, 0, 48);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // glyph bitmaps are byte-aligned
 
-        // load first 128 characters of ASCII set, if want arrow or smth need increase the chars i think
-        for (unsigned char c = 0; c < 128; c++)
-        {
-            // Load character glyph 
-            if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-            {
-                std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-                continue;
-            }
-
-            // generate texture
-            unsigned int texture;
-            glGenTextures(1, &texture);
-            glBindTexture(GL_TEXTURE_2D, texture);
-            glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                GL_RED,
-                face->glyph->bitmap.width,
-                face->glyph->bitmap.rows,
-                0,
-                GL_RED,
-                GL_UNSIGNED_BYTE,
-                face->glyph->bitmap.buffer
-            );
-
-            // set texture options
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            // now store character for later use
-
-            Character character = {
-                texture,
-                glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-                glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-                static_cast<unsigned int>(face->glyph->advance.x)
-            };
-
-            Characters.insert(std::pair<char, Character>(c, character));
+    // Load first 128 ASCII glyphs
+    for (unsigned char c = 0; c < 128; ++c) {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+            std::cout << "ERROR::FREETYPE: Failed to load Glyph '" << (int)c << "'\n";
+            continue;  // this is fine; keep going for other glyphs
         }
 
-        glBindTexture(GL_TEXTURE_2D, 0);
+        unsigned int texture = 0;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            face->glyph->bitmap.buffer
+        );
 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        Character character = {
+            texture,
+            glm::ivec2(face->glyph->bitmap.width,  face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left,   face->glyph->bitmap_top),
+            static_cast<unsigned int>(face->glyph->advance.x)
+        };
+
+        // If character already existed (re-init), delete old texture first (we cleared above though)
+        Characters[c] = character;
     }
 
-    // destroy FreeType once we're finished
-    FT_Done_Face(face);
-    FT_Done_FreeType(ft);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-    //glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+    // Always release FreeType objects on every path
+    cleanupFT();
 
-    // configure VAO/VBO for texture quads
-    // -----------------------------------
-    //GLuint textVAO, textVBO;
+    // ---------- VAO/VBO for text quads ----------
     glGenVertexArrays(1, &textVAO);
     glGenBuffers(1, &textVBO);
     glBindVertexArray(textVAO);
     glBindBuffer(GL_ARRAY_BUFFER, textVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
+
+    // aPos (x,y)
     glEnableVertexAttribArray(0);
-    //glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0); <--- doesnt matches the vert shader aTex, aPos, x,y,u,v
-    // Fix vertex attributes
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    // aTex (u,v)
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-
-
-    //===========================================================================
-
-
 }
+
 
 void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color) {
 
@@ -834,4 +839,43 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //REMEMBER TO SET THIS BACK TO FALSE, CUS REM U SET IT TO TRUE TO TRIGGER uUseText in the beginning
+}
+
+void Render::Shutdown() {
+    // --- Delete all glyph textures ---
+    for (auto& [c, ch] : Characters) {
+        glDeleteTextures(1, &ch.TextureID);
+    }
+    Characters.clear();
+
+    // --- Delete text rendering VAO/VBO ---
+    if (textVAO) {
+        glDeleteVertexArrays(1, &textVAO);
+        textVAO = 0;
+    }
+    if (textVBO) {
+        glDeleteBuffers(1, &textVBO);
+        textVBO = 0;
+    }
+
+    // --- Delete main VAO/VBO ---
+    if (vao) {
+        glDeleteVertexArrays(1, &vao);
+        vao = 0;
+    }
+    if (vbo) {
+        glDeleteBuffers(1, &vbo);
+        vbo = 0;
+    }
+
+    // --- Delete shader program(s) ---
+    if (shaderProgram) {
+        glDeleteProgram(shaderProgram);
+        shaderProgram = 0;
+    }
+
+    // --- Clear cached textures ---
+    ClearAllTextures();
+
+    std::cout << "[Render] Shutdown complete — all GPU resources freed.\n";
 }

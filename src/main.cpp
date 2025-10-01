@@ -8,9 +8,18 @@
 #include "PlayerSystem.h"
 #include "PhysicsSystem.h"
 #include "ImguiSystem.h"
-
+#include <crtdbg.h>
+void EnableMemoryLeakChecking(int breakAlloc = -1)
+{
+    int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+    tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
+    _CrtSetDbgFlag(tmpDbgFlag);
+    if (breakAlloc != -1) _CrtSetBreakAlloc(breakAlloc);
+}
 int main() {
     if (!GLApp::init(1920, 1080, "Rock & Ghoul")) return -1;
+    EnableMemoryLeakChecking();
+
     CoreEngine& engine = CoreEngine::GetInstance();
     // Render& renderer = Render::GetInstance();
 
@@ -33,7 +42,8 @@ int main() {
     std::cout << "GETS PAST ENGINE RUN\n";
 
     engine.Shutdown();
-
+    Render::GetInstance().Shutdown();
+    ImGuiSystem::ShutdownImGui();
     GLApp::cleanup();
     return 0;
 }
