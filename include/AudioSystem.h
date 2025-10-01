@@ -52,10 +52,6 @@ private:
     FMOD::Sound* mainMenuMusic = nullptr;
     FMOD::Sound* level1Music = nullptr;
 
-    // ===== REMOVED: Individual button sound members =====
-    // (Now handled by AudioSystem's unified system)
-    // ===== END REMOVED =====
-
     // State tracking
     GameState lastState = GameState::GS_MAIN_MENU;
 
