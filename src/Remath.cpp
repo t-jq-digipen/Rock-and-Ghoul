@@ -15,13 +15,11 @@ T RG_GetPI() {
 // ANGLE CONVERSION
 // ==============================================
 
-// Degree to Radians
 template<typename T>
 T RG_DegToRad(T x) {
     return x * (RG_GetPI<T>() / (T)180.0);
 }
 
-// Radians to Degree
 template<typename T>
 T RG_RadToDeg(T x) {
     return x * ((T)180.0 / RG_GetPI<T>());
@@ -46,26 +44,16 @@ T RG_Tan(T x) {
 }
 
 template<typename T>
-// Clamping x to the domain of asin (-1, 1)
 T RG_ASin(T x) {
-    if (x < (T)-1.0) {
-        x = (T)-1.0;
-    }
-    if (x > (T)1.0) {
-        x = (T)1.0;
-    }
+    if (x < (T)-1.0) x = (T)-1.0;
+    if (x > (T)1.0) x = (T)1.0;
     return (T)asin((double)x);
 }
 
 template<typename T>
-// Clamping x to domain of acos (-1, 1)
 T RG_ACos(T x) {
-    if (x < (T)-1.0) {
-        x = (T)-1.0;
-    }
-    if (x > (T)1.0) {
-        x = (T)1.0;
-    }
+    if (x < (T)-1.0) x = (T)-1.0;
+    if (x > (T)1.0) x = (T)1.0;
     return (T)acos((double)x);
 }
 
@@ -116,9 +104,74 @@ T RG_ATanDeg(T x) {
 #pragma endregion TRIGO
 
 // ==============================================
-// VEC2 OPERATIONS
+// VEC2 CONSTRUCTORS AND OPERATORS
 // ==============================================
 #pragma region Vec2
+
+// Constructors
+Vec2::Vec2() : x(0.f), y(0.f) {}
+Vec2::Vec2(float _x, float _y) : x(_x), y(_y) {}
+
+// Operator overloads
+Vec2 Vec2::operator*(float scalar) const {
+    return Vec2(x * scalar, y * scalar);
+}
+
+Vec2 Vec2::operator+(const Vec2& rhs) const {
+    return Vec2(x + rhs.x, y + rhs.y);
+}
+
+Vec2 Vec2::operator-(const Vec2& rhs) const {
+    return Vec2(x - rhs.x, y - rhs.y);
+}
+
+Vec2 Vec2::operator/(float scalar) const {
+    return Vec2(x / scalar, y / scalar);
+}
+
+Vec2& Vec2::operator+=(const Vec2& rhs) {
+    x += rhs.x;
+    y += rhs.y;
+    return *this;
+}
+
+Vec2& Vec2::operator-=(const Vec2& rhs) {
+    x -= rhs.x;
+    y -= rhs.y;
+    return *this;
+}
+
+Vec2& Vec2::operator*=(float scalar) {
+    x *= scalar;
+    y *= scalar;
+    return *this;
+}
+
+Vec2& Vec2::operator/=(float scalar) {
+    x /= scalar;
+    y /= scalar;
+    return *this;
+}
+
+// ==============================================
+// VEC2 OPERATIONS
+// ==============================================
+
+Vec2 RG_Add(const Vec2& a, const Vec2& b) {
+    return { a.x + b.x, a.y + b.y };
+}
+
+Vec2 RG_Subtract(const Vec2& a, const Vec2& b) {
+    return { a.x - b.x, a.y - b.y };
+}
+
+Vec2 RG_Scale(const Vec2& v, float scalar) {
+    return { v.x * scalar, v.y * scalar };
+}
+
+float RG_DotProduct(const Vec2& a, const Vec2& b) {
+    return a.x * b.x + a.y * b.y;
+}
 
 float RG_DistanceSquared(const Vec2& p1, const Vec2& p2) {
     float dx = p2.x - p1.x;
@@ -126,63 +179,107 @@ float RG_DistanceSquared(const Vec2& p1, const Vec2& p2) {
     return dx * dx + dy * dy;
 }
 
-float RG_DotProduct(const Vec2& a, const Vec2& b) {
-    return a.x * b.x + a.y * b.y;
+float RG_Distance(const Vec2& p1, const Vec2& p2) {
+    return RG_Sqrt(RG_DistanceSquared(p1, p2));
 }
 
-Vec2 Add(const Vec2& a, const Vec2& b) {
-    return { a.x + b.x, a.y + b.y };
+float RG_Length(const Vec2& v) {
+    return RG_Sqrt(v.x * v.x + v.y * v.y);
 }
 
-Vec2 Subtract(const Vec2& a, const Vec2& b) {
-    return { a.x - b.x, a.y - b.y };
+float RG_LengthSquared(const Vec2& v) {
+    return v.x * v.x + v.y * v.y;
 }
 
-Vec2 Scale(const Vec2& v, float scalar) {
-    return { v.x * scalar, v.y * scalar };
-}
-
-Vec2 Lerp(const Vec2& a, const Vec2& b, float t) {
-    return Add(a, Scale(Subtract(b, a), t));
-}
-
-Vec2 Normalize(const Vec2 a) {
-    const float len = std::sqrt(a.x * a.x + a.y * a.y);
-
+Vec2 RG_Normalize(const Vec2& v) {
+    const float len = RG_Length(v);
     if (len > 0.f) {
-        return { a.x / len, a.y / len };
+        return { v.x / len, v.y / len };
     }
-
     return { 0.f, 0.f };
+}
+
+Vec2 RG_Lerp(const Vec2& a, const Vec2& b, float t) {
+    return RG_Add(a, RG_Scale(RG_Subtract(b, a), t));
 }
 
 #pragma endregion Vec2
 
 // ==============================================
-// VEC3 OPERATIONS
+// VEC3 CONSTRUCTORS AND OPERATORS
 // ==============================================
 #pragma region Vec3
 
-Vec3 Add(const Vec3& a, const Vec3& b) {
+// Constructors
+Vec3::Vec3() : x(0.f), y(0.f), z(0.f) {}
+Vec3::Vec3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+
+// Operator overloads
+Vec3 Vec3::operator+(const Vec3& rhs) const {
+    return Vec3(x + rhs.x, y + rhs.y, z + rhs.z);
+}
+
+Vec3 Vec3::operator-(const Vec3& rhs) const {
+    return Vec3(x - rhs.x, y - rhs.y, z - rhs.z);
+}
+
+Vec3 Vec3::operator*(float scalar) const {
+    return Vec3(x * scalar, y * scalar, z * scalar);
+}
+
+Vec3 Vec3::operator/(float scalar) const {
+    return Vec3(x / scalar, y / scalar, z / scalar);
+}
+
+Vec3& Vec3::operator+=(const Vec3& rhs) {
+    x += rhs.x;
+    y += rhs.y;
+    z += rhs.z;
+    return *this;
+}
+
+Vec3& Vec3::operator-=(const Vec3& rhs) {
+    x -= rhs.x;
+    y -= rhs.y;
+    z -= rhs.z;
+    return *this;
+}
+
+Vec3& Vec3::operator*=(float scalar) {
+    x *= scalar;
+    y *= scalar;
+    z *= scalar;
+    return *this;
+}
+
+Vec3& Vec3::operator/=(float scalar) {
+    x /= scalar;
+    y /= scalar;
+    z /= scalar;
+    return *this;
+}
+
+// ==============================================
+// VEC3 OPERATIONS
+// ==============================================
+
+Vec3 RG_Add(const Vec3& a, const Vec3& b) {
     return Vec3(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
-Vec3 Subtract(const Vec3& a, const Vec3& b) {
+Vec3 RG_Subtract(const Vec3& a, const Vec3& b) {
     return Vec3(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
-Vec3 Scale(const Vec3& v, float scalar) {
+Vec3 RG_Scale(const Vec3& v, float scalar) {
     return Vec3(v.x * scalar, v.y * scalar, v.z * scalar);
 }
 
-// Result is positive if vectors point in similar directions, negative if opposite
-// Result is zero if vectors are perpendicular
-float DotProduct(const Vec3& a, const Vec3& b) {
+float RG_DotProduct(const Vec3& a, const Vec3& b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-// Cross Product
-Vec3 CrossProduct(const Vec3& a, const Vec3& b) {
+Vec3 RG_CrossProduct(const Vec3& a, const Vec3& b) {
     return Vec3(
         a.y * b.z - a.z * b.y,  // i 
         a.z * b.x - a.x * b.z,  // j 
@@ -190,47 +287,34 @@ Vec3 CrossProduct(const Vec3& a, const Vec3& b) {
     );
 }
 
-// Length: calculates the size of a vector
-// This is the distance from the origin to the point
-float Length(const Vec3& v) {
+float RG_Length(const Vec3& v) {
     return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
-float LengthSquared(const Vec3& v) {
+float RG_LengthSquared(const Vec3& v) {
     return v.x * v.x + v.y * v.y + v.z * v.z;
 }
 
-// Distance Squared: calculates squared distance between two points
-float DistanceSquared(const Vec3& p1, const Vec3& p2) {
+float RG_DistanceSquared(const Vec3& p1, const Vec3& p2) {
     float dx = p2.x - p1.x;
     float dy = p2.y - p1.y;
     float dz = p2.z - p1.z;
     return dx * dx + dy * dy + dz * dz;
 }
 
-// Distance: calculates actual distance between two points
-float Distance(const Vec3& p1, const Vec3& p2) {
-    return std::sqrt(DistanceSquared(p1, p2));
+float RG_Distance(const Vec3& p1, const Vec3& p2) {
+    return std::sqrt(RG_DistanceSquared(p1, p2));
 }
 
-// Normalize: converts a vector to unit length (length = 1) while keeping its direction
-// This is crucial for direction vectors in physics, graphics, AI, etc.
-Vec3 Normalize(const Vec3& v) {
-    float len = Length(v);
-
-    // Avoid division by zero for zero-length vectors
+Vec3 RG_Normalize(const Vec3& v) {
+    float len = RG_Length(v);
     if (len > 0.0f) {
         return Vec3(v.x / len, v.y / len, v.z / len);
     }
-
-    // Return zero vector if input was zero vector
     return Vec3(0.0f, 0.0f, 0.0f);
 }
 
-// Lerp: Linear interpolation between two vectors
-// t=0 returns a, t=1 returns b, t=0.5 returns midpoint
-// Values of t outside [0,1] will extrapolate beyond the points
-Vec3 Lerp(const Vec3& a, const Vec3& b, float t) {
+Vec3 RG_Lerp(const Vec3& a, const Vec3& b, float t) {
     return Vec3(
         a.x + (b.x - a.x) * t,
         a.y + (b.y - a.y) * t,
@@ -238,41 +322,32 @@ Vec3 Lerp(const Vec3& a, const Vec3& b, float t) {
     );
 }
 
-
 #pragma endregion Vec3
 
 // ==============================================
 // UTILITY FUNCTIONS
 // ==============================================
 
-float Sqrt(float x) {
-    if (x < 0) { return 0; }
-    if (x == 0 || x == 1) { return x; }
+float RG_Sqrt(float x) {
+    if (x < 0) return 0;
+    if (x == 0 || x == 1) return x;
 
     float precision = 0.00001f;
     float guess = x * 0.5f;
-    float abs;
 
     for (int i = 0; i < 10; ++i) {
         float newGuess = 0.5f * (guess + x / guess);
-
-        abs = (newGuess - guess < 0) ? -(newGuess - guess) : (newGuess - guess);
+        float abs = (newGuess - guess < 0) ? -(newGuess - guess) : (newGuess - guess);
 
         if (abs < precision) {
             return newGuess;
         }
-
         guess = newGuess;
     }
-
     return guess;
 }
 
-void Clamp(float& val, float const& min, float const& max) {
-    if (val > max) {
-        val = max;
-    }
-    if (val < min) {
-        val = min;
-    }
+void RG_Clamp(float& val, float const& min, float const& max) {
+    if (val > max) val = max;
+    if (val < min) val = min;
 }
