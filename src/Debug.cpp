@@ -1,21 +1,38 @@
+// Debug velocity line
+/*
+-> loop through physics component list
+{
+	-> if has transform component
+	{
+		point 1 = transform component position
+		point 2 = point 1 + velocity * some scalar shit(from physics component)
+		draw line from point 1 to point 2, maybe add arrow tip?(optional!)
+	}
+}
+*/
+
+// Debug hitbox
+/*
+-> loop through collider list
+{
+	call render to draw the AABB ^^	need to flesh out render system first xd
+}
+*/
 /* ========================================================
- * @file    Debug.cpp
- * @author   w.shiyuregine@digipen.edu
- * @date    01/10/2025
+ * @file	Debug.cpp
+ * @author	WONG SHI YU REGINE
+ * @date	1 OCTOBER 2025
  *
- * @brief 
- * 
- * This registry functions as the connection between the entities and components, 
- * and is the medium for the systems to interact with entitites and their components.
- * 
- * This checks all entities with Physics and Transform components
- * for overlaps between their collision shapes (rectangles and circles).
- * Detected collisions are stored as events for later processing. The default resolution strategy (ActionStop) rolls entities back to their
- * previous positions and zeroes their velocity, ensuring they do not overlap, can be improved
+ * @brief
+ *
+ *
+ *
+ *
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
+
 #include "Debug.h"
 #include <unordered_map>
 
