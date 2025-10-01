@@ -1,3 +1,22 @@
+/* ========================================================
+ * @file    JsonLoad.cpp
+ * @author  yasmin.t@digipen.edu
+ * @author  t.yingclarissa@digipen.edu
+ * @date    26/09/2025
+ *
+ * @brief   Implementation file for JSON serialization system
+ *
+ * This file contains the implementation of the JsonLoad system,
+ * which provides JSON serialization and deserialization
+ * functionality for the game's Entity Component System (ECS). The
+ * system enables saving and loading of individual components, complete
+ * entities, entire game scenes, and game settings. It uses the nlohmann
+ * JSON library for parsing and serialization, and provides type-safe
+ * conversion between game objects and their JSON representations.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 #include "JsonLoad.h"
 #include "FileIO.h"
 #include "Registry.h"
@@ -5,6 +24,14 @@
 #include <iostream>
 
 #pragma region ComponentSavers
+
+ /**
+  * @brief Serializes Transform component to JSON string.
+  *
+  * @param eID The entity ID whose Transform component should be serialized.
+  * @return std::string JSON string containing the transform data with fields:
+  *         posX, posY, scaleX, scaleY, and rot.
+  */
 std::string JsonLoad::Save_Transform(Entity eID) {
     auto& t = Get_TransformComponent(eID);
     json j = {
@@ -17,27 +44,13 @@ std::string JsonLoad::Save_Transform(Entity eID) {
     return j.dump();
 }
 
-//std::string JsonLoad::Save_Sprite(Entity eID) {
-//    auto& s = Get_SpriteComponent(eID);
-//
-//    // Get texture path
-//    std::string texPath = "";
-//    if (s.textureID != 0) {
-//        texPath = Render::GetInstance().GetTexturePath(s.textureID);
-//    }
-//
-//    json j = {
-//        {"texturePath", texPath},
-//        {"sizeX", s.size.x},
-//        {"sizeY", s.size.y},
-//        {"colorX", s.color.x},
-//        {"colorY", s.color.y},
-//        {"colorZ", s.color.z},
-//        { "shape", static_cast<int>(s.shape) }
-//    };
-//    return j.dump();
-//}
-
+/**
+ * @brief Serializes Sprite component to JSON string.
+ *
+ * @param eID The entity ID whose Sprite component should be serialized.
+ * @return std::string JSON string containing the sprite data with fields:
+ *         texturePath, scaleX, scaleY, and animated.
+ */
 std::string JsonLoad::Save_Sprite(Entity eID) {
     auto& s = Get_SpriteComponent(eID);
 
@@ -53,6 +66,15 @@ std::string JsonLoad::Save_Sprite(Entity eID) {
     };
     return j.dump();
 }
+
+/**
+ * @brief Serializes Animator component to JSON string.
+ *
+ * @param eID The entity ID whose Animator component should be serialized.
+ * @return std::string JSON string containing the animator data including:
+ *         totalRows, totalCols, animDuration, frame configuration,
+ *         currentState, all animation states, and UV coordinates (u0, v0, u1, v1).
+ */
 std::string JsonLoad::Save_Animator(Entity eID) {
     auto& a = Get_AnimatorComponent(eID);
 
@@ -80,6 +102,13 @@ std::string JsonLoad::Save_Animator(Entity eID) {
     };
     return j.dump();
 }
+
+/**
+ * @brief Serializes Shape component to JSON string.
+ *
+ * @param eID Entity ID Shape component should be serialized.
+ * @return std::string JSON string containing the shape data
+ */
 std::string JsonLoad::Save_Shape(Entity eID) {
     auto& s = Get_ShapeComponent(eID);
     json j = {
@@ -93,6 +122,12 @@ std::string JsonLoad::Save_Shape(Entity eID) {
     return j.dump();
 }
 
+/**
+ * @brief Serializes Physics component to JSON string.
+ *
+ * @param eID The entity ID whose Physics component should be serialized.
+ * @return std::string JSON string containing the physics data.
+ */
 std::string JsonLoad::Save_Physics(Entity eID) {
     auto& p = Get_PhysicsComponent(eID);
     auto vel = p.Get_Vel();
@@ -123,6 +158,12 @@ std::string JsonLoad::Save_Physics(Entity eID) {
     return j.dump();
 }
 
+/**
+ * @brief Serializes Health component to JSON string.
+ *
+ * @param eID The entity ID where Health component should be serialized.
+ * @return std::string JSON string containing the health data.
+ */
 std::string JsonLoad::Save_Health(Entity eID) {
     auto& h = Get_HealthComponent(eID);
     json j = {
@@ -132,6 +173,12 @@ std::string JsonLoad::Save_Health(Entity eID) {
     return j.dump();
 }
 
+/**
+ * @brief Serializes Tag component to JSON string.
+ *
+ * @param eID The entity ID whose Tag component should be serialized.
+ * @return std::string JSON string containing the tag data.
+ */
 std::string JsonLoad::Save_Tag(Entity eID) {
     auto& t = Get_TagComponent(eID);
     json j = {
@@ -140,6 +187,12 @@ std::string JsonLoad::Save_Tag(Entity eID) {
     return j.dump();
 }
 
+/**
+ * @brief Serializes Input component to JSON string.
+ *
+ * @param eID The entity ID where Input component should be serialized.
+ * @return std::string JSON string containing the input data.
+ */
 std::string JsonLoad::Save_Input(Entity eID) {
     auto& i = Get_InputComponent(eID);
     json j = {
@@ -151,6 +204,12 @@ std::string JsonLoad::Save_Input(Entity eID) {
 
 #pragma region ComponentLoaders
 
+/**
+ * @brief Deserializes and loads Transform component onto entity.
+ *
+ * @param eID The entity ID to which the Transform component should be added.
+ * @param data JSON string containing transform data.
+ */
 void JsonLoad::Load_Transform(Entity eID, const std::string& data) {
     json j = json::parse(data);
     TransformComponent t;
@@ -161,6 +220,13 @@ void JsonLoad::Load_Transform(Entity eID, const std::string& data) {
     t.rot = j.value("rot", 0.0f);
     Add_Component(eID, t);
 }
+
+/**
+ * @brief Deserializes and loads Shape component onto entity.
+ *
+ * @param eID The entity ID to which the Shape component should be added.
+ * @param data JSON string containing shape data.
+ */
 void JsonLoad::Load_Shape(Entity eID, const std::string& data) {
     json j = json::parse(data);
     ShapeComponent s;
@@ -174,6 +240,14 @@ void JsonLoad::Load_Shape(Entity eID, const std::string& data) {
 
     Add_Component(eID, s);
 }
+
+/**
+ * @brief Deserializes and loads Animator component onto entity.
+ *
+ * @param eID The entity ID to which the Animator component should be added.
+ * @param data JSON string containing animator data.
+ * @throws std::runtime_error If the entity doesn't have a Sprite component.
+ */
 void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
     json j = json::parse(data);
 
@@ -182,20 +256,20 @@ void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
     frames.row = j["frameRow"];
     frames.col_start = j["frameColStart"];
     frames.col_end = j["frameColEnd"];
-    //frames.duration = j["frameDuration"];
     frames.duration = j.value("frameDuration", 1.0f);
+
     if (!Has_Component(eID, CT_Sprite)) {
         std::cerr << "ERROR: Entity " << eID << " doesn't have Sprite component yet!" << std::endl;
         throw std::runtime_error("Animator requires Sprite component");
     }
+
     // Get the sprite component to determine image dimensions
     auto& sprite = Get_SpriteComponent(eID);
     int imageWidth = sprite.Get_Image().widthPixels;
     int imageHeight = sprite.Get_Image().heightPixels;
 
     // Create animator with saved parameters
-    Animator::AnimatorComponent anim( j["totalRows"], j["totalCols"], imageWidth, imageHeight, frames,j.value("animDuration", 1.0f));
-
+    Animator::AnimatorComponent anim(j["totalRows"], j["totalCols"], imageWidth, imageHeight, frames, j.value("animDuration", 1.0f));
 
     if (j.contains("states")) {
         for (auto& [stateKey, stateData] : j["states"].items()) {
@@ -209,35 +283,20 @@ void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
             anim.AddState(stateID, stateFrames);
         }
     }
-    if (j.contains("currentState") && j["currentState"] != -1) { anim.SetState(j["currentState"]); }
+
+    if (j.contains("currentState") && j["currentState"] != -1) {
+        anim.SetState(j["currentState"]);
+    }
+
     Add_Component(eID, anim);
 }
-//void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
-//    json j = json::parse(data);
-//    SpriteComponent s;
-//
-//    // Reload texture from path
-//    std::string texPath = j["texturePath"];
-//    if (!texPath.empty()) {
-//        s.textureID = Render::GetInstance().LoadTexture(texPath);
-//    }
-//    else {
-//        s.textureID = 0;
-//    }
-//
-//    s.size.x = j["sizeX"];
-//    s.size.y = j["sizeY"];
-//    s.color.x = j["colorX"];
-//    s.color.y = j["colorY"];
-//    s.color.z = j["colorZ"];
-//    if (j.contains("shape")) {
-//        s.shape = static_cast<ShapeType>(static_cast<int>(j["shape"]));
-//    }
-//    else {
-//        s.shape = (s.textureID == 0) ? SHAPE_RECT : SHAPE_TEXTURED;
-//    }
-//    Add_Component(eID, s);
-//}
+
+/**
+ * @brief Deserializes and loads Sprite component onto entity.
+ *
+ * @param eID The entity ID to which the Sprite component should be added.
+ * @param data JSON string containing sprite data (texturePath, scale, animated).
+ */
 void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
     json j = json::parse(data);
 
@@ -247,13 +306,18 @@ void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
     scale.y = j["scaleY"];
     bool animated = j["animated"];
 
-
     if (!texPath.empty()) {
         Sprite::SpriteComponent s(texPath, scale, animated);
         Add_Component(eID, s);
     }
 }
 
+/**
+ * @brief Deserializes and loads Physics component onto entity.
+ *
+ * @param eID The entity ID to which the Physics component should be added.
+ * @param data JSON string containing physics data.
+ */
 void JsonLoad::Load_Physics(Entity eID, const std::string& data) {
     json j = json::parse(data);
 
@@ -282,6 +346,12 @@ void JsonLoad::Load_Physics(Entity eID, const std::string& data) {
     Add_Component(eID, p);
 }
 
+/**
+ * @brief Deserializes and loads Health component onto entity.
+ *
+ * @param eID The entity ID to which the Health component should be added.
+ * @param data JSON string containing health data.
+ */
 void JsonLoad::Load_Health(Entity eID, const std::string& data) {
     json j = json::parse(data);
     HealthComponent h;
@@ -290,6 +360,12 @@ void JsonLoad::Load_Health(Entity eID, const std::string& data) {
     Add_Component(eID, h);
 }
 
+/**
+ * @brief Deserializes and loads Tag component onto entity.
+ *
+ * @param eID The entity ID to which the Tag component should be added.
+ * @param data JSON string containing tag data.
+ */
 void JsonLoad::Load_Tag(Entity eID, const std::string& data) {
     json j = json::parse(data);
     TagComponent t;
@@ -297,16 +373,29 @@ void JsonLoad::Load_Tag(Entity eID, const std::string& data) {
     Add_Component(eID, t);
 }
 
+/**
+ * @brief Deserializes and loads Input component onto entity.
+ *
+ * @param eID The entity ID to which the Input component should be added.
+ * @param data JSON string containing input data.
+ */
 void JsonLoad::Load_Input(Entity eID, const std::string& data) {
     json j = json::parse(data);
     InputComponent i;
     i.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
     Add_Component(eID, i);
 }
-#pragma endregion ComponentSavers
+#pragma endregion ComponentLoaders
 
 // ECS <-> SAVED ENTITY CONVERSION
 
+/**
+ * @brief Converts live entity to SavedEntity structure.
+ *
+ * @param eID The entity ID to convert to a SavedEntity.
+ * @return SavedEntity Structure containing the entity's ID, name, and all
+ *         component data as JSON strings indexed by component type.
+ */
 SavedEntity JsonLoad::EntityToSaved(Entity eID) {
     SavedEntity saved;
     saved.id = eID;
@@ -332,13 +421,15 @@ SavedEntity JsonLoad::EntityToSaved(Entity eID) {
     if (Has_Component(eID, CT_Tag)) {
         saved.componentData[CT_Tag] = Save_Tag(eID);
     }
-    if (Has_Component(eID, CT_Shape)) {  // ADD THIS
+
+    if (Has_Component(eID, CT_Shape)) {
         saved.componentData[CT_Shape] = Save_Shape(eID);
     }
 
     if (Has_Component(eID, CT_Input)) {
         saved.componentData[CT_Input] = Save_Input(eID);
     }
+
     if (Has_Component(eID, CT_Animator)) {
         saved.componentData[CT_Animator] = Save_Animator(eID);
     }
@@ -346,6 +437,12 @@ SavedEntity JsonLoad::EntityToSaved(Entity eID) {
     return saved;
 }
 
+/**
+ * @brief Creates live entity from SavedEntity structure.
+ *
+ * @param saved The SavedEntity structure containing serialized component data.
+ * @return Entity The ID of the newly created entity with all components attached.
+ */
 Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
     Entity e = Create_Entity();
     SetEntityName(e, saved.name);
@@ -410,6 +507,12 @@ Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
 
 #pragma region Serialization
 
+/**
+ * @brief Serializes SavedEntity to JSON object.
+ *
+ * @param j Reference to the JSON object to populate with entity data.
+ * @param e SavedEntity to serialize.
+ */
 void JsonLoad::to_json(json& j, const SavedEntity& e) {
     j = json{
         {"id", e.id},
@@ -437,6 +540,12 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
     }
 }
 
+/**
+ * @brief Deserializes SavedEntity from JSON object.
+ *
+ * @param j The JSON object containing entity data.
+ * @param e Reference to the SavedEntity to populate using deserialized data.
+ */
 void JsonLoad::from_json(const json& j, SavedEntity& e) {
     e.id = j["id"];
     e.name = j["name"];
@@ -463,6 +572,12 @@ void JsonLoad::from_json(const json& j, SavedEntity& e) {
     }
 }
 
+/**
+ * @brief Serializes SavedScene to JSON object.
+ *
+ * @param j Reference to the JSON object to populate with scene data.
+ * @param s SavedScene to serialize.
+ */
 void JsonLoad::to_json(json& j, const SavedScene& s) {
     j = json{
         {"sceneName", s.sceneName},
@@ -476,17 +591,29 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
     }
 }
 
+/**
+ * @brief Deserializes SavedScene from JSON object.
+ *
+ * @param j The JSON object containing scene data.
+ * @param s Reference to SavedScene to populate with deserialized data.
+ */
 void JsonLoad::from_json(const json& j, SavedScene& s) {
     s.sceneName = j["sceneName"];
     s.entities.clear();
 
-    for (const auto& entityJson : j["entities"]) {  // This iterates forwards
+    for (const auto& entityJson : j["entities"]) {
         SavedEntity entity;
         from_json(entityJson, entity);
-        s.entities.push_back(entity);  // Adds to end of vector
+        s.entities.push_back(entity);
     }
 }
 
+/**
+ * @brief Serializes GameSettings to JSON object.
+ *
+ * @param j Reference to the JSON object to populate with settings data.
+ * @param s GameSettings to serialize.
+ */
 void JsonLoad::to_json(json& j, const GameSettings& s) {
     j = json{
         {"volume", s.volume},
@@ -496,16 +623,30 @@ void JsonLoad::to_json(json& j, const GameSettings& s) {
     };
 }
 
+/**
+ * @brief Deserializes GameSettings from JSON object.
+ *
+ * @param j The JSON object containing settings data.
+ * @param s Reference to GameSettings to populate with deserialized data.
+ */
 void JsonLoad::from_json(const json& j, GameSettings& s) {
     j.at("volume").get_to(s.volume);
     j.at("resolutionWidth").get_to(s.resolutionWidth);
     j.at("resolutionHeight").get_to(s.resolutionHeight);
     j.at("fullscreen").get_to(s.fullscreen);
 }
-#pragma region Serialization
+#pragma endregion Serialization
 
 #pragma region SavingandLoading
 
+/**
+ * @brief Saves current game scene to JSON file.
+ *
+ * @param filepath The file path where the scene should be saved.
+ * @param sceneName The name to assign to this scene for identification.
+ * @return bool True if the scene was successfully saved, false if an error
+ *         occurred during serialization or file writing.
+ */
 bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& sceneName) {
     try {
         SavedScene scene;
@@ -544,6 +685,14 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
     }
 }
 
+/**
+ * @brief Loads game scene from JSON file.
+ *
+ * @param filepath The file path to the scene file to load.
+ * @return bool True if the scene was successfully loaded, false if the file
+ *         doesn't exist, is empty, contains invalid JSON, or an error occurred
+ *         during deserialization.
+ */
 bool JsonLoad::LoadScene(const std::string& filepath) {
     try {
         std::string content = FileIO::ReadFile(filepath);
@@ -573,6 +722,14 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
     }
 }
 
+/**
+ * @brief Saves game settings to JSON file.
+ *
+ * @param filepath The file path where settings should be saved.
+ * @param settings GameSettings structure containing the settings to save.
+ * @return bool True if settings were successfully saved, false if an error
+ *         occurred during serialization or file writing.
+ */
 bool JsonLoad::SaveSettings(const std::string& filepath, const GameSettings& settings) {
     try {
         json j;
@@ -585,6 +742,13 @@ bool JsonLoad::SaveSettings(const std::string& filepath, const GameSettings& set
     }
 }
 
+/**
+ * @brief Loads game settings from JSON file.
+ *
+ * @param filepath The file path to the settings file to load.
+ * @return std::optional<GameSettings> Contains the loaded settings
+ *         if successful, or std::nullopt if fails.
+ */
 std::optional<GameSettings> JsonLoad::LoadSettings(const std::string& filepath) {
     try {
         std::string content = FileIO::ReadFile(filepath);
@@ -602,7 +766,9 @@ std::optional<GameSettings> JsonLoad::LoadSettings(const std::string& filepath) 
 }
 #pragma endregion SavingandLoading
 
-// clear all entities before loading so we don't clone them
+/**
+ * @brief Clears all entities from the current scene.
+ */
 void JsonLoad::ClearAllEntities() {
     EntityManager& em = EntityManager::get();
     std::vector<Entity> toRemove;
