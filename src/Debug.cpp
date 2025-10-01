@@ -46,6 +46,7 @@ void DebugDraw::DrawHotspot(const Vec2& pos, Render& renderer) {
 
 
 void DebugDraw::DrawVelocity(Entity e, const TransformComponent& t, Render& renderer, float dt){
+    //unordered map store per entity data
     static std::unordered_map<Entity, Vec2> lastPos;
     static std::unordered_map<Entity, Vec2> smoothVel;
 
@@ -67,7 +68,7 @@ void DebugDraw::DrawVelocity(Entity e, const TransformComponent& t, Render& rend
     smoothVel[e] = smoothVel[e] * 0.8f + rawVel * 0.2f;
 
     // scale line for visibility
-    float scale = 0.05f;
+    float scale = 1.0f;
     Vec2 end = pos + smoothVel[e] * scale;
 
     renderer.DrawLine(pos, end, { 1.f, 0.f, 0.f });
