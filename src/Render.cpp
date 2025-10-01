@@ -335,7 +335,7 @@ void Render::UnloadTexture(GLuint textureID) {
             glBindTexture(GL_TEXTURE_2D, 0); // Unbind any texture
             textureCache.erase(it);
             std::cout << "Texture unloaded successfully" << std::endl;
-            return; // Found and removed, exit
+            return;
         }
     }
     std::cout << "Warning: Texture ID " << textureID << " not found in cache" << std::endl;
@@ -603,7 +603,7 @@ void Render::DrawImageSub(const Image& Image,
     glBindTexture(GL_TEXTURE_2D, Image.textureID);
     glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
 
-    // Tell shader we’re using texture mode
+    // Tell shader weï¿½re using texture mode
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), true);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), false);
 

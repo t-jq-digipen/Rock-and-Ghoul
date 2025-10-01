@@ -191,7 +191,7 @@ void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
 void JsonLoad::Load_Physics(Entity eID, const std::string& data) {
     json j = json::parse(data);
 
-    // Build AABB using Set_AABB helper (which sets dim automatically)
+    // Build AABB using Set_AABB helper
     Vec2 center = { j["aabb"]["centerX"], j["aabb"]["centerY"] };
     Vec2 size = { j["aabb"]["dimX"], j["aabb"]["dimY"] };
     AABB aabb = Set_AABB(center, size);
@@ -239,9 +239,7 @@ void JsonLoad::Load_Input(Entity eID, const std::string& data) {
 }
 #pragma endregion ComponentSavers
 
-// ========================================
 // ECS <-> SAVED ENTITY CONVERSION
-// ========================================
 
 SavedEntity JsonLoad::EntityToSaved(Entity eID) {
     SavedEntity saved;
@@ -285,7 +283,7 @@ Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
 
     std::cout << "Creating entity '" << saved.name << "' (ID: " << e << ")" << std::endl;
 
-    // Loop through component data and load each component
+    // loop through component data and load each component
     for (const auto& [componentType, data] : saved.componentData) {
         switch (componentType) {
         case CT_Transform:
@@ -332,7 +330,7 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
         {"components", json::object()}
     };
 
-    // Add component data
+    // add component data in a nice format
     for (const auto& [componentType, data] : e.componentData) {
         std::string componentName;
         switch (componentType) {
@@ -346,7 +344,7 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
         default: componentName = "Unknown"; break;
         }
 
-        // Parse the JSON string and add it
+        // parse JSON string and add component data
         j["components"][componentName] = json::parse(data);
     }
 }
@@ -417,9 +415,7 @@ void JsonLoad::from_json(const json& j, GameSettings& s) {
 }
 #pragma region Serialization
 
-// ========================================
-// HIGH-LEVEL SAVE/LOAD FUNCTIONS
-// ========================================
+#pragma region SavingandLoading
 
 bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& sceneName) {
     try {
@@ -515,19 +511,21 @@ std::optional<GameSettings> JsonLoad::LoadSettings(const std::string& filepath) 
         return std::nullopt;
     }
 }
-// Clear all entities before loading
+#pragma endregion SavingandLoading
+
+// clear all entities before loading so we don't clone them
 void JsonLoad::ClearAllEntities() {
     EntityManager& em = EntityManager::get();
     std::vector<Entity> toRemove;
 
-    // Collect all alive entities
+    // get all alive entities
     for (Entity e = 0; e < em.maxEntities(); ++e) {
         if (em.isAlive(e)) {
             toRemove.push_back(e);
         }
     }
 
-    // Remove them
+    // remove them one by one
     for (Entity e : toRemove) {
         Remove_Entity(e);
     }

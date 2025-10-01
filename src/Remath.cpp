@@ -15,13 +15,11 @@ T RG_GetPI() {
 // ANGLE CONVERSION
 // ==============================================
 
-// Degree to Radians
 template<typename T>
 T RG_DegToRad(T x) {
     return x * (RG_GetPI<T>() / (T)180.0);
 }
 
-// Radians to Degree
 template<typename T>
 T RG_RadToDeg(T x) {
     return x * ((T)180.0 / RG_GetPI<T>());
@@ -46,26 +44,16 @@ T RG_Tan(T x) {
 }
 
 template<typename T>
-// Clamping x to the domain of asin (-1, 1)
 T RG_ASin(T x) {
-    if (x < (T)-1.0) {
-        x = (T)-1.0;
-    }
-    if (x > (T)1.0) {
-        x = (T)1.0;
-    }
+    if (x < (T)-1.0) x = (T)-1.0;
+    if (x > (T)1.0) x = (T)1.0;
     return (T)asin((double)x);
 }
 
 template<typename T>
-// Clamping x to domain of acos (-1, 1)
 T RG_ACos(T x) {
-    if (x < (T)-1.0) {
-        x = (T)-1.0;
-    }
-    if (x > (T)1.0) {
-        x = (T)1.0;
-    }
+    if (x < (T)-1.0) x = (T)-1.0;
+    if (x > (T)1.0) x = (T)1.0;
     return (T)acos((double)x);
 }
 
@@ -113,76 +101,257 @@ T RG_ATanDeg(T x) {
     return RG_RadToDeg(RG_ATan(x));
 }
 
-float RG_DistanceSquared(const Vec2& p1, const Vec2& p2) {
-    float dx = p2.x - p1.x;
-    float dy = p2.y - p1.y;
-    return dx * dx + dy * dy;
+#pragma endregion TRIGO
+
+// ==============================================
+// VEC2 CONSTRUCTORS AND OPERATORS
+// ==============================================
+#pragma region Vec2
+
+// Constructors
+Vec2::Vec2() : x(0.f), y(0.f) {}
+Vec2::Vec2(float _x, float _y) : x(_x), y(_y) {}
+
+// Operator overloads
+Vec2 Vec2::operator*(float scalar) const {
+    return Vec2(x * scalar, y * scalar);
+}
+
+Vec2 Vec2::operator+(const Vec2& rhs) const {
+    return Vec2(x + rhs.x, y + rhs.y);
+}
+
+Vec2 Vec2::operator-(const Vec2& rhs) const {
+    return Vec2(x - rhs.x, y - rhs.y);
+}
+
+Vec2 Vec2::operator/(float scalar) const {
+    return Vec2(x / scalar, y / scalar);
+}
+
+Vec2& Vec2::operator+=(const Vec2& rhs) {
+    x += rhs.x;
+    y += rhs.y;
+    return *this;
+}
+
+Vec2& Vec2::operator-=(const Vec2& rhs) {
+    x -= rhs.x;
+    y -= rhs.y;
+    return *this;
+}
+
+Vec2& Vec2::operator*=(float scalar) {
+    x *= scalar;
+    y *= scalar;
+    return *this;
+}
+
+Vec2& Vec2::operator/=(float scalar) {
+    x /= scalar;
+    y /= scalar;
+    return *this;
+}
+
+// ==============================================
+// VEC2 OPERATIONS
+// ==============================================
+
+Vec2 RG_Add(const Vec2& a, const Vec2& b) {
+    return { a.x + b.x, a.y + b.y };
+}
+
+Vec2 RG_Subtract(const Vec2& a, const Vec2& b) {
+    return { a.x - b.x, a.y - b.y };
+}
+
+Vec2 RG_Scale(const Vec2& v, float scalar) {
+    return { v.x * scalar, v.y * scalar };
 }
 
 float RG_DotProduct(const Vec2& a, const Vec2& b) {
     return a.x * b.x + a.y * b.y;
 }
 
-Vec2 Add(const Vec2& a, const Vec2& b) {
-    return { a.x + b.x, a.y + b.y };
+float RG_DistanceSquared(const Vec2& p1, const Vec2& p2) {
+    float dx = p2.x - p1.x;
+    float dy = p2.y - p1.y;
+    return dx * dx + dy * dy;
 }
 
-Vec2 Subtract(const Vec2& a, const Vec2& b) {
-    return { a.x - b.x, a.y - b.y };
+float RG_Distance(const Vec2& p1, const Vec2& p2) {
+    return RG_Sqrt(RG_DistanceSquared(p1, p2));
 }
 
-Vec2 Scale(const Vec2& v, float scalar) {
-    return { v.x * scalar, v.y * scalar };
+float RG_Length(const Vec2& v) {
+    return RG_Sqrt(v.x * v.x + v.y * v.y);
 }
 
-// Linear interpolation: find where u are along a straight line
-Vec2 Lerp(const Vec2& a, const Vec2& b, float t) {
-    return Add(a, Scale(Subtract(b, a), t));
+float RG_LengthSquared(const Vec2& v) {
+    return v.x * v.x + v.y * v.y;
 }
 
-// Normalize
-Vec2 Normalize(const Vec2 a)
-{
-    const float len = std::sqrt(a.x * a.x + a.y * a.y);
-
-    if (len>0.f)
-    { return { a.x / len, a.y / len }; }
-
-    return { 0.f,0.f };
+Vec2 RG_Normalize(const Vec2& v) {
+    const float len = RG_Length(v);
+    if (len > 0.f) {
+        return { v.x / len, v.y / len };
+    }
+    return { 0.f, 0.f };
 }
 
-float Sqrt(float x) {
-    if (x < 0) { return 0; } // cannot sqrt -ve number
+Vec2 RG_Lerp(const Vec2& a, const Vec2& b, float t) {
+    return RG_Add(a, RG_Scale(RG_Subtract(b, a), t));
+}
 
-    if (x == 0 || x == 1) { return x; } // special cases
+#pragma endregion Vec2
 
-    float precision = 0.00001; // accurate to 5dp
+// ==============================================
+// VEC3 CONSTRUCTORS AND OPERATORS
+// ==============================================
+#pragma region Vec3
+
+// Constructors
+Vec3::Vec3() : x(0.f), y(0.f), z(0.f) {}
+Vec3::Vec3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+
+// Operator overloads
+Vec3 Vec3::operator+(const Vec3& rhs) const {
+    return Vec3(x + rhs.x, y + rhs.y, z + rhs.z);
+}
+
+Vec3 Vec3::operator-(const Vec3& rhs) const {
+    return Vec3(x - rhs.x, y - rhs.y, z - rhs.z);
+}
+
+Vec3 Vec3::operator*(float scalar) const {
+    return Vec3(x * scalar, y * scalar, z * scalar);
+}
+
+Vec3 Vec3::operator/(float scalar) const {
+    return Vec3(x / scalar, y / scalar, z / scalar);
+}
+
+Vec3& Vec3::operator+=(const Vec3& rhs) {
+    x += rhs.x;
+    y += rhs.y;
+    z += rhs.z;
+    return *this;
+}
+
+Vec3& Vec3::operator-=(const Vec3& rhs) {
+    x -= rhs.x;
+    y -= rhs.y;
+    z -= rhs.z;
+    return *this;
+}
+
+Vec3& Vec3::operator*=(float scalar) {
+    x *= scalar;
+    y *= scalar;
+    z *= scalar;
+    return *this;
+}
+
+Vec3& Vec3::operator/=(float scalar) {
+    x /= scalar;
+    y /= scalar;
+    z /= scalar;
+    return *this;
+}
+
+// ==============================================
+// VEC3 OPERATIONS
+// ==============================================
+
+Vec3 RG_Add(const Vec3& a, const Vec3& b) {
+    return Vec3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+
+Vec3 RG_Subtract(const Vec3& a, const Vec3& b) {
+    return Vec3(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+Vec3 RG_Scale(const Vec3& v, float scalar) {
+    return Vec3(v.x * scalar, v.y * scalar, v.z * scalar);
+}
+
+float RG_DotProduct(const Vec3& a, const Vec3& b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+Vec3 RG_CrossProduct(const Vec3& a, const Vec3& b) {
+    return Vec3(
+        a.y * b.z - a.z * b.y,  // i 
+        a.z * b.x - a.x * b.z,  // j 
+        a.x * b.y - a.y * b.x   // k 
+    );
+}
+
+float RG_Length(const Vec3& v) {
+    return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+float RG_LengthSquared(const Vec3& v) {
+    return v.x * v.x + v.y * v.y + v.z * v.z;
+}
+
+float RG_DistanceSquared(const Vec3& p1, const Vec3& p2) {
+    float dx = p2.x - p1.x;
+    float dy = p2.y - p1.y;
+    float dz = p2.z - p1.z;
+    return dx * dx + dy * dy + dz * dz;
+}
+
+float RG_Distance(const Vec3& p1, const Vec3& p2) {
+    return std::sqrt(RG_DistanceSquared(p1, p2));
+}
+
+Vec3 RG_Normalize(const Vec3& v) {
+    float len = RG_Length(v);
+    if (len > 0.0f) {
+        return Vec3(v.x / len, v.y / len, v.z / len);
+    }
+    return Vec3(0.0f, 0.0f, 0.0f);
+}
+
+Vec3 RG_Lerp(const Vec3& a, const Vec3& b, float t) {
+    return Vec3(
+        a.x + (b.x - a.x) * t,
+        a.y + (b.y - a.y) * t,
+        a.z + (b.z - a.z) * t
+    );
+}
+
+#pragma endregion Vec3
+
+// ==============================================
+// UTILITY FUNCTIONS
+// ==============================================
+
+float RG_Sqrt(float x) {
+    if (x < 0) return 0;
+    if (x == 0 || x == 1) return x;
+
+    float precision = 0.00001f;
     float guess = x * 0.5f;
-    float abs;
 
-    for (int i = 0; i < 10; ++i) { // capping iterations
+    for (int i = 0; i < 10; ++i) {
         float newGuess = 0.5f * (guess + x / guess);
+        float abs = (newGuess - guess < 0) ? -(newGuess - guess) : (newGuess - guess);
 
-        if ((newGuess - guess) < 0) {
-            abs = -(newGuess - guess);
-        }
-        else { abs = newGuess - guess; }
-
-        // if absolute value of difference between newGuess and Guess is negligible by precision, newGuess is good
         if (abs < precision) {
             return newGuess;
         }
-
-        guess = newGuess; // trying again
+        guess = newGuess;
     }
-
     return guess;
 }
 
-void Clamp(float& val, float const& min, float const& max)
-{
-    if (val > max)
-    { val = max; }
-    if (val < min)
-    { val = min; }
+void RG_Clamp(float& val, float const& min, float const& max) {
+    if (val > max) {
+        val = max;
+    }
+    if (val < min) {
+        val = min;
+    }
 }

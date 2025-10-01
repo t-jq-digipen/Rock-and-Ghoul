@@ -113,7 +113,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     float tLast = 0.016f;
 
     // speed at which circles are schmovinnnn
-    float relSpeed = sqrt((relVel.x * relVel.x) + (relVel.y * relVel.y)); // USING MATH LIBRARY REMOVE LATER AND USE CUSTOM MATH ENGINE
+    float relSpeed = RG_Sqrt((relVel.x * relVel.x) + (relVel.y * relVel.y));
     if (relSpeed == 0.0f) {
         return false;
     }
@@ -170,10 +170,10 @@ bool CollisionIntersection_CA_Static(const Circle& circle, const AABB& aabb)
 
 bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& line) {
         // starting from point on line to center of circle
-        Vec2 linecircle = Subtract(Vec2{ circle.pos.x, circle.pos.y }, line.start);
+        Vec2 linecircle = RG_Subtract(Vec2{ circle.pos.x, circle.pos.y }, line.start);
 
         // dir vector of line
-        Vec2 vecDir = Subtract(line.end, line.start);
+        Vec2 vecDir = RG_Subtract(line.end, line.start);
 
         // squared length of the line segment
         float lineLengthSquared = RG_DotProduct(vecDir, vecDir);
@@ -190,7 +190,7 @@ bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& li
         t = (t < 0.0f) ? 0.0f : (t > 1.0f) ? 1.0f : t;
 
         // find the closest point on the line segment for collision and scale with the clamp
-        Vec2 closestPoint = Add(line.start, Scale(vecDir, t));
+        Vec2 closestPoint = RG_Add(line.start, RG_Scale(vecDir, t));
 
         // check if circle intersects with the closest point
         float distanceSquared = RG_DistanceSquared(Vec2{ circle.pos.x, circle.pos.y }, closestPoint);

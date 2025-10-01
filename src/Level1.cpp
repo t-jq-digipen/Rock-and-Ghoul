@@ -48,13 +48,14 @@ void Level1::Init()
 
 	// JQ COMMENT OUT HAHAHA
 	// 5. Create entities
-	/*rock = Create_Player(200.f, 500.f);
-	square = Create_Square(800.f, 500.f);
-	roundy = Create_Circle(500.f, 500.f);*/
-	waffle = Create_Waffle(400.f, 400.f);
-	rock = Create_Player(200.f, 500.f);
-	square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
-	roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
+	if (!JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
+		
+		// Create with names (updated for json)
+		waffle = Create_Waffle(400.f, 400.f);
+		rock = Create_Player(200.f, 500.f);
+		square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
+		roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
+	}
 }
 
 void Level1::Update()
