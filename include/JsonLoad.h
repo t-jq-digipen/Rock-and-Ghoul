@@ -37,6 +37,7 @@ private:
     static void Load_Health(Entity eID, const std::string& data);
     static void Load_Tag(Entity eID, const std::string& data);
     static void Load_Input(Entity eID, const std::string& data);
+    static void Load_Animator(Entity eID, const std::string& data);
 
     // Component savers
     static std::string Save_Transform(Entity eID);
@@ -46,7 +47,7 @@ private:
     static std::string Save_Health(Entity eID);
     static std::string Save_Tag(Entity eID);
     static std::string Save_Input(Entity eID);
-
+    static std::string Save_Animator(Entity eID);
     // JSON serialization
     static void to_json(json& j, const SavedEntity& e);
     static void from_json(const json& j, SavedEntity& e);

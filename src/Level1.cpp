@@ -69,18 +69,24 @@ void Level1::Update()
 
 	// Load scene on F9
 	if (Input::IsKeyPressed(GLFW_KEY_F9)) {
-		// IMPORTANT: Clear existing entities first
 		JsonLoad::ClearAllEntities();
 
 		if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
 			std::cout << "Scene loaded successfully!" << std::endl;
-		}
-		else {
-			std::cout << "Failed to load scene!" << std::endl;
-			// Recreate default entities if load failed
-			rock = Create_Player(200.f, 500.f);
-			square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
-			roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
+
+			// Find waffle by checking for its sprite texture
+			for (Entity e = 0; e < 10; ++e) {
+				if (!EntityManager::get().isAlive(e)) continue;
+
+				if (Has_Component(e, CT_Sprite)) {
+					auto& s = Get_SpriteComponent(e);
+					if (s.Get_TexturePath().find("Waffle") != std::string::npos) {
+						std::cout << "Found waffle at Entity " << e << std::endl;
+						waffle = e;  // Update the waffle variable
+						break;
+					}
+				}
+			}
 		}
 	}
 	// to test game state changes

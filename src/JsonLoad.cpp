@@ -11,7 +11,8 @@ std::string JsonLoad::Save_Transform(Entity eID) {
         {"posX", t.pos.x},
         {"posY", t.pos.y},
         {"scaleX", t.scale.x},
-        {"scaleY", t.scale.y}
+        {"scaleY", t.scale.y},
+        {"rot", t.rot}
     };
     return j.dump();
 }
@@ -48,10 +49,29 @@ std::string JsonLoad::Save_Sprite(Entity eID) {
         {"scaleX", s.Get_Scale().x},
         {"scaleY", s.Get_Scale().y},
         {"animated", s.IsAnimated()}
+
     };
     return j.dump();
 }
+std::string JsonLoad::Save_Animator(Entity eID) {
+    auto& a = Get_AnimatorComponent(eID);
 
+    auto frames = a.GetFrames();
+
+    json j = {
+        {"totalRows", a.GetTotalRows()},
+        {"totalCols", a.GetTotalCols()},
+        {"animDuration", a.GetAnimDuration()},
+        {"frameRow", frames.row},
+        {"frameColStart", frames.col_start},
+        {"frameColEnd", frames.col_end},
+        {"u0", a.u0},
+        {"v0", a.v0},
+        {"u1", a.u1},
+        {"v1", a.v1}
+    };
+    return j.dump();
+}
 std::string JsonLoad::Save_Shape(Entity eID) {
     auto& s = Get_ShapeComponent(eID);
     json j = {
@@ -130,6 +150,7 @@ void JsonLoad::Load_Transform(Entity eID, const std::string& data) {
     t.pos.y = j["posY"];
     t.scale.x = j["scaleX"];
     t.scale.y = j["scaleY"];
+    t.rot = j.value("rot", 0.0f);
     Add_Component(eID, t);
 }
 void JsonLoad::Load_Shape(Entity eID, const std::string& data) {
@@ -145,7 +166,32 @@ void JsonLoad::Load_Shape(Entity eID, const std::string& data) {
 
     Add_Component(eID, s);
 }
+void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
+    json j = json::parse(data);
 
+    // Reconstruct ActiveFrames
+    Animator::ActiveFrames frames;
+    frames.row = j["frameRow"];
+    frames.col_start = j["frameColStart"];
+    frames.col_end = j["frameColEnd"];
+
+    // Get the sprite component to determine image dimensions
+    auto& sprite = Get_SpriteComponent(eID);
+    int imageWidth = sprite.Get_Image().widthPixels;
+    int imageHeight = sprite.Get_Image().heightPixels;
+
+    // Create animator with saved parameters
+    Animator::AnimatorComponent anim(
+        j["totalRows"],
+        j["totalCols"],
+        imageWidth,
+        imageHeight,
+        frames,
+        j["animDuration"]
+    );
+
+    Add_Component(eID, anim);
+}
 //void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
 //    json j = json::parse(data);
 //    SpriteComponent s;
@@ -181,7 +227,7 @@ void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
     scale.y = j["scaleY"];
     bool animated = j["animated"];
 
-    // Create sprite component with the loaded data
+
     if (!texPath.empty()) {
         Sprite::SpriteComponent s(texPath, scale, animated);
         Add_Component(eID, s);
@@ -273,48 +319,69 @@ SavedEntity JsonLoad::EntityToSaved(Entity eID) {
     if (Has_Component(eID, CT_Input)) {
         saved.componentData[CT_Input] = Save_Input(eID);
     }
+    if (Has_Component(eID, CT_Animator)) {
+        saved.componentData[CT_Animator] = Save_Animator(eID);
+    }
 
     return saved;
 }
 
 Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
     Entity e = Create_Entity();
-    SetEntityName(e, saved.name);  // get the name of component stored
+    SetEntityName(e, saved.name);
 
     std::cout << "Creating entity '" << saved.name << "' (ID: " << e << ")" << std::endl;
 
-    // loop through component data and load each component
+    // Load Transform FIRST
+    auto transformIt = saved.componentData.find(CT_Transform);
+    if (transformIt != saved.componentData.end()) {
+        Load_Transform(e, transformIt->second);
+        std::cout << " Transform loaded" << std::endl;
+    }
+
+    // Load Sprite SECOND (before Animator needs it)
+    auto spriteIt = saved.componentData.find(CT_Sprite);
+    if (spriteIt != saved.componentData.end()) {
+        Load_Sprite(e, spriteIt->second);
+        std::cout << "Loaded Sprite" << std::endl;
+    }
+
+    // Then load other components
     for (const auto& [componentType, data] : saved.componentData) {
-        switch (componentType) {
-        case CT_Transform:
-            Load_Transform(e, data);
-            break;
+        if (componentType == CT_Transform || componentType == CT_Sprite) continue;
 
-       case CT_Sprite:
-            Load_Sprite(e, data);
-            break;
-
-        case CT_Physics:
-            Load_Physics(e, data);
-            break;
-
-        case CT_Health:
-            Load_Health(e, data);
-            break;
-
-        case CT_Tag:
-            Load_Tag(e, data);
-            break;
-
-        case CT_Input:
-            Load_Input(e, data);
-            break;
-        case CT_Shape:  // ADD THIS CASE
-            Load_Shape(e, data);
-            break;
-
-        default:
-            break;
+        try {
+            switch (componentType) {
+            case CT_Animator:
+                Load_Animator(e, data);
+                std::cout << "Loaded Animator" << std::endl;
+                break;
+            case CT_Physics:
+                Load_Physics(e, data);
+                std::cout << "Loaded Physics" << std::endl;
+                break;
+            case CT_Health:
+                Load_Health(e, data);
+                std::cout << "Loaded Health" << std::endl;
+                break;
+            case CT_Tag:
+                Load_Tag(e, data);
+                std::cout << "Loaded Tag" << std::endl;
+                break;
+            case CT_Shape:
+                Load_Shape(e, data);
+                std::cout << "Loaded Shape" << std::endl;
+                break;
+            case CT_Input:
+                Load_Input(e, data);
+                std::cout << "Loaded Input" << std::endl;
+                break;
+            default:
+                break;
+            }
+        }
+        catch (const std::exception& ex) {
+            std::cerr << "Failed to load component: " << ex.what() << std::endl;
         }
     }
 
@@ -341,6 +408,7 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
         case CT_Tag: componentName = "Tag"; break;
         case CT_Input: componentName = "Input"; break;
         case CT_Shape: componentName = "Shape"; break;
+        case CT_Animator: componentName = "Animator"; break;
         default: componentName = "Unknown"; break;
         }
 
@@ -367,6 +435,7 @@ void JsonLoad::from_json(const json& j, SavedEntity& e) {
         else if (componentName == "Tag") componentType = CT_Tag;
         else if (componentName == "Shape") componentType = CT_Shape;
         else if (componentName == "Input") componentType = CT_Input;
+        else if (componentName == "Animator") componentType = CT_Animator;
 
         if (componentType != CT_None) {
             e.componentData[componentType] = it.value().dump();
@@ -389,12 +458,12 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
 
 void JsonLoad::from_json(const json& j, SavedScene& s) {
     s.sceneName = j["sceneName"];
-
     s.entities.clear();
-    for (const auto& entityJson : j["entities"]) {
+
+    for (const auto& entityJson : j["entities"]) {  // This iterates forwards
         SavedEntity entity;
         from_json(entityJson, entity);
-        s.entities.push_back(entity);
+        s.entities.push_back(entity);  // Adds to end of vector
     }
 }
 

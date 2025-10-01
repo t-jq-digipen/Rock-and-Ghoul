@@ -64,7 +64,10 @@ namespace Animator {
 		void ResetTimer();
 
 		void UpdateFrame(float dt);
-
+		int GetTotalRows() const { return m_total_rows; }
+		int GetTotalCols() const { return m_total_cols; }
+		float GetAnimDuration() const { return anim_duration; }
+		ActiveFrames GetFrames() const { return frames; }
 		
 	};
 
