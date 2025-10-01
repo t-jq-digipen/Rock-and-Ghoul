@@ -1,13 +1,20 @@
 /* ========================================================
- * @file	ImguiSystem.cpp
- * @author	WONG SHI YU REGINE
- * @date	1 OCTOBER 2025
+ * @file    ImguiSystem.cpp
+ * @author   w.shiyuregine@digipen.edu
+ * @date    01/10/2025
  *
  * @brief
+ * 
+ * Implements the ImGuiSystem, which provides a in-game editor UI. The system toggles with F1 and
+ * displays a single "Game Editor" window containing multiple panels:
+ * 
+ * - Engine Info:           Framerate and system timings
+ * - Collision:             Displays collider stats and scene management
+ * - Hierarchy + Editor:    Entity list and property editor
  *
- *
- *
- *
+ * Panels are switched using buttons inside the editor window.
+ * This design avoids multiple pop-up windows by embedding
+ * panel content inline within one parent window.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -21,13 +28,16 @@
 #include "Input.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
+
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 bool ImGuiSystem::guiEnabled = false;
+static Panel activePanel = Panel::None;
+
 
 namespace {
-    // A small helper to name an entity for the Hierarchy list
+    // small helper to name an entity for the Hierarchy list
     std::string EntityDisplayName(Entity e) {
         std::string name = "Entity " + std::to_string(e);
 
@@ -39,15 +49,6 @@ namespace {
                 : "Unknown";
             name = std::string(tagName) + " " + std::to_string(e);
         }
-
-        // JQ COMMENT OUT HAHAHA
-        // If it has a sprite, append a hint (textured / square / circle)
-        /*if (Has_Component(e, CT_Sprite)) {
-            auto& s = Get_SpriteComponent(e);
-            if (s.textureID == 0)      name += "  [Square]";
-            else if (s.textureID == 1) name += "  [Circle]";
-            else                       name += "  [Textured]";
-        }*/
         if (Has_Component(e, CT_Shape)) {
             auto& s = Get_ShapeComponent(e);
             if (s.shape == SHAPE_RECTANGLE) {
@@ -58,7 +59,6 @@ namespace {
             }
         }
         else if (Has_Component(e, CT_Sprite)) {
-            // Try to identify sprite type by name or other properties
             std::string entName = GetEntityName(e);
             name += "  [Textured]";
         
@@ -94,27 +94,46 @@ void ImGuiSystem::Update(float dt) {
     if (Input::IsKeyPressed(GLFW_KEY_F1)) {
         guiEnabled = !guiEnabled; // toggle on/off
     }
-    ////start a frame
-    //ImGui_ImplOpenGL3_NewFrame();
-    //ImGui_ImplGlfw_NewFrame();
-    //ImGui::NewFrame();
+    if (!guiEnabled) return;
 
-    ////all windows
-    //ShowEngineDebugWindow(); //engine fps n shii
-    //ShowCollisionDebugWindow(); //collision n entity loc
-    //ShowHierarchyWindow();   // NEW
-    //ShowInspectorWindow();
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 
-    if (guiEnabled) {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+    ImGui::Begin("Game Editor");
 
+    if (ImGui::Button("Engine Info")) activePanel = Panel::Engine;
+    if (ImGui::Button("Collision + Scene Management")) activePanel = Panel::Collision;
+    if (ImGui::Button("Editor")) activePanel = activePanel = Panel::HierarchyInspector;
+
+    ImGui::Separator();
+    switch (activePanel) {
+    case Panel::Engine:
         ShowEngineDebugWindow();
+        break;
+
+    case Panel::Collision:
         ShowCollisionDebugWindow();
+        break;
+
+    case Panel::HierarchyInspector:
+        //ImGui own 2D vector struct
+        ImGui::BeginChild("LeftPane", ImVec2(ImGui::GetWindowWidth() * 0.4f, 0), true);
         ShowHierarchyWindow();
+        ImGui::EndChild();
+
+        ImGui::SameLine();
+
+        ImGui::BeginChild("RightPane", ImVec2(0, 0), true);
         ShowInspectorWindow();
+        ImGui::EndChild();
+        break;
+
+    default:
+        ImGui::Text("Select a panel above.");
+        break;
     }
+    ImGui::End();
 }
 // called every frame after Update() to actually render ImGui to screen
 //  MUSTTT be called after NewFrame() and before buffer swap
@@ -125,7 +144,6 @@ void ImGuiSystem::Render() {
 }
 
 void ImGuiSystem::ShowEngineDebugWindow() {
-    ImGui::Begin("Engine Info");
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate); //ms
     CoreEngine& engine = CoreEngine::GetInstance(); // however you access it
@@ -147,13 +165,10 @@ void ImGuiSystem::ShowEngineDebugWindow() {
         //visual bar
         ImGui::ProgressBar((float)(percent / 100.0f), ImVec2(-1, 0), (std::to_string((int)percent) + "%").c_str());
     }
-    ImGui::End();
 }
 
 //collili
 void ImGuiSystem::ShowCollisionDebugWindow() {
-    ImGui::Begin("Collision Debug");
-
     // count active colliders
     int activeColliders = 0;
     int totalColliders = 0;
@@ -222,12 +237,10 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
             std::cout << "Failed to load scene!" << std::endl;
         }
     }
-    ImGui::End();
 }
 
 
 void ImGuiSystem::ShowHierarchyWindow() {
-    ImGui::Begin("Hierarchy");
 
     EnsureSelectionValid();
 
@@ -256,17 +269,14 @@ void ImGuiSystem::ShowHierarchyWindow() {
         selectedEntity = Create_Shape(600.f, 200.f, SHAPE_CIRCLE, CS_ARROWS);
     }
 
-    ImGui::End();
 }
 
 void ImGuiSystem::ShowInspectorWindow() {
-    ImGui::Begin("Inspector");
 
     EnsureSelectionValid();
     //if no entity is selected, just show a message and return
     if (selectedEntity == INVALID_ENTITY) {
         ImGui::Text("No entity selected");
-        ImGui::End();
         return;
     }
     // show the entity ID at top
@@ -466,7 +476,6 @@ void ImGuiSystem::ShowInspectorWindow() {
         }
         ImGui::EndPopup();
     }
-    ImGui::End();
 }
 
 void ImGuiSystem::Shutdown() {

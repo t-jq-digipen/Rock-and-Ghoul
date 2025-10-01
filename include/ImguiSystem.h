@@ -4,6 +4,13 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+enum class Panel {
+    None,
+    Engine,
+    Collision,
+    HierarchyInspector
+};
+
 
 class ImGuiSystem : public ISystem {
 public:
