@@ -41,19 +41,19 @@ std::unordered_map<AudioSystem::ButtonType, FMOD::Sound*> AudioSystem::buttonSou
  */
 bool AudioSystem::Init() {
     FMOD_RESULT result;
-
+    // Create the FMOD system object
     result = FMOD::System_Create(&mSystem);
     if (result != FMOD_OK) {
         std::cerr << "FMOD Error: Failed to create system (" << result << ")" << std::endl;
         return false;
     }
-
+    // Create the FMOD system object
     result = mSystem->init(32, FMOD_INIT_NORMAL, nullptr);
     if (result != FMOD_OK) {
         std::cerr << "FMOD Error: Failed to initialize system (" << result << ")" << std::endl;
         return false;
     }
-
+    // Load the default button click sounds
     LoadDefaultButtonSounds();
 
     std::cout << "FMOD Audio initialized successfully!" << std::endl;
@@ -84,7 +84,9 @@ void AudioSystem::LoadDefaultButtonSounds() {
  *             as defined in the ButtonType enum.
  */
 void AudioSystem::PlayButtonSound(ButtonType type) {
+    // Look up the button sound in the map
     auto it = buttonSounds.find(type);
+    // If found and valid, play it
     if (it != buttonSounds.end() && it->second) {
         PlaySound(it->second);
         std::cout << "Playing button sound for type: " << static_cast<int>(type) << std::endl;
@@ -112,6 +114,8 @@ void AudioSystem::PlayButtonSound(ButtonType type) {
  * @param soundPath The file path to the sound file
  */
 void AudioSystem::RegisterButtonSound(ButtonType type, const std::string& soundPath) {
+    //RegisterButtonSound(ButtonType::PLAY, "../Assets/music/playclick.mp3");
+    //RegisterButtonSound(ButtonType::QUIT, "../Assets/music/quitclick.mp3");
     FMOD::Sound* sound = LoadSound(soundPath, false);
     if (sound) {
         buttonSounds[type] = sound;
@@ -133,6 +137,10 @@ void AudioSystem::RegisterButtonSound(ButtonType type, const std::string& soundP
  * @param sound Pointer to an already loaded FMOD::Sound object.
  */
 void AudioSystem::RegisterButtonSound(ButtonType type, FMOD::Sound* sound) {
+
+    //FMOD::Sound* clickSound = LoadSound("../Assets/music/click.mp3", false);
+    //RegisterButtonSound(ButtonType::PLAY, clickSound);
+    //RegisterButtonSound(ButtonType::OPTIONS, clickSound);
     if (sound) {
         buttonSounds[type] = sound;
         std::cout << "Registered button sound for type " << static_cast<int>(type) << std::endl;
@@ -148,12 +156,12 @@ void AudioSystem::RegisterButtonSound(ButtonType type, FMOD::Sound* sound) {
 void AudioSystem::Close() {
     for (auto& pair : buttonSounds) { // cleaning up button sounds
         if (pair.second) {
-            pair.second->release();
+            pair.second->release(); // free FMOD sound memory
         }
     }
     buttonSounds.clear();
 
-    if (mSystem) {
+    if (mSystem) { // Shut down and release the FMOD system itself
         mSystem->close();
         mSystem->release();
         mSystem = nullptr;
@@ -258,6 +266,7 @@ FMOD::Channel* AudioSystem::PlaySoundGetChannel(FMOD::Sound* sound, bool paused)
  * @param ms The position in milliseconds from the start of the sound.
  */
 void AudioSystem::SetChannelPosition(FMOD::Channel* channel, unsigned int ms) {
+    //FMOD::Channel* musicChannel = AudioSystem::PlaySoundGetChannel(bgm, false);
     if (channel) {
         channel->setPosition(ms, FMOD_TIMEUNIT_MS);
     }
@@ -273,6 +282,7 @@ void AudioSystem::SetChannelPosition(FMOD::Channel* channel, unsigned int ms) {
  * @return unsigned int The current playback position in milliseconds.
  */
 unsigned int AudioSystem::GetChannelPosition(FMOD::Channel* channel) {
+    //AudioSystem::SetChannelPaused(musicChannel, true);
     unsigned int pos = 0;
     if (channel) {
         channel->getPosition(&pos, FMOD_TIMEUNIT_MS);

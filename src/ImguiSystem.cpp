@@ -302,8 +302,8 @@ void ImGuiSystem::ShowInspectorWindow() {
     if (Has_Component(selectedEntity, CT_Physics)) {
         auto& p = Get_PhysicsComponent(selectedEntity);
         if (ImGui::TreeNode("Physics")) {
-            auto aabb = p.Get_AABB();
-            auto circ = p.Get_Circle();
+            auto& aabb = p.Get_AABB();
+            auto& circ = p.Get_Circle();
             ImGui::Checkbox("Collision Active", const_cast<bool*>(&p.CollisionActive()));
             Vec2 aabbSize = aabb.dim;
             if (ImGui::DragFloat2("AABB Size", &aabbSize.x, 1.0f, 10.0f, 1000.0f)) {
@@ -360,10 +360,9 @@ void ImGuiSystem::ShowInspectorWindow() {
         // Copy Physics
         if (Has_Component(selectedEntity, CT_Physics)) {
             auto& p = Get_PhysicsComponent(selectedEntity);
-            auto aabb = p.Get_AABB();
-            auto circle = p.Get_Circle();
-            Physics::PhysicsComponent newP(0.015f, p.CollisionActive(), aabb, circle);
-            Add_Component(clone, newP);
+            auto& aabb = p.Get_AABB();
+            auto& circle = p.Get_Circle();
+            Add_Component(clone, p);
         }
 
         // Copy Shape

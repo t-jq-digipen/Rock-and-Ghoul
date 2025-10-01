@@ -76,6 +76,8 @@ namespace Physics {
 		PhysicsComponent();
 		PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref);
 
+		PhysicsComponent(const PhysicsComponent& other) = default;
+
 		void AddForce(Vec2 const& direction, float magnitude, float duration = 0);
 
 		void Update();

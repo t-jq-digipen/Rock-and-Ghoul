@@ -14,7 +14,7 @@
 
 // Vertex + Fragment shaders loaded from file in Assets, any changes to shader code to be done inside those fiels
 
-Render::Render() : vao(0), vbo(0), shaderProgram(0) {}
+Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0) {}
 
 Render::~Render() {
     // Clean up OpenGL resources
@@ -26,7 +26,7 @@ Render::~Render() {
     if (textVAO) glDeleteVertexArrays(1, &textVAO);
     if (textVBO) glDeleteBuffers(1, &textVBO);
 
-    // THIS IS THE KEY FIX - Clean up FreeType character textures
+    //clean up FreeType character textures
     for (auto& [c, character] : Characters) {
         glDeleteTextures(1, &character.TextureID);
     }
