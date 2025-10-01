@@ -31,6 +31,13 @@ struct Character {
     unsigned int Advance;    // Offset to advance to next glyph
 };
 
+struct InstanceData {
+    glm::vec2 position;
+    glm::vec2 scale;
+    glm::vec4 uvRect;  // u0, v0, u1, v1
+    float rotation;
+};
+
 class Render {
 public:
     static Render& GetInstance() {
@@ -93,6 +100,9 @@ public:
     void DrawText(std::string text, float x, float y, float scale, const Colour3& color); //use: text, position, size, color
     //maybe set_font
 
+        //instance try
+    void DrawImageInstanced(const Image& image, const std::vector<InstanceData>& instances);
+
 
 
     std::string Get_TexturePath(const GLuint& imgID);
@@ -107,6 +117,7 @@ private:
     Render(const Render&) = delete;
     Render& operator=(const Render&) = delete;
     GLuint vao, vbo, shaderProgram;
+    GLuint InstanceVBO, InstanceShaderProgram;
     GLuint textVAO, textVBO; //text vaovbos
     glm::mat4 projection;
 
