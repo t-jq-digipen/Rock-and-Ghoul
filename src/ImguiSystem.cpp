@@ -225,6 +225,10 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::End();
 }
 
+void ImGuiSystem::ShowEntityDebugWindow() {
+    return;
+}
+
 void ImGuiSystem::ShowHierarchyWindow() {
     ImGui::Begin("Hierarchy");
 
