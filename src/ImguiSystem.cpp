@@ -307,7 +307,7 @@ void ImGuiSystem::ShowInspectorWindow() {
 
             //scale/dimensions
             Vec2 scale = s.Get_Scale();
-            if (ImGui::DragFloat2("Scale", &scale.x, 0.01f, 0.01f, 10.0f)) {
+            if (ImGui::InputFloat2("Scale", &scale.x)) {
                 s.Set_Size(scale);
             }
             ImGui::TreePop();
