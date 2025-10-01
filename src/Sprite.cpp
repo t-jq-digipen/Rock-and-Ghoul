@@ -19,22 +19,24 @@ namespace Sprite {
 
 	// Sprite Component
 
-	SpriteComponent::SpriteComponent() : m_image(), m_scale{ 0.f,0.f }, m_anim{ false } {}
+	SpriteComponent::SpriteComponent() : m_image(), m_scale{ 0.f,0.f }, m_anim{ false }, m_rot{ 0.f } {}
 
-	SpriteComponent::SpriteComponent(std::string const& path, Vec2 scale_offset, bool anim) : m_scale{ scale_offset }, m_anim{ anim } {
+	SpriteComponent::SpriteComponent(std::string const& path, Vec2 scale_offset, bool anim) : m_scale{ scale_offset }, m_anim{ anim }, m_rot{ 0.f } {
 		m_image = CreateImage(path);
 	}
 
 	SpriteComponent::SpriteComponent(Image const& image, float const& width, float const& height, bool anim) :
 		m_image(image),
 		m_scale(width, height),
-		m_anim(anim)
+		m_anim(anim),
+		m_rot{ 0.f }
 	{}
 
 	SpriteComponent::SpriteComponent(Image const& image, Vec2 const& dimensions, bool anim) :
 		m_image(image),
 		m_scale(dimensions),
-		m_anim(anim)
+		m_anim(anim),
+		m_rot{ 0.f }
 	{}
 
 	void SpriteComponent::Set_Image(Image const& image)

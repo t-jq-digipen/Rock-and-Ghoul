@@ -1,15 +1,13 @@
 /* ========================================================
  * @file	Registry.cpp
  * @author	Tan Jun Quan
- * @date	29 SEP 2025
+ * @date	01 OCT 2025
  *
  * @brief	Registry for ECS management
  *
  * This registry functions as the connection between the
  * entities and components, and is the medium for the systems
  * to interact with entitites and their components.
- *
- *
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================

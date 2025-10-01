@@ -5,9 +5,11 @@
  *
  * @brief	Physics component for ECS
  *
- * Physics things (BRIEF TO BE DONE)
- *
- *
+ * This file implements physics related components and utilities
+ * such as managing forces, calculating net velocities and
+ * updating an entity based on the forces applied.
+ * 
+ * The bulk of the updates happen in PhysicsSystem.cpp
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================

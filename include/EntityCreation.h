@@ -23,7 +23,22 @@
 //Entity Create_Circle(float x, float y);
 // Entity Create_Ghoul(float x, float y);
 #include "Component.h"
+
+/**
+ * @brief Create a player entity with transform,
+ *        physics, shape, input, tag, and health components.
+ * @param spawnx The initial x-position of the shape.
+ * @param spawny The initial y-position of the shape.
+ * @return The newly created Player entity.
+ */
 Entity Create_Player(float const& spawnx, float const& spawny);
+/**
+ * @brief Create a waffle entity with transform,
+ *        physics, shape, input, tag, and health components.
+ * @param spawnx The initial x-position of the shape.
+ * @param spawny The initial y-position of the shape.
+ * @return The newly created waffle entity. For engine testing.
+ */
 Entity Create_Waffle(float const& spawnx, float const& spawny);
 /**
  * @brief Create a generic Shape entity (rectangle or circle) with transform,

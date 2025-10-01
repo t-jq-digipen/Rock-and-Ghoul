@@ -1,3 +1,18 @@
+/* ========================================================
+ * @file	PhysicsSystem.cpp
+ * @author	Tan Jun Quan
+ * @date	29 SEP 2025
+ *
+ * @brief	Physics system for ECS
+ *
+ * This file implements the update order of the various
+ * parts in the physics component, with reference to other
+ * components such as Transform.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "PhysicsSystem.h"
 #include "Registry.h"
 #include "Component.h"
@@ -23,33 +38,6 @@ void PhysicsSystem::Update(float dt) {
 
     // Step 1: Move entities
 
-    //for (auto& [entID, phyComp] : CM_Physics().getComponents())
-    //{
-    //    // for Force force : ForceList(std::vector?)
-    //    /*
-    //    * {
-    //    *   phyComp.vel.x += force.vel.x * dt;
-    //    *   phyComp.vel.y += force.vel.y * dt;
-    //    * }
-    //    */
-
-
-    //    // Apply forces
-
-    //    // Apply damping
-    //    Damping(phyComp.vel, dt);
-
-    //    // Update positions
-    //    if (Has_Component(entID, CT_Transform))
-    //    {
-    //        TransformComponent& transform = Get_TransformComponent(entID);
-    //        transform.pos.x += phyComp.vel.x * dt;
-    //        transform.pos.y += phyComp.vel.y * dt;
-    //    }
-
-
-
-    //}
 
     // for new physics component
     for (auto& [entID, phyComp] : CM_Physics().getComponents())
@@ -72,8 +60,6 @@ void PhysicsSystem::Update(float dt) {
         collisionManager.CheckCollisions();
         collisionManager.ProcessEvents();
     }
-
-
 
 }
 

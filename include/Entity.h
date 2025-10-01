@@ -1,4 +1,13 @@
-
+/* ========================================================
+ * @file	Entity.h
+ * @author	Tan Jun Quan
+ * @date	24 SEP 2025
+ *
+ * @brief	Entity type declaration for ECS
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 #pragma once
 
 #include <bitset>
