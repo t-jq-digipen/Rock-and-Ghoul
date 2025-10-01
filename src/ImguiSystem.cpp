@@ -309,12 +309,6 @@ void ImGuiSystem::ShowInspectorWindow() {
             if (ImGui::DragFloat2("Scale", &scale.x, 0.01f, 0.01f, 10.0f)) {
                 s.Set_Size(scale);
             }
-
-            // if animated
-            bool animated = s.IsAnimated();
-            ImGui::Checkbox("Animated", &animated);
-            s.Set_Animated(animated);
-
             ImGui::TreePop();
         }
     }
@@ -426,6 +420,11 @@ void ImGuiSystem::ShowInspectorWindow() {
         if (Has_Component(selectedEntity, CT_Sprite)) {
             auto& s = Get_SpriteComponent(selectedEntity);
             Add_Component(clone, s);  // Copy entire sprite component
+        }
+
+        if (Has_Component(selectedEntity, CT_Animator)) {
+            auto& anim = Get_AnimatorComponent(selectedEntity);
+            Add_Component(clone, anim);  // This copies the entire animator with states
         }
 
         // Copy Tag

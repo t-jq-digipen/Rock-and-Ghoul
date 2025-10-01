@@ -129,9 +129,11 @@ namespace Animator {
 			anim_duration = frames.duration;
 			m_current_row = frames.row;
 			m_current_col = frames.col_start;
+
 			UpdateUV();
 			ResetTimer();
 		}
+		 m_current_state = state;
 	}
 
 	void AnimatorComponent::AddState(int state, ActiveFrames const& frames)

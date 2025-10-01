@@ -58,6 +58,8 @@ namespace Animator {
 		// using int for key for enumeration
 		std::unordered_map<int, ActiveFrames> stateframe;	// Create a map with int key for active frames
 
+		int m_current_state = -1;
+
 	public:
 		float u0, v0, u1, v1;	// For sub image
 
@@ -81,8 +83,10 @@ namespace Animator {
 		void SetState(int state);
 
 		void AddState(int state, ActiveFrames const& framerange);
+		std::unordered_map<int, ActiveFrames> GetStateFrames() const { return stateframe; }
+		int GetCurrentState() const { return m_current_state; }
 
-		
+
 		
 	};
 

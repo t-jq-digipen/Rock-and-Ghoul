@@ -57,6 +57,17 @@ std::string JsonLoad::Save_Animator(Entity eID) {
     auto& a = Get_AnimatorComponent(eID);
 
     auto frames = a.GetFrames();
+    auto stateMap = a.GetStateFrames();
+
+    json statesJson = json::object();
+    for (const auto& [state, stateFrames] : stateMap) {
+        statesJson[std::to_string(state)] = {
+            {"row", stateFrames.row},
+            {"col_start", stateFrames.col_start},
+            {"col_end", stateFrames.col_end},
+            {"duration", stateFrames.duration}
+        };
+    }
 
     json j = {
         {"totalRows", a.GetTotalRows()},
@@ -65,6 +76,8 @@ std::string JsonLoad::Save_Animator(Entity eID) {
         {"frameRow", frames.row},
         {"frameColStart", frames.col_start},
         {"frameColEnd", frames.col_end},
+         {"currentState", a.GetCurrentState()},
+        {"states", statesJson},
         {"u0", a.u0},
         {"v0", a.v0},
         {"u1", a.u1},
@@ -174,7 +187,12 @@ void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
     frames.row = j["frameRow"];
     frames.col_start = j["frameColStart"];
     frames.col_end = j["frameColEnd"];
-
+    //frames.duration = j["frameDuration"];
+    frames.duration = j.value("frameDuration", 1.0f);
+    if (!Has_Component(eID, CT_Sprite)) {
+        std::cerr << "ERROR: Entity " << eID << " doesn't have Sprite component yet!" << std::endl;
+        throw std::runtime_error("Animator requires Sprite component");
+    }
     // Get the sprite component to determine image dimensions
     auto& sprite = Get_SpriteComponent(eID);
     int imageWidth = sprite.Get_Image().widthPixels;
@@ -187,9 +205,25 @@ void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
         imageWidth,
         imageHeight,
         frames,
-        j["animDuration"]
+        j.value("animDuration", 1.0f)
     );
 
+
+    if (j.contains("states")) {
+        for (auto& [stateKey, stateData] : j["states"].items()) {
+            int stateID = std::stoi(stateKey);
+            Animator::ActiveFrames stateFrames;
+            stateFrames.row = stateData["row"];
+            stateFrames.col_start = stateData["col_start"];
+            stateFrames.col_end = stateData["col_end"];
+            stateFrames.duration = stateData.value("duration", 1.0f);
+
+            anim.AddState(stateID, stateFrames);
+        }
+    }
+    if (j.contains("currentState") && j["currentState"] != -1) {
+        anim.SetState(j["currentState"]);
+    }
     Add_Component(eID, anim);
 }
 //void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
