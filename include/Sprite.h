@@ -23,6 +23,7 @@ namespace Sprite {
 		Image	m_image;	// Image struct
 		Vec2	m_scale;	// Independant image scaling
 		bool	m_anim;		// Bool if sprite is animated or static
+		float	m_rot;
 	public:
 		SpriteComponent();
 		SpriteComponent(std::string const& path, Vec2 scale_offset, bool anim = false);
@@ -39,6 +40,10 @@ namespace Sprite {
 		bool IsAnimated();
 		
 		std::string Get_TexturePath();
+
+		void Set_Rotation(float rot);
+		float Get_Rotation() const;
+		void Rotate(float deltaRot);
 	};
 
 }

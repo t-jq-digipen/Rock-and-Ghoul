@@ -521,17 +521,17 @@ void Render::DrawImage(const Image& image, float x, float y) {
     DrawTexturedQuad(pos, scale, image.textureID);
 }
 
-void Render::Draw_SpecImage(const Image& image, float x, float y, float w, float h) {
+void Render::Draw_SpecImage(const Image& image, float x, float y, float w, float h, float rotation) {
     if (!image.IsValid()) {
         return;
     }
 
     Vec2 pos(x, y);
     Vec2 scale(w, h);
-    DrawTexturedQuad(pos, scale, image.textureID);
+    DrawTexturedQuad(pos, scale, image.textureID, rotation);
 }
 
-void Render::DrawImageScaled(const Image& image, float x, float y, float scaleX, float scaleY) {
+void Render::DrawImageScaled(const Image& image, float x, float y, float scaleX, float scaleY, float rotation) {
     if (!image.IsValid()) {
         return;
 
@@ -539,7 +539,7 @@ void Render::DrawImageScaled(const Image& image, float x, float y, float scaleX,
 
     float w = image.widthPixels * scaleX;
     float h = image.heightPixels * scaleY;
-    Draw_SpecImage(image, x, y, w, h);
+    Draw_SpecImage(image, x, y, w, h, rotation);
 }
 
 void Render::DrawImageRotated(const Image& image, float x, float y, float angleRad) {
@@ -571,7 +571,7 @@ void Render::DrawImageRotated(const Image& image, float x, float y, float angleR
 
 void Render::DrawImageSub(const Image& Image,
     float x, float y, float w, float h,
-    float u0, float v0, float u1, float v1)
+    float u0, float v0, float u1, float v1, float rotation)
 {
     glUseProgram(shaderProgram);
 
@@ -597,7 +597,7 @@ void Render::DrawImageSub(const Image& Image,
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseSubImage"), true); //tell shader i want to use sub image mode
     glUniform4f(glGetUniformLocation(shaderProgram, "uUVRect"), u0n, v0n, u1n, v1n); //sub mode uses this uniform
-
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation);
     //Texture binding
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, Image.textureID);

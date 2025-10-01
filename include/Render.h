@@ -75,7 +75,7 @@ public:
     //Image/Texture
     // Image LoadImage(const std::string& path);                    // something like CP_Image_Load
     void DrawImage(const Image& image, float x, float y);        // something like CP_Image_Draw
-    void Draw_SpecImage(const Image& image, float x, float y, float w, float h); // draw image to given width, height
+    void Draw_SpecImage(const Image& image, float x, float y, float w, float h, float rotation = 0.0f); // draw image to given width, height
 
     //usage for drawImage Sub
     //- x, y: the position of where u want the cropped image to be
@@ -83,10 +83,10 @@ public:
     //- u, v portion of the texture/image u wanna to display
     // etc u0, u1 (0,256) means span 256 pixels from top left to right
     // v0, v1 (0, 256) means span 256 pixels from top left to down
-    void DrawImageSub(const Image& image, float x, float y, float w, float h, float u0, float v0, float u1, float v1);
+    void DrawImageSub(const Image& image, float x, float y, float w, float h, float u0, float v0, float u1, float v1, float rotation = 0.0f);
 
    
-    void DrawImageScaled(const Image& image, float x, float y, float scaleX, float scaleY); 
+    void DrawImageScaled(const Image& image, float x, float y, float scaleX, float scaleY, float rotation); 
     void DrawImageRotated(const Image& image, float x, float y, float angle); //note that angles u input must be in radians
     int GetImageWidth(const Image& image) const;                 // get the image width
     int GetImageHeight(const Image& image) const;                // get the height

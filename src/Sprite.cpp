@@ -72,4 +72,18 @@ namespace Sprite {
 
 	std::string SpriteComponent::Get_TexturePath()
 	{ return Render::GetInstance().Get_TexturePath(m_image.textureID); }
+
+
+	void SpriteComponent::Set_Rotation(float rot) {
+		m_rot = rot;
+	}
+
+	float SpriteComponent::Get_Rotation() const {
+		return m_rot;
+	}
+
+	void SpriteComponent::Rotate(float deltaRot) {
+		m_rot += deltaRot;
+
+	}
 }
