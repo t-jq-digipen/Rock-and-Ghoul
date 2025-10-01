@@ -134,6 +134,12 @@ struct Vec3 {
 // UTILITY FUNCTIONS
 // ==================================================
 // Find the square root of a value
+/**
+ * @brief Computes the square root using Newton's method.
+ *
+ * @param x The number to compute the square root of.
+ * @return float The square root of x, or 0 if x is negative.
+ */
 float RG_Sqrt(float x);
 // Clamp a value between two values
 void RG_Clamp(float& val, float const& min, float const& max);
@@ -166,6 +172,14 @@ Vec2 RG_Normalize(const Vec2& v);
 Vec3 RG_Normalize(const Vec3& v);
 
 // Linear Interpolation
+/**
+ * @brief Linearly interpolates between two 2D vectors.
+ *
+ * @param a The starting vector.
+ * @param b The ending vector.
+ * @param t The interpolation parameter (0.0 returns a, 1.0 returns b).
+ * @return Vec2 The interpolated vector at position t between a and b.
+ */
 Vec2 RG_Lerp(const Vec2& a, const Vec2& b, float t);
 Vec3 RG_Lerp(const Vec3& a, const Vec3& b, float t);
 

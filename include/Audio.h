@@ -1,57 +1,198 @@
+/* ========================================================
+ * @file    Audio.h
+ * @author  w.shiyuregine@digipen.edu
+ * @author  t.yingclarissa@digipen.edu
+ * @date    26/09/2025
+ *
+ * @brief   Header file declaring the AudioSystem class
+ *
+ * This header file contains the declaration of the AudioSystem
+ * class. The class initializes the audio system, loading
+ * and playing sounds, managing audio channels for playback
+ * control, and handling button sound effects.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 #pragma once
 #ifndef AUDIO_H
 #define AUDIO_H
-
 #include <string>
 #include <unordered_map>
 #include "fmod.hpp"
 
+ /**
+  * @class AudioSystem
+  * @brief Low-level audio system interface using FMOD.
+  *
+  * The AudioSystem class provides static methods for loading, playing, and controlling audio.
+  * The class includes a flexible button sound system that maps button types to specific sound effects.
+  */
 class AudioSystem {
 public:
-    // Initialize FMOD
+    /**
+     * @brief Initializes the FMOD audio system.
+     *
+     * This function creates and initializes the FMOD audio system and loads default
+     * button sounds for the application.
+     *
+     * @return bool True if FMOD was successfully initialized, false if
+     *         an error occurred during system creation or initialization.
+     */
     static bool Init();
 
-    // Close FMOD
+    /**
+     * @brief Closes and cleans up the FMOD audio system.
+     *
+     * This function releases all button sounds, closes the FMOD system,
+     * and frees all associated resources.
+     */
     static void Close();
 
-    // Update FMOD (must be called every frame)
+    /**
+     * @brief Updates the FMOD audio system.
+     *
+     * This function must be called once per frame to update FMOD's internal
+     * state, including channel management, streaming, and effects processing.
+     */
     static void Update();
 
-    // Load and play sound
+    /**
+     * @brief Loads a sound file from disk.
+     *
+     * This function loads an audio file using FMOD and returns a pointer
+     * to the loaded sound.
+     *
+     * @param filename The file path to the audio file to load
+     * @param loop If true, the sound will loop continuously when played.
+     *             If false (default), the sound will play once and stop.
+     * @return FMOD::Sound* Pointer to the loaded sound object, or nullptr
+     *         if loading failed (e.g., file not found, unsupported format).
+     */
     static FMOD::Sound* LoadSound(const std::string& filename, bool loop = false);
+
+    /**
+     * @brief Plays a sound immediately without returning a channel handle.
+     *
+     * This function plays the specified sound at full volume without
+     * channel control.
+     *
+     * @param sound Pointer to the FMOD::Sound object to play.
+     */
     static void PlaySound(FMOD::Sound* sound);
 
-    // Stop all sounds
+    /**
+     * @brief Stops all currently playing sounds.
+     *
+     * This function stops all active audio channels by closing and
+     * reinitializing the FMOD system.
+     *
+     * @warning This will stop ALL audio including music and sound effects.
+     */
     static void StopAll();
 
-    // Channel control functions
+    /**
+     * @brief Plays a sound and returns the channel handle for playback control.
+     *
+     * This function plays a sound and returns a pointer to the channel.
+     *
+     * @param sound Pointer to the FMOD::Sound object to play.
+     * @param paused If true, the sound is loaded onto a channel but not played
+     *               immediately. If false (default), playback begins immediately.
+     * @return FMOD::Channel* Pointer to the channel playing the sound, or
+     *         nullptr if playback failed or the audio system is not initialized.
+     */
     static FMOD::Channel* PlaySoundGetChannel(FMOD::Sound* sound, bool paused = false);
+
+    /**
+     * @brief Sets the playback position of a channel.
+     *
+     * This function seeks to a specific position in the audio stream.
+     *
+     * @param channel Pointer to the FMOD::Channel whose position should be set.
+     * @param ms The position in milliseconds from the start of the sound.
+     */
     static void SetChannelPosition(FMOD::Channel* channel, unsigned int ms);
+
+    /**
+     * @brief Gets the current playback position of a channel.
+     *
+     * This function retrieves the current position of the audio playhead
+     * in milliseconds from the start of the sound
+     *
+     * @param channel Pointer to the FMOD::Channel to query.
+     * @return unsigned int The current playback position in milliseconds.
+     */
     static unsigned int GetChannelPosition(FMOD::Channel* channel);
+
+    /**
+     * @brief Sets the pause state of a channel.
+     *
+     * This function pauses or resumes playback on a specific channel.
+     * When paused, can be resumed from the same point.
+     *
+     * @param channel Pointer to the FMOD::Channel to pause or unpause.
+     * @param paused If true, the channel is paused. If false, playback resumes.
+     */
     static void SetChannelPaused(FMOD::Channel* channel, bool paused);
 
-    // ===== ADDED: Flexible Button SFX System =====
+    /**
+     * @enum ButtonType
+     * @brief Enumeration of button types for UI sound effects.
+     *
+     * This enum defines different button types in the application, each
+     * of which can have a unique sound effect associated with it.
+     */
     enum class ButtonType {
-        PLAY,
-        QUIT,
+        PLAY,    ///< Play button sound effect
+        QUIT,    ///< Quit button sound effect
     };
 
-    // Main button sound function - handles all button types
+    /**
+     * @brief Plays the sound effect associated with a specific button type.
+     *
+     * This function looks up and plays the sound registered for the given
+     * button type.
+     *
+     * @param type The type of button whose sound effect should be played,
+     *             as defined in the ButtonType enum.
+     */
     static void PlayButtonSound(ButtonType type);
 
-    // Register custom button sounds at runtime
+    /**
+     * @brief Registers a button sound effect by loading it from a file path.
+     *
+     * This function loads a sound file from the specified path and associates
+     * it with a button type.
+     *
+     * @param type The ButtonType to associate with this sound effect.
+     * @param soundPath The file path to the sound file
+     */
     static void RegisterButtonSound(ButtonType type, const std::string& soundPath);
-    static void RegisterButtonSound(ButtonType type, FMOD::Sound* sound);
 
-    // ===== END ADDED =====
+    /**
+     * @brief Registers a button sound effect using an existing FMOD::Sound pointer.
+     *
+     * This overload allows registration of a button sound using an already
+     * loaded FMOD::Sound object.
+     *
+     * @param type The ButtonType to associate with this sound effect.
+     * @param sound Pointer to an already loaded FMOD::Sound object.
+     */
+    static void RegisterButtonSound(ButtonType type, FMOD::Sound* sound);
 
 private:
     static FMOD::System* mSystem;
 
-    // ===== ADDED: Button sound storage =====
     static std::unordered_map<ButtonType, FMOD::Sound*> buttonSounds;
+
+    /**
+     * @brief Loads default button sound effects.
+     *
+     * This function registers default sound effects for different button types
+     * in the application.
+     */
     static void LoadDefaultButtonSounds();
-    // ===== END ADDED =====
 };
 
 #endif // AUDIO_H

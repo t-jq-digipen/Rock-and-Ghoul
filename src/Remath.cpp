@@ -198,7 +198,14 @@ Vec2 RG_Normalize(const Vec2& v) {
     }
     return { 0.f, 0.f };
 }
-
+/**
+ * @brief Linearly interpolates between two 2D vectors.
+ *
+ * @param a The starting vector.
+ * @param b The ending vector.
+ * @param t The interpolation parameter (0.0 returns a, 1.0 returns b).
+ * @return Vec2 The interpolated vector at position t between a and b.
+ */
 Vec2 RG_Lerp(const Vec2& a, const Vec2& b, float t) {
     return RG_Add(a, RG_Scale(RG_Subtract(b, a), t));
 }
@@ -328,6 +335,12 @@ Vec3 RG_Lerp(const Vec3& a, const Vec3& b, float t) {
 // UTILITY FUNCTIONS
 // ==============================================
 
+/**
+ * @brief Computes the square root using Newton's method.
+ *
+ * @param x The number to compute the square root of.
+ * @return float The square root of x, or 0 if x is negative.
+ */
 float RG_Sqrt(float x) {
     if (x < 0) return 0;
     if (x == 0 || x == 1) return x;
