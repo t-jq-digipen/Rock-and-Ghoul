@@ -1,3 +1,12 @@
+/*!
+@file       vertexSrc.vert
+@author   kervinguancheng.ong@digipen.edu
+@date    	  02/10/2025
+
+This file implements the vertex shader required for regular rendering
+
+*//*__________________________________________________________________________*/
+
 #version 450 core
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aTex;
