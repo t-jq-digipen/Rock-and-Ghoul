@@ -1,4 +1,5 @@
 #include "EntityCreation.h"
+#include "PlayerSystem.h"
 #include "Render.h"
 #include "Animator.h"
 
@@ -48,7 +49,10 @@ Entity Create_Waffle(float const& x, float const& y) {
         Add_Component(player, Sprite::SpriteComponent{ imgtemp, {100.f,100.f }, true });
         
         Animator::AnimatorComponent animtemp(3, 6, imgtemp.widthPixels, imgtemp.heightPixels, {2,0,1}, 1.f);
+        animtemp.AddState(PS_IDLE, { 3, 0, 1, 1.f });
+        animtemp.AddState(PS_WALK, { 3,2,3,0.5f });
         Add_Component(player, animtemp);
+
     }
     Add_Component(player, HealthComponent{ 100.f, 100.f });
     return player;
