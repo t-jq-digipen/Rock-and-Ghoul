@@ -135,8 +135,7 @@ void ImGuiSystem::Update(float dt) {
     }
     ImGui::End();
 }
-// called every frame after Update() to actually render ImGui to screen
-//  MUSTTT be called after NewFrame() and before buffer swap
+// called every frame after Update() to actually render ImGui to screen in core engine!!!!!!!!!!!!!!!!!!!!
 void ImGuiSystem::Render() {
     if (!guiEnabled) return; //skip if GUI is off
     ImGui::Render();
@@ -146,20 +145,20 @@ void ImGuiSystem::Render() {
 void ImGuiSystem::ShowEngineDebugWindow() {
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate); //ms
-    CoreEngine& engine = CoreEngine::GetInstance(); // however you access it
+    CoreEngine& engine = CoreEngine::GetInstance(); //in coreengine.h
     auto& timings = engine.GetTimings();
 
-    // Calculate total frame time
+    // total frame time
     double total = 0.0;
     for (auto& [name, t] : timings) total += t.ms;
 
     ImGui::Separator();
     ImGui::Text("System Timings:");
-    // Loop through each system and display its timing
+    //each system and display its timing
     for (auto& [name, t] : timings) { //gets reference to the real map
-        // Calculate percentage of total frame time this system used
+        // percentage of total frame time this system used
         double percent = (total > 0.0) ? (t.ms / total) * 100.0 : 0.0;
-        // Show system name, elapsed time in ms, and percentage of total frame
+        //system name, elapsed time in ms, and percentage of total frame
         ImGui::Text("%s: %.3f ms (%.1f%%)", name.c_str(), t.ms, percent);
 
         //visual bar
@@ -181,31 +180,6 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     }
 
     ImGui::Text("AABB Colliders: %d / %d active", activeColliders, totalColliders);
-
-    // colili
-    //if (ImGui::CollapsingHeader("Physics Components")) {
-    //    for (auto& [entity, physics] : CM_Physics().getComponents()) {
-    //        if (Has_Component(entity, CT_Transform) && Has_Component(entity, CT_Tag)) {
-    //            // oni process entities that have Transform and Tag components
-    //            TransformComponent& transform = Get_TransformComponent(entity);
-    //            TagComponent& tag = Get_TagComponent(entity);
-    //            // udate collision shapes (AABB and Circle) to match current position
-    //            physics.UpdateHitboxes(transform.pos);
-
-    //            const char* tagName = (tag.tag == T_PLAYER) ? "Player" :(tag.tag == T_ENEMY) ? "Enemy" :(tag.tag == T_PROJECTILE) ? "Projectile" : "Unknown";
-
-    //            AABB aabb = physics.Get_AABB();
-    //            Circle circle = physics.Get_Circle();
-
-    //            ImGui::Text("%s %d:", tagName, entity);
-    //            ImGui::Text("  Position: (%.1f, %.1f)", transform.pos.x, transform.pos.y);
-    //            ImGui::Text("  AABB: (%.1f, %.1f) to (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
-    //            ImGui::Text("  Circle: center(%.1f, %.1f) radius %.1f", circle.pos.x, circle.pos.y, circle.rad);
-    //            ImGui::Text("  Collision Active: %s", physics.CollisionActive() ? "Yes" : "No");
-    //            ImGui::Separator();
-    //        }
-    //    }
-    //}
     ImGui::Checkbox("Show Colliders", &showColliders);
     ImGui::Checkbox("Show Velocity", &showVelocity);
     //enityt
@@ -295,23 +269,10 @@ void ImGuiSystem::ShowInspectorWindow() {
         }
     }
 
-    // JQ COMMENT OUT HAHAHA
-    // --- Sprite ---
-    /*if (Has_Component(selectedEntity, CT_Sprite)) {
-        auto& s = Get_SpriteComponent(selectedEntity);
-        if (ImGui::TreeNode("Sprite")) {
-            ImGui::Text("Texture ID: %u", s.textureID);
-            ImGui::SliderFloat("Width", &s.size.x, 10.f, 2000.f);
-            ImGui::SliderFloat("Height", &s.size.y, 10.f, 2000.f);
-            ImGui::ColorEdit3("Tint", &s.color.x);
-            ImGui::TreePop();
-        }
-    }*/
     // --- Sprite ---
     if (Has_Component(selectedEntity, CT_Sprite)) {
         auto& s = Get_SpriteComponent(selectedEntity);
         if (ImGui::TreeNode("Sprite")) {
-            // Display texture path (read-only)
             std::string texPath = s.Get_TexturePath();
             ImGui::Text("Texture: %s", texPath.c_str());
 
@@ -341,11 +302,9 @@ void ImGuiSystem::ShowInspectorWindow() {
     if (Has_Component(selectedEntity, CT_Physics)) {
         auto& p = Get_PhysicsComponent(selectedEntity);
         if (ImGui::TreeNode("Physics")) {
-            // Show AABB & Circle data (read-only snapshot)
             auto aabb = p.Get_AABB();
             auto circ = p.Get_Circle();
-            ImGui::Checkbox("Collision Active", const_cast<bool*>(&p.CollisionActive())); // if your API allows toggling, change to setter
-            //Edit AABB size
+            ImGui::Checkbox("Collision Active", const_cast<bool*>(&p.CollisionActive()));
             Vec2 aabbSize = aabb.dim;
             if (ImGui::DragFloat2("AABB Size", &aabbSize.x, 1.0f, 10.0f, 1000.0f)) {
                 auto& trans = Get_TransformComponent(selectedEntity);
@@ -358,7 +317,7 @@ void ImGuiSystem::ShowInspectorWindow() {
                 newCircle.rad = circRad;
                 p.Set_Circle(newCircle);
             }
-            ImGui::Text("AABB: (%.1f, %.1f) -> (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
+            ImGui::Text("AABB: min: (%.1f, %.1f), max: (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
             ImGui::Text("Circle: center(%.1f, %.1f), r=%.1f", circ.pos.x, circ.pos.y, circ.rad);
             ImGui::TreePop();
         }
@@ -386,20 +345,6 @@ void ImGuiSystem::ShowInspectorWindow() {
             ImGui::TreePop();
         }
     }
-
-    // JQ COMMENT OUT HAHAHA
-    /*if (ImGui::Button("Clone")) {
-        if (Has_Component(selectedEntity, CT_Sprite)) {
-            auto& s = Get_SpriteComponent(selectedEntity);
-            if (s.shape == SHAPE_RECT)      selectedEntity = Create_Square(400.f, 200.f);
-            else if (s.shape == SHAPE_CIRCLE) selectedEntity = Create_Circle(600.f, 200.f);
-            else                       selectedEntity = Create_Player(200.f, 200.f);
-        }
-        else {
-            selectedEntity = Create_Player(200.f, 200.f);
-        }
-    }*/
-
     ImGui::Separator();
     if (ImGui::Button("Clone")) {
         Entity clone = Create_Entity();
@@ -430,12 +375,12 @@ void ImGuiSystem::ShowInspectorWindow() {
         // Copy Sprite
         if (Has_Component(selectedEntity, CT_Sprite)) {
             auto& s = Get_SpriteComponent(selectedEntity);
-            Add_Component(clone, s);  // Copy entire sprite component
+            Add_Component(clone, s);
         }
 
         if (Has_Component(selectedEntity, CT_Animator)) {
             auto& anim = Get_AnimatorComponent(selectedEntity);
-            Add_Component(clone, anim);  // This copies the entire animator with states
+            Add_Component(clone, anim);
         }
 
         // Copy Tag
@@ -456,7 +401,7 @@ void ImGuiSystem::ShowInspectorWindow() {
         //    Add_Component(clone, h);
         //}
 
-        selectedEntity = clone;  // Select the new clone
+        selectedEntity = clone;  // select new clone
     }
 
     ImGui::SameLine();
@@ -479,7 +424,7 @@ void ImGuiSystem::ShowInspectorWindow() {
 }
 
 void ImGuiSystem::Shutdown() {
-    // ImGui cleanup is handled by static ShutdownImGui() in main
+    ShutdownImGui();
 }
 
 void ImGuiSystem::ShutdownImGui() {

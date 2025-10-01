@@ -70,6 +70,9 @@ void CoreEngine::Run() {
                 auto end = clock::now();
                 //how long the update took in milliseconds
                 double elapsedMs = std::chrono::duration<double, std::milli>(end - start).count();
+                // ISystem* s = new PhysicsSystem();
+                //*s dereferences the pointer, so typeid(*s) looks at the dynamic type of the object (PhysicsSystem),
+                // returns a const char* that represents the type’s name.
                 // Get the system's type name (like "class PhysicsSystem") as a string
                 std::string sysName = typeid(*s).name();
                 timings[sysName].ms = elapsedMs;

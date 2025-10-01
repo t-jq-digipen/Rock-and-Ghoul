@@ -1,3 +1,26 @@
+/* ========================================================
+ * @file    RenderSystem.cpp
+ * @author  w.shiyuregine@digipen.edu
+ * @date    01/10/2025
+ *
+ * @brief
+ *
+ * Implements the RenderSystem, which is responsible for
+ * drawing all visual components in the ECS framework.
+ *
+ * Responsibilities:
+ * - Renders sprite components (static and animated).
+ * - Renders shape components (rectangles and circles).
+ * - Integrates with Animator for updating animated frames.
+ * - Uses the central Render instance to issue draw calls.
+ * - Supports debug drawing for physics (velocity vectors,
+ *   AABBs, circle colliders, hotspots) controlled by ImGui.
+ *
+ * On shutdown, clears the texture cache to free GPU resources.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 #include "RenderSystem.h"
 #include "Render.h"
 #include "Animator.h"
@@ -29,10 +52,10 @@ void RenderSystem::Update(float dt) {
         }
     }
 
-
+    // Loop through all ShapeComponents in the ECS
     for (auto& [entID, shapeComp] : CM_Shape().getComponents())
-    {
-        // shape drawing tings (REGINE PUT YO SHIT HERE)
+    {   
+        // Skip entities without a transform (need position/rotation to draw)
         if (!Has_Component(entID, CT_Transform)) continue;
         TransformComponent& transComp = Get_TransformComponent(entID);
         Colour3 color = { shapeComp.color.x, shapeComp.color.y, shapeComp.color.z };
@@ -56,18 +79,25 @@ void RenderSystem::Update(float dt) {
                 transComp.rot
             );
         }
+
+        // ------------------------------------------------
+        // Debug drawing section (Velocity, AABBs, Colliders)
+        // ------------------------------------------------
         auto& em = EntityManager::get();
         for (Entity e = 0; e < em.maxEntities(); ++e) {
             if (!em.isAlive(e)) continue;
             if (!Has_Component(e, CT_Transform)) continue;
             auto& t = Get_TransformComponent(e);
 
+            // If velocity debug is enabled in ImGui and entity is a player with physics,
+            // draw the velocity vector as a line/arrow
             if (ImGuiSystem::showVelocity && Has_Component(e, CT_Physics) && Has_Component(e, CT_Tag)) {
                 auto& tag = Get_TagComponent(e);
                 if (tag.tag == T_PLAYER) {
                     DebugDraw::DrawVelocity(e, t, renderInstance, dt);
                 }
             }
+            // If collider debug is enabled in ImGui, draw collision boundaries
             if (ImGuiSystem::showColliders && Has_Component(e, CT_Physics)) {
                 auto& p = Get_PhysicsComponent(e);
                 DebugDraw::DrawAABB(p.Get_AABB(), renderInstance);
@@ -79,72 +109,12 @@ void RenderSystem::Update(float dt) {
                         DebugDraw::DrawCircleCollider(p.Get_Circle(), renderInstance);
                     }
                 }
-
+                // Draw the hotspot (center point) of the transform
                 DebugDraw::DrawHotspot(t.pos, renderInstance);
             }
         }
 
     }
-
-    //auto& em = EntityManager::get();
-    //static bool showDebug = false;
-    //if (Input::IsKeyPressed(GLFW_KEY_5)) {
-    //    showDebug = !showDebug;
-    //}
-    //for (Entity e = 0; e < em.maxEntities(); ++e) {
-    //    if (!em.isAlive(e)) continue;
-    //    if (!Has_Component(e, CT_Transform) || !Has_Component(e, CT_Sprite))
-    //        continue;
-
-    //    auto& t = Get_TransformComponent(e);
-    //    auto& s = Get_SpriteComponent(e);
-
-    //    if (s.textureID == 0) {
-    //        // Render as colored rectangle (no texture)
-    //        Colour3 color = { s.color.x, s.color.y, s.color.z };
-    //        renderer.DrawRect(
-    //            t.pos,
-    //            s.size.x,
-    //            s.size.y,
-    //            color, t.rot
-    //        );
-    //    }
-    //    else if (s.textureID == 1) {
-    //        // Render as colored circle
-    //        Colour3 color = { s.color.x, s.color.y, s.color.z };
-    //        float radius = (s.size.x + s.size.y) / 4.0f; // Average of width and height, divided by 2
-    //        renderer.DrawCircle(
-    //            { t.pos.x, t.pos.y },
-    //            radius,
-    //            color, 32, t.rot
-    //        );
-    //    }
-    //    else {
-    //        // Render as textured quad
-    //        renderer.DrawTexturedQuad(
-    //            t.pos,
-    //            s.size,
-    //            s.textureID,
-    //            t.rot
-    //        );
-    //    }
-
-    //    if (ImGuiSystem::showVelocity && Has_Component(e, CT_Physics) && Has_Component(e, CT_Tag)) {
-    //        auto& tag = Get_TagComponent(e);
-    //        if (tag.tag == T_PLAYER) {
-    //            DebugDraw::DrawVelocity(e, t, renderer, dt);
-    //        }
-    //    }
-    //    // Debug drawing (AABB + hotspot)
-
-    //    if (ImGuiSystem::showColliders && Has_Component(e, CT_Physics)) {
-    //        auto& p = Get_PhysicsComponent(e);
-
-    //        DebugDraw::DrawAABB(p.Get_AABB(), renderer);
-    //        DebugDraw::DrawHotspot(t.pos, renderer);
-    //    }
-
-    //}
 
 }
 

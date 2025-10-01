@@ -1,3 +1,25 @@
+/* ========================================================
+ * @file    Spells.cpp
+ * @author  w.shiyuregine@digipen.edu
+ * @date    01/10/2025
+ *
+ * @brief
+ *
+ * Implements the SpellManager class, which manages a fixed set
+ * of spell slots for the player. Handles loading and unloading
+ * spell textures, saving/clearing spells in slots, assigning
+ * spells dynamically, and drawing the spell UI (spell bar).
+ *
+ * Responsibilities:
+ * - Load/unload spell icon textures from Assets.
+ * - Maintain an array of slots, each with texture + fill state.
+ * - Draw slot backgrounds and spell icons on screen.
+ * - Provide functions to save, clear, or give a new spell.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "Spells.h"
 #include "Remath.h"
 #include <iostream>

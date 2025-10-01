@@ -1,7 +1,35 @@
-// FrameRateController.cpp
+/* ========================================================
+ * @file    FrameRateController.cpp
+ * @author   w.shiyuregine@digipen.edu
+ * @date    01/10/2025
+ *
+ * @brief
+ *
+ * Implements the FrameRateController class, which measures frame delta time, calculates FPS, and optionally enforces
+ * a target frame rate by sleeping the main thread. This provides smoother timing control for the game loop when
+ * vsync is disabled or not reliable.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 #include "FrameRateController.h"
 #include <thread>
 #include <algorithm>
+// page 5 of csd 1130 3_1
+//Frame rate controller pseudo code :
+//Initialization
+//Frames counter = 0
+//Max Frame Rate = 60
+//Frame Rate = Max Frame Rate
+//Frame Time = 1 / Frame Rate
+//Min Frame Time = 1 / Max Frame Rate
+//Frame Controller Start
+//Frame Start = Current Time
+//Frame Controller End
+//While((Current Time – Frame Start) < (Min Frame Time))
+//    Frame End = Current Time
+//    Frame Time = Frame End – Frame Start
+//    Increment Frame Counter
 
 FrameRateController::FrameRateController(int targetFPS)
     : m_targetFPS(targetFPS),
@@ -17,6 +45,7 @@ void FrameRateController::StartFrame() {
     //just placeholder
 }
 
+
 void FrameRateController::EndFrame() {
     auto now = Clock::now();
     std::chrono::duration<double> frameDuration = now - m_lastFrame;
@@ -28,7 +57,7 @@ void FrameRateController::EndFrame() {
     m_frameCount++;
     m_fps = (m_deltaTime > 0.0) ? (1.0 / m_deltaTime) : 0.0;
 
-    // Manual FPS cap (only if vsync is OFF)
+    //FPS cap (only if vsync is OFF)
     if (m_targetFPS > 0) {
         double sleepTime = m_targetFrameTime - m_deltaTime;
         if (sleepTime > 0.0) {

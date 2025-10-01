@@ -1,5 +1,5 @@
 /* ========================================================
- * @file    CollisionManager.cpp
+ * @file    CollisionManager.h
  * @author   w.shiyuregine@digipen.edu
  * @date    01/10/2025
  *

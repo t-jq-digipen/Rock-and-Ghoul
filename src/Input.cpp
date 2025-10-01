@@ -1,7 +1,26 @@
-﻿#include "input.h"
+﻿/* ========================================================
+ * @file    Input.cpp
+ * @author   w.shiyuregine@digipen.edu
+ * @date    01/10/2025
+ *
+ * @brief
+ * 
+ * Implements the Input system, which handles keyboard and mouse input via GLFW callbacks. 
+ * This module maintains the current state of keys and mouse buttons (Pressed,
+ * Held, Released), tracks mouse position, and processes scroll offsets.
+ * Transient states are updated each frame to ensure consistent input.
+ * 
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+#include "input.h"
 #include <iostream>
 
-// Define static members
+//check if a key/button is pressed/held/released
+//keys = all keyboard states.
+//mouseButtons = all mouse button states.
+//Each entry maps a GLFW key / button code(int) to a KeyState enum (PRESSED, HELD, RELEASED).
 std::unordered_map<int, KeyState> Input::keys;
 std::unordered_map<int, KeyState> Input::mouseButtons;
 double Input::mouseX = 0.0;
@@ -10,19 +29,22 @@ double Input::scrollX = 0.0;
 double Input::scrollY = 0.0;
 
 void Input::Update() {
-    // Reset transient states (PRESSED/RELEASED -> HELD/RELEASED)
     for (auto& [key, state] : keys) {
-        if (state == KeyState::PRESSED)
-            state = KeyState::HELD;
-        else if (state == KeyState::RELEASED)
-            state = KeyState::RELEASED; // stays released for one frame
+        if (state == KeyState::PRESSED) {
+            state = KeyState::HELD;  // pressed to held (only first frame is "pressed")
+        }
+        else if (state == KeyState::RELEASED) {
+            state = KeyState::NONE; // stays released for one frame
+        }
     }
 
     for (auto& [button, state] : mouseButtons) {
-        if (state == KeyState::PRESSED)
+        if (state == KeyState::PRESSED) {
             state = KeyState::HELD;
-        else if (state == KeyState::RELEASED)
-            state = KeyState::RELEASED; // Remove this line or change logic
+        }
+        else if (state == KeyState::RELEASED) {
+            state = KeyState::NONE;
+        }
     }
 
     // Reset scroll each frame so it only reflects last tick's scroll

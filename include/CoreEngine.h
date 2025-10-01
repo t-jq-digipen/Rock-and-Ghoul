@@ -35,7 +35,7 @@ public:
     void Shutdown();
     void Quit();
     //getter function for your timings map
-    //the key is a std::string (system name "PhysicsSystem"),
+    //the key is a std::string
     //the value is a SystemTiming struct (contains ms for elapsed milliseconds).
     std::unordered_map<std::string, SystemTiming>& GetTimings() { return timings; }
 };

@@ -1,3 +1,19 @@
+/* ========================================================
+ * @file    EntityCreation.cpp
+ * @author  w.shiyuregine@digipen.edu
+ * @date    01/10/2025
+ *
+ * @brief
+ *
+ * This file centralizes entity construction logic to ensure consistency
+ * when spawning game objects. Each creation function initializes a new
+ * entity, attaches the required components (transform, physics, sprite,
+ * input, health, etc.), and sets defaults such as position,
+ * scale, collision bounds, and textures.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 #include "EntityCreation.h"
 #include "PlayerSystem.h"
 #include "Render.h"
@@ -5,10 +21,6 @@
 
 Entity Create_Player(float const& x, float const& y) {
     Entity player = Create_Entity();
-
-    //static std::unordered_map<Entity, std::string>& nameMap = GetEntityNameMap();
-    //nameMap[player] = name;
-
     Add_Component(player, TransformComponent{ {x, y}, {100.f, 100.f} });
 
     {
