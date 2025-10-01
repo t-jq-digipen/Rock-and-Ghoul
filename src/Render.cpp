@@ -61,6 +61,34 @@ void Render::Init() {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
+    //====== Instancing render ==========
+
+    //instance VBO (initially empty, will be filled per draw call)
+    glGenBuffers(1, &InstanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(InstanceData) * 10000, nullptr, GL_DYNAMIC_DRAW); // Pre-allocate for 10k instances
+
+    // Instance attribute 0, position
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, position));
+    glVertexAttribDivisor(2, 1); // This attribute updates per instance
+
+    // Instance attribute 1,  scale 
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, scale));
+    glVertexAttribDivisor(3, 1);
+
+    // Instance attribute 2, uvRect
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, uvRect));
+    glVertexAttribDivisor(4, 1);
+
+    // Instance attribute 3, rotation
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, rotation));
+    glVertexAttribDivisor(5, 1);
+
+
     glBindVertexArray(0);
 
     // Shaders
@@ -68,6 +96,12 @@ void Render::Init() {
         "../Assets/vertexSrc.vert",
         "../Assets/fragmentSrc.frag"
     );
+
+    InstanceShaderProgram = CreateProgramFromFiles(
+        "../Assets/InstanceVertexSrc.vert",  // try use a new vertex shader for instancing , cus it needs per-instance attributes
+        "../Assets/fragmentSrc.frag"
+    );
+
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -635,6 +669,39 @@ int Render::GetImageWidth(const Image& image) const {
 
 int Render::GetImageHeight(const Image& image) const {
     return image.heightPixels;
+}
+
+
+//instancing(try)
+void Render::DrawImageInstanced(const Image& image, const std::vector<InstanceData>& instances) {
+    if (instances.empty() || !image.IsValid()) {
+        return;
+    }
+
+    // Upload instance data
+    glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, instances.size() * sizeof(InstanceData), instances.data());
+
+    // Use shader (INSTANCE)
+    glUseProgram(InstanceShaderProgram);
+
+    // Set uniforms
+    GLint projLoc = glGetUniformLocation(InstanceShaderProgram, "uProjection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+
+    // Bind texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, image.textureID);
+
+    GLint texLoc = glGetUniformLocation(InstanceShaderProgram, "uTexture");
+    glUniform1i(glGetUniformLocation(InstanceShaderProgram, "uUseTexture"), true); //enable this shi to see textuer
+    glUniform1i(texLoc, 0);
+
+    // Draw
+    glBindVertexArray(vao);
+    glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, instances.size());
+
+    glBindVertexArray(0);
 }
 
 //void Render::UnloadImage(Image& image) {

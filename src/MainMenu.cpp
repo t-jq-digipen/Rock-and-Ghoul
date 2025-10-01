@@ -11,6 +11,7 @@
 #include "CrashHandler.h"
 
 AudioManager* MainMenu::audio = nullptr;
+bool showInstancingDemo = false;
 
 void MainMenu::SetAudioManager(AudioManager* audioMgr) {
     audio = audioMgr;
@@ -28,7 +29,7 @@ GLuint ghoulTexture{ 0 };
 GLuint playTexture{ 0 };
 GLuint quitTexture{ 0 };
 
-//Image titleImage;
+Image titleImage;
 
 // Convert GLFW/screen cords (origin: top-left) to render coords (origin: bottom-left)
 static inline glm::vec2 ScreenToRender(const glm::vec2& mouseScreen, float windowHeight)
@@ -58,7 +59,7 @@ void MainMenu::Load()
         CrashHandler::LogIfZeroTexture(quitTexture, "../Assets/title.png");
     });
 
-
+    titleImage = CreateImage("../Assets/quit.png");
     //titleImage = Render::GetInstance().LoadImage("../Assets/quit.png");
 
 }
@@ -173,6 +174,62 @@ void MainMenu::Update()
     //renderer.DrawImage(titleImage, 400.f, 400.f);
     //renderer.DrawImageRotated(titleImage, 400.f, 400.f, 1.57f);
     //renderer.DrawImageSub(titleImage, 400.f, 400.f, 100.f, 400.f, 0.f, 0.f, 256.f, 256.f);
+    renderer.DrawText("Let's play", 400.f, 700.f, 0.75f, { 0.f,0.f,1.f });
+    renderer.DrawText("Game Over", 1400.f, 700.f, 0.75f, { 1.f,1.f,1.f });
+
+    if (Input::IsKeyPressed(GLFW_KEY_B)) {
+        //std::cout << showInstancingDemo << std::endl;
+        showInstancingDemo = !showInstancingDemo;
+    }
+    if (showInstancingDemo) {
+        std::vector<InstanceData> instances;
+
+        int totalInstances = 2500;
+
+        // Calculate grid dimensions that fit the screen
+        float aspectRatio = (float)GLApp::width / (float)GLApp::height;
+        int cols = static_cast<int>(std::sqrt(totalInstances * aspectRatio));
+        int rows = static_cast<int>(std::ceil((float)totalInstances / cols));
+
+        // Calculate space to fit screen
+        float paddingX = 5.0f;
+        float paddingY = 5.0f;
+        float spacingX = (GLApp::width - 2 * paddingX) / cols;
+        float spacingY = (GLApp::height - 2 * paddingY) / rows;
+
+        // Use the smaller spacing to ensure everything fits
+        float spacing = std::min(spacingX, spacingY);
+
+        // Calculate sprite size 
+        float spriteSize = spacing * 0.8f;
+
+        for (int i = 0; i < totalInstances; i++) {
+            InstanceData data;
+
+            // Grid layout centered on screen
+            int col = i % cols;
+            int row = i / cols;
+
+            data.position = glm::vec2(
+                paddingX + col * spacing + spacing * 0.5f,  // Center
+                paddingY + row * spacing + spacing * 0.5f
+            );
+
+            // Sprite size
+            data.scale = glm::vec2(spriteSize, spriteSize);
+
+            // Rotation over time (animation)
+            data.rotation = static_cast<float>(glfwGetTime() + i * 0.1f);
+
+            // Full texture
+            data.uvRect = glm::vec4(0, 0, 1, 1);
+
+            instances.push_back(data);
+        }
+
+        renderer.DrawImageInstanced(titleImage, instances);
+    }
+
 }
 
 void MainMenu::Draw()
