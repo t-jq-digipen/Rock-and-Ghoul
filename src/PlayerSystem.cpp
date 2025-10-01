@@ -1,5 +1,5 @@
 #include "PlayerSystem.h"
-
+#include "Registry.h"
 
 
 constexpr float dash = 10.f;
@@ -75,6 +75,19 @@ void WASD_Movement(Entity eID, float& dt)
 		if (Input::IsKeyHeld(GLFW_KEY_K)) transform.pos.y -= speed * dt;
 		if (Input::IsKeyHeld(GLFW_KEY_J)) transform.pos.x -= speed * dt;
 		if (Input::IsKeyHeld(GLFW_KEY_L)) transform.pos.x += speed * dt;
+
+		if (CM_Animator().hasComponent(eID))
+		{
+			if ((Input::IsKeyHeld(GLFW_KEY_I) || Input::IsKeyHeld(GLFW_KEY_J) || Input::IsKeyHeld(GLFW_KEY_K) || Input::IsKeyHeld(GLFW_KEY_L)))
+			{
+				CM_Animator().getComponent(eID).SetState(PS_WALK);
+			}
+			else
+			{
+				CM_Animator().getComponent(eID).SetState(PS_IDLE);
+			}
+
+		}
 		break;
 	case CS_ARROWS:
 		if (Input::IsKeyHeld(GLFW_KEY_UP)) transform.pos.y += speed * dt;

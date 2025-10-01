@@ -13,7 +13,7 @@
  * ========================================================
  */
 #pragma once
-
+#include <unordered_map>
 namespace Animator {
 
 	// ActiveFrames set the rows and cols to be used
@@ -27,10 +27,15 @@ namespace Animator {
 	// e.g	if I would like to call the frames marked X, ActiveFrames would be
 	//		initialized as {1, 0, 2}
 	struct ActiveFrames {
-		int row = 0;
-		int col_start = 0;
-		int col_end = 0;
+		int row			= 0;
+		int col_start	= 0;
+		int col_end		= 0;
+		float duration	= 0.f;
+
+		bool operator==(const ActiveFrames& rhs) const;
 	};
+
+
 
 	class AnimatorComponent {
 	private:
@@ -44,11 +49,14 @@ namespace Animator {
 		float m_uv_width;
 
 
-		float anim_duration;	// Time to cycle through the frames in seconds
-		float anim_timer;		// Time elapsed
+		float anim_duration;								// Time to cycle through the frames in seconds
+		float anim_timer;									// Time elapsed
 
-		ActiveFrames frames;	// Which frames to call
-		int range;				// Number of frames we are looping through
+		ActiveFrames frames;								// Which frames to call
+		int range;											// Number of frames we are looping through
+
+		// using int for key for enumeration
+		std::unordered_map<int, ActiveFrames> stateframe;	// Create a map with int key for active frames
 
 	public:
 		float u0, v0, u1, v1;	// For sub image
@@ -65,6 +73,12 @@ namespace Animator {
 
 		void UpdateFrame(float dt);
 
+		// Set active state to call set of frames
+		void SetState(int state);
+
+		void AddState(int state, ActiveFrames const& framerange);
+
+		
 		
 	};
 

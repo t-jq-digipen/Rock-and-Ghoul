@@ -6,7 +6,11 @@
 #include "GameStateManager.h"
 #include <iostream>
 
-
+enum PlayerState : int {
+    PS_IDLE,
+    PS_WALK,
+    PS_SLIDE
+};
 
 class PlayerSystem : public ISystem {
 public:

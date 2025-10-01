@@ -21,6 +21,9 @@
 
 namespace Animator {
 
+	bool ActiveFrames::operator==(const ActiveFrames& rhs) const
+	{ return (this->row == rhs.row && this->col_start == rhs.col_start && this->col_end == rhs.col_end && this->duration == rhs.duration); }
+
 	AnimatorComponent::AnimatorComponent() :
 		m_total_rows{}, m_total_cols{}, m_current_row{}, m_current_col{},
 		u0{}, v0{}, u1{}, v1{}, anim_duration{}, anim_timer{}, frames{} 
@@ -108,4 +111,38 @@ namespace Animator {
 		// std::cout << "u0 " << u0 << " v0 " << v0 << " u1 " << u1 << " v1 " << v1 << '\n';
 	}
 
+	void AnimatorComponent::SetState(int state)
+	{
+		auto it = stateframe.find(state);
+		if (it == stateframe.end())
+		{
+			std::cout << "U NEVER SET THIS STATE " << state << " BEFORE!!! WHAT U DOING!! I COMPLAIN TO PRASSANA!!\n";
+			throw std::runtime_error("NEVER DECLARE STATE THEN GO SET STATE FOR ANIMATOR BOBO\n");
+		}
+
+		// HAS frames of this key
+
+		// Change to new frames!
+		if (frames != stateframe[state])
+		{
+			frames = stateframe[state];
+			anim_duration = frames.duration;
+			m_current_row = frames.row;
+			m_current_col = frames.col_start;
+			UpdateUV();
+			ResetTimer();
+		}
+	}
+
+	void AnimatorComponent::AddState(int state, ActiveFrames const& frames)
+	{
+		auto it = stateframe.find(state);
+		if (it != stateframe.end())
+		{
+			std::cout << "THIS STATE ALREADY SET!!! but i dont runtime error u bc i feeling nice\n";
+			return;
+		}
+
+		stateframe[state] = frames;
+	}
 }
