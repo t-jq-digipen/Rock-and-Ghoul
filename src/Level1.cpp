@@ -25,7 +25,6 @@ void Level1::Load()
 {
 	Render& renderer = Render::GetInstance();
 	CrashHandler::Safe("Level1", "Load", [&] {
-		CrashHandler::Log("Level1::Load start");
 		std::cout << "Level 1 Loaded!!!" << std::endl;
 
 		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
@@ -37,7 +36,6 @@ void Level1::Init()
 {
 	Render& renderer = Render::GetInstance();
 	CrashHandler::Safe("Level1", "Init", [&] {
-		CrashHandler::Log("Level1::Init start");
 		std::cout << "Level 1 Initialized!!!" << std::endl;
 		renderer.Init();
 
@@ -52,8 +50,6 @@ void Level1::Init()
 		rock = Create_Player(200.f, 500.f);
 		square = Create_Square(800.f, 500.f);
 		roundy = Create_Circle(500.f, 500.f);
-
-		CrashHandler::Log("Level1::Init end");
 	});
 }
 
@@ -107,7 +103,6 @@ void Level1::Free()
 		std::cout << "Level 1 Freed!!!" << std::endl;
 		Remove_Entity(rock);
 		Remove_Entity(ECSplayer);
-		CrashHandler::Log("Level1::Free");
 	});
 }
 
@@ -125,7 +120,6 @@ void Level1::Unload()
 		renderer.UnloadTexture(bgTexture);
 		//Render::GetInstance().ClearAllTextures();
 		std::cout << "Level 1 Unloaded!!!" << std::endl;
-		CrashHandler::Log("Level1::Unload");
 	});
 }
 

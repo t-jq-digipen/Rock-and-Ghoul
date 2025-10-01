@@ -12,6 +12,8 @@
 
 namespace CrashHandler {
 
+
+
     // ---------- Minimal RAII for FILE* -------------------------------------------
     struct FileGuard {
         FILE* f{ nullptr };
@@ -29,6 +31,7 @@ namespace CrashHandler {
     };
 
     // ---------- Internal state ----------------------------------------------------
+    // Terminate handlers
     inline std::terminate_handler g_prev_terminate = nullptr;
     inline void (*g_prev_sigabrt)(int) = SIG_DFL;
     inline void (*g_prev_sigsegv)(int) = SIG_DFL;
@@ -42,6 +45,7 @@ namespace CrashHandler {
     inline char  g_effective_path[1024] = ".log";
 
     // ---------- Small helpers -----------------------------------------------------
+    // Signal handlers
     inline const char* SigName(int sig) noexcept {
         switch (sig) {
         case SIGABRT: return "SIGABRT";
@@ -53,6 +57,7 @@ namespace CrashHandler {
         }
     }
 
+    // Write timestamp
     inline void Timestamp(char* buf, std::size_t n) noexcept {
         if (!buf || n == 0) return;
         std::time_t t = std::time(nullptr);
@@ -63,21 +68,8 @@ namespace CrashHandler {
         else    std::snprintf(buf, n, "unknown-time");
     }
 
-    inline bool is_absolute(const char* p) noexcept {
-        if (!p || !*p) return false;
-#if defined(_WIN32)
-        // "C:\..." or "\\server\share" or leading slash
-        if ((std::strlen(p) >= 3 && std::isalpha(static_cast<unsigned char>(p[0])) && p[1] == ':' &&
-            (p[2] == '\\' || p[2] == '/')) ||
-            (p[0] == '\\' && p[1] == '\\') || p[0] == '/' || p[0] == '\\')
-            return true;
-        return false;
-#else
-        return p[0] == '/';
-#endif
-    }
-
-    inline const char* basename_of(const char* path) noexcept {
+    // Get basename
+    inline const char* BasenameOf(const char* path) noexcept {
         if (!path || !*path) return ".log";
         const char* b1 = std::strrchr(path, '/');
         const char* b2 = std::strrchr(path, '\\');
@@ -86,7 +78,7 @@ namespace CrashHandler {
     }
 
     // Join dir + filename into out (size out_n). dir may or may not end with slash.
-    inline void join_path(char* out, std::size_t out_n, const char* dir, const char* fname) noexcept {
+    inline void JoinPath(char* out, std::size_t out_n, const char* dir, const char* fname) noexcept {
         if (!out || out_n == 0) return;
 #if defined(_WIN32)
         const char sep = '\\';
@@ -106,7 +98,7 @@ namespace CrashHandler {
     }
 
     // Attempt to open the configured path; on failure, fall back to temp dirs.
-    inline FileGuard open_log_for_append() noexcept {
+    inline FileGuard OpenLogForAppend() noexcept {
         // 1) Try exact requested path.
         if (FILE* f = std::fopen(g_log_path, "a")) {
             std::snprintf(g_effective_path, sizeof(g_effective_path), "%s", g_log_path);
@@ -121,13 +113,13 @@ namespace CrashHandler {
             "TMPDIR", "TEMP", "TMP", "HOME"
     #endif
         };
-        const char* base_name = basename_of(g_log_path);
+        const char* base_name = BasenameOf(g_log_path);
 
         for (const char* key : cand_envs) {
             const char* dir = std::getenv(key);
             if (dir && *dir) {
                 char candidate[1024];
-                join_path(candidate, sizeof(candidate), dir, base_name);
+                JoinPath(candidate, sizeof(candidate), dir, base_name);
                 if (FILE* f = std::fopen(candidate, "a")) {
                     std::snprintf(g_effective_path, sizeof(g_effective_path), "%s", candidate);
                     return FileGuard{ f };
@@ -153,16 +145,17 @@ namespace CrashHandler {
 
     // Centralized logging (best-effort; non-throwing).
     inline void LogLine(const char* line) noexcept {
-        FileGuard fp = open_log_for_append();
+        FileGuard fp = OpenLogForAppend();
         if (!fp) return;
         char ts[32]; Timestamp(ts, sizeof ts);
         std::fprintf(fp.f, "[%s] %s\n", ts, line ? line : "(null)");
         std::fflush(fp.f);
     }
 
+    // Write formatted string to log file
     template <typename... Args>
     inline void Logf(const char* fmt, Args... args) noexcept {
-        FileGuard fp = open_log_for_append();
+        FileGuard fp = OpenLogForAppend();
         if (!fp) return;
         char ts[32]; Timestamp(ts, sizeof ts);
         std::fprintf(fp.f, "[%s] ", ts);
@@ -174,7 +167,7 @@ namespace CrashHandler {
     // Make sure a log exists right away and record both requested/effective paths.
     inline void EnsureLogFile() noexcept {
         {
-            FileGuard fp = open_log_for_append();
+            FileGuard fp = OpenLogForAppend();
             if (!fp) return; // as best-effort; nothing else we can do
         }
         LogLine("CrashHandler initialized log");
@@ -211,7 +204,7 @@ namespace CrashHandler {
     // NOTE: This uses stdio in a signal handler (not async-signal-safe).
     // It's intentionally simple/minimal for portability and tiny header goals.
     inline void SignalHandler(int sig) {
-        Logf("Caught %s (%d). Aborting.", SigName(sig), sig);
+        Logf("Caught %s SIGNAL (%d). Aborting.", SigName(sig), sig);
 
         void (*prev)(int) = SIG_DFL;
         switch (sig) {
@@ -240,6 +233,7 @@ namespace CrashHandler {
     inline const char* GetRequestedPath()  noexcept { return g_log_path; }
     inline const char* GetEffectivePath()  noexcept { return g_effective_path; }
 
+    // Install the crash handler (upon program startup)
     inline void Install() noexcept {
         // Install handlers first
         g_prev_terminate = std::set_terminate(TerminateHandler);
@@ -255,6 +249,7 @@ namespace CrashHandler {
         LogLine("CrashHandler installed");
     }
 
+    // Uninstall the crash handler (upon program shutdown)
     inline void Uninstall() noexcept {
         if (g_prev_terminate) std::set_terminate(g_prev_terminate);
         std::signal(SIGABRT, g_prev_sigabrt);
@@ -289,72 +284,13 @@ namespace CrashHandler {
     inline void Safe(const char* file, const char* state, T&& fn) {
         if (RunProtected(std::forward<T>(fn)) != 0) {
             Logf("%s::%s failed (caught exception)", file, state);
+            
             GSM_SetNextState(GameState::GS_QUIT); // safe shutdown
         }
     }
-
-    //inline void DrainAllGLErrors() {
-    //    GLenum e;
-    //    while ((e = glGetError()) != GL_NO_ERROR) { (void)e; }
-    //}
-
-    //// At scope entry: clear prior errors. At exit: log only new ones.
-    //struct GLErrorScope {
-    //    const char* where;
-    //    explicit GLErrorScope(const char* w) : where(w) { DrainAllGLErrors(); }
-    //    ~GLErrorScope() {
-    //        GLenum e; bool any = false;
-    //        while ((e = glGetError()) != GL_NO_ERROR) {
-    //            any = true;
-    //            CrashHandler::Logf("OpenGL error 0x%X in %s", (unsigned)e, where);
-    //        }
-    //        (void)any;
-    //    }
-    //};
-
-    //inline void LogIfGLError(const char* state, bool drain_previous = false, bool log_all = true) {
-    //    if (drain_previous) {
-    //        DrainAllGLErrors();
-    //        return;
-    //    }
-
-    //    GLenum e;
-    //    bool any = false;
-
-    //    while ((e = glGetError()) != GL_NO_ERROR) {
-    //        any = true;
-    //        Logf("OpenGL error 0x%X in %s", static_cast<unsigned>(e), state ? state : "(unknown)");
-    //        if (!log_all) break;
-    //    }
-    //    (void)any;
-    //}
 
     inline void LogIfZeroTexture(GLuint tex, const char* path) {
         if (!tex) Logf("Failed to load texture: %s", path);
     }
 
 } // namespace CrashHandler
-
-/* -------------------------- Usage Example ------------------------------------
-
-#include "CrashHandler.h"
-
-int main() {
-    CrashHandler::SetLogPath("rockandghoul-crash.log"); // optional
-    CrashHandler::Install();                             // creates the log immediately
-    CrashHandler::Log("App starting up");               // sanity line you can search for
-
-    // ... your program ...
-    // e.g., return CrashHandler::RunProtected([&]{ /* body * / });
-
-    CrashHandler::Uninstall();
-    return 0;
-}
-
-Notes:
-- On failure to open the requested path, the logger falls back to a writable
-  temp location (LOCALAPPDATA/TEMP on Windows; TMPDIR/HOME or /tmp on POSIX).
-- The *effective* path used is recorded via GetEffectivePath() and logged on init.
-- This is intentionally simplified; for production signal safety, switch
-  to async-signal-safe writes (e.g., ::write) and add platform backtraces.
-------------------------------------------------------------------------------- */

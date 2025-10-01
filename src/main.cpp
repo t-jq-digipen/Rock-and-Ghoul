@@ -15,7 +15,7 @@ int main() {
     CrashHandler::Install();
     CrashHandler::Log("=== Rock & Ghoul starting ===");
 
-    const int rc = CrashHandler::RunProtected([&]
+    int rc = CrashHandler::RunProtected([&]
     {
         if (!GLApp::init(1920, 1080, "Rock & Ghoul"))
         {
@@ -58,7 +58,6 @@ int main() {
         CrashHandler::Log("Engine shutdown complete");
     });
 
-    CrashHandler::Logf("Exiting with code %d", rc);
     CrashHandler::Uninstall();
     return rc;
 }

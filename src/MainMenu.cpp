@@ -40,7 +40,6 @@ void MainMenu::Load()
 {
     Render& renderer = Render::GetInstance();
     CrashHandler::Safe("MainMenu", "Load", [&] {
-        CrashHandler::Log("MainMenu::Load start");
         std::cout << "Main Menu Loaded!!!" << std::endl;
 
         titleTexture = renderer.LoadTexture("../Assets/title.png");
@@ -57,8 +56,6 @@ void MainMenu::Load()
 
         quitTexture = renderer.LoadTexture("../Assets/quit.png");
         CrashHandler::LogIfZeroTexture(quitTexture, "../Assets/title.png");
-
-        CrashHandler::Log("MainMenu::Load end");
     });
 
 
@@ -70,10 +67,8 @@ void MainMenu::Init()
 {
     Render& renderer = Render::GetInstance();
     CrashHandler::Safe("MainMenu", "Init", [&] {
-        CrashHandler::Log("MainMenu::Init start");
         std::cout << "Main Menu Initialized!!!" << std::endl;
         renderer.Init();
-        CrashHandler::Log("MainMenu::Init end");
     });
 }
 
@@ -99,7 +94,6 @@ void MainMenu::Update()
                 {
                     CrashHandler::Log("AudioManager is null on PLAY click");
                 }
-                CrashHandler::Log("PLAY clicked -> GS_LEVEL1");
                 GSM_SetNextState(GameState::GS_LEVEL1);
             }
         }
@@ -128,7 +122,6 @@ void MainMenu::Update()
                     AudioSystem::Update();
                     glfwPollEvents();
                 }
-                CrashHandler::Log("QUIT clicked -> GS_QUIT");
                 GSM_SetNextState(GameState::GS_QUIT);
             }
         }
@@ -145,10 +138,34 @@ void MainMenu::Update()
             {
                 CrashHandler::Log("AudioManager is null on SPACE press");
             }
-            CrashHandler::Log("SPACE -> GS_LEVEL1");
             GSM_SetNextState(GameState::GS_LEVEL1);
         }
+
+        // Non-fatal test: press F1 to simulate a runtime error, writes to log file (should NOT quit the program!)
+        if (Input::IsKeyPressed(GLFW_KEY_F1))
+        {
+            int rc = CrashHandler::RunProtected([] {
+                throw std::runtime_error("F1 has been pressed! std::exception test successful!");
+            });
+            CrashHandler::Logf("int rc = %d (expected value: 1)", rc);
+            return;
+        }
+
+        // Fatal test: press F2 to simulate a crash, program automatically hard-exits
+        if (Input::IsKeyPressed(GLFW_KEY_F2))
+        {
+            throw std::runtime_error("F2 has been pressed! std::terminate handler successful!");
+        }
+
+        // Fatal signal test: press F4 to simulate an abortion (DON'T ALT + F4 THOUGH)
+        if (Input::IsKeyPressed(GLFW_KEY_F4))
+        {
+            CrashHandler::Log("F4 has been pressed! std::abort successful!");
+            std::abort();
+        }
     });
+
+
 
     // Render main menu textures (placeholders rn)
     
@@ -218,7 +235,6 @@ void MainMenu::Free()
 {
     CrashHandler::Safe("MainMenu", "Free", [&] {
         std::cout << "Main Menu Freed!!!" << std::endl;
-        CrashHandler::Log("MainMenu::Free");
     });
 }
 
@@ -232,7 +248,5 @@ void MainMenu::Unload()
         renderer.UnloadTexture(ghoulTexture);
         renderer.UnloadTexture(playTexture);
         renderer.UnloadTexture(quitTexture);
-
-        CrashHandler::Log("MainMenu::Unload");
     });
 }
