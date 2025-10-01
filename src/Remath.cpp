@@ -348,6 +348,10 @@ float RG_Sqrt(float x) {
 }
 
 void RG_Clamp(float& val, float const& min, float const& max) {
-    if (val > max) val = max;
-    if (val < min) val = min;
+    if (val > max) {
+        val = max;
+    }
+    if (val < min) {
+        val = min;
+    }
 }
