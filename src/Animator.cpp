@@ -1,4 +1,20 @@
+/* ========================================================
+ * @file	Animator.cpp
+ * @author	Tan Jun Quan
+ * @date	01 OCT 2025
+ *
+ * @brief	Animator component for ECS
+ *
+ * Anim things (BRIEF TO BE DONE)
+ *
+ *
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "Animator.h"
+#include "Sprite.h"
 #include <stdio.h>
 #include <stdexcept>
 #include <iostream>
@@ -10,13 +26,13 @@ namespace Animator {
 		u0{}, v0{}, u1{}, v1{}, anim_duration{}, anim_timer{}, frames{} 
 	{ UpdateUV(); }
 
-	AnimatorComponent::AnimatorComponent(int total_rows, int total_cols, ActiveFrames const& framerange, float duration) :
+	AnimatorComponent::AnimatorComponent(int total_rows, int total_cols, int imageWidthPixels, int imageHeightPixels, ActiveFrames const& framerange, float duration) :
 		m_total_rows{ total_rows }, m_total_cols{ total_cols }, m_current_row{}, m_current_col{}, 
 		frames { framerange }, anim_timer{}, anim_duration{ duration }
 	{
 		range = framerange.col_end - framerange.col_start;
-		m_uv_width = 1.f / m_total_cols;
-		m_uv_height = 1.f / m_total_rows;
+		m_uv_width = static_cast<float>(imageWidthPixels) / static_cast<float>(m_total_cols);
+		m_uv_height = static_cast<float>(imageHeightPixels) / static_cast<float>(m_total_rows);
 		m_current_row = frames.row;
 		m_current_col = frames.col_start;
 		UpdateUV();
@@ -55,6 +71,12 @@ namespace Animator {
 	void AnimatorComponent::ResetTimer()
 	{ anim_timer = 0; }
 
+	void Loop_Timer(float& timer, const float& limit)
+	{
+		while (timer > limit)
+		{ timer -= limit; }
+	}
+
 
 	void AnimatorComponent::UpdateFrame(float dt)
 	{
@@ -69,20 +91,21 @@ namespace Animator {
 
 		// Update anim timer and wrap it if it exceeds the duration
 		anim_timer += dt;
-		if (anim_timer >= anim_duration)
-		{
-			anim_timer = anim_timer - anim_duration;
-		}
+
+
+		// Reset timer
+		Loop_Timer(anim_timer, anim_duration);
 
 		// Assign current row and col
 		m_current_row = frames.row;
-		m_current_col = frames.col_start + static_cast<int>((anim_timer / anim_duration) * range);
+		m_current_col = frames.col_start + static_cast<int>((anim_timer / anim_duration) * (range+1));
 		if (m_current_col > frames.col_end)
 		{
 			m_current_col = frames.col_end;
 		}
+
 		UpdateUV();
-		std::cout << "u0 " << u0 << " v0 " << v0 << " u1 " << u1 << " v1 " << v1 << '\n';
+		// std::cout << "u0 " << u0 << " v0 " << v0 << " u1 " << u1 << " v1 " << v1 << '\n';
 	}
 
 }

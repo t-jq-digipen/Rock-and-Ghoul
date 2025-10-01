@@ -44,13 +44,11 @@ Entity Create_Waffle(float const& x, float const& y) {
     Add_Component(player, TagComponent{ T_PLAYER });
 
     {
-        Image temp = CreateImage("../Assets/Waffle_Sprites.png");
-        Add_Component(player, Sprite::SpriteComponent{ temp, {10.f,10.f }, true });
-    }
-    {
+        Image imgtemp = CreateImage("../Assets/Waffle_Sprites.png");
+        Add_Component(player, Sprite::SpriteComponent{ imgtemp, {100.f,100.f }, true });
         
-        Animator::AnimatorComponent temp(3, 6, {0,0,1}, 1.f);
-        Add_Component(player, temp);
+        Animator::AnimatorComponent animtemp(3, 6, imgtemp.widthPixels, imgtemp.heightPixels, {2,0,1}, 1.f);
+        Add_Component(player, animtemp);
     }
     Add_Component(player, HealthComponent{ 100.f, 100.f });
     return player;

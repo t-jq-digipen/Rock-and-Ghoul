@@ -1,7 +1,31 @@
+/* ========================================================
+ * @file	Animator.h
+ * @author	Tan Jun Quan
+ * @date	01 OCT 2025
+ *
+ * @brief	Animator component for ECS
+ *
+ * Anim things (BRIEF TO BE DONE)
+ *
+ *
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 #pragma once
 
 namespace Animator {
 
+	// ActiveFrames set the rows and cols to be used
+	// Rows and cols are called as follows:
+	//   C0 C1 C2 C3 
+	// R3
+	// R2
+	// R1 x  x  x
+	// R0
+	// 
+	// e.g	if I would like to call the frames marked X, ActiveFrames would be
+	//		initialized as {1, 0, 2}
 	struct ActiveFrames {
 		int row = 0;
 		int col_start = 0;
@@ -31,7 +55,7 @@ namespace Animator {
 
 		AnimatorComponent();
 
-		AnimatorComponent(int total_rows, int total_cols, ActiveFrames const& framerange, float duration = 0.f);
+		AnimatorComponent(int total_rows, int total_cols, int imageWidthPixels, int imageHeightPixels, ActiveFrames const& framerange, float duration = 0.f);
 
 		void UpdateUV();
 
