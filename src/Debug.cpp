@@ -18,6 +18,20 @@
 	call render to draw the AABB ^^	need to flesh out render system first xd
 }
 */
+/* ========================================================
+ * @file	Debug.cpp
+ * @author	WONG SHI YU REGINE
+ * @date	1 OCTOBER 2025
+ *
+ * @brief
+ *
+ *
+ *
+ *
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 
 #include "Debug.h"
 #include <unordered_map>

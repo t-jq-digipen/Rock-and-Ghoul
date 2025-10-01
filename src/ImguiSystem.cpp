@@ -1,3 +1,18 @@
+/* ========================================================
+ * @file	ImguiSystem.cpp
+ * @author	WONG SHI YU REGINE
+ * @date	1 OCTOBER 2025
+ *
+ * @brief
+ *
+ *
+ *
+ *
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "ImGuiSystem.h"
 #include "Registry.h"
 #include "glapp.h"
