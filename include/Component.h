@@ -1,4 +1,38 @@
-
+/* ========================================================
+ * @file	Registry.cpp
+ * @author	Tan Jun Quan
+ * @date	29 SEP 2025
+ *
+ * @brief	Declaration of ECS component type IDs and minor
+ *			components found within
+ *
+ * This file declares component type IDs (e.g CT_Sprite)
+ * used for calling the different component managers within
+ * registry (Registry.cpp)
+ * 
+ * More complex components will be declared and defined in
+ * their own header and source files. Below is a list of
+ * components sorted by Major and Minor:
+ * 
+ * MAJOR COMPONENTS:
+ * - Physics		| Physics.cpp + Physics.h	| Velocity, damping, forces
+ * - Sprite			| Sprite.cpp + Sprite.h		|
+ * - Animator		| 
+ * 
+ * MINOR COMPONENTS:
+ * - Transform		|  Position, Rotation, Scale, Positional changes
+ * - Audio			|  Audio (Pending, may be promoted to MAJOR)
+ * - Lifetime		|  Lifetime, for timers or expirations
+ * - Health			|  Current and max health
+ * - Tag
+ * - Input
+ * - Shape
+ *
+ *
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 // Declare component structs and IDs i guess idk im sleepy
 	
 #pragma once
@@ -9,15 +43,7 @@
 #include "Collision.h"
 
 // System notes:
-/*
-* Physics system
-* -> READS physics component
-* -> UPDATES physics component
-* -> WRITES into transform component
-* 
-* Render system
-* -> READS transform component
-*/
+
 
 // Define component types using enum
 enum ComponentTypeID
@@ -74,12 +100,12 @@ struct TransformComponent {
 //};
 
 // COMP_3
-struct AnimatorComponent {
-	unsigned int total_cols, total_rows;
-	unsigned int curr_col, curr_row;
-
-	std::string state;
-};
+//struct AnimatorComponent {
+//	unsigned int total_cols, total_rows;
+//	unsigned int curr_col, curr_row;
+//
+//	std::string state;
+//};
 // GRAPHICS END
 
 // PHYSICS

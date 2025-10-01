@@ -443,7 +443,6 @@ std::string Render::Get_TexturePath(const GLuint& imgID)
     return{};
 }
 
-
 bool Render::IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height)
 {
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), areaPos.x, areaPos.y);

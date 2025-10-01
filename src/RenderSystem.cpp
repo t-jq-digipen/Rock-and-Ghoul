@@ -1,5 +1,6 @@
 #include "RenderSystem.h"
 #include "Render.h"
+#include "Animator.h"
 
 extern Render& renderInstance = Render::GetInstance();
 
@@ -14,6 +15,12 @@ void RenderSystem::Update(float dt) {
         if (spriteComp.IsAnimated())
         {
             // draw animated logic
+            TransformComponent& transComp = Get_TransformComponent(entID);
+            Animator::AnimatorComponent& animComp = Get_AnimatorComponent(entID);
+
+            animComp.UpdateFrame(dt);
+
+            renderInstance.DrawImageSub(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, animComp.u0, animComp.v0, animComp.u1, animComp.v1);
         }
         else
         {
