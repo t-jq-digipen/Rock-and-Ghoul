@@ -185,7 +185,7 @@ void MainMenu::Update()
         std::vector<InstanceData> instances;
 
         int totalInstances = 2500;
-
+        
         // Calculate grid dimensions that fit the screen
         float aspectRatio = (float)GLApp::width / (float)GLApp::height;
         int cols = static_cast<int>(std::sqrt(totalInstances * aspectRatio));
@@ -228,6 +228,9 @@ void MainMenu::Update()
         }
 
         renderer.DrawImageInstanced(titleImage, instances);
+        std::ostringstream oss;
+        oss << "Rock & Ghoul - Objects: " << totalInstances;
+        glfwSetWindowTitle(GLApp::ptr_window, oss.str().c_str());
     }
 
 }
