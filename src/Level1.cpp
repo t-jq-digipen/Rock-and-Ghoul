@@ -69,6 +69,7 @@ void Level1::Init()
 		square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
 		roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
 	}
+	});
 }
 
 void Level1::Update()

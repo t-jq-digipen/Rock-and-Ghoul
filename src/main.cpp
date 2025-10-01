@@ -10,6 +10,7 @@
 #include "ImguiSystem.h"
 #include "CrashHandler.h"
 #include <crtdbg.h>
+
 void EnableMemoryLeakChecking(int breakAlloc = -1)
 {
     int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
@@ -18,61 +19,53 @@ void EnableMemoryLeakChecking(int breakAlloc = -1)
     if (breakAlloc != -1) _CrtSetBreakAlloc(breakAlloc);
 }
 
-
 int main() {
     CrashHandler::SetLogPath("rockandghoul_crash.log");
     CrashHandler::Install();
     CrashHandler::Log("=== Rock & Ghoul starting ===");
     EnableMemoryLeakChecking();
+
     int rc = CrashHandler::RunProtected([&]
-    {
-        if (!GLApp::init(1920, 1080, "Rock & Ghoul"))
         {
-            CrashHandler::Log("GLApp::init failed");
-            return;
-        }
-
-        struct Cleanup
-        {
-            ~Cleanup() noexcept
+            if (!GLApp::init(1920, 1080, "Rock & Ghoul"))
             {
-                GLApp::cleanup();
-                CrashHandler::Log("GLApp cleaned up");
+                CrashHandler::Log("GLApp::init failed");
+                return -1;
             }
-        } cleanup_guard;
 
-        CoreEngine& engine = CoreEngine::GetInstance();
-        Render& renderer = Render::GetInstance();
+            CoreEngine& engine = CoreEngine::GetInstance();
+            Render& renderer = Render::GetInstance();
 
-        // Create audio manager
-        AudioManager* audio = new AudioManager();
-        engine.AddSystem(audio);
-        MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
+            // Create audio manager
+            AudioManager* audio = new AudioManager();
+            engine.AddSystem(audio);
+            MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
 
-        engine.AddSystem(new RenderSystem(renderer));
-        engine.AddSystem(new PlayerSystem());
-        engine.AddSystem(new PhysicsSystem());
-        engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
+            engine.AddSystem(new RenderSystem());
+            engine.AddSystem(new PlayerSystem());
+            engine.AddSystem(new PhysicsSystem());
+            engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
 
-   
-    return 0;
-        // initialize all systems (this sets up FMOD, OpenGL, etc.)
-        engine.Initialize();
-        CrashHandler::Log("Engine initialized");
-        std::cout << "GETS PAST ENGINE INIT\n";
+            // initialize all systems (FMOD, OpenGL, etc.)
+            engine.Initialize();
+            CrashHandler::Log("Engine initialized");
+            std::cout << "GETS PAST ENGINE INIT\n";
 
-        engine.Run();
-        CrashHandler::Log("Engine run returned");
-        std::cout << "GETS PAST ENGINE RUN\n";
+            engine.Run();
+            CrashHandler::Log("Engine run returned");
+            std::cout << "GETS PAST ENGINE RUN\n";
 
-        engine.Shutdown();
-        CrashHandler::Log("Engine shutdown complete");
+            engine.Shutdown();
+            CrashHandler::Log("Engine shutdown complete");
 
+            return 0;
+        });
 
-    });
-    Render::GetInstance().Shutdown();
-    ImGuiSystem::ShutdownImGui();
-    GLApp::cleanup();
-    CrashHandler::Uninstall();
+    // ---- explicit cleanup order ----
+    ImGuiSystem::ShutdownImGui();       // 1. destroy ImGui (needs GL context alive)
+    Render::GetInstance().Shutdown();   // 2. free GPU resources
+    GLApp::cleanup();                   // 3. finally destroy GLFW + GL context
+    CrashHandler::Uninstall();          // 4. crash handler last
+
     return rc;
 }
