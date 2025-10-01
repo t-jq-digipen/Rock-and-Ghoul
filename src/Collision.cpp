@@ -1,6 +1,25 @@
 #include "Collision.h"
 #include <math.h>
 #include "Remath.h"
+
+// AABB setter helper
+AABB Set_AABB(Vec2 const& pos, Vec2 const& size)
+{
+    AABB temp;
+    // dimension = dim (for saving in json)
+    temp.dim = size;
+    temp.min = { pos.x - size.x / 2.f, pos.y - size.y / 2.f };
+    temp.max = { pos.x + size.x / 2.f, pos.y + size.y / 2.f };
+    return temp;
+}
+
+// AABB updater
+void Update_AABB(AABB& aabb, Vec2 const& pos)
+{
+    aabb.min = { pos.x - aabb.dim.x / 2.f, pos.y - aabb.dim.y / 2.f };
+    aabb.max = { pos.x + aabb.dim.x / 2.f, pos.y + aabb.dim.y / 2.f };
+}
+
 // Static collision
 bool CollisionIntersection_RectRect_Static(const AABB& aabb1, const AABB& aabb2)
 {
@@ -67,8 +86,8 @@ bool CollisionIntersection_RectRect_Dynamic(const AABB& aabb1,
 
 // Circle Collision
 bool CollisionIntersection_CC_Static(const Circle& c1, const Circle& c2) {
-    float dx = c2.x - c1.x;
-    float dy = c2.y - c1.y;
+    float dx = c2.pos.x - c1.pos.x;
+    float dy = c2.pos.y - c1.pos.y;
     float d2 = (dx * dx) + (dy * dy);
 
     float radSum = c1.rad + c2.rad;
@@ -100,7 +119,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     }
 
     // vec of diff between c1 and c2
-    Vec2 centerDiff = Vec2{ c2.x - c1.x, c2.y - c1.y };
+    Vec2 centerDiff = Vec2{ c2.pos.x - c1.pos.x, c2.pos.y - c1.pos.y };
 
     // project the vec onto the direction that circle is going??? 
     float proj = (centerDiff.x * relVel.x + centerDiff.y * relVel.y) / relSpeed;
@@ -122,7 +141,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
 bool CollisionIntersection_CA_Static(const Circle& circle, const AABB& aabb)
 {
     // find closest point on AABB to circle center
-    float closestX = circle.x;
+    float closestX = circle.pos.x;
     // clamping
     if (closestX < aabb.min.x) {
         closestX = aabb.min.x;
@@ -131,7 +150,7 @@ bool CollisionIntersection_CA_Static(const Circle& circle, const AABB& aabb)
         closestX = aabb.max.x;
     }
 
-    float closestY = circle.y;
+    float closestY = circle.pos.y;
     if (closestY < aabb.min.y) {
         closestY = aabb.min.y;
     }
@@ -140,8 +159,8 @@ bool CollisionIntersection_CA_Static(const Circle& circle, const AABB& aabb)
     }
 
     // compute squared distance between circle center and closest point (not using rg_distancesquared for now)
-    float dx = circle.x - closestX;
-    float dy = circle.y - closestY;
+    float dx = circle.pos.x- closestX;
+    float dy = circle.pos.y - closestY;
     float dist2 = dx * dx + dy * dy;
 
     return dist2 <= (circle.rad * circle.rad);
@@ -172,7 +191,7 @@ bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& li
         Vec2 closestPoint = RG_Add(line.start, RG_Scale(vecDir, t));
 
         // check if circle intersects with the closest point
-        float distanceSquared = RG_DistanceSquared(Vec2{ circle.x, circle.y }, closestPoint);
+        float distanceSquared = RG_DistanceSquared(Vec2{ circle.pos.x, circle.pos.y }, closestPoint);
 
         return distanceSquared <= (circle.rad * circle.rad);
     

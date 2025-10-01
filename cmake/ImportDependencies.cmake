@@ -138,6 +138,17 @@ macro(import_stb)
         target_include_directories(stb INTERFACE ${stb_SOURCE_DIR})
     endif()
 endmacro()
+# Macro to import nlohmann/json
+macro(import_json)
+    if(NOT TARGET nlohmann_json)  # Guard to prevent multiple inclusion
+        FetchContent_Declare(
+            nlohmann_json
+            GIT_REPOSITORY https://github.com/nlohmann/json.git
+            GIT_TAG v3.11.3    # or latest stable
+        )
+        FetchContent_MakeAvailable(nlohmann_json)
+    endif()
+endmacro()
 
 # Macro to import all dependencies
 macro(importDependencies)
@@ -163,5 +174,6 @@ macro(importDependencies)
     message(STATUS "Importing stb...")
     import_stb()
     message(STATUS "stb imported successfully.")
+    import_json()
     message(STATUS "All dependencies have been imported successfully.")
 endmacro()

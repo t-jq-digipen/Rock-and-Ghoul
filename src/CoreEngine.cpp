@@ -6,11 +6,14 @@
 #include "GameStateManager.h"
 #include <iostream>
 #include <string>
-
+#include "ImguiSystem.h"
+#include "FrameRateController.h"
+#include <algorithm>
 CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
-
+FrameRateController frameRate(60);
 
 GSM gsm;
+float g_dt; // Global dt
 
 void CoreEngine::AddSystem(ISystem* sys) {
     systems.push_back(sys);
@@ -18,7 +21,6 @@ void CoreEngine::AddSystem(ISystem* sys) {
 
 void CoreEngine::Initialize() {
     for (auto s : systems) s->Initialize();
-    lastFrame = glfwGetTime();
     gsm.Init(GameState::GS_MAIN_MENU);
 
 }
@@ -28,6 +30,7 @@ void CoreEngine::Run() {
 
     while (running && !glfwWindowShouldClose(GLApp::ptr_window) && GSM_CurrentState() != GameState::GS_QUIT) {
         // --- 1. Bind function pointers for the new current state
+
         gsm.Update();
 
         // --- 2. Load + Init ONCE for this state
@@ -36,27 +39,48 @@ void CoreEngine::Run() {
 
         // --- 3. Frame loop for this state
         while (gsm.GetNextState() == gsm.GetCurrentState()) {
-            double now = glfwGetTime();
-            float dt = static_cast<float>(now - lastFrame);
-            lastFrame = now;
-
+            frameRate.StartFrame();
+            
             glfwPollEvents();
-
+            float dt = static_cast<float>(frameRate.GetDeltaTime());
+            g_dt = std::clamp(dt, 0.0f, 0.05f);
+            
             // 1. Update game state logic first
             gsm.CallUpdate();
 
-            // 2. Draw background/UI (this calls glClear)  
+            // 2. Draw background/UI (this calls glClear)
             gsm.CallDraw();
 
-            // 3. Then run systems (RenderSystem draws entities ON TOP)
-            for (auto s : systems) s->Update(dt);
+            //loop through all systems managed by the engine
+            for (auto s : systems) {
+                //high-resolution clock
+                using clock = std::chrono::high_resolution_clock;
+                // Record the starting timestamp before running the system update
+                auto start = clock::now();
+                // Call the system's update function, passing delta time for this frame
+                s->Update(g_dt);
+                // Record the ending timestamp immediately after update finishes
+                auto end = clock::now();
+                //how long the update took in milliseconds
+                double elapsedMs = std::chrono::duration<double, std::milli>(end - start).count();
+                // Get the system's type name (like "class PhysicsSystem") as a string
+                std::string sysName = typeid(*s).name();
+                timings[sysName].ms = elapsedMs;
+
+                // call Render() immediately after Update()
+                if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s)) {
+                    imguiSystem->Render();
+                }
+            }
 
             if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
                 GSM_SetNextState(GameState::GS_QUIT);
 
             Input::Update();
             glfwSwapBuffers(GLApp::ptr_window);
+            frameRate.EndFrame();
         }
+
 
         // --- 4. Clean up the old state
         gsm.CallFree();

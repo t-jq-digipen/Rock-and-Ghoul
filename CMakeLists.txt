@@ -18,6 +18,7 @@ set(ALL_LIBS
     libglew_static
     imgui
     freetype
+    nlohmann_json::nlohmann_json
 )
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
@@ -46,11 +47,6 @@ add_executable(${CMAKE_PROJECT_NAME}
     ${HEADERS}
 )
 
-# ======================= Link Libraries =============================
-target_link_libraries(${CMAKE_PROJECT_NAME}
-    ${ALL_LIBS}
-)
-
 # ======================= FMOD Setup =========================
 # Use the correct FMOD path structure
 set(FMOD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/deps/fmod")
@@ -77,20 +73,27 @@ else()
     message(STATUS "Using 32-bit FMOD libraries from: ${FMOD_LIB_DIR}")
 endif()
 
-# Verify the library file exists
 if(EXISTS "${FMOD_LIBRARY_PATH}")
     message(STATUS "✓ Found fmod_vc.lib at: ${FMOD_LIBRARY_PATH}")
 else()
     message(WARNING "✗ fmod_vc.lib NOT found at: ${FMOD_LIBRARY_PATH}")
 endif()
 
-# Link FMOD libraries using absolute path
-target_link_libraries(${CMAKE_PROJECT_NAME}
-    ${ALL_LIBS}
-	stb
-    "${FMOD_LIBRARY_PATH}"
-)
-
+# Link FMOD only if present
+if(EXISTS "${FMOD_LIBRARY_PATH}")
+    target_link_libraries(${CMAKE_PROJECT_NAME}
+        PRIVATE
+            ${ALL_LIBS}
+            stb
+            "${FMOD_LIBRARY_PATH}"
+    )
+else()
+    target_link_libraries(${CMAKE_PROJECT_NAME}
+        PRIVATE
+            ${ALL_LIBS}
+            stb
+    )
+endif()
 # Copy FMOD DLLs on Windows
 if(WIN32)
     # Copy main FMOD DLL
@@ -171,6 +174,12 @@ source_group("BaseEngine\\Debug" FILES
 source_group("BaseEngine\\FilePath" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FileIO.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FileIO.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/DataDefs.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonAdapt.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/JsonLoad.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonLoad.h
 )
 source_group("BaseEngine\\Serialization" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Serialization.cpp
@@ -269,3 +278,39 @@ source_group("Export" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
 )
+
+# ======================= Runtime Data (saves folder) =========================
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
+)
+
+
+file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/saves/*.json")
+foreach(save_file ${SAVE_FILES})
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${save_file}
+        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
+    )
+endforeach()
+
+# ======================= Install target =========================
+
+# Install the executable
+install(TARGETS ${CMAKE_PROJECT_NAME}
+    RUNTIME DESTINATION bin
+)
+
+# Install the saves folder (all json files)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/saves
+    DESTINATION bin
+    FILES_MATCHING PATTERN "*.json"
+)
+
+# Install FMOD DLL (Windows only)
+if(WIN32 AND EXISTS "${FMOD_LIB_DIR}/fmod.dll")
+    install(FILES "${FMOD_LIB_DIR}/fmod.dll"
+        DESTINATION bin
+    )
+endif()

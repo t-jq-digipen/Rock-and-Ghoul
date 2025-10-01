@@ -9,16 +9,19 @@
 #include "glapp.h"
 #include "CoreEngine.h"
 #include "RenderSystem.h"
-#include "BossGhoul.h"
 #include "EntityCreation.h"
+#include "JsonLoad.h"
+#include "FilePath.h"
+
 
 static FretBoard* fretboard = nullptr;
 
 
 GLuint bgTexture = 0;
 Entity ECSplayer{};
-
-
+Entity rock;
+Entity square;
+Entity roundy;
 void Level1::Load()
 {
 
@@ -43,16 +46,40 @@ void Level1::Init()
 	fretboard->StartGame();
 
 	// 5. Create entities
-	Entity rock = Create_Player(200.f, 500.f);
-	Entity ghoul = Create_Ghoul(800.f, 500.f);
-
-
+	if (!JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
+		
+		// Create with names (updated for json)
+		rock = Create_Player(200.f, 500.f);
+		square = Create_Square(800.f, 500.f);
+		roundy = Create_Circle(500.f, 500.f);
+	}
 }
 
 void Level1::Update()
 {
 	//std::cout << "Level 1 Updating!!!" << std::endl;
+	// Save scene on F5
+	if (Input::IsKeyPressed(GLFW_KEY_F5)) {
+		JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "Level1");
+		std::cout << "Scene saved!" << std::endl;
+	}
 
+	// Load scene on F9
+	if (Input::IsKeyPressed(GLFW_KEY_F9)) {
+		// IMPORTANT: Clear existing entities first
+		JsonLoad::ClearAllEntities();
+
+		if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
+			std::cout << "Scene loaded successfully!" << std::endl;
+		}
+		else {
+			std::cout << "Failed to load scene!" << std::endl;
+			// Recreate default entities if load failed
+			rock = Create_Player(200.f, 500.f);
+			square = Create_Square(800.f, 500.f);
+			roundy = Create_Circle(500.f, 500.f);
+		}
+	}
 	// to test game state changes
 	if (Input::IsKeyPressed(GLFW_KEY_M))
 	{
@@ -96,18 +123,20 @@ void Level1::Draw()
 void Level1::Free()
 {
 	std::cout << "Level 1 Freed!!!" << std::endl;
-
-	Remove_Entity(ECSplayer);
+	JsonLoad::ClearAllEntities();
 }
 
 void Level1::Unload()
 {
 	delete fretboard;
 	fretboard = nullptr;
-	if (bgTexture) {
+	/*if (bgTexture) {
 		glDeleteTextures(1, &bgTexture);
 		bgTexture = 0;
-	}
+	}*/
+
+	Render::GetInstance().UnloadTexture(bgTexture);
+	//Render::GetInstance().ClearAllTextures();
 	std::cout << "Level 1 Unloaded!!!" << std::endl;
 }
 
