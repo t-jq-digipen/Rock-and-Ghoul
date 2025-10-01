@@ -61,7 +61,7 @@ void PhysicsSystem::Update(float dt) {
         phyComp.Update();
 
         // Update transform positions
-        transComp.pos = Add(transComp.pos, phyComp.Get_Vel());
+        transComp.pos = RG_Add(transComp.pos, phyComp.Get_Vel());
 
         // updatehitboxes w transform position
         phyComp.UpdateHitboxes(transComp.pos);

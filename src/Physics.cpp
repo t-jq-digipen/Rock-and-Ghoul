@@ -24,13 +24,13 @@ namespace Physics {
 	
 	ForceComp::ForceComp(Vec2 direction, float magnitude, float duration) : dir{ direction }, mag{ magnitude }, force{ 0.f,0.f }, age{}, lifetime{duration}
 	{
-		dir = Normalize(direction);
-		force = Scale(dir, mag);
+		dir = RG_Normalize(direction);
+		force = RG_Scale(dir, mag);
 	}
 
 	void ForceComp::Update()
 	{
-		force = Scale(dir, mag);
+		force = RG_Scale(dir, mag);
 		if (lifetime)
 		{ age += g_dt; }
 	}
@@ -39,7 +39,7 @@ namespace Physics {
 	{ return force; }
 
 	void ForceComp::Set_Dir(Vec2 direction)
-	{ dir = Normalize(direction); }
+	{ dir = RG_Normalize(direction); }
 
 	void ForceComp::Set_Magnitude(float magnitude)
 	{ mag = magnitude; }
@@ -64,7 +64,7 @@ namespace Physics {
 		{
 			return force.GetForce();
 		}
-		return Scale(force.GetForce(), g_dt);
+		return RG_Scale(force.GetForce(), g_dt);
 	}
 
 	// Update ForceList
@@ -80,7 +80,7 @@ namespace Physics {
 			{
 				forcecomp.Update();
 				// Update net_vel change!
-				net_vel = Add(net_vel,Update_NetVel(forcecomp));
+				net_vel = RG_Add(net_vel,Update_NetVel(forcecomp));
 			}
 
 			// Remove expired
@@ -134,7 +134,7 @@ namespace Physics {
 	void PhysicsComponent::UpdateForces()
 	{
 		forcelist.Update();
-		vel = Add(vel, forcelist.Get_NetVel());
+		vel = RG_Add(vel, forcelist.Get_NetVel());
 	}
 
 
@@ -155,7 +155,7 @@ namespace Physics {
 	void PhysicsComponent::Damping()
 	{
 		if (decay)
-		{ vel = Scale(vel, std::pow(decay, g_dt)); }
+		{ vel = RG_Scale(vel, std::pow(decay, g_dt)); }
 	}
 
 	// GETTERS

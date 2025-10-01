@@ -84,10 +84,6 @@ struct Colour4 {
 	float r, g, b, a;
 };
 
-struct Colour4 {
-	float r, g, b, a;
-};
-
 // 2D VECTORS
 // ==================================================
 #pragma region 2DVectors

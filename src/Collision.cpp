@@ -168,7 +168,7 @@ bool CollisionIntersection_CA_Static(const Circle& circle, const AABB& aabb)
 
 bool CollisionIntersection_CL_Static(const Circle& circle, const LineSegment& line) {
         // starting from point on line to center of circle
-        Vec2 linecircle = RG_Subtract(Vec2{ circle.x, circle.y }, line.start);
+        Vec2 linecircle = RG_Subtract(Vec2{ circle.pos.x, circle.pos.y }, line.start);
 
         // dir vector of line
         Vec2 vecDir = RG_Subtract(line.end, line.start);
