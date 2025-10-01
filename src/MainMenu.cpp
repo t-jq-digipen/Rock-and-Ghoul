@@ -9,7 +9,9 @@
 #include "GameStates.h"
 #include "CoreEngine.h"
 #include "CrashHandler.h"
-
+static double lastTime = 0.0;
+static int frames = 0;
+static double fps = 0.0;
 AudioManager* MainMenu::audio = nullptr;
 bool showInstancingDemo = false;
 
@@ -143,19 +145,19 @@ void MainMenu::Update()
         }
 
         // Non-fatal test: press F1 to simulate a runtime error, writes to log file (should NOT quit the program!)
-        if (Input::IsKeyPressed(GLFW_KEY_F1))
+        if (Input::IsKeyPressed(GLFW_KEY_F2))
         {
             int rc = CrashHandler::RunProtected([] {
-                throw std::runtime_error("F1 has been pressed! std::exception test successful!");
+                throw std::runtime_error("F2 has been pressed! std::exception test successful!");
             });
             CrashHandler::Logf("int rc = %d (expected value: 1)", rc);
             return;
         }
 
         // Fatal test: press F2 to simulate a crash, program automatically hard-exits
-        if (Input::IsKeyPressed(GLFW_KEY_F2))
+        if (Input::IsKeyPressed(GLFW_KEY_F3))
         {
-            throw std::runtime_error("F2 has been pressed! std::terminate handler successful!");
+            throw std::runtime_error("F3 has been pressed! std::terminate handler successful!");
         }
 
         // Fatal signal test: press F4 to simulate an abortion (DON'T ALT + F4 THOUGH)
@@ -226,10 +228,16 @@ void MainMenu::Update()
 
             instances.push_back(data);
         }
-
+        double currentTime = glfwGetTime();
+        frames++;
+        if (currentTime - lastTime >= 1.0) { // update once per second
+            fps = double(frames) / (currentTime - lastTime);
+            frames = 0;
+            lastTime = currentTime;
+        }
         renderer.DrawImageInstanced(titleImage, instances);
         std::ostringstream oss;
-        oss << "Rock & Ghoul - Objects: " << totalInstances;
+        oss << "Rock & Ghoul - Instancing: " << totalInstances << " | FPS: " << int(fps);
         glfwSetWindowTitle(GLApp::ptr_window, oss.str().c_str());
     }
 
