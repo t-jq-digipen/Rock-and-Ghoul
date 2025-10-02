@@ -15,9 +15,9 @@
  * components sorted by Major and Minor:
  * 
  * MAJOR COMPONENTS:
- * - Physics		| Physics.cpp + Physics.h	| Velocity, damping, forces
- * - Sprite			| Sprite.cpp + Sprite.h		|
- * - Animator		| 
+ * - Physics		| Physics.cpp + .h	| Velocity, damping, forces
+ * - Sprite			| Sprite.cpp + .h	| Image component
+ * - Animator		| Animator.cpp + .h | Spritesheet management with relation to states.
  * 
  * MINOR COMPONENTS:
  * - Transform		|  Position, Rotation, Scale, Positional changes
@@ -27,7 +27,6 @@
  * - Tag
  * - Input
  * - Shape
- *
  *
  *
  * Copyright © 2025 DigiPen, All rights reserved.

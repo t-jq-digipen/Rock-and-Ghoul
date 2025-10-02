@@ -5,7 +5,8 @@
  *
  * @brief	Animator component for ECS
  *
- * Implementation of the functions declared in Animator.h
+ * Implementation of the classes and functions declared 
+ * in Animator.h
  * These functions facilitate the updating and editing of
  * spritesheet management.
  *

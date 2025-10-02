@@ -5,7 +5,8 @@
  *
  * @brief	Sprite component for ECS
  *
- * Sprite things (BRIEF TO BE DONE)
+ * This file declares the sprite component used for loading
+ * and drawing images.
  *
  *
  *

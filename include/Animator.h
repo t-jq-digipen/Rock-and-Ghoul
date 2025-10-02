@@ -52,21 +52,21 @@ namespace Animator {
 	*/
 	class AnimatorComponent {
 	private:
-		int m_total_rows;		// ------------------------- | Total number of rows in spritesheet
-		int m_total_cols;		// ------------------------- | Total number of columns in spritesheet
+		int m_total_rows;		// Total number of rows in spritesheet
+		int m_total_cols;		// Total number of columns in spritesheet
 
-		int m_current_row;		// ------------------------- | Current row index of spritesheet
-		int m_current_col;		// ------------------------- | Current column index of spritesheet
+		int m_current_row;		// Current row index of spritesheet
+		int m_current_col;		// Current column index of spritesheet
 		
-		float m_uv_height;		// ------------------------- | UV height of single frame
-		float m_uv_width;		// ------------------------- | UV width of single frame
+		float m_uv_height;		// UV height of single frame
+		float m_uv_width;		// UV width of single frame
 
 
-		float anim_duration;	// ------------------------- | Time to cycle through the frames in seconds
-		float anim_timer;		// ------------------------- | Time elapsed
+		float anim_duration;	// Time to cycle through the frames in seconds
+		float anim_timer;		// Time elapsed
 
-		ActiveFrames frames;	// ------------------------- | Which frames to call
-		int range;				// ------------------------- | Number of frames we are looping through
+		ActiveFrames frames;	// Which frames to call
+		int range;				// Number of frames we are looping through
 
 		// using int for key for enumeration
 		std::unordered_map<int, ActiveFrames> stateframe;	// A map with int key for active frames
