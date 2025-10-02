@@ -1,4 +1,21 @@
-// component manager class
+/* ========================================================
+ * @file	ComponentManager.h
+ * @author	Tan Jun Quan
+ * @date	27 SEP 2025
+ *
+ * @brief	Component Manager template for ECS
+ * 
+ * The Component Manager is responsible for storing, retrieving
+ * and removing components of a given type. Each component type
+ * has it's own manager.
+ * e.g ComponentManager<TransformComponent>
+ * These component managers exist in Registry.
+ * 
+ * Entities must still be managed through the EntityManager!
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 
 #pragma once
 
@@ -10,7 +27,6 @@
 
 
 // template for component manager for each component
-// each component to have its own manager e.g ComponentManager<TransformComponent>
 template<typename Component>
 class ComponentManager {
 
@@ -20,10 +36,23 @@ private:
 
 public:
 
-	// Check if entity has component
+	/**
+	 * @brief Check if an entity has this component type.
+	 * @param eID The entity ID to check.
+	 * @return True if the entity has the component, false otherwise.
+	 */
 	bool		hasComponent(Entity eID) { return (components.find(eID) != components.end()); }
 
-	// Add a component to an entity
+	/**
+	 * @brief Add a component to an entity.
+	 *
+	 * Associates a new component of type `Component` with the given entity.
+	 * Throws if the entity already has a component of this type.
+	 *
+	 * @param eID The entity ID.
+	 * @param comp The component instance to add.
+	 * @throws std::runtime_error if the entity already has this component.
+	 */
 	void		addComponent(Entity eID, Component const& comp)
 	{
 		// check if entity already has component
@@ -39,10 +68,19 @@ public:
 		}
 	}
 
-	// Remove a component from an entity
+	/**
+	 * @brief Remove a component from an entity.
+	 * @param eID The entity ID.
+	 */
 	void		removeComponent(Entity eID) { components.erase(eID); }
 
-	// Return reference to component struct
+	/**
+	 * @brief Get a reference to an entity's component.
+	 *
+	 * @param eID The entity ID.
+	 * @return Reference to the component associated with the entity.
+	 * @throws std::runtime_error if the entity does not have this component.
+	 */
 	Component&	getComponent(Entity eID)
 	{
 		auto it = components.find(eID);
@@ -53,8 +91,15 @@ public:
 		throw std::runtime_error("Entity " + std::to_string(eID) + " does NOT have component\n");
 	}
 
-	// Reference to container
+	/**
+	 * @brief Get all components managed by this manager.
+	 * @return Reference to the internal unordered_map of entity IDs to components.
+	 */
 	std::unordered_map<Entity, Component>& getComponents() { return components; }
+	/**
+	 * @brief Get all components managed by this manager (const version).
+	 * @return Const reference to the internal unordered_map of entity IDs to components.
+	 */
 	const std::unordered_map<Entity, Component>& getComponents() const { return components; }
 
 };

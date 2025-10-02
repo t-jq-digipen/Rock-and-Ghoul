@@ -15,24 +15,24 @@
  * components sorted by Major and Minor:
  * 
  * MAJOR COMPONENTS:
- * - Physics		| Physics.cpp + Physics.h	| Velocity, damping, forces
- * - Sprite			| Sprite.cpp + Sprite.h		|
- * - Animator		| 
+ * - Physics		| Physics.cpp + .h	| Velocity, damping, forces
+ * - Sprite			| Sprite.cpp + .h	| Image component
+ * - Animator		| Animator.cpp + .h | Spritesheet management with relation to states.
  * 
  * MINOR COMPONENTS:
  * - Transform		|  Position, Rotation, Scale, Positional changes
  * - Audio			|  Audio (Pending, may be promoted to MAJOR)
  * - Lifetime		|  Lifetime, for timers or expirations
  * - Health			|  Current and max health
- * - Tag
- * - Input
- * - Shape
- *
+ * - Tag			|  Tag with common object types for easy tracking
+ * - Input			|  Input component
+ * - Shape			|  Basic shape component (for primitive shapes without sprites)
  *
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
+
 // Declare component structs and IDs i guess idk im sleepy
 	
 #pragma once

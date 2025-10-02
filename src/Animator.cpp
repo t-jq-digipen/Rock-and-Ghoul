@@ -5,9 +5,10 @@
  *
  * @brief	Animator component for ECS
  *
- * Anim things (BRIEF TO BE DONE)
- *
- *
+ * Implementation of the classes and functions declared 
+ * in Animator.h
+ * These functions facilitate the updating and editing of
+ * spritesheet management.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
