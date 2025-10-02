@@ -84,15 +84,15 @@ void RenderSystem::Update(float dt) {
         // Debug drawing section (Velocity, AABBs, Colliders)
         // ------------------------------------------------
         if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {
-            for (auto& [e, physics] : CM_Physics().getComponents()) {
-                if (!Has_Component(e, CT_Transform)) continue;
-                auto& t = Get_TransformComponent(e);
+            for (auto& [entID, physics] : CM_Physics().getComponents()) {
+                if (!Has_Component(entID, CT_Transform)) continue;
+                auto& t = Get_TransformComponent(entID);
 
                 // Velocity debug (only for players)
-                if (ImGuiSystem::showVelocity && Has_Component(e, CT_Tag)) {
-                    auto& tag = Get_TagComponent(e);
+                if (ImGuiSystem::showVelocity && Has_Component(entID, CT_Tag)) {
+                    auto& tag = Get_TagComponent(entID);
                     if (tag.tag == T_PLAYER) {
-                        DebugDraw::DrawVelocity(e, t, renderInstance, dt);
+                        DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
                     }
                 }
 
@@ -100,8 +100,8 @@ void RenderSystem::Update(float dt) {
                 if (ImGuiSystem::showColliders) {
                     DebugDraw::DrawAABB(physics.Get_AABB(), renderInstance);
 
-                    if (Has_Component(e, CT_Shape)) {
-                        auto& shape = Get_ShapeComponent(e);
+                    if (Has_Component(entID, CT_Shape)) {
+                        auto& shape = Get_ShapeComponent(entID);
                         if (shape.shape == SHAPE_CIRCLE) {
                             DebugDraw::DrawCircleCollider(physics.Get_Circle(), renderInstance);
                         }
