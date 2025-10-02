@@ -1,7 +1,8 @@
 /* ========================================================
- * @file	PhysicsSystem.cpp
- * @author	Tan Jun Quan
- * @date	29 SEP 2025
+ * @file	    PhysicsSystem.cpp
+ * @author	    Tan Jun Quan | t.junquan@digipen.edu
+ * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date	    29 SEP 2025
  *
  * @brief	Physics system for ECS
  *

@@ -1,7 +1,7 @@
 /* ========================================================
  * @file    FrameRateController.h
  * @author  w.shiyuregine
- * @date    01/10/2025
+ * @date    01 OCT 2025
  *
  * @brief
  *

@@ -1,3 +1,19 @@
+/* ========================================================
+ * @file        Collision.h
+ * @author      Yasmin Tazi         | yasmin.t@digipen.edu
+ * @co-author   Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
+ * @date        01 OCT 2025
+ *
+ * @brief
+ *
+ * fella never even document this ------------- FIXTHISSHIT
+ * Collili! (plz help me type more words i tired its almsot 4am, help check if author/coauth correct)
+ * -------------------------------------- end of FIXTHISSHIT
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #include "Remath.h"
 #include <math.h>

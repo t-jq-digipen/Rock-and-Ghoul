@@ -1,7 +1,7 @@
 /* ========================================================
- * @file    Render.cpp
- * @author  kervinguancheng.ong@digipen.edu
- * @date    02/10/2025
+ * @file        Render.cpp
+ * @author      Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+ * @date        02 OCT 2025
  *
  * @brief   Rendering system class, consisting function definitions for drawing 2D
  *          primitives, images, and text using OpenGL.

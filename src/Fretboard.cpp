@@ -1,3 +1,16 @@
+/* ========================================================
+ * @file		Fretboard.cpp
+ * @author		? | ?@digipen.edu
+ * @date		01 OCT 2025
+ *
+ * @brief	FIXTHISSHIT
+ *
+ * FIXTHISSHIT (or delete?)
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "Fretboard.h"
 #include <cstdlib>  // rand()
 #include <ctime>    // random number generator seed

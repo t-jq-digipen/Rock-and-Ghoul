@@ -1,7 +1,7 @@
 /* ========================================================
- * @file	ComponentManager.h
- * @author	Tan Jun Quan
- * @date	27 SEP 2025
+ * @file		ComponentManager.h
+ * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @date		27 SEP 2025
  *
  * @brief	Component Manager template for ECS
  * 
@@ -17,6 +17,7 @@
  * ========================================================
  */
 
+// DO NOT AMEND
 #pragma once
 
 #include "Component.h"

@@ -1,7 +1,7 @@
 /* ========================================================
- * @file    CollisionManager.cpp
- * @author   w.shiyuregine@digipen.edu
- * @date    01/10/2025
+ * @file        CollisionManager.cpp
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        01 OCT 2025
  *
  * @brief
  *

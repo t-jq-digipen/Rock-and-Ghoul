@@ -1,6 +1,6 @@
 /* ========================================================
  * @file	MainMenu.h
- * @author	Manfred Sim
+ * @author	Manfred Sim | manfred.sim@digipen.edu
  * @date	29 SEP 2025
  *
  * @brief	Main Menu

@@ -1,17 +1,15 @@
 /* ========================================================
- * @file    Debug.cpp
- * @author   w.shiyuregine@digipen.edu
- * @date    01/10/2025
+ * @file        Debug.cpp
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        01 OCT 2025
  *
  * @brief 
  * 
- * This registry functions as the connection between the entities and components, 
- * and is the medium for the systems to interact with entitites and their components.
+ * ur debug never document properly ------------ FIXTHISSHIT
+ * Implements debug rendering utilities for visualization of
+ * physics velocities and collision hitboxes.
+ * -------------------------------------- end of FIXTHISSHIT
  * 
- * This checks all entities with Physics and Transform components
- * for overlaps between their collision shapes (rectangles and circles).
- * Detected collisions are stored as events for later processing. The default resolution strategy (ActionStop) rolls entities back to their
- * previous positions and zeroes their velocity, ensuring they do not overlap, can be improved
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
