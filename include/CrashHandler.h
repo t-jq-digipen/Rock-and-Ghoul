@@ -1,4 +1,19 @@
-// CrashHandler.h
+/* ========================================================
+ * @file	Crash Handler
+ * @author	Manfred Sim
+ * @date	29 SEP 2025
+ *
+ * @brief	Crash Handler for writing crash logs to a text file
+ *
+ * This header file contains the declaration of functions
+ * used by the crash handler. The crash handler uses safe
+ * wrappers like "try-catch" with "exception safety" to write
+ * a log to the text file should the program crash.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 
 #include <cstdio>     // FILE, fopen, fprintf, fflush, fclose
@@ -12,9 +27,7 @@
 
 namespace CrashHandler {
 
-
-
-    // ---------- Minimal RAII for FILE* -------------------------------------------
+    // RAII Wrapper for FILE*
     struct FileGuard {
         FILE* f{ nullptr };
         FileGuard() = default;
@@ -26,6 +39,7 @@ namespace CrashHandler {
             if (this != &o) { if (f) std::fclose(f); f = o.f; o.f = nullptr; }
             return *this;
         }
+        // Guarantees fclose() on scope exit
         ~FileGuard() { if (f) std::fclose(f); }
         explicit operator bool() const noexcept { return f != nullptr; }
     };
@@ -45,7 +59,7 @@ namespace CrashHandler {
     inline char  g_effective_path[1024] = ".log";
 
     // ---------- Small helpers -----------------------------------------------------
-    // Signal handlers
+    // Returns a short string for a signal number (e.g. SIGABRT)
     inline const char* SigName(int sig) noexcept {
         switch (sig) {
         case SIGABRT: return "SIGABRT";
@@ -53,11 +67,11 @@ namespace CrashHandler {
         case SIGILL:  return "SIGILL";
         case SIGFPE:  return "SIGFPE";
         case SIGTERM: return "SIGTERM";
-        default:      return "SIGNAL";
+        default:      return "SIGNAL";  // For unknown signals
         }
     }
 
-    // Write timestamp
+    // Writes timestamp into buffer in format "YYYY-MM-DD HH:MM:SS"
     inline void Timestamp(char* buf, std::size_t n) noexcept {
         if (!buf || n == 0) return;
         std::time_t t = std::time(nullptr);
@@ -68,7 +82,7 @@ namespace CrashHandler {
         else    std::snprintf(buf, n, "unknown-time");
     }
 
-    // Get basename
+    // Returns the filename from a path
     inline const char* BasenameOf(const char* path) noexcept {
         if (!path || !*path) return ".log";
         const char* b1 = std::strrchr(path, '/');
@@ -77,7 +91,7 @@ namespace CrashHandler {
         return b ? (b + 1) : path;
     }
 
-    // Join dir + filename into out (size out_n). dir may or may not end with slash.
+    // Join directory and filename into out (size out_n).
     inline void JoinPath(char* out, std::size_t out_n, const char* dir, const char* fname) noexcept {
         if (!out || out_n == 0) return;
 #if defined(_WIN32)
@@ -143,7 +157,7 @@ namespace CrashHandler {
         return FileGuard{};
     }
 
-    // Centralized logging (best-effort; non-throwing).
+    // Appends a single line (with timestamp) to the log file
     inline void LogLine(const char* line) noexcept {
         FileGuard fp = OpenLogForAppend();
         if (!fp) return;
@@ -152,7 +166,7 @@ namespace CrashHandler {
         std::fflush(fp.f);
     }
 
-    // Write formatted string to log file
+    // Appends a single formatted line (with timestamp) to the log file
     template <typename... Args>
     inline void Logf(const char* fmt, Args... args) noexcept {
         FileGuard fp = OpenLogForAppend();
@@ -164,11 +178,12 @@ namespace CrashHandler {
         std::fflush(fp.f);
     }
 
-    // Make sure a log exists right away and record both requested/effective paths.
+    // Ensures the log file exists by opening and closing it once, then writes
+    // startup breadcrumbs including both requested and effective paths
     inline void EnsureLogFile() noexcept {
         {
             FileGuard fp = OpenLogForAppend();
-            if (!fp) return; // as best-effort; nothing else we can do
+            if (!fp) return;
         }
         LogLine("CrashHandler initialized log");
         Logf("Log path requested: %s", g_log_path ? g_log_path : "(null)");
@@ -176,6 +191,8 @@ namespace CrashHandler {
     }
 
     // ---------- Terminate & Signal handlers --------------------------------------
+    // Custom std::terminate handler that logs details about any exception thrown and
+    // then aborts the program
     inline void TerminateHandler() noexcept {
         try {
             if (auto ex = std::current_exception()) {
@@ -201,8 +218,7 @@ namespace CrashHandler {
         std::abort();
     }
 
-    // NOTE: This uses stdio in a signal handler (not async-signal-safe).
-    // It's intentionally simple/minimal for portability and tiny header goals.
+    // Logs the signal name then aborts the program
     inline void SignalHandler(int sig) {
         Logf("Caught %s SIGNAL (%d). Aborting.", SigName(sig), sig);
 
@@ -221,6 +237,7 @@ namespace CrashHandler {
     }
 
     // ---------- Public API --------------------------------------------------------
+    // Sets the desired log file path
     inline void SetLogPath(const char* path) noexcept {
         // Copy into internal storage to avoid dangling pointers.
         const char* use = (path && *path) ? path : ".log";
@@ -230,7 +247,10 @@ namespace CrashHandler {
         std::snprintf(g_effective_path, sizeof(g_effective_path), "%s", g_log_path);
     }
 
+    // Returns the last requested log path string
     inline const char* GetRequestedPath()  noexcept { return g_log_path; }
+
+    // Returns the actual path used on the last successful opening of the file
     inline const char* GetEffectivePath()  noexcept { return g_effective_path; }
 
     // Install the crash handler (upon program startup)
@@ -260,7 +280,7 @@ namespace CrashHandler {
         LogLine("CrashHandler uninstalled");
     }
 
-    // Manual log helper
+    // Convenience helper to write a single line to the log file
     inline void Log(const char* msg) noexcept { LogLine(msg); }
 
     // Run callable; logs exceptions; returns 0 on success, 1 on failure.
@@ -280,15 +300,16 @@ namespace CrashHandler {
     }
 
     // ---------- Helpers for game states ------------------------------------------
+    // Wraps a callable function with RunProtected()
     template <typename T>
     inline void Safe(const char* file, const char* state, T&& fn) {
         if (RunProtected(std::forward<T>(fn)) != 0) {
-            Logf("%s::%s failed (caught exception)", file, state);
-            
+            Logf("%s::%s failed (caught exception)", file, state); 
             GSM_SetNextState(GameState::GS_QUIT); // safe shutdown
         }
     }
 
+    // Logs a message if texture object ID is zero (failed load)
     inline void LogIfZeroTexture(GLuint tex, const char* path) {
         if (!tex) Logf("Failed to load texture: %s", path);
     }

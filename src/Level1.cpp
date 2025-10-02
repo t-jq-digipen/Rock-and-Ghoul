@@ -1,3 +1,18 @@
+/* ========================================================
+ * @file	Level1.cpp
+ * @author	Manfred Sim
+ * @date	29 SEP 2025
+ *
+ * @brief	Level 1
+ *
+ * This source file contains the implementation of functions
+ * used by the Level 1. While in Level 1, the game is in
+ * its playing state.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -17,13 +32,17 @@
 
 static FretBoard* fretboard = nullptr;
 
-
+// Background Texture
 GLuint bgTexture = 0;
+
+// Entities for Level 1
 Entity ECSplayer{};
 Entity rock;
 Entity square;
 Entity roundy;
 Entity waffle;
+
+// Loads Level 1
 void Level1::Load()
 {
 	Render& renderer = Render::GetInstance();
@@ -35,14 +54,16 @@ void Level1::Load()
 	});
 }
 
+// Initializes Level 1
 void Level1::Init()
 {
 	Render& renderer = Render::GetInstance();
 	CrashHandler::Safe("Level1", "Init", [&] {
 		std::cout << "Level 1 Initialized!!!" << std::endl;
+		// 1. Initialize the Renderer
 		renderer.Init();
 
-		// 1. Create FretBoard after OpenGL is ready
+		// 2. Create FretBoard after OpenGL is ready
 		if (!fretboard) {
 			fretboard = new FretBoard(0, 0, 800, 200);
 		}
@@ -59,7 +80,6 @@ void Level1::Init()
 	fretboard->LoadTextures();
 	fretboard->StartGame();
 
-	// JQ COMMENT OUT HAHAHA
 	// 5. Create entities
 	if (!JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
 		
@@ -72,6 +92,7 @@ void Level1::Init()
 	});
 }
 
+// Updates Level 1
 void Level1::Update()
 {
 	//std::cout << "Level 1 Updating!!!" << std::endl;
@@ -123,6 +144,7 @@ void Level1::Update()
 	});
 }
 
+// Draws Level 1
 void Level1::Draw()
 {	
 	Render& renderer = Render::GetInstance();
@@ -137,7 +159,6 @@ void Level1::Draw()
 			);
 		}
 
-
 		if (fretboard) {
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
@@ -145,11 +166,11 @@ void Level1::Draw()
 	});
 }
 
+// Frees Level 1
 void Level1::Free()
 {
 	std::cout << "Level 1 Freed!!!" << std::endl;
 	JsonLoad::ClearAllEntities();
-	//Render::GetInstance().ClearAllTextures();
 	if (bgTexture) {
 		Render::GetInstance().UnloadTexture(bgTexture);
 		bgTexture = 0;
@@ -164,14 +185,15 @@ void Level1::Free()
 	});
 }
 
+// Unloads Level 1
 void Level1::Unload()
 {
-
 	// Clean up background texture
-	Render::GetInstance().ClearAllTextures();
-	//Render::GetInstance().ClearAllTextures();
-	std::cout << "Level 1 Unloaded!!!" << std::endl;
 	Render& renderer = Render::GetInstance();
+	renderer.ClearAllTextures();
+
+	std::cout << "Level 1 Unloaded!!!" << std::endl;
+
 	CrashHandler::Safe("Level1", "Unload", [&] {
 		if (fretboard) {
 		// FretBoard should clean its own textures before deletion
@@ -184,7 +206,6 @@ void Level1::Unload()
 		}*/
 
 		renderer.UnloadTexture(bgTexture);
-		//Render::GetInstance().ClearAllTextures();
 		std::cout << "Level 1 Unloaded!!!" << std::endl;
 	});
 }
