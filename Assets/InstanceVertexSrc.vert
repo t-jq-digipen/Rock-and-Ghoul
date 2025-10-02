@@ -1,3 +1,12 @@
+/*!
+@file       InstanceVertexSrc.vert
+@author   kervinguancheng.ong@digipen.edu
+@date    	  02/10/2025
+
+This file implements the vertex shader required for instanced rendering
+
+*//*__________________________________________________________________________*/
+
 #version 330 core
 layout (location = 0) in vec2 aPos;   // base quad vertex pos
 layout (location = 1) in vec2 aTex;   // base quad UV

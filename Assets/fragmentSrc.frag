@@ -1,5 +1,8 @@
 /*!
 @file       fragmentSrc.frag
+@author   kervinguancheng.ong@digipen.edu
+@date    	  02/10/2025
+
 This file implements the fragment shader.
 
 *//*__________________________________________________________________________*/
