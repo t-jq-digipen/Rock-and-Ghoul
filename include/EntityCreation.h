@@ -50,5 +50,21 @@ Entity Create_Waffle(float const& spawnx, float const& spawny);
  * @return The newly created Shape entity.
  */
 Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme controls);
+/**
+ * @brief Create a wall entity with transform, physics, shape, and tag components.
+ * @param x The x-position of the wall.
+ * @param y The y-position of the wall.
+ * @param width The width of the wall in world units.
+ * @param height The height of the wall in world units.
+ * @return The newly created Wall entity.
+ */
 Entity Create_Wall(float x, float y, float width, float height);
+/**
+ * @brief Create a lightweight instanced square entity with transform, shape, and tag components.
+ * @param x The x-position of the square.
+ * @param y The y-position of the square.
+ * @param size The size (width and height) of the square.
+ * @param color The RGB color of the square.
+ * @return The newly created instanced square entity.
+ */
 Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);

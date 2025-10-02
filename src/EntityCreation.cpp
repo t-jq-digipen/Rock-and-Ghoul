@@ -124,8 +124,9 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color)
 {
     Entity instance = Create_Entity();
 
-    // Minimal transform (pos + scale)
+    
     Add_Component(instance, TransformComponent{ {x, y}, {size, size} });
+    //for rendersystem
     ShapeComponent s;
     s.shape = SHAPE_RECTANGLE;
     s.dimensions = { size, size };
