@@ -83,34 +83,32 @@ void RenderSystem::Update(float dt) {
         // ------------------------------------------------
         // Debug drawing section (Velocity, AABBs, Colliders)
         // ------------------------------------------------
-        auto& em = EntityManager::get();
-        for (Entity e = 0; e < em.maxEntities(); ++e) {
-            if (!em.isAlive(e)) continue;
-            if (!Has_Component(e, CT_Transform)) continue;
-            auto& t = Get_TransformComponent(e);
+        if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {
+            for (auto& [entID, physics] : CM_Physics().getComponents()) {
+                if (!Has_Component(entID, CT_Transform)) continue;
+                auto& t = Get_TransformComponent(entID);
 
-            // If velocity debug is enabled in ImGui and entity is a player with physics,
-            // draw the velocity vector as a line/arrow
-            if (ImGuiSystem::showVelocity && Has_Component(e, CT_Physics) && Has_Component(e, CT_Tag)) {
-                auto& tag = Get_TagComponent(e);
-                if (tag.tag == T_PLAYER) {
-                    DebugDraw::DrawVelocity(e, t, renderInstance, dt);
-                }
-            }
-            // If collider debug is enabled in ImGui, draw collision boundaries
-            if (ImGuiSystem::showColliders && Has_Component(e, CT_Physics)) {
-                auto& p = Get_PhysicsComponent(e);
-                DebugDraw::DrawAABB(p.Get_AABB(), renderInstance);
-
-                // Only draw circle collider debug for circle shapes
-                if (Has_Component(e, CT_Shape)) {
-                    auto& shape = Get_ShapeComponent(e);
-                    if (shape.shape == SHAPE_CIRCLE) {
-                        DebugDraw::DrawCircleCollider(p.Get_Circle(), renderInstance);
+                // Velocity debug (only for players)
+                if (ImGuiSystem::showVelocity && Has_Component(entID, CT_Tag)) {
+                    auto& tag = Get_TagComponent(entID);
+                    if (tag.tag == T_PLAYER) {
+                        DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
                     }
                 }
-                // Draw the hotspot (center point) of the transform
-                DebugDraw::DrawHotspot(t.pos, renderInstance);
+
+                // Collider debug
+                if (ImGuiSystem::showColliders) {
+                    DebugDraw::DrawAABB(physics.Get_AABB(), renderInstance);
+
+                    if (Has_Component(entID, CT_Shape)) {
+                        auto& shape = Get_ShapeComponent(entID);
+                        if (shape.shape == SHAPE_CIRCLE) {
+                            DebugDraw::DrawCircleCollider(physics.Get_Circle(), renderInstance);
+                        }
+                    }
+
+                    DebugDraw::DrawHotspot(t.pos, renderInstance);
+                }
             }
         }
 
