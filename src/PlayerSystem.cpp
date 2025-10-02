@@ -64,18 +64,26 @@ void WASD_Movement(Entity eID, float& dt)
 	// Handle movement based on control scheme
 	switch (input.scheme) {
 	case CS_WASD:
-		if (Input::IsKeyHeld(GLFW_KEY_W)) transform.pos.y += speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_S)) transform.pos.y -= speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_W)) transform.pos.y += speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_S)) transform.pos.y -= speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt; 
+	    if (Input::IsKeyHeld(GLFW_KEY_W)) physics.AddForce({ 0,1 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_S)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_A)) physics.AddForce({ -1,0 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_D)) physics.AddForce({ 1,0 }, 1.f, 0.f);
 		break;
 
 	case CS_IJKL:
-		if (Input::IsKeyHeld(GLFW_KEY_I)) transform.pos.y += speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_K)) transform.pos.y -= speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_J)) transform.pos.x -= speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_L)) transform.pos.x += speed * dt;
-
+		//if (Input::IsKeyHeld(GLFW_KEY_I)) transform.pos.y += speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_K)) transform.pos.y -= speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_J)) transform.pos.x -= speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_L)) transform.pos.x += speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_I)) physics.AddForce({ 0,1 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_K)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_J)) physics.AddForce({ -1,0 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_L)) physics.AddForce({ 1,0 }, 1.f, 0.f);
 		if (CM_Animator().hasComponent(eID))
 		{
 			if ((Input::IsKeyHeld(GLFW_KEY_I) || Input::IsKeyHeld(GLFW_KEY_J) || Input::IsKeyHeld(GLFW_KEY_K) || Input::IsKeyHeld(GLFW_KEY_L)))
@@ -90,10 +98,14 @@ void WASD_Movement(Entity eID, float& dt)
 		}
 		break;
 	case CS_ARROWS:
-		if (Input::IsKeyHeld(GLFW_KEY_UP)) transform.pos.y += speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_DOWN)) transform.pos.y -= speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_LEFT)) transform.pos.x -= speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) transform.pos.x += speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_UP)) transform.pos.y += speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_DOWN)) transform.pos.y -= speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_LEFT)) transform.pos.x -= speed * dt;
+		//if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) transform.pos.x += speed * dt;
+		if (Input::IsKeyHeld(GLFW_KEY_UP)) physics.AddForce({ 0,1 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_DOWN)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_LEFT)) physics.AddForce({ -1,0 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) physics.AddForce({ 1,0 }, 1.f, 0.f);
 		break;
 	}
 

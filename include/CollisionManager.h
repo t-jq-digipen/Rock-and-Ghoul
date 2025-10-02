@@ -68,4 +68,8 @@ public:
      */
     void ActionStop(Entity a, Entity b);
 
+    void ActionStop_Static(Entity dynamic, Entity staticObj);
+
+    void CollisionActions(Entity a, Entity b, bool intersected);
+
 };

@@ -35,3 +35,4 @@ Entity Create_Waffle(float const& spawnx, float const& spawny);
  * @return The newly created Shape entity.
  */
 Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme controls);
+Entity Create_Wall(float x, float y, float width, float height);

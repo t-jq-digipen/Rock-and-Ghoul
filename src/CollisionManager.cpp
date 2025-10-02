@@ -5,12 +5,17 @@
  *
  * @brief
  *
- * This checks all entities with Physics and Transform components
- * for overlaps between their collision shapes (rectangles and circles).
- * Detected collisions are stored as events for later processing.
+ * This system iterates over all entities that have both Physics and Transform
+ * components and performs collision detection between their collision.
  *
- * The default resolution strategy (ActionStop) rolls entities back to their
- * previous positions and zeroes their velocity, ensuring they do not overlap, can be improved
+ * When an overlap is detected, a CollisionEvent is created and stored for
+ * later processing.
+ *
+ *   - Position correction: computes the penetration depth and displaces the dynamic obj
+ *      along the collision normal so shapes no longer overlap.
+ *   - Velocity correction: projects the obj velocity onto the normal and removes any inward component, preventing continued motion into
+ *     the static object.
+ *
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -50,15 +55,116 @@ void CollisionManager::ActionStop(Entity a, Entity b) {
     auto& transB = Get_TransformComponent(b);
     auto& physB = Get_PhysicsComponent(b);
 
-    // rollback
-    transA.pos = transA.Prevpos;
-    transB.pos = transB.Prevpos;
+    const AABB& aabbA = physA.Get_AABB();
+    const AABB& aabbB = physB.Get_AABB();
 
-    // stop
-    physA.Set_Vel({ 0.f, 0.f });
-    physB.Set_Vel({ 0.f, 0.f });
+    //overlap
+    Vec2 diff = RG_Subtract(transB.pos, transA.pos);
+    float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - fabs(diff.x);
+    float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - fabs(diff.y);
+
+    if (overlapX <= 0 || overlapY <= 0) return;
+
+    // Separate on axis of least overlap
+    if (overlapX < overlapY) {
+        float halfOverlap = overlapX / 2.0f;
+        if (diff.x > 0) {
+            transA.pos.x -= halfOverlap;
+            transB.pos.x += halfOverlap;
+        }
+        else {
+            transA.pos.x += halfOverlap;
+            transB.pos.x -= halfOverlap;
+        }
+    }
+    else {
+        float halfOverlap = overlapY / 2.0f;
+        if (diff.y > 0) {
+            transA.pos.y -= halfOverlap;
+            transB.pos.y += halfOverlap;
+        }
+        else {
+            transA.pos.y += halfOverlap;
+            transB.pos.y -= halfOverlap;
+        }
+    }
+
+    physA.UpdateHitboxes(transA.pos);
+    physB.UpdateHitboxes(transB.pos);
+
+    // stop velocities
+    physA.Set_Vel({ 0.0f, 0.0f });
+    physB.Set_Vel({ 0.0f, 0.0f });
 }
 
+void CollisionManager::ActionStop_Static(Entity dynamic, Entity staticObj) {
+    auto& transDyn = Get_TransformComponent(dynamic);
+    auto& physDyn = Get_PhysicsComponent(dynamic);
+    auto& transStatic = Get_TransformComponent(staticObj);
+    auto& physStatic = Get_PhysicsComponent(staticObj);
+
+    const AABB& aabbDyn = physDyn.Get_AABB();
+    const AABB& aabbStatic = physStatic.Get_AABB();
+
+    if (!CollisionIntersection_RectRect_Static(aabbDyn, aabbStatic)) {
+        return;
+    }
+
+
+    //Lecture 6_2 and 7
+    //if (leftA > rightB) then no collision
+    //if (leftB > rightA) then no collision
+    //if (topA < bottomB) then no collision
+    //if (topB < bottomA) then no collision
+    Vec2 diff = RG_Subtract(transDyn.pos, transStatic.pos);
+    float overlapX = (aabbDyn.dim.x + aabbStatic.dim.x) / 2.0f - fabs(diff.x);
+    float overlapY = (aabbDyn.dim.y + aabbStatic.dim.y) / 2.0f - fabs(diff.y);
+
+    // collision normal
+    Vec2 normal;
+    if (overlapX < overlapY) {
+        normal = (diff.x > 0) ? Vec2{ 1.0f, 0.0f } : Vec2{ -1.0f, 0.0f };
+    }
+    else {
+        normal = (diff.y > 0) ? Vec2{ 0.0f, 1.0f } : Vec2{ 0.0f, -1.0f };
+    }
+
+    float minimum_overlap = std::min(overlapX, overlapY);
+    Vec2 displacement = RG_Scale(normal, minimum_overlap);
+    transDyn.pos = RG_Add(transDyn.pos, displacement);
+
+    physDyn.UpdateHitboxes(transDyn.pos);
+
+    //Lecture 16 – Animated Point to Line
+    Vec2 velDyn = physDyn.Get_Vel();
+    float velocitynorm = RG_DotProduct(velDyn, normal);
+    // If moving into the wall (negative dot product)
+    if (velocitynorm < 0) {
+        // Remove the normal component of velocity
+        Vec2 correctionstep = RG_Scale(normal, velocitynorm);
+        physDyn.Set_Vel(RG_Subtract(velDyn, correctionstep));
+    }
+}
+
+void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected)
+{
+    if (!intersected) return;
+
+    AddEvent(a, b);
+
+    auto& compA = Get_PhysicsComponent(a);
+    auto& compB = Get_PhysicsComponent(b);
+
+    if (compA.IsStatic() && !compB.IsStatic()) {
+        ActionStop_Static(b, a);
+    }
+    else if (!compA.IsStatic() && compB.IsStatic()) {
+        ActionStop_Static(a, b);
+    }
+    else {
+        ActionStop(a, b);
+    }
+}
 
 void CollisionManager::CheckCollisions() {
     auto& physicsComps = CM_Physics().getComponents();
@@ -81,46 +187,45 @@ void CollisionManager::CheckCollisions() {
             auto& transB = Get_TransformComponent(b);
             compB.UpdateHitboxes(transB.pos);
 
-            // collision shapes based on sprite textureID
+            // collision shapes
             bool aIsCircle = false, bIsCircle = false;
 
-            // JQ COMMENT OUT HAHAHA
             if (Has_Component(a, CT_Shape)) {
                 auto& shapeA = Get_ShapeComponent(a);
                 aIsCircle = (shapeA.shape == SHAPE_CIRCLE);
             }
-
             if (Has_Component(b, CT_Shape)) {
                 auto& shapeB = Get_ShapeComponent(b);
                 bIsCircle = (shapeB.shape == SHAPE_CIRCLE);
             }
-            
-            // collision n action
+
+            if (Has_Component(a, CT_Tag) && Has_Component(b, CT_Tag)) {
+                auto& tagA = Get_TagComponent(a);
+                auto& tagB = Get_TagComponent(b);
+                if (tagA.tag == T_WALL && tagB.tag == T_WALL) {
+                    continue; // don’t process wall–wall collisions
+                }
+            }
+
             if (!aIsCircle && !bIsCircle) {
-                if (CollisionIntersection_RectRect_Static(compA.Get_AABB(), compB.Get_AABB())) {
-                    AddEvent(a, b);
-                    ActionStop(a, b);
-                }
+                // Both are rectangles
+                bool hit = CollisionIntersection_RectRect_Static(compA.Get_AABB(), compB.Get_AABB());
+                CollisionActions(a, b, hit);
             }
+
+            // === CIRCLE - CIRCLE ===
             else if (aIsCircle && bIsCircle) {
-                if (CollisionIntersection_CC_Static(compA.Get_Circle(), compB.Get_Circle())) {
-                    AddEvent(a, b);
-                    ActionStop(a, b);
-                }
+                // Both are circles
+                bool hit = CollisionIntersection_CC_Static(compA.Get_Circle(), compB.Get_Circle());
+                CollisionActions(a, b, hit);
             }
+
+            // === CIRCLE - RECT ===
             else {
-                if (aIsCircle) {
-                    if (CollisionIntersection_CA_Static(compA.Get_Circle(), compB.Get_AABB())) {
-                        AddEvent(a, b);
-                        ActionStop(a, b);
-                    }
-                }
-                else {
-                    if (CollisionIntersection_CA_Static(compB.Get_Circle(), compA.Get_AABB())) {
-                        AddEvent(a, b);
-                        ActionStop(a, b);
-                    }
-                }
+                // One is circle, other is rectangle
+                bool hit = aIsCircle? CollisionIntersection_CA_Static(compA.Get_Circle(), compB.Get_AABB()) : CollisionIntersection_CA_Static(compB.Get_Circle(), compA.Get_AABB());
+
+                CollisionActions(a, b, hit);
             }
         }
     }

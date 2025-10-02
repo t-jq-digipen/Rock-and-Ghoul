@@ -106,6 +106,21 @@ Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeTyp
 
     return shape;
 }
+
+Entity Create_Wall(float x, float y, float width, float height) {
+    Entity wall = Create_Entity();
+    Add_Component(wall, ShapeComponent{ SHAPE_RECTANGLE });
+    Add_Component(wall, TransformComponent{ {x, y}, {width, height} });
+    AABB aabb = Set_AABB({ x, y }, { width, height });
+    Circle circle = { {x, y}, 0.0f }; // zero radius
+    Physics::PhysicsComponent phys(0.0f, true, aabb, circle, true);
+    Add_Component(wall, phys);
+
+    Add_Component(wall, TagComponent{ T_WALL });
+    return wall;
+}
+
+
 //Entity Create_Square(float x, float y) {
 //    Entity square = Create_Entity();
 //    Add_Component(square, TransformComponent{ {x, y}, {100.f, 100.f} });

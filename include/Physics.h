@@ -65,7 +65,7 @@ namespace Physics {
 	class PhysicsComponent {
 		Vec2 vel;
 		float decay;
-
+		bool isStatic;
 		bool willCollide;
 		AABB aabbhitbox;
 		Circle circlehitbox;
@@ -74,7 +74,7 @@ namespace Physics {
 		void UpdateForces();
 	public:
 		PhysicsComponent();
-		PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref);
+		PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref, bool makeStatic = false);
 
 		PhysicsComponent(const PhysicsComponent& other) = default;
 
@@ -101,6 +101,9 @@ namespace Physics {
 		void Set_Vel(Vec2 const& newVel);
 		void StopX() { vel.x = 0.f; }
 		void StopY() { vel.y = 0.f; }
+
+		bool IsStatic() const { return isStatic; }
+		void SetStatic(bool s) { isStatic = s; }
 	};
 }
 

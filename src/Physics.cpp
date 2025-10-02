@@ -119,9 +119,9 @@ namespace Physics {
 	// ================================================================================
 
 	// ctors hehe
-	PhysicsComponent::PhysicsComponent() : vel{ 0.f,0.f }, decay{ 0.f }, willCollide{ false }, aabbhitbox{ { 0.f, 0.f }, { 0.f,0.f }, {0.f,0.f} }, circlehitbox{ {0.f,0.f}, 0.f } {}
+	PhysicsComponent::PhysicsComponent() : vel{ 0.f,0.f }, decay{ 0.f }, willCollide{ false }, isStatic{ false }, aabbhitbox{ { 0.f, 0.f }, { 0.f,0.f }, {0.f,0.f} }, circlehitbox{ {0.f,0.f}, 0.f } {}
 
-	PhysicsComponent::PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref) : vel{ 0.f,0.f }, decay{ decayval }, willCollide{ solid }, aabbhitbox{ aabbref }, circlehitbox{ circleref } {}
+	PhysicsComponent::PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref, bool makeStatic) : vel{ 0.f,0.f }, decay{ decayval }, willCollide{ solid }, aabbhitbox{ aabbref }, circlehitbox{ circleref }, isStatic{ makeStatic } {}
 
 
 	// FORCES

@@ -16,7 +16,9 @@
 #include "CrashHandler.h"
 
 static FretBoard* fretboard = nullptr;
-
+constexpr float LEVEL_WIDTH = 1920.f;
+constexpr float LEVEL_HEIGHT = 1080.f;
+constexpr float WALL_THICKNESS = 50.f;
 
 GLuint bgTexture = 0;
 Entity ECSplayer{};
@@ -68,8 +70,24 @@ void Level1::Init()
 		rock = Create_Player(200.f, 500.f);
 		square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
 		roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
+
 	}
-	});
+	});		// Top wall
+		Create_Wall(LEVEL_WIDTH * 0.5f, LEVEL_HEIGHT - WALL_THICKNESS * 0.5f,
+			LEVEL_WIDTH, WALL_THICKNESS);
+
+		// Bottom wall
+		Create_Wall(LEVEL_WIDTH * 0.5f, WALL_THICKNESS * 0.5f,
+			LEVEL_WIDTH, WALL_THICKNESS);
+
+		// Left wall
+		Create_Wall(WALL_THICKNESS * 0.5f, LEVEL_HEIGHT * 0.5f,
+			WALL_THICKNESS, LEVEL_HEIGHT);
+
+		// Right wall
+		Create_Wall(LEVEL_WIDTH - WALL_THICKNESS * 0.5f, LEVEL_HEIGHT * 0.5f,
+			WALL_THICKNESS, LEVEL_HEIGHT);
+
 }
 
 void Level1::Update()
