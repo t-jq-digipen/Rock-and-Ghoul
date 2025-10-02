@@ -1,22 +1,43 @@
+/* ========================================================
+ * @file	Level1.h
+ * @author	Manfred Sim
+ * @date	29 SEP 2025
+ *
+ * @brief	Level 1
+ *
+ * This header file contains the declaration of functions
+ * used by the Level 1. While in Level 1, the game is in
+ * its playing state.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #include <iostream>
 #ifndef LEVEL1_H
 #define LEVEL1_H
 
+ // Class for Level 1
 class Level1
 {
 public:
-	// Loads main menu
+	// Loads Level 1
 	static void Load();
-	// Initializes main menu
+
+	// Initializes Level 1
 	static void Init();
-	// Updates main menu
+
+	// Updates Level 1
 	static void Update();
-	// Draws main menu
+
+	// Draws Level 1
 	static void Draw();
-	// Frees main menu
+
+	// Frees Level 1
 	static void Free();
-	// Unloads main menu
+
+	// Unloads Level 1
 	static void Unload();
 };
 
