@@ -723,7 +723,7 @@ void Render::InitTextRendering() {
         textVBO = 0;
     }
 
-    // ---------- FreeType lifetime with single exit ----------
+    //FreeType lifetime with single exit
     FT_Library ft = nullptr;
     FT_Face face = nullptr;
 
@@ -791,7 +791,7 @@ void Render::InitTextRendering() {
     // Always release FreeType objects on every path
     cleanupFT();
 
-    // ---------- VAO/VBO for text quads ----------
+    // VAO/VBO for text quads 
     glGenVertexArrays(1, &textVAO);
     glGenBuffers(1, &textVBO);
     glBindVertexArray(textVAO);
@@ -878,13 +878,13 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
 }
 
 void Render::Shutdown() {
-    // --- Delete all glyph textures ---
+    // Delete all glyph textures
     for (auto& [c, ch] : Characters) {
         glDeleteTextures(1, &ch.TextureID);
     }
     Characters.clear();
 
-    // --- Delete text rendering VAO/VBO ---
+    // Delete text rendering VAO/VBO
     if (textVAO) {
         glDeleteVertexArrays(1, &textVAO);
         textVAO = 0;
@@ -894,7 +894,7 @@ void Render::Shutdown() {
         textVBO = 0;
     }
 
-    // --- Delete main VAO/VBO ---
+    // Delete main VAO/VBO
     if (vao) {
         glDeleteVertexArrays(1, &vao);
         vao = 0;
@@ -904,13 +904,13 @@ void Render::Shutdown() {
         vbo = 0;
     }
 
-    // --- Delete shader program(s) ---
+    // Delete shader program
     if (shaderProgram) {
         glDeleteProgram(shaderProgram);
         shaderProgram = 0;
     }
 
-    // --- Clear cached textures ---
+    // Clear cached textures
     ClearAllTextures();
 
     std::cout << "[Render] Shutdown complete — all GPU resources freed.\n";
