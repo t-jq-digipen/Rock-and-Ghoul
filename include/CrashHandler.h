@@ -8,7 +8,8 @@
  * This header file contains the declaration of functions
  * used by the crash handler. The crash handler uses safe
  * wrappers like "try-catch" with "exception safety" to write
- * a log to the text file should the program crash.
+ * a log to the text file should the program crash. The text
+ * file created is "rockandghoul_crash.log".
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
