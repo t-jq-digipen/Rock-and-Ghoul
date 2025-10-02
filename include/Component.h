@@ -24,14 +24,15 @@
  * - Audio			|  Audio (Pending, may be promoted to MAJOR)
  * - Lifetime		|  Lifetime, for timers or expirations
  * - Health			|  Current and max health
- * - Tag
- * - Input
- * - Shape
+ * - Tag			|  Tag with common object types for easy tracking
+ * - Input			|  Input component
+ * - Shape			|  Basic shape component (for primitive shapes without sprites)
  *
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
+
 // Declare component structs and IDs i guess idk im sleepy
 	
 #pragma once

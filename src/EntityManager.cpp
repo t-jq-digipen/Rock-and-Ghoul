@@ -1,3 +1,20 @@
+/* ========================================================
+ * @file	EntityManager.cpp
+ * @author	Tan Jun Quan
+ * @date	01 OCT 2025
+ *
+ * @brief	Entity Manager for ECS
+ *
+ * Singleton exists within Registry.
+ *
+ * This file implements the functionality of the Entity Manager
+ * declared in EntityManager.h.
+ *
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "EntityManager.h"
 #include <iostream>
 #include <string>
