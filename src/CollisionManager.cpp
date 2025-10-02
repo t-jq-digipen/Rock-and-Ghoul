@@ -65,7 +65,8 @@ void CollisionManager::ActionStop(Entity a, Entity b) {
 
     if (overlapX <= 0 || overlapY <= 0) return;
 
-    // Separate on axis of least overlap
+    //  Separate along the axis of least overlap
+    //both objects are movable, split the correction between them (so neither gets unfairly displaced)
     if (overlapX < overlapY) {
         float halfOverlap = overlapX / 2.0f;
         if (diff.x > 0) {
