@@ -120,7 +120,20 @@ Entity Create_Wall(float x, float y, float width, float height) {
     return wall;
 }
 
+Entity Create_InstancedSquare(float x, float y, float size, Vec3 color)
+{
+    Entity instance = Create_Entity();
 
+    // Minimal transform (pos + scale)
+    Add_Component(instance, TransformComponent{ {x, y}, {size, size} });
+    ShapeComponent s;
+    s.shape = SHAPE_RECTANGLE;
+    s.dimensions = { size, size };
+    s.color = color;
+    Add_Component(instance, s);
+    Add_Component(instance, TagComponent{ T_INSTANCING });
+    return instance;
+}
 //Entity Create_Square(float x, float y) {
 //    Entity square = Create_Entity();
 //    Add_Component(square, TransformComponent{ {x, y}, {100.f, 100.f} });

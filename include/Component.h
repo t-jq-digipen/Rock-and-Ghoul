@@ -137,7 +137,8 @@ enum C_TagID {
 	T_PLAYER,
 	T_ENEMY,
 	T_PROJECTILE,
-	T_WALL
+	T_WALL,
+	T_INSTANCING
 };
 
 struct TagComponent {

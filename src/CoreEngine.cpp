@@ -27,7 +27,8 @@ void CoreEngine::Initialize() {
 
 void CoreEngine::Run() {
     std::cout << "EngRun\n";
-
+    double lastTitleUpdate = glfwGetTime();
+    int frames = 0;
     while (running && !glfwWindowShouldClose(GLApp::ptr_window) && GSM_CurrentState() != GameState::GS_QUIT) {
         if (gsm.GetCurrentState() != GameState::GS_RESTART)
         {
@@ -89,6 +90,18 @@ void CoreEngine::Run() {
             Input::Update();
             glfwSwapBuffers(GLApp::ptr_window);
             frameRate.EndFrame();
+
+            frames++;
+            double now = glfwGetTime();
+            if (now - lastTitleUpdate >= 1.0) {
+                float fps = frames / (now - lastTitleUpdate);
+
+                std::string title = "Rock & Ghoul - FPS: " + std::to_string((int)fps);
+                glfwSetWindowTitle(GLApp::ptr_window, title.c_str());
+
+                frames = 0;
+                lastTitleUpdate = now;
+            }
         }
 
 

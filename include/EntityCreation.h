@@ -36,3 +36,4 @@ Entity Create_Waffle(float const& spawnx, float const& spawny);
  */
 Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme controls);
 Entity Create_Wall(float x, float y, float width, float height);
+Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);

@@ -72,26 +72,89 @@ void Level1::Init()
 		roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
 
 	}
-	});		// Top wall
-		Create_Wall(LEVEL_WIDTH * 0.5f, LEVEL_HEIGHT - WALL_THICKNESS * 0.5f,
-			LEVEL_WIDTH, WALL_THICKNESS);
+	});	
+	// Top wall
+	Create_Wall(LEVEL_WIDTH/2, LEVEL_HEIGHT - WALL_THICKNESS/2, LEVEL_WIDTH, WALL_THICKNESS);
 
-		// Bottom wall
-		Create_Wall(LEVEL_WIDTH * 0.5f, WALL_THICKNESS * 0.5f,
-			LEVEL_WIDTH, WALL_THICKNESS);
+	// Bottom wall
+	Create_Wall(LEVEL_WIDTH/2, WALL_THICKNESS/2,LEVEL_WIDTH, WALL_THICKNESS);
 
-		// Left wall
-		Create_Wall(WALL_THICKNESS * 0.5f, LEVEL_HEIGHT * 0.5f,
-			WALL_THICKNESS, LEVEL_HEIGHT);
+	// Left wall
+	Create_Wall(WALL_THICKNESS/2, LEVEL_HEIGHT/2,WALL_THICKNESS, LEVEL_HEIGHT);
 
-		// Right wall
-		Create_Wall(LEVEL_WIDTH - WALL_THICKNESS * 0.5f, LEVEL_HEIGHT * 0.5f,
-			WALL_THICKNESS, LEVEL_HEIGHT);
+	// Right wall
+	Create_Wall(LEVEL_WIDTH - WALL_THICKNESS/2, LEVEL_HEIGHT/2,WALL_THICKNESS, LEVEL_HEIGHT);
 
 }
 
 void Level1::Update()
 {
+	static bool spawned = false;
+	std::vector<Entity> toRemove;
+
+	// Toggle with B key
+	if (Input::IsKeyPressed(GLFW_KEY_B))
+	{
+		if (!spawned)
+		{
+			int totalEntities = 2500;
+			float aspectRatio = (float)GLApp::width / (float)GLApp::height;
+			int cols = static_cast<int>(std::sqrt(totalEntities * aspectRatio));
+			int rows = static_cast<int>(std::ceil((float)totalEntities / cols));
+
+			float paddingX = 5.0f, paddingY = 5.0f;
+			float spacingX = (GLApp::width - 2 * paddingX) / cols;
+			float spacingY = (GLApp::height - 2 * paddingY) / rows;
+			float spacing = std::min(spacingX, spacingY);
+			float size = spacing * 0.8f;
+
+			for (int i = 0; i < totalEntities; ++i) {
+				int col = i % cols;
+				int row = i / cols;
+
+				float px = paddingX + col * spacing + spacing * 0.5f;
+				float py = paddingY + row * spacing + spacing * 0.5f;
+
+				Create_InstancedSquare(px, py, size, { 0.2f, 0.8f, 1.0f });
+			}
+
+			std::cout << "Spawned " << totalEntities << " squares with B key!\n";
+			spawned = true;
+		}
+		else
+		{
+			// === Clear all ===
+			for (auto& [e, tag] : CM_Tag().getComponents()) {
+				if (tag.tag == T_INSTANCING && EntityManager::get().isAlive(e)) {
+					toRemove.push_back(e);
+				}
+			}
+			for (Entity e : toRemove) {
+				Remove_Entity(e);
+			}
+			std::cout << "Cleared all spawned squares!\n";
+			spawned = false;
+		}
+	}
+
+	// === Rotation update for spawned squares ===
+	if (spawned) {
+		static double lastTime = glfwGetTime();
+		double currentTime = glfwGetTime();
+		float dt = static_cast<float>(currentTime - lastTime);
+		lastTime = currentTime;
+
+		for (auto& [e, t] : CM_Transform().getComponents()) {
+			if (Has_Component(e, CT_Tag)) {
+				auto& tag = Get_TagComponent(e);
+				if (tag.tag == T_INSTANCING) {
+					t.rot += 45.f * dt;
+				}
+			}
+		}
+	}
+
+	
 	//std::cout << "Level 1 Updating!!!" << std::endl;
 	// Save scene on F5
 	if (Input::IsKeyPressed(GLFW_KEY_F5)) {
