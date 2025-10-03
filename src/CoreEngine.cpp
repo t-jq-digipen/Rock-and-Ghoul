@@ -6,7 +6,6 @@
  *
  * @brief   Core Engine implementation and update loop
  *
- * fella never even document this ------------- FIXTHISSHIT
  * The CoreEngine class is responsible for running the main
  * loop of the game.
  * 
@@ -21,7 +20,6 @@
  * The GSM has global functions provided for interfacing, allowing
  * retrieval and modification of current, previous, and next states
  * outside of the engine code.
- * -------------------------------------- end of FIXTHISSHIT
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================

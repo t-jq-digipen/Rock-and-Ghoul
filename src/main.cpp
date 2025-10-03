@@ -1,13 +1,24 @@
 ﻿/* ========================================================
  * @file        main.cpp
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
+ * @co-author   Manfred Sim         | manfred.sim@digipen.edu
  * @date        01 OCT 2025
  *
- * @brief
+ * @brief       
  *
- * fella never even document this ------------- FIXTHISSHIT
- * how did you forget MAIN of all things oh my dayssss
- * -------------------------------------- end of FIXTHISSHIT
+ * The main entry point for the application. Enables checks
+ * for memory leaks and installs a crash handler before starting
+ * up the application. When the application starts, it creates
+ * a 1920x1080 game window and initializes the core engine
+ * needed to run the game, as well as the following core systems:
+ * 
+ * - Audio Manager (for managing audio files)
+ * - Render System (for rendering shape and sprite components)
+ * - Player System (for handling player behaviour)
+ * - Physics System (for handling in-game physics and collisions)
+ * - ImGui System (for implementing game editor)
+ *
+ * Cleans up all resources once the application is closed.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
