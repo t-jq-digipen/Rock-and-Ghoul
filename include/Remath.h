@@ -6,9 +6,26 @@
  *
  * @brief
  *
- * fella never even document this ------------- FIXTHISSHIT
- * Math library declaration (plz help me type more words i tired its almsot 4am)
- * -------------------------------------- end of FIXTHISSHIT
+ * @brief
+ * Header file for Remath library. This library includes
+ * trigonometric functions, vector operations, and common math utilities.
+ *
+ * Features:
+ * - Trigonometric Functions: Template-based sin, cos, tan, and their
+ *   inverse variants (asin, acos, atan, atan2) with built-in clamping
+ *   for inverse functions.
+ *
+ * - Angle Conversion: Conversion between degrees and radians.
+ *
+ * - Vec2 Operations: 2D vector mathematics including construction,
+ *   arithmetic operators, dot product, distance calculations, length
+ *   computation, normalization, and linear interpolation (lerp).
+ *
+ * - Vec3 Operations: 3D vector mathematics including all functions
+ *   from Vec2, and cross product.
+ *
+ * - Utility Functions: Custom square root implementation using Newton's
+ *   method and clamping function for value range restriction.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
