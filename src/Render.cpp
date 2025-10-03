@@ -242,7 +242,7 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
     glUseProgram(0);
 }
 
-void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments, float rotation) {
+void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments) {
     // vertices for a circle
     std::vector<GLfloat> vertices;
     vertices.reserve((segments + 2) * 2);

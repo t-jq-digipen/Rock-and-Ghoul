@@ -187,7 +187,7 @@ public:
     * @param segments Number of line segments to approximate the circle.
     * @param rotation Rotation applied to the circle (default = 0.0f).
     */
-    void DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments,float rotation = 0.0f);
+    void DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments);
 
 
     //Image/Texture
