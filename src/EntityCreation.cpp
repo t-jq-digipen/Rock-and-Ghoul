@@ -52,6 +52,13 @@ Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeTyp
     return 0;
 }
 
+/**
+ * @brief Generates initial prefab JSON files in Assets/prefabs/.
+ *
+ * Creates the prefabs directory if missing and generates default
+ * entity prefabs (Player, Waffle, Rectangle, Circle).
+ * 
+ */
 void GenerateInitialPrefabs() {
     std::cout << "=== GENERATING PREFABS ===" << std::endl;
 
