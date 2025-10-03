@@ -35,6 +35,10 @@
 #include "PhysicsSystem.h"
 #include "ImguiSystem.h"
 #include "CrashHandler.h"
+
+#include "JsonLoad.h"
+#include "FilePath.h"
+
 #include <crtdbg.h>
 
 void EnableMemoryLeakChecking(int breakAlloc = -1)
@@ -46,6 +50,29 @@ void EnableMemoryLeakChecking(int breakAlloc = -1)
 }
 
 int main() {
+    // Load settings from file FIRST (before creating window)
+    auto settingsOpt = JsonLoad::LoadSettings(FilePath::SETTINGS_FILE);
+
+    GameSettings settings;
+    if (settingsOpt.has_value()) {
+        settings = settingsOpt.value();
+        std::cout << "Loaded settings from file" << std::endl;
+    }
+    else {
+        // If file doesn't exist, create default settings
+        settings.volume = 100.0f;
+        settings.resolutionWidth = 1920;
+        settings.resolutionHeight = 1080;
+        settings.fullscreen = false;
+
+        // Save defaults for next time
+        JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
+    }
+
+    // USE the loaded settings to initialize window
+    if (!GLApp::init(settings.resolutionWidth, settings.resolutionHeight, "Rock & Ghoul")) {
+        return -1;
+    }
     CrashHandler::SetLogPath("rockandghoul_crash.log");
     CrashHandler::Install();
     CrashHandler::Log("=== Rock & Ghoul starting ===");

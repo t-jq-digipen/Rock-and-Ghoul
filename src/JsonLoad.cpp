@@ -14,7 +14,7 @@
  * JSON library for parsing and serialization, and provides type-safe
  * conversion between game objects and their JSON representations.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "JsonLoad.h"
@@ -722,15 +722,8 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
     }
 }
 
-/**
- * @brief Saves game settings to JSON file.
- *
- * @param filepath The file path where settings should be saved.
- * @param settings GameSettings structure containing the settings to save.
- * @return bool True if settings were successfully saved, false if an error
- *         occurred during serialization or file writing.
- */
-bool JsonLoad::SaveSettings(const std::string& filepath, const GameSettings& settings) {
+bool JsonLoad::SaveSettings(const std::string& filepath, GameSettings& settings) {
+    
     try {
         json j;
         to_json(j, settings);

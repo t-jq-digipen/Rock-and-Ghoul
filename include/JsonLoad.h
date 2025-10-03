@@ -60,23 +60,8 @@ public:
      */
     static bool LoadScene(const std::string& filepath);
 
-    /**
-     * @brief Saves game settings to JSON file.
-     *
-     * @param filepath The file path where settings should be saved.
-     * @param settings GameSettings structure containing the settings to save.
-     * @return bool True if settings were successfully saved, false if an error
-     *         occurred during serialization or file writing.
-     */
-    static bool SaveSettings(const std::string& filepath, const GameSettings& settings);
-
-    /**
-     * @brief Loads game settings from JSON file.
-     *
-     * @param filepath The file path to the settings file to load.
-     * @return std::optional<GameSettings> Contains the loaded settings
-     *         if successful, or std::nullopt if fails.
-     */
+    // Save game settings
+    static bool SaveSettings(const std::string& filepath, GameSettings& settings);
     static std::optional<GameSettings> LoadSettings(const std::string& filepath);
 
 private:
