@@ -77,17 +77,16 @@ private:
 	int currNoteIndex;
 
 	SpellState currSpellState;
-	Spell currSpell;
 	static const Spell spellList[4];
 	//bool waitingForInput;   // waiting for player response
 
 
-	GLuint arrowUpTex;
-	GLuint arrowRightTex;
-	GLuint arrowDownTex;
-	GLuint arrowLeftTex;
+	GLuint arrowUpTex = 0;
+	GLuint arrowRightTex = 0;
+	GLuint arrowDownTex = 0 ;
+	GLuint arrowLeftTex = 0;
 	SpellManager spellManager; //fretboard owns spells.h
-
+	Spell currSpell{};
 public:
 /**
  * @brief Constructs a fretboard with specified dimensions.

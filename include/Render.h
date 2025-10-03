@@ -359,10 +359,6 @@ public:
 
 
 private:
-    /**
-     * @brief Pointer to the instance of the Render class.
-     */
-    static Render* instance;
 
     /**
      * @brief Default constructor for the Render system.

@@ -162,7 +162,7 @@ enum ShapeType {
 };
 
 struct ShapeComponent {
-	ShapeType shape;
-	Vec2 dimensions;	// default size
-	Vec3 color;			// white (no tint)
+	ShapeType shape = SHAPE_RECTANGLE;
+	Vec2 dimensions = { 1.0f, 1.0f };
+	Vec3 color = { 1.0f, 1.0f, 1.0f };
 };
