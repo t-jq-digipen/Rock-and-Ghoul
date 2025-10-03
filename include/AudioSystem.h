@@ -160,15 +160,7 @@ public:
      */
     void PlayButtonSound(AudioSystem::ButtonType type) {
         AudioSystem::PlayButtonSound(type);
-
     }
-
-     /**
-     * @brief Set master volume
-     *
-     */
-    void SetVolume(float vol);
-
 
 private:
     // Volume control

@@ -90,7 +90,6 @@ int main() {
 
             // Create audio manager
             AudioManager* audio = new AudioManager();
-            audio->SetVolume(settings.volume);
             engine.AddSystem(audio);
             MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
 

@@ -304,24 +304,6 @@ void AudioSystem::SetChannelPaused(FMOD::Channel* channel, bool paused) {
         channel->setPaused(paused);
     }
 }
-/**
- * @brief Sets the master music volume for the AudioManager.
- *
- * Updates the internal volume value and applies it to the current
- * and next music channels if they are active. This affects how loud
- * background music plays but does not change the raw sound data.
- *
- * @param vol The new volume level (0.0f = silent, 1.0f = full volume).
- */
-void AudioManager::SetVolume(float vol) {
-    musicVol = vol;
-
-    if (currentChannel)
-        currentChannel->setVolume(musicVol);
-
-    if (nextChannel)
-        nextChannel->setVolume(musicVol);
-}
 
 // ============================================================================
 // AudioManager Implementation
