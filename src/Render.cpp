@@ -704,6 +704,32 @@ void Render::DrawImageInstanced(const Image& image, const std::vector<InstanceDa
     glBindVertexArray(0);
 }
 
+
+void Render::DrawRectInstanced(const std::vector<InstanceData>& instances, const Colour3& color) {
+    if (instances.empty()) return;
+
+    // Upload instance data
+    glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, instances.size() * sizeof(InstanceData), instances.data());
+
+    glUseProgram(InstanceShaderProgram);
+
+    // Projection
+    GLint projLoc = glGetUniformLocation(InstanceShaderProgram, "uProjection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+
+    // Pass solid color instead of texture
+    GLint useTexLoc = glGetUniformLocation(InstanceShaderProgram, "uUseTexture");
+    glUniform1i(useTexLoc, false);
+
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
+
+    // Draw instanced quad
+    glBindVertexArray(vao);
+    glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, static_cast<GLsizei>(instances.size()));
+    glBindVertexArray(0);
+}
+
 //text rendering
 void Render::InitTextRendering() {
     // If InitTextRendering can be called multiple times,
