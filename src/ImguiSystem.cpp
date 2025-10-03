@@ -218,6 +218,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
 
     //empties the vector each frame
     prefabNames.clear();
+    //from json file path
     for (auto& entry : std::filesystem::directory_iterator(FilePath::PREFABS_FOLDER)) {
         if (entry.path().extension() == ".json") { //.extension() just the file extension (with the dot)
             //.stem() the filename without the extension
@@ -229,14 +230,15 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::Separator();
     ImGui::Text("Spawn Prefab:");
 
-    // Only show dropdown if we have prefabs
+    //show dropdown if we have prefabs
     if (!prefabNames.empty()) {
-        // Build array of const char* for ImGui::Combo
+        //array of const char* for ImGui::Combo
         std::vector<const char*> items;
+        //iterates over each string in that vector.
         for (auto& name : prefabNames) items.push_back(name.c_str());
 
         if (ImGui::Combo("##PrefabCombo", &selectedPrefab, items.data(), (int)items.size())) {
-            // Spawn entity immediately on selection
+            //spawn
             std::string filepath = FilePath::PREFABS_FOLDER + prefabNames[selectedPrefab] + ".json";
             selectedEntity = JsonLoad::LoadEntityFromFile(filepath, 200.f, 200.f);
             std::cout << "Spawned prefab: " << prefabNames[selectedPrefab] << std::endl;
