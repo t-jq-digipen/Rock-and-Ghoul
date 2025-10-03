@@ -281,6 +281,12 @@ void ImGuiSystem::ShowInspectorWindow() {
             if (ImGui::InputFloat2("Scale", &scale.x)) {
                 s.Set_Size(scale);
             }
+
+            float rot = s.Get_Rotation();
+            if (ImGui::SliderAngle("Rotation", &rot, -360.0f, 360.0f)) {
+                s.Set_Rotation(rot);
+            }
+
             ImGui::TreePop();
         }
     }
