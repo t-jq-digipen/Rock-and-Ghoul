@@ -47,7 +47,7 @@ void Input::Update() {
         }
     }
 
-    // Reset scroll each frame so it only reflects last tick's scroll
+    // Reset scroll each frame so it only reflects last tick scroll
     scrollX = 0.0;
     scrollY = 0.0;
 }
