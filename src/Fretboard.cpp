@@ -14,12 +14,11 @@
 #include "Fretboard.h"
 #include <cstdlib>  // rand()
 #include <ctime>    // random number generator seed
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "glapp.h"
-#include "MovementController.h"
 #include "Spells.h"
+#include "input.h"
 glm::vec2 arrowPositions[4] = {
     {300.0f, 900.0f}, // LEFT
     {400.0f, 900.0f}, // DOWN
