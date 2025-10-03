@@ -47,12 +47,12 @@ struct String {
 
 struct Note {
 	Circle circle;
-	int direction;  // up = 1
+	int direction =0;  // up = 1
 				    // right = 2
 					// down = 3
 					// left = 4
-	int stringIndex;     // which string (0 or 1)
-	int segmentIndex;    // which segment (0, 1, or 2)
+	int stringIndex=0;     // which string (0 or 1)
+	int segmentIndex=0;    // which segment (0, 1, or 2)
 	bool isActive;
 };
 struct Spell {

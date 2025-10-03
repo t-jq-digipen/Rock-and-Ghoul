@@ -54,7 +54,7 @@ void Update_AABB(AABB& aabb, Vec2 const& pos);
  */
 struct Circle {
     Vec2 pos;   // center position
-    float rad;  // radius of circle
+    float rad = 0.f;  // radius of circle
 };
 
 /**

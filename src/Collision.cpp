@@ -139,7 +139,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     Vec2 relVel = Vec2{ vel1.x - vel2.x, vel1.y - vel2.y };
 
     float tFirst = 0.0f;
-    float tLast = 0.016f;
+    //float tLast = 0.016f; // used later as upper bound for tExit
 
     // speed at which circles are schmovinnnn
     float relSpeed = RG_Sqrt((relVel.x * relVel.x) + (relVel.y * relVel.y));
@@ -159,7 +159,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     float distance = (centerDiff.x * centerDiff.x + centerDiff.y * centerDiff.y) - (proj * proj);
 
     float radSum = c1.rad + c2.rad;
-    float rad2 = radSum * radSum;
+    //float rad2 = radSum * radSum;
 
     if (radSum < distance) {
         return false;

@@ -153,7 +153,7 @@ enum ControlScheme {
 };
 
 struct InputComponent {
-	ControlScheme scheme;
+	ControlScheme scheme = CS_WASD;
 };
 
 enum ShapeType {

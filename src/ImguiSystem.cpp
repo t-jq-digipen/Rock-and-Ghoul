@@ -400,8 +400,7 @@ void ImGuiSystem::ShowInspectorWindow() {
         // Copy Physics
         if (Has_Component(selectedEntity, CT_Physics)) {
             auto& p = Get_PhysicsComponent(selectedEntity);
-            auto& aabb = p.Get_AABB();
-            auto& circle = p.Get_Circle();
+
             Add_Component(clone, p);
         }
 
