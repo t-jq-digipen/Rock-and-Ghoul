@@ -181,27 +181,129 @@ void RG_Clamp(float& val, float const& min, float const& max);
 // ==================================================
 #pragma region VectorOperations
 
+/**
+ * @brief Adds two 2D vectors.
+ *
+ * @param a The first vector.
+ * @param b The second vector.
+ * @return Vec2 The sum of the two vectors (a.x + b.x, a.y + b.y).
+ */
 Vec2 RG_Add(const Vec2& a, const Vec2& b);
+
+/**
+ * @brief Adds two 3D vectors.
+ *
+ * @param a The first vector.
+ * @param b The second vector.
+ * @return Vec3 The sum of the two vectors.
+ */
 Vec3 RG_Add(const Vec3& a, const Vec3& b);
 
+/**
+ * @brief Subtracts one 2D vector from another.
+ *
+ * @param a The vector to subtract from.
+ * @param b The vector to subtract.
+ * @return Vec2 The difference (a - b).
+ */
 Vec2 RG_Subtract(const Vec2& a, const Vec2& b);
+
+/**
+ * @brief Subtracts one 3D vector from another.
+ *
+ * @param a The vector to subtract from.
+ * @param b The vector to subtract.
+ * @return Vec3 The difference (a - b).
+ */
 Vec3 RG_Subtract(const Vec3& a, const Vec3& b);
 
+/**
+ * @brief Scales a 2D vector by a scalar value.
+ *
+ * @param v The vector to scale.
+ * @param scalar The scaling factor.
+ * @return Vec2 The scaled vector (v.x * scalar, v.y * scalar).
+ */
 Vec2 RG_Scale(const Vec2& v, float scalar);
+
+/**
+ * @brief Scales a 3D vector by a scalar value.
+ *
+ * @param v The vector to scale.
+ * @param scalar The scaling factor.
+ * @return Vec3 The scaled vector.
+ */
 Vec3 RG_Scale(const Vec3& v, float scalar);
 
+/**
+ * @brief Computes the dot product of two 2D vectors.
+ *
+ * @param a The first vector.
+ * @param b The second vector.
+ * @return float The dot product (a.x * b.x + a.y * b.y).
+ */
 float RG_DotProduct(const Vec2& a, const Vec2& b);
+
+/**
+ * @brief Computes the dot product of two 3D vectors.
+ *
+ * @param a The first vector.
+ * @param b The second vector.
+ * @return float The dot product.
+ */
 float RG_DotProduct(const Vec3& a, const Vec3& b);
 
+/**
+ * @brief Computes the squared distance between two 2D points.
+ *
+ *
+ * @param p1 The first point.
+ * @param p2 The second point.
+ * @return float The squared distance between the points.
+ */
 float RG_DistanceSquared(const Vec2& p1, const Vec2& p2);
+
+/**
+ * @brief Computes the squared distance between two 3D points.
+ *
+ * @param p1 The first point.
+ * @param p2 The second point.
+ * @return float The squared distance between the points.
+ */
 float RG_DistanceSquared(const Vec3& p1, const Vec3& p2);
 
-// Distance
+/**
+ * @brief Computes the Euclidean distance between two 2D points.
+ *
+ * @param p1 The first point.
+ * @param p2 The second point.
+ * @return float The distance between the points.
+ */
 float RG_Distance(const Vec2& p1, const Vec2& p2);
+
+/**
+ * @brief Computes the Euclidean distance between two 3D points.
+ *
+ * @param p1 The first point.
+ * @param p2 The second point.
+ * @return float The distance between the points.
+ */
 float RG_Distance(const Vec3& p1, const Vec3& p2);
 
-// Normalize
+/**
+ * @brief Normalizes a 2D vector to unit length.
+ *
+ * @param v The vector to normalize.
+ * @return Vec2 The normalized vector with length 1, or zero vector if input length is 0.
+ */
 Vec2 RG_Normalize(const Vec2& v);
+
+/**
+ * @brief Normalizes a 3D vector to unit length.
+ *
+ * @param v The vector to normalize.
+ * @return Vec3 The normalized vector with length 1, or zero vector if input length is 0.
+ */
 Vec3 RG_Normalize(const Vec3& v);
 
 // Linear Interpolation
@@ -216,19 +318,53 @@ Vec3 RG_Normalize(const Vec3& v);
 Vec2 RG_Lerp(const Vec2& a, const Vec2& b, float t);
 Vec3 RG_Lerp(const Vec3& a, const Vec3& b, float t);
 
-// Length
+/**
+ * @brief Computes the length (magnitude) of a 2D vector.
+ *
+ * @param v The vector to measure.
+ * @return float The length of the vector.
+ */
 float RG_Length(const Vec2& v);
+
+/**
+ * @brief Computes the length (magnitude) of a 3D vector.
+ *
+ * @param v The vector to measure.
+ * @return float The length of the vector.
+ */
 float RG_Length(const Vec3& v);
 
-// Length Squared
+/**
+ * @brief Computes the squared length of a 2D vector.
+ *
+ *
+ * @param v The vector to measure.
+ * @return float The squared length of the vector.
+ */
 float RG_LengthSquared(const Vec2& v);
+
+/**
+ * @brief Computes the squared length of a 3D vector.
+ *
+ *
+ * @param v The vector to measure.
+ * @return float The squared length of the vector.
+ */
 float RG_LengthSquared(const Vec3& v);
 
 // ==============================================
 // VEC3-ONLY OPERATIONS
 // ==============================================
 
-// Cross product
+/**
+ * @brief Computes the cross product of two 3D vectors.
+ *
+ * Returns a vector perpendicular to both input vectors.
+ *
+ * @param a The first vector.
+ * @param b The second vector.
+ * @return Vec3 The cross product vector (a × b).
+ */
 Vec3 RG_CrossProduct(const Vec3& a, const Vec3& b);
 
 #pragma endregion VectorOperations
