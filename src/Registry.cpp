@@ -1,6 +1,8 @@
 /* ========================================================
  * @file		Registry.cpp
  * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @co-author   Yasmin Tazi  | yasmin.t@digipen.edu
+
  * @date		01 OCT 2025
  *
  * @brief	Registry for ECS management
