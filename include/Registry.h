@@ -1,6 +1,8 @@
 /* ========================================================
  * @file		Registry.h
  * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @co-author   Yasmin Tazi  | yasmin.t@digipen.edu
+
  * @date		01 OCT 2025
  * 
  * @brief	Registry for ECS management
@@ -130,7 +132,30 @@ ComponentManager<ShapeComponent>				& CM_Shape();
 
 // Component list accessor?
 
-// Entity name management
-std::unordered_map<Entity, std::string>& GetEntityNameMap();
+/**
+ * @brief Returns reference to the static entity name map singleton.
+ *
+ *
+ * @return std::unordered_map<Entity, std::string>& Reference to the name map.
+ */std::unordered_map<Entity, std::string>& GetEntityNameMap();
+ 
+ /**
+ * @brief Assigns a nice readable name to an entity
+ *
+ * Used for debugging, serialization, and editor display.
+ *
+ * @param eID The entity ID to name.
+ * @param name The string name to assign (e.g., "Player").
+ */
 void SetEntityName(Entity eID, const std::string& name);
+
+/**
+ * @brief Retrieves the name associated with an entity.
+ *
+ * Returns the custom name if one was set via SetEntityName(), otherwise
+ * generates a default name in the format "Entity_{ID}".
+ *
+ * @param eID The entity ID to query.
+ * @return std::string The entity's name or auto-generated fallback.
+ */
 std::string GetEntityName(Entity eID);
