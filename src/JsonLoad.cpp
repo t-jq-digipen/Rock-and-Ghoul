@@ -573,7 +573,8 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
     }
 }
 
-bool JsonLoad::SaveSettings(const std::string& filepath, const GameSettings& settings) {
+bool JsonLoad::SaveSettings(const std::string& filepath, GameSettings& settings) {
+    
     try {
         json j;
         to_json(j, settings);

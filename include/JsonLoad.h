@@ -22,7 +22,7 @@ public:
     static bool LoadScene(const std::string& filepath);
 
     // Save game settings
-    static bool SaveSettings(const std::string& filepath, const GameSettings& settings);
+    static bool SaveSettings(const std::string& filepath, GameSettings& settings);
     static std::optional<GameSettings> LoadSettings(const std::string& filepath);
 
 private:
