@@ -80,11 +80,11 @@ int main() {
 
     int rc = CrashHandler::RunProtected([&]
         {
-            if (!GLApp::init(1920, 1080, "Rock & Ghoul"))
-            {
-                CrashHandler::Log("GLApp::init failed");
-                return -1;
-            }
+            //if (!GLApp::init(1920, 1080, "Rock & Ghoul"))
+            //{
+            //    CrashHandler::Log("GLApp::init failed");
+            //    return -1;
+            //}
             CoreEngine& engine = CoreEngine::GetInstance();
             Render& renderer = Render::GetInstance();
 
