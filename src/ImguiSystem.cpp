@@ -103,8 +103,8 @@ void ImGuiSystem::Update(float dt) {
     ImGui::Begin("Game Editor");
 
     if (ImGui::Button("Engine Info")) activePanel = Panel::Engine;
-    if (ImGui::Button("Collision + Scene Management")) activePanel = Panel::Collision;
-    if (ImGui::Button("Editor")) activePanel = activePanel = Panel::HierarchyInspector;
+    if (ImGui::Button("Collision + Prefab")) activePanel = Panel::Collision;
+    if (ImGui::Button("Entity Editor")) activePanel = activePanel = Panel::HierarchyInspector;
 
     ImGui::Separator();
     switch (activePanel) {
@@ -211,6 +211,41 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
             std::cout << "Failed to load scene!" << std::endl;
         }
     }
+
+    static int selectedPrefab = -1; //currently selected index cuz imgui dropdown dont take a string
+    //int index into an array of items
+    static std::vector<std::string> prefabNames;
+
+    //empties the vector each frame
+    prefabNames.clear();
+    for (auto& entry : std::filesystem::directory_iterator(FilePath::PREFABS_FOLDER)) {
+        if (entry.path().extension() == ".json") { //.extension() just the file extension (with the dot)
+            //.stem() the filename without the extension
+            //.string() converts the path object into a std::string
+            prefabNames.push_back(entry.path().stem().string()); // no ".json"
+        }
+    }
+
+    ImGui::Separator();
+    ImGui::Text("Spawn Prefab:");
+
+    // Only show dropdown if we have prefabs
+    if (!prefabNames.empty()) {
+        // Build array of const char* for ImGui::Combo
+        std::vector<const char*> items;
+        for (auto& name : prefabNames) items.push_back(name.c_str());
+
+        if (ImGui::Combo("##PrefabCombo", &selectedPrefab, items.data(), (int)items.size())) {
+            // Spawn entity immediately on selection
+            std::string filepath = FilePath::PREFABS_FOLDER + prefabNames[selectedPrefab] + ".json";
+            selectedEntity = JsonLoad::LoadEntityFromFile(filepath, 200.f, 200.f);
+            std::cout << "Spawned prefab: " << prefabNames[selectedPrefab] << std::endl;
+        }
+    }
+    else {
+        ImGui::TextDisabled("No prefabs available in %s", FilePath::PREFABS_FOLDER.c_str());
+    }
+
 }
 
 
@@ -227,22 +262,19 @@ void ImGuiSystem::ShowHierarchyWindow() {
             selectedEntity = entity;
         }
     }
-
-    // JQ COMMENT OUT HAHAHA
-    ImGui::Separator();
-    ImGui::Text("Create:");
-    if (ImGui::Button("Add Player")) {
-        selectedEntity = Create_Player(200.f, 200.f);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Add Rectangle")) {
-        selectedEntity = Create_Shape(400.f, 200.f, SHAPE_RECTANGLE, CS_IJKL);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Add Circle")) {
-        selectedEntity = Create_Shape(600.f, 200.f, SHAPE_CIRCLE, CS_ARROWS);
-    }
-
+    //ImGui::Separator();
+    //ImGui::Text("Create:");
+    //if (ImGui::Button("Add Player")) {
+    //    selectedEntity = Create_Player(200.f, 200.f);
+    //}
+    //ImGui::SameLine();
+    //if (ImGui::Button("Add Rectangle")) {
+    //    selectedEntity = Create_Shape(400.f, 200.f, SHAPE_RECTANGLE, CS_IJKL);
+    //}
+    //ImGui::SameLine();
+    //if (ImGui::Button("Add Circle")) {
+    //    selectedEntity = Create_Shape(600.f, 200.f, SHAPE_CIRCLE, CS_ARROWS);
+    //}
 }
 
 void ImGuiSystem::ShowInspectorWindow() {
@@ -411,7 +443,7 @@ void ImGuiSystem::ShowInspectorWindow() {
 
     ImGui::SameLine();
     if (ImGui::Button("Delete")) {
-        if (selectedEntity <= 3) {
+        if (selectedEntity <= 7) {
             ImGui::OpenPopup("Protected Entity");
         }
         else {
