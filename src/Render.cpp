@@ -410,8 +410,8 @@ void Render::UnloadTexture(GLuint textureID) {
             std::cout << "Texture unloaded successfully" << std::endl;
             return;
         }
+        // std::cout << "Warning: Texture ID " << textureID << " not found in cache" << std::endl;
     }
-    std::cout << "Warning: Texture ID " << textureID << " not found in cache" << std::endl;
 }
 
 void Render::ClearAllTextures() {
