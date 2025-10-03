@@ -32,7 +32,6 @@ int main() {
                 CrashHandler::Log("GLApp::init failed");
                 return -1;
             }
-
             CoreEngine& engine = CoreEngine::GetInstance();
             Render& renderer = Render::GetInstance();
 

@@ -33,6 +33,16 @@ void Level1::Load()
 		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
 	});
+
+	// Check if prefabs folder exists, create if not
+	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER)) {
+		std::filesystem::create_directories(FilePath::PREFABS_FOLDER);
+	}
+
+	// Auto-generate prefabs if they don't exist
+	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Player.json")) {
+		GenerateInitialPrefabs();
+	}
 }
 
 void Level1::Init()
@@ -61,9 +71,10 @@ void Level1::Init()
 
 	// JQ COMMENT OUT HAHAHA
 	// 5. Create entities
+	// If there is no pre-existing/saved scene, it will generate prefabs
+	// Otherwise, it will load the saved scene
 	if (!JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
 		
-		// Create with names (updated for json)
 		waffle = Create_Waffle(400.f, 400.f);
 		rock = Create_Player(200.f, 500.f);
 		square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);

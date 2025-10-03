@@ -12,6 +12,9 @@ public:
     // Save all current entities to a scene file
     static bool SaveCurrentScene(const std::string& filepath, const std::string& sceneName);
     
+    static bool SaveEntity(const std::string& filepath, Entity eID);
+    // Single entity loading (this is so we can access private function in EntityCreation.cpp)
+    static Entity LoadEntityFromFile(const std::string& filepath, float x, float y);
     // Clear all entities before loading (no cloning)
     static void ClearAllEntities();
 

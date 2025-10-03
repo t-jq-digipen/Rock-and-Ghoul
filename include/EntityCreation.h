@@ -11,3 +11,4 @@
 Entity Create_Player(float const& spawnx, float const& spawny);
 Entity Create_Waffle(float const& spawnx, float const& spawny);
 Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme controls);
+void GenerateInitialPrefabs();
