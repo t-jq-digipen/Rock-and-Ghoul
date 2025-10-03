@@ -130,9 +130,9 @@ std::string JsonLoad::Save_Shape(Entity eID) {
  */
 std::string JsonLoad::Save_Physics(Entity eID) {
     auto& p = Get_PhysicsComponent(eID);
-    auto vel = p.Get_Vel();
-    auto aabb = p.Get_AABB();
-    auto circle = p.Get_Circle();
+    auto& vel = p.Get_Vel();
+    auto& aabb = p.Get_AABB();
+    auto& circle = p.Get_Circle();
 
     // Calculate center from AABB
     float centerX = (aabb.min.x + aabb.max.x) * 0.5f;

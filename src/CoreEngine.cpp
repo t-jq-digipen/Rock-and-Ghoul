@@ -9,7 +9,7 @@
 #include "ImguiSystem.h"
 #include "FrameRateController.h"
 #include <algorithm>
-CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
+CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
 
 GSM gsm;
@@ -94,7 +94,7 @@ void CoreEngine::Run() {
             frames++;
             double now = glfwGetTime();
             if (now - lastTitleUpdate >= 1.0) {
-                float fps = frames / (now - lastTitleUpdate);
+                double fps = frames / (now - lastTitleUpdate);
 
                 std::string title = "Rock & Ghoul - FPS: " + std::to_string((int)fps);
                 glfwSetWindowTitle(GLApp::ptr_window, title.c_str());

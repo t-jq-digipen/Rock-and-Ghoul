@@ -5,14 +5,11 @@
  *
  * @brief 
  * 
- * This registry functions as the connection between the entities and components, 
- * and is the medium for the systems to interact with entitites and their components.
+ * Implements debug rendering utilities to visualize game data. 
+ * Provides functions to draw bounding boxes (AABB), hotspots, 
+ * velocity vectors, and circle colliders using simple shapes 
+ * and lines, helping with collision and physics debugging.
  * 
- * This checks all entities with Physics and Transform components
- * for overlaps between their collision shapes (rectangles and circles).
- * Detected collisions are stored as events for later processing. The default resolution strategy (ActionStop) rolls entities back to their
- * previous positions and zeroes their velocity, ensuring they do not overlap, can be improved
- *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
