@@ -5,10 +5,10 @@
  *
  * @brief
  *
- * fella never even document this ------------- FIXTHISSHIT
- * Declares base ISystem class for systems management in
- * CoreEngine
- * -------------------------------------- end of FIXTHISSHIT
+ * Declares the ISystem interface, which defines the base
+ * lifecycle for engine systems (Initialize, Update, Shutdown).
+ * All engine systems inherit from this class and implement
+ * their own update logic.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================

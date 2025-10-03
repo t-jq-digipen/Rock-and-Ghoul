@@ -5,10 +5,10 @@
  *
  * @brief
  *
- * fella never even document this ------------- FIXTHISSHIT
- * Declares the RenderSystem, which is responsible for
- * drawing all visual components in the ECS framework.
- * -------------------------------------- end of FIXTHISSHIT
+ * Declares the RenderSystem, which handles rendering of all
+ * visual components in the ECS framework. This includes drawing
+ * sprites, shapes, and optional debug overlays, integrating with
+ * OpenGL and ImGui for visualization.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -27,8 +27,6 @@
 #include "ImguiSystem.h"
 class RenderSystem : public ISystem {
 public:
-    /*Render& renderer;
-    RenderSystem(Render& r) : renderer(r) {}*/
     RenderSystem() {}
     void Initialize() override;
     void Update(float dt) override;

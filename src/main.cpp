@@ -114,10 +114,9 @@ int main() {
         });
 
     // ---- explicit cleanup order ----
-    //ImGuiSystem::ShutdownImGui();       // 1. destroy ImGui (needs GL context alive)
-    Render::GetInstance().Shutdown();   // 2. free GPU resources
-    GLApp::cleanup();                   // 3. finally destroy GLFW + GL context
-    CrashHandler::Uninstall();          // 4. crash handler last
+    Render::GetInstance().Shutdown();   // free GPU resources
+    GLApp::cleanup();                   // destroy GLFW + GL context
+    CrashHandler::Uninstall();          //crash handler last
 
     return rc;
 }

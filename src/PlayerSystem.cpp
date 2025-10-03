@@ -118,7 +118,6 @@ void PlayerSystem::Update(float dt)
 		if (comp.tag == T_PLAYER)
 		{
 			// THIS IS A PLAYER, DO PLAYER THINGS
-			trans.Prevpos = trans.pos;
 			WASD_Movement(entity, dt);
 
 		}

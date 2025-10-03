@@ -1,6 +1,5 @@
 /* ========================================================
  * @file    AudioSystem.h
- * @author  Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
  * @date    26 SEP 2025
  *
