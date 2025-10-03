@@ -1,4 +1,19 @@
-﻿#include <GL/glew.h>
+﻿/* ========================================================
+ * @file        main.cpp
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        01 OCT 2025
+ *
+ * @brief
+ *
+ * fella never even document this ------------- FIXTHISSHIT
+ * how did you forget MAIN of all things oh my dayssss
+ * -------------------------------------- end of FIXTHISSHIT
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "glapp.h"
 #include "CoreEngine.h"

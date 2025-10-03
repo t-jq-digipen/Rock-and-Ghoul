@@ -1,3 +1,32 @@
+/* ========================================================
+ * @file        CoreEngine.cpp
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu  
+ * @co-author   Manfred Sim         | manfred.sim@digipen.edu
+ * @date        01 OCT 2025
+ *
+ * @brief   Core Engine implementation and update loop
+ *
+ * fella never even document this ------------- FIXTHISSHIT
+ * The CoreEngine class is responsible for running the main
+ * loop of the game.
+ * 
+ * The engine:
+ * - Initializes various systems and the Game State Manager(GSM).
+ * - Controls frame rate and delta-time clamping.
+ * - Manages system updates and timing measurements for tracking
+ *   system performances
+ * - Handles rendering, input management, and gamestate transitions.
+ * - Shuts down all subsystems.
+ * 
+ * The GSM has global functions provided for interfacing, allowing
+ * retrieval and modification of current, previous, and next states
+ * outside of the engine code.
+ * -------------------------------------- end of FIXTHISSHIT
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "CoreEngine.h"
 #include "System.h"
 #include "glapp.h"
@@ -59,6 +88,8 @@ void CoreEngine::Run() {
             // 2. Draw background/UI (this calls glClear)
             gsm.CallDraw();
 
+            // NEED TO FIGURE OUT HOW TO SPLIT THIS PER DRAW/UPDATE
+            
             //loop through all systems managed by the engine
             for (auto s : systems) {
                 //high-resolution clock

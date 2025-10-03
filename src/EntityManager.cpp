@@ -1,7 +1,7 @@
 /* ========================================================
- * @file	EntityManager.cpp
- * @author	Tan Jun Quan
- * @date	01 OCT 2025
+ * @file		EntityManager.cpp
+ * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @date		01 OCT 2025
  *
  * @brief	Entity Manager for ECS
  *
@@ -15,6 +15,7 @@
  * ========================================================
  */
 
+// DO NOT AMEND THIS FILE
 #include "EntityManager.h"
 #include <iostream>
 #include <string>

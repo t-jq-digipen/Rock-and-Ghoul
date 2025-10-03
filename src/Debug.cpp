@@ -1,7 +1,7 @@
 /* ========================================================
- * @file    Debug.cpp
- * @author   w.shiyuregine@digipen.edu
- * @date    01/10/2025
+ * @file        Debug.cpp
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        01 OCT 2025
  *
  * @brief 
  * 
@@ -10,7 +10,7 @@
  * velocity vectors, and circle colliders using simple shapes 
  * and lines, helping with collision and physics debugging.
  * 
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "Debug.h"

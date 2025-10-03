@@ -1,3 +1,19 @@
+/* ========================================================
+ * @file        Remath.cpp
+ * @author      Yasmin Tazi         | yasmin.t@digipen.edu
+ * @co-author   Tan Ying Clarissa   | t.yingclarissa@digipen.edu
+ * @date        01 OCT 2025
+ *
+ * @brief
+ *
+ * fella never even document this ------------- FIXTHISSHIT
+ * Math library implementation (plz help me type more words i tired its almsot 4am)
+ * -------------------------------------- end of FIXTHISSHIT
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "Remath.h"
 #include <cmath>
 

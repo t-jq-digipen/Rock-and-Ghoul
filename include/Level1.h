@@ -1,7 +1,7 @@
 /* ========================================================
- * @file	Level1.h
- * @author	Manfred Sim
- * @date	29 SEP 2025
+ * @file		Level1.h
+ * @author		Manfred Sim | manfred.sim@digipen.edu
+ * @date		29 SEP 2025
  *
  * @brief	Level 1
  *

@@ -1,13 +1,15 @@
 /* ========================================================
- * @file	Registry.h
- * @author	Tan Jun Quan
- * @date	01 OCT 2025
+ * @file		Registry.h
+ * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @date		01 OCT 2025
  * 
  * @brief	Registry for ECS management
  *
- * This registry functions as the connection between the
- * entities and components, and is the medium for the systems
- * to interact with entitites and their components.
+ * Declares interface functions for Entity and Component
+ * management of the ECS architecture. Provides functions
+ * for creating, removing, and accessing entities and
+ * their components, as well as accessors for the
+ * component managers.
  * 
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -15,7 +17,6 @@
 
 // IMPORTANT!!! DO NOT AMEND ANYTHING IN THIS FILES WITHOUT ASKING ME!!!!!!!
 #pragma once
-// Tis shid the glue between the E the C and the S so u could call it registry == ECS lololol
 
 
 // Use entity manager
@@ -31,29 +32,29 @@
 
 // constexpr size_t MAX_COMPONENT_TYPES = 11; // max number of components TIS SHI NOT EVEN BEING USED
 
-/*
-COMPONENTS LIST: (ENUM IN COMPONENT.H)
-	1 | CT_Transform		| For position, rotate, and scale data
-	2 | CT_Sprite			| Sprite texture data, sprite frame
-	3 | CT_Animator			| Animation handler
-	4 | CT_Physics			| Velocity, acceleration
-	5 | CT_AABB				| AABB collision hitbox
-	5 | CT_CircleCollider	| Circle collision hitbox
-	6 | CT_Audio
-	7 | CT_Lifetime
-	8 | CT_Health
-	9 | CT_Tag
-	10| CT_Shape
-*/
-
 
 // Entity functions
+// ========================================================
+/**
+ * @brief Creates a new entity.
+ * @return The unique ID of the created entity.
+ */
 Entity Create_Entity();
-
+/**
+ * @brief Removes an entity and all of its components.
+ * @param eID The entity ID to remove.
+ */
 void Remove_Entity(Entity eID);
+// ======================================================== //
 
 
 // overloads for adding
+/**
+ * @brief Adds a Component to an entity.
+ * @param eID Entity identifier.
+ * @param comp Component instance to add.
+ */
+// ========================================================
 void Add_Component(Entity eID, TransformComponent			const& comp);
 void Add_Component(Entity eID, Sprite::SpriteComponent		const& comp);
 void Add_Component(Entity eID, Animator::AnimatorComponent	const& comp);
@@ -64,15 +65,39 @@ void Add_Component(Entity eID, HealthComponent				const& comp);
 void Add_Component(Entity eID, TagComponent					const& comp);
 void Add_Component(Entity eID, InputComponent				const& comp);
 void Add_Component(Entity eID, ShapeComponent				const& comp);
+// ======================================================== //
 
-// overloads for removal
+// removal
+// ========================================================
+/**
+ * @brief Removes a specific component type from an entity.
+ * @param eID Entity identifier.
+ * @param cID Component type identifier.
+ */
 void Remove_Component(Entity eID, ComponentTypeID const& cID);
+/**
+ * @brief Removes a specific component type from an entity.
+ * @param eID Entity identifier.
+ * @param cIDlist Initializer list of Component type identifiers
+ */
 void Remove_Components(Entity eID, std::initializer_list<ComponentTypeID> cIDlist);
+// ======================================================== //
 
-// Checks if an entity has component of certain type
+/**
+ * @brief Checks whether an entity has the given component type.
+ * @param eID Entity identifier.
+ * @param cID Component type identifier.
+ * @return True if the entity has the component, false otherwise.
+ */
 bool Has_Component(Entity eID, ComponentTypeID const& cID);
 
 // Gets the component of the entity from the specified type
+/**
+ * @brief Retrieves the Component of an entity.
+ * @param eID Entity identifier.
+ * @return Reference to the entity’s Component.
+ */
+// ========================================================
 TransformComponent			& Get_TransformComponent(Entity eID);
 Sprite::SpriteComponent		& Get_SpriteComponent(Entity eID);
 Animator::AnimatorComponent	& Get_AnimatorComponent(Entity eID);
@@ -83,8 +108,14 @@ HealthComponent				& Get_HealthComponent(Entity eID);
 TagComponent				& Get_TagComponent(Entity eID);
 InputComponent				& Get_InputComponent(Entity eID);
 ShapeComponent				& Get_ShapeComponent(Entity eID);
+// ======================================================== //
 
 // Manager accessors
+/**
+ * @brief Retrieves the Manager of a component.
+ * @return Reference to the Component's manager.
+ */
+// ========================================================
 ComponentManager<TransformComponent>			& CM_Transform();
 ComponentManager<Sprite::SpriteComponent>		& CM_Sprite();
 ComponentManager<Animator::AnimatorComponent>	& CM_Animator();
@@ -95,6 +126,7 @@ ComponentManager<HealthComponent>				& CM_Health();
 ComponentManager<TagComponent>					& CM_Tag();
 ComponentManager<InputComponent>				& CM_Input();
 ComponentManager<ShapeComponent>				& CM_Shape();
+// ======================================================== //
 
 // Component list accessor?
 
