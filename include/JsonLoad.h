@@ -11,7 +11,7 @@
  * deserialization system for the game's Entity Component System (ECS).
  * It uses the nlohmann JSON library for parsing and serialization.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -35,18 +35,43 @@ public:
     // ===== MAIN FUNCTIONS =====
 
 /**
- * @brief Saves current game scene to JSON file.
+ * @brief Saves the current game scene to a JSON file.
  *
- * @param filepath The file path where the scene should be saved.
- * @param sceneName The name to assign to this scene for identification.
- * @return bool True if the scene was successfully saved, false if an error
- *         occurred during serialization or file writing.
+ * Serializes all alive entities and their components into a JSON format
+ * and writes to the specified filepath.
+ *
+ * @param filepath The destination file path.
+ * @param sceneName The name identifier for the scene.
+ * @return bool True if save successful, false otherwise.
  */
     static bool SaveCurrentScene(const std::string& filepath, const std::string& sceneName);
-
+    
  /**
- * @brief Clears all entities from the current scene.
+ * @brief Saves a single entity to a JSON file.
+ *
+ * Serializes the specified entity and all its components to JSON format.
+ *
+ * @param filepath The destination file path to save to.
+ * @param eID The entity ID to serialize.
+ * @return bool True if save successful, false otherwise.
  */
+    static bool SaveEntity(const std::string& filepath, Entity eID);
+ 
+ /**
+ * @brief Loads a single entity from a JSON prefab file.
+ *
+ * Deserializes entity data from a scene JSON file and overrides the
+ * transform position with provided coordinates. Automatically updates
+ * physics hitboxes to match the new position.
+ *
+ * @param filepath The prefab JSON file path.
+ * @param x The x-coordinate to spawn the entity at.
+ * @param y The y-coordinate to spawn the entity at.
+ * @return Entity The created entity ID, or 0 if failed.
+ */
+    static Entity LoadEntityFromFile(const std::string& filepath, float x, float y);
+    
+    // Clear all entities before loading (no cloning)
     static void ClearAllEntities();
 
     /**
@@ -59,23 +84,8 @@ public:
      */
     static bool LoadScene(const std::string& filepath);
 
-    /**
-     * @brief Saves game settings to JSON file.
-     *
-     * @param filepath The file path where settings should be saved.
-     * @param settings GameSettings structure containing the settings to save.
-     * @return bool True if settings were successfully saved, false if an error
-     *         occurred during serialization or file writing.
-     */
-    static bool SaveSettings(const std::string& filepath, const GameSettings& settings);
-
-    /**
-     * @brief Loads game settings from JSON file.
-     *
-     * @param filepath The file path to the settings file to load.
-     * @return std::optional<GameSettings> Contains the loaded settings
-     *         if successful, or std::nullopt if fails.
-     */
+    // Save game settings
+    static bool SaveSettings(const std::string& filepath, GameSettings& settings);
     static std::optional<GameSettings> LoadSettings(const std::string& filepath);
 
 private:

@@ -97,38 +97,32 @@ void RenderSystem::Update(float dt) {
             );
         }
 
-        // ------------------------------------------------
-        // Debug drawing section (Velocity, AABBs, Colliders)
-        // ------------------------------------------------
-        if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {
-            for (auto& [entID, physics] : CM_Physics().getComponents()) {
-                if (!Has_Component(entID, CT_Transform)) continue;
-                auto& t = Get_TransformComponent(entID);
+    }
 
-                // Velocity debug (only for players)
-                if (ImGuiSystem::showVelocity && Has_Component(entID, CT_Tag)) {
-                    auto& tag = Get_TagComponent(entID);
-                    if (tag.tag == T_PLAYER) {
-                        DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
-                    }
+    // Debug drawing for physics colliders / velocities
+    if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {
+        for (auto& [entID, physics] : CM_Physics().getComponents()) {
+            if (!Has_Component(entID, CT_Transform)) continue;
+            auto& t = Get_TransformComponent(entID);
+
+            if (ImGuiSystem::showVelocity && Has_Component(entID, CT_Tag)) {
+                auto& tag = Get_TagComponent(entID);
+                if (tag.tag == T_PLAYER)
+                    DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
+            }
+
+            if (ImGuiSystem::showColliders) {
+                DebugDraw::DrawAABB(physics.Get_AABB(), renderInstance);
+
+                if (Has_Component(entID, CT_Shape)) {
+                    auto& shape = Get_ShapeComponent(entID);
+                    if (shape.shape == SHAPE_CIRCLE)
+                        DebugDraw::DrawCircleCollider(physics.Get_Circle(), renderInstance);
                 }
 
-                // Collider debug
-                if (ImGuiSystem::showColliders) {
-                    DebugDraw::DrawAABB(physics.Get_AABB(), renderInstance);
-
-                    if (Has_Component(entID, CT_Shape)) {
-                        auto& shape = Get_ShapeComponent(entID);
-                        if (shape.shape == SHAPE_CIRCLE) {
-                            DebugDraw::DrawCircleCollider(physics.Get_Circle(), renderInstance);
-                        }
-                    }
-
-                    DebugDraw::DrawHotspot(t.pos, renderInstance);
-                }
+                DebugDraw::DrawHotspot(t.pos, renderInstance);
             }
         }
-
     }
 
     if (!batch.empty()) {

@@ -5,13 +5,12 @@
  *
  * @brief 
  * 
- * ur debug never document properly ------------ FIXTHISSHIT
- * Implements debug rendering utilities for visualization of
- * physics velocities and collision hitboxes.
- * -------------------------------------- end of FIXTHISSHIT
+ * Implements debug rendering utilities to visualize game data. 
+ * Provides functions to draw bounding boxes (AABB), hotspots, 
+ * velocity vectors, and circle colliders using simple shapes 
+ * and lines, helping with collision and physics debugging.
  * 
- *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "Debug.h"

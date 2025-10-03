@@ -2,6 +2,7 @@
  * @file		EntityCreation.h
  * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
  * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @co-author   Yasmin Tazi         | yasmin.t@digipen.edu
  * @date		01 OCT 2025
  *
  * @brief
@@ -12,7 +13,7 @@
  * input, health, etc.), and sets defaults such as position,
  * scale, collision bounds, and textures.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -69,3 +70,12 @@ Entity Create_Wall(float x, float y, float width, float height);
  * @return The newly created instanced square entity.
  */
 Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);
+
+/**
+ * @brief Generates initial prefab JSON files in Assets/prefabs/.
+ *
+ * Creates the prefabs directory if missing and generates default
+ * entity prefabs (Player, Waffle, Rectangle, Circle). 
+ *
+ */
+void GenerateInitialPrefabs();

@@ -3,12 +3,12 @@
  * @author		Manfred Sim | manfred.sim@digipen.edu
  * @date		29 SEP 2025
  *
- * @brief	Game State Manager
+ * @brief	Game State Manager implementation
  *
- * The game state manager handles the switching of game states
- * while the program is running and calls the corresponding
- * state functions. This source file contains the implementation
- * of functions and enumerations used by the game state manager.
+ * Creates function pointers that point to the current game
+ * state's respective functions and defines the state callers
+ * and accessors in the GSM class for handling the switching
+ * of game states.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================

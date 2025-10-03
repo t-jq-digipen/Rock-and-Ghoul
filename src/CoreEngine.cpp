@@ -6,7 +6,6 @@
  *
  * @brief   Core Engine implementation and update loop
  *
- * fella never even document this ------------- FIXTHISSHIT
  * The CoreEngine class is responsible for running the main
  * loop of the game.
  * 
@@ -21,7 +20,6 @@
  * The GSM has global functions provided for interfacing, allowing
  * retrieval and modification of current, previous, and next states
  * outside of the engine code.
- * -------------------------------------- end of FIXTHISSHIT
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -38,7 +36,7 @@
 #include "ImguiSystem.h"
 #include "FrameRateController.h"
 #include <algorithm>
-CoreEngine::CoreEngine() : running(true), lastFrame(0.0) {}
+CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
 
 GSM gsm;
@@ -125,7 +123,7 @@ void CoreEngine::Run() {
             frames++;
             double now = glfwGetTime();
             if (now - lastTitleUpdate >= 1.0) {
-                float fps = frames / (now - lastTitleUpdate);
+                double fps = frames / (now - lastTitleUpdate);
 
                 std::string title = "Rock & Ghoul - FPS: " + std::to_string((int)fps);
                 glfwSetWindowTitle(GLApp::ptr_window, title.c_str());

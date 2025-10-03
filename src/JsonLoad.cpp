@@ -14,7 +14,7 @@
  * JSON library for parsing and serialization, and provides type-safe
  * conversion between game objects and their JSON representations.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "JsonLoad.h"
@@ -130,9 +130,9 @@ std::string JsonLoad::Save_Shape(Entity eID) {
  */
 std::string JsonLoad::Save_Physics(Entity eID) {
     auto& p = Get_PhysicsComponent(eID);
-    auto vel = p.Get_Vel();
-    auto aabb = p.Get_AABB();
-    auto circle = p.Get_Circle();
+    auto& vel = p.Get_Vel();
+    auto& aabb = p.Get_AABB();
+    auto& circle = p.Get_Circle();
 
     // Calculate center from AABB
     float centerX = (aabb.min.x + aabb.max.x) * 0.5f;
@@ -722,15 +722,8 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
     }
 }
 
-/**
- * @brief Saves game settings to JSON file.
- *
- * @param filepath The file path where settings should be saved.
- * @param settings GameSettings structure containing the settings to save.
- * @return bool True if settings were successfully saved, false if an error
- *         occurred during serialization or file writing.
- */
-bool JsonLoad::SaveSettings(const std::string& filepath, const GameSettings& settings) {
+bool JsonLoad::SaveSettings(const std::string& filepath, GameSettings& settings) {
+    
     try {
         json j;
         to_json(j, settings);
@@ -762,6 +755,79 @@ std::optional<GameSettings> JsonLoad::LoadSettings(const std::string& filepath) 
     catch (const std::exception& e) {
         std::cerr << "Error loading settings: " << e.what() << std::endl;
         return std::nullopt;
+    }
+}
+/**
+ * @brief Saves a single entity to a JSON file.
+ *
+ * Serializes the specified entity and all its components to JSON format.
+ * Useful for creating entity prefabs programmatically.
+ *
+ * @param filepath The destination file path to save to.
+ * @param eID The entity ID to serialize.
+ * @return bool True if save successful, false otherwise.
+ */
+bool JsonLoad::SaveEntity(const std::string& filepath, Entity eID) {
+    try {
+        SavedEntity saved = EntityToSaved(eID);
+        json j;
+        to_json(j, saved);
+        return FileIO::WriteFile(filepath, j.dump(4));
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error saving entity prefab: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+/**
+ * @brief Loads a single entity from a JSON prefab file.
+ *
+ * Deserializes entity data from a scene JSON file and overrides the
+ * transform position with provided coordinates. Automatically updates
+ * physics hitboxes to match the new position.
+ *
+ * @param filepath The prefab JSON file path.
+ * @param x The x-coordinate to spawn the entity at.
+ * @param y The y-coordinate to spawn the entity at.
+ * @return Entity The created entity ID, or 0 if failed.
+ */
+
+Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float y) {
+    std::string content = FileIO::ReadFile(filepath);
+    if (content.empty()) {
+        std::cerr << "Failed to load entity from: " << filepath << std::endl;
+        return 0;
+    }
+
+    try {
+        json j = json::parse(content);
+        SavedScene scene;
+        from_json(j, scene);  // Can call private function from within the class
+
+        if (scene.entities.empty()) {
+            std::cerr << "No entities in file: " << filepath << std::endl;
+            return 0;
+        }
+
+        Entity e = SavedToEntity(scene.entities[0]);  // Can call private function
+
+        // Override position
+        if (Has_Component(e, CT_Transform)) {
+            auto& transform = Get_TransformComponent(e);
+            transform.pos = { x, y };
+
+            if (Has_Component(e, CT_Physics)) {
+                auto& phys = Get_PhysicsComponent(e);
+                phys.UpdateHitboxes({ x, y });
+            }
+        }
+
+        return e;
+    }
+    catch (const std::exception& ex) {
+        std::cerr << "Error loading entity: " << ex.what() << std::endl;
+        return 0;
     }
 }
 #pragma endregion SavingandLoading

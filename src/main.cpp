@@ -1,13 +1,24 @@
 ﻿/* ========================================================
  * @file        main.cpp
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
+ * @co-author   Manfred Sim         | manfred.sim@digipen.edu
  * @date        01 OCT 2025
  *
- * @brief
+ * @brief       
  *
- * fella never even document this ------------- FIXTHISSHIT
- * how did you forget MAIN of all things oh my dayssss
- * -------------------------------------- end of FIXTHISSHIT
+ * The main entry point for the application. Enables checks
+ * for memory leaks and installs a crash handler before starting
+ * up the application. When the application starts, it creates
+ * a 1920x1080 game window and initializes the core engine
+ * needed to run the game, as well as the following core systems:
+ * 
+ * - Audio Manager (for managing audio files)
+ * - Render System (for rendering shape and sprite components)
+ * - Player System (for handling player behaviour)
+ * - Physics System (for handling in-game physics and collisions)
+ * - ImGui System (for implementing game editor)
+ *
+ * Cleans up all resources once the application is closed.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -24,6 +35,10 @@
 #include "PhysicsSystem.h"
 #include "ImguiSystem.h"
 #include "CrashHandler.h"
+
+#include "JsonLoad.h"
+#include "FilePath.h"
+
 #include <crtdbg.h>
 
 void EnableMemoryLeakChecking(int breakAlloc = -1)
@@ -35,6 +50,29 @@ void EnableMemoryLeakChecking(int breakAlloc = -1)
 }
 
 int main() {
+    // Load settings from file FIRST (before creating window)
+    auto settingsOpt = JsonLoad::LoadSettings(FilePath::SETTINGS_FILE);
+
+    GameSettings settings;
+    if (settingsOpt.has_value()) {
+        settings = settingsOpt.value();
+        std::cout << "Loaded settings from file" << std::endl;
+    }
+    else {
+        // If file doesn't exist, create default settings
+        settings.volume = 100.0f;
+        settings.resolutionWidth = 1920;
+        settings.resolutionHeight = 1080;
+        settings.fullscreen = false;
+
+        // Save defaults for next time
+        JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
+    }
+
+    // USE the loaded settings to initialize window
+    if (!GLApp::init(settings.resolutionWidth, settings.resolutionHeight, "Rock & Ghoul")) {
+        return -1;
+    }
     CrashHandler::SetLogPath("rockandghoul_crash.log");
     CrashHandler::Install();
     CrashHandler::Log("=== Rock & Ghoul starting ===");
@@ -42,12 +80,11 @@ int main() {
 
     int rc = CrashHandler::RunProtected([&]
         {
-            if (!GLApp::init(1920, 1080, "Rock & Ghoul"))
-            {
-                CrashHandler::Log("GLApp::init failed");
-                return -1;
-            }
-
+            //if (!GLApp::init(1920, 1080, "Rock & Ghoul"))
+            //{
+            //    CrashHandler::Log("GLApp::init failed");
+            //    return -1;
+            //}
             CoreEngine& engine = CoreEngine::GetInstance();
             Render& renderer = Render::GetInstance();
 
@@ -77,10 +114,9 @@ int main() {
         });
 
     // ---- explicit cleanup order ----
-    //ImGuiSystem::ShutdownImGui();       // 1. destroy ImGui (needs GL context alive)
-    Render::GetInstance().Shutdown();   // 2. free GPU resources
-    GLApp::cleanup();                   // 3. finally destroy GLFW + GL context
-    CrashHandler::Uninstall();          // 4. crash handler last
+    Render::GetInstance().Shutdown();   // free GPU resources
+    GLApp::cleanup();                   // destroy GLFW + GL context
+    CrashHandler::Uninstall();          //crash handler last
 
     return rc;
 }
