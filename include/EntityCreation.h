@@ -12,7 +12,7 @@
  * input, health, etc.), and sets defaults such as position,
  * scale, collision bounds, and textures.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -69,3 +69,5 @@ Entity Create_Wall(float x, float y, float width, float height);
  * @return The newly created instanced square entity.
  */
 Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);
+
+void GenerateInitialPrefabs();

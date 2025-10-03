@@ -11,7 +11,7 @@
  * deserialization system for the game's Entity Component System (ECS).
  * It uses the nlohmann JSON library for parsing and serialization.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -43,10 +43,11 @@ public:
  *         occurred during serialization or file writing.
  */
     static bool SaveCurrentScene(const std::string& filepath, const std::string& sceneName);
-
- /**
- * @brief Clears all entities from the current scene.
- */
+    
+    static bool SaveEntity(const std::string& filepath, Entity eID);
+    // Single entity loading (this is so we can access private function in EntityCreation.cpp)
+    static Entity LoadEntityFromFile(const std::string& filepath, float x, float y);
+    // Clear all entities before loading (no cloning)
     static void ClearAllEntities();
 
     /**

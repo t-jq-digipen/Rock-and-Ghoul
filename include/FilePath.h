@@ -52,4 +52,7 @@ public:
      * This constant holds the full path to the level2.json file.
      */
     static const std::string LEVEL2_SCENE;
+    static const std::string ASSETS_FOLDER;
+    static const std::string PREFABS_FOLDER;
+
 };

@@ -764,6 +764,56 @@ std::optional<GameSettings> JsonLoad::LoadSettings(const std::string& filepath) 
         return std::nullopt;
     }
 }
+
+bool JsonLoad::SaveEntity(const std::string& filepath, Entity eID) {
+    try {
+        SavedEntity saved = EntityToSaved(eID);
+        json j;
+        to_json(j, saved);
+        return FileIO::WriteFile(filepath, j.dump(4));
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error saving entity prefab: " << e.what() << std::endl;
+        return false;
+    }
+}
+Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float y) {
+    std::string content = FileIO::ReadFile(filepath);
+    if (content.empty()) {
+        std::cerr << "Failed to load entity from: " << filepath << std::endl;
+        return 0;
+    }
+
+    try {
+        json j = json::parse(content);
+        SavedScene scene;
+        from_json(j, scene);  // Can call private function from within the class
+
+        if (scene.entities.empty()) {
+            std::cerr << "No entities in file: " << filepath << std::endl;
+            return 0;
+        }
+
+        Entity e = SavedToEntity(scene.entities[0]);  // Can call private function
+
+        // Override position
+        if (Has_Component(e, CT_Transform)) {
+            auto& transform = Get_TransformComponent(e);
+            transform.pos = { x, y };
+
+            if (Has_Component(e, CT_Physics)) {
+                auto& phys = Get_PhysicsComponent(e);
+                phys.UpdateHitboxes({ x, y });
+            }
+        }
+
+        return e;
+    }
+    catch (const std::exception& ex) {
+        std::cerr << "Error loading entity: " << ex.what() << std::endl;
+        return 0;
+    }
+}
 #pragma endregion SavingandLoading
 
 /**
