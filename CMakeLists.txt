@@ -368,3 +368,13 @@ if(WIN32 AND EXISTS "${FMOD_LIB_DIR}/fmod.dll")
         DESTINATION bin
     )
 endif()
+
+# Copy project documentation into the build folder (beside .sln)
+add_custom_target(copy_docs ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/AvidDivas_ReadMe.txt
+        ${CMAKE_BINARY_DIR}/AvidDivas_ReadMe.txt
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/projectGuide.pdf
+        ${CMAKE_BINARY_DIR}/projectGuide.pdf
+)
