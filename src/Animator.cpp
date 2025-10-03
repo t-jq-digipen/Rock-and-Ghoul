@@ -1,6 +1,6 @@
 /* ========================================================
  * @file	Animator.cpp
- * @author	Tan Jun Quan
+ * @author	Tan Jun Quan | t.junquan@digipen.edu
  * @date	01 OCT 2025
  *
  * @brief	Animator component for ECS

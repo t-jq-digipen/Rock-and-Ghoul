@@ -1,3 +1,19 @@
+/* ========================================================
+ * @file	    PlayerSystem.cpp
+ * @author	    Tan Jun Quan | t.junquan@digipen.edu
+ * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date	    29 SEP 2025
+ *
+ * @brief	Player System for handling player behaviour.
+ *
+ * This file implements the movement controls of a player
+ * entity based on forces, has a dash, and switches player
+ * states accordingly.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "PlayerSystem.h"
 #include "Registry.h"
 
@@ -8,49 +24,6 @@ constexpr float speed = 500.f;
 
 void WASD_Movement(Entity eID, float& dt)
 {
-	// very crude brake this shit gotta change
-	/*if (!(Input::IsKeyHeld(GLFW_KEY_W) || Input::IsKeyHeld(GLFW_KEY_S)))
-	{
-		if (physics.vel.y >= 20.f)
-		{
-			physics.vel.y -= accel * dt;
-		}
-		else if (physics.vel.y <= -20.f)
-		{
-			physics.vel.y += accel * dt;
-		}
-		else
-		{
-			physics.vel.y = 0.f;
-		}
-	}
-	if (!(Input::IsKeyHeld(GLFW_KEY_A) || Input::IsKeyHeld(GLFW_KEY_D)))
-	{
-		if (physics.vel.x >= 20.f)
-		{
-			physics.vel.x -= accel * dt;
-		}
-		else if (physics.vel.x <= -20.f)
-		{
-			physics.vel.x += accel * dt;
-		}
-		else
-		{
-			physics.vel.x = 0.f;
-		}
-	}*/
-
-
-	/*if (Input::IsKeyHeld(GLFW_KEY_W)) physics.vel.y += accel * dt;
-	if (Input::IsKeyHeld(GLFW_KEY_S)) physics.vel.y -= accel * dt;
-	if (Input::IsKeyHeld(GLFW_KEY_A)) physics.vel.x -= accel * dt;
-	if (Input::IsKeyHeld(GLFW_KEY_D)) physics.vel.x += accel * dt;
-
-	if (physics.vel.x > 300.f) { physics.vel.x = 300.f; }
-	if (physics.vel.x < -300.f) { physics.vel.x = -300.f; }
-	if (physics.vel.y > 300.f) { physics.vel.y = 300.f; }
-	if (physics.vel.y < -300.f) { physics.vel.y = -300.f; }*/
-
 	auto& physics = Get_PhysicsComponent(eID);
 	const Vec2& vel = physics.Get_Vel();
 
@@ -149,18 +122,5 @@ void PlayerSystem::Update(float dt)
 			WASD_Movement(entity, dt);
 
 		}
-		// JQ COMMENT OUT HAHAHA
-		//if (Has_Component(entity, CT_Sprite)) {
-		//	auto& sprite = Get_SpriteComponent(entity);
-
-		//	if (Input::IsKeyHeld(GLFW_KEY_Q)) sprite.size.x += 100.f * dt;
-		//	if (Input::IsKeyHeld(GLFW_KEY_E)) sprite.size.x = std::max(10.f, sprite.size.x - 100.f * dt);
-
-		//	if (Input::IsKeyHeld(GLFW_KEY_R)) sprite.size.y += 100.f * dt;
-		//	if (Input::IsKeyHeld(GLFW_KEY_F)) sprite.size.y = std::max(10.f, sprite.size.y - 100.f * dt);
-
-		//	if (Input::IsKeyHeld(GLFW_KEY_Z)) trans.rot -= 90.f * dt; // counter-clockwise
-		//	if (Input::IsKeyHeld(GLFW_KEY_X)) trans.rot += 90.f * dt; // clockwise
-		//}
 	}
 }

@@ -1,3 +1,19 @@
+/* ========================================================
+ * @file        Remath.h
+ * @author      Yasmin Tazi			| yasmin.t@digipen.edu
+ * @co-author   Tan Ying Clarissa	| t.yingclarissa@digipen.edu
+ * @date        01 OCT 2025
+ *
+ * @brief
+ *
+ * fella never even document this ------------- FIXTHISSHIT
+ * Math library declaration (plz help me type more words i tired its almsot 4am)
+ * -------------------------------------- end of FIXTHISSHIT
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #ifndef RG_MATH_H
 #define RG_MATH_H
 

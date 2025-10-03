@@ -1,3 +1,19 @@
+/* ========================================================
+ * @file        Spells.h
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        01 OCT 2025
+ *
+ * @brief
+ *
+ * fella never even document this ------------- FIXTHISSHIT
+ * Declares the SpellManager class which does spellmanager
+ * things
+ * -------------------------------------- end of FIXTHISSHIT
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #include <GL/glew.h>
 #include <glm/glm.hpp>

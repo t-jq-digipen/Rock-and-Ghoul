@@ -1,7 +1,7 @@
 /* ========================================================
- * @file	Sprite.h
- * @author	Tan Jun Quan
- * @date	29 SEP 2025
+ * @file		Sprite.h
+ * @author		Tan Jun Quan
+ * @date		29 SEP 2025
  *
  * @brief	Sprite component for ECS
  *

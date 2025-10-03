@@ -1,7 +1,7 @@
 /* ========================================================
- * @file    Debug.h
- * @author   w.shiyuregine@digipen.edu
- * @date    01/10/2025
+ * @file        Debug.h
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        01 OCT 2025
  *
  * @brief
  *
@@ -12,9 +12,9 @@
  * circle colliders.
  *
  * Functions include:
- * - DrawAABB:          Renders an axis-aligned bounding box.
- * - DrawHotspot:       Marks a point of interest (e.g., collider center).
- * - DrawVelocity:      Renders a velocity vector for an entity.
+ * - DrawAABB:           Renders an axis-aligned bounding box.
+ * - DrawHotspot:        Marks a point of interest (e.g., collider center).
+ * - DrawVelocity:       Renders a velocity vector for an entity.
  * - DrawCircleCollider: Renders a circle collider outline.
  *
  * Copyright © 2025 DigiPen, All rights reserved.

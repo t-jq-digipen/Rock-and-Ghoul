@@ -1,7 +1,8 @@
 /* ========================================================
- * @file    EntityCreation.h
- * @author  w.shiyuregine@digipen.edu
- * @date    01/10/2025
+ * @file		EntityCreation.h
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @date		01 OCT 2025
  *
  * @brief
  *

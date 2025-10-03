@@ -1,3 +1,16 @@
+/* ========================================================
+ * @file		Fretboard.h
+ * @author		? | ?@digipen.edu
+ * @date		01 OCT 2025
+ *
+ * @brief	FIXTHISSHIT
+ *
+ * FIXTHISSHIT (or delete?)
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #ifndef FRETBOARD_H
 #define FRETBOARD_H

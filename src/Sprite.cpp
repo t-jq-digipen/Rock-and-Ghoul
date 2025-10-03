@@ -1,6 +1,6 @@
 /* ========================================================
  * @file	Sprite.cpp
- * @author	Tan Jun Quan
+ * @author	Tan Jun Quan | t.junquan@digipen.edu
  * @date	29 SEP 2025
  *
  * @brief	Sprite component for ECS

@@ -1,7 +1,7 @@
 /* ========================================================
- * @file    Render.h
- * @author  kervinguancheng.ong@digipen.edu
- * @date    02/10/2025
+ * @file        Render.h
+ * @author      Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+ * @date        02 OCT 2025
  *
  * @brief   Rendering system class, consisting function declarations for drawing 2D
  *          primitives, images, and text using OpenGL.

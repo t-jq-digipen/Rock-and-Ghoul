@@ -1,7 +1,7 @@
 /* ========================================================
- * @file    FileIO.h
- * @author  t.yingclarissa@digipen.edu
- * @date    26/09/2025
+ * @file        FileIO.h
+ * @author      Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @date        26 SEP 2025
  *
  * @brief   Header file declaring the FileIO utility class
  *

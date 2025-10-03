@@ -1,7 +1,7 @@
 /* ========================================================
- * @file	Physics.h
- * @author	Tan Jun Quan
- * @date	29 SEP 2025
+ * @file		Physics.h
+ * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @date		29 SEP 2025
  *
  * @brief	Physics component for ECS
  *

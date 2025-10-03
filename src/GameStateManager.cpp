@@ -1,7 +1,7 @@
 /* ========================================================
- * @file	GameStateManager.cpp
- * @author	Manfred Sim
- * @date	29 SEP 2025
+ * @file		GameStateManager.cpp
+ * @author		Manfred Sim | manfred.sim@digipen.edu
+ * @date		29 SEP 2025
  *
  * @brief	Game State Manager
  *

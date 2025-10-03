@@ -1,7 +1,7 @@
 /* ========================================================
- * @file	Registry.cpp
- * @author	Tan Jun Quan
- * @date	01 OCT 2025
+ * @file		Registry.cpp
+ * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @date		01 OCT 2025
  *
  * @brief	Registry for ECS management
  *
@@ -15,6 +15,7 @@
 
 // IMPORTANT!!! DO NOT AMEND ANYTHING IN THIS FILES WITHOUT ASKING ME!!!!!!!
 #include "Registry.h"
+// Tis shid the glue between the E the C and the S so like E + C + S = registry then u could call it registry == ECS lololol i need sleep its 5am
 
 
 

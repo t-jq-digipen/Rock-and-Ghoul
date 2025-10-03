@@ -1,7 +1,8 @@
 /* ========================================================
- * @file    RenderSystem.cpp
- * @author  w.shiyuregine@digipen.edu
- * @date    01/10/2025
+ * @file        RenderSystem.cpp
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @date        01 OCT 2025
  *
  * @brief
  *
@@ -44,12 +45,12 @@ void RenderSystem::Update(float dt) {
 
             animComp.UpdateFrame(dt);
 
-            renderInstance.DrawImageSub(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, animComp.u0, animComp.v0, animComp.u1, animComp.v1, transComp.rot);
+            renderInstance.DrawImageSub(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, animComp.u0, animComp.v0, animComp.u1, animComp.v1, transComp.rot + spriteComp.Get_Rotation());
         }
         else
         {
             TransformComponent& transComp = Get_TransformComponent(entID);
-            renderInstance.DrawImageScaled(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, transComp.rot);
+            renderInstance.DrawImageScaled(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, transComp.rot + spriteComp.Get_Rotation());
         }
     }
 

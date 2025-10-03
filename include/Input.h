@@ -1,15 +1,15 @@
 /* ========================================================
- * @file    Input.h
- * @author   w.shiyuregine@digipen.edu
- * @date    01/10/2025
+ * @file        Input.h
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        01 OCT 2025
  *
  * @brief
  *
  * Declares the Input class, which manages keyboard and mouse input for the engine.
- *  Input is captured via GLFW callbacks and stored in static maps of key/button states. 
+ * Input is captured via GLFW callbacks and stored in static maps of key/button states. 
  * The system tracks transitions (Pressed, Held, Released, None), cursor position, and scroll offsets. 
  * Query functions provide easy access to the current input state, while Update() ensures
- *  states last only one frame.
+ * states last only one frame.
  *
  *
  * Copyright © 2025 DigiPen, All rights reserved.

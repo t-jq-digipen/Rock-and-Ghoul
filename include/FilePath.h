@@ -1,8 +1,9 @@
 /* ========================================================
- * @file    FilePath.h
- * @author  yasmin.t@digipen.edu
- * @author  t.yingclarissa@digipen.edu
- * @date    26/09/2025
+ * @file        FilePath.h
+ * @author      Yasmin Tazi | yasmin.t@digipen.edu
+ * @co-author   Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @date        26 SEP 2025
+ * 
  * @brief   Header file declaring the FilePath utility class
  *
  * This header file contains the declaration of the FilePath class.
