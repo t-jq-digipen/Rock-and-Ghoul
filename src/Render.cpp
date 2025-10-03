@@ -250,11 +250,9 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     //center point
     vertices.push_back(center.x);
     vertices.push_back(center.y);
-    float rot = rotation;
 
     for (int i = 0; i <= segments; i++) {
         float angle = static_cast<float>((2.0f * 3.1415 * i) / segments);
-        float ang = angle + rot;
         float x = center.x + radius * cos(angle);
         float y = center.y + radius * sin(angle);
         vertices.push_back(x);
@@ -513,7 +511,6 @@ std::string Render::Get_TexturePath(const GLuint& imgID)
         return it->second;
     }
     throw std::runtime_error("Unable to retrieve texture path\n");
-    return{};
 }
 
 bool Render::IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height)

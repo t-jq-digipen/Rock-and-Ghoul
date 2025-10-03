@@ -74,7 +74,7 @@ namespace {
     }
 }
 
-void ImGuiSystem::InitializeImGui(GLFWwindow* window) {
+void ImGuiSystem::InitializeImGui() {
     IMGUI_CHECKVERSION(); //checks version compatibility
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); //imgui i/o settings
@@ -87,10 +87,11 @@ void ImGuiSystem::InitializeImGui(GLFWwindow* window) {
 
 //init hear so is easier
 void ImGuiSystem::Initialize() {
-    InitializeImGui(GLApp::ptr_window);  // Do it here instead of main
+    InitializeImGui();  // Do it here instead of main
 }
 
 void ImGuiSystem::Update(float dt) {
+    (void)dt;
     if (Input::IsKeyPressed(GLFW_KEY_F1)) {
         guiEnabled = !guiEnabled; // toggle on/off
     }
