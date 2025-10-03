@@ -334,20 +334,20 @@ source_group("Math" FILES
 )
 
 # ======================= Runtime Data (saves folder) =========================
-add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
-)
+#add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} -E make_directory
+#    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
+#)
 
 
-file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/saves/*.json")
-foreach(save_file ${SAVE_FILES})
-    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${save_file}
-        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
-    )
-endforeach()
+#file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/saves/*.json")
+#foreach(save_file ${SAVE_FILES})
+#    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#        ${save_file}
+#        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
+#    )
+#endforeach()
 
 # ======================= Install target =========================
 
