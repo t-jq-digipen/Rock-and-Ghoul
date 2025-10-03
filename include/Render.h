@@ -95,8 +95,8 @@ struct Character {
  * position, scale, rotation, and texture UV region.
  */
 struct InstanceData {
-    glm::vec2 position; //World position of the instance
-    glm::vec2 scale; //Scale factors (x, y) for the instance
+    Vec2 position; //World position of the instance
+    Vec2 scale; //Scale factors (x, y) for the instance
     glm::vec4 uvRect;  // u0, v0, u1, v1
     float rotation; //in radians
 };
@@ -343,6 +343,8 @@ public:
     * @param instances A list of instance data (position, scale, UV, rotation).
     */
     void DrawImageInstanced(const Image& image, const std::vector<InstanceData>& instances);
+
+    void DrawRectInstanced(const std::vector<InstanceData>& instances, const Colour3& color);
 
 
     /**

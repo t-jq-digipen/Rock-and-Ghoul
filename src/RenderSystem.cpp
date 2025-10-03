@@ -27,6 +27,7 @@
 #include "Animator.h"
 
 Render& renderInstance = Render::GetInstance();
+std::vector<InstanceData> batch;
 
 void RenderSystem::Initialize() {
     // ? 
@@ -60,6 +61,21 @@ void RenderSystem::Update(float dt) {
         if (!Has_Component(entID, CT_Transform)) continue;
         TransformComponent& transComp = Get_TransformComponent(entID);
         Colour3 color = { shapeComp.color.x, shapeComp.color.y, shapeComp.color.z };
+        if (Has_Component(entID, CT_Tag)) {
+            TagComponent& tag = Get_TagComponent(entID);
+
+            if (shapeComp.shape == SHAPE_RECTANGLE && tag.tag == T_INSTANCING) {
+                InstanceData inst;
+                inst.position = transComp.pos;
+                inst.scale = transComp.scale;
+                inst.rotation = transComp.rot;
+                inst.uvRect = { 0,0,1,1 };
+                batch.push_back(inst);
+                continue;
+            }
+
+
+        }
 
         if (shapeComp.shape == SHAPE_RECTANGLE) {
             renderInstance.DrawRect(
@@ -109,6 +125,11 @@ void RenderSystem::Update(float dt) {
         }
     }
 
+    if (!batch.empty()) {
+        renderInstance.DrawRectInstanced(batch, { 0.2f, 0.8f, 1.0f });
+        batch.clear();
+    }
+    
 }
 
 void RenderSystem::Shutdown() {

@@ -149,7 +149,7 @@ void Level1::Update()
 				float px = paddingX + col * spacing + spacing * 0.5f;
 				float py = paddingY + row * spacing + spacing * 0.5f;
 
-				Create_InstancedSquare(px, py, size, { 0.2f, 0.8f, 1.0f });
+				Create_InstancedSquare(px, py, size, { 0.2f, 0.8f, 1.0f }); //u are calling drawrect per entity, not all at once. lagg
 			}
 
 			std::cout << "Spawned " << totalEntities << " squares with B key!\n";
