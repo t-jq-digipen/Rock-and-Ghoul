@@ -344,6 +344,17 @@ public:
     */
     void DrawImageInstanced(const Image& image, const std::vector<InstanceData>& instances);
 
+    /**
+    * @brief Draws multiple instances of a solid-colored rectangle efficiently using instanced rendering.
+    *
+    * This function batches all instances of rectangles into a single GPU draw call using
+    * hardware instancing. Each instance uses its own position, scale, and rotation from
+    * the provided instance data, but all instances share the same color.
+    *
+    * @param instances A list of instance data (position, scale, rotation, UV rect).
+    *                  The UV rect field is ignored for solid-colored rectangles.
+    * @param color     The RGB color to apply to all rendered rectangle instances.
+    */
     void DrawRectInstanced(const std::vector<InstanceData>& instances, const Colour3& color);
 
 

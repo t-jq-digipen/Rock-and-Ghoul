@@ -27,7 +27,7 @@
 #include "Animator.h"
 
 Render& renderInstance = Render::GetInstance();
-std::vector<InstanceData> batch;
+std::vector<InstanceData> batch; //added for instancing
 
 void RenderSystem::Initialize() {
     // ? 
@@ -64,11 +64,12 @@ void RenderSystem::Update(float dt) {
         if (Has_Component(entID, CT_Tag)) {
             TagComponent& tag = Get_TagComponent(entID);
 
-            if (shapeComp.shape == SHAPE_RECTANGLE && tag.tag == T_INSTANCING) {
+            if (shapeComp.shape == SHAPE_RECTANGLE && tag.tag == T_INSTANCING) { //check entity is using instancing
+                //Store matching entities inside InstanceData vector
                 InstanceData inst;
                 inst.position = transComp.pos;
                 inst.scale = transComp.scale;
-                inst.rotation = transComp.rot;
+                inst.rotation = glm::radians(transComp.rot);
                 inst.uvRect = { 0,0,1,1 };
                 batch.push_back(inst);
                 continue;
@@ -132,6 +133,7 @@ void RenderSystem::Update(float dt) {
     }
 
     if (!batch.empty()) {
+        //then draw them all at once
         renderInstance.DrawRectInstanced(batch, { 0.2f, 0.8f, 1.0f });
         batch.clear();
     }
