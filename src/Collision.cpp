@@ -1,14 +1,27 @@
 /* ========================================================
  * @file        Collision.cpp
- * @author      Yasmin Tazi         | yasmin.t@digipen.edu
- * @co-author   Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
+ * @author      Yasmin Tazi | yasmin.t@digipen.edu
  * @date        01 OCT 2025
  *
- * @brief
+ * @brief       Collision detection system for 2D/3D shapes.
  *
- * fella never even document this ------------- FIXTHISSHIT
- * Collili! (plz help me type more words i tired its almsot 4am, help check if author/coauth correct)
- * -------------------------------------- end of FIXTHISSHIT
+ * Implements comprehensive collision detection algorithms for various
+ * geometric primitives including AABB (Axis-Aligned Bounding Boxes),
+ * circles, line segments, and 3D bounding volumes.
+ *
+ * Supports both static (overlap testing) and dynamic (swept/continuous)
+ * collision detection. Dynamic collisions calculate the time of first
+ * contact between moving objects within a single frame (1/60th second).
+ *
+ * Collision types supported:
+ * - AABB vs AABB (static and dynamic)
+ * - Circle vs Circle (static and dynamic)
+ * - Circle vs AABB (static)
+ * - Circle vs Line Segment (static)
+ * - AABB3D vs AABB3D (static)
+ *
+ * Helper functions provide AABB construction and position updating
+ * with automatic min/max recalculation based on center position and dimensions.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
