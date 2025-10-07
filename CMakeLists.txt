@@ -368,3 +368,18 @@ if(WIN32 AND EXISTS "${FMOD_LIB_DIR}/fmod.dll")
         DESTINATION bin
     )
 endif()
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
+)
+
+# Copy save files from source to build directory
+file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
+foreach(save_file ${SAVE_FILES})
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${save_file}
+        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
+    )
+endforeach()
