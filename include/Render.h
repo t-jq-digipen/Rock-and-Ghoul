@@ -290,22 +290,6 @@ public:
     * @brief Clears all cached textures from GPU memory.
     */
     void ClearAllTextures();
-    
-    // amended helper functions for json bc they load the wrong texture for rock
-    /**
-    * @brief Associates a texture ID with its file path in the path cache.
-    * @param texID The OpenGL texture ID to register.
-    * @param path The file path corresponding to the texture.
-    */
-    void RegisterTexturePath(GLuint texID, const std::string& path);
-
-
-    /**
-     * @brief Retrieves the file path associated with a given texture ID.
-     * @param texID The OpenGL texture ID to get.
-     * @return The file path as a string. Returns an empty string if not found.
-     */
-    std::string GetTexturePath(GLuint texID) const;
 
 
     /**
@@ -314,7 +298,6 @@ public:
      * @return The file path as a string. Returns an empty string if not found.
      */
     std::string Get_TexturePath(const GLuint& imgID);
-
 
 
     //Draw text
@@ -419,7 +402,7 @@ private:
     std::map<char, Character> Characters; //Character map storing FreeType glyph data for text rendering
 
     // to load for json
-    std::unordered_map<GLuint, std::string> texturePathMap;
+    // std::unordered_map<GLuint, std::string> texturePathMap;
 
     
 
