@@ -3,12 +3,12 @@
  * @author	    Manfred Sim | manfred.sim@digipen.edu
  * @date	    29 SEP 2025
  *
- * @brief	Game State Manager
+ * @brief	Game State Manager declaration
  *
- * The game state manager handles the switching of game states
- * while the program is running and calls the corresponding
- * state functions. This header file contains the declaration
- * of functions and enumerations used by the game state manager.
+ * Declares the GameState enumeration and the GSM class for 
+ * handling the switching of game states while the engine is 
+ * running. The GSM class contains state callers and accessors
+ * to be defined in GameStateManager.cpp.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================

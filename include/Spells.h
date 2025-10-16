@@ -5,10 +5,10 @@
  *
  * @brief
  *
- * fella never even document this ------------- FIXTHISSHIT
- * Declares the SpellManager class which does spellmanager
- * things
- * -------------------------------------- end of FIXTHISSHIT
+ * Declares the SpellManager class, which manages a fixed set
+ * of spell slots for the player. Provides functions to load
+ * and unload spell textures and save,
+ * clear, or assign spells dynamically to slots.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================

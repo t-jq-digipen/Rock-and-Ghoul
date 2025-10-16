@@ -1,14 +1,27 @@
 /* ========================================================
  * @file        Collision.cpp
- * @author      Yasmin Tazi         | yasmin.t@digipen.edu
- * @co-author   Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
+ * @author      Yasmin Tazi | yasmin.t@digipen.edu
  * @date        01 OCT 2025
  *
- * @brief
+ * @brief       Collision detection system for 2D/3D shapes.
  *
- * fella never even document this ------------- FIXTHISSHIT
- * Collili! (plz help me type more words i tired its almsot 4am, help check if author/coauth correct)
- * -------------------------------------- end of FIXTHISSHIT
+ * Implements comprehensive collision detection algorithms for various
+ * geometric primitives including AABB (Axis-Aligned Bounding Boxes),
+ * circles, line segments, and 3D bounding volumes.
+ *
+ * Supports both static (overlap testing) and dynamic (swept/continuous)
+ * collision detection. Dynamic collisions calculate the time of first
+ * contact between moving objects within a single frame (1/60th second).
+ *
+ * Collision types supported:
+ * - AABB vs AABB (static and dynamic)
+ * - Circle vs Circle (static and dynamic)
+ * - Circle vs AABB (static)
+ * - Circle vs Line Segment (static)
+ * - AABB3D vs AABB3D (static)
+ *
+ * Helper functions provide AABB construction and position updating
+ * with automatic min/max recalculation based on center position and dimensions.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -126,7 +139,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     Vec2 relVel = Vec2{ vel1.x - vel2.x, vel1.y - vel2.y };
 
     float tFirst = 0.0f;
-    float tLast = 0.016f;
+    //float tLast = 0.016f; // used later as upper bound for tExit
 
     // speed at which circles are schmovinnnn
     float relSpeed = RG_Sqrt((relVel.x * relVel.x) + (relVel.y * relVel.y));
@@ -146,7 +159,7 @@ bool CollisionIntersection_CC_Dynamic(const Circle& c1,
     float distance = (centerDiff.x * centerDiff.x + centerDiff.y * centerDiff.y) - (proj * proj);
 
     float radSum = c1.rad + c2.rad;
-    float rad2 = radSum * radSum;
+    //float rad2 = radSum * radSum;
 
     if (radSum < distance) {
         return false;

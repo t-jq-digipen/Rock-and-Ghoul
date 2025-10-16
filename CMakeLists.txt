@@ -136,6 +136,11 @@ source_group("BaseEngine\\CoreEngine" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CoreEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CoreEngine.h
 )
+source_group("BaseEngine\\Editor" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImguiSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ImguiSystem.h
+)
+
 
 
 # BASE ENG SYSTEMS | FRAMERATE
@@ -146,6 +151,8 @@ source_group("BaseEngine\\BaseSystems\\FrameRateController" FILES
 )
 # ================================================= FRAMERATE
 
+
+
 # BASE ENG SYSTEMS | AUDIO
 # =================================================
 source_group("BaseEngine\\BaseSystems\\Audio" FILES 
@@ -155,12 +162,7 @@ source_group("BaseEngine\\BaseSystems\\Audio" FILES
 )
 # ================================================= AUDIO
 
-# BASE ENG SYSTEMS | GRAPHICS
-# =================================================
-source_group("BaseEngine\\BaseSystems\\Graphics" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
-)
+# BASE ENG SYSTEMS
 
 source_group("BaseEngine\\BaseSystems\\Graphics\\Components" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
@@ -188,6 +190,7 @@ source_group("BaseEngine\\BaseSystems\\Input" FILES
 source_group("BaseEngine\\BaseSystems\\Debug" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Debug.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Debug.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/CrashHandler.h
 )
 # ================================================= DEBUG
 
@@ -198,14 +201,6 @@ source_group("BaseEngine\\Math" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
 )
 # ================================================= MATH
-
-# BASE ENG | EXPORT
-# =================================================
-source_group("Export" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
-)
-# ================================================= EXPORT
 
 # GSM
 # =================================================
@@ -224,7 +219,6 @@ source_group("BaseEngine\\ECS\\Registry" FILES
 # E
 source_group("BaseEngine\\ECS\\Entity" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityCreation.cpp
@@ -233,15 +227,10 @@ source_group("BaseEngine\\ECS\\Entity" FILES
 source_group("BaseEngine\\ECS\\Component" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Component.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ComponentManager.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ComponentManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
 )
 
 source_group("BaseEngine\\ECS\\System" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/System.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/SystemManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/SystemManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
@@ -251,28 +240,18 @@ source_group("BaseEngine\\ECS\\Registry" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
 
-
-source_group("BaseEngine\\Debug" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/DebugTool.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/DebugTool.h
-)
 source_group("BaseEngine\\FilePath" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FileIO.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FileIO.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/DataDefs.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonAdapt.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/JsonLoad.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonLoad.h
 )
 source_group("BaseEngine\\Serialization" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Serialization.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Serialization.h
-)
-source_group("BaseEngine\\Transform" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Transform.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Transform.h
 )
 
 source_group("Systems\\Audio" FILES 
@@ -303,6 +282,7 @@ source_group("Systems\\Graphics\\Render" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderSystem.cpp
 )
 source_group("Systems\\Graphics" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
@@ -320,22 +300,18 @@ source_group("Physics\\System" FILES
 source_group("Physics\\System\\Collision" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionManager.h
 )
-source_group("Physics\\Movement" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementController.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementController.h
-)
+
 source_group("Game\\State\\GameStates" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStates.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStates.cpp
 )
 source_group("Game\\State\\Levels" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Level1.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Level2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Level1.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Level2.h
 )
 
 source_group("Game\\State\\MainMenu" FILES 
@@ -345,14 +321,9 @@ source_group("Game\\State\\MainMenu" FILES
 source_group("Game\\GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PlayerSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/BossGhoul.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Projectile.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Projectile.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Spells.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Spells.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fretboard.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Enemy.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Enemy.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
 )
 
@@ -361,26 +332,22 @@ source_group("Math" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
 )
-source_group("Export" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Export.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Export.h
-)
 
 # ======================= Runtime Data (saves folder) =========================
-add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
-)
+#add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} -E make_directory
+#    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
+#)
 
 
-file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/saves/*.json")
-foreach(save_file ${SAVE_FILES})
-    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${save_file}
-        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
-    )
-endforeach()
+#file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/saves/*.json")
+#foreach(save_file ${SAVE_FILES})
+#    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#        ${save_file}
+#        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/saves
+#    )
+#endforeach()
 
 # ======================= Install target =========================
 
@@ -401,3 +368,28 @@ if(WIN32 AND EXISTS "${FMOD_LIB_DIR}/fmod.dll")
         DESTINATION bin
     )
 endif()
+
+# Copy project documentation into the build folder (beside .sln)
+add_custom_target(copy_docs ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/AvidDivas_ReadMe.txt
+        ${CMAKE_BINARY_DIR}/AvidDivas_ReadMe.txt
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/projectGuide.pdf
+        ${CMAKE_BINARY_DIR}/projectGuide.pdf
+)
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
+)
+
+# Copy save files from source to build directory
+file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
+foreach(save_file ${SAVE_FILES})
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${save_file}
+        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
+    )
+endforeach()

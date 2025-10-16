@@ -4,13 +4,11 @@
  * @co-author   Manfred Sim         | manfred.sim@digipen.edu
  * @date        01 OCT 2025
  *
- * @brief
+ * @brief   Core Engine declaration
  *
- * fella never even document this ------------- FIXTHISSHIT
  * Declares the CoreEngine class and interface functions for
  * managing game loop, along with system management and
  * Game State Manager (GSM) integration.
- * -------------------------------------- end of FIXTHISSHIT
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -45,11 +43,21 @@ public:
         return instance;
     }
 
+    // Adds systems to the Core Engine
     void AddSystem(ISystem* sys);
+
+    // Initialize the Core Engine
     void Initialize();
+
+    // Run the Core Engine
     void Run();
+
+    // Shutdown the Core Engine
     void Shutdown();
+
+    // Quit the Core Engine
     void Quit();
+
     //getter function for your timings map
     //the key is a std::string
     //the value is a SystemTiming struct (contains ms for elapsed milliseconds).

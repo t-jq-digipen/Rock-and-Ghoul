@@ -14,12 +14,11 @@
 #include "Fretboard.h"
 #include <cstdlib>  // rand()
 #include <ctime>    // random number generator seed
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "glapp.h"
-#include "MovementController.h"
 #include "Spells.h"
+#include "input.h"
 glm::vec2 arrowPositions[4] = {
     {300.0f, 900.0f}, // LEFT
     {400.0f, 900.0f}, // DOWN
@@ -42,7 +41,7 @@ FretBoard::FretBoard(float x, float y, float length, float width){
 
     segments = 3;
     // segment spacing
-    float spacing = width / 3.0f;
+    //float spacing = width / 3.0f;
     currSpellState = SELECTION;
     currNoteIndex = 0;
     currNote.isActive = false;
@@ -63,6 +62,7 @@ FretBoard::FretBoard(float x, float y, float length, float width){
 
     srand((unsigned int)time(nullptr));
     spellManager.LoadTextures();
+    
 
 }
 
@@ -142,7 +142,7 @@ void FretBoard::NextNote() {
     int requiredDirection = currSpell.sequence[currNoteIndex];
     currNote.direction = requiredDirection;
 
-    int posIndex;
+    int posIndex = 0;
     if (requiredDirection == 4) {
         posIndex = 0; // LEFT
     }

@@ -74,7 +74,7 @@ namespace {
     }
 }
 
-void ImGuiSystem::InitializeImGui(GLFWwindow* window) {
+void ImGuiSystem::InitializeImGui() {
     IMGUI_CHECKVERSION(); //checks version compatibility
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); //imgui i/o settings
@@ -87,10 +87,11 @@ void ImGuiSystem::InitializeImGui(GLFWwindow* window) {
 
 //init hear so is easier
 void ImGuiSystem::Initialize() {
-    InitializeImGui(GLApp::ptr_window);  // Do it here instead of main
+    InitializeImGui();  // Do it here instead of main
 }
 
 void ImGuiSystem::Update(float dt) {
+    (void)dt;
     if (Input::IsKeyPressed(GLFW_KEY_F1)) {
         guiEnabled = !guiEnabled; // toggle on/off
     }
@@ -103,8 +104,8 @@ void ImGuiSystem::Update(float dt) {
     ImGui::Begin("Game Editor");
 
     if (ImGui::Button("Engine Info")) activePanel = Panel::Engine;
-    if (ImGui::Button("Collision + Scene Management")) activePanel = Panel::Collision;
-    if (ImGui::Button("Editor")) activePanel = activePanel = Panel::HierarchyInspector;
+    if (ImGui::Button("Collision + Prefab")) activePanel = Panel::Collision;
+    if (ImGui::Button("Entity Editor")) activePanel = activePanel = Panel::HierarchyInspector;
 
     ImGui::Separator();
     switch (activePanel) {
@@ -211,6 +212,43 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
             std::cout << "Failed to load scene!" << std::endl;
         }
     }
+
+    static int selectedPrefab = -1; //currently selected index cuz imgui dropdown dont take a string
+    //int index into an array of items
+    static std::vector<std::string> prefabNames;
+
+    //empties the vector each frame
+    prefabNames.clear();
+    //from json file path
+    for (auto& entry : std::filesystem::directory_iterator(FilePath::PREFABS_FOLDER)) {
+        if (entry.path().extension() == ".json") { //.extension() just the file extension (with the dot)
+            //.stem() the filename without the extension
+            //.string() converts the path object into a std::string
+            prefabNames.push_back(entry.path().stem().string()); // no ".json"
+        }
+    }
+
+    ImGui::Separator();
+    ImGui::Text("Spawn Prefab:");
+
+    //show dropdown if we have prefabs
+    if (!prefabNames.empty()) {
+        //array of const char* for ImGui::Combo
+        std::vector<const char*> items;
+        //iterates over each string in that vector.
+        for (auto& name : prefabNames) items.push_back(name.c_str());
+
+        if (ImGui::Combo("##PrefabCombo", &selectedPrefab, items.data(), (int)items.size())) {
+            //spawn
+            std::string filepath = FilePath::PREFABS_FOLDER + prefabNames[selectedPrefab] + ".json";
+            selectedEntity = JsonLoad::LoadEntityFromFile(filepath, 200.f, 200.f);
+            std::cout << "Spawned prefab: " << prefabNames[selectedPrefab] << std::endl;
+        }
+    }
+    else {
+        ImGui::TextDisabled("No prefabs available in %s", FilePath::PREFABS_FOLDER.c_str());
+    }
+
 }
 
 
@@ -227,22 +265,19 @@ void ImGuiSystem::ShowHierarchyWindow() {
             selectedEntity = entity;
         }
     }
-
-    // JQ COMMENT OUT HAHAHA
-    ImGui::Separator();
-    ImGui::Text("Create:");
-    if (ImGui::Button("Add Player")) {
-        selectedEntity = Create_Player(200.f, 200.f);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Add Rectangle")) {
-        selectedEntity = Create_Shape(400.f, 200.f, SHAPE_RECTANGLE, CS_IJKL);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Add Circle")) {
-        selectedEntity = Create_Shape(600.f, 200.f, SHAPE_CIRCLE, CS_ARROWS);
-    }
-
+    //ImGui::Separator();
+    //ImGui::Text("Create:");
+    //if (ImGui::Button("Add Player")) {
+    //    selectedEntity = Create_Player(200.f, 200.f);
+    //}
+    //ImGui::SameLine();
+    //if (ImGui::Button("Add Rectangle")) {
+    //    selectedEntity = Create_Shape(400.f, 200.f, SHAPE_RECTANGLE, CS_IJKL);
+    //}
+    //ImGui::SameLine();
+    //if (ImGui::Button("Add Circle")) {
+    //    selectedEntity = Create_Shape(600.f, 200.f, SHAPE_CIRCLE, CS_ARROWS);
+    //}
 }
 
 void ImGuiSystem::ShowInspectorWindow() {
@@ -281,6 +316,12 @@ void ImGuiSystem::ShowInspectorWindow() {
             if (ImGui::InputFloat2("Scale", &scale.x)) {
                 s.Set_Size(scale);
             }
+
+            float rot = s.Get_Rotation();
+            if (ImGui::SliderAngle("Rotation", &rot, -360.0f, 360.0f)) {
+                s.Set_Rotation(rot);
+            }
+
             ImGui::TreePop();
         }
     }
@@ -360,8 +401,7 @@ void ImGuiSystem::ShowInspectorWindow() {
         // Copy Physics
         if (Has_Component(selectedEntity, CT_Physics)) {
             auto& p = Get_PhysicsComponent(selectedEntity);
-            auto& aabb = p.Get_AABB();
-            auto& circle = p.Get_Circle();
+
             Add_Component(clone, p);
         }
 
@@ -405,7 +445,7 @@ void ImGuiSystem::ShowInspectorWindow() {
 
     ImGui::SameLine();
     if (ImGui::Button("Delete")) {
-        if (selectedEntity <= 3) {
+        if (selectedEntity <= 7) {
             ImGui::OpenPopup("Protected Entity");
         }
         else {

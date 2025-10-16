@@ -47,7 +47,7 @@ void Input::Update() {
         }
     }
 
-    // Reset scroll each frame so it only reflects last tick's scroll
+    // Reset scroll each frame so it only reflects last tick scroll
     scrollX = 0.0;
     scrollY = 0.0;
 }
@@ -88,6 +88,8 @@ double Input::GetScrollY() { return scrollY; }
 // GLFW Callbacks
 // -----------------------------
 void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    (void)scancode;
+    (void)mods;
     if (action == GLFW_PRESS) {
         keys[key] = KeyState::PRESSED;
     }
@@ -103,6 +105,8 @@ void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
 }
 
 void Input::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    (void)window;
+    (void)mods;
     if (action == GLFW_PRESS) {
         mouseButtons[button] = KeyState::PRESSED;
     }
@@ -112,11 +116,13 @@ void Input::MouseButtonCallback(GLFWwindow* window, int button, int action, int 
 }
 
 void Input::MousePosCallback(GLFWwindow* window, double xpos, double ypos) {
+    (void)window;
     mouseX = xpos;
     mouseY = ypos;
 }
 
 void Input::MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    (void)window;
     scrollX = xoffset;
     scrollY = yoffset;
 }

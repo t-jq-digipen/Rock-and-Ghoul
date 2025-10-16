@@ -137,7 +137,7 @@ namespace Animator {
 		 m_current_state = state;
 	}
 
-	void AnimatorComponent::AddState(int state, ActiveFrames const& frames)
+	void AnimatorComponent::AddState(int state, ActiveFrames const& framerange)
 	{
 		auto it = stateframe.find(state);
 		if (it != stateframe.end())
@@ -146,6 +146,6 @@ namespace Animator {
 			return;
 		}
 
-		stateframe[state] = frames;
+		stateframe[state] = framerange;
 	}
 }

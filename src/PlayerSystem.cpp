@@ -24,10 +24,8 @@ constexpr float speed = 500.f;
 
 void WASD_Movement(Entity eID, float& dt)
 {
+	(void)dt;
 	auto& physics = Get_PhysicsComponent(eID);
-	const Vec2& vel = physics.Get_Vel();
-
-	auto& transform = Get_TransformComponent(eID);
 
 	if (!Has_Component(eID, CT_Input)) {
 		return; // No input component, skip movement
@@ -113,12 +111,9 @@ void PlayerSystem::Update(float dt)
 	{
 		if (!Has_Component(entity, CT_Transform))
 			continue;
-
-		auto& trans = Get_TransformComponent(entity);
 		if (comp.tag == T_PLAYER)
 		{
 			// THIS IS A PLAYER, DO PLAYER THINGS
-			trans.Prevpos = trans.pos;
 			WASD_Movement(entity, dt);
 
 		}

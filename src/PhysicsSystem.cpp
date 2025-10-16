@@ -36,7 +36,7 @@ void PhysicsSystem::Initialize() {
 
 
 void PhysicsSystem::Update(float dt) {
-
+    (void)dt;
     // Step 1: Move entities
 
 
