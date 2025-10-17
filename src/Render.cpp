@@ -902,6 +902,96 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
 }
 
+
+void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color) {
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // activate render state	
+    glUseProgram(shaderProgram);
+
+    //set uniforms
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]);
+    glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+
+    //text no need, so set them transform uniforms to defaults
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(textVAO);
+
+    //track where next glyph will placed
+    float nextX = x;
+    float nextY = y;
+
+    //get the horizontal step for space char
+    float spaceWidth = (Characters[' '].Advance >> 6) * scale;
+
+    std::istringstream iss(text);
+    std::string word;
+
+    while (iss >> word) {
+
+        // Measure word width
+        float wordWidth = 0.0f;
+
+        for (char c : word) {
+            Character ch = Characters[c];
+            wordWidth += (ch.Advance >> 6) * scale;
+        }
+
+        // Wrap to new line
+        //Check if drawing the whole word will excced the right edge
+        if (nextX + wordWidth > x + rowWidth) {
+            //if yes reset the nextX to be the left edge
+            nextX = x;
+            nextY -= (Characters['H'].Size.y * 1.5f) * scale; //move down like new line
+        }
+
+        // Draw characters of word (similar setup to previous)
+        for (char c : word) {
+            Character ch = Characters[c];
+
+            float xpos = nextX + ch.Bearing.x * scale;
+            float ypos = nextY - (ch.Size.y - ch.Bearing.y) * scale;
+            float w = ch.Size.x * scale;
+            float h = ch.Size.y * scale;
+
+            float vertices[6][4] = {
+                { xpos,     ypos + h,   0.0f, 0.0f },
+                { xpos,     ypos,       0.0f, 1.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+
+                { xpos,     ypos + h,   0.0f, 0.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+                { xpos + w, ypos + h,   1.0f, 0.0f }
+            };
+
+            glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+            glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            nextX += (ch.Advance >> 6) * scale; //position next char 
+        }
+
+        nextX += spaceWidth; // Add space
+    }
+
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
+
+}
+
+
 void Render::Shutdown() {
     // Delete all glyph textures
     for (auto& [c, ch] : Characters) {

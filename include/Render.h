@@ -30,6 +30,7 @@
 #include <map>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include <sstream>
 
  /**
   * @struct Image
@@ -333,6 +334,17 @@ public:
     * @param color The RGB color of the text.
     */
     void DrawText(std::string text, float x, float y, float scale, const Colour3& color);
+
+    /**
+    * @brief Draws text on screen bounded by a textbox using a loaded FreeType font.
+    * @param text The string to render.
+    * @param x The x position of the text baseline.
+    * @param y The y position of the text baseline.
+    * @param rowWidth The width for the textbox
+    * @param scale Scale factor for text size.
+    * @param color The RGB color of the text.
+    */
+    void DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color); //for dialogue
 
 
 

@@ -216,6 +216,7 @@ void MainMenu::Update()
     //renderer.DrawImageSub(titleImage, 400.f, 400.f, 100.f, 400.f, 0.f, 0.f, 256.f, 256.f);
     renderer.DrawText("Let's play", 400.f, 700.f, 0.75f, { 0.f,0.f,1.f });
     renderer.DrawText("Game Over", 1400.f, 700.f, 0.75f, { 1.f,1.f,1.f });
+    //renderer.DrawTextBox("This is a test string to test if the text box works, as in it will wrap the text base on the rowwidth", 1400.f, 1000.f, 500.f, 0.75f, { 1.f,1.f,1.f });
 //
 //    if (Input::IsKeyPressed(GLFW_KEY_B)) {
 //        //std::cout << showInstancingDemo << std::endl;
