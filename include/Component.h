@@ -143,7 +143,7 @@ enum C_TagID {
 };
 
 struct TagComponent {
-	C_TagID tag;
+	C_TagID tag = T_PLAYER;
 };
 
 enum ControlScheme {

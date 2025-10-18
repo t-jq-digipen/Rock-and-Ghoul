@@ -34,7 +34,15 @@ bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 bool ImGuiSystem::guiEnabled = false;
 static FMOD::Channel* previewChannel = nullptr;
-
+static std::unordered_map<ComponentTypeID, std::vector<ComponentTypeID>> dependencies = {
+    { CT_Animator, { CT_Sprite } },      // Animator needs Sprite
+    { CT_Physics,  { CT_Transform } },   // Physics needs Transform
+    { CT_Shape,    { CT_Transform } },   // Shape needs Transform
+    { CT_Sprite,   { CT_Transform } },   // Sprite needs Transform
+    { CT_Audio,    {} },                 // Audio independent
+    { CT_Tag,      {} },                 // Tag independent
+    { CT_Input,    {} }                  // Input independent
+};
 namespace {
     // small helper to name an entity for the Hierarchy list
     std::string EntityDisplayName(Entity e) {
@@ -87,6 +95,14 @@ void ImGuiSystem::InitializeImGui(GLFWwindow* window) {
 //init hear so is easier
 void ImGuiSystem::Initialize() {
     InitializeImGui(GLApp::ptr_window);  // Do it here instead of main
+    CM_Tag();
+    CM_Transform();
+    CM_Sprite();
+    CM_Physics();
+    CM_Shape();
+    CM_Input();
+    CM_Animator();
+    CM_Audio();
 }
 
 void ImGuiSystem::Update(float dt) {
@@ -298,14 +314,14 @@ void ImGuiSystem::ShowHierarchyWindow() {
     EnsureSelectionValid();
 
     // all entities that have a Tag
-    for (auto& [entity, tag] : CM_Tag().getComponents()) {
-        bool selected = (entity == selectedEntity);
-        std::string label = EntityDisplayName(entity);
-        //highlight cn click
-        if (ImGui::Selectable(label.c_str(), selected)) {
-            selectedEntity = entity;
-        }
-    }
+    //for (auto& [entity, tag] : CM_Tag().getComponents()) {
+    //    bool selected = (entity == selectedEntity);
+    //    std::string label = EntityDisplayName(entity);
+    //    //highlight cn click
+    //    if (ImGui::Selectable(label.c_str(), selected)) {
+    //        selectedEntity = entity;
+    //    }
+    //}
     //ImGui::Separator();
     //ImGui::Text("Create:");
     //if (ImGui::Button("Add Player")) {
@@ -319,6 +335,29 @@ void ImGuiSystem::ShowHierarchyWindow() {
     //if (ImGui::Button("Add Circle")) {
     //    selectedEntity = Create_Shape(600.f, 200.f, SHAPE_CIRCLE, CS_ARROWS);
     //}
+    if (ImGui::Button("Add Entity"))
+    {
+        Entity newEntity = Create_Entity();
+        selectedEntity = newEntity;
+
+        // Store editor-only name (not actual TagComponent)
+        GetEntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
+
+    }
+    // show all known entities (even blank)
+    auto& nameMap = GetEntityNameMap();
+
+    for (auto& [entity, name] : nameMap)
+    {
+        if (!EntityManager::get().isAlive(entity))
+            continue;
+
+        bool selected = (entity == selectedEntity);
+        if (ImGui::Selectable(name.c_str(), selected))
+            selectedEntity = entity;
+    }
+
+
 }
 
 void ImGuiSystem::ShowInspectorWindow() {
@@ -428,6 +467,89 @@ void ImGuiSystem::ShowInspectorWindow() {
         }
     }
     ImGui::Separator();
+    ImGui::Text("Add Component:");
+
+    std::vector<std::pair<ComponentTypeID, const char*>> availableComps = {
+        { CT_Transform, "Transform" },
+        { CT_Sprite,    "Sprite" },
+        { CT_Animator,  "Animator" },
+        { CT_Physics,   "Physics" },
+        { CT_Shape,     "Shape" },
+        { CT_Audio,     "Audio" },
+        { CT_Input,     "Input" },
+        { CT_Tag,       "Tag" }
+    };
+
+    for (auto& [compID, name] : availableComps)
+    {
+        bool hasAlready = Has_Component(selectedEntity, compID);
+
+        // Check dependency rules
+        bool canAdd = true;
+        for (auto& dep : dependencies[compID])
+        {
+            if (!Has_Component(selectedEntity, dep))
+            {
+                canAdd = false;
+                break;
+            }
+        }
+
+        // Visual differentiation
+        if (hasAlready)
+        {
+            ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "%s (already added)", name);
+            continue;
+        }
+
+        if (!canAdd)
+            ImGui::BeginDisabled();
+
+        if (ImGui::Button(name, ImVec2(140, 0)))
+        {
+            if (canAdd)
+            {
+                switch (compID)
+                {
+                case CT_Transform:
+                    Add_Component(selectedEntity, TransformComponent{});
+                    break;
+                case CT_Sprite:
+                    Add_Component(selectedEntity, Sprite::SpriteComponent{});
+                    break;
+                case CT_Animator:
+                    Add_Component(selectedEntity, Animator::AnimatorComponent{});
+                    break;
+                case CT_Physics:
+                    Add_Component(selectedEntity, Physics::PhysicsComponent{});
+                    break;
+                case CT_Shape:
+                    Add_Component(selectedEntity, ShapeComponent{ SHAPE_RECTANGLE, {100.f,100.f}, {1.f,1.f,1.f} });
+                    break;
+                case CT_Audio:
+                    Add_Component(selectedEntity, AudioComponent{});
+                    break;
+                case CT_Input:
+                    Add_Component(selectedEntity, InputComponent{});
+                    break;
+                case CT_Tag:
+                    Add_Component(selectedEntity, TagComponent{ T_PLAYER });
+                    break;
+                }
+                std::cout << "[ImGui] Added component " << name << " to Entity " << selectedEntity << std::endl;
+            }
+        }
+
+        if (!canAdd)
+        {
+            ImGui::EndDisabled();
+            ImGui::SameLine();
+            ImGui::TextDisabled("(requires other component)");
+        }
+    }
+
+
+    ImGui::Separator();
     if (ImGui::Button("Clone")) {
         Entity clone = Create_Entity();
 
@@ -485,6 +607,8 @@ void ImGuiSystem::ShowInspectorWindow() {
         selectedEntity = clone;  // select new clone
     }
 
+
+
     ImGui::SameLine();
     if (ImGui::Button("Delete")) {
         if (selectedEntity <= 7) {
@@ -502,6 +626,8 @@ void ImGuiSystem::ShowInspectorWindow() {
         }
         ImGui::EndPopup();
     }
+
+
 }
 void ImGuiSystem::ShowAssetPreviewWindow()
 {
