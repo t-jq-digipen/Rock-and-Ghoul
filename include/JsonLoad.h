@@ -176,6 +176,14 @@ private:
      */
     static void Load_Animator(Entity eID, const std::string& data);
 
+    /**
+    * @brief Deserializes and loads Text component onto an entity.
+    *
+    * @param eID The entity ID to which the component should be added.
+    * @param data JSON string containing input data.
+    */
+    static void Load_Text(Entity eID, const std::string& data);
+
     // Component savers
 
     /**
@@ -246,6 +254,15 @@ private:
      *         currentState, all animation states, and UV coordinates (u0, v0, u1, v1).
      */
     static std::string Save_Animator(Entity eID);
+
+    /**
+    * @brief Serializes Text component to JSON string.
+    *
+    * @param eID The entity ID whose Text component should be serialized.
+    * @return std::string JSON string containing the text data including:
+    *         lines, currentLineIndex, charsPerSecond, fontPath, fontSize, color
+    */
+    static std::string Save_Text(Entity eID);
 
     // JSON serialization
 

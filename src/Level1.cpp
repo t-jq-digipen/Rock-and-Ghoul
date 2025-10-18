@@ -15,6 +15,7 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <algorithm>
 
 #include "Level1.h"
 #include "Input.h"
@@ -45,6 +46,11 @@ Entity rock;
 Entity square;
 Entity roundy;
 Entity waffle;
+Entity dialogue;
+
+static std::string dialogueLineToDraw;
+static float dialogueX = 0.f;
+static float dialogueY = 0.f;
 
 // Loads Level 1
 void Level1::Load()
@@ -103,7 +109,7 @@ void Level1::Init()
 		rock = Create_Player(200.f, 500.f);
 		square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
 		roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
-
+		dialogue = Create_Dialogue(600.f, 200.f, CS_DIALOGUE);
 	}
 	});	
 	// Top wall
@@ -117,12 +123,13 @@ void Level1::Init()
 
 	// Right wall
 	Create_Wall(LEVEL_WIDTH - WALL_THICKNESS/2, LEVEL_HEIGHT/2,WALL_THICKNESS, LEVEL_HEIGHT);
-
 }
 
 // Updates Level 1
 void Level1::Update()
 {
+	Render& renderer = Render::GetInstance();
+
 	static bool spawned = false;
 	std::vector<Entity> toRemove;
 
@@ -235,6 +242,24 @@ void Level1::Update()
 		if (fretboard) {
 			fretboard->PlayerInput();
 		}
+
+		//if (EntityManager::get().isAlive(dialogue) && Has_Component(dialogue, CT_Text))
+		//{
+		//	auto& txt = Get_TextComponent(dialogue);
+		//	const int count = static_cast<int>(txt.lines.size());
+		//	if (count > 0)
+		//	{
+		//		const int index = std::clamp(txt.currentLineIndex, 0, count - 1);
+		//		dialogueLineToDraw = txt.lines[static_cast<size_t>(index)];
+
+		//		if (Has_Component(dialogue, CT_Transform))
+		//		{
+		//			const auto& t = Get_TransformComponent(dialogue);
+		//			dialogueX = t.pos.x;
+		//			dialogueY = t.pos.y;
+		//		}
+		//	}
+		//}
 	});
 }
 
@@ -257,6 +282,10 @@ void Level1::Draw()
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
 		}
+
+		// Dialogue editor
+		const auto& txt = Get_TextComponent(dialogue);
+		renderer.DrawText(dialogueLineToDraw.c_str(), dialogueX, dialogueY, 1.f, { txt.color.x, txt.color.y, txt.color.z });
 	});
 }
 

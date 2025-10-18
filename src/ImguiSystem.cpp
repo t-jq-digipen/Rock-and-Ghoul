@@ -49,20 +49,27 @@ namespace {
                 : "Unknown";
             name = std::string(tagName) + " " + std::to_string(e);
         }
-        if (Has_Component(e, CT_Shape)) {
-            auto& s = Get_ShapeComponent(e);
-            if (s.shape == SHAPE_RECTANGLE) {
-                name += "  [Square]";
+        if (Has_Component(e, CT_Text)) {
+            name += " [Dialogue]";
+        }
+        else
+        {
+            if (Has_Component(e, CT_Shape)) {
+                auto& s = Get_ShapeComponent(e);
+                if (s.shape == SHAPE_RECTANGLE) {
+                    name += "  [Square]";
+                }
+                else if (s.shape == SHAPE_CIRCLE) {
+                    name += "  [Circle]";
+                }
             }
-            else if (s.shape == SHAPE_CIRCLE) {
-                name += "  [Circle]";
+            else if (Has_Component(e, CT_Sprite)) {
+                std::string entName = GetEntityName(e);
+                name += "  [Textured]";
+
             }
         }
-        else if (Has_Component(e, CT_Sprite)) {
-            std::string entName = GetEntityName(e);
-            name += "  [Textured]";
-        
-        }
+
         return name;
     }
 
@@ -359,6 +366,24 @@ void ImGuiSystem::ShowInspectorWindow() {
             }
             ImGui::Text("AABB: min: (%.1f, %.1f), max: (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
             ImGui::Text("Circle: center(%.1f, %.1f), r=%.1f", circ.pos.x, circ.pos.y, circ.rad);
+            ImGui::TreePop();
+        }
+    }
+    
+    // --- Text ---
+    if (Has_Component(selectedEntity, CT_Text)) {
+        auto& txt = Get_TextComponent(selectedEntity);
+        if (ImGui::TreeNode("Text")) {
+            int currentLineIndex = txt.currentLineIndex;
+            std::vector<const char*> dialogue_items;
+            for (const auto& item : txt.lines)
+            {
+                dialogue_items.push_back(item.c_str());
+            }
+            if (ImGui::Combo("Current Line", &currentLineIndex, dialogue_items.data(), dialogue_items.size()))
+            {
+                txt.currentLineIndex = currentLineIndex;
+            }
             ImGui::TreePop();
         }
     }

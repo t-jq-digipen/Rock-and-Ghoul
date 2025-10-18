@@ -80,7 +80,11 @@ void WASD_Movement(Entity eID, float& dt)
 		if (Input::IsKeyHeld(GLFW_KEY_LEFT)) physics.AddForce({ -1,0 }, 1.f, 0.f);
 		if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) physics.AddForce({ 1,0 }, 1.f, 0.f);
 		break;
+	case CS_DIALOGUE:
+		if (Input::IsKeyPressed(GLFW_KEY_ENTER) || Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) // advance to next line
+		break;
 	}
+
 
 	// knockback test
 	int vert{0};
