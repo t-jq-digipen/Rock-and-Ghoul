@@ -185,7 +185,7 @@ void GenerateInitialPrefabs() {
             "Oh, I hear them calling for our name! Where is Ghoul? I should find her." 
         };
 
-        Add_Component(dialogue_ent, TextComponent{ lines, 0, 50.f, "../Assets/Antonio-Bold.ttf", 20, { 0.f, 0.f, 0.f } });
+        Add_Component(dialogue_ent, Text::TextComponent{ lines, 0, 50.f, 0, "../Assets/Antonio-Bold.ttf", 20, { 0.f, 0.f, 0.f } });
 
         JsonLoad::SaveCurrentScene(FilePath::PREFABS_FOLDER + "Dialogue.json", "Dialogue");
         Remove_Entity(dialogue_ent);

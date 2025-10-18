@@ -28,7 +28,7 @@
 #include "EntityCreation.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
-
+#include "TextSystem.h"
 #include "CrashHandler.h"
 
 static FretBoard* fretboard = nullptr;
@@ -242,24 +242,6 @@ void Level1::Update()
 		if (fretboard) {
 			fretboard->PlayerInput();
 		}
-
-		//if (EntityManager::get().isAlive(dialogue) && Has_Component(dialogue, CT_Text))
-		//{
-		//	auto& txt = Get_TextComponent(dialogue);
-		//	const int count = static_cast<int>(txt.lines.size());
-		//	if (count > 0)
-		//	{
-		//		const int index = std::clamp(txt.currentLineIndex, 0, count - 1);
-		//		dialogueLineToDraw = txt.lines[static_cast<size_t>(index)];
-
-		//		if (Has_Component(dialogue, CT_Transform))
-		//		{
-		//			const auto& t = Get_TransformComponent(dialogue);
-		//			dialogueX = t.pos.x;
-		//			dialogueY = t.pos.y;
-		//		}
-		//	}
-		//}
 	});
 }
 
@@ -282,10 +264,6 @@ void Level1::Draw()
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
 		}
-
-		// Dialogue editor
-		const auto& txt = Get_TextComponent(dialogue);
-		renderer.DrawText(dialogueLineToDraw.c_str(), dialogueX, dialogueY, 1.f, { txt.color.x, txt.color.y, txt.color.z });
 	});
 }
 

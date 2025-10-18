@@ -210,14 +210,15 @@ std::string JsonLoad::Save_Input(Entity eID) {
 std::string JsonLoad::Save_Text(Entity eID) {
     auto& txt = Get_TextComponent(eID);
     json j = {
-        {"lines", static_cast<std::vector<std::string>>(txt.lines)},
-        {"currentLineIndex", static_cast<int>(txt.currentLineIndex)},
-        {"charsPerSecond", static_cast<float>(txt.charsPerSecond)},
-        {"fontPath", static_cast<std::string>(txt.fontPath)},
-        {"fontSize", static_cast<int>(txt.fontSize)},
-        {"colorX", txt.color.x},
-        {"colorY", txt.color.y},
-        {"colorZ", txt.color.z}
+        {"lines", txt.GetLines()},
+        {"currentLineIndex", txt.GetCurrentLineIndex()},
+        {"charsPerSecond", txt.GetCharsPerSecond()},
+        {"speakerID", txt.GetSpeakerID()},
+        {"fontPath", txt.GetFontPath()},
+        {"fontSize", txt.GetFontSize()},
+        {"colorX", txt.GetColor().x},
+        {"colorY", txt.GetColor().y},
+        {"colorZ", txt.GetColor().z}
     };
     return j.dump();
 }
@@ -415,17 +416,23 @@ void JsonLoad::Load_Input(Entity eID, const std::string& data) {
  */
 void JsonLoad::Load_Text(Entity eID, const std::string& data) {
     json j = json::parse(data);
-    TextComponent txt;
-    txt.lines = j["lines"];
-    txt.currentLineIndex = j["currentLineIndex"];
-    txt.charsPerSecond = j["charsPerSecond"];
-    txt.fontPath = j["fontPath"];
-    txt.fontSize = j["fontSize"];
-    txt.color.x = j["colorX"];
-    txt.color.y = j["colorY"];
-    txt.color.z = j["colorZ"];
 
-    Add_Component(eID, txt);
+    std::vector<std::string> lines = j["lines"];
+    int currentLineIndex = j["currentLineIndex"];
+    float charsPerSecond = j["charsPerSecond"];
+    int speakerID = j["speakerID"];
+    std::string fontPath = j["fontPath"];
+    int fontSize = j["fontSize"];
+    Vec3 color;
+    color.x = j["colorX"];
+    color.y = j["colorY"];
+    color.z = j["colorZ"];
+
+    if (!fontPath.empty())
+    {
+        Text::TextComponent txt(lines, currentLineIndex, charsPerSecond, speakerID, fontPath, fontSize, color);
+        Add_Component(eID, txt);
+    }
 }
 #pragma endregion ComponentLoaders
 

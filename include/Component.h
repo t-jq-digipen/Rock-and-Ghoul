@@ -170,13 +170,3 @@ struct ShapeComponent {
 	Vec2 dimensions;	// default size
 	Vec3 color;			// white (no tint)
 };
-
-struct TextComponent
-{
-	std::vector<std::string> lines;
-	int currentLineIndex{};
-	float charsPerSecond{ 0.f };
-	std::string fontPath;
-	int fontSize{ 0 };
-	Vec3 color;
-};
