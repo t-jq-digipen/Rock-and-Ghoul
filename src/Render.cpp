@@ -370,13 +370,13 @@ GLuint Render::LoadTexture(const std::string& path) {
     pathCache[textureID] = path;
 
     // json
-    texturePathMap[textureID] = path;
+    //texturePathMap[textureID] = path;
 
     return textureID;
 }
 
 // helpers for json
-void Render::RegisterTexturePath(GLuint texID, const std::string& path) {
+/*void Render::RegisterTexturePath(GLuint texID, const std::string& path) {
     texturePathMap[texID] = path;
 }
 
@@ -386,7 +386,7 @@ std::string Render::GetTexturePath(GLuint texID) const {
         return it->second;
     }
     return "";
-}
+}*/
 
 
 void Render::UnloadTexture(const std::string& path) {
@@ -991,6 +991,71 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
 
 }
 
+
+//Load all image assets from JSON file (containing the image paths)
+void Render::LoadImageAssetsFromJSON(const std::string& jsonPath) {
+
+    //maybe can default create a json for image if doesnt exists?
+    
+    //read file
+    std::ifstream file{ jsonPath };
+    //check if the json file for images exists
+    if (!file.is_open()) {
+        std::cerr << "Failed to open Image Asset JSON: " << jsonPath << std::endl;
+        return;
+    }
+
+    json j;
+    try {
+        file >> j;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error parsing Image JSON file: " << e.what() << std::endl;
+        return;
+    }
+
+    //"images" is the name of the array in the json (if u edit the name in the file, need remember update here)
+    if (!j.contains("images") || !j["images"].is_array()) {
+        std::cerr << "Invalid JSON format: missing \"images\" array in " << jsonPath << std::endl;
+        return;
+    }
+
+    //for my sanity to check if the loaded amount tally
+    int loadedCount = 0;
+
+    //for each entry in the images array...
+    for (const auto& path : j["images"]) {
+
+        //ignores if entry is not a string
+        if (!path.is_string()) {
+            std::cerr << "Skipping invalid image entry (not a string)" << std::endl;
+            continue;
+        }
+
+        std::string texPath = path.get<std::string>();
+
+        // Check if the file actually exists
+        if (!fs::exists(texPath)) {
+            std::cerr << "Warning: Texture file not found: " << texPath << std::endl;
+            continue; // Skip this one
+        }
+
+        //Loading and caching stuff and checks
+        /*if (textureCache.find(texPath) != textureCache.end()) {
+            std::cout << "Already cached: " << texPath << std::endl;
+            continue;
+        }*/
+
+        //Load the texture
+        GLuint texID = LoadTexture(texPath);
+
+        loadedCount++;
+
+    }
+
+    //just checking if logic works
+    std::cout << "[Render] Loaded " << loadedCount << " textures from " << jsonPath << std::endl;
+}
 
 void Render::Shutdown() {
     // Delete all glyph textures

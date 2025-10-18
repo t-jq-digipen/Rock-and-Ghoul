@@ -31,6 +31,11 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <sstream>
+#include <nlohmann/json.hpp>
+#include <filesystem>
+
+using json = nlohmann::json;
+namespace fs = std::filesystem;
 
  /**
   * @struct Image
@@ -298,7 +303,7 @@ public:
     * @param texID The OpenGL texture ID to register.
     * @param path The file path corresponding to the texture.
     */
-    void RegisterTexturePath(GLuint texID, const std::string& path);
+    //void RegisterTexturePath(GLuint texID, const std::string& path);
 
 
     /**
@@ -306,7 +311,7 @@ public:
      * @param texID The OpenGL texture ID to get.
      * @return The file path as a string. Returns an empty string if not found.
      */
-    std::string GetTexturePath(GLuint texID) const;
+    //std::string GetTexturePath(GLuint texID) const;
 
 
     /**
@@ -381,6 +386,11 @@ public:
     bool IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height);
 
 
+
+    //Loading multiple textures from json file
+    void LoadImageAssetsFromJSON(const std::string& jsonPath);
+
+
 private:
 
     /**
@@ -442,7 +452,7 @@ private:
     std::map<char, Character> Characters; //Character map storing FreeType glyph data for text rendering
 
     // to load for json
-    std::unordered_map<GLuint, std::string> texturePathMap;
+    //std::unordered_map<GLuint, std::string> texturePathMap;
 
     
 
