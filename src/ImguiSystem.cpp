@@ -28,13 +28,12 @@
 #include "Input.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
-
+#include "Audio.h"
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 bool ImGuiSystem::guiEnabled = false;
-static Panel activePanel = Panel::None;
-
+static FMOD::Channel* previewChannel = nullptr;
 
 namespace {
     // small helper to name an entity for the Hierarchy list
@@ -102,36 +101,28 @@ void ImGuiSystem::Update(float dt) {
 
     ImGui::Begin("Game Editor");
 
-    if (ImGui::Button("Engine Info")) activePanel = Panel::Engine;
-    if (ImGui::Button("Collision + Prefab")) activePanel = Panel::Collision;
-    if (ImGui::Button("Entity Editor")) activePanel = activePanel = Panel::HierarchyInspector;
-
-    ImGui::Separator();
-    switch (activePanel) {
-    case Panel::Engine:
-        ShowEngineDebugWindow();
-        break;
-
-    case Panel::Collision:
-        ShowCollisionDebugWindow();
-        break;
-
-    case Panel::HierarchyInspector:
-        //ImGui own 2D vector struct
-        ImGui::BeginChild("LeftPane", ImVec2(ImGui::GetWindowWidth() * 0.4f, 0), true);
-        ShowHierarchyWindow();
-        ImGui::EndChild();
-
-        ImGui::SameLine();
-
-        ImGui::BeginChild("RightPane", ImVec2(0, 0), true);
-        ShowInspectorWindow();
-        ImGui::EndChild();
-        break;
-
-    default:
-        ImGui::Text("Select a panel above.");
-        break;
+    if (ImGui::BeginTabBar("EditorTabs")) {
+        if (ImGui::BeginTabItem("Engine Info")) {
+            ShowEngineDebugWindow();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Collision + Prefabs")) {
+            ShowCollisionDebugWindow();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Entity Editor")) {
+            ImGui::Columns(2);
+            ShowHierarchyWindow();
+            ImGui::NextColumn();
+            ShowInspectorWindow();
+            ImGui::Columns(1);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Assets")) {
+            ShowAssetPreviewWindow();
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
     }
     ImGui::End();
 }
@@ -247,6 +238,57 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     else {
         ImGui::TextDisabled("No prefabs available in %s", FilePath::PREFABS_FOLDER.c_str());
     }
+    // ==============================
+// Image loader (runtime only)
+// ==============================
+    ImGui::Separator();
+    ImGui::Text("Image Loader:");
+
+    static char imgNameBuf[128] = "";
+    static std::vector<std::string> loadedImages;
+    static std::string statusMsg;
+
+    ImGui::InputText("Image Filename", imgNameBuf, IM_ARRAYSIZE(imgNameBuf));
+    ImGui::SameLine();
+
+    if (ImGui::Button("Add Image")) {
+        std::string filename = imgNameBuf;
+        if (filename.empty()) {
+            statusMsg = " Please enter a filename.";
+        }
+        else {
+            std::string fullPath = "../Assets/" + filename;
+            try {
+                Image img = CreateImage(fullPath); // uses your Render.cpp helper
+                if (img.IsValid()) {
+                    loadedImages.push_back(filename);
+                    statusMsg = "Loaded and added: " + filename;
+                }
+                else {
+                    statusMsg = "Failed to load image (invalid texture): " + filename;
+                }
+            }
+            catch (...) {
+                statusMsg = "File not found: " + filename;
+            }
+        }
+    }
+
+    if (!statusMsg.empty()) {
+        ImGui::TextWrapped("%s", statusMsg.c_str());
+    }
+
+    ImGui::Separator();
+    ImGui::Text("Loaded Images:");
+    if (loadedImages.empty()) {
+        ImGui::TextDisabled("(none yet)");
+    }
+    else {
+        for (auto const& name : loadedImages) {
+            ImGui::BulletText("%s", name.c_str());
+        }
+    }
+
 
 }
 
@@ -461,6 +503,212 @@ void ImGuiSystem::ShowInspectorWindow() {
         ImGui::EndPopup();
     }
 }
+void ImGuiSystem::ShowAssetPreviewWindow()
+{
+    ImGui::Text( "Asset Preview Browser");
+    ImGui::Separator();
+
+    if (ImGui::BeginTabBar("AssetsTabs"))
+    {
+        // ====================================================
+        // IMAGES TAB
+        // ====================================================
+        if (ImGui::BeginTabItem("Images"))
+        {
+            static std::vector<Image> loadedThumbnails;
+            static std::vector<std::string> imageNames;
+            static bool initialized = false;
+
+            if (!initialized)
+            {
+                const std::string assetFolder = "../Assets/";
+                for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
+                {
+                    if (!entry.is_regular_file()) continue;
+                    std::string path = entry.path().string();
+                    std::string ext = entry.path().extension().string();
+                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+                    {
+                        try {
+                            Image img = CreateImage(path);
+                            if (img.IsValid()) {
+                                loadedThumbnails.push_back(img);
+                                imageNames.push_back(entry.path().filename().string());
+                            }
+                        }
+                        catch (...) {
+                            std::cout << "[AssetPreview] Failed to load " << path << std::endl;
+                        }
+                    }
+                }
+                initialized = true;
+            }
+
+            if (loadedThumbnails.empty()) {
+                ImGui::TextDisabled("No images found in Assets folder.");
+            }
+            else
+            {
+                const float thumbSize = 100.0f;
+                const float padding = 16.0f;
+                float windowWidth = ImGui::GetContentRegionAvail().x;
+                int columns = static_cast<int>(windowWidth / (thumbSize + padding));
+                if (columns < 1) columns = 1;
+
+                ImGui::BeginChild("ImageScroll", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
+
+                int count = 0;
+                for (size_t i = 0; i < loadedThumbnails.size(); ++i)
+                {
+                    ImGui::BeginGroup();
+                    GLuint texID = loadedThumbnails[i].textureID;
+
+                    // show image (flipped UVs)
+                    ImGui::Image((ImTextureID)(intptr_t)texID,
+                        ImVec2(thumbSize, thumbSize),
+                        ImVec2(0, 1), ImVec2(1, 0));
+
+                    // filename
+                    ImGui::TextWrapped("%s", imageNames[i].c_str());
+                    ImGui::EndGroup();
+
+                    if (++count % columns != 0)
+                        ImGui::SameLine();
+                }
+
+                ImGui::EndChild();
+            }
+
+            ImGui::EndTabItem();
+        }
+
+        // ====================================================
+        // MUSIC TAB
+        // ====================================================
+        if (ImGui::BeginTabItem("Music"))
+        {
+            static bool initialized = false;
+            static std::vector<std::string> musicFiles;
+            static int selectedIndex = -1;
+            static std::string statusMsg;
+
+            if (!initialized)
+            {
+                try
+                {
+                    const std::string musicFolder = "../Assets/music/";
+                    for (auto& entry : std::filesystem::recursive_directory_iterator(musicFolder))
+                    {
+                        if (!entry.is_regular_file()) continue;
+
+                        std::string ext = entry.path().extension().string();
+                        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                        if (ext == ".mp3" || ext == ".wav" || ext == ".ogg")
+                            musicFiles.push_back(entry.path().filename().string());
+                    }
+
+                    if (musicFiles.empty())
+                        statusMsg = "No audio files found in ../Assets/music/";
+                    else
+                        statusMsg = "Found " + std::to_string(musicFiles.size()) + " tracks.";
+
+                    initialized = true;
+                }
+                catch (const std::exception& e)
+                {
+                    statusMsg = std::string(" Error scanning music folder: ") + e.what();
+                }
+            }
+
+            ImGui::Text("Music Files:");
+            ImGui::Separator();
+
+            if (musicFiles.empty())
+            {
+                ImGui::TextDisabled("(none found)");
+            }
+            else
+            {
+                for (int i = 0; i < (int)musicFiles.size(); ++i)
+                {
+                    bool selected = (i == selectedIndex);
+                    if (ImGui::Selectable(musicFiles[i].c_str(), selected))
+                    {
+                        selectedIndex = i;
+                        statusMsg = "Selected: " + musicFiles[i];
+                        std::cout << "[MusicTab] Selected " << musicFiles[i] << std::endl;
+                    }
+                }
+
+                if (selectedIndex >= 0)
+                {
+                    ImGui::Separator();
+                    ImGui::Text("Selected: %s", musicFiles[selectedIndex].c_str());
+
+                    if (ImGui::Button("Play Preview"))
+                    {
+                        std::string fullPath = "../Assets/music/" + musicFiles[selectedIndex];
+
+                        // load without looping
+                        FMOD::Sound* previewSound = AudioSystem::LoadSound(fullPath, false);
+                        if (previewSound)
+                        {
+                            // stop previous preview if any
+                            if (previewChannel)
+                                previewChannel->stop();
+
+                            // play preview sound on its own channel
+                            previewChannel = AudioSystem::PlaySoundGetChannel(previewSound, false);
+                            if (previewChannel)
+                            {
+                                previewChannel->setVolume(0.7f); // slightly lower volume
+                                statusMsg = " Previewing: " + musicFiles[selectedIndex];
+                                std::cout << "[MusicTab] Preview playing " << fullPath << std::endl;
+                            }
+                            else
+                            {
+                                statusMsg = " Failed to start preview channel.";
+                            }
+                        }
+                        else
+                        {
+                            statusMsg = "Failed to load preview: " + musicFiles[selectedIndex];
+                        }
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::Button("Stop Preview"))
+                    {
+                        if (previewChannel)
+                        {
+                            previewChannel->stop();
+                            previewChannel = nullptr;
+                            statusMsg = "Preview stopped.";
+                        }
+                    }
+
+                }
+            }
+
+            if (!statusMsg.empty())
+            {
+                ImGui::Separator();
+                ImGui::TextWrapped("%s", statusMsg.c_str());
+            }
+
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+    }
+
+    ImGui::Separator();
+}
+
+
 
 void ImGuiSystem::Shutdown() {
     ShutdownImGui();
