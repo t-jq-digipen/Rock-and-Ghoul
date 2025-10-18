@@ -256,8 +256,10 @@ source_group("BaseEngine\\Serialization" FILES
 
 source_group("Systems\\Audio" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AudioCache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioCache.h
 )
 source_group("Systems\\Input" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp

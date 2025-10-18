@@ -20,6 +20,7 @@
  */
 #include "audio.h"
 #include "AudioSystem.h"
+#include "AudioCache.h"
 #include "CoreEngine.h"
 #include <iostream>
 
@@ -318,9 +319,16 @@ void AudioSystem::SetChannelPaused(FMOD::Channel* channel, bool paused) {
 void AudioManager::Initialize() {
     AudioSystem::Init();
 
+    // TEST THE CACHE
+    std::cout << "\n=== TESTING AUDIOCACHE ===" << std::endl;
+    if (!AudioCache::Initialize("../Assets/audio_manifest.json")) {
+        std::cerr << "AudioCache failed to initialize!" << std::endl;
+    }
+    std::cout << "=== AUDIOCACHE TEST COMPLETE ===\n" << std::endl;
+
     // preload music tracks
-    mainMenuMusic = Load("../Assets/music/mainmenu.wav", true);
-    level1Music = Load("../Assets/music/level1.wav", true);
+    mainMenuMusic = Load("../Assets/audio/music/mainmenu.wav", true);
+    level1Music = Load("../Assets/audio/music/level1.wav", true);
 
     // start main menu music
     if (mainMenuMusic) {
