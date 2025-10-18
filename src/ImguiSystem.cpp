@@ -313,28 +313,6 @@ void ImGuiSystem::ShowHierarchyWindow() {
 
     EnsureSelectionValid();
 
-    // all entities that have a Tag
-    //for (auto& [entity, tag] : CM_Tag().getComponents()) {
-    //    bool selected = (entity == selectedEntity);
-    //    std::string label = EntityDisplayName(entity);
-    //    //highlight cn click
-    //    if (ImGui::Selectable(label.c_str(), selected)) {
-    //        selectedEntity = entity;
-    //    }
-    //}
-    //ImGui::Separator();
-    //ImGui::Text("Create:");
-    //if (ImGui::Button("Add Player")) {
-    //    selectedEntity = Create_Player(200.f, 200.f);
-    //}
-    //ImGui::SameLine();
-    //if (ImGui::Button("Add Rectangle")) {
-    //    selectedEntity = Create_Shape(400.f, 200.f, SHAPE_RECTANGLE, CS_IJKL);
-    //}
-    //ImGui::SameLine();
-    //if (ImGui::Button("Add Circle")) {
-    //    selectedEntity = Create_Shape(600.f, 200.f, SHAPE_CIRCLE, CS_ARROWS);
-    //}
     if (ImGui::Button("Add Entity"))
     {
         Entity newEntity = Create_Entity();
