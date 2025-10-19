@@ -3,7 +3,7 @@
 #include <vector>
 #include <Remath.h>
 
-namespace Text
+namespace TextSystem
 {
 	class TextComponent {
 		std::vector<std::string> lines;
@@ -28,6 +28,7 @@ namespace Text
 		const std::string& GetFontPath() const noexcept;
 		int GetFontSize() const noexcept;
 		const Vec3& GetColor() const noexcept;
+		const std::string& GetCurrentLine(int index) const noexcept;
 
 		// SETTERS
 		void SetLines(const std::vector<std::string>& script);

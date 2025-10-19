@@ -430,7 +430,7 @@ void JsonLoad::Load_Text(Entity eID, const std::string& data) {
 
     if (!fontPath.empty())
     {
-        Text::TextComponent txt(lines, currentLineIndex, charsPerSecond, speakerID, fontPath, fontSize, color);
+        TextSystem::TextComponent txt(lines, currentLineIndex, charsPerSecond, speakerID, fontPath, fontSize, color);
         Add_Component(eID, txt);
     }
 }

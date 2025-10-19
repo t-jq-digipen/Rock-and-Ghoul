@@ -64,7 +64,7 @@ ComponentManager<ShapeComponent>				shape;
 
 // Text
 // CT_Text
-ComponentManager<Text::TextComponent>			text;
+ComponentManager<TextSystem::TextComponent>			text;
 
 // Entity manager (stores a REFERENCE to the singleton entity manager ^^)
 // ================================================================================
@@ -166,7 +166,7 @@ void Add_Component(Entity eID, ShapeComponent const& comp)
 	shape.addComponent(eID, comp);
 }
 
-void Add_Component(Entity eID, Text::TextComponent const& comp)
+void Add_Component(Entity eID, TextSystem::TextComponent const& comp)
 {
 	std::cout << "REGISTRY | ADDING COMPONENT | TEXT		| eID: " << eID << "\n";
 	text.addComponent(eID, comp);
@@ -357,7 +357,7 @@ InputComponent&					Get_InputComponent(Entity eID)			{ return input.getComponent
 
 ShapeComponent&					Get_ShapeComponent(Entity eID)			{ return shape.getComponent(eID); }
 
-Text::TextComponent&			Get_TextComponent(Entity eID)			{ return text.getComponent(eID); }
+TextSystem::TextComponent&		Get_TextComponent(Entity eID)			{ return text.getComponent(eID); }
 
 
 // Manager accessors
@@ -371,7 +371,7 @@ ComponentManager<HealthComponent>&				CM_Health()			{ return health; }
 ComponentManager<TagComponent>&					CM_Tag()			{ return tag; }
 ComponentManager<InputComponent>&				CM_Input()			{ return input; }
 ComponentManager<ShapeComponent>&				CM_Shape()			{ return shape; }
-ComponentManager<Text::TextComponent>&			CM_Text()			{ return text; }
+ComponentManager<TextSystem::TextComponent>&	CM_Text()			{ return text; }
 
 #pragma endregion COMPONENT
 

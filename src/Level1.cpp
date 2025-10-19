@@ -264,6 +264,18 @@ void Level1::Draw()
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
 		}
+
+		//for (Entity e = 0; e < 50; ++e) {
+		//	if (!EntityManager::get().isAlive(e)) continue;
+
+		//	if (Has_Component(e, CT_Text))
+		//	{
+		//		const auto& txt = Get_TextComponent(e);
+		//		const auto& aabb = Get_PhysicsComponent(e);
+		//		const auto& trans = Get_TransformComponent(e);
+		//		renderer.DrawText(txt.GetCurrentLine(txt.GetCurrentLineIndex()), trans.pos.x - aabb.Get_AABB().dim.x / 2, trans.pos.y, txt.GetFontSize(), { txt.GetColor().x, txt.GetColor().y, txt.GetColor().z });
+		//	}
+		//}
 	});
 }
 

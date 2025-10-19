@@ -1,6 +1,6 @@
 #include "TextSystem.h"
 
-namespace Text
+namespace TextSystem
 {
 	TextComponent::TextComponent() : lines{ "" }, currentLineIndex{0}, charsPerSecond{0.f}, speakerID{0}, fontPath{}, fontSize{0}, color{} {}
 	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float charsPerSecond, int speakerID, std::string fontPath, int fontSize, Vec3 color)
@@ -14,6 +14,7 @@ namespace Text
 	const std::string& TextComponent::GetFontPath() const noexcept { return fontPath; }
 	int TextComponent::GetFontSize() const noexcept { return fontSize; }
 	const Vec3& TextComponent::GetColor() const noexcept { return color; }
+	const std::string& TextComponent::GetCurrentLine(int index) const noexcept { return lines[index]; };
 
 	// SETTERS
 	void TextComponent::SetLines(const std::vector<std::string>& script) { lines = script; }
