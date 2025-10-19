@@ -404,6 +404,97 @@ public:
     */
     std::unordered_map<std::string, GLuint> LoadImageAssetsFromJSON(const std::string& jsonPath);
 
+
+
+
+
+    //Shader interface functions for future
+    /**
+    * @brief Activates a specific shader program for subsequent rendering.
+    *
+    * This function binds the given shader program using glUseProgram().
+    * Once applied, all draw calls will use this shader until another shader
+    * is bound or ResetShader() is called.
+    *
+    * @param shaderID OpenGL handle of the shader program to activate.
+    */
+    void ApplyShader(GLuint shaderID);
+
+    /**
+    * @brief Deactivates the currently bound shader program.
+    *
+    * Unbinds any active shader by calling glUseProgram(0), effectively
+    * resetting the rendering pipeline to have no shader bound.
+    */
+    void ResetShader();
+
+    /**
+    * @brief Sets a floating-point uniform variable in the specified shader.
+    *
+    * Retrieves the uniform location within the shader program and uploads
+    * the given float value using glUniform1f(). This is typically used for
+    * scalar parameters such as intensity, time, or alpha.
+    *
+    * @param shaderID OpenGL handle of the shader program containing the uniform.
+    * @param name Name of the uniform variable in the shader source. (like this name must exists in the vertexSrc/FragmentSrc)
+    * @param value Floating-point value to assign to the uniform.
+    */
+    void SetUniform1f(GLuint ShaderID, const std::string& name, float value);
+
+    /**
+     * @brief Sets a vec2 (two-component float vector) uniform variable in a shader program.
+     *
+     * This function uploads a 2D vector (e.g., position, scale, or UV offset)
+     * to a specified uniform variable inside the given shader program.
+     * If the uniform name is not found in the shader, the function safely does nothing.
+     *
+     * @param shaderID   The OpenGL shader program handle (GLuint) to modify.
+     * @param name       The name of the uniform variable in the shader (as declared in GLSL).
+     * @param value      The glm::vec2 value to upload to the shader.
+     *
+     * @note This is a convenience wrapper for glUniform2f().
+     *       It must be called after the shader program has been activated with ApplyShader()/glUseProgram().
+     */
+    void SetUniform2f(GLuint shaderID, const std::string& name, const glm::vec2& value);
+
+    /**
+    * @brief Sets a 3-component vector uniform variable in the specified shader.
+    *
+    * Retrieves the uniform location within the shader program and uploads
+    * the given vector using glUniform3f(). Commonly used for color or direction values.
+    *
+    * @param shaderID OpenGL handle of the shader program containing the uniform.
+    * @param name Name of the uniform variable in the shader source.
+    * @param vec 3-component vector value to assign to the uniform.
+    */
+    void SetUniform3f(GLuint ShaderID, const std::string& name, const glm::vec3& vec);
+
+
+    /**
+    * @brief Sets a 4x4 matrix uniform variable in the specified shader.
+    *
+    * Retrieves the uniform location within the shader program and uploads
+    * the given matrix using glUniformMatrix4fv(). This is typically used for
+    * transformation matrices such as model, view, or projection.
+    *
+    * @param shaderID OpenGL handle of the shader program containing the uniform.
+    * @param name Name of the uniform variable in the shader source.
+    * @param mat 4x4 matrix to assign to the uniform.
+    */
+    void SetUniformMat4(GLuint ShaderID, const std::string& name, const glm::mat4& mat);
+
+
+    /**
+    * @brief Returns the OpenGL handle of the default sprite shader program.
+    *
+    * Provides access to the internal sprite shader used by DrawImage() and
+    * other basic 2D rendering operations.
+    *
+    * @return GLuint Shader program ID of the sprite shader.
+    */
+    GLuint GetSpriteShader() const { return shaderProgram; } //for now this, can added instancedShader in the future
+
+
 private:
 
     /**

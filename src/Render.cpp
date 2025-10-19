@@ -1080,6 +1080,41 @@ std::unordered_map<std::string, GLuint> Render::LoadImageAssetsFromJSON(const st
     return result;
 }
 
+//shader interface functions
+void Render::ApplyShader(GLuint shaderID) {
+    glUseProgram(shaderID);
+}
+
+void Render::ResetShader() {
+    glUseProgram(0);
+}
+
+void Render::SetUniform1f(GLuint shaderID, const std::string& name, float value) {
+    GLint loc = glGetUniformLocation(shaderID, name.c_str());
+    if (loc != -1)
+        glUniform1f(loc, value);
+}
+
+void Render::SetUniform2f(GLuint shaderID, const std::string& name, const glm::vec2& value) {
+    GLint loc = glGetUniformLocation(shaderID, name.c_str());
+    if (loc != -1)
+        glUniform2f(loc, value.x, value.y);
+}
+
+void Render::SetUniform3f(GLuint shaderID, const std::string& name, const glm::vec3& vec) {
+    GLint loc = glGetUniformLocation(shaderID, name.c_str());
+    if (loc != -1)
+        glUniform3f(loc, vec.x, vec.y, vec.z);
+}
+
+void Render::SetUniformMat4(GLuint shaderID, const std::string& name, const glm::mat4& mat) {
+    GLint loc = glGetUniformLocation(shaderID, name.c_str());
+    if (loc != -1)
+        glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
+}
+
+
+
 void Render::Shutdown() {
     // Delete all glyph textures
     for (auto& [c, ch] : Characters) {

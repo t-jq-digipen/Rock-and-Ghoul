@@ -81,7 +81,7 @@ void MainMenu::Load()
     Render& renderer = Render::GetInstance();
 
     // Preload all Image assets from JSON (they’ll be stored in textureCache)
-    auto menuTextures = renderer.LoadImageAssetsFromJSON("../Assets/imageAssets.json"); //stress test function, so maybe can have 1 for all main menu assets? like put inside the json idk
+    auto menuTextures = renderer.LoadImageAssetsFromJSON("../Assets/imageAssets.json"); //i added an imageAssets.json inside assets folder
 
     CrashHandler::Safe("MainMenu", "Load", [&] {
         std::cout << "Main Menu Loaded!!!" << std::endl;
