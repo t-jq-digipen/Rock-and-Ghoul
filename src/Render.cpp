@@ -993,16 +993,17 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
 
 
 //Load all image assets from JSON file (containing the image paths)
-void Render::LoadImageAssetsFromJSON(const std::string& jsonPath) {
+std::unordered_map<std::string, GLuint> Render::LoadImageAssetsFromJSON(const std::string& jsonPath) {
 
     //maybe can default create a json for image if doesnt exists?
+    std::unordered_map<std::string, GLuint> result;
     
     //read file
     std::ifstream file{ jsonPath };
     //check if the json file for images exists
     if (!file.is_open()) {
         std::cerr << "Failed to open Image Asset JSON: " << jsonPath << std::endl;
-        return;
+        return result;
     }
 
     json j;
@@ -1011,20 +1012,17 @@ void Render::LoadImageAssetsFromJSON(const std::string& jsonPath) {
     }
     catch (const std::exception& e) {
         std::cerr << "Error parsing Image JSON file: " << e.what() << std::endl;
-        return;
+        return result;
     }
 
     //"images" is the name of the array in the json (if u edit the name in the file, need remember update here)
     if (!j.contains("images") || !j["images"].is_array()) {
         std::cerr << "Invalid JSON format: missing \"images\" array in " << jsonPath << std::endl;
-        return;
+        return result;
     }
 
-    //for my sanity to check if the loaded amount tally
-    int loadedCount = 0;
-
     //for each entry in the images array...
-    for (const auto& path : j["images"]) {
+    /*for (const auto& path : j["images"]) {
 
         //ignores if entry is not a string
         if (!path.is_string()) {
@@ -1040,21 +1038,46 @@ void Render::LoadImageAssetsFromJSON(const std::string& jsonPath) {
             continue; // Skip this one
         }
 
-        //Loading and caching stuff and checks
-        /*if (textureCache.find(texPath) != textureCache.end()) {
-            std::cout << "Already cached: " << texPath << std::endl;
-            continue;
-        }*/
-
         //Load the texture
         GLuint texID = LoadTexture(texPath);
 
         loadedCount++;
 
+    }*/
+    for (const auto& entry : j["images"]) {
+
+        std::string path;
+        std::string alias;
+
+        if (entry.is_string()) {
+            path = entry.get<std::string>();
+            alias = path; // fallback use path as key if alias not provided
+        }
+        else if (entry.is_object()) {
+            path = entry.value("path", "");
+            alias = entry.value("alias", path);
+        }
+
+        if (path.empty()) {
+            continue;
+        }
+
+        if (!std::filesystem::exists(path)) {
+            std::cerr << "Missing Image file: " << path << std::endl;
+            continue;
+        }
+
+        GLuint texID = LoadTexture(path);
+
+        if (texID != 0) {
+            result[alias] = texID; //store in map
+        }
     }
 
     //just checking if logic works
-    std::cout << "[Render] Loaded " << loadedCount << " textures from " << jsonPath << std::endl;
+    std::cout << "[Render] Loaded " << result.size() << " textures from " << jsonPath << std::endl;
+
+    return result;
 }
 
 void Render::Shutdown() {

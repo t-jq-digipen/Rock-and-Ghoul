@@ -388,8 +388,21 @@ public:
 
 
     //Loading multiple textures from json file
-    void LoadImageAssetsFromJSON(const std::string& jsonPath);
-
+    /**
+    * @brief Loads image assets defined in a JSON file and returns their texture handles.
+    *
+    * Example JSON:
+    * {
+    *   "images": [
+    *     { "path": "Assets/title.png", "alias": "title" },
+    *     { "path": "Assets/play.png", "alias": "play" }
+    *   ]
+    * }
+    *
+    * @param jsonPath Path to JSON file containing image paths or objects.
+    * @return std::unordered_map<std::string, GLuint> Mapping of alias (key) to texture ID (value).
+    */
+    std::unordered_map<std::string, GLuint> LoadImageAssetsFromJSON(const std::string& jsonPath);
 
 private:
 

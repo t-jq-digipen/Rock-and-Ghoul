@@ -81,25 +81,30 @@ void MainMenu::Load()
     Render& renderer = Render::GetInstance();
 
     // Preload all Image assets from JSON (they’ll be stored in textureCache)
-    renderer.LoadImageAssetsFromJSON("../Assets/imageAssets.json"); //stress test function, so maybe can have 1 for all main menu assets? like put inside the json idk
+    auto menuTextures = renderer.LoadImageAssetsFromJSON("../Assets/imageAssets.json"); //stress test function, so maybe can have 1 for all main menu assets? like put inside the json idk
 
     CrashHandler::Safe("MainMenu", "Load", [&] {
         std::cout << "Main Menu Loaded!!!" << std::endl;
 
         // Load Textures
-        titleTexture = renderer.LoadTexture("../Assets/title.png"); //does'nt load it again, just returns from texturecache
+        //titleTexture = renderer.LoadTexture("../Assets/title.png"); //does'nt load it again, just returns from texturecache
+        titleTexture = menuTextures["title"];
         CrashHandler::LogIfZeroTexture(titleTexture, "../Assets/title.png");
 
-        rockTexture = renderer.LoadTexture("../Assets/Rock_2048px.png");
+        //rockTexture = renderer.LoadTexture("../Assets/Rock_2048px.png");
+        rockTexture = menuTextures["rock"];
         CrashHandler::LogIfZeroTexture(rockTexture, "../Assets/title.png");
 
-        ghoulTexture = renderer.LoadTexture("../Assets/Ghoul_2048px.png");
+        //ghoulTexture = renderer.LoadTexture("../Assets/Ghoul_2048px.png");
+        ghoulTexture = menuTextures["ghoul"];
         CrashHandler::LogIfZeroTexture(ghoulTexture, "../Assets/title.png");
 
-        playTexture = renderer.LoadTexture("../Assets/play.png");
+        //playTexture = renderer.LoadTexture("../Assets/play.png");
+        playTexture = menuTextures["play"];
         CrashHandler::LogIfZeroTexture(playTexture, "../Assets/title.png");
 
-        quitTexture = renderer.LoadTexture("../Assets/quit.png");
+        //quitTexture = renderer.LoadTexture("../Assets/quit.png");
+        quitTexture = menuTextures["quit"];
         CrashHandler::LogIfZeroTexture(quitTexture, "../Assets/title.png");
     });
     //titleImage = Render::GetInstance().LoadImage("../Assets/quit.png"); 
