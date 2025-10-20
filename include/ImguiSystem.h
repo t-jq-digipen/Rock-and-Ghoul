@@ -47,7 +47,7 @@ public:
     void Render();
     void Shutdown() override;
     static Entity selectedEntity;
-    static void InitializeImGui(GLFWwindow* window);
+    static void InitializeImGui();
     static void ShutdownImGui();
     static bool showColliders;
     static bool showVelocity;

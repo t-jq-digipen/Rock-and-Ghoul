@@ -92,8 +92,7 @@ void RenderSystem::Update(float dt) {
                 transComp.pos,
                 radius,
                 color,
-                32,
-                transComp.rot
+                32
             );
         }
 

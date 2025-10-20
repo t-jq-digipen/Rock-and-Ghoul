@@ -16,7 +16,7 @@
  * This design avoids multiple pop-up windows by embedding
  * panel content inline within one parent window.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -81,7 +81,7 @@ namespace {
     }
 }
 
-void ImGuiSystem::InitializeImGui(GLFWwindow* window) {
+void ImGuiSystem::InitializeImGui() {
     IMGUI_CHECKVERSION(); //checks version compatibility
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); //imgui i/o settings
@@ -106,6 +106,7 @@ void ImGuiSystem::Initialize() {
 }
 
 void ImGuiSystem::Update(float dt) {
+    (void)dt;
     if (Input::IsKeyPressed(GLFW_KEY_F1)) {
         guiEnabled = !guiEnabled; // toggle on/off
     }
@@ -542,8 +543,7 @@ void ImGuiSystem::ShowInspectorWindow() {
         // Copy Physics
         if (Has_Component(selectedEntity, CT_Physics)) {
             auto& p = Get_PhysicsComponent(selectedEntity);
-            auto& aabb = p.Get_AABB();
-            auto& circle = p.Get_Circle();
+
             Add_Component(clone, p);
         }
 

@@ -1,0 +1,24 @@
+{
+  "music": {
+    "main_menu": {
+      "id": 0,
+      "path": "../Assets/music/mainmenu.wav",
+      "loop": true,
+      "group": "Music"
+    }
+  },
+  "ui": {
+    "button_play": {
+      "id": 200,
+      "path": "../Assets/music/playclick.mp3",
+      "loop": false,
+      "group": "UI"
+    },
+    "button_quit": {
+      "id": 201,
+      "path": "../Assets/music/quitclick.mp3",
+      "loop": false,
+      "group": "UI"
+    }
+  }
+}

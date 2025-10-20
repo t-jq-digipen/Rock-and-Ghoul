@@ -24,7 +24,7 @@ struct CollisionEvent {
     Entity b;
 };
 // convert a tag enum to a readable string
-static const char* TagToString(C_TagID tag) {
+constexpr const char* TagToString(C_TagID tag) {
     switch (tag) {
     case T_PLAYER:     return "Player";
     case T_ENEMY:      return "Enemy";

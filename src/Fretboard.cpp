@@ -41,7 +41,7 @@ FretBoard::FretBoard(float x, float y, float length, float width){
 
     segments = 3;
     // segment spacing
-    float spacing = width / 3.0f;
+    //float spacing = width / 3.0f;
     currSpellState = SELECTION;
     currNoteIndex = 0;
     currNote.isActive = false;
@@ -62,6 +62,7 @@ FretBoard::FretBoard(float x, float y, float length, float width){
 
     srand((unsigned int)time(nullptr));
     spellManager.LoadTextures();
+    
 
 }
 
@@ -141,7 +142,7 @@ void FretBoard::NextNote() {
     int requiredDirection = currSpell.sequence[currNoteIndex];
     currNote.direction = requiredDirection;
 
-    int posIndex;
+    int posIndex = 0;
     if (requiredDirection == 4) {
         posIndex = 0; // LEFT
     }

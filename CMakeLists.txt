@@ -256,8 +256,10 @@ source_group("BaseEngine\\Serialization" FILES
 
 source_group("Systems\\Audio" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AudioCache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioCache.h
 )
 source_group("Systems\\Input" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
@@ -368,6 +370,16 @@ if(WIN32 AND EXISTS "${FMOD_LIB_DIR}/fmod.dll")
         DESTINATION bin
     )
 endif()
+
+# Copy project documentation into the build folder (beside .sln)
+add_custom_target(copy_docs ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/AvidDivas_ReadMe.txt
+        ${CMAKE_BINARY_DIR}/AvidDivas_ReadMe.txt
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/projectGuide.pdf
+        ${CMAKE_BINARY_DIR}/projectGuide.pdf
+)
 
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory

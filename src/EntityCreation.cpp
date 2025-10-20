@@ -43,13 +43,19 @@ Entity Create_Waffle(float const& x, float const& y) {
     return LoadEntity("Waffle", x, y);
 }
 
-Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme controls) {
+Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme scheme) {
+     Entity shape = 0;
     if (shapeType == SHAPE_RECTANGLE) {
         return LoadEntity("Rectangle", spawnx, spawny);
     }
     else if (shapeType == SHAPE_CIRCLE) {
         return LoadEntity("Circle", spawnx, spawny);
     }
+
+    if (shape != 0) {
+        Add_Component(shape, InputComponent{ scheme }); // <--- use scheme here
+    }
+
     return 0;
 }
 

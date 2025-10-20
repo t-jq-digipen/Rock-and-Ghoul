@@ -215,7 +215,9 @@ This function is called when keyboard buttons are pressed.
 When the ESC key is pressed, the close flag of the window is set.
 */
 void GLApp::key_cb(GLFWwindow *pwin, int key, int scancode, int action, int mod) {
-  if (GLFW_PRESS == action) {
+    (void)scancode;
+    (void)mod;
+ if (GLFW_PRESS == action) {
 #ifdef _DEBUG
     std::cout << "Key pressed" << std::endl;
 #endif
@@ -257,6 +259,8 @@ were held down
 This function is called when mouse buttons are pressed.
 */
 void GLApp::mousebutton_cb(GLFWwindow *pwin, int button, int action, int mod) {
+    (void)pwin;
+    (void)mod;
   switch (button) {
   case GLFW_MOUSE_BUTTON_LEFT:
 #ifdef _DEBUG
@@ -302,6 +306,7 @@ relative to the top-left corner of the window client area.
 */
 void GLApp::mousepos_cb(GLFWwindow *pwin, double xpos, double ypos) {
 #ifdef _DEBUG
+    (void)pwin;
   std::cout << "Mouse cursor position: (" << xpos << ", " << ypos << ")" << std::endl;
 #endif
 }
@@ -326,6 +331,7 @@ mouse scroll wheel, being vertical, provides offsets only along the Y-axis.
 */
 void GLApp::mousescroll_cb(GLFWwindow *pwin, double xoffset, double yoffset) {
 #ifdef _DEBUG
+    (void)pwin;
   std::cout << "Mouse scroll wheel offset: ("
     << xoffset << ", " << yoffset << ")" << std::endl;
 #endif
@@ -346,6 +352,7 @@ The error callback receives a human-readable description of the error and
 (when possible) its cause.
 */
 void GLApp::error_cb(int error, char const* description) {
+    (void)error;
   std::cerr << "GLFW error: " << description << std::endl;
 }
 
@@ -366,9 +373,10 @@ Height in pixels of new window size
 This function is called when the window is resized - it receives the new size
 of the window in pixels.
 */
-void GLApp::fbsize_cb(GLFWwindow *ptr_win, int width, int height) {
+void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
   // use the entire framebuffer as drawing region
-  glViewport(0, 0, width, height);
+    (void)ptr_win;
+  glViewport(0, 0, newwidth, newheight);
   // later, if working in 3D, we'll have to set the projection matrix here ...
 }
 

@@ -47,12 +47,12 @@ struct String {
 
 struct Note {
 	Circle circle;
-	int direction;  // up = 1
+	int direction =0;  // up = 1
 				    // right = 2
 					// down = 3
 					// left = 4
-	int stringIndex;     // which string (0 or 1)
-	int segmentIndex;    // which segment (0, 1, or 2)
+	int stringIndex=0;     // which string (0 or 1)
+	int segmentIndex=0;    // which segment (0, 1, or 2)
 	bool isActive;
 };
 struct Spell {
@@ -77,17 +77,16 @@ private:
 	int currNoteIndex;
 
 	SpellState currSpellState;
-	Spell currSpell;
 	static const Spell spellList[4];
 	//bool waitingForInput;   // waiting for player response
 
 
-	GLuint arrowUpTex;
-	GLuint arrowRightTex;
-	GLuint arrowDownTex;
-	GLuint arrowLeftTex;
+	GLuint arrowUpTex = 0;
+	GLuint arrowRightTex = 0;
+	GLuint arrowDownTex = 0 ;
+	GLuint arrowLeftTex = 0;
 	SpellManager spellManager; //fretboard owns spells.h
-
+	Spell currSpell{};
 public:
 /**
  * @brief Constructs a fretboard with specified dimensions.

@@ -86,7 +86,7 @@ int main() {
             //    return -1;
             //}
             CoreEngine& engine = CoreEngine::GetInstance();
-            Render& renderer = Render::GetInstance();
+            //Render& renderer = Render::GetInstance();
 
             // Create audio manager
             AudioManager* audio = new AudioManager();
