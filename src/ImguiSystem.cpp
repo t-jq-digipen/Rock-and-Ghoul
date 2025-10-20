@@ -29,11 +29,15 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include "Audio.h"
+#include <fstream>
+#include <nlohmann/json.hpp>
+
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 bool ImGuiSystem::guiEnabled = false;
 static FMOD::Channel* previewChannel = nullptr;
+
 static std::unordered_map<ComponentTypeID, std::vector<ComponentTypeID>> dependencies = {
     { CT_Animator, { CT_Sprite } },      // Animator needs Sprite
     { CT_Physics,  { CT_Transform } },   // Physics needs Transform
@@ -43,6 +47,10 @@ static std::unordered_map<ComponentTypeID, std::vector<ComponentTypeID>> depende
     { CT_Tag,      {} },                 // Tag independent
     { CT_Input,    {} }                  // Input independent
 };
+
+using json = nlohmann::json;
+
+
 namespace {
     // small helper to name an entity for the Hierarchy list
     std::string EntityDisplayName(Entity e) {
@@ -79,6 +87,40 @@ namespace {
             ImGuiSystem::selectedEntity = 0;
         }
     }
+
+    //another helpers
+    static nlohmann::json audioManifest;
+    static bool audioManifestLoaded = false;
+
+    static bool LoadAudioManifest(const std::string& path)
+    {
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            std::cout << "[ImGui AudioManifest] File not found, creating new.\n";
+            audioManifest = json::object();
+            audioManifest["music"] = json::object();
+            audioManifest["ui"] = json::object();
+            return false;
+        }
+        try {
+            file >> audioManifest;
+            file.close();
+            audioManifestLoaded = true;
+            return true;
+        }
+        catch (...) {
+            std::cout << "[ImGui AudioManifest] Failed to parse JSON.\n";
+            return false;
+        }
+    }
+
+    static void SaveAudioManifest(const std::string& path)
+    {
+        std::ofstream out(path);
+        out << std::setw(4) << audioManifest;
+        out.close();
+        std::cout << "[ImGui AudioManifest] Saved.\n";
+    }
 }
 
 void ImGuiSystem::InitializeImGui() {
@@ -94,7 +136,7 @@ void ImGuiSystem::InitializeImGui() {
 
 //init hear so is easier
 void ImGuiSystem::Initialize() {
-    InitializeImGui(GLApp::ptr_window);  // Do it here instead of main
+    InitializeImGui();  // Do it here instead of main
     CM_Tag();
     CM_Transform();
     CM_Sprite();
@@ -263,36 +305,22 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
 
     static char imgNameBuf[128] = "";
     static std::vector<std::string> loadedImages;
-    static std::string statusMsg;
+
 
     ImGui::InputText("Image Filename", imgNameBuf, IM_ARRAYSIZE(imgNameBuf));
     ImGui::SameLine();
 
     if (ImGui::Button("Add Image")) {
         std::string filename = imgNameBuf;
-        if (filename.empty()) {
-            statusMsg = " Please enter a filename.";
-        }
-        else {
-            std::string fullPath = "../Assets/" + filename;
-            try {
-                Image img = CreateImage(fullPath); // uses your Render.cpp helper
-                if (img.IsValid()) {
-                    loadedImages.push_back(filename);
-                    statusMsg = "Loaded and added: " + filename;
-                }
-                else {
-                    statusMsg = "Failed to load image (invalid texture): " + filename;
-                }
-            }
-            catch (...) {
-                statusMsg = "File not found: " + filename;
-            }
-        }
-    }
 
-    if (!statusMsg.empty()) {
-        ImGui::TextWrapped("%s", statusMsg.c_str());
+
+        std::string fullPath = "../Assets/" + filename;
+        Image img = CreateImage(fullPath); // uses your Render.cpp helper
+        if (img.IsValid()) {
+            loadedImages.push_back(filename);
+
+        }
+
     }
 
     ImGui::Separator();
@@ -643,7 +671,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                             }
                         }
                         catch (...) {
-                            std::cout << "[AssetPreview] Failed to load " << path << std::endl;
+                            std::cout << "Failed to load " << path << std::endl;
                         }
                     }
                 }
@@ -691,116 +719,107 @@ void ImGuiSystem::ShowAssetPreviewWindow()
         // ====================================================
         // MUSIC TAB
         // ====================================================
-        if (ImGui::BeginTabItem("Music"))
+        if (ImGui::BeginTabItem("Audio"))
         {
-            static bool initialized = false;
-            static std::vector<std::string> musicFiles;
-            static int selectedIndex = -1;
-            static std::string statusMsg;
+            static bool manifestLoaded = false;
+            const std::string manifestPath = "../Assets/audio_manifest.json";
 
-            if (!initialized)
+            if (!manifestLoaded)
             {
-                try
-                {
-                    const std::string musicFolder = "../Assets/music/";
-                    for (auto& entry : std::filesystem::recursive_directory_iterator(musicFolder))
-                    {
-                        if (!entry.is_regular_file()) continue;
-
-                        std::string ext = entry.path().extension().string();
-                        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
-                        if (ext == ".mp3" || ext == ".wav" || ext == ".ogg")
-                            musicFiles.push_back(entry.path().filename().string());
-                    }
-
-                    if (musicFiles.empty())
-                        statusMsg = "No audio files found in ../Assets/music/";
-                    else
-                        statusMsg = "Found " + std::to_string(musicFiles.size()) + " tracks.";
-
-                    initialized = true;
-                }
-                catch (const std::exception& e)
-                {
-                    statusMsg = std::string(" Error scanning music folder: ") + e.what();
-                }
+                LoadAudioManifest(manifestPath);
+                manifestLoaded = true;
             }
 
-            ImGui::Text("Music Files:");
+            ImGui::Text("Audio Manifest Editor");
             ImGui::Separator();
 
-            if (musicFiles.empty())
+            // --- ADD NEW AUDIO ENTRY ---
+            static char categoryBuf[32] = "music";
+            static char nameBuf[64] = "";
+            static char pathBuf[128] = "";
+            static int idBuf = 0;
+            static bool loopBuf = false;
+            static char groupBuf[32] = "Music";
+
+            ImGui::InputText("Category (music/ui)", categoryBuf, IM_ARRAYSIZE(categoryBuf));
+            ImGui::InputText("Asset Name", nameBuf, IM_ARRAYSIZE(nameBuf));
+            ImGui::InputText("Path", pathBuf, IM_ARRAYSIZE(pathBuf));
+            ImGui::InputInt("ID", &idBuf);
+            ImGui::Checkbox("Loop", &loopBuf);
+            ImGui::InputText("Group", groupBuf, IM_ARRAYSIZE(groupBuf));
+
+            if (ImGui::Button("Add Audio Asset"))
             {
-                ImGui::TextDisabled("(none found)");
-            }
-            else
-            {
-                for (int i = 0; i < (int)musicFiles.size(); ++i)
+                std::string category = categoryBuf;
+                std::string name = nameBuf;
+                std::string path = pathBuf;
+
+                if (name.empty() || path.empty())
                 {
-                    bool selected = (i == selectedIndex);
-                    if (ImGui::Selectable(musicFiles[i].c_str(), selected))
-                    {
-                        selectedIndex = i;
-                        statusMsg = "Selected: " + musicFiles[i];
-                        std::cout << "[MusicTab] Selected " << musicFiles[i] << std::endl;
-                    }
+                    std::cout << "[ImGui AudioManifest] Missing name or path!\n";
                 }
-
-                if (selectedIndex >= 0)
+                else
                 {
-                    ImGui::Separator();
-                    ImGui::Text("Selected: %s", musicFiles[selectedIndex].c_str());
+                    // Ensure category exists
+                    if (!audioManifest.contains(category))
+                        audioManifest[category] = json::object();
 
-                    if (ImGui::Button("Play Preview"))
+                    // Add entry
+                    audioManifest[category][name] = {
+                        { "id", idBuf },
+                        { "path", path },
+                        { "loop", loopBuf },
+                        { "group", groupBuf }
+                    };
+
+                    SaveAudioManifest(manifestPath);
+                    std::cout << "[ImGui AudioManifest] Added " << name << " to " << category << "\n";
+                }
+            }
+
+            ImGui::Separator();
+
+            // --- DISPLAY EXISTING ENTRIES ---
+            for (auto& [category, assets] : audioManifest.items())
+            {
+                if (ImGui::CollapsingHeader(category.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    for (auto& [name, data] : assets.items())
                     {
-                        std::string fullPath = "../Assets/music/" + musicFiles[selectedIndex];
+                        ImGui::PushID(name.c_str());
+                        ImGui::Text("Name: %s", name.c_str());
+                        ImGui::Text("Path: %s", data["path"].get<std::string>().c_str());
+                        ImGui::Text("ID: %d", data["id"].get<int>());
+                        ImGui::Text("Loop: %s", data["loop"].get<bool>() ? "true" : "false");
+                        ImGui::Text("Group: %s", data["group"].get<std::string>().c_str());
 
-                        // load without looping
-                        FMOD::Sound* previewSound = AudioSystem::LoadSound(fullPath, false);
-                        if (previewSound)
-                        {
-                            // stop previous preview if any
-                            if (previewChannel)
-                                previewChannel->stop();
-
-                            // play preview sound on its own channel
-                            previewChannel = AudioSystem::PlaySoundGetChannel(previewSound, false);
-                            if (previewChannel)
-                            {
-                                previewChannel->setVolume(0.7f); // slightly lower volume
-                                statusMsg = " Previewing: " + musicFiles[selectedIndex];
-                                std::cout << "[MusicTab] Preview playing " << fullPath << std::endl;
-                            }
-                            else
-                            {
-                                statusMsg = " Failed to start preview channel.";
+                        // Preview controls
+                        if (ImGui::Button("Play")) {
+                            FMOD::Sound* snd = AudioSystem::LoadSound(data["path"], data["loop"]);
+                            if (snd) {
+                                if (previewChannel) previewChannel->stop();
+                                previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
+                                if (previewChannel) previewChannel->setVolume(0.8f);
                             }
                         }
-                        else
-                        {
-                            statusMsg = "Failed to load preview: " + musicFiles[selectedIndex];
-                        }
-                    }
-
-                    ImGui::SameLine();
-                    if (ImGui::Button("Stop Preview"))
-                    {
-                        if (previewChannel)
-                        {
-                            previewChannel->stop();
+                        ImGui::SameLine();
+                        if (ImGui::Button("Stop")) {
+                            if (previewChannel) previewChannel->stop();
                             previewChannel = nullptr;
-                            statusMsg = "Preview stopped.";
                         }
+
+                        ImGui::SameLine();
+                        if (ImGui::Button("Remove")) {
+                            assets.erase(name);
+                            SaveAudioManifest(manifestPath);
+                            ImGui::PopID();
+                            break; // exit this loop safely since we modified
+                        }
+
+                        ImGui::Separator();
+                        ImGui::PopID();
                     }
-
                 }
-            }
-
-            if (!statusMsg.empty())
-            {
-                ImGui::Separator();
-                ImGui::TextWrapped("%s", statusMsg.c_str());
             }
 
             ImGui::EndTabItem();

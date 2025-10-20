@@ -68,8 +68,8 @@ bool AudioSystem::Init() {
  */
 void AudioSystem::LoadDefaultButtonSounds() {
     // Register default button sounds based on your ButtonType enum
-    RegisterButtonSound(ButtonType::PLAY, "../Assets/music/playclick.mp3");
-    RegisterButtonSound(ButtonType::QUIT, "../Assets/music/quitclick.mp3");
+    RegisterButtonSound(ButtonType::PLAY, "../Assets/audio/ui/playclick.mp3");
+    RegisterButtonSound(ButtonType::QUIT, "../Assets/audio/ui/quitclick.mp3");
 
     std::cout << "Default button sounds loaded!" << std::endl;
 }
