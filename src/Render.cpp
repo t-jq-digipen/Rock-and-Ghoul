@@ -513,17 +513,25 @@ std::string Render::Get_TexturePath(const GLuint& imgID)
     throw std::runtime_error("Unable to retrieve texture path\n");
 }
 
-bool Render::IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height)
+bool Render::IsAreaTouched(const Vec2& mousePos, const Vec2& areaPos, float width, float height)
 {
     //set uniforms
-    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), areaPos.x, areaPos.y);
+  /*  glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), areaPos.x, areaPos.y);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), width, height);
 
     const glm::vec2 deltaPos = glm::abs(mousePos - areaPos);
     const float hx = 0.5f * std::abs(width);
     const float hy = 0.5f * std::abs(height);
 
-    return (deltaPos.x <= hx) && (deltaPos.y <= hy);
+    return (deltaPos.x <= hx) && (deltaPos.y <= hy);*/
+
+    Vec2 MousePos = { mousePos.x, static_cast<float>(GLApp::height) - mousePos.y };
+
+    const Vec2 delta = MousePos - areaPos;
+    const float hx = 0.5f * width;
+    const float hy = 0.5f * height;
+
+    return (std::abs(delta.x) <= hx) && (std::abs(delta.y) <= hy);
 }
 
 //Image stuff

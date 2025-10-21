@@ -20,7 +20,7 @@
 
 #include <GLFW/glfw3.h>
 #include <unordered_map>
-
+#include "Remath.h"
 /**
  * @enum KeyState
  * @brief Represents the possible states of a key or mouse button.
@@ -68,7 +68,7 @@ public:
     static double GetMouseY();
     static double GetScrollX();
     static double GetScrollY();
-
+    static Vec2 GetMousePosition();
     // GLFW callbacks (set in GLApp::init)
     /**
      * @brief GLFW key input callback.
@@ -103,6 +103,7 @@ public:
      */
     static void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
+    
 private:
 
     // Map of key codes (GLFW_KEY_*) to their current KeyState.
@@ -117,6 +118,7 @@ private:
     static double scrollX;
     // Vertical scroll offset since last frame.
     static double scrollY;
+    
 };
 
 #endif // INPUT_H
