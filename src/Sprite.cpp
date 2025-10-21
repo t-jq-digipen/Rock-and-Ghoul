@@ -20,7 +20,7 @@ namespace Sprite {
 
 	// Sprite Component
 
-	SpriteComponent::SpriteComponent() : m_image(), m_scale{ 0.f,0.f }, m_anim{ false }, m_rot{ 0.f } {}
+	SpriteComponent::SpriteComponent() : m_image(), m_scale{ 0.f,0.f }, m_anim{ false }, m_rot{ 0.f }, tint{ 0.0f, 0.0f, 0.0f } {}
 
 	SpriteComponent::SpriteComponent(std::string const& path, Vec2 scale_offset, bool anim) : m_scale{ scale_offset }, m_anim{ anim }, m_rot{ 0.f } {
 		m_image = CreateImage(path);

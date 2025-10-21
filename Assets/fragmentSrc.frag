@@ -30,8 +30,9 @@ void main() {
         //FragColor = vec4(uTextColor, 1.0) * vec4(1.0, 1.0, 1.0, alpha);
 	FragColor = vec4(uTextColor, alpha); 
     }
-    else if (uUseTexture){
-        FragColor = texture(uTexture, TexCoord);
+    else if (uUseTexture) {
+    	vec4 texColor = texture(uTexture, TexCoord);
+    	FragColor = vec4(texColor.rgb * (uColor * 0.5 + 0.5), texColor.a);
     }
     else{
         FragColor = vec4(uColor, 1.0);

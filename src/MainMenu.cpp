@@ -83,7 +83,8 @@ void MainMenu::Load()
 
     // Preload all Image assets from JSON (they’ll be stored in textureCache)
     auto menuTextures = renderer.LoadImageAssetsFromJSON("../Assets/imageAssets.json"); //i added an imageAssets.json inside assets folder
-
+    MainMenuTexture = menuTextures["mainmenu"]; // alias from JSON
+    CrashHandler::LogIfZeroTexture(MainMenuTexture, "../Assets/MainMenu_Rock&Ghoul.PNG");
     CrashHandler::Safe("MainMenu", "Load", [&] {
         std::cout << "Main Menu Loaded!!!" << std::endl;
 
@@ -106,8 +107,8 @@ void MainMenu::Load()
         quitTexture = renderer.LoadTexture("../Assets/quit.png");
         CrashHandler::LogIfZeroTexture(quitTexture, "../Assets/title.png");*/
 
-        MainMenuTexture = renderer.LoadTexture("../Assets/MainMenu_Rock&Ghoul.PNG");
-        CrashHandler::LogIfZeroTexture(MainMenuTexture, "../Assets/MainMenu_Rock&Ghoul.PNG");
+      /*  MainMenuTexture = renderer.LoadTexture("../Assets/MainMenu_Rock&Ghoul.PNG");
+        CrashHandler::LogIfZeroTexture(MainMenuTexture, "../Assets/MainMenu_Rock&Ghoul.PNG");*/
     });
     //titleImage = Render::GetInstance().LoadImage("../Assets/quit.png"); 
 }

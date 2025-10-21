@@ -35,6 +35,7 @@ namespace Sprite {
 		Vec2	m_scale;	// Independant image scaling
 		bool	m_anim;		// Bool if sprite is animated or static
 		float	m_rot;		// Rotation value of image in degrees
+		Colour3 tint;
 	public:
 		/**
 		 * @brief Default constructor. 
@@ -125,6 +126,10 @@ namespace Sprite {
 		 */
 		float Get_Rotation() const;
 		void Rotate(float deltaRot);
+
+
+		void Set_Tint(const Colour3& color) { tint = color; }
+		const Colour3& Get_Tint() const { return tint; }
 	};
 
 }

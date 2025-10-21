@@ -38,7 +38,7 @@
 
 // Vertex + Fragment shaders loaded from file in Assets, any changes to shader code to be done inside those files
 
-Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0) {}
+Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0), currentTint(1.f,1.f,1.f) {}
 
 Render::~Render() {
     // Clean up OpenGL resources
@@ -182,6 +182,9 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), scale.x, scale.y);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation); //added rotation
 
+    GLint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
+    if (colorLoc != -1)
+        glUniform3f(colorLoc, currentTint.x, currentTint.y, currentTint.z);
     // enable texture
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_TRUE);
 
@@ -658,7 +661,9 @@ void Render::DrawImageSub(const Image& Image,
     // Tell shader we be using texture mode
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), true);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), false);
-
+    GLint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
+    if (colorLoc != -1)
+        glUniform3f(colorLoc, currentTint.x, currentTint.y, currentTint.z);
     // Draw quad 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -1122,7 +1127,12 @@ void Render::SetUniformMat4(GLuint shaderID, const std::string& name, const glm:
 }
 
 
-
+void Render::SetTint(const Colour3& tint) {
+    currentTint = { tint.r, tint.g, tint.b };
+}
+void Render::ClearTint() {
+    currentTint = { 1.f, 1.f, 1.f };
+}
 void Render::Shutdown() {
     // Delete all glyph textures
     for (auto& [c, ch] : Characters) {

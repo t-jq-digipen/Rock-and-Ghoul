@@ -494,7 +494,8 @@ public:
     */
     GLuint GetSpriteShader() const { return shaderProgram; } //for now this, can added instancedShader in the future
 
-
+    void SetTint(const Colour3& tint);
+    void ClearTint();
 private:
 
     /**
@@ -559,5 +560,5 @@ private:
     //std::unordered_map<GLuint, std::string> texturePathMap;
 
     
-
+    glm::vec3 currentTint = { 1.f, 1.f, 1.f };
 };
