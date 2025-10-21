@@ -370,13 +370,13 @@ GLuint Render::LoadTexture(const std::string& path) {
     pathCache[textureID] = path;
 
     // json
-    texturePathMap[textureID] = path;
+    //texturePathMap[textureID] = path;
 
     return textureID;
 }
 
 // helpers for json
-void Render::RegisterTexturePath(GLuint texID, const std::string& path) {
+/*void Render::RegisterTexturePath(GLuint texID, const std::string& path) {
     texturePathMap[texID] = path;
 }
 
@@ -386,7 +386,7 @@ std::string Render::GetTexturePath(GLuint texID) const {
         return it->second;
     }
     return "";
-}
+}*/
 
 
 void Render::UnloadTexture(const std::string& path) {
@@ -711,7 +711,9 @@ void Render::DrawImageInstanced(const Image& image, const std::vector<InstanceDa
 
 
 void Render::DrawRectInstanced(const std::vector<InstanceData>& instances, const Colour3& color) {
-    if (instances.empty()) return;
+    if (instances.empty()) {
+        return;
+    }
 
     // Upload instance data
     glBindBuffer(GL_ARRAY_BUFFER, InstanceVBO);
@@ -723,7 +725,7 @@ void Render::DrawRectInstanced(const std::vector<InstanceData>& instances, const
     GLint projLoc = glGetUniformLocation(InstanceShaderProgram, "uProjection");
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
 
-    // Pass solid color instead of texture
+    // Pass solid color instead of texture (turn off use texture)
     GLint useTexLoc = glGetUniformLocation(InstanceShaderProgram, "uUseTexture");
     glUniform1i(useTexLoc, false);
 
@@ -731,7 +733,7 @@ void Render::DrawRectInstanced(const std::vector<InstanceData>& instances, const
 
     // Draw instanced quad
     glBindVertexArray(vao);
-    glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, static_cast<GLsizei>(instances.size()));
+    glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, static_cast<GLsizei>(instances.size())); //instanced
     glBindVertexArray(0);
 }
 
@@ -907,6 +909,219 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
 }
+
+
+void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color) {
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // activate render state	
+    glUseProgram(shaderProgram);
+
+    //set uniforms
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]);
+    glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+
+    //text no need, so set them transform uniforms to defaults
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(textVAO);
+
+    //track where next glyph will placed
+    float nextX = x;
+    float nextY = y;
+
+    //get the horizontal step for space char
+    float spaceWidth = (Characters[' '].Advance >> 6) * scale;
+
+    std::istringstream iss(text);
+    std::string word;
+
+    while (iss >> word) {
+
+        // Measure word width
+        float wordWidth = 0.0f;
+
+        for (char c : word) {
+            Character ch = Characters[c];
+            wordWidth += (ch.Advance >> 6) * scale;
+        }
+
+        // Wrap to new line
+        //Check if drawing the whole word will excced the right edge
+        if (nextX + wordWidth > x + rowWidth) {
+            //if yes reset the nextX to be the left edge
+            nextX = x;
+            nextY -= (Characters['H'].Size.y * 1.5f) * scale; //move down like new line
+        }
+
+        // Draw characters of word (similar setup to previous)
+        for (char c : word) {
+            Character ch = Characters[c];
+
+            float xpos = nextX + ch.Bearing.x * scale;
+            float ypos = nextY - (ch.Size.y - ch.Bearing.y) * scale;
+            float w = ch.Size.x * scale;
+            float h = ch.Size.y * scale;
+
+            float vertices[6][4] = {
+                { xpos,     ypos + h,   0.0f, 0.0f },
+                { xpos,     ypos,       0.0f, 1.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+
+                { xpos,     ypos + h,   0.0f, 0.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+                { xpos + w, ypos + h,   1.0f, 0.0f }
+            };
+
+            glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+            glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            nextX += (ch.Advance >> 6) * scale; //position next char 
+        }
+
+        nextX += spaceWidth; // Add space
+    }
+
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
+
+}
+
+
+//Load all image assets from JSON file (containing the image paths)
+std::unordered_map<std::string, GLuint> Render::LoadImageAssetsFromJSON(const std::string& jsonPath) {
+
+    //maybe can default create a json for image if doesnt exists?
+    std::unordered_map<std::string, GLuint> result;
+    
+    //read file
+    std::ifstream file{ jsonPath };
+    //check if the json file for images exists
+    if (!file.is_open()) {
+        std::cerr << "Failed to open Image Asset JSON: " << jsonPath << std::endl;
+        return result;
+    }
+
+    json j;
+    try {
+        file >> j;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error parsing Image JSON file: " << e.what() << std::endl;
+        return result;
+    }
+
+    //"images" is the name of the array in the json (if u edit the name in the file, need remember update here)
+    if (!j.contains("images") || !j["images"].is_array()) {
+        std::cerr << "Invalid JSON format: missing \"images\" array in " << jsonPath << std::endl;
+        return result;
+    }
+
+    //for each entry in the images array...
+    /*for (const auto& path : j["images"]) {
+
+        //ignores if entry is not a string
+        if (!path.is_string()) {
+            std::cerr << "Skipping invalid image entry (not a string)" << std::endl;
+            continue;
+        }
+
+        std::string texPath = path.get<std::string>();
+
+        // Check if the file actually exists
+        if (!fs::exists(texPath)) {
+            std::cerr << "Warning: Texture file not found: " << texPath << std::endl;
+            continue; // Skip this one
+        }
+
+        //Load the texture
+        GLuint texID = LoadTexture(texPath);
+
+        loadedCount++;
+
+    }*/
+    for (const auto& entry : j["images"]) {
+
+        std::string path;
+        std::string alias;
+
+        if (entry.is_string()) {
+            path = entry.get<std::string>();
+            alias = path; // fallback use path as key if alias not provided
+        }
+        else if (entry.is_object()) {
+            path = entry.value("path", "");
+            alias = entry.value("alias", path);
+        }
+
+        if (path.empty()) {
+            continue;
+        }
+
+        if (!std::filesystem::exists(path)) {
+            std::cerr << "Missing Image file: " << path << std::endl;
+            continue;
+        }
+
+        GLuint texID = LoadTexture(path);
+
+        if (texID != 0) {
+            result[alias] = texID; //store in map
+        }
+    }
+
+    //just checking if logic works
+    std::cout << "[Render] Loaded " << result.size() << " textures from " << jsonPath << std::endl;
+
+    return result;
+}
+
+//shader interface functions
+void Render::ApplyShader(GLuint shaderID) {
+    glUseProgram(shaderID);
+}
+
+void Render::ResetShader() {
+    glUseProgram(0);
+}
+
+void Render::SetUniform1f(GLuint shaderID, const std::string& name, float value) {
+    GLint loc = glGetUniformLocation(shaderID, name.c_str());
+    if (loc != -1)
+        glUniform1f(loc, value);
+}
+
+void Render::SetUniform2f(GLuint shaderID, const std::string& name, const glm::vec2& value) {
+    GLint loc = glGetUniformLocation(shaderID, name.c_str());
+    if (loc != -1)
+        glUniform2f(loc, value.x, value.y);
+}
+
+void Render::SetUniform3f(GLuint shaderID, const std::string& name, const glm::vec3& vec) {
+    GLint loc = glGetUniformLocation(shaderID, name.c_str());
+    if (loc != -1)
+        glUniform3f(loc, vec.x, vec.y, vec.z);
+}
+
+void Render::SetUniformMat4(GLuint shaderID, const std::string& name, const glm::mat4& mat) {
+    GLint loc = glGetUniformLocation(shaderID, name.c_str());
+    if (loc != -1)
+        glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
+}
+
+
 
 void Render::Shutdown() {
     // Delete all glyph textures
