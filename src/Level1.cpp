@@ -46,6 +46,9 @@ Entity square;
 Entity roundy;
 Entity waffle;
 
+// Registry ref
+Registry& registry = Registry::Get();
+
 // Loads Level 1
 void Level1::Load()
 {
@@ -158,13 +161,13 @@ void Level1::Update()
 		else
 		{
 			// === Clear all ===
-			for (auto& [e, tag] : CM_Tag().getComponents()) {
+			for (auto& [e, tag] : registry.Get_ComponentMap<TagComponent>()) {
 				if (tag.tag == T_INSTANCING && EntityManager::get().isAlive(e)) {
 					toRemove.push_back(e);
 				}
 			}
 			for (Entity e : toRemove) {
-				Remove_Entity(e);
+				registry.Remove_Entity(e);
 			}
 			std::cout << "Cleared all spawned squares!\n";
 			spawned = false;
@@ -178,9 +181,9 @@ void Level1::Update()
 		float dt = static_cast<float>(currentTime - lastTime);
 		lastTime = currentTime;
 
-		for (auto& [e, t] : CM_Transform().getComponents()) {
-			if (Has_Component(e, CT_Tag)) {
-				auto& tag = Get_TagComponent(e);
+		for (auto& [e, t] : registry.Get_ComponentMap<TransformComponent>()) {
+			if (registry.Has_Component<TagComponent>(e)) {
+				auto& tag = registry.Get_Component<TagComponent>(e);
 				if (tag.tag == T_INSTANCING) {
 					t.rot += 45.f * dt;
 				}
@@ -207,8 +210,8 @@ void Level1::Update()
 			for (Entity e = 0; e < 10; ++e) {
 				if (!EntityManager::get().isAlive(e)) continue;
 
-				if (Has_Component(e, CT_Sprite)) {
-					auto& s = Get_SpriteComponent(e);
+				if (registry.Has_Component<Sprite::SpriteComponent>(e)) {
+					auto& s = registry.Get_Component<Sprite::SpriteComponent>(e);
 					if (s.Get_TexturePath().find("Waffle") != std::string::npos) {
 						std::cout << "Found waffle at Entity " << e << std::endl;
 						waffle = e;  // Update the waffle variable

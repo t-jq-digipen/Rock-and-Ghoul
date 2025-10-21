@@ -35,13 +35,13 @@ void RenderSystem::Initialize() {
 
 void RenderSystem::Update(float dt) {
 
-    for (auto& [entID, spriteComp] : CM_Sprite().getComponents())
+    for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
         if (spriteComp.IsAnimated())
         {
             // draw animated logic
-            TransformComponent& transComp = Get_TransformComponent(entID);
-            Animator::AnimatorComponent& animComp = Get_AnimatorComponent(entID);
+            TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+            Animator::AnimatorComponent& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
 
             animComp.UpdateFrame(dt);
 
@@ -49,20 +49,20 @@ void RenderSystem::Update(float dt) {
         }
         else
         {
-            TransformComponent& transComp = Get_TransformComponent(entID);
+            TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
             renderInstance.DrawImageScaled(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, transComp.rot + spriteComp.Get_Rotation());
         }
     }
 
     // Loop through all ShapeComponents in the ECS
-    for (auto& [entID, shapeComp] : CM_Shape().getComponents())
+    for (auto& [entID, shapeComp] : m_registry.Get_ComponentMap<ShapeComponent>())
     {   
         // Skip entities without a transform (need position/rotation to draw)
-        if (!Has_Component(entID, CT_Transform)) continue;
-        TransformComponent& transComp = Get_TransformComponent(entID);
+        if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
+        TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
         Colour3 color = { shapeComp.color.x, shapeComp.color.y, shapeComp.color.z };
-        if (Has_Component(entID, CT_Tag)) {
-            TagComponent& tag = Get_TagComponent(entID);
+        if (m_registry.Has_Component<TagComponent>(entID)) {
+            TagComponent& tag = m_registry.Get_Component<TagComponent>(entID);
 
             if (shapeComp.shape == SHAPE_RECTANGLE && tag.tag == T_INSTANCING) { //check entity is using instancing
                 //Store matching entities inside InstanceData vector
@@ -101,12 +101,12 @@ void RenderSystem::Update(float dt) {
 
     // Debug drawing for physics colliders / velocities
     if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {
-        for (auto& [entID, physics] : CM_Physics().getComponents()) {
-            if (!Has_Component(entID, CT_Transform)) continue;
-            auto& t = Get_TransformComponent(entID);
+        for (auto& [entID, physics] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
+            if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
+            auto& t = m_registry.Get_Component<TransformComponent>(entID);
 
-            if (ImGuiSystem::showVelocity && Has_Component(entID, CT_Tag)) {
-                auto& tag = Get_TagComponent(entID);
+            if (ImGuiSystem::showVelocity && m_registry.Has_Component<TagComponent>(entID)) {
+                auto& tag = m_registry.Get_Component<TagComponent>(entID);
                 if (tag.tag == T_PLAYER)
                     DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
             }
@@ -114,8 +114,8 @@ void RenderSystem::Update(float dt) {
             if (ImGuiSystem::showColliders) {
                 DebugDraw::DrawAABB(physics.Get_AABB(), renderInstance);
 
-                if (Has_Component(entID, CT_Shape)) {
-                    auto& shape = Get_ShapeComponent(entID);
+                if (m_registry.Has_Component<ShapeComponent>(entID)) {
+                    auto& shape = m_registry.Get_Component<ShapeComponent>(entID);
                     if (shape.shape == SHAPE_CIRCLE)
                         DebugDraw::DrawCircleCollider(physics.Get_Circle(), renderInstance);
                 }

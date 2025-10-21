@@ -84,7 +84,7 @@ Entity Create_Entity()
 void Remove_Entity(Entity eID)
 {
 	// remove all components!
-	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input, CT_Shape, CT_Element });
+	// Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input, CT_Shape, CT_Element });
 
 	// remove entity ID!
 	entityManager.destroyEntity(eID);

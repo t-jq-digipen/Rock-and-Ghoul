@@ -26,10 +26,16 @@
 #include <iostream>
 #include <string>
 
+// type erased component manager for registry storage
+class IComponentManager {
+public:
+	virtual ~IComponentManager() = default;
+	virtual void removeComponent(Entity eID) = 0;
+};
 
 // template for component manager for each component
 template<typename Component>
-class ComponentManager {
+class ComponentManager : public IComponentManager {
 
 private:
 	// Map of ENTITY ID and COMPONENT
@@ -73,7 +79,7 @@ public:
 	 * @brief Remove a component from an entity.
 	 * @param eID The entity ID.
 	 */
-	void		removeComponent(Entity eID) { components.erase(eID); }
+	void		removeComponent(Entity eID)  override { components.erase(eID); }
 
 	/**
 	 * @brief Get a reference to an entity's component.

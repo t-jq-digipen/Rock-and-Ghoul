@@ -54,18 +54,19 @@ using json = nlohmann::json;
 namespace {
     // small helper to name an entity for the Hierarchy list
     std::string EntityDisplayName(Entity e) {
+        Registry& reg = Registry::Get();
         std::string name = "Entity " + std::to_string(e);
 
-        if (Has_Component(e, CT_Tag)) {
-            auto& tag = Get_TagComponent(e);
+        if (reg.Has_Component<TagComponent>(e)) {
+            auto& tag = reg.Get_Component<TagComponent>(e);
             const char* tagName = (tag.tag == T_PLAYER) ? "Player"
                 : (tag.tag == T_ENEMY) ? "Enemy"
                 : (tag.tag == T_PROJECTILE) ? "Projectile"
                 : "Unknown";
             name = std::string(tagName) + " " + std::to_string(e);
         }
-        if (Has_Component(e, CT_Shape)) {
-            auto& s = Get_ShapeComponent(e);
+        if (reg.Has_Component<TagComponent>(e)) {
+            auto& s = reg.Get_Component<ShapeComponent>(e);
             if (s.shape == SHAPE_RECTANGLE) {
                 name += "  [Square]";
             }
@@ -73,7 +74,7 @@ namespace {
                 name += "  [Circle]";
             }
         }
-        else if (Has_Component(e, CT_Sprite)) {
+        else if (reg.Has_Component<Sprite::SpriteComponent>(e)) {
             std::string entName = GetEntityName(e);
             name += "  [Textured]";
         
@@ -137,14 +138,15 @@ void ImGuiSystem::InitializeImGui() {
 //init hear so is easier
 void ImGuiSystem::Initialize() {
     InitializeImGui();  // Do it here instead of main
-    CM_Tag();
-    CM_Transform();
-    CM_Sprite();
-    CM_Physics();
-    CM_Shape();
-    CM_Input();
-    CM_Animator();
-    CM_Audio();
+    
+    //CM_Tag();
+    //CM_Transform();
+    //CM_Sprite();
+    //CM_Physics();
+    //CM_Shape();
+    //CM_Input();
+    //CM_Animator();
+    //CM_Audio();
 }
 
 void ImGuiSystem::Update(float dt) {
@@ -222,7 +224,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     int activeColliders = 0;
     int totalColliders = 0;
 
-    for (auto& [entity, physics] : CM_Physics().getComponents()) {
+    for (auto& [entity, physics] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
         totalColliders++;
         if (physics.CollisionActive()) { // Use the physics component's collision active check
             activeColliders++;
@@ -234,9 +236,9 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::Checkbox("Show Velocity", &showVelocity);
     //enityt
     if (ImGui::CollapsingHeader("Entity Positions")) {
-        for (auto& [entity, tag] : CM_Tag().getComponents()) {
-            if (Has_Component(entity, CT_Transform)) {
-                TransformComponent& transform = Get_TransformComponent(entity);
+        for (auto& [entity, tag] : m_registry.Get_ComponentMap<TagComponent>()) {
+            if (m_registry.Has_Component<TransformComponent>(entity)) {
+                TransformComponent& transform = m_registry.Get_Component<TransformComponent>(entity);
                 const char* tagName = (tag.tag == T_PLAYER) ? "Player" :(tag.tag == T_ENEMY) ? "Enemy" :(tag.tag == T_PROJECTILE) ? "Projectile" : "Unknown";
                 ImGui::Text("%s %d: (%.1f, %.1f)", tagName, entity, transform.pos.x, transform.pos.y);
             }
@@ -344,7 +346,7 @@ void ImGuiSystem::ShowHierarchyWindow() {
 
     if (ImGui::Button("Add Entity"))
     {
-        Entity newEntity = Create_Entity();
+        Entity newEntity = m_registry.Create_Entity();
         selectedEntity = newEntity;
 
         // Store editor-only name (not actual TagComponent)
@@ -380,8 +382,8 @@ void ImGuiSystem::ShowInspectorWindow() {
     ImGui::Separator();
 
     // --- Transform ---
-    if (Has_Component(selectedEntity, CT_Transform)) {
-        auto& t = Get_TransformComponent(selectedEntity);
+    if (m_registry.Has_Component<TransformComponent>(selectedEntity)) {
+        auto& t = m_registry.Get_Component<TransformComponent>(selectedEntity);
         // collapsible tree node for Transform data
         if (ImGui::TreeNode("Transform")) {
             ImGui::SliderFloat("X", &t.pos.x, 0.f, 1920.f);
@@ -392,8 +394,8 @@ void ImGuiSystem::ShowInspectorWindow() {
     }
 
     // --- Sprite ---
-    if (Has_Component(selectedEntity, CT_Sprite)) {
-        auto& s = Get_SpriteComponent(selectedEntity);
+    if (m_registry.Has_Component<Sprite::SpriteComponent>(selectedEntity)) {
+        auto& s = m_registry.Get_Component<Sprite::SpriteComponent>(selectedEntity);
         if (ImGui::TreeNode("Sprite")) {
             std::string texPath = s.Get_TexturePath();
             ImGui::Text("Texture: %s", texPath.c_str());
@@ -412,8 +414,8 @@ void ImGuiSystem::ShowInspectorWindow() {
             ImGui::TreePop();
         }
     }
-    if (Has_Component(selectedEntity, CT_Shape)) {
-        auto& s = Get_ShapeComponent(selectedEntity);
+    if (m_registry.Has_Component<ShapeComponent>(selectedEntity)) {
+        auto& s = m_registry.Get_Component<ShapeComponent>(selectedEntity);
         if (ImGui::TreeNode("Shape")) {
             const char* shapeTypes[] = { "Rectangle", "Circle" };
             int currentShape = static_cast<int>(s.shape);
@@ -427,15 +429,15 @@ void ImGuiSystem::ShowInspectorWindow() {
     }
 
     // --- Physics ---
-    if (Has_Component(selectedEntity, CT_Physics)) {
-        auto& p = Get_PhysicsComponent(selectedEntity);
+    if (m_registry.Has_Component<Physics::PhysicsComponent>(selectedEntity)) {
+        auto& p = m_registry.Get_Component<Physics::PhysicsComponent>(selectedEntity);
         if (ImGui::TreeNode("Physics")) {
             auto& aabb = p.Get_AABB();
             auto& circ = p.Get_Circle();
             ImGui::Checkbox("Collision Active", const_cast<bool*>(&p.CollisionActive()));
             Vec2 aabbSize = aabb.dim;
             if (ImGui::DragFloat2("AABB Size", &aabbSize.x, 1.0f, 10.0f, 1000.0f)) {
-                auto& trans = Get_TransformComponent(selectedEntity);
+                auto& trans = m_registry.Get_Component<TransformComponent>(selectedEntity);
                 AABB newAABB = Set_AABB(trans.pos, aabbSize);
                 p.Set_AABB(newAABB);
             }
@@ -462,8 +464,8 @@ void ImGuiSystem::ShowInspectorWindow() {
     //}
 
     // --- Tag ---
-    if (Has_Component(selectedEntity, CT_Tag)) {
-        auto& tg = Get_TagComponent(selectedEntity);
+    if (m_registry.Has_Component<TagComponent>(selectedEntity)) {
+        auto& tg = m_registry.Get_Component<TagComponent>(selectedEntity);
         if (ImGui::TreeNode("Tag")) {
             int tagVal = (int)tg.tag;
             const char* items[] = { "Player", "Enemy", "Projectile" };
@@ -487,121 +489,121 @@ void ImGuiSystem::ShowInspectorWindow() {
         { CT_Tag,       "Tag" }
     };
 
-    for (auto& [compID, name] : availableComps)
-    {
-        bool hasAlready = Has_Component(selectedEntity, compID);
+    //for (auto& [compID, name] : availableComps)
+    //{
+    //    bool hasAlready = Has_Component(selectedEntity, compID);
 
-        // Check dependency rules
-        bool canAdd = true;
-        for (auto& dep : dependencies[compID])
-        {
-            if (!Has_Component(selectedEntity, dep))
-            {
-                canAdd = false;
-                break;
-            }
-        }
+    //    // Check dependency rules
+    //    bool canAdd = true;
+    //    for (auto& dep : dependencies[compID])
+    //    {
+    //        if (!Has_Component(selectedEntity, dep))
+    //        {
+    //            canAdd = false;
+    //            break;
+    //        }
+    //    }
 
-        // Visual differentiation
-        if (hasAlready)
-        {
-            ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "%s (already added)", name);
-            continue;
-        }
+    //    // Visual differentiation
+    //    if (hasAlready)
+    //    {
+    //        ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "%s (already added)", name);
+    //        continue;
+    //    }
 
-        if (!canAdd)
-            ImGui::BeginDisabled();
+    //    if (!canAdd)
+    //        ImGui::BeginDisabled();
 
-        if (ImGui::Button(name, ImVec2(140, 0)))
-        {
-            if (canAdd)
-            {
-                switch (compID)
-                {
-                case CT_Transform:
-                    Add_Component(selectedEntity, TransformComponent{});
-                    break;
-                case CT_Sprite:
-                    Add_Component(selectedEntity, Sprite::SpriteComponent{});
-                    break;
-                case CT_Animator:
-                    Add_Component(selectedEntity, Animator::AnimatorComponent{});
-                    break;
-                case CT_Physics:
-                    Add_Component(selectedEntity, Physics::PhysicsComponent{});
-                    break;
-                case CT_Shape:
-                    Add_Component(selectedEntity, ShapeComponent{ SHAPE_RECTANGLE, {100.f,100.f}, {1.f,1.f,1.f} });
-                    break;
-                case CT_Audio:
-                    Add_Component(selectedEntity, AudioComponent{});
-                    break;
-                case CT_Input:
-                    Add_Component(selectedEntity, InputComponent{});
-                    break;
-                case CT_Tag:
-                    Add_Component(selectedEntity, TagComponent{ T_PLAYER });
-                    break;
-                }
-                std::cout << "[ImGui] Added component " << name << " to Entity " << selectedEntity << std::endl;
-            }
-        }
+    //    if (ImGui::Button(name, ImVec2(140, 0)))
+    //    {
+    //        if (canAdd)
+    //        {
+    //            switch (compID)
+    //            {
+    //            case CT_Transform:
+    //                Add_Component(selectedEntity, TransformComponent{});
+    //                break;
+    //            case CT_Sprite:
+    //                Add_Component(selectedEntity, Sprite::SpriteComponent{});
+    //                break;
+    //            case CT_Animator:
+    //                Add_Component(selectedEntity, Animator::AnimatorComponent{});
+    //                break;
+    //            case CT_Physics:
+    //                Add_Component(selectedEntity, Physics::PhysicsComponent{});
+    //                break;
+    //            case CT_Shape:
+    //                Add_Component(selectedEntity, ShapeComponent{ SHAPE_RECTANGLE, {100.f,100.f}, {1.f,1.f,1.f} });
+    //                break;
+    //            case CT_Audio:
+    //                Add_Component(selectedEntity, AudioComponent{});
+    //                break;
+    //            case CT_Input:
+    //                Add_Component(selectedEntity, InputComponent{});
+    //                break;
+    //            case CT_Tag:
+    //                Add_Component(selectedEntity, TagComponent{ T_PLAYER });
+    //                break;
+    //            }
+    //            std::cout << "[ImGui] Added component " << name << " to Entity " << selectedEntity << std::endl;
+    //        }
+    //    }
 
-        if (!canAdd)
-        {
-            ImGui::EndDisabled();
-            ImGui::SameLine();
-            ImGui::TextDisabled("(requires other component)");
-        }
-    }
+    //    if (!canAdd)
+    //    {
+    //        ImGui::EndDisabled();
+    //        ImGui::SameLine();
+    //        ImGui::TextDisabled("(requires other component)");
+    //    }
+    //}
 
 
     ImGui::Separator();
     if (ImGui::Button("Clone")) {
-        Entity clone = Create_Entity();
+        Entity clone = m_registry.Create_Entity();
 
         // Copy Transform
-        if (Has_Component(selectedEntity, CT_Transform)) {
-            auto& t = Get_TransformComponent(selectedEntity);
+        if (m_registry.Has_Component<TransformComponent>(selectedEntity)) {
+            auto& t = m_registry.Get_Component<TransformComponent>(selectedEntity);
             TransformComponent newT = t;
             newT.pos.x += 50.f;  // so it's not exactly on top
-            Add_Component(clone, newT);
+            m_registry.Add_Component<TransformComponent>(clone, newT);
         }
 
         // Copy Physics
-        if (Has_Component(selectedEntity, CT_Physics)) {
-            auto& p = Get_PhysicsComponent(selectedEntity);
+        if (m_registry.Has_Component<Physics::PhysicsComponent>(selectedEntity)) {
+            auto& p = m_registry.Get_Component<Physics::PhysicsComponent>(selectedEntity);
 
-            Add_Component(clone, p);
+            m_registry.Add_Component<Physics::PhysicsComponent>(clone, p);
         }
 
         // Copy Shape
-        if (Has_Component(selectedEntity, CT_Shape)) {
-            auto& s = Get_ShapeComponent(selectedEntity);
-            Add_Component(clone, ShapeComponent{ s.shape, s.dimensions, s.color });
+        if (m_registry.Has_Component<ShapeComponent>(selectedEntity)) {
+            auto& s = m_registry.Get_Component<ShapeComponent>(selectedEntity);
+            m_registry.Add_Component<ShapeComponent>(clone, ShapeComponent{ s.shape, s.dimensions, s.color });
         }
 
         // Copy Sprite
-        if (Has_Component(selectedEntity, CT_Sprite)) {
-            auto& s = Get_SpriteComponent(selectedEntity);
-            Add_Component(clone, s);
+        if (m_registry.Has_Component<Sprite::SpriteComponent>(selectedEntity)) {
+            auto& s = m_registry.Get_Component<Sprite::SpriteComponent>(selectedEntity);
+            m_registry.Add_Component<Sprite::SpriteComponent>(clone, s);
         }
 
-        if (Has_Component(selectedEntity, CT_Animator)) {
-            auto& anim = Get_AnimatorComponent(selectedEntity);
-            Add_Component(clone, anim);
+        if (m_registry.Has_Component<Animator::AnimatorComponent>(selectedEntity)) {
+            auto& anim = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
+            m_registry.Add_Component<Animator::AnimatorComponent>(clone, anim);
         }
 
         // Copy Tag
-        if (Has_Component(selectedEntity, CT_Tag)) {
-            auto& tag = Get_TagComponent(selectedEntity);
-            Add_Component(clone, tag);
+        if (m_registry.Has_Component<TagComponent>(selectedEntity)) {
+            auto& tag = m_registry.Get_Component<TagComponent>(selectedEntity);
+            m_registry.Add_Component<TagComponent>(clone, tag);
         }
 
         // Copy Input
-        if (Has_Component(selectedEntity, CT_Input)) {
-            auto& inp = Get_InputComponent(selectedEntity);
-            Add_Component(clone, inp);
+        if (m_registry.Has_Component<InputComponent>(selectedEntity)) {
+            auto& inp = m_registry.Get_Component<InputComponent>(selectedEntity);
+            m_registry.Add_Component<InputComponent>(clone, inp);
         }
 
         //// Copy Health
@@ -621,7 +623,7 @@ void ImGuiSystem::ShowInspectorWindow() {
             ImGui::OpenPopup("Protected Entity");
         }
         else {
-            Remove_Entity(selectedEntity);
+            m_registry.Remove_Entity(selectedEntity);
             selectedEntity = INVALID_ENTITY;
         }
     }
