@@ -62,10 +62,6 @@ ComponentManager<InputComponent>				input;
 // CT_Shape
 ComponentManager<ShapeComponent>				shape;
 
-// Text
-// CT_Text
-ComponentManager<TextSystem::TextComponent>			text;
-
 // Entity manager (stores a REFERENCE to the singleton entity manager ^^)
 // ================================================================================
 EntityManager& entityManager = EntityManager::get();
@@ -83,7 +79,7 @@ Entity Create_Entity()
 void Remove_Entity(Entity eID)
 {
 	// remove all components!
-	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input, CT_Shape, CT_Text });
+	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input, CT_Shape });
 
 	// remove entity ID!
 	entityManager.destroyEntity(eID);
@@ -164,12 +160,6 @@ void Add_Component(Entity eID, ShapeComponent const& comp)
 {
 	std::cout << "REGISTRY | ADDING COMPONENT | SHAPE		| eID: " << eID << "\n";
 	shape.addComponent(eID, comp);
-}
-
-void Add_Component(Entity eID, TextSystem::TextComponent const& comp)
-{
-	std::cout << "REGISTRY | ADDING COMPONENT | TEXT		| eID: " << eID << "\n";
-	text.addComponent(eID, comp);
 }
 
 
@@ -257,13 +247,6 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 		shape.removeComponent(eID);
 	}
 	break;	// CT_Shape
-
-	case (CT_Text):
-	{
-		std::cout << "REGISTRY | REMOVING COMPONENT | TEXT			| eID: " << eID << "\n";
-		text.removeComponent(eID);
-	}
-	break;	// CT_Text
 	}
 }
 
@@ -318,15 +301,11 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 
 	case (CT_Input):
 	{ return input.hasComponent(eID); }
-	break;	// CT_Input
+	break;	// CT_Tag
 
 	case (CT_Shape):
 	{ return shape.hasComponent(eID); }
-	break;	// CT_Shape
-
-	case (CT_Text):
-	{ return text.hasComponent(eID); }
-	break;	// CT_Text
+	break;	// CT_Tag
 
 	default:
 		return false;
@@ -357,8 +336,6 @@ InputComponent&					Get_InputComponent(Entity eID)			{ return input.getComponent
 
 ShapeComponent&					Get_ShapeComponent(Entity eID)			{ return shape.getComponent(eID); }
 
-TextSystem::TextComponent&		Get_TextComponent(Entity eID)			{ return text.getComponent(eID); }
-
 
 // Manager accessors
 ComponentManager<TransformComponent>&			CM_Transform()		{ return transform; }
@@ -371,7 +348,6 @@ ComponentManager<HealthComponent>&				CM_Health()			{ return health; }
 ComponentManager<TagComponent>&					CM_Tag()			{ return tag; }
 ComponentManager<InputComponent>&				CM_Input()			{ return input; }
 ComponentManager<ShapeComponent>&				CM_Shape()			{ return shape; }
-ComponentManager<TextSystem::TextComponent>&	CM_Text()			{ return text; }
 
 #pragma endregion COMPONENT
 

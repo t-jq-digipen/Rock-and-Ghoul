@@ -25,7 +25,6 @@
 #include "RenderSystem.h"
 #include "Render.h"
 #include "Animator.h"
-#include "TextSystem.h"
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
@@ -98,47 +97,6 @@ void RenderSystem::Update(float dt) {
             );
         }
 
-    }
-
-    // Loop through Text Component
-    for (auto& [entID, textComp] : CM_Text().getComponents())
-    {
-        if (Has_Component(entID, CT_Text))
-        {
-            auto& txt = Get_TextComponent(entID);
-            const auto& aabb = Get_PhysicsComponent(entID);
-            const auto& trans = Get_TransformComponent(entID);
-
-            // Determine speaker's name based on ID
-            std::string speakerName = "";
-
-            if (txt.GetCurrentLineIndex() == 1)
-            {
-                txt.SetSpeakerID(1);
-            }
-            else
-            {
-                txt.SetSpeakerID(0);
-            }
-
-            switch (txt.GetSpeakerID())
-            {
-            case 0:
-                speakerName = "Rock";
-                break;
-            case 1:
-                speakerName = "Ghoul";
-                break;
-            default:
-                break;
-            }
-
-            // Draw speaker's name
-            renderInstance.DrawText(txt.GetCurrentLine(txt.GetCurrentLineIndex()), trans.pos.x - aabb.Get_AABB().dim.x / 2, trans.pos.y, txt.GetFontSize(), { txt.GetColor().x, txt.GetColor().y, txt.GetColor().z });
-
-            // Draw speaker's line
-            renderInstance.DrawText(speakerName, trans.pos.x - aabb.Get_AABB().dim.x / 2, trans.pos.y + 100.f, txt.GetFontSize(), { txt.GetColor().x, txt.GetColor().y, txt.GetColor().z });
-        }
     }
 
     // Debug drawing for physics colliders / velocities

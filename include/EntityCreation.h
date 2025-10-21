@@ -53,14 +53,6 @@ Entity Create_Waffle(float const& spawnx, float const& spawny);
  */
 Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme controls);
 /**
- * @brief Create a dialogue entity with transform,
- *        physics, shape, input, tag, and health components.
- * @param spawnx The initial x-position of the shape.
- * @param spawny The initial y-position of the shape.
- * @return The newly created dialogue entity. For engine testing.
- */
-Entity Create_Dialogue(float const& spawnx, float const& spawny, ControlScheme controls);
-/**
  * @brief Create a wall entity with transform, physics, shape, and tag components.
  * @param x The x-position of the wall.
  * @param y The y-position of the wall.

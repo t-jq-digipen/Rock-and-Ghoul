@@ -31,7 +31,6 @@
 #include "Physics.h"		// Physics Component
 #include "Sprite.h"			// Sprite Component
 #include "Animator.h"		// Animator Component
-#include "TextSystem.h"		// Text Component
 
 // constexpr size_t MAX_COMPONENT_TYPES = 11; // max number of components TIS SHI NOT EVEN BEING USED
 
@@ -68,7 +67,6 @@ void Add_Component(Entity eID, HealthComponent				const& comp);
 void Add_Component(Entity eID, TagComponent					const& comp);
 void Add_Component(Entity eID, InputComponent				const& comp);
 void Add_Component(Entity eID, ShapeComponent				const& comp);
-void Add_Component(Entity eID, TextSystem::TextComponent	const& comp);
 // ======================================================== //
 
 // removal
@@ -112,7 +110,6 @@ HealthComponent				& Get_HealthComponent(Entity eID);
 TagComponent				& Get_TagComponent(Entity eID);
 InputComponent				& Get_InputComponent(Entity eID);
 ShapeComponent				& Get_ShapeComponent(Entity eID);
-TextSystem::TextComponent	& Get_TextComponent(Entity eID);
 // ======================================================== //
 
 // Manager accessors
@@ -131,7 +128,6 @@ ComponentManager<HealthComponent>				& CM_Health();
 ComponentManager<TagComponent>					& CM_Tag();
 ComponentManager<InputComponent>				& CM_Input();
 ComponentManager<ShapeComponent>				& CM_Shape();
-ComponentManager<TextSystem::TextComponent>		& CM_Text();
 // ======================================================== //
 
 // Component list accessor?

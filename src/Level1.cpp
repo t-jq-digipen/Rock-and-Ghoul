@@ -15,7 +15,6 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <algorithm>
 
 #include "Level1.h"
 #include "Input.h"
@@ -28,7 +27,7 @@
 #include "EntityCreation.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
-#include "TextSystem.h"
+
 #include "CrashHandler.h"
 
 static FretBoard* fretboard = nullptr;
@@ -46,11 +45,6 @@ Entity rock;
 Entity square;
 Entity roundy;
 Entity waffle;
-Entity dialogue;
-
-static std::string dialogueLineToDraw;
-static float dialogueX = 0.f;
-static float dialogueY = 0.f;
 
 // Loads Level 1
 void Level1::Load()
@@ -109,7 +103,7 @@ void Level1::Init()
 		rock = Create_Player(200.f, 500.f);
 		square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
 		roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
-		dialogue = Create_Dialogue(600.f, 200.f, CS_DIALOGUE);
+
 	}
 	});	
 	// Top wall
@@ -123,13 +117,12 @@ void Level1::Init()
 
 	// Right wall
 	Create_Wall(LEVEL_WIDTH - WALL_THICKNESS/2, LEVEL_HEIGHT/2,WALL_THICKNESS, LEVEL_HEIGHT);
+
 }
 
 // Updates Level 1
 void Level1::Update()
 {
-	Render& renderer = Render::GetInstance();
-
 	static bool spawned = false;
 	std::vector<Entity> toRemove;
 
@@ -264,18 +257,6 @@ void Level1::Draw()
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
 		}
-
-		//for (Entity e = 0; e < 50; ++e) {
-		//	if (!EntityManager::get().isAlive(e)) continue;
-
-		//	if (Has_Component(e, CT_Text))
-		//	{
-		//		const auto& txt = Get_TextComponent(e);
-		//		const auto& aabb = Get_PhysicsComponent(e);
-		//		const auto& trans = Get_TransformComponent(e);
-		//		renderer.DrawText(txt.GetCurrentLine(txt.GetCurrentLineIndex()), trans.pos.x - aabb.Get_AABB().dim.x / 2, trans.pos.y, txt.GetFontSize(), { txt.GetColor().x, txt.GetColor().y, txt.GetColor().z });
-		//	}
-		//}
 	});
 }
 

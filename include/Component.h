@@ -28,10 +28,9 @@
  * - Tag			|  Tag with common object types for easy tracking
  * - Input			|  Input component
  * - Shape			|  Basic shape component (for primitive shapes without sprites)
- * - Text			|  Text component (for UI, dialogue, etc)
  *
  *
- * Copyright ï¿½ 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -74,8 +73,7 @@ enum ComponentTypeID
 							  
 	CT_Input,
 
-	CT_Shape,			//		| Shape enumeration for non-sprite drawing
-	CT_Text				//		| Enumeration for text (store array of lines)
+	CT_Shape			//		| Shape enumeration for non-sprite drawing
 };
 
 
@@ -141,8 +139,7 @@ enum C_TagID {
 	T_ENEMY,
 	T_PROJECTILE,
 	T_WALL,
-	T_INSTANCING,
-	T_TEXT
+	T_INSTANCING
 };
 
 struct TagComponent {
@@ -152,8 +149,7 @@ struct TagComponent {
 enum ControlScheme {
 	CS_WASD,
 	CS_IJKL,
-	CS_ARROWS,
-	CS_DIALOGUE
+	CS_ARROWS
 };
 
 struct InputComponent {

@@ -59,16 +59,11 @@ Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeTyp
     return 0;
 }
 
-Entity Create_Dialogue(float const& x, float const& y, ControlScheme controls)
-{
-    return LoadEntity("Dialogue", x, y);
-}
-
 /**
  * @brief Generates initial prefab JSON files in Assets/prefabs/.
  *
  * Creates the prefabs directory if missing and generates default
- * entity prefabs (Player, Waffle, Rectangle, Circle, Dialogue).
+ * entity prefabs (Player, Waffle, Rectangle, Circle).
  * 
  */
 void GenerateInitialPrefabs() {
@@ -167,35 +162,6 @@ void GenerateInitialPrefabs() {
 
         JsonLoad::SaveCurrentScene(FilePath::PREFABS_FOLDER + "Circle.json", "Circle");
         Remove_Entity(circle_ent);
-    }
-
-    // Dialogue
-    {
-        Entity dialogue_ent = Create_Entity();
-        SetEntityName(dialogue_ent, "Dialogue");
-        Add_Component(dialogue_ent, TransformComponent({ 0, 0 }, { 200.f, 200.f }));
-
-        AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
-        Circle circle = { {0, 0}, 200.f };
-        Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
-        Add_Component(dialogue_ent, phys);
-
-        Add_Component(dialogue_ent, ShapeComponent{ SHAPE_RECTANGLE, {200.f, 200.f}, {0.0f, 0.0f, 1.0f} });
-        Add_Component(dialogue_ent, ShapeComponent{ SHAPE_RECTANGLE, {200.f, 200.f}, {0.0f, 0.0f, 1.0f} });
-        Add_Component(dialogue_ent, InputComponent{ CS_DIALOGUE });
-        Add_Component(dialogue_ent, TagComponent{ T_TEXT });
-
-        std::vector<std::string> lines = { 
-            "I'm excited for the Jam Out SG! Are you excited too, Ghoul?",
-            "You betcha! But it's almost time for our turn, I'll head to the toilet first!",
-            "Be back quick!",
-            "Oh, I hear them calling for our name! Where is Ghoul? I should find her." 
-        };
-
-        Add_Component(dialogue_ent, TextSystem::TextComponent{ lines, 0, 50.f, 0, "../Assets/Antonio-Bold.ttf", 20, { 0.f, 0.f, 0.f } });
-
-        JsonLoad::SaveCurrentScene(FilePath::PREFABS_FOLDER + "Dialogue.json", "Dialogue");
-        Remove_Entity(dialogue_ent);
     }
 
     std::cout << "=== ALL PREFABS GENERATED ===" << std::endl;

@@ -31,7 +31,6 @@
 #include "Audio.h"
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include "TextSystem.h"
 
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
@@ -65,27 +64,20 @@ namespace {
                 : "Unknown";
             name = std::string(tagName) + " " + std::to_string(e);
         }
-        if (Has_Component(e, CT_Text)) {
-            name += " [Dialogue]";
-        }
-        else
-        {
-            if (Has_Component(e, CT_Shape)) {
-                auto& s = Get_ShapeComponent(e);
-                if (s.shape == SHAPE_RECTANGLE) {
-                    name += "  [Square]";
-                }
-                else if (s.shape == SHAPE_CIRCLE) {
-                    name += "  [Circle]";
-                }
+        if (Has_Component(e, CT_Shape)) {
+            auto& s = Get_ShapeComponent(e);
+            if (s.shape == SHAPE_RECTANGLE) {
+                name += "  [Square]";
             }
-            else if (Has_Component(e, CT_Sprite)) {
-                std::string entName = GetEntityName(e);
-                name += "  [Textured]";
-
+            else if (s.shape == SHAPE_CIRCLE) {
+                name += "  [Circle]";
             }
         }
-
+        else if (Has_Component(e, CT_Sprite)) {
+            std::string entName = GetEntityName(e);
+            name += "  [Textured]";
+        
+        }
         return name;
     }
 
@@ -458,32 +450,6 @@ void ImGuiSystem::ShowInspectorWindow() {
             ImGui::TreePop();
         }
     }
-    
-    // --- Text ---
-    if (Has_Component(selectedEntity, CT_Text)) {
-        auto& txt = Get_TextComponent(selectedEntity);
-        if (ImGui::TreeNode("Text")) {
-            int currentLineIndex = txt.GetCurrentLineIndex();
-            const auto& lines = txt.GetLines(); // stable reference, no temporaries
-            const int count = static_cast<int>(lines.size());
-
-            // Items getter: ImGui pulls labels on-demand; pointers remain valid because 'lines' lives for the frame
-            auto getter = [](void* data, int idx, const char** out_text) -> bool {
-                const auto* v = static_cast<const std::vector<std::string>*>(data);
-                if (idx < 0 || idx >= static_cast<int>(v->size())) return false;
-                *out_text = (*v)[static_cast<size_t>(idx)].c_str();
-                return true;
-                };
-
-            if (ImGui::Combo("Current Line", &currentLineIndex, getter, (void*)&lines, count)) {
-                // clamp to be safe if 'lines' edited elsewhere this frame
-                currentLineIndex = (count == 0) ? 0 : std::clamp(currentLineIndex, 0, count - 1);
-                txt.SetCurrentLineIndex(currentLineIndex);
-            }
-
-            ImGui::TreePop();
-        }
-    }
 
     //// --- Health ????????????????/ ---
     //if (Has_Component(selectedEntity, CT_Health)) {
@@ -621,7 +587,6 @@ void ImGuiSystem::ShowInspectorWindow() {
             Add_Component(clone, s);
         }
 
-        // Copy Animator
         if (Has_Component(selectedEntity, CT_Animator)) {
             auto& anim = Get_AnimatorComponent(selectedEntity);
             Add_Component(clone, anim);
@@ -639,17 +604,11 @@ void ImGuiSystem::ShowInspectorWindow() {
             Add_Component(clone, inp);
         }
 
-        // Copy Text
-        if (Has_Component(selectedEntity, CT_Text)) {
-            auto& txt = Get_TextComponent(selectedEntity);
-            Add_Component(clone, txt);
-        }
-
-        // Copy Health
-        if (Has_Component(selectedEntity, CT_Health)) {
-            auto& h = Get_HealthComponent(selectedEntity);
-            Add_Component(clone, h);
-        }
+        //// Copy Health
+        //if (Has_Component(selectedEntity, CT_Health)) {
+        //    auto& h = Get_HealthComponent(selectedEntity);
+        //    Add_Component(clone, h);
+        //}
 
         selectedEntity = clone;  // select new clone
     }
