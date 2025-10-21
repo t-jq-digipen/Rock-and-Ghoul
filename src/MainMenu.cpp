@@ -80,6 +80,10 @@ static inline glm::vec2 ScreenToRender(const glm::vec2& mouseScreen, float windo
 void MainMenu::Load()
 {
     Render& renderer = Render::GetInstance();
+
+    // Preload all Image assets from JSON (they’ll be stored in textureCache)
+    auto menuTextures = renderer.LoadImageAssetsFromJSON("../Assets/imageAssets.json"); //i added an imageAssets.json inside assets folder
+
     CrashHandler::Safe("MainMenu", "Load", [&] {
         std::cout << "Main Menu Loaded!!!" << std::endl;
 
@@ -87,13 +91,16 @@ void MainMenu::Load()
       /*  titleTexture = renderer.LoadTexture("../Assets/title.png");
         CrashHandler::LogIfZeroTexture(titleTexture, "../Assets/title.png");
 
-        rockTexture = renderer.LoadTexture("../Assets/Rock_2048px.png");
+        //rockTexture = renderer.LoadTexture("../Assets/Rock_2048px.png");
+        rockTexture = menuTextures["rock"];
         CrashHandler::LogIfZeroTexture(rockTexture, "../Assets/title.png");
 
-        ghoulTexture = renderer.LoadTexture("../Assets/Ghoul_2048px.png");
+        //ghoulTexture = renderer.LoadTexture("../Assets/Ghoul_2048px.png");
+        ghoulTexture = menuTextures["ghoul"];
         CrashHandler::LogIfZeroTexture(ghoulTexture, "../Assets/title.png");
 
-        playTexture = renderer.LoadTexture("../Assets/play.png");
+        //playTexture = renderer.LoadTexture("../Assets/play.png");
+        playTexture = menuTextures["play"];
         CrashHandler::LogIfZeroTexture(playTexture, "../Assets/title.png");
 
         quitTexture = renderer.LoadTexture("../Assets/quit.png");
@@ -102,7 +109,7 @@ void MainMenu::Load()
         MainMenuTexture = renderer.LoadTexture("../Assets/MainMenu_Rock&Ghoul.PNG");
         CrashHandler::LogIfZeroTexture(MainMenuTexture, "../Assets/MainMenu_Rock&Ghoul.PNG");
     });
-    //titleImage = Render::GetInstance().LoadImage("../Assets/quit.png");
+    //titleImage = Render::GetInstance().LoadImage("../Assets/quit.png"); 
 }
 
 // Initializes Main Menu

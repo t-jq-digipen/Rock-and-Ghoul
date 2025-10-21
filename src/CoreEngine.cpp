@@ -59,7 +59,8 @@ void CoreEngine::Run() {
     while (running && !glfwWindowShouldClose(GLApp::ptr_window) && GSM_CurrentState() != GameState::GS_QUIT) {
         if (gsm.GetCurrentState() != GameState::GS_RESTART)
         {
-            // --- 1. Bind function pointers for the new current state
+            // --- 1. Bind function pointers for the 
+            // current state
             gsm.Update();
 
             // --- 2. Load + Init ONCE for this state
