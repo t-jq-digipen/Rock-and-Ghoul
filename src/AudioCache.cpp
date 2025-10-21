@@ -1,0 +1,175 @@
+/* ========================================================
+ * @file    AudioCache.cpp
+ * @brief   Implementation of AudioCache system
+ * ========================================================
+ */
+#include "AudioCache.h"
+#include "Audio.h"
+#include "FileIO.h"
+#include <iostream>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+// Static member initialization
+std::unordered_map<std::string, AudioAsset> AudioCache::assetsByName;
+std::unordered_map<int, std::string> AudioCache::idToName;
+
+bool AudioCache::Initialize(const std::string& manifestPath) {
+    std::cout << "[AudioCache] Initializing from: " << manifestPath << std::endl;
+
+    if (!ParseManifest(manifestPath)) {
+        std::cerr << "[AudioCache] Failed to parse manifest!" << std::endl;
+        return false;
+    }
+
+    std::cout << "[AudioCache] Loaded " << assetsByName.size() << " audio assets" << std::endl;
+    return true;
+}
+
+bool AudioCache::ParseManifest(const std::string& manifestPath) {
+    try {
+        std::string content = FileIO::ReadFile(manifestPath);
+        if (content.empty()) {
+            std::cerr << "[AudioCache] Manifest file is empty or doesn't exist: " << manifestPath << std::endl;
+            return false;
+        }
+
+        json manifest = json::parse(content);
+
+        // Helper to parse a category
+        auto parseCategory = [&](const std::string& categoryName) {
+            if (!manifest.contains(categoryName)) return;
+
+            const json& category = manifest[categoryName];
+            for (auto it = category.begin(); it != category.end(); ++it) {
+                const std::string& assetName = it.key();
+                const json& assetData = it.value();
+
+                AudioAsset asset;
+                asset.name = assetName;
+                asset.id = assetData["id"];
+                asset.path = assetData["path"];
+                asset.loop = assetData["loop"];
+                asset.group = assetData["group"];
+                asset.spatial = assetData.value("spatial", false);
+                asset.sound = nullptr;
+
+                assetsByName[asset.name] = asset;
+                idToName[asset.id] = asset.name;
+
+                std::cout << "[AudioCache]   - " << categoryName << ": " << assetName
+                    << " (ID: " << asset.id << ")" << std::endl;
+            }
+            };
+
+        parseCategory("music");
+        parseCategory("sfx");
+        parseCategory("ui");
+        parseCategory("ambience");
+
+        return true;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "[AudioCache] Error parsing manifest: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+void AudioCache::Shutdown() {
+    std::cout << "[AudioCache] Shutting down..." << std::endl;
+
+    for (auto& [name, asset] : assetsByName) {
+        if (asset.sound) {
+            asset.sound->release();
+            asset.sound = nullptr;
+        }
+    }
+
+    assetsByName.clear();
+    idToName.clear();
+}
+
+AudioAsset* AudioCache::GetAsset(const std::string& name) {
+    auto it = assetsByName.find(name);
+    if (it != assetsByName.end()) {
+        return &it->second;
+    }
+    return nullptr;
+}
+
+AudioAsset* AudioCache::GetAssetByID(int id) {
+    auto it = idToName.find(id);
+    if (it != idToName.end()) {
+        return GetAsset(it->second);
+    }
+    return nullptr;
+}
+
+FMOD::Sound* AudioCache::GetSound(const std::string& name) {
+    AudioAsset* asset = GetAsset(name);
+    if (asset && asset->sound) {
+        return asset->sound;
+    }
+
+    if (asset && !asset->sound) {
+        std::cout << "[AudioCache] Auto-loading: " << name << std::endl;
+        if (LoadAsset(name)) {
+            return asset->sound;
+        }
+    }
+
+    return nullptr;
+}
+
+FMOD::Sound* AudioCache::GetSoundByID(int id) {
+    auto it = idToName.find(id);
+    if (it != idToName.end()) {
+        return GetSound(it->second);
+    }
+    return nullptr;
+}
+
+bool AudioCache::IsLoaded(const std::string& name) {
+    AudioAsset* asset = GetAsset(name);
+    return (asset && asset->sound != nullptr);
+}
+
+bool AudioCache::LoadAsset(const std::string& name) {
+    AudioAsset* asset = GetAsset(name);
+    if (!asset) {
+        std::cerr << "[AudioCache] Asset not found: " << name << std::endl;
+        return false;
+    }
+
+    if (asset->sound) {
+        std::cout << "[AudioCache] Asset already loaded: " << name << std::endl;
+        return true;
+    }
+
+    return LoadAudioFile(*asset);
+}
+
+bool AudioCache::LoadAudioFile(AudioAsset& asset) {
+    std::cout << "[AudioCache] Loading: " << asset.name << " from " << asset.path << std::endl;
+
+    asset.sound = AudioSystem::LoadSound(asset.path, asset.loop);
+
+    if (!asset.sound) {
+        std::cerr << "[AudioCache] Failed to load: " << asset.path << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+void AudioCache::UnloadAsset(const std::string& name) {
+    AudioAsset* asset = GetAsset(name);
+    if (!asset) return;
+
+    if (asset->sound) {
+        std::cout << "[AudioCache] Unloading: " << name << std::endl;
+        asset->sound->release();
+        asset->sound = nullptr;
+    }
+}

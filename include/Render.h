@@ -338,7 +338,7 @@ public:
      * @param height The height of the rectangular area.
      * @return True if the mouse position is inside the area, false otherwise.
      */
-    bool IsAreaTouched(const glm::vec2& mousePos, const glm::vec2& areaPos, float width, float height);
+    bool IsAreaTouched(const Vec2& mousePos, const Vec2& areaPos, float width, float height);
 
 
 private:

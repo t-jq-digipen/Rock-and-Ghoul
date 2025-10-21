@@ -16,7 +16,6 @@
  */
 #include "input.h"
 #include <iostream>
-
 //check if a key/button is pressed/held/released
 //keys = all keyboard states.
 //mouseButtons = all mouse button states.
@@ -125,4 +124,8 @@ void Input::MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffs
     (void)window;
     scrollX = xoffset;
     scrollY = yoffset;
+}
+
+Vec2 Input::GetMousePosition() {
+    return Vec2(static_cast<float>(mouseX), static_cast<float>(mouseY));
 }

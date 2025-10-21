@@ -16,7 +16,7 @@
  * This design avoids multiple pop-up windows by embedding
  * panel content inline within one parent window.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -28,12 +28,27 @@
 #include "Input.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
+#include "Audio.h"
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 bool ImGuiSystem::guiEnabled = false;
-static Panel activePanel = Panel::None;
+static FMOD::Channel* previewChannel = nullptr;
+
+static std::unordered_map<ComponentTypeID, std::vector<ComponentTypeID>> dependencies = {
+    { CT_Animator, { CT_Sprite } },      // Animator needs Sprite
+    { CT_Physics,  { CT_Transform } },   // Physics needs Transform
+    { CT_Shape,    { CT_Transform } },   // Shape needs Transform
+    { CT_Sprite,   { CT_Transform } },   // Sprite needs Transform
+    { CT_Audio,    {} },                 // Audio independent
+    { CT_Tag,      {} },                 // Tag independent
+    { CT_Input,    {} }                  // Input independent
+};
+
+using json = nlohmann::json;
 
 
 namespace {
@@ -72,6 +87,40 @@ namespace {
             ImGuiSystem::selectedEntity = 0;
         }
     }
+
+    //another helpers
+    static nlohmann::json audioManifest;
+    static bool audioManifestLoaded = false;
+
+    static bool LoadAudioManifest(const std::string& path)
+    {
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            std::cout << "[ImGui AudioManifest] File not found, creating new.\n";
+            audioManifest = json::object();
+            audioManifest["music"] = json::object();
+            audioManifest["ui"] = json::object();
+            return false;
+        }
+        try {
+            file >> audioManifest;
+            file.close();
+            audioManifestLoaded = true;
+            return true;
+        }
+        catch (...) {
+            std::cout << "[ImGui AudioManifest] Failed to parse JSON.\n";
+            return false;
+        }
+    }
+
+    static void SaveAudioManifest(const std::string& path)
+    {
+        std::ofstream out(path);
+        out << std::setw(4) << audioManifest;
+        out.close();
+        std::cout << "[ImGui AudioManifest] Saved.\n";
+    }
 }
 
 void ImGuiSystem::InitializeImGui() {
@@ -88,6 +137,14 @@ void ImGuiSystem::InitializeImGui() {
 //init hear so is easier
 void ImGuiSystem::Initialize() {
     InitializeImGui();  // Do it here instead of main
+    CM_Tag();
+    CM_Transform();
+    CM_Sprite();
+    CM_Physics();
+    CM_Shape();
+    CM_Input();
+    CM_Animator();
+    CM_Audio();
 }
 
 void ImGuiSystem::Update(float dt) {
@@ -103,36 +160,28 @@ void ImGuiSystem::Update(float dt) {
 
     ImGui::Begin("Game Editor");
 
-    if (ImGui::Button("Engine Info")) activePanel = Panel::Engine;
-    if (ImGui::Button("Collision + Prefab")) activePanel = Panel::Collision;
-    if (ImGui::Button("Entity Editor")) activePanel = activePanel = Panel::HierarchyInspector;
-
-    ImGui::Separator();
-    switch (activePanel) {
-    case Panel::Engine:
-        ShowEngineDebugWindow();
-        break;
-
-    case Panel::Collision:
-        ShowCollisionDebugWindow();
-        break;
-
-    case Panel::HierarchyInspector:
-        //ImGui own 2D vector struct
-        ImGui::BeginChild("LeftPane", ImVec2(ImGui::GetWindowWidth() * 0.4f, 0), true);
-        ShowHierarchyWindow();
-        ImGui::EndChild();
-
-        ImGui::SameLine();
-
-        ImGui::BeginChild("RightPane", ImVec2(0, 0), true);
-        ShowInspectorWindow();
-        ImGui::EndChild();
-        break;
-
-    default:
-        ImGui::Text("Select a panel above.");
-        break;
+    if (ImGui::BeginTabBar("EditorTabs")) {
+        if (ImGui::BeginTabItem("Engine Info")) {
+            ShowEngineDebugWindow();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Collision + Prefabs")) {
+            ShowCollisionDebugWindow();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Entity Editor")) {
+            ImGui::Columns(2);
+            ShowHierarchyWindow();
+            ImGui::NextColumn();
+            ShowInspectorWindow();
+            ImGui::Columns(1);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Assets")) {
+            ShowAssetPreviewWindow();
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
     }
     ImGui::End();
 }
@@ -248,6 +297,43 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     else {
         ImGui::TextDisabled("No prefabs available in %s", FilePath::PREFABS_FOLDER.c_str());
     }
+    // ==============================
+// Image loader (runtime only)
+// ==============================
+    ImGui::Separator();
+    ImGui::Text("Image Loader:");
+
+    static char imgNameBuf[128] = "";
+    static std::vector<std::string> loadedImages;
+
+
+    ImGui::InputText("Image Filename", imgNameBuf, IM_ARRAYSIZE(imgNameBuf));
+    ImGui::SameLine();
+
+    if (ImGui::Button("Add Image")) {
+        std::string filename = imgNameBuf;
+
+
+        std::string fullPath = "../Assets/" + filename;
+        Image img = CreateImage(fullPath); // uses your Render.cpp helper
+        if (img.IsValid()) {
+            loadedImages.push_back(filename);
+
+        }
+
+    }
+
+    ImGui::Separator();
+    ImGui::Text("Loaded Images:");
+    if (loadedImages.empty()) {
+        ImGui::TextDisabled("(none yet)");
+    }
+    else {
+        for (auto const& name : loadedImages) {
+            ImGui::BulletText("%s", name.c_str());
+        }
+    }
+
 
 }
 
@@ -256,28 +342,29 @@ void ImGuiSystem::ShowHierarchyWindow() {
 
     EnsureSelectionValid();
 
-    // all entities that have a Tag
-    for (auto& [entity, tag] : CM_Tag().getComponents()) {
-        bool selected = (entity == selectedEntity);
-        std::string label = EntityDisplayName(entity);
-        //highlight cn click
-        if (ImGui::Selectable(label.c_str(), selected)) {
-            selectedEntity = entity;
-        }
+    if (ImGui::Button("Add Entity"))
+    {
+        Entity newEntity = Create_Entity();
+        selectedEntity = newEntity;
+
+        // Store editor-only name (not actual TagComponent)
+        GetEntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
+
     }
-    //ImGui::Separator();
-    //ImGui::Text("Create:");
-    //if (ImGui::Button("Add Player")) {
-    //    selectedEntity = Create_Player(200.f, 200.f);
-    //}
-    //ImGui::SameLine();
-    //if (ImGui::Button("Add Rectangle")) {
-    //    selectedEntity = Create_Shape(400.f, 200.f, SHAPE_RECTANGLE, CS_IJKL);
-    //}
-    //ImGui::SameLine();
-    //if (ImGui::Button("Add Circle")) {
-    //    selectedEntity = Create_Shape(600.f, 200.f, SHAPE_CIRCLE, CS_ARROWS);
-    //}
+    // show all known entities (even blank)
+    auto& nameMap = GetEntityNameMap();
+
+    for (auto& [entity, name] : nameMap)
+    {
+        if (!EntityManager::get().isAlive(entity))
+            continue;
+
+        bool selected = (entity == selectedEntity);
+        if (ImGui::Selectable(name.c_str(), selected))
+            selectedEntity = entity;
+    }
+
+
 }
 
 void ImGuiSystem::ShowInspectorWindow() {
@@ -387,6 +474,89 @@ void ImGuiSystem::ShowInspectorWindow() {
         }
     }
     ImGui::Separator();
+    ImGui::Text("Add Component:");
+
+    std::vector<std::pair<ComponentTypeID, const char*>> availableComps = {
+        { CT_Transform, "Transform" },
+        { CT_Sprite,    "Sprite" },
+        { CT_Animator,  "Animator" },
+        { CT_Physics,   "Physics" },
+        { CT_Shape,     "Shape" },
+        { CT_Audio,     "Audio" },
+        { CT_Input,     "Input" },
+        { CT_Tag,       "Tag" }
+    };
+
+    for (auto& [compID, name] : availableComps)
+    {
+        bool hasAlready = Has_Component(selectedEntity, compID);
+
+        // Check dependency rules
+        bool canAdd = true;
+        for (auto& dep : dependencies[compID])
+        {
+            if (!Has_Component(selectedEntity, dep))
+            {
+                canAdd = false;
+                break;
+            }
+        }
+
+        // Visual differentiation
+        if (hasAlready)
+        {
+            ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "%s (already added)", name);
+            continue;
+        }
+
+        if (!canAdd)
+            ImGui::BeginDisabled();
+
+        if (ImGui::Button(name, ImVec2(140, 0)))
+        {
+            if (canAdd)
+            {
+                switch (compID)
+                {
+                case CT_Transform:
+                    Add_Component(selectedEntity, TransformComponent{});
+                    break;
+                case CT_Sprite:
+                    Add_Component(selectedEntity, Sprite::SpriteComponent{});
+                    break;
+                case CT_Animator:
+                    Add_Component(selectedEntity, Animator::AnimatorComponent{});
+                    break;
+                case CT_Physics:
+                    Add_Component(selectedEntity, Physics::PhysicsComponent{});
+                    break;
+                case CT_Shape:
+                    Add_Component(selectedEntity, ShapeComponent{ SHAPE_RECTANGLE, {100.f,100.f}, {1.f,1.f,1.f} });
+                    break;
+                case CT_Audio:
+                    Add_Component(selectedEntity, AudioComponent{});
+                    break;
+                case CT_Input:
+                    Add_Component(selectedEntity, InputComponent{});
+                    break;
+                case CT_Tag:
+                    Add_Component(selectedEntity, TagComponent{ T_PLAYER });
+                    break;
+                }
+                std::cout << "[ImGui] Added component " << name << " to Entity " << selectedEntity << std::endl;
+            }
+        }
+
+        if (!canAdd)
+        {
+            ImGui::EndDisabled();
+            ImGui::SameLine();
+            ImGui::TextDisabled("(requires other component)");
+        }
+    }
+
+
+    ImGui::Separator();
     if (ImGui::Button("Clone")) {
         Entity clone = Create_Entity();
 
@@ -443,6 +613,8 @@ void ImGuiSystem::ShowInspectorWindow() {
         selectedEntity = clone;  // select new clone
     }
 
+
+
     ImGui::SameLine();
     if (ImGui::Button("Delete")) {
         if (selectedEntity <= 7) {
@@ -460,7 +632,206 @@ void ImGuiSystem::ShowInspectorWindow() {
         }
         ImGui::EndPopup();
     }
+
+
 }
+void ImGuiSystem::ShowAssetPreviewWindow()
+{
+    ImGui::Text( "Asset Preview Browser");
+    ImGui::Separator();
+
+    if (ImGui::BeginTabBar("AssetsTabs"))
+    {
+        // ====================================================
+        // IMAGES TAB
+        // ====================================================
+        if (ImGui::BeginTabItem("Images"))
+        {
+            static std::vector<Image> loadedThumbnails;
+            static std::vector<std::string> imageNames;
+            static bool initialized = false;
+
+            if (!initialized)
+            {
+                const std::string assetFolder = "../Assets/";
+                for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
+                {
+                    if (!entry.is_regular_file()) continue;
+                    std::string path = entry.path().string();
+                    std::string ext = entry.path().extension().string();
+                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+                    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+                    {
+                        try {
+                            Image img = CreateImage(path);
+                            if (img.IsValid()) {
+                                loadedThumbnails.push_back(img);
+                                imageNames.push_back(entry.path().filename().string());
+                            }
+                        }
+                        catch (...) {
+                            std::cout << "Failed to load " << path << std::endl;
+                        }
+                    }
+                }
+                initialized = true;
+            }
+
+            if (loadedThumbnails.empty()) {
+                ImGui::TextDisabled("No images found in Assets folder.");
+            }
+            else
+            {
+                const float thumbSize = 100.0f;
+                const float padding = 16.0f;
+                float windowWidth = ImGui::GetContentRegionAvail().x;
+                int columns = static_cast<int>(windowWidth / (thumbSize + padding));
+                if (columns < 1) columns = 1;
+
+                ImGui::BeginChild("ImageScroll", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
+
+                int count = 0;
+                for (size_t i = 0; i < loadedThumbnails.size(); ++i)
+                {
+                    ImGui::BeginGroup();
+                    GLuint texID = loadedThumbnails[i].textureID;
+
+                    // show image (flipped UVs)
+                    ImGui::Image((ImTextureID)(intptr_t)texID,
+                        ImVec2(thumbSize, thumbSize),
+                        ImVec2(0, 1), ImVec2(1, 0));
+
+                    // filename
+                    ImGui::TextWrapped("%s", imageNames[i].c_str());
+                    ImGui::EndGroup();
+
+                    if (++count % columns != 0)
+                        ImGui::SameLine();
+                }
+
+                ImGui::EndChild();
+            }
+
+            ImGui::EndTabItem();
+        }
+
+        // ====================================================
+        // MUSIC TAB
+        // ====================================================
+        if (ImGui::BeginTabItem("Audio"))
+        {
+            static bool manifestLoaded = false;
+            const std::string manifestPath = "../Assets/audio_manifest.json";
+
+            if (!manifestLoaded)
+            {
+                LoadAudioManifest(manifestPath);
+                manifestLoaded = true;
+            }
+
+            ImGui::Text("Audio Manifest Editor");
+            ImGui::Separator();
+
+            // --- ADD NEW AUDIO ENTRY ---
+            static char categoryBuf[32] = "music";
+            static char nameBuf[64] = "";
+            static char pathBuf[128] = "";
+            static int idBuf = 0;
+            static bool loopBuf = false;
+            static char groupBuf[32] = "Music";
+
+            ImGui::InputText("Category (music/ui)", categoryBuf, IM_ARRAYSIZE(categoryBuf));
+            ImGui::InputText("Asset Name", nameBuf, IM_ARRAYSIZE(nameBuf));
+            ImGui::InputText("Path", pathBuf, IM_ARRAYSIZE(pathBuf));
+            ImGui::InputInt("ID", &idBuf);
+            ImGui::Checkbox("Loop", &loopBuf);
+            ImGui::InputText("Group", groupBuf, IM_ARRAYSIZE(groupBuf));
+
+            if (ImGui::Button("Add Audio Asset"))
+            {
+                std::string category = categoryBuf;
+                std::string name = nameBuf;
+                std::string path = pathBuf;
+
+                if (name.empty() || path.empty())
+                {
+                    std::cout << "[ImGui AudioManifest] Missing name or path!\n";
+                }
+                else
+                {
+                    // Ensure category exists
+                    if (!audioManifest.contains(category))
+                        audioManifest[category] = json::object();
+
+                    // Add entry
+                    audioManifest[category][name] = {
+                        { "id", idBuf },
+                        { "path", path },
+                        { "loop", loopBuf },
+                        { "group", groupBuf }
+                    };
+
+                    SaveAudioManifest(manifestPath);
+                    std::cout << "[ImGui AudioManifest] Added " << name << " to " << category << "\n";
+                }
+            }
+
+            ImGui::Separator();
+
+            // --- DISPLAY EXISTING ENTRIES ---
+            for (auto& [category, assets] : audioManifest.items())
+            {
+                if (ImGui::CollapsingHeader(category.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    for (auto& [name, data] : assets.items())
+                    {
+                        ImGui::PushID(name.c_str());
+                        ImGui::Text("Name: %s", name.c_str());
+                        ImGui::Text("Path: %s", data["path"].get<std::string>().c_str());
+                        ImGui::Text("ID: %d", data["id"].get<int>());
+                        ImGui::Text("Loop: %s", data["loop"].get<bool>() ? "true" : "false");
+                        ImGui::Text("Group: %s", data["group"].get<std::string>().c_str());
+
+                        // Preview controls
+                        if (ImGui::Button("Play")) {
+                            FMOD::Sound* snd = AudioSystem::LoadSound(data["path"], data["loop"]);
+                            if (snd) {
+                                if (previewChannel) previewChannel->stop();
+                                previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
+                                if (previewChannel) previewChannel->setVolume(0.8f);
+                            }
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Stop")) {
+                            if (previewChannel) previewChannel->stop();
+                            previewChannel = nullptr;
+                        }
+
+                        ImGui::SameLine();
+                        if (ImGui::Button("Remove")) {
+                            assets.erase(name);
+                            SaveAudioManifest(manifestPath);
+                            ImGui::PopID();
+                            break; // exit this loop safely since we modified
+                        }
+
+                        ImGui::Separator();
+                        ImGui::PopID();
+                    }
+                }
+            }
+
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+    }
+
+    ImGui::Separator();
+}
+
+
 
 void ImGuiSystem::Shutdown() {
     ShutdownImGui();
