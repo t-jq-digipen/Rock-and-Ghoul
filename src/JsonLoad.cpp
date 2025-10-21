@@ -200,6 +200,28 @@ std::string JsonLoad::Save_Input(Entity eID) {
     };
     return j.dump();
 }
+
+/**
+ * @brief Serializes Text component to JSON string.
+ *
+ * @param eID The entity ID where Text component should be serialized.
+ * @return std::string JSON string containing the text data.
+ */
+std::string JsonLoad::Save_Text(Entity eID) {
+    auto& txt = Get_TextComponent(eID);
+    json j = {
+        {"lines", txt.GetLines()},
+        {"currentLineIndex", txt.GetCurrentLineIndex()},
+        {"charsPerSecond", txt.GetCharsPerSecond()},
+        {"speakerID", txt.GetSpeakerID()},
+        {"fontPath", txt.GetFontPath()},
+        {"fontSize", txt.GetFontSize()},
+        {"colorX", txt.GetColor().x},
+        {"colorY", txt.GetColor().y},
+        {"colorZ", txt.GetColor().z}
+    };
+    return j.dump();
+}
 #pragma endregion ComponentSavers
 
 #pragma region ComponentLoaders
@@ -385,6 +407,33 @@ void JsonLoad::Load_Input(Entity eID, const std::string& data) {
     i.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
     Add_Component(eID, i);
 }
+
+/**
+ * @brief Deserializes and loads Text component onto entity.
+ *
+ * @param eID The entity ID to which the Text component should be added.
+ * @param data JSON string containing text data.
+ */
+void JsonLoad::Load_Text(Entity eID, const std::string& data) {
+    json j = json::parse(data);
+
+    std::vector<std::string> lines = j["lines"];
+    int currentLineIndex = j["currentLineIndex"];
+    float charsPerSecond = j["charsPerSecond"];
+    int speakerID = j["speakerID"];
+    std::string fontPath = j["fontPath"];
+    int fontSize = j["fontSize"];
+    Vec3 color;
+    color.x = j["colorX"];
+    color.y = j["colorY"];
+    color.z = j["colorZ"];
+
+    if (!fontPath.empty())
+    {
+        TextSystem::TextComponent txt(lines, currentLineIndex, charsPerSecond, speakerID, fontPath, fontSize, color);
+        Add_Component(eID, txt);
+    }
+}
 #pragma endregion ComponentLoaders
 
 // ECS <-> SAVED ENTITY CONVERSION
@@ -432,6 +481,10 @@ SavedEntity JsonLoad::EntityToSaved(Entity eID) {
 
     if (Has_Component(eID, CT_Animator)) {
         saved.componentData[CT_Animator] = Save_Animator(eID);
+    }
+
+    if (Has_Component(eID, CT_Text)) {
+        saved.componentData[CT_Text] = Save_Text(eID);
     }
 
     return saved;
@@ -493,6 +546,9 @@ Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
                 Load_Input(e, data);
                 std::cout << "Loaded Input" << std::endl;
                 break;
+            case CT_Text:
+                Load_Text(e, data);
+                std::cout << "Loaded Text" << std::endl;
             default:
                 break;
             }
@@ -532,6 +588,7 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
         case CT_Input: componentName = "Input"; break;
         case CT_Shape: componentName = "Shape"; break;
         case CT_Animator: componentName = "Animator"; break;
+        case CT_Text: componentName = "Text"; break;
         default: componentName = "Unknown"; break;
         }
 
@@ -565,6 +622,7 @@ void JsonLoad::from_json(const json& j, SavedEntity& e) {
         else if (componentName == "Shape") componentType = CT_Shape;
         else if (componentName == "Input") componentType = CT_Input;
         else if (componentName == "Animator") componentType = CT_Animator;
+        else if (componentName == "Text") componentType = CT_Text;
 
         if (componentType != CT_None) {
             e.componentData[componentType] = it.value().dump();
@@ -666,6 +724,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
                 if (Has_Component(e, CT_Health)) std::cout << "  - Has Health" << std::endl;
                 if (Has_Component(e, CT_Tag)) std::cout << "  - Has Tag" << std::endl;
                 if (Has_Component(e, CT_Input)) std::cout << "  - Has Input" << std::endl;
+                if (Has_Component(e, CT_Text)) std::cout << " - Has Text" << std::endl;
 
                 SavedEntity saved = EntityToSaved(e);
                 scene.entities.push_back(saved);

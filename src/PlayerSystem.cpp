@@ -10,7 +10,7 @@
  * entity based on forces, has a dash, and switches player
  * states accordingly.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -26,6 +26,10 @@ void WASD_Movement(Entity eID, float& dt)
 {
 	(void)dt;
 	auto& physics = Get_PhysicsComponent(eID);
+	const Vec2& vel = physics.Get_Vel();
+
+	auto& transform = Get_TransformComponent(eID);
+	auto& txt = Get_TextComponent(eID);
 
 	if (!Has_Component(eID, CT_Input)) {
 		return; // No input component, skip movement
@@ -78,7 +82,14 @@ void WASD_Movement(Entity eID, float& dt)
 		if (Input::IsKeyHeld(GLFW_KEY_LEFT)) physics.AddForce({ -1,0 }, 1.f, 0.f);
 		if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) physics.AddForce({ 1,0 }, 1.f, 0.f);
 		break;
+	case CS_DIALOGUE:
+		if (Input::IsKeyPressed(GLFW_KEY_ENTER) || Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+		{
+			// advance to next line
+		}
+		break;
 	}
+
 
 	// knockback test
 	int vert{0};
