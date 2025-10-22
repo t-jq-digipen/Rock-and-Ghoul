@@ -92,8 +92,13 @@ struct TransformComponent {
 	Vec2 Prevpos;
 	float rot{0.0f};
 
-	std::string SaveComponent() const {}
-	void LoadComponent(const std::string& data)  {}
+	std::string Serialize() const {
+		// does serialization things here
+	}
+
+	TransformComponent DeSerialize(Entity eID, const std::string& data)  {
+		// does deserialization things here
+	}
 
 };
 // BASE END
