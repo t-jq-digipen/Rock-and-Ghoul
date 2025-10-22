@@ -52,4 +52,9 @@ private:
     std::vector<TextBoxConfig> textboxes;
     static AudioManager* audio;
     Render& render = Render::GetInstance();
+
+
+    bool editMode = false;
+    int selectedIndex = -1;
+    enum class SelectedType { None, Button, TextBox } selectedType = SelectedType::None;
 };
