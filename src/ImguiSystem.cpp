@@ -75,7 +75,7 @@ namespace {
             }
         }
         else if (reg.Has_Component<Sprite::SpriteComponent>(e)) {
-            std::string entName = GetEntityName(e);
+            std::string entName = reg.Get_EntityName(e);
             name += "  [Textured]";
         
         }
@@ -350,11 +350,11 @@ void ImGuiSystem::ShowHierarchyWindow() {
         selectedEntity = newEntity;
 
         // Store editor-only name (not actual TagComponent)
-        GetEntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
+        m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
 
     }
     // show all known entities (even blank)
-    auto& nameMap = GetEntityNameMap();
+    auto& nameMap = m_registry.Get_EntityNameMap();
 
     for (auto& [entity, name] : nameMap)
     {

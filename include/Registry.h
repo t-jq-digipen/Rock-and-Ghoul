@@ -55,9 +55,10 @@ private:
 	Registry() {}
 	Registry(const Registry&) = delete;
 
-
+	// Reference to entity manager
 	EntityManager& entityManager = EntityManager::get();
 
+	// Map of component managers
 	std::unordered_map<std::type_index, std::unique_ptr<IComponentManager>> componentManagers;
 
 	template<typename Component>
@@ -68,6 +69,7 @@ private:
 
 		return static_cast<ComponentManager<Component>*>(it->second.get());
 	}
+
 
 public:
 	// REGISTRY
@@ -154,6 +156,7 @@ public:
 	 * @return The unique ID of the created entity.
 	 */
 	Entity Create_Entity() { return entityManager.createEntity(); }
+
 	/**
 	 * @brief Removes an entity and all of its components.
 	 * @param eID The entity ID to remove.
@@ -162,12 +165,19 @@ public:
 	{
 		// Remove every component!!
 		for (auto& [type, manager] : componentManagers)
-		{
-			manager->removeComponent(eID);
-		}
+		{ manager->removeComponent(eID); }
 
 		entityManager.destroyEntity(eID);
 	}
+
+	std::unordered_map<Entity, std::string>& Get_EntityNameMap()
+	{ return entityManager.GetEntityNameMap(); }
+
+	void Set_EntityName(Entity eID, const std::string& name)
+	{ entityManager.SetEntityName(eID, name); }
+
+	std::string Get_EntityName(Entity eID)
+	{ return entityManager.GetEntityName(eID); }
 	// ================================================================================
 
 
@@ -279,25 +289,26 @@ public:
  *
  *
  * @return std::unordered_map<Entity, std::string>& Reference to the name map.
- */std::unordered_map<Entity, std::string>& GetEntityNameMap();
- 
- /**
- * @brief Assigns a nice readable name to an entity
- *
- * Used for debugging, serialization, and editor display.
- *
- * @param eID The entity ID to name.
- * @param name The string name to assign (e.g., "Player").
  */
-void SetEntityName(Entity eID, const std::string& name);
-
-/**
- * @brief Retrieves the name associated with an entity.
- *
- * Returns the custom name if one was set via SetEntityName(), otherwise
- * generates a default name in the format "Entity_{ID}".
- *
- * @param eID The entity ID to query.
- * @return std::string The entity's name or auto-generated fallback.
- */
-std::string GetEntityName(Entity eID);
+//std::unordered_map<Entity, std::string>& GetEntityNameMap();
+// 
+// /**
+// * @brief Assigns a nice readable name to an entity
+// *
+// * Used for debugging, serialization, and editor display.
+// *
+// * @param eID The entity ID to name.
+// * @param name The string name to assign (e.g., "Player").
+// */
+//void SetEntityName(Entity eID, const std::string& name);
+//
+///**
+// * @brief Retrieves the name associated with an entity.
+// *
+// * Returns the custom name if one was set via SetEntityName(), otherwise
+// * generates a default name in the format "Entity_{ID}".
+// *
+// * @param eID The entity ID to query.
+// * @return std::string The entity's name or auto-generated fallback.
+// */
+//std::string GetEntityName(Entity eID);

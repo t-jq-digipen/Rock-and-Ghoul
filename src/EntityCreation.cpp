@@ -77,7 +77,7 @@ void GenerateInitialPrefabs() {
     // Player
     {
         Entity player = Registry::Get().Create_Entity();
-        SetEntityName(player, "Player");
+        Registry::Get().Set_EntityName(player, "Player");
         Registry::Get().Add_Component<TransformComponent>(player, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
         AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
@@ -100,7 +100,7 @@ void GenerateInitialPrefabs() {
     // Waffle
     {
         Entity waffle = Registry::Get().Create_Entity();
-        SetEntityName(waffle, "Waffle");
+        Registry::Get().Set_EntityName(waffle, "Waffle");
         Registry::Get().Add_Component<TransformComponent>(waffle, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
         AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
@@ -128,7 +128,7 @@ void GenerateInitialPrefabs() {
     // Rectangle
     {
         Entity rect = Registry::Get().Create_Entity();
-        SetEntityName(rect, "Rectangle");
+        Registry::Get().Set_EntityName(rect, "Rectangle");
         Registry::Get().Add_Component<TransformComponent>(rect, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
         AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
@@ -148,7 +148,7 @@ void GenerateInitialPrefabs() {
     // Circle
     {
         Entity circle_ent = Registry::Get().Create_Entity();
-        SetEntityName(circle_ent, "Circle");
+        Registry::Get().Set_EntityName(circle_ent, "Circle");
         Registry::Get().Add_Component<TransformComponent>(circle_ent, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
         AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });

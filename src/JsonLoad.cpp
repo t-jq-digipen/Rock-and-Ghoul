@@ -399,7 +399,7 @@ void JsonLoad::Load_Input(Entity eID, const std::string& data) {
 SavedEntity JsonLoad::EntityToSaved(Entity eID) {
     SavedEntity saved;
     saved.id = eID;
-    saved.name = GetEntityName(eID);
+    saved.name = Registry::Get().Get_EntityName(eID);
 
     // Check each component and save if exists
     if (Registry::Get().Has_Component<TransformComponent>(eID)) {
@@ -445,7 +445,7 @@ SavedEntity JsonLoad::EntityToSaved(Entity eID) {
  */
 Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
     Entity e = Registry::Get().Create_Entity();
-    SetEntityName(e, saved.name);
+    Registry::Get().Set_EntityName(e, saved.name);
 
     std::cout << "Creating entity '" << saved.name << "' (ID: " << e << ")" << std::endl;
 
