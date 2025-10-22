@@ -7,31 +7,38 @@
 #include <vector>
 #include <string>
 
-struct GUIButton {
-    std::string label;
-    Vec2 pos;
-    Vec2 size;
-    Colour3 color;
-    std::function<void()> onClick;
-    bool hovered = false;
-    bool hoverPlayed = false;
-    AudioSystem::ButtonType soundType = AudioSystem::ButtonType::PLAY;
+enum class ButtonShape {
+    Rectangle,
+    Circle,
+    Rounded
 };
 
+struct ButtonConfig {
+    std::string label;
+    Vec2 pos;
+    Vec2 size{ 200.f, 100.f };
+    Colour3 color{ 0.3f, 0.3f, 0.3f };
+    std::function<void()> onClick = nullptr;
+    AudioSystem::ButtonType soundType = AudioSystem::ButtonType::PLAY;
+    ButtonShape shape = ButtonShape::Rectangle;
+};
+struct Button {
+    ButtonConfig cfg;
+    bool hovered = false;
+    bool pressed = false;
+};
 class GuiSystem : public ISystem {
 public:
     void Initialize() override;
     void Update(float dt) override;
     void Shutdown() override;
 
-    void AddButton(const std::string& text, const Vec2& pos, const Vec2& size,
-        const Colour3& color, std::function<void()> callback,
-        AudioSystem::ButtonType soundType = AudioSystem::ButtonType::PLAY);
+    void AddButton(const ButtonConfig& cfg);
 
     static void SetAudioManager(AudioManager* audioMgr);
 
 private:
-    std::vector<GUIButton> buttons;
+    std::vector<ButtonConfig> buttons;
     static AudioManager* audio;
     Render& render = Render::GetInstance();
 };

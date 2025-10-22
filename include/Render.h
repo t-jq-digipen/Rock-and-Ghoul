@@ -479,6 +479,9 @@ public:
 
     void SetTint(const Colour3& tint);
     void ClearTint();
+
+    void DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color);
+
 private:
 
     /**

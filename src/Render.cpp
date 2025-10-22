@@ -1117,6 +1117,25 @@ void Render::SetTint(const Colour3& tint) {
 void Render::ClearTint() {
     currentTint = { 1.f, 1.f, 1.f };
 }
+
+
+void Render::DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color) {
+    // base rectangle
+    DrawRect(pos, width - 2 * radius, height, color);
+    DrawRect(pos, width, height - 2 * radius, color);
+
+    // 4 quarter-circles for corners
+    Vec2 corners[] = {
+        { pos.x - width / 2 + radius, pos.y + height / 2 - radius }, // top-left
+        { pos.x + width / 2 - radius, pos.y + height / 2 - radius }, // top-right
+        { pos.x - width / 2 + radius, pos.y - height / 2 + radius }, // bottom-left
+        { pos.x + width / 2 - radius, pos.y - height / 2 + radius }  // bottom-right
+    };
+    for (auto& c : corners)
+        DrawCircle(c, radius, color, 16);
+}
+
+
 void Render::Shutdown() {
     // Delete all glyph textures
     for (auto& [c, ch] : Characters) {

@@ -122,19 +122,35 @@ void MainMenu::Init()
         renderer.Init();
         guiSystem.Initialize();
 
-        guiSystem.AddButton("PLAY",
-            { 1600, 600 },
-            { 200.f, 100.f },
-            { 20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
-            [] { GSM_SetNextState(GameState::GS_LEVEL1); },
-            AudioSystem::ButtonType::PLAY);
+        //guiSystem.AddButton("PLAY",
+        //    { 1600, 600 },
+        //    { 200.f, 100.f },
+        //    { 20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
+        //    [] { GSM_SetNextState(GameState::GS_LEVEL1); },
+        //    AudioSystem::ButtonType::PLAY);
+        guiSystem.AddButton({
+            .label = "PLAY",
+            .pos = {1650, 550},
+            .size = { 300.f, 100.f },
+            .color = {20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
+            .onClick = [] { GSM_SetNextState(GameState::GS_LEVEL1); },
+            .soundType = AudioSystem::ButtonType::PLAY,
+            .shape = ButtonShape::Rounded });
 
-        guiSystem.AddButton("QUIT",
-            { 1600, 400 },
-            { 200.f, 100.f },
-            { 20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
-            [] { GSM_SetNextState(GameState::GS_QUIT); },
-            AudioSystem::ButtonType::QUIT);
+        guiSystem.AddButton({
+            .label = "QUIT",
+            .pos = {1650, 150},
+            .size = { 300.f, 100.f },
+            .color = {20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
+            .onClick = [] { GSM_SetNextState(GameState::GS_QUIT); },
+            .soundType = AudioSystem::ButtonType::QUIT,
+            .shape = ButtonShape::Rounded });
+        //guiSystem.AddButton("QUIT",
+        //    { 1600, 400 },
+        //    { 200.f, 100.f },
+        //    { 20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
+        //    [] { GSM_SetNextState(GameState::GS_QUIT); },
+        //    AudioSystem::ButtonType::QUIT);
 
     });
 }
