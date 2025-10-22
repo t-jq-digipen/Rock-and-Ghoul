@@ -151,7 +151,12 @@ void MainMenu::Init()
         //    { 20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
         //    [] { GSM_SetNextState(GameState::GS_QUIT); },
         //    AudioSystem::ButtonType::QUIT);
-
+        guiSystem.AddTextBox({
+            .text = "Press SPACE or Click Play",
+            .pos = {1650, 50},
+            .scale = 0.5f,
+            .color = {0.f, 0.f, 0.f},
+            .centered = true});
     });
 }
 

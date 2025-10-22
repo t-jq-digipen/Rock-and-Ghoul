@@ -22,6 +22,16 @@ struct ButtonConfig {
     AudioSystem::ButtonType soundType = AudioSystem::ButtonType::PLAY;
     ButtonShape shape = ButtonShape::Rectangle;
 };
+
+struct TextBoxConfig {
+    std::string text;
+    Vec2 pos;
+    float scale = 1.0f;
+    Colour3 color{ 0, 0, 0 };   //black text
+    bool centered = false;      //centering
+};
+
+
 struct Button {
     ButtonConfig cfg;
     bool hovered = false;
@@ -34,11 +44,12 @@ public:
     void Shutdown() override;
 
     void AddButton(const ButtonConfig& cfg);
-
+    void AddTextBox(const TextBoxConfig& cfg);
     static void SetAudioManager(AudioManager* audioMgr);
 
 private:
     std::vector<ButtonConfig> buttons;
+    std::vector<TextBoxConfig> textboxes;
     static AudioManager* audio;
     Render& render = Render::GetInstance();
 };

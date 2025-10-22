@@ -17,6 +17,10 @@ void GuiSystem::AddButton(const ButtonConfig& cfg)
 {
     buttons.push_back(cfg);
 }
+void GuiSystem::AddTextBox(const TextBoxConfig& cfg)
+{
+    textboxes.push_back(cfg);
+}
 
 void GuiSystem::Update(float dt) {
     Vec2 mouse = Input::GetMousePosition();
@@ -70,6 +74,24 @@ void GuiSystem::Update(float dt) {
             if (audio) audio->PlayButtonSound(cfg.soundType);
             if (cfg.onClick) cfg.onClick();
         }
+    }
+
+    for (auto& tb : textboxes)
+    {
+        float textScale = tb.scale;
+        Vec2 textSize = render.CalculateTextSize(tb.text, textScale);
+
+        float drawX = tb.pos.x;
+        float drawY = tb.pos.y;
+
+        if (tb.centered)
+        {
+            drawX -= textSize.x * 0.5f;
+            drawY -= textSize.y * 0.5f;
+           // drawY += textSize.y * 0.15f;
+        }
+
+        render.DrawText(tb.text, drawX, drawY, textScale, tb.color);
     }
 
 }
