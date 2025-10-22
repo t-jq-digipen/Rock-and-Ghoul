@@ -54,7 +54,17 @@ void GuiSystem::Update(float dt) {
                 }
         }
 
-        r.DrawText(cfg.label, cfg.pos.x - cfg.size.x * 0.15f, cfg.pos.y - 10.f, 1.2f, { 1, 1, 1 });
+        float textScale = 1.2f;
+        Vec2 textSize = r.CalculateTextSize(cfg.label, textScale);
+
+        // Center text horizontally and vertically on the button
+        float textX = cfg.pos.x - textSize.x * 0.5f;
+        float textY = cfg.pos.y - textSize.y * 0.5f;
+
+        // optional: small vertical fine-tune offset (+/-)
+        textY += textSize.y * 0.15f;
+
+        r.DrawText(cfg.label, textX, textY, textScale, { 0, 0, 0 });
 
         if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
             if (audio) audio->PlayButtonSound(cfg.soundType);

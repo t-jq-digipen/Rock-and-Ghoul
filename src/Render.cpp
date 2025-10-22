@@ -833,6 +833,24 @@ void Render::InitTextRendering() {
     glBindVertexArray(0);
 }
 
+Vec2 Render::CalculateTextSize(const std::string& text, float scale)
+{
+    float width = 0.0f;
+    float height = 0.0f;
+
+    for (char c : text)
+    {
+        if (Characters.find(c) == Characters.end())
+            continue;
+
+        const Character& ch = Characters[c];
+        width += (ch.Advance >> 6) * scale; // Advance in pixels
+        height = std::max(height, (float)ch.Size.y * scale);
+    }
+
+    return { width, height };
+}
+
 
 void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color) {
 
