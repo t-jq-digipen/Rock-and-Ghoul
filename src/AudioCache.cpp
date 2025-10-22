@@ -1,6 +1,6 @@
 /* ========================================================
  * @file    AudioCache.cpp
- * @brief   Implementation of AudioCache system
+ * @brief   Implementation of AudioCache system with Bank Loading
  * ========================================================
  */
 #include "AudioCache.h"
@@ -14,6 +14,7 @@ using json = nlohmann::json;
 // Static member initialization
 std::unordered_map<std::string, AudioAsset> AudioCache::assetsByName;
 std::unordered_map<int, std::string> AudioCache::idToName;
+std::unordered_map<std::string, std::vector<std::string>> AudioCache::banks;
 
 bool AudioCache::Initialize(const std::string& manifestPath) {
     std::cout << "[AudioCache] Initializing from: " << manifestPath << std::endl;
@@ -24,6 +25,7 @@ bool AudioCache::Initialize(const std::string& manifestPath) {
     }
 
     std::cout << "[AudioCache] Loaded " << assetsByName.size() << " audio assets" << std::endl;
+    std::cout << "[AudioCache] Loaded " << banks.size() << " banks" << std::endl;
     return true;
 }
 
@@ -68,6 +70,24 @@ bool AudioCache::ParseManifest(const std::string& manifestPath) {
         parseCategory("ui");
         parseCategory("ambience");
 
+        // Parse banks
+        if (manifest.contains("banks")) {
+            const json& banksJson = manifest["banks"];
+            for (auto it = banksJson.begin(); it != banksJson.end(); ++it) {
+                const std::string& bankName = it.key();
+                const json& assetList = it.value();
+
+                std::vector<std::string> assets;
+                for (const auto& assetName : assetList) {
+                    assets.push_back(assetName.get<std::string>());
+                }
+
+                banks[bankName] = assets;
+                std::cout << "[AudioCache]   - Bank: " << bankName
+                    << " (" << assets.size() << " assets)" << std::endl;
+            }
+        }
+
         return true;
     }
     catch (const std::exception& e) {
@@ -88,6 +108,7 @@ void AudioCache::Shutdown() {
 
     assetsByName.clear();
     idToName.clear();
+    banks.clear();
 }
 
 AudioAsset* AudioCache::GetAsset(const std::string& name) {
@@ -172,4 +193,60 @@ void AudioCache::UnloadAsset(const std::string& name) {
         asset->sound->release();
         asset->sound = nullptr;
     }
+}
+
+// ============================================================================
+// BANK SYSTEM FUNCTIONS
+// ============================================================================
+
+bool AudioCache::LoadBank(const std::string& bankName) {
+    auto it = banks.find(bankName);
+    if (it == banks.end()) {
+        std::cerr << "[AudioCache] Bank not found: " << bankName << std::endl;
+        return false;
+    }
+
+    std::cout << "[AudioCache] Loading bank: " << bankName << std::endl;
+
+    const std::vector<std::string>& assets = it->second;
+    bool allLoaded = true;
+
+    for (const std::string& assetName : assets) {
+        if (!LoadAsset(assetName)) {
+            std::cerr << "[AudioCache] Failed to load asset in bank: " << assetName << std::endl;
+            allLoaded = false;
+        }
+    }
+
+    if (allLoaded) {
+        std::cout << "[AudioCache] Bank loaded successfully: " << bankName
+            << " (" << assets.size() << " assets)" << std::endl;
+    }
+
+    return allLoaded;
+}
+
+void AudioCache::UnloadBank(const std::string& bankName) {
+    auto it = banks.find(bankName);
+    if (it == banks.end()) {
+        std::cerr << "[AudioCache] Bank not found: " << bankName << std::endl;
+        return;
+    }
+
+    std::cout << "[AudioCache] Unloading bank: " << bankName << std::endl;
+
+    const std::vector<std::string>& assets = it->second;
+    for (const std::string& assetName : assets) {
+        UnloadAsset(assetName);
+    }
+
+    std::cout << "[AudioCache] Bank unloaded: " << bankName << std::endl;
+}
+
+std::vector<std::string> AudioCache::GetBankAssets(const std::string& bankName) {
+    auto it = banks.find(bankName);
+    if (it != banks.end()) {
+        return it->second;
+    }
+    return {};
 }

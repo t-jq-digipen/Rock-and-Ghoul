@@ -67,10 +67,8 @@ bool AudioSystem::Init() {
  * in the application.
  */
 void AudioSystem::LoadDefaultButtonSounds() {
-    // Register default button sounds based on your ButtonType enum
-    RegisterButtonSound(ButtonType::PLAY, "../Assets/audio/ui/playclick.mp3");
-    RegisterButtonSound(ButtonType::QUIT, "../Assets/audio/ui/quitclick.mp3");
-
+    RegisterButtonSound(ButtonType::PLAY, AudioCache::GetSound("button_play"));
+    RegisterButtonSound(ButtonType::QUIT, AudioCache::GetSound("button_quit"));
     std::cout << "Default button sounds loaded!" << std::endl;
 }
 
@@ -317,18 +315,21 @@ void AudioSystem::SetChannelPaused(FMOD::Channel* channel, bool paused) {
  * playing the main menu music.
  */
 void AudioManager::Initialize() {
-    AudioSystem::Init();
-
     // TEST THE CACHE
     std::cout << "\n=== TESTING AUDIOCACHE ===" << std::endl;
     if (!AudioCache::Initialize("../Assets/audio_manifest.json")) {
         std::cerr << "AudioCache failed to initialize!" << std::endl;
     }
     std::cout << "=== AUDIOCACHE TEST COMPLETE ===\n" << std::endl;
+    
+    AudioSystem::Init();
+
+    std::cout << "\n[AudioManager] Loading init bank..." << std::endl;
+    AudioCache::LoadBank("init");
 
     // preload music tracks
-    mainMenuMusic = Load("../Assets/audio/music/mainmenu.wav", true);
-    level1Music = Load("../Assets/audio/music/level1.wav", true);
+    mainMenuMusic = AudioCache::GetSound("main_menu");
+    level1Music = AudioCache::GetSound("level_1");
 
     // start main menu music
     if (mainMenuMusic) {
