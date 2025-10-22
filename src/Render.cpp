@@ -755,7 +755,8 @@ void Render::InitTextRendering() {
         return;
     }
 
-    if (FT_New_Face(ft, "../Assets/Antonio-Bold.ttf", 0, &face)) { //for now, direct path is placed in here
+    //to myself: (gonna prob put in a cache or smth similar to image for rubrics (support multiple font types)
+    if (FT_New_Face(ft, "../Assets/PermanentMarker-Regular.ttf", 0, &face)) { //for now, direct path is placed in here, danny's font
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
         cleanupFT();
         return;
@@ -789,7 +790,7 @@ void Render::InitTextRendering() {
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //GL_NEAREST
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //GL_NEAREST if it appears blurry
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         Character character = {
