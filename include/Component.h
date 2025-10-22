@@ -82,6 +82,7 @@ enum ComponentTypeID
 // basically for faster reading, consider implementing later
 using ComponentMask = std::bitset<32>;
 
+
 // BASE
 // COMP_1
 struct TransformComponent {
@@ -90,6 +91,10 @@ struct TransformComponent {
 	Vec2 scale	{ 1.0f, 1.0f };
 	Vec2 Prevpos;
 	float rot{0.0f};
+
+	std::string SaveComponent() const {}
+	void LoadComponent(const std::string& data)  {}
+
 };
 // BASE END
 
