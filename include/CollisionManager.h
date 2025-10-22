@@ -39,10 +39,16 @@ constexpr const char* TagToString(C_TagID tag) {
  */
 
 class CollisionManager {
+private:
     //stores a list of all collision events found during one frame
     std::vector<CollisionEvent> events;
 
+    // Reference to registry
+    Registry& m_registry;
+
 public:
+    // Default ctor to initialize registry reference
+    CollisionManager() : m_registry(Registry::Get()) {}
     /**
      * @brief Clears all collision events for the current frame.
      */

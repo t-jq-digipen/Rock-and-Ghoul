@@ -27,6 +27,9 @@ enum PlayerState : int {
 };
 
 class PlayerSystem : public ISystem {
+private:
+    void WASD_Movement(Entity eID, float& dt);
+
 public:
 
     void Initialize() override;

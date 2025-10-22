@@ -80,3 +80,19 @@ bool EntityManager::isAlive(Entity eID) const
 	return alive[eID];
 }
 
+// Get map of entity names
+std::unordered_map<Entity,std::string>& EntityManager::GetEntityNameMap()
+{ return entityNames; }
+
+void EntityManager::SetEntityName(Entity eID, const std::string& name)
+{ entityNames[eID] = name; }
+
+std::string EntityManager::GetEntityName(Entity eID)
+{
+	if (entityNames.find(eID) == entityNames.end())
+	{
+		// ENTITY NOT NAMED :( return generic entity name
+		return "Entity_" + std::to_string(eID);
+	}
+	return entityNames[eID];
+}

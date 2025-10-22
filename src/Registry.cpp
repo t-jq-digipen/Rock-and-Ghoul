@@ -62,6 +62,11 @@ ComponentManager<InputComponent>				input;
 // CT_Shape
 ComponentManager<ShapeComponent>				shape;
 
+// Element
+// CT_Elemnt
+ComponentManager<ElementComponent>				element;
+
+
 // Entity manager (stores a REFERENCE to the singleton entity manager ^^)
 // ================================================================================
 EntityManager& entityManager = EntityManager::get();
@@ -79,7 +84,7 @@ Entity Create_Entity()
 void Remove_Entity(Entity eID)
 {
 	// remove all components!
-	Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input, CT_Shape });
+	// Remove_Components(eID, { CT_Transform, CT_Sprite, CT_Animator, CT_Physics, CT_Audio, CT_Lifetime, CT_Health, CT_Tag, CT_Input, CT_Shape, CT_Element });
 
 	// remove entity ID!
 	entityManager.destroyEntity(eID);
@@ -148,18 +153,23 @@ void Add_Component(Entity eID, HealthComponent const& comp)
 
 void Add_Component(Entity eID, TagComponent const& comp)
 {
-	std::cout << "REGISTRY | ADDING COMPONENT | TAG			| eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | TAG	        | eID: " << eID << "\n";
 	tag.addComponent(eID, comp);
 }
 void Add_Component(Entity eID, InputComponent const& comp)
 {
-	std::cout << "REGISTRY | ADDING COMPONENT | INPUT		| eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | INPUT       | eID: " << eID << "\n";
 	input.addComponent(eID, comp);
 }
 void Add_Component(Entity eID, ShapeComponent const& comp)
 {
-	std::cout << "REGISTRY | ADDING COMPONENT | SHAPE		| eID: " << eID << "\n";
+	std::cout << "REGISTRY | ADDING COMPONENT | SHAPE       | eID: " << eID << "\n";
 	shape.addComponent(eID, comp);
+}
+void Add_Component(Entity eID, ElementComponent const& comp)
+{
+	std::cout << "REGISTRY | ADDING COMPONENT | ELEMENT	    | eID: " << eID << "\n";
+	element.addComponent(eID, comp);
 }
 
 
@@ -247,6 +257,13 @@ void Remove_Component(Entity eID, ComponentTypeID const& cID)
 		shape.removeComponent(eID);
 	}
 	break;	// CT_Shape
+
+	case (CT_Element):
+	{
+		std::cout << "REGISTRY | REMOVING COMPONENT | ELEMENT       | eID: " << eID << "\n";
+		element.removeComponent(eID);
+	}
+	break;	// CT_Element
 	}
 }
 
@@ -307,6 +324,10 @@ bool Has_Component(Entity eID, ComponentTypeID const& cID)
 	{ return shape.hasComponent(eID); }
 	break;	// CT_Tag
 
+	case (CT_Element):
+	{ return element.hasComponent(eID); }
+	break;	// CT_Element
+
 	default:
 		return false;
 	}
@@ -336,6 +357,8 @@ InputComponent&					Get_InputComponent(Entity eID)			{ return input.getComponent
 
 ShapeComponent&					Get_ShapeComponent(Entity eID)			{ return shape.getComponent(eID); }
 
+ElementComponent&				Get_ElementComponent(Entity eID)		{ return element.getComponent(eID); }
+
 
 // Manager accessors
 ComponentManager<TransformComponent>&			CM_Transform()		{ return transform; }
@@ -348,7 +371,7 @@ ComponentManager<HealthComponent>&				CM_Health()			{ return health; }
 ComponentManager<TagComponent>&					CM_Tag()			{ return tag; }
 ComponentManager<InputComponent>&				CM_Input()			{ return input; }
 ComponentManager<ShapeComponent>&				CM_Shape()			{ return shape; }
-
+ComponentManager<ElementComponent>&				CM_Element()		{ return element; }
 #pragma endregion COMPONENT
 
 std::unordered_map<Entity, std::string>& GetEntityNameMap() {

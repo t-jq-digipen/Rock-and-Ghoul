@@ -16,10 +16,15 @@
 #pragma once
 #include <vector>
 #include "Entity.h"   // or wherever Entity typedef is
+#include "Registry.h"
 
 class Registry; // forward declare
 
 class ISystem {
+protected:
+    Registry& m_registry;
+
+    ISystem() : m_registry(Registry::Get()) {}
 public:
     virtual void Initialize() {}
     virtual void Update(float dt) = 0;

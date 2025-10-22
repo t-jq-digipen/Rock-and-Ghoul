@@ -22,15 +22,15 @@ constexpr float dash = 10.f;
 constexpr float maxspeed = 10.f;
 constexpr float speed = 500.f;
 
-void WASD_Movement(Entity eID, float& dt)
+void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 {
 	(void)dt;
-	auto& physics = Get_PhysicsComponent(eID);
+	auto& physics = m_registry.Get_Component<Physics::PhysicsComponent>(eID);
 
-	if (!Has_Component(eID, CT_Input)) {
+	if (!m_registry.Has_Component<InputComponent>(eID)) {
 		return; // No input component, skip movement
 	}
-	auto& input = Get_InputComponent(eID);
+	auto& input = m_registry.Get_Component<InputComponent>(eID);
 
 	// Handle movement based on control scheme
 	switch (input.scheme) {
@@ -55,15 +55,15 @@ void WASD_Movement(Entity eID, float& dt)
 		if (Input::IsKeyHeld(GLFW_KEY_K)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
 		if (Input::IsKeyHeld(GLFW_KEY_J)) physics.AddForce({ -1,0 }, 1.f, 0.f);
 		if (Input::IsKeyHeld(GLFW_KEY_L)) physics.AddForce({ 1,0 }, 1.f, 0.f);
-		if (CM_Animator().hasComponent(eID))
+		if (m_registry.Has_Component<Animator::AnimatorComponent>(eID))
 		{
 			if ((Input::IsKeyHeld(GLFW_KEY_I) || Input::IsKeyHeld(GLFW_KEY_J) || Input::IsKeyHeld(GLFW_KEY_K) || Input::IsKeyHeld(GLFW_KEY_L)))
 			{
-				CM_Animator().getComponent(eID).SetState(PS_WALK);
+				m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(PS_WALK);
 			}
 			else
 			{
-				CM_Animator().getComponent(eID).SetState(PS_IDLE);
+				m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(PS_IDLE);
 			}
 
 		}
@@ -107,9 +107,9 @@ void PlayerSystem::Initialize()
 
 void PlayerSystem::Update(float dt)
 {
-	for (auto& [entity, comp] : CM_Tag().getComponents())
+	for (auto& [entity, comp] : m_registry.Get_ComponentMap<TagComponent>())
 	{
-		if (!Has_Component(entity, CT_Transform))
+		if (!m_registry.Has_Component<TransformComponent>(entity))
 			continue;
 		if (comp.tag == T_PLAYER)
 		{

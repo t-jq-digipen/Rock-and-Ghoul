@@ -53,7 +53,8 @@ Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeTyp
     }
 
     if (shape != 0) {
-        Add_Component(shape, InputComponent{ scheme }); // <--- use scheme here
+        Registry::Get().Add_Component<InputComponent>(shape, InputComponent{ scheme });
+        // Add_Component(shape, InputComponent{ scheme }); // <--- use scheme here
     }
 
     return 0;
@@ -75,123 +76,123 @@ void GenerateInitialPrefabs() {
 
     // Player
     {
-        Entity player = Create_Entity();
-        SetEntityName(player, "Player");
-        Add_Component(player, TransformComponent{ {0, 0}, {100.f, 100.f} });
+        Entity player = Registry::Get().Create_Entity();
+        Registry::Get().Set_EntityName(player, "Player");
+        Registry::Get().Add_Component<TransformComponent>(player, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
         AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
         Circle circle = { {0, 0}, 200.f };
         Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-        Add_Component(player, temp);
+        Registry::Get().Add_Component<Physics::PhysicsComponent>(player, temp);
 
-        Add_Component(player, InputComponent{ CS_WASD });
-        Add_Component(player, TagComponent{ T_PLAYER });
+        Registry::Get().Add_Component<InputComponent>(player, InputComponent{ CS_WASD });
+        Registry::Get().Add_Component<TagComponent>(player, TagComponent{ T_PLAYER });
 
         Image img = CreateImage("../Assets/Rock_FightingPose_2048px.png");
-        Add_Component(player, Sprite::SpriteComponent{ img, {.1f,.1f} });
+        Registry::Get().Add_Component<Sprite::SpriteComponent>(player, Sprite::SpriteComponent{ img, {.1f,.1f} });
 
-        Add_Component(player, HealthComponent{ 100.f, 100.f });
+        Registry::Get().Add_Component<HealthComponent>(player, HealthComponent{ 100.f, 100.f });
 
         JsonLoad::SaveCurrentScene(FilePath::PREFABS_FOLDER + "Player.json", "Player");
-        Remove_Entity(player);
+        Registry::Get().Remove_Entity(player);
     }
 
     // Waffle
     {
-        Entity waffle = Create_Entity();
-        SetEntityName(waffle, "Waffle");
-        Add_Component(waffle, TransformComponent{ {0, 0}, {100.f, 100.f} });
+        Entity waffle = Registry::Get().Create_Entity();
+        Registry::Get().Set_EntityName(waffle, "Waffle");
+        Registry::Get().Add_Component<TransformComponent>(waffle, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
         AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
         Circle circle = { {0, 0}, 200.f };
         Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-        Add_Component(waffle, temp);
+        Registry::Get().Add_Component<Physics::PhysicsComponent>(waffle, temp);
 
-        Add_Component(waffle, InputComponent{ CS_IJKL });
-        Add_Component(waffle, TagComponent{ T_PLAYER });
+        Registry::Get().Add_Component<InputComponent>(waffle, InputComponent{ CS_IJKL });
+        Registry::Get().Add_Component<TagComponent>(waffle, TagComponent{ T_PLAYER });
 
         Image imgtemp = CreateImage("../Assets/Waffle_Sprites.png");
-        Add_Component(waffle, Sprite::SpriteComponent{ imgtemp, {100.f,100.f }, true });
+        Registry::Get().Add_Component<Sprite::SpriteComponent>(waffle, Sprite::SpriteComponent{ imgtemp, {100.f,100.f }, true });
 
         Animator::AnimatorComponent animtemp(3, 6, imgtemp.widthPixels, imgtemp.heightPixels, { 2,0,1 }, 1.f);
         animtemp.AddState(PS_IDLE, { 3, 0, 1, 1.f });
         animtemp.AddState(PS_WALK, { 3,2,3,0.5f });
-        Add_Component(waffle, animtemp);
+        Registry::Get().Add_Component<Animator::AnimatorComponent>(waffle, animtemp);
 
-        Add_Component(waffle, HealthComponent{ 100.f, 100.f });
+        Registry::Get().Add_Component<HealthComponent>(waffle, HealthComponent{ 100.f, 100.f });
 
         JsonLoad::SaveCurrentScene(FilePath::PREFABS_FOLDER + "Waffle.json", "Waffle");
-        Remove_Entity(waffle);
+        Registry::Get().Remove_Entity(waffle);
     }
 
     // Rectangle
     {
-        Entity rect = Create_Entity();
-        SetEntityName(rect, "Rectangle");
-        Add_Component(rect, TransformComponent{ {0, 0}, {100.f, 100.f} });
+        Entity rect = Registry::Get().Create_Entity();
+        Registry::Get().Set_EntityName(rect, "Rectangle");
+        Registry::Get().Add_Component<TransformComponent>(rect, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
         AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
         Circle circle = { {0, 0}, 200.f };
         Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
-        Add_Component(rect, phys);
+        Registry::Get().Add_Component<Physics::PhysicsComponent>(rect, phys);
 
-        Add_Component(rect, ShapeComponent{ SHAPE_RECTANGLE, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
-        Add_Component(rect, InputComponent{ CS_WASD });
-        Add_Component(rect, TagComponent{ T_PLAYER });
-        Add_Component(rect, HealthComponent{ 100.f, 100.f });
+        Registry::Get().Add_Component<ShapeComponent>(rect, ShapeComponent{ SHAPE_RECTANGLE, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
+        Registry::Get().Add_Component<InputComponent>(rect, InputComponent{ CS_WASD });
+        Registry::Get().Add_Component<TagComponent>(rect, TagComponent{ T_PLAYER });
+        Registry::Get().Add_Component<HealthComponent>(rect, HealthComponent{ 100.f, 100.f });
 
         JsonLoad::SaveCurrentScene(FilePath::PREFABS_FOLDER + "Rectangle.json", "Rectangle");
-        Remove_Entity(rect);
+        Registry::Get().Remove_Entity(rect);
     }
 
     // Circle
     {
-        Entity circle_ent = Create_Entity();
-        SetEntityName(circle_ent, "Circle");
-        Add_Component(circle_ent, TransformComponent{ {0, 0}, {100.f, 100.f} });
+        Entity circle_ent = Registry::Get().Create_Entity();
+        Registry::Get().Set_EntityName(circle_ent, "Circle");
+        Registry::Get().Add_Component<TransformComponent>(circle_ent, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
         AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
         Circle circle = { {0, 0}, 100.f };
         Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
-        Add_Component(circle_ent, phys);
+        Registry::Get().Add_Component<Physics::PhysicsComponent>(circle_ent, phys);
 
-        Add_Component(circle_ent, ShapeComponent{ SHAPE_CIRCLE, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} });
-        Add_Component(circle_ent, InputComponent{ CS_ARROWS });
-        Add_Component(circle_ent, TagComponent{ T_PLAYER });
-        Add_Component(circle_ent, HealthComponent{ 100.f, 100.f });
+        Registry::Get().Add_Component<ShapeComponent>(circle_ent, ShapeComponent{ SHAPE_CIRCLE, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} });
+        Registry::Get().Add_Component<InputComponent>(circle_ent, InputComponent{ CS_ARROWS });
+        Registry::Get().Add_Component<TagComponent>(circle_ent, TagComponent{ T_PLAYER });
+        Registry::Get().Add_Component<HealthComponent>(circle_ent, HealthComponent{ 100.f, 100.f });
 
         JsonLoad::SaveCurrentScene(FilePath::PREFABS_FOLDER + "Circle.json", "Circle");
-        Remove_Entity(circle_ent);
+        Registry::Get().Remove_Entity(circle_ent);
     }
 
     std::cout << "=== ALL PREFABS GENERATED ===" << std::endl;
 }
 Entity Create_Wall(float x, float y, float width, float height) {
-    Entity wall = Create_Entity();
-    Add_Component(wall, ShapeComponent{ SHAPE_RECTANGLE });
-    Add_Component(wall, TransformComponent{ {x, y}, {width, height} });
+    Entity wall = Registry::Get().Create_Entity();
+    Registry::Get().Add_Component<ShapeComponent>(wall, ShapeComponent{ SHAPE_RECTANGLE });
+    Registry::Get().Add_Component<TransformComponent>(wall, TransformComponent{ {x, y}, {width, height} });
     AABB aabb = Set_AABB({ x, y }, { width, height });
     Circle circle = { {x, y}, 0.0f }; // zero radius
     Physics::PhysicsComponent phys(0.0f, true, aabb, circle, true);
-    Add_Component(wall, phys);
+    Registry::Get().Add_Component<Physics::PhysicsComponent>(wall, phys);
 
-    Add_Component(wall, TagComponent{ T_WALL });
+    Registry::Get().Add_Component<TagComponent>(wall, TagComponent{ T_WALL });
     return wall;
 }
 
 Entity Create_InstancedSquare(float x, float y, float size, Vec3 color)
 {
-    Entity instance = Create_Entity();
+    Entity instance = Registry::Get().Create_Entity();
 
 
-    Add_Component(instance, TransformComponent{ {x, y}, {size, size} });
+    Registry::Get().Add_Component<TransformComponent>(instance, TransformComponent{ {x, y}, {size, size} });
     //for rendersystem
     ShapeComponent s;
     s.shape = SHAPE_RECTANGLE;
     s.dimensions = { size, size };
     s.color = color;
-    Add_Component(instance, s);
-    Add_Component(instance, TagComponent{ T_INSTANCING });
+    Registry::Get().Add_Component<ShapeComponent>(instance, s);
+    Registry::Get().Add_Component<TagComponent>(instance, TagComponent{ T_INSTANCING });
     return instance;
 }
 //Entity Create_Square(float x, float y) {

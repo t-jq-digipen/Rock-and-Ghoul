@@ -36,9 +36,9 @@ void CollisionManager::ProcessEvents() {
     for (auto& e : events) {
         //if both entities have a tag
         //tags tell us what kind of entity
-        if (Has_Component(e.a, CT_Tag) && Has_Component(e.b, CT_Tag)) {
-            auto& tagA = Get_TagComponent(e.a);
-            auto& tagB = Get_TagComponent(e.b);
+        if (m_registry.Has_Component<TagComponent>(e.a) && m_registry.Has_Component<TagComponent>(e.b)) {
+            auto& tagA = m_registry.Get_Component<TagComponent>(e.a);
+            auto& tagB = m_registry.Get_Component<TagComponent>(e.b);
 
             std::cout << "Collision detected between " << TagToString(tagA.tag) << " (Entity " << e.a << ")" << " and "  << TagToString(tagB.tag) << " (Entity " << e.b << ")" << std::endl;
         }
@@ -50,10 +50,10 @@ void CollisionManager::ProcessEvents() {
 }
 
 void CollisionManager::ActionStop(Entity a, Entity b) {
-    auto& transA = Get_TransformComponent(a);
-    auto& physA = Get_PhysicsComponent(a);
-    auto& transB = Get_TransformComponent(b);
-    auto& physB = Get_PhysicsComponent(b);
+    auto& transA = m_registry.Get_Component<TransformComponent>(a);
+    auto& physA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
+    auto& transB = m_registry.Get_Component<TransformComponent>(b);
+    auto& physB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
 
     const AABB& aabbA = physA.Get_AABB();
     const AABB& aabbB = physB.Get_AABB();
@@ -99,10 +99,10 @@ void CollisionManager::ActionStop(Entity a, Entity b) {
 }
 
 void CollisionManager::ActionStop_Static(Entity dynamic, Entity staticObj) {
-    auto& transDyn = Get_TransformComponent(dynamic);
-    auto& physDyn = Get_PhysicsComponent(dynamic);
-    auto& transStatic = Get_TransformComponent(staticObj);
-    auto& physStatic = Get_PhysicsComponent(staticObj);
+    auto& transDyn = m_registry.Get_Component<TransformComponent>(dynamic);
+    auto& physDyn = m_registry.Get_Component<Physics::PhysicsComponent>(dynamic);
+    auto& transStatic = m_registry.Get_Component<TransformComponent>(staticObj);
+    auto& physStatic = m_registry.Get_Component<Physics::PhysicsComponent>(staticObj);
 
     const AABB& aabbDyn = physDyn.Get_AABB();
     const AABB& aabbStatic = physStatic.Get_AABB();
@@ -153,8 +153,8 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected)
 
     AddEvent(a, b);
 
-    auto& compA = Get_PhysicsComponent(a);
-    auto& compB = Get_PhysicsComponent(b);
+    auto& compA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
+    auto& compB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
 
     if (compA.IsStatic() && !compB.IsStatic()) {
         ActionStop_Static(b, a);
@@ -168,41 +168,41 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected)
 }
 
 void CollisionManager::CheckCollisions() {
-    auto& physicsComps = CM_Physics().getComponents();
+    auto& physicsComps = m_registry.Get_ComponentMap<Physics::PhysicsComponent>();
 
     for (auto itA = physicsComps.begin(); itA != physicsComps.end(); ++itA) {
         Entity a = itA->first;
         Physics::PhysicsComponent& compA = itA->second;
 
-        if (!compA.CollisionActive() || !Has_Component(a, CT_Transform)) continue;
+        if (!compA.CollisionActive() || !m_registry.Has_Component<TransformComponent>(a)) continue;
 
-        auto& transA = Get_TransformComponent(a);
+        auto& transA = m_registry.Get_Component<TransformComponent>(a);
         compA.UpdateHitboxes(transA.pos);
 
         for (auto itB = std::next(itA); itB != physicsComps.end(); ++itB) {
             Entity b = itB->first;
             Physics::PhysicsComponent& compB = itB->second;
 
-            if (!compB.CollisionActive() || !Has_Component(b, CT_Transform)) continue;
+            if (!compB.CollisionActive() || !m_registry.Has_Component<TransformComponent>(b)) continue;
 
-            auto& transB = Get_TransformComponent(b);
+            auto& transB = m_registry.Get_Component<TransformComponent>(b);
             compB.UpdateHitboxes(transB.pos);
 
             // collision shapes
             bool aIsCircle = false, bIsCircle = false;
 
-            if (Has_Component(a, CT_Shape)) {
-                auto& shapeA = Get_ShapeComponent(a);
+            if (m_registry.Has_Component<ShapeComponent>(a)) {
+                auto& shapeA = m_registry.Get_Component<ShapeComponent>(a);
                 aIsCircle = (shapeA.shape == SHAPE_CIRCLE);
             }
-            if (Has_Component(b, CT_Shape)) {
-                auto& shapeB = Get_ShapeComponent(b);
+            if (m_registry.Has_Component<ShapeComponent>(b)) {
+                auto& shapeB = m_registry.Get_Component<ShapeComponent>(b);
                 bIsCircle = (shapeB.shape == SHAPE_CIRCLE);
             }
 
-            if (Has_Component(a, CT_Tag) && Has_Component(b, CT_Tag)) {
-                auto& tagA = Get_TagComponent(a);
-                auto& tagB = Get_TagComponent(b);
+            if (m_registry.Has_Component<TagComponent>(a) && m_registry.Has_Component<TagComponent>(b)) {
+                auto& tagA = m_registry.Get_Component<TagComponent>(a);
+                auto& tagB = m_registry.Get_Component<TagComponent>(b);
                 if (tagA.tag == T_WALL && tagB.tag == T_WALL) {
                     continue; // don’t process wall–wall collisions
                 }

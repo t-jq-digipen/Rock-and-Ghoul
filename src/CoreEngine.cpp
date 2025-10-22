@@ -47,6 +47,43 @@ void CoreEngine::AddSystem(ISystem* sys) {
 }
 
 void CoreEngine::Initialize() {
+    Registry& registry = Registry::Get();
+    std::cout << "\n\nINITIALIZING REGISTRY\n==============================\n";
+    std::cout << "INITIALIZING DEFAULT COMPONENTS: \n==============================\n";
+    registry.Register_Component<TransformComponent>();
+    std::cout << "REGISTRY | REGISTERED TRANSFORM COMPONENT\n";
+
+    registry.Register_Component<Sprite::SpriteComponent>();
+    std::cout << "REGISTRY | REGISTERED SPRITE COMPONENT\n";
+
+    registry.Register_Component<Animator::AnimatorComponent>();
+    std::cout << "REGISTRY | REGISTERED ANIMATOR COMPONENT\n";
+
+    registry.Register_Component<Physics::PhysicsComponent>();
+    std::cout << "REGISTRY | REGISTERED PHYSICS COMPONENT\n";
+
+    registry.Register_Component<AudioComponent>();
+    std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";
+
+    registry.Register_Component<HealthComponent>();
+    std::cout << "REGISTRY | REGISTERED HEALTH COMPONENT\n";
+
+    registry.Register_Component<InputComponent>();
+    std::cout << "REGISTRY | REGISTERED INPUT COMPONENT\n";
+
+    registry.Register_Component<ShapeComponent>();
+    std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";
+
+    // marker for non-standard components which should be shifted out to game files
+    std::cout << "NON DEFAULT COMPONENTS: \n==============================\n";
+
+    registry.Register_Component<TagComponent>();
+    std::cout << "REGISTRY | REGISTERED TAG COMPONENT\n";
+
+    registry.Register_Component<ElementComponent>();
+    std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";
+
+
     for (auto s : systems) s->Initialize();
     gsm.Init(GameState::GS_MAIN_MENU);
 

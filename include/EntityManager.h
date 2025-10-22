@@ -43,6 +43,7 @@ private:
 	std::vector<Entity>	freeID;		// Recycle old IDs to prevent next_entID from increasing infinitely
 	std::vector<bool>	alive;		// Track which ID is alive, vector grows as new entities are added
 
+	std::unordered_map<Entity, std::string> entityNames;	// Map to store entity names
 private:
 	// Private ctor for singleton
 	EntityManager()									= default;
@@ -106,5 +107,29 @@ public:
 	 * @return The number of entities currently tracked.
 	 */
 	size_t maxEntities() const { return alive.size(); }
+
+	/**
+	 * @brief Get the map of entity names.
+	 *
+	 * @return Reference to unordered map of entity IDs to their names
+	 */
+	std::unordered_map<Entity, std::string>& GetEntityNameMap();
+
+	/**
+	 * @brief Sets the name of an entity.
+	 * 
+	 * @param eID The entity ID.
+	 * @param name The name to be assigned to the entity.
+	 */
+	void SetEntityName(Entity eID, const std::string& name);
+
+	/**
+	 * @brief Sets the name of an entity.
+	 * 
+	 * @param eID The entity ID.
+	 * @return The name of the entity.
+	 */
+	std::string GetEntityName(Entity eID);
+
 
 };

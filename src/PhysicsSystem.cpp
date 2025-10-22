@@ -41,10 +41,10 @@ void PhysicsSystem::Update(float dt) {
 
 
     // for new physics component
-    for (auto& [entID, phyComp] : CM_Physics().getComponents())
+    for (auto& [entID, phyComp] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>())
     {
         // Get transform component (you gonna need it!)
-        TransformComponent& transComp = Get_TransformComponent(entID);
+        TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
 
         // Update physics component
         phyComp.Update();

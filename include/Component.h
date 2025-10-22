@@ -73,7 +73,9 @@ enum ComponentTypeID
 							  
 	CT_Input,
 
-	CT_Shape			//		| Shape enumeration for non-sprite drawing
+	CT_Shape,			//		| Shape enumeration for non-sprite drawing
+
+	CT_Element
 };
 
 
@@ -165,4 +167,16 @@ struct ShapeComponent {
 	ShapeType shape = SHAPE_RECTANGLE;
 	Vec2 dimensions = { 1.0f, 1.0f };
 	Vec3 color = { 1.0f, 1.0f, 1.0f };
+};
+
+enum Element {
+	ELEMENT_NONE,
+	ELEMENT_FIRE,
+	ELEMENT_ICE,
+	ELEMENT_WIND,
+	ELEMENT_LIGHTNING
+};
+
+struct ElementComponent {
+	Element element = ELEMENT_NONE;
 };

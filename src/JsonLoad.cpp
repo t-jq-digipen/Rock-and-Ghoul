@@ -33,7 +33,7 @@
   *         posX, posY, scaleX, scaleY, and rot.
   */
 std::string JsonLoad::Save_Transform(Entity eID) {
-    auto& t = Get_TransformComponent(eID);
+    auto& t = Registry::Get().Get_Component<TransformComponent>(eID);
     json j = {
         {"posX", t.pos.x},
         {"posY", t.pos.y},
@@ -52,7 +52,7 @@ std::string JsonLoad::Save_Transform(Entity eID) {
  *         texturePath, scaleX, scaleY, and animated.
  */
 std::string JsonLoad::Save_Sprite(Entity eID) {
-    auto& s = Get_SpriteComponent(eID);
+    auto& s = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID);
 
     // Get texture path from the image
     std::string texPath = s.Get_TexturePath();
@@ -76,7 +76,7 @@ std::string JsonLoad::Save_Sprite(Entity eID) {
  *         currentState, all animation states, and UV coordinates (u0, v0, u1, v1).
  */
 std::string JsonLoad::Save_Animator(Entity eID) {
-    auto& a = Get_AnimatorComponent(eID);
+    auto& a = Registry::Get().Get_Component<Animator::AnimatorComponent>(eID);
 
     auto frames = a.GetFrames();
     auto stateMap = a.GetStateFrames();
@@ -110,7 +110,7 @@ std::string JsonLoad::Save_Animator(Entity eID) {
  * @return std::string JSON string containing the shape data
  */
 std::string JsonLoad::Save_Shape(Entity eID) {
-    auto& s = Get_ShapeComponent(eID);
+    auto& s = Registry::Get().Get_Component<ShapeComponent>(eID);
     json j = {
         {"shapeType", static_cast<int>(s.shape)},
         {"dimX", s.dimensions.x},
@@ -129,7 +129,7 @@ std::string JsonLoad::Save_Shape(Entity eID) {
  * @return std::string JSON string containing the physics data.
  */
 std::string JsonLoad::Save_Physics(Entity eID) {
-    auto& p = Get_PhysicsComponent(eID);
+    auto& p = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
     auto& vel = p.Get_Vel();
     auto& aabb = p.Get_AABB();
     auto& circle = p.Get_Circle();
@@ -165,7 +165,7 @@ std::string JsonLoad::Save_Physics(Entity eID) {
  * @return std::string JSON string containing the health data.
  */
 std::string JsonLoad::Save_Health(Entity eID) {
-    auto& h = Get_HealthComponent(eID);
+    auto& h = Registry::Get().Get_Component<HealthComponent>(eID);
     json j = {
         {"currentHP", h.currhp},
         {"maxHP", h.maxhp}
@@ -180,7 +180,7 @@ std::string JsonLoad::Save_Health(Entity eID) {
  * @return std::string JSON string containing the tag data.
  */
 std::string JsonLoad::Save_Tag(Entity eID) {
-    auto& t = Get_TagComponent(eID);
+    auto& t = Registry::Get().Get_Component<TagComponent>(eID);
     json j = {
         {"tagID", static_cast<int>(t.tag)}
     };
@@ -194,7 +194,7 @@ std::string JsonLoad::Save_Tag(Entity eID) {
  * @return std::string JSON string containing the input data.
  */
 std::string JsonLoad::Save_Input(Entity eID) {
-    auto& i = Get_InputComponent(eID);
+    auto& i = Registry::Get().Get_Component<InputComponent>(eID);
     json j = {
         {"scheme", static_cast<int>(i.scheme)}
     };
@@ -218,7 +218,7 @@ void JsonLoad::Load_Transform(Entity eID, const std::string& data) {
     t.scale.x = j["scaleX"];
     t.scale.y = j["scaleY"];
     t.rot = j.value("rot", 0.0f);
-    Add_Component(eID, t);
+    Registry::Get().Add_Component<TransformComponent>(eID, t);
 }
 
 /**
@@ -238,7 +238,7 @@ void JsonLoad::Load_Shape(Entity eID, const std::string& data) {
     s.color.y = j["colorY"];
     s.color.z = j["colorZ"];
 
-    Add_Component(eID, s);
+    Registry::Get().Add_Component<ShapeComponent>(eID, s);
 }
 
 /**
@@ -258,13 +258,13 @@ void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
     frames.col_end = j["frameColEnd"];
     frames.duration = j.value("frameDuration", 1.0f);
 
-    if (!Has_Component(eID, CT_Sprite)) {
+    if (!Registry::Get().Has_Component<Sprite::SpriteComponent>(eID)) {
         std::cerr << "ERROR: Entity " << eID << " doesn't have Sprite component yet!" << std::endl;
         throw std::runtime_error("Animator requires Sprite component");
     }
 
     // Get the sprite component to determine image dimensions
-    auto& sprite = Get_SpriteComponent(eID);
+    auto& sprite = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID);
     int imageWidth = sprite.Get_Image().widthPixels;
     int imageHeight = sprite.Get_Image().heightPixels;
 
@@ -288,7 +288,7 @@ void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
         anim.SetState(j["currentState"]);
     }
 
-    Add_Component(eID, anim);
+    Registry::Get().Add_Component<Animator::AnimatorComponent>(eID, anim);
 }
 
 /**
@@ -308,7 +308,7 @@ void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
 
     if (!texPath.empty()) {
         Sprite::SpriteComponent s(texPath, scale, animated);
-        Add_Component(eID, s);
+        Registry::Get().Add_Component<Sprite::SpriteComponent>(eID, s);
     }
 }
 
@@ -343,7 +343,7 @@ void JsonLoad::Load_Physics(Entity eID, const std::string& data) {
     vel.y = j["velY"];
     p.Set_Vel(vel);
 
-    Add_Component(eID, p);
+    Registry::Get().Add_Component<Physics::PhysicsComponent>(eID, p);
 }
 
 /**
@@ -357,7 +357,7 @@ void JsonLoad::Load_Health(Entity eID, const std::string& data) {
     HealthComponent h;
     h.currhp = j["currentHP"];
     h.maxhp = j["maxHP"];
-    Add_Component(eID, h);
+    Registry::Get().Add_Component<HealthComponent>(eID, h);
 }
 
 /**
@@ -370,7 +370,7 @@ void JsonLoad::Load_Tag(Entity eID, const std::string& data) {
     json j = json::parse(data);
     TagComponent t;
     t.tag = static_cast<C_TagID>(static_cast<int>(j["tagID"]));
-    Add_Component(eID, t);
+    Registry::Get().Add_Component<TagComponent>(eID, t);
 }
 
 /**
@@ -383,7 +383,7 @@ void JsonLoad::Load_Input(Entity eID, const std::string& data) {
     json j = json::parse(data);
     InputComponent i;
     i.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
-    Add_Component(eID, i);
+    Registry::Get().Add_Component<InputComponent>(eID, i);
 }
 #pragma endregion ComponentLoaders
 
@@ -399,38 +399,38 @@ void JsonLoad::Load_Input(Entity eID, const std::string& data) {
 SavedEntity JsonLoad::EntityToSaved(Entity eID) {
     SavedEntity saved;
     saved.id = eID;
-    saved.name = GetEntityName(eID);
+    saved.name = Registry::Get().Get_EntityName(eID);
 
     // Check each component and save if exists
-    if (Has_Component(eID, CT_Transform)) {
+    if (Registry::Get().Has_Component<TransformComponent>(eID)) {
         saved.componentData[CT_Transform] = Save_Transform(eID);
     }
 
-    if (Has_Component(eID, CT_Sprite)) {
+    if (Registry::Get().Has_Component<Sprite::SpriteComponent>(eID)) {
         saved.componentData[CT_Sprite] = Save_Sprite(eID);
     }
 
-    if (Has_Component(eID, CT_Physics)) {
+    if (Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) {
         saved.componentData[CT_Physics] = Save_Physics(eID);
     }
 
-    if (Has_Component(eID, CT_Health)) {
+    if (Registry::Get().Has_Component<HealthComponent>(eID)) {
         saved.componentData[CT_Health] = Save_Health(eID);
     }
 
-    if (Has_Component(eID, CT_Tag)) {
+    if (Registry::Get().Has_Component<TagComponent>(eID)) {
         saved.componentData[CT_Tag] = Save_Tag(eID);
     }
 
-    if (Has_Component(eID, CT_Shape)) {
+    if (Registry::Get().Has_Component<ShapeComponent>(eID)) {
         saved.componentData[CT_Shape] = Save_Shape(eID);
     }
 
-    if (Has_Component(eID, CT_Input)) {
+    if (Registry::Get().Has_Component<InputComponent>(eID)) {
         saved.componentData[CT_Input] = Save_Input(eID);
     }
 
-    if (Has_Component(eID, CT_Animator)) {
+    if (Registry::Get().Has_Component<Animator::AnimatorComponent>(eID)) {
         saved.componentData[CT_Animator] = Save_Animator(eID);
     }
 
@@ -444,8 +444,8 @@ SavedEntity JsonLoad::EntityToSaved(Entity eID) {
  * @return Entity The ID of the newly created entity with all components attached.
  */
 Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
-    Entity e = Create_Entity();
-    SetEntityName(e, saved.name);
+    Entity e = Registry::Get().Create_Entity();
+    Registry::Get().Set_EntityName(e, saved.name);
 
     std::cout << "Creating entity '" << saved.name << "' (ID: " << e << ")" << std::endl;
 
@@ -660,12 +660,12 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
                 std::cout << "Saving entity ID: " << e << std::endl;
 
                 // Debug: check what components it has
-                if (Has_Component(e, CT_Transform)) std::cout << "  - Has Transform" << std::endl;
-                if (Has_Component(e, CT_Sprite)) std::cout << "  - Has Sprite" << std::endl;
-                if (Has_Component(e, CT_Physics)) std::cout << "  - Has Physics" << std::endl;
-                if (Has_Component(e, CT_Health)) std::cout << "  - Has Health" << std::endl;
-                if (Has_Component(e, CT_Tag)) std::cout << "  - Has Tag" << std::endl;
-                if (Has_Component(e, CT_Input)) std::cout << "  - Has Input" << std::endl;
+                if (Registry::Get().Has_Component<TransformComponent>(e)) std::cout << "  - Has Transform" << std::endl;
+                if (Registry::Get().Has_Component<Sprite::SpriteComponent>(e)) std::cout << "  - Has Sprite" << std::endl;
+                if (Registry::Get().Has_Component<Physics::PhysicsComponent>(e)) std::cout << "  - Has Physics" << std::endl;
+                if (Registry::Get().Has_Component<HealthComponent>(e)) std::cout << "  - Has Health" << std::endl;
+                if (Registry::Get().Has_Component<TagComponent>(e)) std::cout << "  - Has Tag" << std::endl;
+                if (Registry::Get().Has_Component<InputComponent>(e)) std::cout << "  - Has Input" << std::endl;
 
                 SavedEntity saved = EntityToSaved(e);
                 scene.entities.push_back(saved);
@@ -813,12 +813,12 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
         Entity e = SavedToEntity(scene.entities[0]);  // Can call private function
 
         // Override position
-        if (Has_Component(e, CT_Transform)) {
-            auto& transform = Get_TransformComponent(e);
+        if (Registry::Get().Has_Component<TransformComponent>(e)) {
+            auto& transform = Registry::Get().Get_Component<TransformComponent>(e);
             transform.pos = { x, y };
 
-            if (Has_Component(e, CT_Physics)) {
-                auto& phys = Get_PhysicsComponent(e);
+            if (Registry::Get().Has_Component<Physics::PhysicsComponent>(e)) {
+                auto& phys = Registry::Get().Get_Component<Physics::PhysicsComponent>(e);
                 phys.UpdateHitboxes({ x, y });
             }
         }
@@ -848,7 +848,7 @@ void JsonLoad::ClearAllEntities() {
 
     // remove them one by one
     for (Entity e : toRemove) {
-        Remove_Entity(e);
+        Registry::Get().Remove_Entity(e);
     }
 
     std::cout << "Cleared " << toRemove.size() << " entities" << std::endl;
