@@ -33,19 +33,19 @@ void CollisionManager::AddEvent(Entity a, Entity b) {
 
 void CollisionManager::ProcessEvents() {
     //loops through each stored collision event from this frame.
-    for (auto& e : events) {
-        //if both entities have a tag
-        //tags tell us what kind of entity
-        if (m_registry.Has_Component<TagComponent>(e.a) && m_registry.Has_Component<TagComponent>(e.b)) {
-            auto& tagA = m_registry.Get_Component<TagComponent>(e.a);
-            auto& tagB = m_registry.Get_Component<TagComponent>(e.b);
+    //for (auto& e : events) {
+    //    //if both entities have a tag
+    //    //tags tell us what kind of entity
+    //    if (m_registry.Has_Component<TagComponent>(e.a) && m_registry.Has_Component<TagComponent>(e.b)) {
+    //        auto& tagA = m_registry.Get_Component<TagComponent>(e.a);
+    //        auto& tagB = m_registry.Get_Component<TagComponent>(e.b);
 
-            std::cout << "Collision detected between " << TagToString(tagA.tag) << " (Entity " << e.a << ")" << " and "  << TagToString(tagB.tag) << " (Entity " << e.b << ")" << std::endl;
-        }
-        else {
-            std::cout << "Collision detected between Entity " << e.a << " and Entity " << e.b<< " (no tags)" << std::endl;
-        }
-    }
+    //        std::cout << "Collision detected between " << TagToString(tagA.tag) << " (Entity " << e.a << ")" << " and "  << TagToString(tagB.tag) << " (Entity " << e.b << ")" << std::endl;
+    //    }
+    //    else {
+    //        std::cout << "Collision detected between Entity " << e.a << " and Entity " << e.b<< " (no tags)" << std::endl;
+    //    }
+    //}
     Clear();
 }
 

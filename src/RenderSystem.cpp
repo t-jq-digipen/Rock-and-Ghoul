@@ -49,7 +49,7 @@ void RenderSystem::Update(float dt) {
         }
         else
         {
-            TransformComponent& transComp = Get_TransformComponent(entID);
+           // TransformComponent& transComp = Get_TransformComponent(entID);
             if (Input::IsKeyHeld(GLFW_KEY_SPACE))
                 spriteComp.Set_Tint({ 1.0f, 0.0f, 0.0f });
             else

@@ -369,6 +369,69 @@ void ImGuiSystem::ShowHierarchyWindow() {
 
 }
 
+namespace {
+    template<typename T>
+    void DrawAddComponentButton(
+        const char* label,
+        Entity entity,
+        Registry& registry,
+        bool canAdd = true)
+    {
+        if (registry.Has_Component<T>(entity))
+        {
+            ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "%s (already added)", label);
+            return;
+        }
+
+        if (!canAdd)
+            ImGui::BeginDisabled();
+
+        if (ImGui::Button(label, ImVec2(140, 0)))
+        {
+            if (canAdd)
+            {
+                registry.Add_Component<T>(entity, T{});
+                std::cout << "[ImGui] Added component " << label << " to Entity " << entity << std::endl;
+            }
+        }
+
+        if (!canAdd)
+        {
+            ImGui::EndDisabled();
+            ImGui::SameLine();
+            ImGui::TextDisabled("(requires dependency)");
+        }
+    }
+
+
+    template<typename T>
+    void CloneComponent(Entity src, Entity dst, Registry& registry)
+    {
+        if (registry.Has_Component<T>(src))
+        {
+            const T& comp = registry.Get_Component<T>(src);
+            registry.Add_Component<T>(dst, comp);
+        }
+    }
+
+    // Specialize for xform so we can offset the new position
+    template<>
+    void CloneComponent<TransformComponent>(Entity src, Entity dst, Registry& registry)
+    {
+        if (registry.Has_Component<TransformComponent>(src))
+        {
+            const auto& t = registry.Get_Component<TransformComponent>(src);
+            TransformComponent newT = t;
+            newT.pos.x += 50.f; // so it not exactly on top
+            registry.Add_Component<TransformComponent>(dst, newT);
+        }
+    }
+
+
+
+
+}
+
 void ImGuiSystem::ShowInspectorWindow() {
 
     EnsureSelectionValid();
@@ -477,134 +540,28 @@ void ImGuiSystem::ShowInspectorWindow() {
     }
     ImGui::Separator();
     ImGui::Text("Add Component:");
+    auto& r = m_registry;
 
-    std::vector<std::pair<ComponentTypeID, const char*>> availableComps = {
-        { CT_Transform, "Transform" },
-        { CT_Sprite,    "Sprite" },
-        { CT_Animator,  "Animator" },
-        { CT_Physics,   "Physics" },
-        { CT_Shape,     "Shape" },
-        { CT_Audio,     "Audio" },
-        { CT_Input,     "Input" },
-        { CT_Tag,       "Tag" }
-    };
-
-    //for (auto& [compID, name] : availableComps)
-    //{
-    //    bool hasAlready = Has_Component(selectedEntity, compID);
-
-    //    // Check dependency rules
-    //    bool canAdd = true;
-    //    for (auto& dep : dependencies[compID])
-    //    {
-    //        if (!Has_Component(selectedEntity, dep))
-    //        {
-    //            canAdd = false;
-    //            break;
-    //        }
-    //    }
-
-    //    // Visual differentiation
-    //    if (hasAlready)
-    //    {
-    //        ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "%s (already added)", name);
-    //        continue;
-    //    }
-
-    //    if (!canAdd)
-    //        ImGui::BeginDisabled();
-
-    //    if (ImGui::Button(name, ImVec2(140, 0)))
-    //    {
-    //        if (canAdd)
-    //        {
-    //            switch (compID)
-    //            {
-    //            case CT_Transform:
-    //                Add_Component(selectedEntity, TransformComponent{});
-    //                break;
-    //            case CT_Sprite:
-    //                Add_Component(selectedEntity, Sprite::SpriteComponent{});
-    //                break;
-    //            case CT_Animator:
-    //                Add_Component(selectedEntity, Animator::AnimatorComponent{});
-    //                break;
-    //            case CT_Physics:
-    //                Add_Component(selectedEntity, Physics::PhysicsComponent{});
-    //                break;
-    //            case CT_Shape:
-    //                Add_Component(selectedEntity, ShapeComponent{ SHAPE_RECTANGLE, {100.f,100.f}, {1.f,1.f,1.f} });
-    //                break;
-    //            case CT_Audio:
-    //                Add_Component(selectedEntity, AudioComponent{});
-    //                break;
-    //            case CT_Input:
-    //                Add_Component(selectedEntity, InputComponent{});
-    //                break;
-    //            case CT_Tag:
-    //                Add_Component(selectedEntity, TagComponent{ T_PLAYER });
-    //                break;
-    //            }
-    //            std::cout << "[ImGui] Added component " << name << " to Entity " << selectedEntity << std::endl;
-    //        }
-    //    }
-
-    //    if (!canAdd)
-    //    {
-    //        ImGui::EndDisabled();
-    //        ImGui::SameLine();
-    //        ImGui::TextDisabled("(requires other component)");
-    //    }
-    //}
-
+    DrawAddComponentButton<TransformComponent>("Transform", selectedEntity, r);
+    DrawAddComponentButton<Sprite::SpriteComponent>("Sprite", selectedEntity, r, r.Has_Component<TransformComponent>(selectedEntity)); // needs Transform
+    DrawAddComponentButton<Animator::AnimatorComponent>("Animator", selectedEntity, r,r.Has_Component<Sprite::SpriteComponent>(selectedEntity)); // needs Sprite
+    DrawAddComponentButton<Physics::PhysicsComponent>("Physics", selectedEntity, r, r.Has_Component<TransformComponent>(selectedEntity)); // needs Transform
+    DrawAddComponentButton<ShapeComponent>("Shape", selectedEntity, r, r.Has_Component<TransformComponent>(selectedEntity)); // needs Transform
+    DrawAddComponentButton<AudioComponent>("Audio", selectedEntity, r);
+    DrawAddComponentButton<InputComponent>("Input", selectedEntity, r);
+    DrawAddComponentButton<TagComponent>("Tag", selectedEntity, r);
 
     ImGui::Separator();
     if (ImGui::Button("Clone")) {
         Entity clone = m_registry.Create_Entity();
 
-        // Copy Transform
-        if (m_registry.Has_Component<TransformComponent>(selectedEntity)) {
-            auto& t = m_registry.Get_Component<TransformComponent>(selectedEntity);
-            TransformComponent newT = t;
-            newT.pos.x += 50.f;  // so it's not exactly on top
-            m_registry.Add_Component<TransformComponent>(clone, newT);
-        }
-
-        // Copy Physics
-        if (m_registry.Has_Component<Physics::PhysicsComponent>(selectedEntity)) {
-            auto& p = m_registry.Get_Component<Physics::PhysicsComponent>(selectedEntity);
-
-            m_registry.Add_Component<Physics::PhysicsComponent>(clone, p);
-        }
-
-        // Copy Shape
-        if (m_registry.Has_Component<ShapeComponent>(selectedEntity)) {
-            auto& s = m_registry.Get_Component<ShapeComponent>(selectedEntity);
-            m_registry.Add_Component<ShapeComponent>(clone, ShapeComponent{ s.shape, s.dimensions, s.color });
-        }
-
-        // Copy Sprite
-        if (m_registry.Has_Component<Sprite::SpriteComponent>(selectedEntity)) {
-            auto& s = m_registry.Get_Component<Sprite::SpriteComponent>(selectedEntity);
-            m_registry.Add_Component<Sprite::SpriteComponent>(clone, s);
-        }
-
-        if (m_registry.Has_Component<Animator::AnimatorComponent>(selectedEntity)) {
-            auto& anim = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
-            m_registry.Add_Component<Animator::AnimatorComponent>(clone, anim);
-        }
-
-        // Copy Tag
-        if (m_registry.Has_Component<TagComponent>(selectedEntity)) {
-            auto& tag = m_registry.Get_Component<TagComponent>(selectedEntity);
-            m_registry.Add_Component<TagComponent>(clone, tag);
-        }
-
-        // Copy Input
-        if (m_registry.Has_Component<InputComponent>(selectedEntity)) {
-            auto& inp = m_registry.Get_Component<InputComponent>(selectedEntity);
-            m_registry.Add_Component<InputComponent>(clone, inp);
-        }
+        CloneComponent<TransformComponent>(selectedEntity, clone, m_registry);
+        CloneComponent<Physics::PhysicsComponent>(selectedEntity, clone, m_registry);
+        CloneComponent<ShapeComponent>(selectedEntity, clone, m_registry);
+        CloneComponent<Sprite::SpriteComponent>(selectedEntity, clone, m_registry);
+        CloneComponent<Animator::AnimatorComponent>(selectedEntity, clone, m_registry);
+        CloneComponent<TagComponent>(selectedEntity, clone, m_registry);
+        CloneComponent<InputComponent>(selectedEntity, clone, m_registry);
 
         //// Copy Health
         //if (Has_Component(selectedEntity, CT_Health)) {

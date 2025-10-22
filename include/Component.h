@@ -165,7 +165,7 @@ enum ShapeType {
 
 struct ShapeComponent {
 	ShapeType shape = SHAPE_RECTANGLE;
-	Vec2 dimensions = { 1.0f, 1.0f };
+	Vec2 dimensions = { 1.f, 1.f };
 	Vec3 color = { 1.0f, 1.0f, 1.0f };
 };
 
