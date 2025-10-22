@@ -57,11 +57,11 @@ void GuiSystem::Update(float dt) {
         float textScale = 1.2f;
         Vec2 textSize = r.CalculateTextSize(cfg.label, textScale);
 
-        // Center text horizontally and vertically on the button
+        // text horizontally and vertically on the button
         float textX = cfg.pos.x - textSize.x * 0.5f;
         float textY = cfg.pos.y - textSize.y * 0.5f;
 
-        // optional: small vertical fine-tune offset (+/-)
+        //small vertical offset
         textY += textSize.y * 0.15f;
 
         r.DrawText(cfg.label, textX, textY, textScale, { 0, 0, 0 });
