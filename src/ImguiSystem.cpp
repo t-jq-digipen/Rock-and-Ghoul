@@ -386,12 +386,57 @@ namespace {
         if (!canAdd)
             ImGui::BeginDisabled();
 
-        if (ImGui::Button(label, ImVec2(140, 0)))
+       // ==== Special case: Animator ====
+        if constexpr (std::is_same_v<T, Animator::AnimatorComponent>)
         {
-            if (canAdd)
+            if (ImGui::Button(label, ImVec2(140, 0)) && canAdd)
+            {
+                if (registry.Has_Component<Sprite::SpriteComponent>(entity))
+                {
+                    auto& sprite = registry.Get_Component<Sprite::SpriteComponent>(entity);
+                    const Image& img = sprite.Get_Image();
+
+                    // Default to a 1x1 "no animation" animator
+                    Animator::ActiveFrames fr{ 0, 0, 0, 0.0f };
+                    Animator::AnimatorComponent anim(1, 1, img.widthPixels, img.heightPixels, fr, 0.0f);
+
+                    registry.Add_Component<Animator::AnimatorComponent>(entity, anim);
+                    sprite.Set_Animated(true);
+                    std::cout << "[ImGui] Added AnimatorComponent to Entity " << entity << "\n";
+                }
+                else
+                {
+                    std::cout << "[ImGui] Animator requires Sprite component!\n";
+                }
+            }
+
+            if (!canAdd)
+            {
+                ImGui::EndDisabled();
+                ImGui::SameLine();
+                ImGui::TextDisabled("(requires dependency)");
+            }
+            return;
+        }
+
+
+
+        // ==== Generic components (everything except Sprite/Animator) ====
+        if constexpr (!std::is_same_v<T, Sprite::SpriteComponent>)
+        {
+            if (ImGui::Button(label, ImVec2(140, 0)) && canAdd)
             {
                 registry.Add_Component<T>(entity, T{});
-                std::cout << "[ImGui] Added component " << label << " to Entity " << entity << std::endl;
+                std::cout << "[ImGui] Added component " << label
+                    << " to Entity " << entity << std::endl;
+            }
+        }
+        // ==== Sprite special case — open texture popup only ====
+        else
+        {
+            if (ImGui::Button(label, ImVec2(140, 0)) && canAdd)
+            {
+                ImGui::OpenPopup("Add Sprite Texture");
             }
         }
 
@@ -402,6 +447,12 @@ namespace {
             ImGui::TextDisabled("(requires dependency)");
         }
     }
+
+
+
+
+
+
 
 
     template<typename T>
@@ -431,6 +482,49 @@ namespace {
 
 
 }
+
+static void SpriteTexturePopup(Entity entity, Registry& registry)
+{
+    if (ImGui::BeginPopupModal("Add Sprite Texture", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        static char texPathBuf[256] = "";
+        ImGui::Text("Enter texture filename (inside Assets/):");
+        ImGui::InputText("##texpath", texPathBuf, IM_ARRAYSIZE(texPathBuf));
+        ImGui::Separator();
+
+        if (ImGui::Button("Confirm"))
+        {
+            std::string fullPath = "../Assets/" + std::string(texPathBuf);
+            Image img = CreateImage(fullPath);
+            if (img.IsValid())
+            {
+                // only now create the SpriteComponent
+                Sprite::SpriteComponent newSprite;
+                newSprite.Set_Image(img);
+                newSprite.Set_Size({ (float)img.widthPixels, (float)img.heightPixels });
+                registry.Add_Component<Sprite::SpriteComponent>(entity, newSprite);
+
+                std::cout << "[ImGui] Added SpriteComponent with texture: " << texPathBuf << "\n";
+                ImGui::CloseCurrentPopup();
+                texPathBuf[0] = '\0'; // clear buffer
+            }
+            else
+            {
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), "Failed to load image!");
+            }
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            ImGui::CloseCurrentPopup(); // just close, nothing was added
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+
 
 void ImGuiSystem::ShowInspectorWindow() {
 
@@ -472,6 +566,53 @@ void ImGuiSystem::ShowInspectorWindow() {
             float rot = s.Get_Rotation();
             if (ImGui::SliderAngle("Rotation", &rot, -360.0f, 360.0f)) {
                 s.Set_Rotation(rot);
+            }
+
+            ImGui::TreePop();
+        }
+    }
+    // --- Animator ---
+    if (m_registry.Has_Component<Animator::AnimatorComponent>(selectedEntity)) {
+        auto& anim = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
+        if (ImGui::TreeNode("Animator")) {
+            static int editRows = 0, editCols = 0;
+            static Animator::ActiveFrames editFr;
+            static float editDuration = 0.f;
+
+            // load values from anim only once when entity changes
+            static Entity lastEntity = INVALID_ENTITY;
+            if (selectedEntity != lastEntity) {
+                editRows = anim.GetTotalRows();
+                editCols = anim.GetTotalCols();
+                editFr = anim.GetFrames();
+                editDuration = anim.GetAnimDuration();
+                lastEntity = selectedEntity;
+            }
+
+            ImGui::InputInt("Total Rows", &editRows);
+            ImGui::InputInt("Total Cols", &editCols);
+            ImGui::InputInt("Row (animation row)", &editFr.row);
+            ImGui::InputInt("Start Column", &editFr.col_start);
+            ImGui::InputInt("End Column", &editFr.col_end);
+            ImGui::InputFloat("Duration (seconds)", &editDuration);
+
+            if (ImGui::Button("Apply Changes")) {
+                if (m_registry.Has_Component<Sprite::SpriteComponent>(selectedEntity)) {
+                    auto& sprite = m_registry.Get_Component<Sprite::SpriteComponent>(selectedEntity);
+                    const Image& img = sprite.Get_Image();
+
+                    if (editRows > 0 && editCols > 0 && editFr.col_end >= editFr.col_start) {
+                        Animator::AnimatorComponent newAnim(editRows, editCols,
+                            img.widthPixels, img.heightPixels,
+                            editFr, editDuration);
+                        anim = newAnim;
+                        sprite.Set_Animated(true);
+                        std::cout << "[ImGui] Updated animator for Entity "
+                            << selectedEntity << " (" << editRows << "x" << editCols
+                            << ", row=" << editFr.row << ", cols=" << editFr.col_start
+                            << "-" << editFr.col_end << ", dur=" << editDuration << "s)\n";
+                    }
+                }
             }
 
             ImGui::TreePop();
@@ -550,6 +691,7 @@ void ImGuiSystem::ShowInspectorWindow() {
     DrawAddComponentButton<AudioComponent>("Audio", selectedEntity, r);
     DrawAddComponentButton<InputComponent>("Input", selectedEntity, r);
     DrawAddComponentButton<TagComponent>("Tag", selectedEntity, r);
+    SpriteTexturePopup(selectedEntity, m_registry);
 
     ImGui::Separator();
     if (ImGui::Button("Clone")) {
@@ -576,20 +718,9 @@ void ImGuiSystem::ShowInspectorWindow() {
 
     ImGui::SameLine();
     if (ImGui::Button("Delete")) {
-        if (selectedEntity <= 7) {
-            ImGui::OpenPopup("Protected Entity");
-        }
-        else {
             m_registry.Remove_Entity(selectedEntity);
             selectedEntity = INVALID_ENTITY;
-        }
-    }
-    if (ImGui::BeginPopup("Protected Entity")) {
-        ImGui::Text("Cannot delete original Entities!");
-        if (ImGui::Button("OK")) {
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::EndPopup();
+     
     }
 
 
