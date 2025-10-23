@@ -234,7 +234,7 @@ public:
 	std::string Get_EntityName(Entity eID)
 	{ return entityManager.GetEntityName(eID); }
 
-	SavedEntity Save_Entity(const std::string& filepath, Entity eID)
+	SavedEntity Save_Entity(Entity eID)
 	{
 		SavedEntity saved;
 		saved.name = Get_EntityName(eID);

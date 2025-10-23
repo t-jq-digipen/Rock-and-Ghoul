@@ -96,7 +96,7 @@ private:
      * @return SavedEntity Structure containing the entity's ID, name, and all
      *         component data as JSON strings indexed by component type.
      */
-    static SavedEntity EntityToSaved(Entity eID);
+    //static SavedEntity EntityToSaved(Entity eID);
 
     /**
      * @brief Creates live entity from SavedEntity structure.
@@ -104,7 +104,7 @@ private:
      * @param saved The SavedEntity structure containing serialized component data.
      * @return Entity The ID of the newly created entity with all components attached.
      */
-    static Entity SavedToEntity(const SavedEntity& saved);
+    // static Entity SavedToEntity(const SavedEntity& saved);
 
     // Component loaders
 
@@ -141,7 +141,7 @@ private:
      * @param eID The entity ID to which the component should be added.
      * @param data JSON string containing shape data.
      */
-    static void Load_Shape(Entity eID, const std::string& data);
+    //static void Load_Shape(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads a Health component onto an entity.
@@ -149,7 +149,7 @@ private:
      * @param eID The entity ID to which the component should be added.
      * @param data JSON string containing health data.
      */
-    static void Load_Health(Entity eID, const std::string& data);
+    //static void Load_Health(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads a Tag component onto an entity.
@@ -157,7 +157,7 @@ private:
      * @param eID The entity ID to which the component should be added.
      * @param data JSON string containing tag data.
      */
-    static void Load_Tag(Entity eID, const std::string& data);
+    //static void Load_Tag(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads an Input component onto an entity.
@@ -165,7 +165,7 @@ private:
      * @param eID The entity ID to which the component should be added.
      * @param data JSON string containing input data.
      */
-    static void Load_Input(Entity eID, const std::string& data);
+    //static void Load_Input(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads Animator component onto entity.
@@ -211,7 +211,7 @@ private:
      * @param eID Entity ID Shape component should be serialized.
      * @return std::string JSON string containing the shape data
      */
-    static std::string Save_Shape(Entity eID);
+    // static std::string Save_Shape(Entity eID);
 
     /**
      * @brief Serializes Health component to JSON string.
@@ -227,7 +227,7 @@ private:
      * @param eID The entity ID whose Tag component should be serialized.
      * @return std::string JSON string containing the tag data.
      */
-    static std::string Save_Tag(Entity eID);
+    //static std::string Save_Tag(Entity eID);
 
     /**
      * @brief Serializes Input component to JSON string.
@@ -235,7 +235,7 @@ private:
      * @param eID The entity ID where Input component should be serialized.
      * @return std::string JSON string containing the input data.
      */
-    static std::string Save_Input(Entity eID);
+    //static std::string Save_Input(Entity eID);
     
     /**
      * @brief Serializes Animator component to JSON string.
