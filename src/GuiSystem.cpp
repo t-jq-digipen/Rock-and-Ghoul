@@ -444,6 +444,47 @@ void GuiSystem::Update(float dt) {
                     std::to_string((int)t.pos.y) + ")", 50, y, 0.5f, { 1,1,1 });
                 y -= 30;
                 render.DrawText("Size: (" + std::to_string(t.scale) + ")", 50, y, 0.5f, { 1,1,1 });
+                y -= 30;
+
+                render.DrawText("Text Color (0-255):", 50, y, 0.5f, { 1,1,1 });
+                y -= 30;
+
+                int rVal = static_cast<int>(t.color.r * 255.0f);
+                int gVal = static_cast<int>(t.color.g * 255.0f);
+                int bVal = static_cast<int>(t.color.b * 255.0f);
+
+                render.DrawText("R:", 60, y, 0.5f, { 1,0,0 });
+                render.DrawText(std::to_string(rVal), 100, y, 0.5f, { 1,1,1 });
+                render.DrawText("G:", 200, y, 0.5f, { 0,1,0 });
+                render.DrawText(std::to_string(gVal), 240, y, 0.5f, { 1,1,1 });
+                render.DrawText("B:", 340, y, 0.5f, { 0,0,1 });
+                render.DrawText(std::to_string(bVal), 380, y, 0.5f, { 1,1,1 });
+
+                // cycle active color channel using TAB
+                static int textColorChannel = 0; // 0=R,1=G,2=B
+                if (Input::IsKeyPressed(GLFW_KEY_TAB)) {
+                    textColorChannel = (textColorChannel + 1) % 3;
+                }
+
+                // modify current channel with = / -
+                int* target = (textColorChannel == 0) ? &rVal : (textColorChannel == 1) ? &gVal : &bVal;
+                if (Input::IsKeyHeld(GLFW_KEY_EQUAL))    *target = std::min(255, *target + 1);
+                if (Input::IsKeyHeld(GLFW_KEY_MINUS))    *target = std::max(0, *target - 1);
+
+                // apply changes
+                t.color.r = rVal / 255.0f;
+                t.color.g = gVal / 255.0f;
+                t.color.b = bVal / 255.0f;
+
+                // draw small indicator for active channel
+                float indicatorY = y + 5;
+                Colour3 c = (textColorChannel == 0) ? Colour3{ 1,0,0 } :
+                    (textColorChannel == 1) ? Colour3{ 0,1,0 } :
+                    Colour3{ 0,0,1 };
+                float circleX = 40 + textColorChannel * 140;
+                render.DrawCircle({ circleX, indicatorY }, 6.f, c, 24);
+
+                y -= 40;
                 // maybe arrow keys to tweak position
                 if (Input::IsKeyHeld(GLFW_KEY_UP))    t.pos.y += 2;
                 if (Input::IsKeyHeld(GLFW_KEY_DOWN))  t.pos.y -= 2;
