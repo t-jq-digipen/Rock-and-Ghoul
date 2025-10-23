@@ -84,8 +84,8 @@ void MainMenu::Load()
     // Preload all Image assets from JSON (they’ll be stored in textureCache)
     auto menuTextures = renderer.LoadImageAssetsFromJSON("../Assets/imageAssets.json"); //i added an imageAssets.json inside assets folder
 
-    //Load usable fonts for this game state
-    renderer.LoadFont("../Assets/PermanentMarker-regular.ttf", 48, "Marker"); //48 is the pixel font height
+    //Load usable fonts for this game state (maybe a fonts.json, like for image? kiv prob need it for data driven)
+    renderer.LoadFont("../Assets/PermanentMarker-regular.ttf", 48, "Marker"); //48 is the pixel font height, so smaller will appear smaller etc.
     renderer.LoadFont("../Assets/Antonio-Bold.ttf", 48, "Bold");
 
     CrashHandler::Safe("MainMenu", "Load", [&] {
@@ -206,8 +206,10 @@ void MainMenu::Update()
     //renderer.DrawImage(titleImage, 400.f, 400.f);
     //renderer.DrawImageRotated(titleImage, 400.f, 400.f, 1.57f);
     //renderer.DrawImageSub(titleImage, 400.f, 400.f, 100.f, 400.f, 0.f, 0.f, 256.f, 256.f);
-    //renderer.DrawText("Let's play", 400.f, 700.f, 0.75f, { 1.f,1.f,1.f }, "Marker");
-    //renderer.DrawText("Game Over", 1400.f, 700.f, 0.75f, { 1.f,1.f,1.f });
+    
+    //Two fonts different font type testing (using permanent marker and antonio-bold)
+    //renderer.DrawTextBox("Let's play and try to make this text box work idk it should wrap into the new line and look nice", 400.f, 700.f, 500.f, 0.75f, { 1.f,1.f,1.f }, "Marker");
+    //renderer.DrawText("Game Over", 1400.f, 700.f, 0.75f, { 1.f,1.f,1.f }, "Bold");
 //
 //    if (Input::IsKeyPressed(GLFW_KEY_B)) {
 //        //std::cout << showInstancingDemo << std::endl;

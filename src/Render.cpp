@@ -1186,8 +1186,8 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
 }*/
 
 
-void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color, const std::string& fontKey) {
-
+void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color, const std::string& fontKey)
+{
     auto it = fontCache.find(fontKey);
     if (it == fontCache.end()) {
         std::cerr << "This font type does not exists: " << fontKey << std::endl;
@@ -1198,55 +1198,46 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // activate render state	
     glUseProgram(shaderProgram);
 
-    //set uniforms
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]);
     glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
     glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
 
-    //text no need, so set them transform uniforms to defaults
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
 
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(textVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
 
-    //track where next glyph will placed
     float nextX = x;
     float nextY = y;
-
-    //get the horizontal step for space char
-    float spaceWidth = (Characters[' '].Advance >> 6) * scale;
+    float spaceWidth = static_cast<float>(font.glyphs[' '].Advance) * scale;
+    float lineHeight = font.glyphs['H'].Size.y * 1.2f * scale;
 
     std::istringstream iss(text);
     std::string word;
 
     while (iss >> word) {
-
-        // Measure word width
+        // measure word width
         float wordWidth = 0.0f;
-
         for (char c : word) {
-            Character ch = Characters[c];
-            wordWidth += (ch.Advance >> 6) * scale;
+            const Character& ch = font.glyphs[c];
+            wordWidth += static_cast<float>(ch.Advance) * scale;
         }
 
-        // Wrap to new line
-        //Check if drawing the whole word will excced the right edge
-        if (nextX + wordWidth > x + rowWidth) {
-            //if yes reset the nextX to be the left edge
+        // wrap if need, see if it will flow out the width of row
+        if (nextX + wordWidth > x + rowWidth && nextX > x) {
             nextX = x;
-            nextY -= (Characters['H'].Size.y * 1.5f) * scale; //move down like new line
+            nextY -= lineHeight;
         }
 
-        // Draw characters of word (similar setup to previous)
+        // render the each character
         for (char c : word) {
-            Character ch = Characters[c];
+            const Character& ch = font.glyphs[c];
 
             float xpos = nextX + ch.Bearing.x * scale;
             float ypos = nextY - (ch.Size.y - ch.Bearing.y) * scale;
@@ -1257,30 +1248,28 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
                 { xpos,     ypos + h,   0.0f, 0.0f },
                 { xpos,     ypos,       0.0f, 1.0f },
                 { xpos + w, ypos,       1.0f, 1.0f },
-
                 { xpos,     ypos + h,   0.0f, 0.0f },
                 { xpos + w, ypos,       1.0f, 1.0f },
                 { xpos + w, ypos + h,   1.0f, 0.0f }
             };
 
             glBindTexture(GL_TEXTURE_2D, ch.TextureID);
-            glBindBuffer(GL_ARRAY_BUFFER, textVBO);
             glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
             glDrawArrays(GL_TRIANGLES, 0, 6);
 
-            nextX += (ch.Advance >> 6) * scale; //position next char 
+            nextX += static_cast<float>(ch.Advance) * scale;
         }
 
-        nextX += spaceWidth; // Add space
+        nextX += spaceWidth;
     }
 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE);
 
 }
+
 
 
 

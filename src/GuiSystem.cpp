@@ -33,7 +33,7 @@ void GuiSystem::Update(float dt) {
             btn.color;
 
         r.DrawRect(btn.pos, btn.size.x, btn.size.y, drawColor);
-        r.DrawText(btn.label, btn.pos.x - btn.size.x * 0.15f, btn.pos.y - 10.f, 1.2f, { 1, 1, 1 }, "Marker");
+        r.DrawText(btn.label, btn.pos.x - btn.size.x * 0.15f, btn.pos.y - 10.f, 1.2f, { 1, 1, 1 }, "Marker"); //added an extra param for font type
 
         // --- Click action ---
         if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
