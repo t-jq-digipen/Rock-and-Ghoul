@@ -47,7 +47,25 @@ static std::unordered_map<ComponentTypeID, std::vector<ComponentTypeID>> depende
     { CT_Tag,      {} },                 // Tag independent
     { CT_Input,    {} }                  // Input independent
 };
+using HasFunc = std::function<bool(Entity, Registry&)>;
+static std::unordered_map<ComponentTypeID, HasFunc> HasComponentMap = {
+    { CT_Transform, [](Entity e, Registry& r) { return r.Has_Component<TransformComponent>(e); } },
+    { CT_Sprite,    [](Entity e, Registry& r) { return r.Has_Component<Sprite::SpriteComponent>(e); } },
+    { CT_Animator,  [](Entity e, Registry& r) { return r.Has_Component<Animator::AnimatorComponent>(e); } },
+    { CT_Physics,   [](Entity e, Registry& r) { return r.Has_Component<Physics::PhysicsComponent>(e); } },
+    { CT_Shape,     [](Entity e, Registry& r) { return r.Has_Component<ShapeComponent>(e); } },
+    { CT_Audio,     [](Entity e, Registry& r) { return r.Has_Component<AudioComponent>(e); } },
+    { CT_Input,     [](Entity e, Registry& r) { return r.Has_Component<InputComponent>(e); } },
+    { CT_Tag,       [](Entity e, Registry& r) { return r.Has_Component<TagComponent>(e); } }
+};
 
+bool HasComponentByType(Entity e, Registry& registry, ComponentTypeID id)
+{
+    auto it = HasComponentMap.find(id);
+    if (it != HasComponentMap.end())
+        return it->second(e, registry);
+    return false;
+}
 using json = nlohmann::json;
 
 
@@ -65,7 +83,7 @@ namespace {
                 : "Unknown";
             name = std::string(tagName) + " " + std::to_string(e);
         }
-        if (reg.Has_Component<TagComponent>(e)) {
+        if (reg.Has_Component<ShapeComponent>(e)) {
             auto& s = reg.Get_Component<ShapeComponent>(e);
             if (s.shape == SHAPE_RECTANGLE) {
                 name += "  [Square]";
@@ -172,10 +190,13 @@ void ImGuiSystem::Update(float dt) {
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Entity Editor")) {
+            //splits the into two columns
             ImGui::Columns(2);
             ShowHierarchyWindow();
+
             ImGui::NextColumn();
             ShowInspectorWindow();
+            //resets back to a single column layout for the rest of the UI
             ImGui::Columns(1);
             ImGui::EndTabItem();
         }
@@ -480,6 +501,64 @@ namespace {
 
 
 
+    template<typename T>
+    void DrawRemoveComponentButton(
+        Entity entity,
+        Registry& registry,
+        const char* label,
+        const std::unordered_map<ComponentTypeID, std::vector<ComponentTypeID>>& dependencies)
+    {
+        ComponentTypeID typeID =
+            std::is_same_v<T, TransformComponent> ? CT_Transform :
+            std::is_same_v<T, Sprite::SpriteComponent> ? CT_Sprite :
+            std::is_same_v<T, Animator::AnimatorComponent> ? CT_Animator :
+            std::is_same_v<T, Physics::PhysicsComponent> ? CT_Physics :
+            std::is_same_v<T, ShapeComponent> ? CT_Shape :
+            std::is_same_v<T, AudioComponent> ? CT_Audio :
+            std::is_same_v<T, InputComponent> ? CT_Input :
+            std::is_same_v<T, TagComponent> ? CT_Tag :
+            CT_None;
+
+        bool blocked = false;
+        std::string reason;
+
+        // check if any dependent component requires this one
+        for (auto const& [dependent, prereqs] : dependencies)
+        {
+            for (auto const& prereq : prereqs)
+            {
+                if (prereq == typeID && HasComponentByType(entity, registry, dependent))
+                {
+                    blocked = true;
+                    reason = "Cannot remove " + std::string(label) + "\n(required by another component)";
+                    break;
+                }
+            }
+            if (blocked) break;
+        }
+
+        // draw the button (disabled if blocked)
+        if (blocked)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+            ImGui::Button(("Remove " + std::string(label)).c_str());
+            ImGui::PopStyleColor();
+            ImGui::SameLine();
+            ImGui::TextDisabled("%s", reason.c_str());
+        }
+        else
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+            if (ImGui::Button(("Remove " + std::string(label)).c_str()))
+            {
+                registry.Remove_Component<T>(entity);
+                std::cout << "[ImGui] Removed component: " << label
+                    << " from Entity " << entity << "\n";
+            }
+            ImGui::PopStyleColor();
+        }
+    }
+
 
 }
 
@@ -494,23 +573,32 @@ static void SpriteTexturePopup(Entity entity, Registry& registry)
 
         if (ImGui::Button("Confirm"))
         {
-            std::string fullPath = "../Assets/" + std::string(texPathBuf);
-            Image img = CreateImage(fullPath);
-            if (img.IsValid())
-            {
-                // only now create the SpriteComponent
-                Sprite::SpriteComponent newSprite;
-                newSprite.Set_Image(img);
-                newSprite.Set_Size({ (float)img.widthPixels, (float)img.heightPixels });
-                registry.Add_Component<Sprite::SpriteComponent>(entity, newSprite);
 
-                std::cout << "[ImGui] Added SpriteComponent with texture: " << texPathBuf << "\n";
-                ImGui::CloseCurrentPopup();
-                texPathBuf[0] = '\0'; // clear buffer
-            }
-            else
-            {
+            std::string fullPath = "../Assets/" + std::string(texPathBuf);
+            if (!std::filesystem::exists(fullPath)) {
+                //errorMsg = "File does not exist: " + std::string(texPathBuf);
                 ImGui::TextColored(ImVec4(1, 0, 0, 1), "Failed to load image!");
+            }
+            else {
+                Image img = CreateImage(fullPath);
+
+                //Image img = CreateImage(fullPath);
+                if (img.IsValid())
+                {
+                    // only now create the SpriteComponent
+                    Sprite::SpriteComponent newSprite;
+                    newSprite.Set_Image(img);
+                    newSprite.Set_Size({ (float)img.widthPixels, (float)img.heightPixels });
+                    registry.Add_Component<Sprite::SpriteComponent>(entity, newSprite);
+
+                    std::cout << "[ImGui] Added SpriteComponent with texture: " << texPathBuf << "\n";
+                    ImGui::CloseCurrentPopup();
+                    texPathBuf[0] = '\0'; // clear buffer
+                }
+                else
+                {
+                    ImGui::TextColored(ImVec4(1, 0, 0, 1), "Failed to load image!");
+                }
             }
         }
 
@@ -522,6 +610,7 @@ static void SpriteTexturePopup(Entity entity, Registry& registry)
 
         ImGui::EndPopup();
     }
+
 }
 
 
@@ -546,6 +635,11 @@ void ImGuiSystem::ShowInspectorWindow() {
             ImGui::SliderFloat("X", &t.pos.x, 0.f, 1920.f);
             ImGui::SliderFloat("Y", &t.pos.y, 0.f, 1080.f);
             ImGui::SliderAngle("Rotation", &t.rot, -360.0f, 360.0f);
+
+            ImGui::Separator();
+            DrawRemoveComponentButton<TransformComponent>(
+                selectedEntity, m_registry, "Transform", dependencies);
+
             ImGui::TreePop();
         }
     }
@@ -567,6 +661,10 @@ void ImGuiSystem::ShowInspectorWindow() {
             if (ImGui::SliderAngle("Rotation", &rot, -360.0f, 360.0f)) {
                 s.Set_Rotation(rot);
             }
+
+            ImGui::Separator();
+            DrawRemoveComponentButton<Sprite::SpriteComponent>(
+                selectedEntity, m_registry, "Sprite", dependencies);
 
             ImGui::TreePop();
         }
@@ -614,7 +712,9 @@ void ImGuiSystem::ShowInspectorWindow() {
                     }
                 }
             }
-
+            ImGui::Separator();
+            DrawRemoveComponentButton<Animator::AnimatorComponent>(
+                selectedEntity, m_registry, "Animator", dependencies);
             ImGui::TreePop();
         }
     }
@@ -628,6 +728,10 @@ void ImGuiSystem::ShowInspectorWindow() {
             }
             ImGui::DragFloat2("Dimensions", &s.dimensions.x, 1.0f, 10.0f, 1000.0f);
             ImGui::ColorEdit3("Color", &s.color.x);
+
+            ImGui::Separator();
+            DrawRemoveComponentButton<ShapeComponent>(
+                selectedEntity, m_registry, "Shape", dependencies);
             ImGui::TreePop();
         }
     }
@@ -653,6 +757,10 @@ void ImGuiSystem::ShowInspectorWindow() {
             }
             ImGui::Text("AABB: min: (%.1f, %.1f), max: (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
             ImGui::Text("Circle: center(%.1f, %.1f), r=%.1f", circ.pos.x, circ.pos.y, circ.rad);
+
+            ImGui::Separator();
+            DrawRemoveComponentButton<Physics::PhysicsComponent>(
+                selectedEntity, m_registry, "Physics", dependencies);
             ImGui::TreePop();
         }
     }
@@ -676,6 +784,9 @@ void ImGuiSystem::ShowInspectorWindow() {
             if (ImGui::Combo("Type", &tagVal, items, IM_ARRAYSIZE(items))) {
                 tg.tag = (C_TagID)tagVal;
             }
+            ImGui::Separator();
+            DrawRemoveComponentButton<TagComponent>(
+                selectedEntity, m_registry, "Tag", dependencies);
             ImGui::TreePop();
         }
     }
@@ -704,14 +815,18 @@ void ImGuiSystem::ShowInspectorWindow() {
         CloneComponent<Animator::AnimatorComponent>(selectedEntity, clone, m_registry);
         CloneComponent<TagComponent>(selectedEntity, clone, m_registry);
         CloneComponent<InputComponent>(selectedEntity, clone, m_registry);
+        auto& nameMap = m_registry.Get_EntityNameMap();
+        std::string baseName = nameMap.contains(selectedEntity) ? nameMap[selectedEntity] : ("Entity " + std::to_string(selectedEntity));
+        nameMap[clone] = baseName + " (Clone)";
 
+        selectedEntity = clone;  // focus new clone
         //// Copy Health
         //if (Has_Component(selectedEntity, CT_Health)) {
         //    auto& h = Get_HealthComponent(selectedEntity);
         //    Add_Component(clone, h);
         //}
 
-        selectedEntity = clone;  // select new clone
+        //selectedEntity = clone;  // select new clone
     }
 
 
@@ -899,15 +1014,20 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         }
 
                         ImGui::SameLine();
+                        bool removeThis = false;
+
                         if (ImGui::Button("Remove")) {
-                            assets.erase(name);
-                            SaveAudioManifest(manifestPath);
-                            ImGui::PopID();
-                            break; // exit this loop safely since we modified
+                            removeThis = true;
                         }
 
                         ImGui::Separator();
                         ImGui::PopID();
+
+                        if (removeThis) {
+                            assets.erase(name);
+                            SaveAudioManifest(manifestPath);
+                            break;
+                        }
                     }
                 }
             }
@@ -917,8 +1037,6 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
         ImGui::EndTabBar();
     }
-
-    ImGui::Separator();
 }
 
 
