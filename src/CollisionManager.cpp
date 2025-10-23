@@ -40,7 +40,7 @@ void CollisionManager::ProcessEvents() {
             auto& tagA = Get_TagComponent(e.a);
             auto& tagB = Get_TagComponent(e.b);
 
-            std::cout << "Collision detected between " << TagToString(tagA.tag) << " (Entity " << e.a << ")" << " and "  << TagToString(tagB.tag) << " (Entity " << e.b << ")" << std::endl;
+           // std::cout << "Collision detected between " << TagToString(tagA.tag) << " (Entity " << e.a << ")" << " and "  << TagToString(tagB.tag) << " (Entity " << e.b << ")" << std::endl;
         }
         else {
             std::cout << "Collision detected between Entity " << e.a << " and Entity " << e.b<< " (no tags)" << std::endl;

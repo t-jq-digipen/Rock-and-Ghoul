@@ -174,7 +174,13 @@ bool AudioCache::LoadAsset(const std::string& name) {
 bool AudioCache::LoadAudioFile(AudioAsset& asset) {
     std::cout << "[AudioCache] Loading: " << asset.name << " from " << asset.path << std::endl;
 
-    asset.sound = AudioSystem::LoadSound(asset.path, asset.loop);
+    FMOD_MODE mode = asset.spatial ? FMOD_3D : FMOD_2D;
+
+    if (asset.loop) mode |= FMOD_LOOP_NORMAL;
+    else mode |= FMOD_LOOP_OFF;
+    if (asset.spatial) mode |= FMOD_3D_LINEARROLLOFF;
+
+    asset.sound = AudioSystem::LoadSound(asset.path, mode);
 
     if (!asset.sound) {
         std::cerr << "[AudioCache] Failed to load: " << asset.path << std::endl;

@@ -135,6 +135,10 @@ void MainMenu::Update()
                 {
                     CrashHandler::Log("AudioManager is null on PLAY click");
                 }
+
+                // test to hear audio on LEFT SPEAKER
+                //std::cout << "[Test] Playing PLAY click on LEFT" << std::endl;
+                //AudioSystem::PlaySoundAt("button_play", -300.0f, 0.0f, 1.0f);
                 GSM_SetNextState(GameState::GS_LEVEL1);
             }
         }
@@ -154,6 +158,9 @@ void MainMenu::Update()
                 {
                     CrashHandler::Log("AudioManager is null on QUIT click");
                 }
+                // test to hear audio on the RIGHT SPEAKER
+                //std::cout << "[Test] Playing QUIT click on RIGHT" << std::endl;
+                //AudioSystem::PlaySoundAt("button_quit", 300.0f, 0.0f, 1.0f);
 
                 // Wait a bit for the sound to play before quitting
                 double startTime = glfwGetTime();
@@ -179,6 +186,9 @@ void MainMenu::Update()
             {
                 CrashHandler::Log("AudioManager is null on SPACE press");
             }
+            // test to hear centred audio
+            //std::cout << "[Test] Playing SPACE at CENTER" << std::endl;
+            //AudioSystem::PlaySoundAt("button_play", 0.0f, 0.0f, 1.0f);
             GSM_SetNextState(GameState::GS_LEVEL1);
         }
 

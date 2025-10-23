@@ -18,7 +18,7 @@
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
-#include "audio.h"
+#include "Audio.h"
 #include "AudioSystem.h"
 #include "AudioCache.h"
 #include "CoreEngine.h"
@@ -179,29 +179,28 @@ void AudioSystem::Update() {
 }
 
 /**
- * @brief Loads a sound file from disk.
+ * @brief Loads a sound file from disk with specified FMOD mode flags.
  *
- * This function loads an audio file using FMOD and returns a pointer
- * to the loaded sound.
+ * This function loads an audio file using FMOD with custom playback settings
+ * for 2D/3D positioning, looping, and distance attenuation.
  *
  * @param filename The file path to the audio file to load
- * @param loop If true, the sound will loop continuously when played.
- *             If false (default), the sound will play once and stop.
+ * @param mode FMOD mode flags (e.g., FMOD_2D, FMOD_3D, FMOD_LOOP_NORMAL, FMOD_LOOP_OFF).
+ *             Multiple flags can be combined using bitwise OR (|).
  * @return FMOD::Sound* Pointer to the loaded sound object, or nullptr
- *         if loading failed (e.g., file not found, unsupported format).
+ *         if loading failed (e.g., file not found, unsupported format, system not initialized).
  */
-FMOD::Sound* AudioSystem::LoadSound(const std::string& filename, bool loop) {
-    if (!mSystem) return nullptr;
-
-    FMOD::Sound* sound = nullptr;
-    FMOD_MODE mode = loop ? FMOD_LOOP_NORMAL : FMOD_DEFAULT;
-
-    FMOD_RESULT result = mSystem->createSound(filename.c_str(), mode, nullptr, &sound);
-    if (result != FMOD_OK) {
-        std::cerr << "FMOD Error: Failed to load sound (" << filename << ")" << std::endl;
+FMOD::Sound* AudioSystem::LoadSound(const std::string& filename, FMOD_MODE mode) {
+    if (!mSystem) {
+        std::cerr << "[AudioSystem] System not initialized!" << std::endl;
         return nullptr;
     }
-
+    FMOD::Sound* sound = nullptr;
+    FMOD_RESULT result = mSystem->createSound(filename.c_str(), mode, nullptr, &sound);
+    if (result != FMOD_OK) {
+        std::cerr << "[AudioSystem] Failed to load: " << filename << std::endl;
+        return nullptr;
+    }
     return sound;
 }
 
@@ -324,6 +323,9 @@ void AudioManager::Initialize() {
     
     AudioSystem::Init();
 
+    AudioSystem::Configure2DSpatialAudio();      // SPATIAL AUDIO FUNCS
+    AudioSystem::SetListenerPosition(0.0f, 0.0f);
+
     std::cout << "\n[AudioManager] Loading init bank..." << std::endl;
     AudioCache::LoadBank("init");
 
@@ -349,6 +351,7 @@ void AudioManager::Initialize() {
  * @param dt Delta time in seconds.
  */
 void AudioManager::Update(float dt) {
+    AudioSystem::SetListenerPosition(0.0f, 0.0f);  // Update listener position for spatial audio
     AudioSystem::Update();
 
     UpdateCrossfade(dt);
@@ -548,4 +551,59 @@ void AudioManager::CrossfadeTo(FMOD::Sound* newTrack, float duration) {
     crossfadeActive = true;
 
     std::cout << "[AudioManager] Starting crossfade (" << duration << "s)\n";
+}
+
+// ============================================================================
+// Spatial Audio Implementation
+// ============================================================================
+
+
+void AudioSystem::Configure2DSpatialAudio() {
+    if (!system) return;
+
+    // Disable doppler, use simple distance calculations
+    mSystem->set3DSettings(
+        0.0f,  // No doppler effect (we're in 2D)
+        1.0f,  // Distance factor
+        1.0f   // Rolloff scale
+    );
+
+    std::cout << "[AudioSystem] 2D spatial audio configured" << std::endl;
+}
+
+void AudioSystem::SetListenerPosition(float x, float y) {
+    if (!mSystem) return;
+
+    FMOD_VECTOR position = { x, y, 0.0f };
+    FMOD_VECTOR velocity = { 0.0f, 0.0f, 0.0f };
+    FMOD_VECTOR forward = { 0.0f, 0.0f, 1.0f };  // Into screen
+    FMOD_VECTOR up = { 0.0f, 1.0f, 0.0f };       // Up
+
+    mSystem->set3DListenerAttributes(0, &position, &velocity, &forward, &up);
+}
+
+FMOD::Channel* AudioSystem::PlaySoundAt(const std::string& assetName, float x, float y, float volume) {
+    FMOD::Sound* sound = AudioCache::GetSound(assetName);
+    if (!sound || !mSystem) return nullptr;
+
+    FMOD::Channel* channel = nullptr;
+    mSystem->playSound(sound, nullptr, true, &channel);
+
+    if (channel) {
+        // Set position in 2D space
+        FMOD_VECTOR position = { x, y, 0.0f };
+        FMOD_VECTOR velocity = { 0.0f, 0.0f, 0.0f };
+        channel->set3DAttributes(&position, &velocity);
+
+        // Set distance range (adjust to your game scale)
+        channel->set3DMinMaxDistance(
+            50.0f,   // Full volume within 50 units
+            500.0f   // Silent beyond 500 units
+        );
+
+        channel->setVolume(volume);
+        channel->setPaused(false);
+    }
+
+    return channel;
 }
