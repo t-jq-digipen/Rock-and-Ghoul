@@ -93,7 +93,7 @@ private:
 			if (typeIndex == it.second)
 			{ return it.first; }
 		}
-		return "No such component name... :(\n";
+		// return "No such component name... :(\n";
 		throw std::runtime_error("Component name not registered properly\n");
 	}
 

@@ -520,8 +520,8 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
     };
 
     // add component data in a nice format
-    for (const auto& [componentType, data] : e.componentData) {
-        std::string componentName;
+    for (const auto& [componentName, data] : e.componentData) {
+        /*std::string componentName;
         switch (componentType) {
         case CT_Transform: componentName = "Transform"; break;
         case CT_Sprite: componentName = "Sprite"; break;
@@ -532,7 +532,7 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
         case CT_Shape: componentName = "Shape"; break;
         case CT_Animator: componentName = "Animator"; break;
         default: componentName = "Unknown"; break;
-        }
+        }*/
 
         // parse JSON string and add component data
         j["components"][componentName] = json::parse(data);
@@ -554,20 +554,21 @@ void JsonLoad::from_json(const json& j, SavedEntity& e) {
 
     for (auto it = components.begin(); it != components.end(); ++it) {
         const std::string& componentName = it.key();
-        ComponentTypeID componentType = CT_None;
+        //ComponentTypeID componentType = CT_None;
 
-        if (componentName == "Transform") componentType = CT_Transform;
+        /*if (componentName == "Transform") componentType = CT_Transform;
         else if (componentName == "Sprite") componentType = CT_Sprite;
         else if (componentName == "Physics") componentType = CT_Physics;
         else if (componentName == "Health") componentType = CT_Health;
         else if (componentName == "Tag") componentType = CT_Tag;
         else if (componentName == "Shape") componentType = CT_Shape;
         else if (componentName == "Input") componentType = CT_Input;
-        else if (componentName == "Animator") componentType = CT_Animator;
+        else if (componentName == "Animator") componentType = CT_Animator;*/
 
-        if (componentType != CT_None) {
+        /*if (componentType != CT_None) {
             e.componentData[componentType] = it.value().dump();
-        }
+        }*/
+        e.componentData[componentName] = it.value().dump();
     }
 }
 

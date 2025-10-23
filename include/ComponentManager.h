@@ -32,8 +32,8 @@ public:
 	virtual ~IComponentManager() = default;
 	virtual void removeComponent(Entity eID) = 0;
 
-	virtual std::string SaveComponent(Entity eID);
-	virtual void LoadComponent(Entity eID, const std::string& data);
+	virtual std::string SaveComponent(Entity eID) = 0;
+	virtual void LoadComponent(Entity eID, const std::string& data) = 0;
 };
 
 // template for component manager for each component
