@@ -91,6 +91,13 @@ struct Character {
     unsigned int Advance; // Offset in pixels to advance to next glyph
 };
 
+//Struct for font 
+struct Font {
+    std::array<Character, 128> glyphs;
+    int sizePx = 0;
+    std::string name; //i just put here first for debug
+};
+
 
 
 /**
@@ -308,7 +315,7 @@ public:
 
     //Draw text
     /**
-    * @brief Initializes FreeType resources for text rendering.
+    * @brief Initializes FreeType resources for text rendering. (sets up VAO/VBO)
     */
     void InitTextRendering();
 
@@ -321,7 +328,8 @@ public:
     * @param scale Scale factor for text size.
     * @param color The RGB color of the text.
     */
-    void DrawText(std::string text, float x, float y, float scale, const Colour3& color);
+    //void DrawText(std::string text, float x, float y, float scale, const Colour3& color); //need edit, add one more param for fonttype
+    void DrawText(std::string text, float x, float y, float scale, const Colour3& color, const std::string& fontKey);
 
     /**
     * @brief Draws text on screen bounded by a textbox using a loaded FreeType font.
@@ -332,7 +340,14 @@ public:
     * @param scale Scale factor for text size.
     * @param color The RGB color of the text.
     */
-    void DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color); //for dialogue
+    //void DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color); //for dialogue, need edit, add one more param for fonttype
+    void DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color, const std::string& fontKey);
+
+
+    //Extra functions for font loading
+    bool LoadFont(const std::string& fontPath, int sizePx, const std::string& key);
+    void UnloadFont(const std::string& key);
+    void UnloadAllFonts();
 
 
 
@@ -537,6 +552,7 @@ private:
     std::unordered_map<std::string, GLuint> textureCache; //Cache of loaded textures mapped by file path
     std::unordered_map<GLuint, std::string> pathCache; //Reverse lookup cache mapping texture IDs to file paths.
     std::map<char, Character> Characters; //Character map storing FreeType glyph data for text rendering
+    std::unordered_map<std::string, Font> fontCache; //Cache to store the key/font pair of font types
 
     // to load for json
     // std::unordered_map<GLuint, std::string> texturePathMap;

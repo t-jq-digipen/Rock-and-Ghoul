@@ -722,7 +722,7 @@ void Render::DrawRectInstanced(const std::vector<InstanceData>& instances, const
 }
 
 //text rendering
-void Render::InitTextRendering() {
+/*void Render::InitTextRendering() {
     // If InitTextRendering can be called multiple times,
     // first clear any previous GPU objects it created.
     if (!Characters.empty()) {
@@ -826,10 +826,136 @@ void Render::InitTextRendering() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}*/
+
+void Render::InitTextRendering() {
+    // recreate VAO/VBO safely
+    if (!Characters.empty()) {
+        for (auto& [c, ch] : Characters) {
+            glDeleteTextures(1, &ch.TextureID);
+        }
+        Characters.clear();
+    }
+    if (textVAO) {
+        glDeleteVertexArrays(1, &textVAO);
+        textVAO = 0;
+    }
+    if (textVBO) {
+        glDeleteBuffers(1, &textVBO);
+        textVBO = 0;
+    }
+
+    glGenVertexArrays(1, &textVAO);
+    glGenBuffers(1, &textVBO);
+
+    glBindVertexArray(textVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
+
+    // aPos (x,y)
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    // aTex (u,v)
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+bool Render::LoadFont(const std::string& fontPath, int sizePx, const std::string& key) {
+    // If already loaded, do nothing
+    if (fontCache.find(key) != fontCache.end()) {
+        return true;
+    }
+
+    FT_Library ft = nullptr;
+    FT_Face face = nullptr;
+
+    auto cleanupFT = [&]() {
+        if (face) { FT_Done_Face(face); face = nullptr; }
+        if (ft) { FT_Done_FreeType(ft); ft = nullptr; }
+        };
+
+    if (FT_Init_FreeType(&ft)) {
+        std::cerr << "FREETYPE: Could not init library\n";
+        cleanupFT(); return false;
+    }
+    if (FT_New_Face(ft, fontPath.c_str(), 0, &face)) {
+        std::cerr << "FREETYPE: Failed to load font: " << fontPath << "\n";
+        cleanupFT(); return false;
+    }
+
+    FT_Set_Pixel_Sizes(face, 0, static_cast<FT_UInt>(sizePx));
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // glyph bitmaps are byte-aligned
+
+    Font font;
+    font.sizePx = sizePx;
+    font.name = key;
+
+    for (unsigned char c = 0; c < 128; ++c) {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+            std::cerr << "FREETYPE: Failed glyph " << (int)c << "\n";
+            // make an empty glyph to avoid UB
+            font.glyphs[c] = Character{ 0, {0,0}, {0,0}, 0 };
+            continue;
+        }
+
+        GLuint tex = 0;
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows, 0,
+            GL_RED, GL_UNSIGNED_BYTE,
+            face->glyph->bitmap.buffer);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // try GL_NEAREST if you want crisper pixels
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        Character ch{
+            tex,
+            { static_cast<int>(face->glyph->bitmap.width),
+              static_cast<int>(face->glyph->bitmap.rows) },
+            { face->glyph->bitmap_left, face->glyph->bitmap_top },
+            static_cast<unsigned int>(face->glyph->advance.x >> 6) // **pixels**
+        };
+        font.glyphs[c] = ch;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    cleanupFT();
+
+    fontCache.emplace(key, std::move(font));
+    return true;
+}
+
+void Render::UnloadFont(const std::string& key) {
+    auto it = fontCache.find(key);
+    if (it == fontCache.end()) return;
+    for (auto const& ch : it->second.glyphs) {
+        if (ch.TextureID) {
+            glDeleteTextures(1, &const_cast<unsigned int&>(ch.TextureID));
+        }
+    }
+    fontCache.erase(it);
+}
+
+void Render::UnloadAllFonts() {
+    for (auto& [k, f] : fontCache)
+        for (auto const& ch : f.glyphs)
+            if (ch.TextureID) {
+                glDeleteTextures(1, &const_cast<unsigned int&>(ch.TextureID));
+            }
+    fontCache.clear();
 }
 
 
-void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color) {
+
+
+/*void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color) {
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -893,10 +1019,182 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
+}*/
+void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color, const std::string& fontkey) {
+
+    auto it = fontCache.find(fontkey);
+    if (it == fontCache.end()) {
+        std::cerr << "This font type does not exists: " << fontkey << std::endl;
+        return;
+    }
+    
+    const Font& font = it->second;
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // activate render state	
+    glUseProgram(shaderProgram);
+
+    //set uniforms
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]);
+    glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+
+    //text no need, so set them transform uniforms to defaults
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(textVAO);
+
+
+    // iterate through all characters
+    std::string::const_iterator c;
+
+    for (c = text.begin(); c != text.end(); c++)
+    {
+        //Character ch = Characters[*c];
+        Character ch = font.glyphs[*c];
+
+        float xpos = x + ch.Bearing.x * scale;
+        float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+
+        float w = ch.Size.x * scale;
+        float h = ch.Size.y * scale;
+        // update VBO for each character
+        float vertices[6][4] = {
+            { xpos,     ypos + h,   0.0f, 0.0f },
+            { xpos,     ypos,       0.0f, 1.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+
+            { xpos,     ypos + h,   0.0f, 0.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+            { xpos + w, ypos + h,   1.0f, 0.0f }
+        };
+
+        // render glyph texture over quad
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+
+        // update content of VBO memory
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // use glBufferSubData 
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // render quad
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // advance cursors for next glyph (advance is number of 1/64 pixels)
+        //x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+        x += (ch.Advance) * scale; //THIS IS WHERE I WENT WRONG, DONT NEED BITSHIFT AGAIN
+    }
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
 }
 
 
-void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color) {
+/*void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color) {
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // activate render state	
+    glUseProgram(shaderProgram);
+
+    //set uniforms
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]);
+    glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+
+    //text no need, so set them transform uniforms to defaults
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(textVAO);
+
+    //track where next glyph will placed
+    float nextX = x;
+    float nextY = y;
+
+    //get the horizontal step for space char
+    float spaceWidth = (Characters[' '].Advance >> 6) * scale;
+
+    std::istringstream iss(text);
+    std::string word;
+
+    while (iss >> word) {
+
+        // Measure word width
+        float wordWidth = 0.0f;
+
+        for (char c : word) {
+            Character ch = Characters[c];
+            wordWidth += (ch.Advance >> 6) * scale;
+        }
+
+        // Wrap to new line
+        //Check if drawing the whole word will excced the right edge
+        if (nextX + wordWidth > x + rowWidth) {
+            //if yes reset the nextX to be the left edge
+            nextX = x;
+            nextY -= (Characters['H'].Size.y * 1.5f) * scale; //move down like new line
+        }
+
+        // Draw characters of word (similar setup to previous)
+        for (char c : word) {
+            Character ch = Characters[c];
+
+            float xpos = nextX + ch.Bearing.x * scale;
+            float ypos = nextY - (ch.Size.y - ch.Bearing.y) * scale;
+            float w = ch.Size.x * scale;
+            float h = ch.Size.y * scale;
+
+            float vertices[6][4] = {
+                { xpos,     ypos + h,   0.0f, 0.0f },
+                { xpos,     ypos,       0.0f, 1.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+
+                { xpos,     ypos + h,   0.0f, 0.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+                { xpos + w, ypos + h,   1.0f, 0.0f }
+            };
+
+            glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+            glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            nextX += (ch.Advance >> 6) * scale; //position next char 
+        }
+
+        nextX += spaceWidth; // Add space
+    }
+
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
+
+}*/
+
+
+void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color, const std::string& fontKey) {
+
+    auto it = fontCache.find(fontKey);
+    if (it == fontCache.end()) {
+        std::cerr << "This font type does not exists: " << fontKey << std::endl;
+        return;
+    }
+
+    const Font& font = it->second;
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -983,6 +1281,8 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
 
 }
+
+
 
 
 //Load all image assets from JSON file (containing the image paths)

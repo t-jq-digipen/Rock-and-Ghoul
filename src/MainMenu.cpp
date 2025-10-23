@@ -84,6 +84,10 @@ void MainMenu::Load()
     // Preload all Image assets from JSON (they’ll be stored in textureCache)
     auto menuTextures = renderer.LoadImageAssetsFromJSON("../Assets/imageAssets.json"); //i added an imageAssets.json inside assets folder
 
+    //Load usable fonts for this game state
+    renderer.LoadFont("../Assets/PermanentMarker-regular.ttf", 48, "Marker"); //48 is the pixel font height
+    renderer.LoadFont("../Assets/Antonio-Bold.ttf", 48, "Bold");
+
     CrashHandler::Safe("MainMenu", "Load", [&] {
         std::cout << "Main Menu Loaded!!!" << std::endl;
 
@@ -202,7 +206,7 @@ void MainMenu::Update()
     //renderer.DrawImage(titleImage, 400.f, 400.f);
     //renderer.DrawImageRotated(titleImage, 400.f, 400.f, 1.57f);
     //renderer.DrawImageSub(titleImage, 400.f, 400.f, 100.f, 400.f, 0.f, 0.f, 256.f, 256.f);
-    //renderer.DrawText("Let's play", 400.f, 700.f, 0.75f, { 0.f,0.f,1.f });
+    //renderer.DrawText("Let's play", 400.f, 700.f, 0.75f, { 1.f,1.f,1.f }, "Marker");
     //renderer.DrawText("Game Over", 1400.f, 700.f, 0.75f, { 1.f,1.f,1.f });
 //
 //    if (Input::IsKeyPressed(GLFW_KEY_B)) {
@@ -349,5 +353,6 @@ void MainMenu::Unload()
         //renderer.UnloadTexture(playTexture);
         //renderer.UnloadTexture(quitTexture);
         renderer.UnloadTexture(MainMenuTexture);
+        renderer.UnloadAllFonts();
     });
 }
