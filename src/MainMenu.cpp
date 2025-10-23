@@ -178,7 +178,7 @@ void MainMenu::Update()
         }
         guiSystem.Update(0.0f);
         // Alternatively press SPACE to enter LEVEL 1
-        if (Input::IsKeyPressed(GLFW_KEY_SPACE))
+        if (Input::IsKeyPressed(GLFW_KEY_8))
         {
             std::cout << "PLAY CLICKED � switching to Level1\n";
             if (audio) 

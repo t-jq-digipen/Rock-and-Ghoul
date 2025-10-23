@@ -21,6 +21,7 @@ struct ButtonConfig {
     std::function<void()> onClick = nullptr;
     AudioSystem::ButtonType soundType = AudioSystem::ButtonType::PLAY;
     ButtonShape shape = ButtonShape::Rectangle;
+    float textScale = 1.0f;
 };
 
 struct TextBoxConfig {
