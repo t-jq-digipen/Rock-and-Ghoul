@@ -11,7 +11,7 @@
  * detection. Dynamic checks calculate the exact time when moving objects
  * first collide within a frame
  *
- * Helper functions Set_AABB and Update_AABB manage bounding box
+ * Helper functions Create_AABB and Update_AABB manage bounding box
  * construction and position updates for physics systems.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
@@ -37,7 +37,7 @@ struct AABB {
  * @param size The dimensions (width, height) of the bounding box.
  * @return AABB The constructed bounding box with calculated min/max corners.
  */
-AABB Set_AABB(Vec2 const& pos, Vec2 const& size);
+AABB Create_AABB(Vec2 const& pos, Vec2 const& size);
 
 /**
  * @brief Updates an AABB's min/max corners based on new center position.

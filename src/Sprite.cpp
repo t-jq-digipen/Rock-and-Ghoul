@@ -70,10 +70,10 @@ namespace Sprite {
 		return m_scale;
 	}
 
-	bool SpriteComponent::IsAnimated()
+	bool SpriteComponent::IsAnimated() const
 	{ return m_anim; }
 
-	std::string SpriteComponent::Get_TexturePath()
+	std::string SpriteComponent::Get_TexturePath() const
 	{ return Render::GetInstance().Get_TexturePath(m_image.textureID); }
 
 
@@ -88,5 +88,23 @@ namespace Sprite {
 	void SpriteComponent::Rotate(float deltaRot) {
 		m_rot += deltaRot;
 
+	}
+
+	std::string SpriteComponent::Serialize() const {
+
+		json j = {
+			{"texturePath", Get_TexturePath()},
+			{"scaleX", m_scale.x},
+			{"scaleY", m_scale.y},
+			{"animated", m_anim}
+
+		};
+		return j.dump();
+	}
+
+	SpriteComponent SpriteComponent::DeSerialize(const std::string& data) const {
+		json j = json::parse(data);
+
+		return SpriteComponent(j["texturePath"], { j["scaleX"], j["scaleY"] }, j["animated"]);
 	}
 }

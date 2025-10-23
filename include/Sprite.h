@@ -31,7 +31,8 @@ namespace Sprite {
 	 */
 	class SpriteComponent {
 	private:
-		Image	m_image;	// Image struct	Vec2	m_scale;	// Independant image scaling
+		Image	m_image;	// Image struct
+		Vec2	m_scale;	// Independant image scaling
 		bool	m_anim;		// Bool if sprite is animated or static
 		float	m_rot;		// Rotation value of image in degrees
 	public:
@@ -104,13 +105,13 @@ namespace Sprite {
 		 * @brief Check if the sprite is animated. (A spritesheet)
 		 * @return True if animated, false otherwise.
 		 */
-		bool IsAnimated();
+		bool IsAnimated() const;
 		
 		/**
 		 * @brief Get the file path of the texture associated with this sprite.
 		 * @return String representing the texture’s file path.
 		 */
-		std::string Get_TexturePath();
+		std::string Get_TexturePath() const;
 
 		/**
 		 * @brief Set the rotation value of the sprite.
@@ -124,6 +125,10 @@ namespace Sprite {
 		 */
 		float Get_Rotation() const;
 		void Rotate(float deltaRot);
+
+		std::string Serialize() const;
+
+		SpriteComponent DeSerialize(const std::string& data) const;
 	};
 
 }

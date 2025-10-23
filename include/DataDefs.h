@@ -24,15 +24,15 @@
   * @struct SavedEntity
   * @brief Serializable entity structure with component data.
   */
-struct SavedEntity {
-    int id;                                                      
-    std::string name;                                           
-    std::unordered_map<ComponentTypeID, std::string> componentData; 
+struct SavedEntity {                                              
+    std::string name;                   
+    // First string is type name, second string holds data
+    std::unordered_map<std::string, std::string> componentData; 
 
     /**
      * @brief Default constructor with zero ID and empty name.
      */
-    SavedEntity() : id(0), name("") {}
+    SavedEntity() : name("") {}
 };
 
 /**
@@ -44,7 +44,7 @@ struct SavedPhysics {
     float decay;                  
     bool willCollide;            
 
-    // AABB data (center + dim for Set_AABB)
+    // AABB data (center + dim for Create_AABB)
     float aabbCenterX, aabbCenterY; 
     float aabbDimX, aabbDimY;   
 

@@ -438,7 +438,7 @@ void ImGuiSystem::ShowInspectorWindow() {
             Vec2 aabbSize = aabb.dim;
             if (ImGui::DragFloat2("AABB Size", &aabbSize.x, 1.0f, 10.0f, 1000.0f)) {
                 auto& trans = m_registry.Get_Component<TransformComponent>(selectedEntity);
-                AABB newAABB = Set_AABB(trans.pos, aabbSize);
+                AABB newAABB = Create_AABB(trans.pos, aabbSize);
                 p.Set_AABB(newAABB);
             }
             float circRad = circ.rad;

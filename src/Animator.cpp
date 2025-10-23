@@ -148,4 +148,58 @@ namespace Animator {
 
 		stateframe[state] = framerange;
 	}
+
+	std::string AnimatorComponent::Serialize() const {
+		json statesJson = json::object();
+
+		for (const auto& [state, stateFrames] : stateframe)
+		{
+			statesJson[std::to_string(state)] = { {"row", stateFrames.row}, {"col_start", stateFrames.col_start}, {"col_end", stateFrames.col_end}, {"duration", stateFrames.duration} };
+		}
+
+		json j = {
+		{"totalRows", m_total_rows},
+		{"totalCols", m_total_cols},
+		{"animDuration", anim_duration},
+		{"frameRow", GetFrames().row},
+		{"frameColStart", GetFrames().col_start},
+		{"frameColEnd", GetFrames().col_end},
+		{"currentState", GetCurrentState()},
+		{"states", statesJson},
+		{"imageWidth", static_cast<int>(m_uv_width * m_total_cols)},
+		{"imageHeight", static_cast<int>(m_uv_height * m_total_rows)},
+		};
+		return j.dump();
+	}
+
+	AnimatorComponent AnimatorComponent::DeSerialize(const std::string& data) const {
+		json j = json::parse(data);
+
+		ActiveFrames frames;
+		frames.row = j["frameRow"];
+		frames.col_start = j["frameColStart"];
+		frames.col_end = j["frameColEnd"];
+		frames.duration = j.value("frameDuration", 1.0f);
+
+		AnimatorComponent temp(j["totalRows"], j["totalCols"], j["imageWidth"], j["imageHeight"], frames, j.value("animDuration", 0.f));
+
+		if (j.contains("states")) {
+			for (auto& [stateKey, stateData] : j["states"].items()){
+				int stateID = std::stoi(stateKey);
+				ActiveFrames stateFrames;
+				stateFrames.row = stateData["row"];
+				stateFrames.col_start = stateData["col_start"];
+				stateFrames.col_end = stateData["col_end"];
+				stateFrames.duration = stateData.value("duration", 1.0f);
+
+				temp.AddState(stateID, stateFrames);
+			}
+		}
+
+		if (j.contains("currentState") && j["currentState"] != -1) {
+			temp.SetState(j["currentState"]);
+		}
+
+		return temp;
+	}
 }

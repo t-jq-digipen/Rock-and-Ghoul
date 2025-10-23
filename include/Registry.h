@@ -37,6 +37,7 @@
 // Track which entity has what components
 // Help systems find stuff in entities
 #include <typeindex>		// for type index
+#include "DataDefs.h"
 #include <unordered_map>	// for map
 #include <iostream>
 #include <stdexcept>
@@ -71,6 +72,36 @@ private:
 		return static_cast<ComponentManager<Component>*>(it->second.get());
 	}
 
+	template<typename Component>
+	void Register_ComponentTypeName(const std::string& name)
+	{
+		std::type_index typeIndex(typeid(Component));
+
+		if (componentTypeNames.find(name) != componentTypeNames.end())
+		{ throw std::runtime_error("COMPONENT NAME " + name + " ALREADY REGISTERED\n"); }
+
+		componentTypeNames[name] = typeIndex;
+	}
+
+	std::string Get_ComponentTypeName(std::type_index typeIndex)
+	{
+		for (auto it : componentTypeNames)
+		{
+			if (typeIndex == it.second)
+			{ return it.first; }
+		}
+		return "No such component name... :(\n";
+		throw std::runtime_error("Component name not registered properly\n");
+	}
+
+	std::type_index Get_ComponentTypeIndex(std::string name)
+	{
+		if (componentTypeNames.find(name) == componentTypeNames.end())
+		{
+			throw std::runtime_error("CANNOT FIND COMPONENT TYPE " + name);
+		}
+		return componentTypeNames[name];
+	}
 
 public:
 	// REGISTRY
@@ -99,7 +130,7 @@ public:
 		else // Component not registered yet, safe to register :)
 		{ 
 			componentManagers[typeIndex] = std::make_unique<ComponentManager<Component>>(); 
-			componentTypeNames[name] = typeIndex;
+			Register_ComponentTypeName(name);
 		}
 	}
 
@@ -197,9 +228,33 @@ public:
 	std::string Get_EntityName(Entity eID)
 	{ return entityManager.GetEntityName(eID); }
 
-	bool Save_Entity(const std::string& filepath, Entity eID)
+	SavedEntity Save_Entity(const std::string& filepath, Entity eID)
 	{
+		SavedEntity saved;
+		saved.name = Get_EntityName(eID);
 
+		for (auto& [typeIndex, manager] : componentManagers)
+		{
+			std::string compType = Get_ComponentTypeName(typeIndex);
+			saved.componentData[compType] = manager->SaveComponent(eID);
+		}
+		return saved;
+	}
+
+	Entity Load_Entity(const SavedEntity& saved)
+	{
+		Entity eID = Create_Entity();
+		Set_EntityName(eID, saved.name);
+
+		std::cout << "Creating entity '" << saved.name << "' (ID: " << eID << ")\n";
+
+		for (auto& [typeName, data] : saved.componentData)
+		{
+			std::type_index typeIndex = Get_ComponentTypeIndex(typeName);
+			componentManagers[typeIndex]->LoadComponent(eID, data);
+		}
+
+		return eID;
 	}
 	// ================================================================================
 

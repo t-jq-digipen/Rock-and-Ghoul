@@ -95,10 +95,25 @@ struct TransformComponent {
 
 	std::string Serialize() const {
 		// does serialization things here
+		json j = {
+			{"posX", pos.x},
+			{"posY", pos.y},
+			{"scaleX", scale.x},
+			{"scaleY", scale.y},
+			{"rot", rot}
+		};
+		return j.dump();
 	}
 
-	TransformComponent DeSerialize(Entity eID, const std::string& data)  {
+	TransformComponent DeSerialize(const std::string& data)  {
 		// does deserialization things here
+		json j = json::parse(data);
+		pos.x = j["posX"];
+		pos.y = j["posY"];
+		scale.x = j["scaleX"];
+		scale.y = j["scaleY"];
+		rot = j.value("rot", 0.0f);
+		return *this;
 	}
 
 };
@@ -145,6 +160,21 @@ struct LifetimeComponent {
 struct HealthComponent {
 	float currhp;
 	float maxhp;
+
+	std::string Serialize() const {
+		json j = {
+			{"currentHP", currhp},
+			{"maxHP", maxhp}
+		};
+		return j.dump();
+	}
+
+	HealthComponent DeSerialize(const std::string& data) {
+		json j = json::parse(data);
+		currhp = j["currentHP"];
+		maxhp = j["maxHP"];
+		return *this;
+	}
 };
 
 enum C_TagID {
@@ -157,6 +187,18 @@ enum C_TagID {
 
 struct TagComponent {
 	C_TagID tag = T_PLAYER;
+
+	std::string Serialize() const {
+		json j = {
+			{"tagID", static_cast<int>(tag)}
+		};
+		return j.dump();
+	}
+
+	TagComponent DeSerialize(const std::string& data) const {
+		json j = json::parse(data);
+		return TagComponent(static_cast<C_TagID>(static_cast<int>(j["tagID"])));
+	}
 };
 
 enum ControlScheme {
@@ -167,6 +209,20 @@ enum ControlScheme {
 
 struct InputComponent {
 	ControlScheme scheme = CS_WASD;
+
+	std::string Serialize() const {
+		json j = {
+			{"scheme", static_cast<int>(scheme)}
+		};
+		return j.dump();
+	}
+
+	InputComponent DeSerialize(const std::string& data) const {
+		json j = json::parse(data);
+		InputComponent temp;
+		temp.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
+		return temp;
+	}
 };
 
 enum ShapeType {
@@ -178,6 +234,33 @@ struct ShapeComponent {
 	ShapeType shape = SHAPE_RECTANGLE;
 	Vec2 dimensions = { 1.0f, 1.0f };
 	Vec3 color = { 1.0f, 1.0f, 1.0f };
+
+	std::string Serialize() const {
+		json j = {
+			{"shapeType", static_cast<int>(shape)},
+			{"dimX", dimensions.x},
+			{"dimY", dimensions.y},
+			{"colorX", color.x},
+			{"colorY", color.y},
+			{"colorZ", color.z}
+		};
+		return j.dump();
+	}
+
+	ShapeComponent DeSerialize(const std::string& data) const {
+		json j = json::parse(data);
+
+		ShapeComponent s;
+
+		s.shape = static_cast<ShapeType>(static_cast<int>(j["shapeType"]));
+		s.dimensions.x = j["dimX"];
+		s.dimensions.y = j["dimY"];
+		s.color.x = j["colorX"];
+		s.color.y = j["colorY"];
+		s.color.z = j["colorZ"];
+
+		return s;
+	}
 };
 
 enum Element {

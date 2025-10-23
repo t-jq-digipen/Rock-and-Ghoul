@@ -196,4 +196,40 @@ namespace Physics {
 		circlehitbox = newCircle;
 	}
 
+	std::string PhysicsComponent::Serialize() const {
+		json j = {
+			{"velX", vel.x},
+			{"velY", vel.y},
+			{"decay", decay},
+			{"willCollide", willCollide},
+			{"aabb", {
+				{"centerX", (aabbhitbox.min.x + aabbhitbox.max.x) * 0.5f},
+				{"centerY", (aabbhitbox.min.y + aabbhitbox.max.y) * 0.5f},
+				{"dimX", aabbhitbox.dim.x},
+				{"dimY", aabbhitbox.dim.y}
+			}},
+			{"circle", {
+				{"posX", circlehitbox.pos.x},
+				{"posY", circlehitbox.pos.y},
+				{"rad", circlehitbox.rad}
+			}}
+		};
+		return j.dump();
+	}
+
+	PhysicsComponent PhysicsComponent::DeSerialize(const std::string& data) const {
+		json j = json::parse(data);
+
+		Vec2 center = { j["aabb"]["centerX"], j["aabb"]["centerY"] };
+		Vec2 size = { j["aabb"]["dimX"], j["aabb"]["dimY"] };
+		AABB aabb = Create_AABB(center, size);
+
+		Circle circle;
+		circle.pos.x = j["circle"]["posX"];
+		circle.pos.y = j["circle"]["posY"];
+		circle.rad = j["circle"]["rad"];
+
+		return PhysicsComponent(j["decay"], j["willCollide"], aabb, circle);
+	}
+
 }

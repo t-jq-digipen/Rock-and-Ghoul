@@ -80,7 +80,7 @@ void GenerateInitialPrefabs() {
         Registry::Get().Set_EntityName(player, "Player");
         Registry::Get().Add_Component<TransformComponent>(player, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
-        AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
+        AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
         Circle circle = { {0, 0}, 200.f };
         Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
         Registry::Get().Add_Component<Physics::PhysicsComponent>(player, temp);
@@ -103,7 +103,7 @@ void GenerateInitialPrefabs() {
         Registry::Get().Set_EntityName(waffle, "Waffle");
         Registry::Get().Add_Component<TransformComponent>(waffle, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
-        AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
+        AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
         Circle circle = { {0, 0}, 200.f };
         Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
         Registry::Get().Add_Component<Physics::PhysicsComponent>(waffle, temp);
@@ -131,7 +131,7 @@ void GenerateInitialPrefabs() {
         Registry::Get().Set_EntityName(rect, "Rectangle");
         Registry::Get().Add_Component<TransformComponent>(rect, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
-        AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
+        AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
         Circle circle = { {0, 0}, 200.f };
         Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
         Registry::Get().Add_Component<Physics::PhysicsComponent>(rect, phys);
@@ -151,7 +151,7 @@ void GenerateInitialPrefabs() {
         Registry::Get().Set_EntityName(circle_ent, "Circle");
         Registry::Get().Add_Component<TransformComponent>(circle_ent, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
-        AABB aabb = Set_AABB({ 0, 0 }, { 200.f, 200.f });
+        AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
         Circle circle = { {0, 0}, 100.f };
         Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
         Registry::Get().Add_Component<Physics::PhysicsComponent>(circle_ent, phys);
@@ -171,7 +171,7 @@ Entity Create_Wall(float x, float y, float width, float height) {
     Entity wall = Registry::Get().Create_Entity();
     Registry::Get().Add_Component<ShapeComponent>(wall, ShapeComponent{ SHAPE_RECTANGLE });
     Registry::Get().Add_Component<TransformComponent>(wall, TransformComponent{ {x, y}, {width, height} });
-    AABB aabb = Set_AABB({ x, y }, { width, height });
+    AABB aabb = Create_AABB({ x, y }, { width, height });
     Circle circle = { {x, y}, 0.0f }; // zero radius
     Physics::PhysicsComponent phys(0.0f, true, aabb, circle, true);
     Registry::Get().Add_Component<Physics::PhysicsComponent>(wall, phys);
@@ -200,7 +200,7 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color)
 //    Add_Component(square, TransformComponent{ {x, y}, {100.f, 100.f} });
 //
 //    {
-//        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
+//        AABB aabb = Create_AABB({ x,y }, { 200.f,200.f });
 //        Circle circle = { {x,y},200.f };
 //        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
 //        Add_Component(square, temp);
@@ -218,7 +218,7 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color)
 //    Entity round = Create_Entity();
 //    Add_Component(round, TransformComponent{ {x, y}, {100.f, 100.f} });
 //    {
-//        AABB aabb = Set_AABB({ x,y }, { 200.f,200.f });
+//        AABB aabb = Create_AABB({ x,y }, { 200.f,200.f });
 //        Circle circle = { {x,y},100.f };
 //        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
 //        Add_Component(round, temp);  // round refers to the entity

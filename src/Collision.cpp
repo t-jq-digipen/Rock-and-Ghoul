@@ -32,7 +32,7 @@
 #include "Remath.h"
 
 // AABB setter helper
-AABB Set_AABB(Vec2 const& pos, Vec2 const& size)
+AABB Create_AABB(Vec2 const& pos, Vec2 const& size)
 {
     AABB temp;
     // dimension = dim (for saving in json)

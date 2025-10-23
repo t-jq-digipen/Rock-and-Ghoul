@@ -32,17 +32,17 @@
   * @return std::string JSON string containing the transform data with fields:
   *         posX, posY, scaleX, scaleY, and rot.
   */
-std::string JsonLoad::Save_Transform(Entity eID) {
-    auto& t = Registry::Get().Get_Component<TransformComponent>(eID);
-    json j = {
-        {"posX", t.pos.x},
-        {"posY", t.pos.y},
-        {"scaleX", t.scale.x},
-        {"scaleY", t.scale.y},
-        {"rot", t.rot}
-    };
-    return j.dump();
-}
+//std::string JsonLoad::Save_Transform(Entity eID) {
+//    auto& t = Registry::Get().Get_Component<TransformComponent>(eID);
+//    json j = {
+//        {"posX", t.pos.x},
+//        {"posY", t.pos.y},
+//        {"scaleX", t.scale.x},
+//        {"scaleY", t.scale.y},
+//        {"rot", t.rot}
+//    };
+//    return j.dump();
+//}
 
 /**
  * @brief Serializes Sprite component to JSON string.
@@ -51,21 +51,21 @@ std::string JsonLoad::Save_Transform(Entity eID) {
  * @return std::string JSON string containing the sprite data with fields:
  *         texturePath, scaleX, scaleY, and animated.
  */
-std::string JsonLoad::Save_Sprite(Entity eID) {
-    auto& s = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID);
-
-    // Get texture path from the image
-    std::string texPath = s.Get_TexturePath();
-
-    json j = {
-        {"texturePath", texPath},
-        {"scaleX", s.Get_Scale().x},
-        {"scaleY", s.Get_Scale().y},
-        {"animated", s.IsAnimated()}
-
-    };
-    return j.dump();
-}
+//std::string JsonLoad::Save_Sprite(Entity eID) {
+//    auto& s = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID);
+//
+//    // Get texture path from the image
+//    std::string texPath = s.Get_TexturePath();
+//
+//    json j = {
+//        {"texturePath", texPath},
+//        {"scaleX", s.Get_Scale().x},
+//        {"scaleY", s.Get_Scale().y},
+//        {"animated", s.IsAnimated()}
+//
+//    };
+//    return j.dump();
+//}
 
 /**
  * @brief Serializes Animator component to JSON string.
@@ -109,18 +109,18 @@ std::string JsonLoad::Save_Animator(Entity eID) {
  * @param eID Entity ID Shape component should be serialized.
  * @return std::string JSON string containing the shape data
  */
-std::string JsonLoad::Save_Shape(Entity eID) {
-    auto& s = Registry::Get().Get_Component<ShapeComponent>(eID);
-    json j = {
-        {"shapeType", static_cast<int>(s.shape)},
-        {"dimX", s.dimensions.x},
-        {"dimY", s.dimensions.y},
-        {"colorX", s.color.x},
-        {"colorY", s.color.y},
-        {"colorZ", s.color.z}
-    };
-    return j.dump();
-}
+//std::string JsonLoad::Save_Shape(Entity eID) {
+//    auto& s = Registry::Get().Get_Component<ShapeComponent>(eID);
+//    json j = {
+//        {"shapeType", static_cast<int>(s.shape)},
+//        {"dimX", s.dimensions.x},
+//        {"dimY", s.dimensions.y},
+//        {"colorX", s.color.x},
+//        {"colorY", s.color.y},
+//        {"colorZ", s.color.z}
+//    };
+//    return j.dump();
+//}
 
 /**
  * @brief Serializes Physics component to JSON string.
@@ -128,35 +128,35 @@ std::string JsonLoad::Save_Shape(Entity eID) {
  * @param eID The entity ID whose Physics component should be serialized.
  * @return std::string JSON string containing the physics data.
  */
-std::string JsonLoad::Save_Physics(Entity eID) {
-    auto& p = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
-    auto& vel = p.Get_Vel();
-    auto& aabb = p.Get_AABB();
-    auto& circle = p.Get_Circle();
-
-    // Calculate center from AABB
-    float centerX = (aabb.min.x + aabb.max.x) * 0.5f;
-    float centerY = (aabb.min.y + aabb.max.y) * 0.5f;
-
-    json j = {
-        {"velX", vel.x},
-        {"velY", vel.y},
-        {"decay", 0.015f},
-        {"willCollide", p.CollisionActive()},
-        {"aabb", {
-            {"centerX", centerX},
-            {"centerY", centerY},
-            {"dimX", aabb.dim.x},      // Save the dim field
-            {"dimY", aabb.dim.y}       // Save the dim field
-        }},
-        {"circle", {
-            {"posX", circle.pos.x},
-            {"posY", circle.pos.y},
-            {"rad", circle.rad}
-        }}
-    };
-    return j.dump();
-}
+//std::string JsonLoad::Save_Physics(Entity eID) {
+//    auto& p = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
+//    auto& vel = p.Get_Vel();
+//    auto& aabb = p.Get_AABB();
+//    auto& circle = p.Get_Circle();
+//
+//    // Calculate center from AABB
+//    float centerX = (aabb.min.x + aabb.max.x) * 0.5f;
+//    float centerY = (aabb.min.y + aabb.max.y) * 0.5f;
+//
+//    json j = {
+//        {"velX", vel.x},
+//        {"velY", vel.y},
+//        {"decay", 0.015f},
+//        {"willCollide", p.CollisionActive()},
+//        {"aabb", {
+//            {"centerX", centerX},
+//            {"centerY", centerY},
+//            {"dimX", aabb.dim.x},      // Save the dim field
+//            {"dimY", aabb.dim.y}       // Save the dim field
+//        }},
+//        {"circle", {
+//            {"posX", circle.pos.x},
+//            {"posY", circle.pos.y},
+//            {"rad", circle.rad}
+//        }}
+//    };
+//    return j.dump();
+//}
 
 /**
  * @brief Serializes Health component to JSON string.
@@ -164,14 +164,14 @@ std::string JsonLoad::Save_Physics(Entity eID) {
  * @param eID The entity ID where Health component should be serialized.
  * @return std::string JSON string containing the health data.
  */
-std::string JsonLoad::Save_Health(Entity eID) {
-    auto& h = Registry::Get().Get_Component<HealthComponent>(eID);
-    json j = {
-        {"currentHP", h.currhp},
-        {"maxHP", h.maxhp}
-    };
-    return j.dump();
-}
+//std::string JsonLoad::Save_Health(Entity eID) {
+//    auto& h = Registry::Get().Get_Component<HealthComponent>(eID);
+//    json j = {
+//        {"currentHP", h.currhp},
+//        {"maxHP", h.maxhp}
+//    };
+//    return j.dump();
+//}
 
 /**
  * @brief Serializes Tag component to JSON string.
@@ -179,13 +179,13 @@ std::string JsonLoad::Save_Health(Entity eID) {
  * @param eID The entity ID whose Tag component should be serialized.
  * @return std::string JSON string containing the tag data.
  */
-std::string JsonLoad::Save_Tag(Entity eID) {
-    auto& t = Registry::Get().Get_Component<TagComponent>(eID);
-    json j = {
-        {"tagID", static_cast<int>(t.tag)}
-    };
-    return j.dump();
-}
+//std::string JsonLoad::Save_Tag(Entity eID) {
+//    auto& t = Registry::Get().Get_Component<TagComponent>(eID);
+//    json j = {
+//        {"tagID", static_cast<int>(t.tag)}
+//    };
+//    return j.dump();
+//}
 
 /**
  * @brief Serializes Input component to JSON string.
@@ -193,13 +193,13 @@ std::string JsonLoad::Save_Tag(Entity eID) {
  * @param eID The entity ID where Input component should be serialized.
  * @return std::string JSON string containing the input data.
  */
-std::string JsonLoad::Save_Input(Entity eID) {
-    auto& i = Registry::Get().Get_Component<InputComponent>(eID);
-    json j = {
-        {"scheme", static_cast<int>(i.scheme)}
-    };
-    return j.dump();
-}
+//std::string JsonLoad::Save_Input(Entity eID) {
+//    auto& i = Registry::Get().Get_Component<InputComponent>(eID);
+//    json j = {
+//        {"scheme", static_cast<int>(i.scheme)}
+//    };
+//    return j.dump();
+//}
 #pragma endregion ComponentSavers
 
 #pragma region ComponentLoaders
@@ -210,16 +210,16 @@ std::string JsonLoad::Save_Input(Entity eID) {
  * @param eID The entity ID to which the Transform component should be added.
  * @param data JSON string containing transform data.
  */
-void JsonLoad::Load_Transform(Entity eID, const std::string& data) {
-    json j = json::parse(data);
-    TransformComponent t;
-    t.pos.x = j["posX"];
-    t.pos.y = j["posY"];
-    t.scale.x = j["scaleX"];
-    t.scale.y = j["scaleY"];
-    t.rot = j.value("rot", 0.0f);
-    Registry::Get().Add_Component<TransformComponent>(eID, t);
-}
+//void JsonLoad::Load_Transform(Entity eID, const std::string& data) {
+//    json j = json::parse(data);
+//    TransformComponent t;
+//    t.pos.x = j["posX"];
+//    t.pos.y = j["posY"];
+//    t.scale.x = j["scaleX"];
+//    t.scale.y = j["scaleY"];
+//    t.rot = j.value("rot", 0.0f);
+//    Registry::Get().Add_Component<TransformComponent>(eID, t);
+//}
 
 /**
  * @brief Deserializes and loads Shape component onto entity.
@@ -297,20 +297,20 @@ void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
  * @param eID The entity ID to which the Sprite component should be added.
  * @param data JSON string containing sprite data (texturePath, scale, animated).
  */
-void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
-    json j = json::parse(data);
-
-    std::string texPath = j["texturePath"];
-    Vec2 scale;
-    scale.x = j["scaleX"];
-    scale.y = j["scaleY"];
-    bool animated = j["animated"];
-
-    if (!texPath.empty()) {
-        Sprite::SpriteComponent s(texPath, scale, animated);
-        Registry::Get().Add_Component<Sprite::SpriteComponent>(eID, s);
-    }
-}
+//void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
+//    json j = json::parse(data);
+//
+//    std::string texPath = j["texturePath"];
+//    Vec2 scale;
+//    scale.x = j["scaleX"];
+//    scale.y = j["scaleY"];
+//    bool animated = j["animated"];
+//
+//    if (!texPath.empty()) {
+//        Sprite::SpriteComponent s(texPath, scale, animated);
+//        Registry::Get().Add_Component<Sprite::SpriteComponent>(eID, s);
+//    }
+//}
 
 /**
  * @brief Deserializes and loads Physics component onto entity.
@@ -318,33 +318,33 @@ void JsonLoad::Load_Sprite(Entity eID, const std::string& data) {
  * @param eID The entity ID to which the Physics component should be added.
  * @param data JSON string containing physics data.
  */
-void JsonLoad::Load_Physics(Entity eID, const std::string& data) {
-    json j = json::parse(data);
-
-    // Build AABB using Set_AABB helper
-    Vec2 center = { j["aabb"]["centerX"], j["aabb"]["centerY"] };
-    Vec2 size = { j["aabb"]["dimX"], j["aabb"]["dimY"] };
-    AABB aabb = Set_AABB(center, size);
-
-    // Build Circle
-    Circle circle;
-    circle.pos.x = j["circle"]["posX"];
-    circle.pos.y = j["circle"]["posY"];
-    circle.rad = j["circle"]["rad"];
-
-    // Create Physics Component
-    float decay = j["decay"];
-    bool willCollide = j["willCollide"];
-    Physics::PhysicsComponent p(decay, willCollide, aabb, circle);
-
-    // Set velocity
-    Vec2 vel;
-    vel.x = j["velX"];
-    vel.y = j["velY"];
-    p.Set_Vel(vel);
-
-    Registry::Get().Add_Component<Physics::PhysicsComponent>(eID, p);
-}
+//void JsonLoad::Load_Physics(Entity eID, const std::string& data) {
+//    json j = json::parse(data);
+//
+//    // Build AABB using Create_AABB helper
+//    Vec2 center = { j["aabb"]["centerX"], j["aabb"]["centerY"] };
+//    Vec2 size = { j["aabb"]["dimX"], j["aabb"]["dimY"] };
+//    AABB aabb = Create_AABB(center, size);
+//
+//    // Build Circle
+//    Circle circle;
+//    circle.pos.x = j["circle"]["posX"];
+//    circle.pos.y = j["circle"]["posY"];
+//    circle.rad = j["circle"]["rad"];
+//
+//    // Create Physics Component
+//    float decay = j["decay"];
+//    bool willCollide = j["willCollide"];
+//    Physics::PhysicsComponent p(decay, willCollide, aabb, circle);
+//
+//    // Set velocity
+//    Vec2 vel;
+//    vel.x = j["velX"];
+//    vel.y = j["velY"];
+//    p.Set_Vel(vel);
+//
+//    Registry::Get().Add_Component<Physics::PhysicsComponent>(eID, p);
+//}
 
 /**
  * @brief Deserializes and loads Health component onto entity.
@@ -352,13 +352,13 @@ void JsonLoad::Load_Physics(Entity eID, const std::string& data) {
  * @param eID The entity ID to which the Health component should be added.
  * @param data JSON string containing health data.
  */
-void JsonLoad::Load_Health(Entity eID, const std::string& data) {
-    json j = json::parse(data);
-    HealthComponent h;
-    h.currhp = j["currentHP"];
-    h.maxhp = j["maxHP"];
-    Registry::Get().Add_Component<HealthComponent>(eID, h);
-}
+//void JsonLoad::Load_Health(Entity eID, const std::string& data) {
+//    json j = json::parse(data);
+//    HealthComponent h;
+//    h.currhp = j["currentHP"];
+//    h.maxhp = j["maxHP"];
+//    Registry::Get().Add_Component<HealthComponent>(eID, h);
+//}
 
 /**
  * @brief Deserializes and loads Tag component onto entity.
@@ -366,12 +366,12 @@ void JsonLoad::Load_Health(Entity eID, const std::string& data) {
  * @param eID The entity ID to which the Tag component should be added.
  * @param data JSON string containing tag data.
  */
-void JsonLoad::Load_Tag(Entity eID, const std::string& data) {
-    json j = json::parse(data);
-    TagComponent t;
-    t.tag = static_cast<C_TagID>(static_cast<int>(j["tagID"]));
-    Registry::Get().Add_Component<TagComponent>(eID, t);
-}
+//void JsonLoad::Load_Tag(Entity eID, const std::string& data) {
+//    json j = json::parse(data);
+//    TagComponent t;
+//    t.tag = static_cast<C_TagID>(static_cast<int>(j["tagID"]));
+//    Registry::Get().Add_Component<TagComponent>(eID, t);
+//}
 
 /**
  * @brief Deserializes and loads Input component onto entity.
@@ -379,12 +379,12 @@ void JsonLoad::Load_Tag(Entity eID, const std::string& data) {
  * @param eID The entity ID to which the Input component should be added.
  * @param data JSON string containing input data.
  */
-void JsonLoad::Load_Input(Entity eID, const std::string& data) {
-    json j = json::parse(data);
-    InputComponent i;
-    i.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
-    Registry::Get().Add_Component<InputComponent>(eID, i);
-}
+//void JsonLoad::Load_Input(Entity eID, const std::string& data) {
+//    json j = json::parse(data);
+//    InputComponent i;
+//    i.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
+//    Registry::Get().Add_Component<InputComponent>(eID, i);
+//}
 #pragma endregion ComponentLoaders
 
 // ECS <-> SAVED ENTITY CONVERSION
@@ -398,25 +398,24 @@ void JsonLoad::Load_Input(Entity eID, const std::string& data) {
  */
 SavedEntity JsonLoad::EntityToSaved(Entity eID) {
     SavedEntity saved;
-    saved.id = eID;
     saved.name = Registry::Get().Get_EntityName(eID);
 
     // Check each component and save if exists
-    if (Registry::Get().Has_Component<TransformComponent>(eID)) {
+    /*if (Registry::Get().Has_Component<TransformComponent>(eID)) {
         saved.componentData[CT_Transform] = Save_Transform(eID);
-    }
+    }*/
 
-    if (Registry::Get().Has_Component<Sprite::SpriteComponent>(eID)) {
+    /*if (Registry::Get().Has_Component<Sprite::SpriteComponent>(eID)) {
         saved.componentData[CT_Sprite] = Save_Sprite(eID);
-    }
+    }*/
 
-    if (Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) {
+    /*if (Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) {
         saved.componentData[CT_Physics] = Save_Physics(eID);
-    }
+    }*/
 
-    if (Registry::Get().Has_Component<HealthComponent>(eID)) {
+    /*if (Registry::Get().Has_Component<HealthComponent>(eID)) {
         saved.componentData[CT_Health] = Save_Health(eID);
-    }
+    }*/
 
     if (Registry::Get().Has_Component<TagComponent>(eID)) {
         saved.componentData[CT_Tag] = Save_Tag(eID);
@@ -450,18 +449,18 @@ Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
     std::cout << "Creating entity '" << saved.name << "' (ID: " << e << ")" << std::endl;
 
     // Load Transform FIRST
-    auto transformIt = saved.componentData.find(CT_Transform);
+    /*auto transformIt = saved.componentData.find(CT_Transform);
     if (transformIt != saved.componentData.end()) {
         Load_Transform(e, transformIt->second);
         std::cout << " Transform loaded" << std::endl;
-    }
+    }*/
 
     // Load Sprite SECOND (before Animator needs it)
-    auto spriteIt = saved.componentData.find(CT_Sprite);
+    /*auto spriteIt = saved.componentData.find(CT_Sprite);
     if (spriteIt != saved.componentData.end()) {
         Load_Sprite(e, spriteIt->second);
         std::cout << "Loaded Sprite" << std::endl;
-    }
+    }*/
 
     // Then load other components
     for (const auto& [componentType, data] : saved.componentData) {
@@ -473,14 +472,14 @@ Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
                 Load_Animator(e, data);
                 std::cout << "Loaded Animator" << std::endl;
                 break;
-            case CT_Physics:
+            /*case CT_Physics:
                 Load_Physics(e, data);
                 std::cout << "Loaded Physics" << std::endl;
-                break;
-            case CT_Health:
+                break;*/
+            /*case CT_Health:
                 Load_Health(e, data);
                 std::cout << "Loaded Health" << std::endl;
-                break;
+                break;*/
             case CT_Tag:
                 Load_Tag(e, data);
                 std::cout << "Loaded Tag" << std::endl;
@@ -515,7 +514,7 @@ Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
  */
 void JsonLoad::to_json(json& j, const SavedEntity& e) {
     j = json{
-        {"id", e.id},
+        // {"id", e.id},
         {"name", e.name},
         {"components", json::object()}
     };
@@ -547,7 +546,7 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
  * @param e Reference to the SavedEntity to populate using deserialized data.
  */
 void JsonLoad::from_json(const json& j, SavedEntity& e) {
-    e.id = j["id"];
+    // e.id = j["id"];
     e.name = j["name"];
 
     // Read component data
@@ -711,7 +710,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         // Create all entities
         for (const auto& savedEntity : scene.entities) {
             Entity e = SavedToEntity(savedEntity);
-            std::cout << "Created entity ID: " << e << " (was: " << savedEntity.id << ")" << std::endl;
+            // std::cout << "Created entity ID: " << e << " (was: " << savedEntity.id << ")" << std::endl;
         }
 
         return true;

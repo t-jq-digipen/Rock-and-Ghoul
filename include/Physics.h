@@ -21,6 +21,7 @@
 #include "Remath.h"
 #include <vector>
 #include "Collision.h"
+#include <string>
 
 
 namespace Physics {
@@ -244,6 +245,10 @@ namespace Physics {
 
 		bool IsStatic() const { return isStatic; }
 		void SetStatic(bool s) { isStatic = s; }
+
+		std::string Serialize() const;
+
+		PhysicsComponent DeSerialize(const std::string& data) const;
 	};
 }
 

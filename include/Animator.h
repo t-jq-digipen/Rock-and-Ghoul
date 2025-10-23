@@ -165,7 +165,9 @@ namespace Animator {
 		 */
 		int GetCurrentState() const { return m_current_state; }
 
+		std::string Serialize() const;
 
+		AnimatorComponent DeSerialize(const std::string& data) const;
 		
 	};
 

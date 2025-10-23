@@ -31,6 +31,9 @@ class IComponentManager {
 public:
 	virtual ~IComponentManager() = default;
 	virtual void removeComponent(Entity eID) = 0;
+
+	virtual std::string SaveComponent(Entity eID);
+	virtual void LoadComponent(Entity eID, const std::string& data);
 };
 
 // template for component manager for each component
@@ -109,17 +112,17 @@ public:
 	 */
 	const std::unordered_map<Entity, Component>& getComponents() const { return components; }
 
-	std::optional<std::string> SaveComponent(Entity eID)
+	std::string SaveComponent(Entity eID) override
 	{
 		auto it = components.find(eID);
 		if (it != components.end())
 		{
 			return it->second.Serialize();
 		}
-		return std::nullopt;
+		return "";
 	}
 
-	void LoadComponent(Entity eID, const std::string& data)
+	void LoadComponent(Entity eID, const std::string& data) override
 	{
 		Component newComp = Component::DeSerialize(data);
 		addComponent(eID, newComp);
