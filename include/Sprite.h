@@ -31,8 +31,7 @@ namespace Sprite {
 	 */
 	class SpriteComponent {
 	private:
-		Image	m_image;	// Image struct
-		Vec2	m_scale;	// Independant image scaling
+		Image	m_image;	// Image struct	Vec2	m_scale;	// Independant image scaling
 		bool	m_anim;		// Bool if sprite is animated or static
 		float	m_rot;		// Rotation value of image in degrees
 	public:

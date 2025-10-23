@@ -50,37 +50,37 @@ void CoreEngine::Initialize() {
     Registry& registry = Registry::Get();
     std::cout << "\n\nINITIALIZING REGISTRY\n==============================\n";
     std::cout << "INITIALIZING DEFAULT COMPONENTS: \n==============================\n";
-    registry.Register_Component<TransformComponent>();
+    registry.Register_Component<TransformComponent>("Transform");
     std::cout << "REGISTRY | REGISTERED TRANSFORM COMPONENT\n";
 
-    registry.Register_Component<Sprite::SpriteComponent>();
+    registry.Register_Component<Sprite::SpriteComponent>("Sprite");
     std::cout << "REGISTRY | REGISTERED SPRITE COMPONENT\n";
 
-    registry.Register_Component<Animator::AnimatorComponent>();
+    registry.Register_Component<Animator::AnimatorComponent>("Animator");
     std::cout << "REGISTRY | REGISTERED ANIMATOR COMPONENT\n";
 
-    registry.Register_Component<Physics::PhysicsComponent>();
+    registry.Register_Component<Physics::PhysicsComponent>("Physics");
     std::cout << "REGISTRY | REGISTERED PHYSICS COMPONENT\n";
 
-    registry.Register_Component<AudioComponent>();
+    registry.Register_Component<AudioComponent>("Audio");
     std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";
 
-    registry.Register_Component<HealthComponent>();
+    registry.Register_Component<HealthComponent>("Health");
     std::cout << "REGISTRY | REGISTERED HEALTH COMPONENT\n";
 
-    registry.Register_Component<InputComponent>();
+    registry.Register_Component<InputComponent>("Input");
     std::cout << "REGISTRY | REGISTERED INPUT COMPONENT\n";
 
-    registry.Register_Component<ShapeComponent>();
+    registry.Register_Component<ShapeComponent>("Shape");
     std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";
 
     // marker for non-standard components which should be shifted out to game files
     std::cout << "NON DEFAULT COMPONENTS: \n==============================\n";
 
-    registry.Register_Component<TagComponent>();
+    registry.Register_Component<TagComponent>("Tag");
     std::cout << "REGISTRY | REGISTERED TAG COMPONENT\n";
 
-    registry.Register_Component<ElementComponent>();
+    registry.Register_Component<ElementComponent>("Element");
     std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";
 
 

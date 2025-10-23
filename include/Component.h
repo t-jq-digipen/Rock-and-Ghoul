@@ -42,6 +42,7 @@
 #include "Remath.h"
 #include "Render.h"
 #include "Collision.h"
+#include "Entity.h"
 
 // System notes:
 

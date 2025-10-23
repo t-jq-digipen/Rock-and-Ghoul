@@ -60,6 +60,7 @@ private:
 
 	// Map of component managers
 	std::unordered_map<std::type_index, std::unique_ptr<IComponentManager>> componentManagers;
+	std::unordered_map<std::string, std::type_index> componentTypeNames;
 
 	template<typename Component>
 	ComponentManager<Component>* Get_Manager() {
@@ -89,14 +90,17 @@ public:
 	 * @param component Component instance to add.
 	 */
 	template<typename Component>
-	void Register_Component() {
+	void Register_Component(const std::string& name) {
 		// Assign type index
 		std::type_index typeIndex(typeid(Component));
 		// Check if component is already registered
 		if ((componentManagers.find(typeIndex)) != componentManagers.end()) 
 		{ throw std::runtime_error("COMPONENT ALREADY REGISTERED\n"); }
 		else // Component not registered yet, safe to register :)
-		{ componentManagers[typeIndex] = std::make_unique<ComponentManager<Component>>(); }
+		{ 
+			componentManagers[typeIndex] = std::make_unique<ComponentManager<Component>>(); 
+			componentTypeNames[name] = typeIndex;
+		}
 	}
 
 	/**
@@ -147,6 +151,20 @@ public:
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 		return manager->getComponents();
 	}
+
+	template<typename Component>
+	std::optional<std::string> SaveComponent(Entity eID)
+	{
+		ComponentManager<Component>* manager = Get_Manager<Component>();
+		return manager->SaveComponent(eID);
+	}
+
+	template<typename Component>
+	void LoadComponent(Entity eID, const std::string& data)
+	{
+		ComponentManager<Component>* manager = Get_Manager<Component>();
+		manager->LoadComponent(eID, data);
+	}
 	// ================================================================================
 
 	// ENTITY
@@ -178,6 +196,11 @@ public:
 
 	std::string Get_EntityName(Entity eID)
 	{ return entityManager.GetEntityName(eID); }
+
+	bool Save_Entity(const std::string& filepath, Entity eID)
+	{
+
+	}
 	// ================================================================================
 
 
