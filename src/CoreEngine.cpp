@@ -36,6 +36,8 @@
 #include "ImguiSystem.h"
 #include "FrameRateController.h"
 #include <algorithm>
+#include "DataDefs.h"
+#include <nlohmann/json.hpp>
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
 
@@ -62,8 +64,8 @@ void CoreEngine::Initialize() {
     registry.Register_Component<Physics::PhysicsComponent>("Physics");
     std::cout << "REGISTRY | REGISTERED PHYSICS COMPONENT\n";
 
-    registry.Register_Component<AudioComponent>("Audio");
-    std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";
+    //registry.Register_Component<AudioComponent>("Audio");
+    //std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";
 
     registry.Register_Component<HealthComponent>("Health");
     std::cout << "REGISTRY | REGISTERED HEALTH COMPONENT\n";
@@ -80,8 +82,8 @@ void CoreEngine::Initialize() {
     registry.Register_Component<TagComponent>("Tag");
     std::cout << "REGISTRY | REGISTERED TAG COMPONENT\n";
 
-    registry.Register_Component<ElementComponent>("Element");
-    std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";
+    /*registry.Register_Component<ElementComponent>("Element");
+    std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";*/
 
 
     for (auto s : systems) s->Initialize();

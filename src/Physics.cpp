@@ -217,7 +217,7 @@ namespace Physics {
 		return j.dump();
 	}
 
-	PhysicsComponent PhysicsComponent::DeSerialize(const std::string& data) const {
+	PhysicsComponent PhysicsComponent::DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 
 		Vec2 center = { j["aabb"]["centerX"], j["aabb"]["centerY"] };

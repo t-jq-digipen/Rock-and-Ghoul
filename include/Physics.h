@@ -22,6 +22,8 @@
 #include <vector>
 #include "Collision.h"
 #include <string>
+#include "DataDefs.h"
+#include <nlohmann/json.hpp>
 
 
 namespace Physics {
@@ -248,7 +250,7 @@ namespace Physics {
 
 		std::string Serialize() const;
 
-		PhysicsComponent DeSerialize(const std::string& data) const;
+		static PhysicsComponent DeSerialize(const std::string& data);
 	};
 }
 

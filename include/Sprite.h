@@ -18,6 +18,8 @@
 
 #pragma once
 #include "Render.h"
+#include "DataDefs.h"
+#include <nlohmann/json.hpp>
 
 namespace Sprite {
 	
@@ -128,7 +130,7 @@ namespace Sprite {
 
 		std::string Serialize() const;
 
-		SpriteComponent DeSerialize(const std::string& data) const;
+		static SpriteComponent DeSerialize(const std::string& data);
 	};
 
 }

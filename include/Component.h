@@ -44,6 +44,9 @@
 #include "Collision.h"
 #include "Entity.h"
 
+#include "DataDefs.h"
+#include <nlohmann/json.hpp>
+
 // System notes:
 
 
@@ -105,15 +108,16 @@ struct TransformComponent {
 		return j.dump();
 	}
 
-	TransformComponent DeSerialize(const std::string& data)  {
+	static TransformComponent DeSerialize(const std::string& data)  {
 		// does deserialization things here
 		json j = json::parse(data);
-		pos.x = j["posX"];
-		pos.y = j["posY"];
-		scale.x = j["scaleX"];
-		scale.y = j["scaleY"];
-		rot = j.value("rot", 0.0f);
-		return *this;
+		TransformComponent temp;
+		temp.pos.x = j["posX"];
+		temp.pos.y = j["posY"];
+		temp.scale.x = j["scaleX"];
+		temp.scale.y = j["scaleY"];
+		temp.rot = j.value("rot", 0.0f);
+		return temp;
 	}
 
 };
@@ -149,9 +153,16 @@ struct TransformComponent {
 //};
 
 
-struct AudioComponent {
-	// Audiofile audio;
-};
+//struct AudioComponent {
+//	// Audiofile audio;
+//	std::string Serialize() const {
+//		json j = {
+//			{"",""}
+//		};
+//		return j.dump();
+//	}
+//
+//};
 
 struct LifetimeComponent {
 	float time;
@@ -169,11 +180,12 @@ struct HealthComponent {
 		return j.dump();
 	}
 
-	HealthComponent DeSerialize(const std::string& data) {
+	static HealthComponent DeSerialize(const std::string& data) {
 		json j = json::parse(data);
-		currhp = j["currentHP"];
-		maxhp = j["maxHP"];
-		return *this;
+		HealthComponent temp;
+		temp.currhp = j["currHP"];
+		temp.maxhp = j["maxHP"];
+		return temp;
 	}
 };
 
@@ -195,7 +207,7 @@ struct TagComponent {
 		return j.dump();
 	}
 
-	TagComponent DeSerialize(const std::string& data) const {
+	static TagComponent DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 		return TagComponent(static_cast<C_TagID>(static_cast<int>(j["tagID"])));
 	}
@@ -217,7 +229,7 @@ struct InputComponent {
 		return j.dump();
 	}
 
-	InputComponent DeSerialize(const std::string& data) const {
+	static InputComponent DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 		InputComponent temp;
 		temp.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
@@ -247,7 +259,7 @@ struct ShapeComponent {
 		return j.dump();
 	}
 
-	ShapeComponent DeSerialize(const std::string& data) const {
+	static ShapeComponent DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 
 		ShapeComponent s;
@@ -263,14 +275,14 @@ struct ShapeComponent {
 	}
 };
 
-enum Element {
-	ELEMENT_NONE,
-	ELEMENT_FIRE,
-	ELEMENT_ICE,
-	ELEMENT_WIND,
-	ELEMENT_LIGHTNING
-};
-
-struct ElementComponent {
-	Element element = ELEMENT_NONE;
-};
+//enum Element {
+//	ELEMENT_NONE,
+//	ELEMENT_FIRE,
+//	ELEMENT_ICE,
+//	ELEMENT_WIND,
+//	ELEMENT_LIGHTNING
+//};
+//
+//struct ElementComponent {
+//	Element element = ELEMENT_NONE;
+//};

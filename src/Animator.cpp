@@ -172,7 +172,7 @@ namespace Animator {
 		return j.dump();
 	}
 
-	AnimatorComponent AnimatorComponent::DeSerialize(const std::string& data) const {
+	AnimatorComponent AnimatorComponent::DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 
 		ActiveFrames frames;

@@ -23,6 +23,8 @@
 
 #pragma once
 #include <unordered_map>
+#include "DataDefs.h"
+#include <nlohmann/json.hpp>
 namespace Animator {
 
 	/**
@@ -167,7 +169,7 @@ namespace Animator {
 
 		std::string Serialize() const;
 
-		AnimatorComponent DeSerialize(const std::string& data) const;
+		static AnimatorComponent DeSerialize(const std::string& data);
 		
 	};
 

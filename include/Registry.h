@@ -37,7 +37,6 @@
 // Track which entity has what components
 // Help systems find stuff in entities
 #include <typeindex>		// for type index
-#include "DataDefs.h"
 #include <unordered_map>	// for map
 #include <iostream>
 #include <stdexcept>
@@ -47,6 +46,8 @@
 #include "Physics.h"		// Physics Component
 #include "Sprite.h"			// Sprite Component
 #include "Animator.h"		// Animator Component
+#include "DataDefs.h"
+#include <nlohmann/json.hpp>
 
 // constexpr size_t MAX_COMPONENT_TYPES = 11; // max number of components TIS SHI NOT EVEN BEING USED
 
@@ -72,16 +73,18 @@ private:
 		return static_cast<ComponentManager<Component>*>(it->second.get());
 	}
 
-	template<typename Component>
-	void Register_ComponentTypeName(const std::string& name)
-	{
-		std::type_index typeIndex(typeid(Component));
+	//template<typename Component>
+	//void Register_ComponentTypeName(const std::string& name)
+	//{
+	//	std::type_index typeIndex(typeid(Component));
 
-		if (componentTypeNames.find(name) != componentTypeNames.end())
-		{ throw std::runtime_error("COMPONENT NAME " + name + " ALREADY REGISTERED\n"); }
+	//	if (componentTypeNames.find(name) != componentTypeNames.end())
+	//	{
+	//		throw std::runtime_error("COMPONENT NAME " + name + " ALREADY REGISTERED\n");
+	//	}
 
-		componentTypeNames[name] = typeIndex;
-	}
+	//	componentTypeNames[name] = typeIndex;
+	//}
 
 	std::string Get_ComponentTypeName(std::type_index typeIndex)
 	{
@@ -100,7 +103,7 @@ private:
 		{
 			throw std::runtime_error("CANNOT FIND COMPONENT TYPE " + name);
 		}
-		return componentTypeNames[name];
+		return componentTypeNames.at(name);
 	}
 
 public:
@@ -115,6 +118,9 @@ public:
 
 	// COMPONENTS
 	// ================================================================================
+
+
+
 	/**
 	 * @brief Registers a Component Type to the registry.
 	 * @param eID Entity identifier.
@@ -123,14 +129,14 @@ public:
 	template<typename Component>
 	void Register_Component(const std::string& name) {
 		// Assign type index
-		std::type_index typeIndex(typeid(Component));
+		std::type_index typeID(typeid(Component));
 		// Check if component is already registered
-		if ((componentManagers.find(typeIndex)) != componentManagers.end()) 
+		if ((componentManagers.find(typeID)) != componentManagers.end()) 
 		{ throw std::runtime_error("COMPONENT ALREADY REGISTERED\n"); }
 		else // Component not registered yet, safe to register :)
 		{ 
-			componentManagers[typeIndex] = std::make_unique<ComponentManager<Component>>(); 
-			Register_ComponentTypeName(name);
+			componentManagers[typeID] = std::make_unique<ComponentManager<Component>>(); 
+			componentTypeNames.emplace(name, typeID);
 		}
 	}
 
@@ -250,7 +256,7 @@ public:
 
 		for (auto& [typeName, data] : saved.componentData)
 		{
-			std::type_index typeIndex = Get_ComponentTypeIndex(typeName);
+			std::type_index typeIndex(Get_ComponentTypeIndex(typeName));
 			componentManagers[typeIndex]->LoadComponent(eID, data);
 		}
 

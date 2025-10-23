@@ -75,33 +75,33 @@
  *         totalRows, totalCols, animDuration, frame configuration,
  *         currentState, all animation states, and UV coordinates (u0, v0, u1, v1).
  */
-std::string JsonLoad::Save_Animator(Entity eID) {
-    auto& a = Registry::Get().Get_Component<Animator::AnimatorComponent>(eID);
-
-    auto frames = a.GetFrames();
-    auto stateMap = a.GetStateFrames();
-
-    json statesJson = json::object();
-    for (const auto& [state, stateFrames] : stateMap) {
-        statesJson[std::to_string(state)] = { {"row", stateFrames.row}, {"col_start", stateFrames.col_start}, {"col_end", stateFrames.col_end}, {"duration", stateFrames.duration} };
-    }
-
-    json j = {
-        {"totalRows", a.GetTotalRows()},
-        {"totalCols", a.GetTotalCols()},
-        {"animDuration", a.GetAnimDuration()},
-        {"frameRow", frames.row},
-        {"frameColStart", frames.col_start},
-        {"frameColEnd", frames.col_end},
-        {"currentState", a.GetCurrentState()},
-        {"states", statesJson},
-        {"u0", a.u0},
-        {"v0", a.v0},
-        {"u1", a.u1},
-        {"v1", a.v1}
-    };
-    return j.dump();
-}
+//std::string JsonLoad::Save_Animator(Entity eID) {
+//    auto& a = Registry::Get().Get_Component<Animator::AnimatorComponent>(eID);
+//
+//    auto frames = a.GetFrames();
+//    auto stateMap = a.GetStateFrames();
+//
+//    json statesJson = json::object();
+//    for (const auto& [state, stateFrames] : stateMap) {
+//        statesJson[std::to_string(state)] = { {"row", stateFrames.row}, {"col_start", stateFrames.col_start}, {"col_end", stateFrames.col_end}, {"duration", stateFrames.duration} };
+//    }
+//
+//    json j = {
+//        {"totalRows", a.GetTotalRows()},
+//        {"totalCols", a.GetTotalCols()},
+//        {"animDuration", a.GetAnimDuration()},
+//        {"frameRow", frames.row},
+//        {"frameColStart", frames.col_start},
+//        {"frameColEnd", frames.col_end},
+//        {"currentState", a.GetCurrentState()},
+//        {"states", statesJson},
+//        {"u0", a.u0},
+//        {"v0", a.v0},
+//        {"u1", a.u1},
+//        {"v1", a.v1}
+//    };
+//    return j.dump();
+//}
 
 /**
  * @brief Serializes Shape component to JSON string.
@@ -248,48 +248,48 @@ void JsonLoad::Load_Shape(Entity eID, const std::string& data) {
  * @param data JSON string containing animator data.
  * @throws std::runtime_error If the entity doesn't have a Sprite component.
  */
-void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
-    json j = json::parse(data);
-
-    // Reconstruct ActiveFrames
-    Animator::ActiveFrames frames;
-    frames.row = j["frameRow"];
-    frames.col_start = j["frameColStart"];
-    frames.col_end = j["frameColEnd"];
-    frames.duration = j.value("frameDuration", 1.0f);
-
-    if (!Registry::Get().Has_Component<Sprite::SpriteComponent>(eID)) {
-        std::cerr << "ERROR: Entity " << eID << " doesn't have Sprite component yet!" << std::endl;
-        throw std::runtime_error("Animator requires Sprite component");
-    }
-
-    // Get the sprite component to determine image dimensions
-    auto& sprite = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID);
-    int imageWidth = sprite.Get_Image().widthPixels;
-    int imageHeight = sprite.Get_Image().heightPixels;
-
-    // Create animator with saved parameters
-    Animator::AnimatorComponent anim(j["totalRows"], j["totalCols"], imageWidth, imageHeight, frames, j.value("animDuration", 1.0f));
-
-    if (j.contains("states")) {
-        for (auto& [stateKey, stateData] : j["states"].items()) {
-            int stateID = std::stoi(stateKey);
-            Animator::ActiveFrames stateFrames;
-            stateFrames.row = stateData["row"];
-            stateFrames.col_start = stateData["col_start"];
-            stateFrames.col_end = stateData["col_end"];
-            stateFrames.duration = stateData.value("duration", 1.0f);
-
-            anim.AddState(stateID, stateFrames);
-        }
-    }
-
-    if (j.contains("currentState") && j["currentState"] != -1) {
-        anim.SetState(j["currentState"]);
-    }
-
-    Registry::Get().Add_Component<Animator::AnimatorComponent>(eID, anim);
-}
+//void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
+//    json j = json::parse(data);
+//
+//    // Reconstruct ActiveFrames
+//    Animator::ActiveFrames frames;
+//    frames.row = j["frameRow"];
+//    frames.col_start = j["frameColStart"];
+//    frames.col_end = j["frameColEnd"];
+//    frames.duration = j.value("frameDuration", 1.0f);
+//
+//    if (!Registry::Get().Has_Component<Sprite::SpriteComponent>(eID)) {
+//        std::cerr << "ERROR: Entity " << eID << " doesn't have Sprite component yet!" << std::endl;
+//        throw std::runtime_error("Animator requires Sprite component");
+//    }
+//
+//    // Get the sprite component to determine image dimensions
+//    auto& sprite = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID);
+//    int imageWidth = sprite.Get_Image().widthPixels;
+//    int imageHeight = sprite.Get_Image().heightPixels;
+//
+//    // Create animator with saved parameters
+//    Animator::AnimatorComponent anim(j["totalRows"], j["totalCols"], imageWidth, imageHeight, frames, j.value("animDuration", 1.0f));
+//
+//    if (j.contains("states")) {
+//        for (auto& [stateKey, stateData] : j["states"].items()) {
+//            int stateID = std::stoi(stateKey);
+//            Animator::ActiveFrames stateFrames;
+//            stateFrames.row = stateData["row"];
+//            stateFrames.col_start = stateData["col_start"];
+//            stateFrames.col_end = stateData["col_end"];
+//            stateFrames.duration = stateData.value("duration", 1.0f);
+//
+//            anim.AddState(stateID, stateFrames);
+//        }
+//    }
+//
+//    if (j.contains("currentState") && j["currentState"] != -1) {
+//        anim.SetState(j["currentState"]);
+//    }
+//
+//    Registry::Get().Add_Component<Animator::AnimatorComponent>(eID, anim);
+//}
 
 /**
  * @brief Deserializes and loads Sprite component onto entity.
@@ -396,45 +396,45 @@ void JsonLoad::Load_Animator(Entity eID, const std::string& data) {
  * @return SavedEntity Structure containing the entity's ID, name, and all
  *         component data as JSON strings indexed by component type.
  */
-SavedEntity JsonLoad::EntityToSaved(Entity eID) {
-    SavedEntity saved;
-    saved.name = Registry::Get().Get_EntityName(eID);
-
-    // Check each component and save if exists
-    /*if (Registry::Get().Has_Component<TransformComponent>(eID)) {
-        saved.componentData[CT_Transform] = Save_Transform(eID);
-    }*/
-
-    /*if (Registry::Get().Has_Component<Sprite::SpriteComponent>(eID)) {
-        saved.componentData[CT_Sprite] = Save_Sprite(eID);
-    }*/
-
-    /*if (Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) {
-        saved.componentData[CT_Physics] = Save_Physics(eID);
-    }*/
-
-    /*if (Registry::Get().Has_Component<HealthComponent>(eID)) {
-        saved.componentData[CT_Health] = Save_Health(eID);
-    }*/
-
-    if (Registry::Get().Has_Component<TagComponent>(eID)) {
-        saved.componentData[CT_Tag] = Save_Tag(eID);
-    }
-
-    if (Registry::Get().Has_Component<ShapeComponent>(eID)) {
-        saved.componentData[CT_Shape] = Save_Shape(eID);
-    }
-
-    if (Registry::Get().Has_Component<InputComponent>(eID)) {
-        saved.componentData[CT_Input] = Save_Input(eID);
-    }
-
-    if (Registry::Get().Has_Component<Animator::AnimatorComponent>(eID)) {
-        saved.componentData[CT_Animator] = Save_Animator(eID);
-    }
-
-    return saved;
-}
+//SavedEntity JsonLoad::EntityToSaved(Entity eID) {
+//    SavedEntity saved;
+//    saved.name = Registry::Get().Get_EntityName(eID);
+//
+//    // Check each component and save if exists
+//    /*if (Registry::Get().Has_Component<TransformComponent>(eID)) {
+//        saved.componentData[CT_Transform] = Save_Transform(eID);
+//    }*/
+//
+//    /*if (Registry::Get().Has_Component<Sprite::SpriteComponent>(eID)) {
+//        saved.componentData[CT_Sprite] = Save_Sprite(eID);
+//    }*/
+//
+//    /*if (Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) {
+//        saved.componentData[CT_Physics] = Save_Physics(eID);
+//    }*/
+//
+//    /*if (Registry::Get().Has_Component<HealthComponent>(eID)) {
+//        saved.componentData[CT_Health] = Save_Health(eID);
+//    }*/
+//
+//    /*if (Registry::Get().Has_Component<TagComponent>(eID)) {
+//        saved.componentData[CT_Tag] = Save_Tag(eID);
+//    }
+//
+//    if (Registry::Get().Has_Component<ShapeComponent>(eID)) {
+//        saved.componentData[CT_Shape] = Save_Shape(eID);
+//    }
+//
+//    if (Registry::Get().Has_Component<InputComponent>(eID)) {
+//        saved.componentData[CT_Input] = Save_Input(eID);
+//    }
+//
+//    if (Registry::Get().Has_Component<Animator::AnimatorComponent>(eID)) {
+//        saved.componentData[CT_Animator] = Save_Animator(eID);
+//    }*/
+//
+//    return saved;
+//}
 
 /**
  * @brief Creates live entity from SavedEntity structure.
@@ -442,67 +442,67 @@ SavedEntity JsonLoad::EntityToSaved(Entity eID) {
  * @param saved The SavedEntity structure containing serialized component data.
  * @return Entity The ID of the newly created entity with all components attached.
  */
-Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
-    Entity e = Registry::Get().Create_Entity();
-    Registry::Get().Set_EntityName(e, saved.name);
-
-    std::cout << "Creating entity '" << saved.name << "' (ID: " << e << ")" << std::endl;
-
-    // Load Transform FIRST
-    /*auto transformIt = saved.componentData.find(CT_Transform);
-    if (transformIt != saved.componentData.end()) {
-        Load_Transform(e, transformIt->second);
-        std::cout << " Transform loaded" << std::endl;
-    }*/
-
-    // Load Sprite SECOND (before Animator needs it)
-    /*auto spriteIt = saved.componentData.find(CT_Sprite);
-    if (spriteIt != saved.componentData.end()) {
-        Load_Sprite(e, spriteIt->second);
-        std::cout << "Loaded Sprite" << std::endl;
-    }*/
-
-    // Then load other components
-    for (const auto& [componentType, data] : saved.componentData) {
-        if (componentType == CT_Transform || componentType == CT_Sprite) continue;
-
-        try {
-            switch (componentType) {
-            case CT_Animator:
-                Load_Animator(e, data);
-                std::cout << "Loaded Animator" << std::endl;
-                break;
-            /*case CT_Physics:
-                Load_Physics(e, data);
-                std::cout << "Loaded Physics" << std::endl;
-                break;*/
-            /*case CT_Health:
-                Load_Health(e, data);
-                std::cout << "Loaded Health" << std::endl;
-                break;*/
-            case CT_Tag:
-                Load_Tag(e, data);
-                std::cout << "Loaded Tag" << std::endl;
-                break;
-            case CT_Shape:
-                Load_Shape(e, data);
-                std::cout << "Loaded Shape" << std::endl;
-                break;
-            case CT_Input:
-                Load_Input(e, data);
-                std::cout << "Loaded Input" << std::endl;
-                break;
-            default:
-                break;
-            }
-        }
-        catch (const std::exception& ex) {
-            std::cerr << "Failed to load component: " << ex.what() << std::endl;
-        }
-    }
-
-    return e;
-}
+//Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
+//    Entity e = Registry::Get().Create_Entity();
+//    Registry::Get().Set_EntityName(e, saved.name);
+//
+//    std::cout << "Creating entity '" << saved.name << "' (ID: " << e << ")" << std::endl;
+//
+//    // Load Transform FIRST
+//    /*auto transformIt = saved.componentData.find(CT_Transform);
+//    if (transformIt != saved.componentData.end()) {
+//        Load_Transform(e, transformIt->second);
+//        std::cout << " Transform loaded" << std::endl;
+//    }*/
+//
+//    // Load Sprite SECOND (before Animator needs it)
+//    /*auto spriteIt = saved.componentData.find(CT_Sprite);
+//    if (spriteIt != saved.componentData.end()) {
+//        Load_Sprite(e, spriteIt->second);
+//        std::cout << "Loaded Sprite" << std::endl;
+//    }*/
+//
+//    // Then load other components
+//    /*for (const auto& [componentType, data] : saved.componentData) {
+//        if (componentType == CT_Transform || componentType == CT_Sprite) continue;*/
+//
+//        //try {
+//        //    switch (componentType) {
+//        //    case CT_Animator:
+//        //        Load_Animator(e, data);
+//        //        std::cout << "Loaded Animator" << std::endl;
+//        //        break;
+//        //    /*case CT_Physics:
+//        //        Load_Physics(e, data);
+//        //        std::cout << "Loaded Physics" << std::endl;
+//        //        break;*/
+//        //    /*case CT_Health:
+//        //        Load_Health(e, data);
+//        //        std::cout << "Loaded Health" << std::endl;
+//        //        break;*/
+//        //    case CT_Tag:
+//        //        Load_Tag(e, data);
+//        //        std::cout << "Loaded Tag" << std::endl;
+//        //        break;
+//        //    case CT_Shape:
+//        //        Load_Shape(e, data);
+//        //        std::cout << "Loaded Shape" << std::endl;
+//        //        break;
+//        //    case CT_Input:
+//        //        Load_Input(e, data);
+//        //        std::cout << "Loaded Input" << std::endl;
+//        //        break;
+//        //    default:
+//        //        break;
+//        //    }
+//        //}
+//        //catch (const std::exception& ex) {
+//        //    std::cerr << "Failed to load component: " << ex.what() << std::endl;
+//        //}
+//    }
+//
+//    return e;
+//}
 
 #pragma region Serialization
 
@@ -512,32 +512,32 @@ Entity JsonLoad::SavedToEntity(const SavedEntity& saved) {
  * @param j Reference to the JSON object to populate with entity data.
  * @param e SavedEntity to serialize.
  */
-void JsonLoad::to_json(json& j, const SavedEntity& e) {
-    j = json{
-        // {"id", e.id},
-        {"name", e.name},
-        {"components", json::object()}
-    };
-
-    // add component data in a nice format
-    for (const auto& [componentType, data] : e.componentData) {
-        std::string componentName;
-        switch (componentType) {
-        case CT_Transform: componentName = "Transform"; break;
-        case CT_Sprite: componentName = "Sprite"; break;
-        case CT_Physics: componentName = "Physics"; break;
-        case CT_Health: componentName = "Health"; break;
-        case CT_Tag: componentName = "Tag"; break;
-        case CT_Input: componentName = "Input"; break;
-        case CT_Shape: componentName = "Shape"; break;
-        case CT_Animator: componentName = "Animator"; break;
-        default: componentName = "Unknown"; break;
-        }
-
-        // parse JSON string and add component data
-        j["components"][componentName] = json::parse(data);
-    }
-}
+//void JsonLoad::to_json(json& j, const SavedEntity& e) {
+//    j = json{
+//        // {"id", e.id},
+//        {"name", e.name},
+//        {"components", json::object()}
+//    };
+//
+//    // add component data in a nice format
+//    for (const auto& [componentType, data] : e.componentData) {
+//        std::string componentName;
+//        switch (componentType) {
+//        case CT_Transform: componentName = "Transform"; break;
+//        case CT_Sprite: componentName = "Sprite"; break;
+//        case CT_Physics: componentName = "Physics"; break;
+//        case CT_Health: componentName = "Health"; break;
+//        case CT_Tag: componentName = "Tag"; break;
+//        case CT_Input: componentName = "Input"; break;
+//        case CT_Shape: componentName = "Shape"; break;
+//        case CT_Animator: componentName = "Animator"; break;
+//        default: componentName = "Unknown"; break;
+//        }
+//
+//        // parse JSON string and add component data
+//        j["components"][componentName] = json::parse(data);
+//    }
+//}
 
 /**
  * @brief Deserializes SavedEntity from JSON object.
@@ -545,31 +545,31 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
  * @param j The JSON object containing entity data.
  * @param e Reference to the SavedEntity to populate using deserialized data.
  */
-void JsonLoad::from_json(const json& j, SavedEntity& e) {
-    // e.id = j["id"];
-    e.name = j["name"];
-
-    // Read component data
-    const json& components = j["components"];
-
-    for (auto it = components.begin(); it != components.end(); ++it) {
-        const std::string& componentName = it.key();
-        ComponentTypeID componentType = CT_None;
-
-        if (componentName == "Transform") componentType = CT_Transform;
-        else if (componentName == "Sprite") componentType = CT_Sprite;
-        else if (componentName == "Physics") componentType = CT_Physics;
-        else if (componentName == "Health") componentType = CT_Health;
-        else if (componentName == "Tag") componentType = CT_Tag;
-        else if (componentName == "Shape") componentType = CT_Shape;
-        else if (componentName == "Input") componentType = CT_Input;
-        else if (componentName == "Animator") componentType = CT_Animator;
-
-        if (componentType != CT_None) {
-            e.componentData[componentType] = it.value().dump();
-        }
-    }
-}
+//void JsonLoad::from_json(const json& j, SavedEntity& e) {
+//    // e.id = j["id"];
+//    e.name = j["name"];
+//
+//    // Read component data
+//    const json& components = j["components"];
+//
+//    for (auto it = components.begin(); it != components.end(); ++it) {
+//        const std::string& componentName = it.key();
+//        ComponentTypeID componentType = CT_None;
+//
+//        if (componentName == "Transform") componentType = CT_Transform;
+//        else if (componentName == "Sprite") componentType = CT_Sprite;
+//        else if (componentName == "Physics") componentType = CT_Physics;
+//        else if (componentName == "Health") componentType = CT_Health;
+//        else if (componentName == "Tag") componentType = CT_Tag;
+//        else if (componentName == "Shape") componentType = CT_Shape;
+//        else if (componentName == "Input") componentType = CT_Input;
+//        else if (componentName == "Animator") componentType = CT_Animator;
+//
+//        if (componentType != CT_None) {
+//            e.componentData[componentType] = it.value().dump();
+//        }
+//    }
+//}
 
 /**
  * @brief Serializes SavedScene to JSON object.
