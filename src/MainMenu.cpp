@@ -171,10 +171,50 @@ void MainMenu::Update()
         if (MainMenuTexture)
         {
             renderer.DrawTexturedQuad({ GLApp::width * 0.5f, GLApp::height * 0.5f }, { 1920.f, 1080.f}, MainMenuTexture);
+            if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+            {
+                if (audio) 
+                {
+                    audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
+                }
+                else
+                {
+                    CrashHandler::Log("AudioManager is null on PLAY click");
+                }
+
+                // test to hear audio on LEFT SPEAKER
+                //std::cout << "[Test] Playing PLAY click on LEFT" << std::endl;
+                //AudioSystem::PlaySoundAt("button_play", -300.0f, 0.0f, 1.0f);
+                GSM_SetNextState(GameState::GS_LEVEL1);
+            }
         }
         else
         {
             CrashHandler::Log("MainMenuTexture texture missing; skipping draw!");
+            if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+            {
+                if (audio) 
+                {
+                    audio->PlayButtonSound(AudioSystem::ButtonType::QUIT);
+                }
+                else
+                {
+                    CrashHandler::Log("AudioManager is null on QUIT click");
+                }
+                // test to hear audio on the RIGHT SPEAKER
+                //std::cout << "[Test] Playing QUIT click on RIGHT" << std::endl;
+                //AudioSystem::PlaySoundAt("button_quit", 300.0f, 0.0f, 1.0f);
+
+                // Wait a bit for the sound to play before quitting
+                double startTime = glfwGetTime();
+                while (glfwGetTime() - startTime < 0.5) // Wait 500ms
+                {
+                    // Keep updating audio system during the wait
+                    AudioSystem::Update();
+                    glfwPollEvents();
+                }
+                GSM_SetNextState(GameState::GS_QUIT);
+            }
         }
         guiSystem.Update(0.0f);
         // Alternatively press SPACE to enter LEVEL 1
@@ -189,6 +229,9 @@ void MainMenu::Update()
             {
                 CrashHandler::Log("AudioManager is null on SPACE press");
             }
+            // test to hear centred audio
+            //std::cout << "[Test] Playing SPACE at CENTER" << std::endl;
+            //AudioSystem::PlaySoundAt("button_play", 0.0f, 0.0f, 1.0f);
             GSM_SetNextState(GameState::GS_LEVEL1);
         }
 

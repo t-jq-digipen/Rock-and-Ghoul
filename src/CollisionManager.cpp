@@ -17,7 +17,7 @@
  *     the static object.
  *
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -136,7 +136,7 @@ void CollisionManager::ActionStop_Static(Entity dynamic, Entity staticObj) {
 
     physDyn.UpdateHitboxes(transDyn.pos);
 
-    //Lecture 16 – Animated Point to Line
+    //Lecture 16 ï¿½ Animated Point to Line
     Vec2 velDyn = physDyn.Get_Vel();
     float velocitynorm = RG_DotProduct(velDyn, normal);
     // If moving into the wall (negative dot product)
@@ -204,7 +204,7 @@ void CollisionManager::CheckCollisions() {
                 auto& tagA = m_registry.Get_Component<TagComponent>(a);
                 auto& tagB = m_registry.Get_Component<TagComponent>(b);
                 if (tagA.tag == T_WALL && tagB.tag == T_WALL) {
-                    continue; // don’t process wall–wall collisions
+                    continue; // donï¿½t process wallï¿½wall collisions
                 }
             }
 

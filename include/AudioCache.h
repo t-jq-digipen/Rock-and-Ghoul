@@ -43,10 +43,16 @@ public:
     static bool LoadAsset(const std::string& name);
     static void UnloadAsset(const std::string& name);
 
+    static bool LoadBank(const std::string& bankName);
+    static void UnloadBank(const std::string& bankName);
+    static std::vector<std::string> GetBankAssets(const std::string& bankName);
+
 private:
     static std::unordered_map<std::string, AudioAsset> assetsByName;
     static std::unordered_map<int, std::string> idToName;
 
     static bool ParseManifest(const std::string& manifestPath);
     static bool LoadAudioFile(AudioAsset& asset);
+
+    static std::unordered_map<std::string, std::vector<std::string>> banks;
 };

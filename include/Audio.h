@@ -57,18 +57,17 @@ public:
     static void Update();
 
     /**
-     * @brief Loads a sound file from disk.
+     * @brief Loads a sound file from disk with specified FMOD mode flags.
      *
-     * This function loads an audio file using FMOD and returns a pointer
-     * to the loaded sound.
+     * This function loads an audio file using FMOD with custom playback settings
+     * for 2D/3D positioning, looping, and distance attenuation.
      *
      * @param filename The file path to the audio file to load
-     * @param loop If true, the sound will loop continuously when played.
-     *             If false (default), the sound will play once and stop.
-     * @return FMOD::Sound* Pointer to the loaded sound object, or nullptr
-     *         if loading failed (e.g., file not found, unsupported format).
+     * @param mode FMOD mode flags (e.g., FMOD_2D, FMOD_3D, FMOD_LOOP_NORMAL, FMOD_LOOP_OFF).
+     *             Multiple flags can be combined using bitwise OR (|).
+     * @return FMOD::Sound* Pointer to the loaded sound object, or nullptr if loading failed.
      */
-    static FMOD::Sound* LoadSound(const std::string& filename, bool loop = false);
+    static FMOD::Sound* LoadSound(const std::string& filename, FMOD_MODE mode);
 
     /**
      * @brief Plays a sound immediately without returning a channel handle.
@@ -179,6 +178,11 @@ public:
      * @param sound Pointer to an already loaded FMOD::Sound object.
      */
     static void RegisterButtonSound(ButtonType type, FMOD::Sound* sound);
+
+    // spatial audio funcs
+    static void SetListenerPosition(float x, float y);
+    static FMOD::Channel* PlaySoundAt(const std::string& assetName, float x, float y, float volume = 1.0f);
+    static void Configure2DSpatialAudio();
 
 private:
     static FMOD::System* mSystem;
