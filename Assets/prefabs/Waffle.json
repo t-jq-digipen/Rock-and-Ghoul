@@ -1,0 +1,78 @@
+{
+    "entities": [
+        {
+            "components": {
+                "Animator": {
+                    "animDuration": 1.0,
+                    "currentState": -1,
+                    "frameColEnd": 1,
+                    "frameColStart": 0,
+                    "frameRow": 2,
+                    "states": {
+                        "0": {
+                            "col_end": 1,
+                            "col_start": 0,
+                            "duration": 1.0,
+                            "row": 3
+                        },
+                        "1": {
+                            "col_end": 3,
+                            "col_start": 2,
+                            "duration": 0.5,
+                            "row": 3
+                        }
+                    },
+                    "totalCols": 6,
+                    "totalRows": 3,
+                    "u0": 0.0,
+                    "u1": 18.0,
+                    "v0": 36.0,
+                    "v1": 54.0
+                },
+                "Health": {
+                    "currentHP": 100.0,
+                    "maxHP": 100.0
+                },
+                "Input": {
+                    "scheme": 1
+                },
+                "Physics": {
+                    "aabb": {
+                        "centerX": 0.0,
+                        "centerY": 0.0,
+                        "dimX": 200.0,
+                        "dimY": 200.0
+                    },
+                    "circle": {
+                        "posX": 0.0,
+                        "posY": 0.0,
+                        "rad": 200.0
+                    },
+                    "decay": 0.014999999664723873,
+                    "velX": 0.0,
+                    "velY": 0.0,
+                    "willCollide": true
+                },
+                "Sprite": {
+                    "animated": true,
+                    "scaleX": 100.0,
+                    "scaleY": 100.0,
+                    "texturePath": "../Assets/Waffle_Sprites.png"
+                },
+                "Tag": {
+                    "tagID": 0
+                },
+                "Transform": {
+                    "posX": 0.0,
+                    "posY": 0.0,
+                    "rot": 0.0,
+                    "scaleX": 100.0,
+                    "scaleY": 100.0
+                }
+            },
+            "id": 0,
+            "name": "Waffle"
+        }
+    ],
+    "sceneName": "Waffle"
+}

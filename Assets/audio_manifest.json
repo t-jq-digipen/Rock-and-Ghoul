@@ -1,0 +1,30 @@
+{
+  "music": {
+    "main_menu": {
+      "id": 0,
+      "path": "../Assets/audio/music/mainmenu.wav",
+      "loop": true,
+      "group": "Music"
+    },
+    "level_1": {
+      "id": 1,
+      "path": "../Assets/audio/music/level1.wav",
+      "loop": true,
+      "group": "Music"
+    }
+  },
+  "ui": {
+    "button_play": {
+      "id": 200,
+      "path": "../Assets/audio/ui/playclick.mp3",
+      "loop": false,
+      "group": "UI"
+    },
+    "button_quit": {
+      "id": 201,
+      "path": "../Assets/audio/ui/quitclick.mp3",
+      "loop": false,
+      "group": "UI"
+    }
+  }
+}
