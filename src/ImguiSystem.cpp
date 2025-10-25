@@ -54,7 +54,7 @@ static std::unordered_map<ComponentTypeID, HasFunc> HasComponentMap = {
     { CT_Animator,  [](Entity e, Registry& r) { return r.Has_Component<Animator::AnimatorComponent>(e); } },
     { CT_Physics,   [](Entity e, Registry& r) { return r.Has_Component<Physics::PhysicsComponent>(e); } },
     { CT_Shape,     [](Entity e, Registry& r) { return r.Has_Component<ShapeComponent>(e); } },
-    { CT_Audio,     [](Entity e, Registry& r) { return r.Has_Component<AudioComponent>(e); } },
+    //{ CT_Audio,     [](Entity e, Registry& r) { return r.Has_Component<AudioComponent>(e); } },
     { CT_Input,     [](Entity e, Registry& r) { return r.Has_Component<InputComponent>(e); } },
     { CT_Tag,       [](Entity e, Registry& r) { return r.Has_Component<TagComponent>(e); } }
 };
@@ -514,7 +514,7 @@ namespace {
             std::is_same_v<T, Animator::AnimatorComponent> ? CT_Animator :
             std::is_same_v<T, Physics::PhysicsComponent> ? CT_Physics :
             std::is_same_v<T, ShapeComponent> ? CT_Shape :
-            std::is_same_v<T, AudioComponent> ? CT_Audio :
+            // std::is_same_v<T, AudioComponent> ? CT_Audio :
             std::is_same_v<T, InputComponent> ? CT_Input :
             std::is_same_v<T, TagComponent> ? CT_Tag :
             CT_None;
@@ -799,7 +799,7 @@ void ImGuiSystem::ShowInspectorWindow() {
     DrawAddComponentButton<Animator::AnimatorComponent>("Animator", selectedEntity, r,r.Has_Component<Sprite::SpriteComponent>(selectedEntity)); // needs Sprite
     DrawAddComponentButton<Physics::PhysicsComponent>("Physics", selectedEntity, r, r.Has_Component<TransformComponent>(selectedEntity)); // needs Transform
     DrawAddComponentButton<ShapeComponent>("Shape", selectedEntity, r, r.Has_Component<TransformComponent>(selectedEntity)); // needs Transform
-    DrawAddComponentButton<AudioComponent>("Audio", selectedEntity, r);
+    // DrawAddComponentButton<AudioComponent>("Audio", selectedEntity, r);
     DrawAddComponentButton<InputComponent>("Input", selectedEntity, r);
     DrawAddComponentButton<TagComponent>("Tag", selectedEntity, r);
     SpriteTexturePopup(selectedEntity, m_registry);

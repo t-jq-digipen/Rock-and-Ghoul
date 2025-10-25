@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdexcept>
 #include <iostream>
+#include "Registry.h"
 
 namespace Animator {
 

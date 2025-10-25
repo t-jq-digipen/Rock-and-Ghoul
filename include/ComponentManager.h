@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <string>
+#include "ImguiSystem.h"
 
 // type erased component manager for registry storage
 class IComponentManager {
@@ -32,8 +33,12 @@ public:
 	virtual ~IComponentManager() = default;
 	virtual void removeComponent(Entity eID) = 0;
 
+	virtual bool hasComponent(Entity eID) = 0;
+
 	virtual std::string SaveComponent(Entity eID) = 0;
 	virtual void LoadComponent(Entity eID, const std::string& data) = 0;
+
+	virtual Editor::ComponentData GetComponentEditorData(Entity eID) = 0;
 };
 
 // template for component manager for each component
@@ -126,6 +131,11 @@ public:
 	{
 		Component newComp = Component::DeSerialize(data);
 		addComponent(eID, newComp);
+	}
+
+	Editor::ComponentData GetComponentEditorData(Entity eID) override
+	{
+		return getComponent(eID).EditorData();
 	}
 
 };

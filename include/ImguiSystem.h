@@ -1,7 +1,8 @@
 /* ========================================================
  * @file        ImGuiSystem.h
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        01 OCT 2025
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @date        26 OCT 2025
  *
  * @brief
  *
@@ -16,6 +17,11 @@
  *
  * Integrates with the engine's system interface (ISystem) and
  * provides hooks for initialization, update, render, and shutdown.
+ * 
+ * Declares Editor data to extract editable values from components to
+ * be utilized in the editor.
+ * For each component, developer MUST provide an interface function to
+ * acquire this data in order to use the editor.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -26,6 +32,8 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <variant>
+#include <map>
 
 /**
  * @class ImGuiSystem
@@ -84,4 +92,78 @@ private:
     void ShowInspectorWindow();
 
     void ShowAssetPreviewWindow();
+};
+
+namespace Editor {
+    // Determines the type of editing widget
+    enum WidgetType {
+        WIDGET_CHECKMARK,
+        WIDGET_DROPDOWN,
+        WIDGET_INT,
+        WIDGET_FLOAT,
+        WIDGET_STRING
+    };
+
+    // Widget data variants based on widget type
+#pragma region WidgetData
+    struct Checkmark {
+        bool check;
+        bool* ref = nullptr;
+    };
+
+    struct Text {
+        std::string string;
+        std::string* ref = nullptr;
+    };
+
+    struct Dropdown {
+        std::vector<std::string> options;
+        std::unordered_map<std::string, int> enumMap;
+        int* ref = nullptr;
+
+    };
+
+    struct Widget_Int {
+        bool slider = false;
+        int min;
+        int max;
+        int* ref = nullptr;
+    };
+
+    struct Widget_Float {
+        bool slider = false;
+        float min;
+        float max;
+        float* ref = nullptr;
+    };
+
+    using WidgetData = std::variant<Checkmark, Text, Dropdown, Widget_Int, Widget_Float>;
+
+#pragma endregion WidgetData
+
+
+
+    struct DataField {
+        WidgetType type;
+        WidgetData data;
+    };
+
+    // Keyed with VALUE NAME
+    using DataName = std::string;
+
+    // Keyed with VALUE NAME
+    // Data holds 
+    class ComponentData {
+    private:
+        std::string ComponentName;
+        std::map<DataName, DataField> ComponentInfo;
+    public:
+        ComponentData(const std::string& name) : ComponentName{ name } {}
+
+        void Add_Data(const DataName& name, const DataField& dataf) {
+            ComponentInfo[name] = dataf;
+        }
+
+    };
+
 };

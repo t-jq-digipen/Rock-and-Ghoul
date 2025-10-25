@@ -47,6 +47,8 @@
 #include "DataDefs.h"
 #include <nlohmann/json.hpp>
 
+#include "Registry.h"
+
 // System notes:
 
 
@@ -120,6 +122,16 @@ struct TransformComponent {
 		return temp;
 	}
 
+
+	Editor::ComponentData EditorData() {
+
+		Editor::ComponentData ret("Transform");
+		ret.Add_Data("posX", { Editor::WIDGET_FLOAT, Editor::Widget_Float{true, 0.f, 1920.f, &pos.x } });
+		ret.Add_Data("posY", { Editor::WIDGET_FLOAT, Editor::Widget_Float{true, 0.f, 1080.f, &pos.y } });
+		ret.Add_Data("Rotation", { Editor::WIDGET_FLOAT, Editor::Widget_Float{true, -360.f, 360.f, &rot } });
+
+		return ret;
+	}
 };
 // BASE END
 
