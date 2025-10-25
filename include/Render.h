@@ -403,6 +403,26 @@ public:
     std::unordered_map<std::string, GLuint> LoadImageAssetsFromJSON(const std::string& jsonPath);
 
 
+    // Loading multiple fonts from JSON file
+    /**
+    * @brief Loads font assets defined in a JSON file and initializes them into the font cache.
+    *
+    * Example JSON:
+    * {
+    *   "fonts": [
+    *     { "name": "Marker", "path": "../Assets/PermanentMarker-Regular.ttf", "size": 48 },
+    *     { "name": "Bold", "path": "../Assets/Antonio-Bold.ttf", "size": 36 }
+    *   ]
+    * }
+    *
+    * @param jsonPath Path to the JSON file containing font definitions.
+    * @return std::unordered_map<std::string, Font> Mapping of font name (key) to Font object (value).
+    */
+
+    std::unordered_map<std::string, Font> LoadFontAssetsFromJSON(const std::string& jsonPath);
+
+
+
 
 
 
@@ -498,7 +518,7 @@ public:
 
     //Batch rendering attempt
     // Call it once per frame before SubmitSpriteBatch()
-    void BeginBatch();
+   /* void BeginBatch();
 
     // Submit a sprite (full texture). pos is sprite world position, size is (w,h) in screen units.
    // rotation in radians, uvRect defaults to full texture.
@@ -511,7 +531,7 @@ public:
     void EndBatch();
 
     // Issue the actual glDrawElements for everything collected
-    void FlushBatch();
+    void FlushBatch();*/
 
 
 private:
@@ -538,7 +558,7 @@ private:
     GLuint vao, vbo, shaderProgram;
     GLuint InstanceVBO, InstanceShaderProgram;
     GLuint textVAO, textVBO;
-    GLuint batchVAO, batchVBO, batchEBO, batchShader;
+    //GLuint batchVAO, batchVBO, batchEBO, batchShader;
     glm::mat4 projection;
 
 
@@ -584,7 +604,7 @@ private:
 
 
      // ---- Batch rendering state data ----
-    struct BatchVertex {
+    /*struct BatchVertex {
         glm::vec2 position;   // screen/world coords
         glm::vec2 texCoord;   // normalized uv
         glm::vec4 color;      // tint (fixed to white for now)
@@ -610,7 +630,7 @@ private:
     std::vector<GLuint> batchTexSlots;
 
     // Convenience white tint (if you extend to per-vertex color, expose as param)
-    const glm::vec4 kWhite{ 1.0f,1.0f,1.0f,1.0f };
+    const glm::vec4 kWhite{ 1.0f,1.0f,1.0f,1.0f };*/
 
 
     

@@ -85,8 +85,9 @@ void MainMenu::Load()
     auto menuTextures = renderer.LoadImageAssetsFromJSON("../Assets/imageAssets.json"); //i added an imageAssets.json inside assets folder
 
     //Load usable fonts for this game state (maybe a fonts.json, like for image? kiv prob need it for data driven)
-    renderer.LoadFont("../Assets/PermanentMarker-regular.ttf", 48, "Marker"); //48 is the pixel font height, so smaller will appear smaller etc.
-    renderer.LoadFont("../Assets/Antonio-Bold.ttf", 48, "Bold");
+    //renderer.LoadFont("../Assets/PermanentMarker-regular.ttf", 48, "Marker"); //48 is the pixel font height, so smaller will appear smaller etc.
+    //renderer.LoadFont("../Assets/Antonio-Bold.ttf", 48, "Bold");
+    auto fontAssets = renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
 
     CrashHandler::Safe("MainMenu", "Load", [&] {
         std::cout << "Main Menu Loaded!!!" << std::endl;

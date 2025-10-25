@@ -1303,29 +1303,6 @@ std::unordered_map<std::string, GLuint> Render::LoadImageAssetsFromJSON(const st
         return result;
     }
 
-    //for each entry in the images array...
-    /*for (const auto& path : j["images"]) {
-
-        //ignores if entry is not a string
-        if (!path.is_string()) {
-            std::cerr << "Skipping invalid image entry (not a string)" << std::endl;
-            continue;
-        }
-
-        std::string texPath = path.get<std::string>();
-
-        // Check if the file actually exists
-        if (!fs::exists(texPath)) {
-            std::cerr << "Warning: Texture file not found: " << texPath << std::endl;
-            continue; // Skip this one
-        }
-
-        //Load the texture
-        GLuint texID = LoadTexture(texPath);
-
-        loadedCount++;
-
-    }*/
     for (const auto& entry : j["images"]) {
 
         std::string path;
@@ -1361,6 +1338,62 @@ std::unordered_map<std::string, GLuint> Render::LoadImageAssetsFromJSON(const st
 
     return result;
 }
+
+
+
+
+//Load font assets from json file (contain the fonts type)
+std::unordered_map<std::string, Font> Render::LoadFontAssetsFromJSON(const std::string& jsonPath) {
+    std::unordered_map<std::string, Font> result;
+
+    std::ifstream file{ jsonPath };
+    if (!file.is_open()) {
+        std::cerr << "Failed to open Font Asset JSON: " << jsonPath << std::endl;
+        return result;
+    }
+
+    json j;
+    try {
+
+        file >> j;
+    }
+
+    catch (const std::exception& e) {
+        std::cerr << "Error parsing Font JSON: " << e.what() << std::endl;
+        return result;
+    }
+
+    if (!j.contains("fonts") || !j["fonts"].is_array()) {
+        std::cerr << "Invalid JSON format: missing \"fonts\" array in " << jsonPath << std::endl;
+        return result;
+    }
+
+    for (const auto& entry : j["fonts"]) {
+
+        if (!entry.contains("name") || !entry.contains("path") || !entry.contains("size")) {
+            std::cerr << "Invalid font entry in JSON (missing name/path/size)" << std::endl;
+            continue;
+        }
+
+        std::string fontName = entry["name"].get<std::string>();
+        std::string fontPath = entry["path"].get<std::string>();
+        int fontSize = entry["size"].get<int>();
+
+        if (LoadFont(fontPath, fontSize, fontName)) {
+            std::cout << "Loaded font: " << fontName << " (" << fontSize << "px)" << std::endl;
+            result[fontName] = fontCache[fontName];
+        }
+        else {
+            std::cerr << "Failed to load font: " << fontName << std::endl;
+        }
+    }
+
+    //just checking if logic works
+    std::cout << "[Font] Loaded " << result.size() << " fonts from " << jsonPath << std::endl;
+
+    return result;
+}
+
 
 //shader interface functions
 void Render::ApplyShader(GLuint shaderID) {
