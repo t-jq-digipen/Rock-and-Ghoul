@@ -109,9 +109,10 @@ if(WIN32)
 endif()
 
 # ======================= Copy Mono Runtime DLL =========================
+
+
 if(WIN32)
-    # Default Mono install directory
-    set(MONO_DLL_PATH "C:/Program Files/Mono/bin/mono-2.0-sgen.dll")
+    set(MONO_DLL_PATH "${CMAKE_SOURCE_DIR}/deps/mono/bin/mono-2.0-sgen.dll")
 
     if(EXISTS "${MONO_DLL_PATH}")
         add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
@@ -121,7 +122,7 @@ if(WIN32)
         )
         message(STATUS "Will copy mono-2.0-sgen.dll from: ${MONO_DLL_PATH}")
     else()
-        message(WARNING "Mono runtime DLL not found at: ${MONO_DLL_PATH}")
+        message(WARNING "Mono DLL not found at: ${MONO_DLL_PATH}")
     endif()
 endif()
 
@@ -167,6 +168,10 @@ source_group("BaseEngine\\Editor" FILES
 source_group("BaseEngine\\Scripting" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoManager.h
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoScriptComponent.h
 
 )
 

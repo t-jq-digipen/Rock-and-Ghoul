@@ -14,7 +14,7 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 /build/_deps/
-
+/deps/mono/
 # ===================== Visual Studio =====================
 .vs/
 *.sln
