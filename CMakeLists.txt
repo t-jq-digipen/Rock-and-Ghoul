@@ -19,6 +19,7 @@ set(ALL_LIBS
     imgui
     freetype
     nlohmann_json::nlohmann_json
+    mono
 )
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
@@ -106,6 +107,24 @@ if(WIN32)
         message(STATUS "Will copy fmod.dll from: ${FMOD_LIB_DIR}")
     endif()
 endif()
+
+# ======================= Copy Mono Runtime DLL =========================
+if(WIN32)
+    # Default Mono install directory
+    set(MONO_DLL_PATH "C:/Program Files/Mono/bin/mono-2.0-sgen.dll")
+
+    if(EXISTS "${MONO_DLL_PATH}")
+        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${MONO_DLL_PATH}"
+            $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>
+        )
+        message(STATUS "Will copy mono-2.0-sgen.dll from: ${MONO_DLL_PATH}")
+    else()
+        message(WARNING "Mono runtime DLL not found at: ${MONO_DLL_PATH}")
+    endif()
+endif()
+
 # ======================= Set C++ Standard ===========================
 set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 
@@ -144,6 +163,13 @@ source_group("BaseEngine\\Editor" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GuiSystem.h
 
 )
+
+source_group("BaseEngine\\Scripting" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoManager.h
+
+)
+
 
 
 

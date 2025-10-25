@@ -150,6 +150,51 @@ macro(import_json)
     endif()
 endmacro()
 
+
+# Macro to import Mono (for C# scripting)
+macro(import_mono)
+    if(NOT TARGET mono)
+        message(STATUS "Importing Mono...")
+
+        # Adjust path to where you installed Mono
+        if (WIN32)
+            # Default install path on Windows
+            set(MONO_ROOT "C:/Program Files/Mono")
+
+            set(MONO_INCLUDE_DIR "${MONO_ROOT}/include/mono-2.0")
+            set(MONO_LIB_DIR "${MONO_ROOT}/lib")
+            set(MONO_LIB mono-2.0-sgen)  # this is the usual library name
+
+            if(NOT EXISTS "${MONO_INCLUDE_DIR}")
+                message(FATAL_ERROR "Mono include dir not found! Please install Mono and verify the path.")
+            endif()
+        elseif(APPLE)
+            # Example path for macOS
+            set(MONO_ROOT "/Library/Frameworks/Mono.framework/Versions/Current")
+            set(MONO_INCLUDE_DIR "${MONO_ROOT}/include/mono-2.0")
+            set(MONO_LIB_DIR "${MONO_ROOT}/lib")
+            set(MONO_LIB mono-2.0)
+        elseif(UNIX)
+            # Linux: installed via apt or pacman
+            set(MONO_INCLUDE_DIR "/usr/include/mono-2.0")
+            set(MONO_LIB_DIR "/usr/lib")
+            set(MONO_LIB mono-2.0)
+        endif()
+
+        # Include and link directories
+        include_directories(${MONO_INCLUDE_DIR})
+        link_directories(${MONO_LIB_DIR})
+
+        # Create an interface target so you can link it like other deps
+        add_library(mono INTERFACE)
+        target_include_directories(mono INTERFACE ${MONO_INCLUDE_DIR})
+        target_link_libraries(mono INTERFACE ${MONO_LIB})
+
+        message(STATUS "Mono imported successfully from: ${MONO_ROOT}")
+    endif()
+endmacro()
+
+
 # Macro to import all dependencies
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")
@@ -176,4 +221,6 @@ macro(importDependencies)
     message(STATUS "stb imported successfully.")
     import_json()
     message(STATUS "All dependencies have been imported successfully.")
+
+    import_mono()
 endmacro()

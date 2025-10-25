@@ -39,6 +39,7 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 
+#include "MonoManager.h"
 #include <crtdbg.h>
 
 void EnableMemoryLeakChecking(int breakAlloc = -1)
@@ -103,13 +104,18 @@ int main() {
             CrashHandler::Log("Engine initialized");
             std::cout << "GETS PAST ENGINE INIT\n";
 
+            MonoManager& mono = MonoManager::Get();
+            mono.Initialize("../Assets/Scripts/GameScripts.dll");
+            float dt = 0.016f;
+            mono.InvokeMethod("Rotator", "Update", dt);
+            mono.InvokeMethod("Mover", "Update", dt);
             engine.Run();
             CrashHandler::Log("Engine run returned");
             std::cout << "GETS PAST ENGINE RUN\n";
 
             engine.Shutdown();
             CrashHandler::Log("Engine shutdown complete");
-
+            mono.Shutdown();
             return 0;
         });
 
