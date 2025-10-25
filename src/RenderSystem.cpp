@@ -19,7 +19,7 @@
  *
  * On shutdown, clears the texture cache to free GPU resources.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "RenderSystem.h"
@@ -49,8 +49,16 @@ void RenderSystem::Update(float dt) {
         }
         else
         {
+           // TransformComponent& transComp = Get_TransformComponent(entID);
+            if (Input::IsKeyHeld(GLFW_KEY_SPACE))
+                spriteComp.Set_Tint({ 1.0f, 0.0f, 0.0f });
+            else
+                spriteComp.Set_Tint({ 1.0f, 1.0f, 1.0f });
+            renderInstance.SetTint(spriteComp.Get_Tint());
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
             renderInstance.DrawImageScaled(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, transComp.rot + spriteComp.Get_Rotation());
+            renderInstance.ClearTint();
+
         }
     }
 

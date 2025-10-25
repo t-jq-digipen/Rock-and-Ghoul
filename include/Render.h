@@ -477,6 +477,12 @@ public:
     */
     GLuint GetSpriteShader() const { return shaderProgram; } //for now this, can added instancedShader in the future
 
+    void SetTint(const Colour3& tint);
+    void ClearTint();
+
+    void DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color);
+
+    Vec2 CalculateTextSize(const std::string& text, float scale);
 
 private:
 
@@ -542,5 +548,5 @@ private:
     // std::unordered_map<GLuint, std::string> texturePathMap;
 
     
-
+    glm::vec3 currentTint = { 1.f, 1.f, 1.f };
 };

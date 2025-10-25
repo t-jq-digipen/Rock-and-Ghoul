@@ -38,7 +38,7 @@
 
 // Vertex + Fragment shaders loaded from file in Assets, any changes to shader code to be done inside those files
 
-Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0) {}
+Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0), currentTint(1.f,1.f,1.f) {}
 
 Render::~Render() {
     // Clean up OpenGL resources
@@ -182,6 +182,9 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), scale.x, scale.y);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation); //added rotation
 
+    GLint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
+    if (colorLoc != -1)
+        glUniform3f(colorLoc, currentTint.x, currentTint.y, currentTint.z);
     // enable texture
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_TRUE);
 
@@ -642,7 +645,9 @@ void Render::DrawImageSub(const Image& Image,
     // Tell shader we be using texture mode
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), true);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), false);
-
+    GLint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
+    if (colorLoc != -1)
+        glUniform3f(colorLoc, currentTint.x, currentTint.y, currentTint.z);
     // Draw quad 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -755,7 +760,8 @@ void Render::InitTextRendering() {
         return;
     }
 
-    if (FT_New_Face(ft, "../Assets/Antonio-Bold.ttf", 0, &face)) { //for now, direct path is placed in here
+    //to myself: (gonna prob put in a cache or smth similar to image for rubrics (support multiple font types)
+    if (FT_New_Face(ft, "../Assets/PermanentMarker-Regular.ttf", 0, &face)) { //for now, direct path is placed in here, danny's font
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
         cleanupFT();
         return;
@@ -789,7 +795,7 @@ void Render::InitTextRendering() {
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //GL_NEAREST
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); //GL_NEAREST if it appears blurry
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         Character character = {
@@ -825,6 +831,24 @@ void Render::InitTextRendering() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+Vec2 Render::CalculateTextSize(const std::string& text, float scale)
+{
+    float width = 0.0f;
+    float height = 0.0f;
+
+    for (char c : text)
+    {
+        if (Characters.find(c) == Characters.end())
+            continue;
+
+        const Character& ch = Characters[c];
+        width += (ch.Advance >> 6) * scale; // Advance in pixels
+        height = std::max(height, (float)ch.Size.y * scale);
+    }
+
+    return { width, height };
 }
 
 
@@ -1105,6 +1129,30 @@ void Render::SetUniformMat4(GLuint shaderID, const std::string& name, const glm:
         glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
 }
 
+
+void Render::SetTint(const Colour3& tint) {
+    currentTint = { tint.r, tint.g, tint.b };
+}
+void Render::ClearTint() {
+    currentTint = { 1.f, 1.f, 1.f };
+}
+
+
+void Render::DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color) {
+    // base rectangle
+    DrawRect(pos, width - 2 * radius, height, color);
+    DrawRect(pos, width, height - 2 * radius, color);
+
+    // 4 quarter-circles for corners
+    Vec2 corners[] = {
+        { pos.x - width / 2 + radius, pos.y + height / 2 - radius }, // top-left
+        { pos.x + width / 2 - radius, pos.y + height / 2 - radius }, // top-right
+        { pos.x - width / 2 + radius, pos.y - height / 2 + radius }, // bottom-left
+        { pos.x + width / 2 - radius, pos.y - height / 2 + radius }  // bottom-right
+    };
+    for (auto& c : corners)
+        DrawCircle(c, radius, color, 16);
+}
 
 
 void Render::Shutdown() {

@@ -48,7 +48,7 @@ ui_*.h
 *.old
 *.orig
 *.tlog
-*.json
+- *.json
 *.html
 
 # ===================== Compiled binaries =====================

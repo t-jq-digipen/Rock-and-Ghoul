@@ -18,7 +18,7 @@
  *     the static object.
  *
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -34,19 +34,19 @@ void CollisionManager::AddEvent(Entity a, Entity b) {
 
 void CollisionManager::ProcessEvents() {
     //loops through each stored collision event from this frame.
-    for (auto& e : events) {
-        //if both entities have a tag
-        //tags tell us what kind of entity
-        if (m_registry.Has_Component<TagComponent>(e.a) && m_registry.Has_Component<TagComponent>(e.b)) {
-            auto& tagA = m_registry.Get_Component<TagComponent>(e.a);
-            auto& tagB = m_registry.Get_Component<TagComponent>(e.b);
+    //for (auto& e : events) {
+    //    //if both entities have a tag
+    //    //tags tell us what kind of entity
+    //    if (m_registry.Has_Component<TagComponent>(e.a) && m_registry.Has_Component<TagComponent>(e.b)) {
+    //        auto& tagA = m_registry.Get_Component<TagComponent>(e.a);
+    //        auto& tagB = m_registry.Get_Component<TagComponent>(e.b);
 
-            std::cout << "Collision detected between " << TagToString(tagA.tag) << " (Entity " << e.a << ")" << " and "  << TagToString(tagB.tag) << " (Entity " << e.b << ")" << std::endl;
-        }
-        else {
-            std::cout << "Collision detected between Entity " << e.a << " and Entity " << e.b<< " (no tags)" << std::endl;
-        }
-    }
+    //        std::cout << "Collision detected between " << TagToString(tagA.tag) << " (Entity " << e.a << ")" << " and "  << TagToString(tagB.tag) << " (Entity " << e.b << ")" << std::endl;
+    //    }
+    //    else {
+    //        std::cout << "Collision detected between Entity " << e.a << " and Entity " << e.b<< " (no tags)" << std::endl;
+    //    }
+    //}
     Clear();
 }
 
@@ -137,7 +137,7 @@ void CollisionManager::ActionStop_Static(Entity dynamic, Entity staticObj) {
 
     physDyn.UpdateHitboxes(transDyn.pos);
 
-    //Lecture 16 – Animated Point to Line
+    //Lecture 16 ï¿½ Animated Point to Line
     Vec2 velDyn = physDyn.Get_Vel();
     float velocitynorm = RG_DotProduct(velDyn, normal);
     // If moving into the wall (negative dot product)
@@ -276,7 +276,7 @@ void CollisionManager::CheckCollisions() {
                 auto& tagA = m_registry.Get_Component<TagComponent>(a);
                 auto& tagB = m_registry.Get_Component<TagComponent>(b);
                 if (tagA.tag == T_WALL && tagB.tag == T_WALL) {
-                    continue; // don’t process wall–wall collisions
+                    continue; // donï¿½t process wallï¿½wall collisions
                 }
             }
 

@@ -83,7 +83,8 @@ void MainMenu::Load()
 
     // Preload all Image assets from JSON (they’ll be stored in textureCache)
     auto menuTextures = renderer.LoadImageAssetsFromJSON("../Assets/imageAssets.json"); //i added an imageAssets.json inside assets folder
-
+    MainMenuTexture = menuTextures["mainmenu"]; // alias from JSON
+    CrashHandler::LogIfZeroTexture(MainMenuTexture, "../Assets/MainMenu_Rock&Ghoul.PNG");
     CrashHandler::Safe("MainMenu", "Load", [&] {
         std::cout << "Main Menu Loaded!!!" << std::endl;
 
@@ -106,8 +107,8 @@ void MainMenu::Load()
         quitTexture = renderer.LoadTexture("../Assets/quit.png");
         CrashHandler::LogIfZeroTexture(quitTexture, "../Assets/title.png");*/
 
-        MainMenuTexture = renderer.LoadTexture("../Assets/MainMenu_Rock&Ghoul.PNG");
-        CrashHandler::LogIfZeroTexture(MainMenuTexture, "../Assets/MainMenu_Rock&Ghoul.PNG");
+      /*  MainMenuTexture = renderer.LoadTexture("../Assets/MainMenu_Rock&Ghoul.PNG");
+        CrashHandler::LogIfZeroTexture(MainMenuTexture, "../Assets/MainMenu_Rock&Ghoul.PNG");*/
     });
     //titleImage = Render::GetInstance().LoadImage("../Assets/quit.png"); 
 }
@@ -121,20 +122,41 @@ void MainMenu::Init()
         renderer.Init();
         guiSystem.Initialize();
 
-        guiSystem.AddButton("PLAY",
-            { 1600, 600 },
-            { 200.f, 100.f },
-            { 20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
-            [] { GSM_SetNextState(GameState::GS_LEVEL1); },
-            AudioSystem::ButtonType::PLAY);
+        //guiSystem.AddButton("PLAY",
+        //    { 1600, 600 },
+        //    { 200.f, 100.f },
+        //    { 20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
+        //    [] { GSM_SetNextState(GameState::GS_LEVEL1); },
+        //    AudioSystem::ButtonType::PLAY);
+        guiSystem.AddButton({
+            .label = "PLAY",
+            .pos = {1650, 550},
+            .size = { 300.f, 100.f },
+            .color = {20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
+            .onClick = [] { GSM_SetNextState(GameState::GS_LEVEL1); },
+            .soundType = AudioSystem::ButtonType::PLAY,
+            .shape = ButtonShape::Rounded });
 
-        guiSystem.AddButton("QUIT",
-            { 1600, 400 },
-            { 200.f, 100.f },
-            { 20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
-            [] { GSM_SetNextState(GameState::GS_QUIT); },
-            AudioSystem::ButtonType::QUIT);
-
+        guiSystem.AddButton({
+            .label = "QUIT",
+            .pos = {1650, 150},
+            .size = { 300.f, 100.f },
+            .color = {20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
+            .onClick = [] { GSM_SetNextState(GameState::GS_QUIT); },
+            .soundType = AudioSystem::ButtonType::QUIT,
+            .shape = ButtonShape::Rounded });
+        //guiSystem.AddButton("QUIT",
+        //    { 1600, 400 },
+        //    { 200.f, 100.f },
+        //    { 20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f },
+        //    [] { GSM_SetNextState(GameState::GS_QUIT); },
+        //    AudioSystem::ButtonType::QUIT);
+        guiSystem.AddTextBox({
+            .text = "Press SPACE or Click Play",
+            .pos = {1650, 50},
+            .scale = 0.5f,
+            .color = {0.f, 0.f, 0.f},
+            .centered = true});
     });
 }
 
@@ -149,14 +171,54 @@ void MainMenu::Update()
         if (MainMenuTexture)
         {
             renderer.DrawTexturedQuad({ GLApp::width * 0.5f, GLApp::height * 0.5f }, { 1920.f, 1080.f}, MainMenuTexture);
+            if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+            {
+                if (audio) 
+                {
+                    audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
+                }
+                else
+                {
+                    CrashHandler::Log("AudioManager is null on PLAY click");
+                }
+
+                // test to hear audio on LEFT SPEAKER
+                //std::cout << "[Test] Playing PLAY click on LEFT" << std::endl;
+                //AudioSystem::PlaySoundAt("button_play", -300.0f, 0.0f, 1.0f);
+                GSM_SetNextState(GameState::GS_LEVEL1);
+            }
         }
         else
         {
             CrashHandler::Log("MainMenuTexture texture missing; skipping draw!");
+            if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+            {
+                if (audio) 
+                {
+                    audio->PlayButtonSound(AudioSystem::ButtonType::QUIT);
+                }
+                else
+                {
+                    CrashHandler::Log("AudioManager is null on QUIT click");
+                }
+                // test to hear audio on the RIGHT SPEAKER
+                //std::cout << "[Test] Playing QUIT click on RIGHT" << std::endl;
+                //AudioSystem::PlaySoundAt("button_quit", 300.0f, 0.0f, 1.0f);
+
+                // Wait a bit for the sound to play before quitting
+                double startTime = glfwGetTime();
+                while (glfwGetTime() - startTime < 0.5) // Wait 500ms
+                {
+                    // Keep updating audio system during the wait
+                    AudioSystem::Update();
+                    glfwPollEvents();
+                }
+                GSM_SetNextState(GameState::GS_QUIT);
+            }
         }
         guiSystem.Update(0.0f);
         // Alternatively press SPACE to enter LEVEL 1
-        if (Input::IsKeyPressed(GLFW_KEY_SPACE))
+        if (Input::IsKeyPressed(GLFW_KEY_8))
         {
             std::cout << "PLAY CLICKED � switching to Level1\n";
             if (audio) 
@@ -167,6 +229,9 @@ void MainMenu::Update()
             {
                 CrashHandler::Log("AudioManager is null on SPACE press");
             }
+            // test to hear centred audio
+            //std::cout << "[Test] Playing SPACE at CENTER" << std::endl;
+            //AudioSystem::PlaySoundAt("button_play", 0.0f, 0.0f, 1.0f);
             GSM_SetNextState(GameState::GS_LEVEL1);
         }
 
