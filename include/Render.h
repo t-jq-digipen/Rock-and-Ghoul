@@ -493,6 +493,27 @@ public:
     GLuint GetSpriteShader() const { return shaderProgram; } //for now this, can added instancedShader in the future
 
 
+
+
+
+    //Batch rendering attempt
+    // Call it once per frame before SubmitSpriteBatch()
+    void BeginBatch();
+
+    // Submit a sprite (full texture). pos is sprite world position, size is (w,h) in screen units.
+   // rotation in radians, uvRect defaults to full texture.
+    void SubmitSpriteBatch(const Image& image, const Vec2& pos, const Vec2& size, float rotation = 0.0f);
+
+    // Submit a sprite with a normalized UV rectangle (u0,v0,u1,v1) in [0,1].
+    void SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2& size, const glm::vec4& uvRect, float rotation = 0.0f);
+
+    // Upload CPU batch buffer to GPU
+    void EndBatch();
+
+    // Issue the actual glDrawElements for everything collected
+    void FlushBatch();
+
+
 private:
 
     /**
@@ -517,6 +538,7 @@ private:
     GLuint vao, vbo, shaderProgram;
     GLuint InstanceVBO, InstanceShaderProgram;
     GLuint textVAO, textVBO;
+    GLuint batchVAO, batchVBO, batchEBO, batchShader;
     glm::mat4 projection;
 
 
@@ -556,6 +578,40 @@ private:
 
     // to load for json
     // std::unordered_map<GLuint, std::string> texturePathMap;
+
+
+
+
+
+     // ---- Batch rendering state data ----
+    struct BatchVertex {
+        glm::vec2 position;   // screen/world coords
+        glm::vec2 texCoord;   // normalized uv
+        glm::vec4 color;      // tint (fixed to white for now)
+        float     texIndex;   // which texture slot [0..N-1]
+    };
+
+    // Limits (tweakable)
+    static constexpr size_t kMaxQuads = 10000;
+    static constexpr size_t kMaxVertices = kMaxQuads * 4;
+    static constexpr size_t kMaxIndices = kMaxQuads * 6;
+    static constexpr size_t kMaxTexSlots = 8;      // keep in sync with shader's uTextures[]
+
+    //helper batch functions
+    void InitBatch_();        // called inside Init()
+    void ResetBatch_();       // reset counters/buffer pointers
+    void FlushIfFull_(size_t quadCountNeeded, GLuint textureID);
+
+    // CPU-side staging buffer
+    std::vector<BatchVertex> batchCPUBuffer;
+    size_t batchIndexCount{ 0 };
+
+    // Textures bound for the current batch (slot i => GL_TEXTURE0 + i)
+    std::vector<GLuint> batchTexSlots;
+
+    // Convenience white tint (if you extend to per-vertex color, expose as param)
+    const glm::vec4 kWhite{ 1.0f,1.0f,1.0f,1.0f };
+
 
     
 
