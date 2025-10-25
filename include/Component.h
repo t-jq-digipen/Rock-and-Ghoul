@@ -166,6 +166,20 @@ struct TransformComponent {
 
 struct LifetimeComponent {
 	float time;
+
+	std::string Serialize() const {
+		json j = {
+			{"time", time}
+		};
+		return j.dump();
+	}
+
+	static LifetimeComponent DeSerialize(const std::string& data) {
+		json j = json::parse(data);
+		LifetimeComponent temp;
+		temp.time = j.value("time", 0.0f);
+		return temp;
+	}
 };
 
 struct HealthComponent {
@@ -183,8 +197,8 @@ struct HealthComponent {
 	static HealthComponent DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 		HealthComponent temp;
-		temp.currhp = j["currHP"];
-		temp.maxhp = j["maxHP"];
+		temp.currhp = j.value("currentHP", 100.0f);
+		temp.maxhp = j.value("maxHP", 100.0f);
 		return temp;
 	}
 };

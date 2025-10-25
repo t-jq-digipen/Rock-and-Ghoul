@@ -60,14 +60,34 @@ void Level1::Load()
 		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
 	});
 
-	// Check if prefabs folder exists, create if not
 	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER)) {
+		std::cout << "FOLDER DOESNT EXIST, CREATING" << std::endl;
 		std::filesystem::create_directories(FilePath::PREFABS_FOLDER);
+		GenerateInitialPrefabs(true);
 	}
+	else {
+		// Check if individual prefab files exist
+		bool needsGeneration = false;
+		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Player.json")) {
+			needsGeneration = true;
+		}
+		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Waffle.json")) {
+			needsGeneration = true;
+		}
+		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Rectangle.json")) {
+			needsGeneration = true;
+		}
+		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Circle.json")) {
+			needsGeneration = true;
+		}
 
-	// Auto-generate prefabs if they don't exist
-	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Player.json")) {
-		GenerateInitialPrefabs();
+		if (needsGeneration) {
+			std::cout << "GENERATING PREFABS YAY" << std::endl;
+			GenerateInitialPrefabs(false);
+		}
+		else {
+			std::cout << "NVM ALL PREFABS EXIST" << std::endl;
+		}
 	}
 }
 
@@ -100,13 +120,17 @@ void Level1::Init()
 	// 5. Create entities
 	// If there is no pre-existing/saved scene, it will generate prefabs
 	// Otherwise, it will load the saved scene
-	if (!JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
-		
+	bool sceneLoaded = false;
+	if (std::filesystem::exists(FilePath::LEVEL1_SCENE)) {
+		sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+	}
+
+	if (!sceneLoaded) {
+		// Create fresh entities from prefabs
 		waffle = Create_Waffle(400.f, 400.f);
 		rock = Create_Player(200.f, 500.f);
 		square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
 		roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
-
 	}
 	});	
 	// Top wall
@@ -195,6 +219,10 @@ void Level1::Update()
 	//std::cout << "Level 1 Updating!!!" << std::endl;
 	// Save scene on F5
 	if (Input::IsKeyPressed(GLFW_KEY_F5)) {
+		if (!std::filesystem::exists(FilePath::SAVES_FOLDER)) {
+			std::filesystem::create_directories(FilePath::SAVES_FOLDER);
+		}
+
 		JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "Level1");
 		std::cout << "Scene saved!" << std::endl;
 	}

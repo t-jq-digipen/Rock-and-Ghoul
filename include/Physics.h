@@ -1,7 +1,8 @@
 /* ========================================================
  * @file		Physics.h
  * @author		Tan Jun Quan | t.junquan@digipen.edu
- * @date		29 SEP 2025
+ * @co-author	Yasmin Tazi	 | yasmin.t@digipen.edu
+ * @date		24 SEP 2025
  *
  * @brief	Physics component for ECS
  *
@@ -11,7 +12,7 @@
  * 
  * The bulk of the updates happen in PhysicsSystem.cpp
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -164,6 +165,9 @@ namespace Physics {
 		Circle circlehitbox;
 		ForceList forcelist;
 		
+		// FOR LINEAR PHYSICS SYSTEM
+		float mass;
+		float restitution;
 		/**
 		 * @brief Update forces and apply their contributions to velocity.
 		 */
@@ -247,6 +251,15 @@ namespace Physics {
 
 		bool IsStatic() const { return isStatic; }
 		void SetStatic(bool s) { isStatic = s; }
+
+		// LINEAR PHYSICS METHODS
+		float GetMass() const { return mass; }
+		float GetRestitution() const { return restitution; }
+
+		void SetMass(float m) { mass = m; }
+		void SetRestitution(float e) { restitution = std::max(0.f, std::min(1.f, e)); }
+
+		void ApplyLinearImpulse(const Vec2& impulse);
 
 		std::string Serialize() const;
 

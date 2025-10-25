@@ -62,9 +62,9 @@ struct SavedScene {
     std::vector<SavedEntity> entities; 
 
     /**
-     * @brief Default constructor with "Level1" name.
+     * @brief Default constructor with no name.
      */
-    SavedScene() : sceneName("Level1") {}
+    SavedScene() : sceneName("") {}
 };
 
 /**

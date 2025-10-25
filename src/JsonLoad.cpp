@@ -759,28 +759,37 @@ std::optional<GameSettings> JsonLoad::LoadSettings(const std::string& filepath) 
     }
 }
 /**
- * @brief Saves a single entity to a JSON file.
- *
- * Serializes the specified entity and all its components to JSON format.
- * Useful for creating entity prefabs programmatically.
- *
+ * @brief Saves a single entity to a JSON file as a prefab.
  * @param filepath The destination file path to save to.
  * @param eID The entity ID to serialize.
  * @return bool True if save successful, false otherwise.
  */
 bool JsonLoad::SaveEntity(const std::string& filepath, Entity eID) {
     try {
+        // Get entity name from registry if possible, otherwise use default
+        std::string entityName = "Entity_" + std::to_string(eID);
+
+        // Save entity data
         SavedEntity saved = Registry::Get().Save_Entity(eID);
+
+        // Wrap in a SavedScene structure so LoadEntityFromFile can read it
+        SavedScene scene;
+        scene.sceneName = saved.name;  // Use entity name as scene name
+        scene.entities.push_back(saved);  // Add entity to entities array
+
+        // Serialize the scene (not just the entity)
         json j;
-        to_json(j, saved);
+        to_json(j, scene);
+
+        // Write to file
         return FileIO::WriteFile(filepath, j.dump(4));
     }
     catch (const std::exception& e) {
         std::cerr << "Error saving entity prefab: " << e.what() << std::endl;
         return false;
     }
-}
 
+}
 /**
  * @brief Loads a single entity from a JSON prefab file.
  *

@@ -23,16 +23,20 @@
 namespace Animator {
 
 	bool ActiveFrames::operator==(const ActiveFrames& rhs) const
-	{ return (this->row == rhs.row && this->col_start == rhs.col_start && this->col_end == rhs.col_end && this->duration == rhs.duration); }
+	{
+		return (this->row == rhs.row && this->col_start == rhs.col_start && this->col_end == rhs.col_end && this->duration == rhs.duration);
+	}
 
 	AnimatorComponent::AnimatorComponent() :
 		m_total_rows{}, m_total_cols{}, m_current_row{}, m_current_col{},
-		u0{}, v0{}, u1{}, v1{}, anim_duration{}, anim_timer{}, frames{} 
-	{ UpdateUV(); }
+		u0{}, v0{}, u1{}, v1{}, anim_duration{}, anim_timer{}, frames{}
+	{
+		UpdateUV();
+	}
 
 	AnimatorComponent::AnimatorComponent(int total_rows, int total_cols, int imageWidthPixels, int imageHeightPixels, ActiveFrames const& framerange, float duration) :
-		m_total_rows{ total_rows }, m_total_cols{ total_cols }, m_current_row{}, m_current_col{}, 
-		frames { framerange }, anim_timer{}, anim_duration{ duration }
+		m_total_rows{ total_rows }, m_total_cols{ total_cols }, m_current_row{}, m_current_col{},
+		frames{ framerange }, anim_timer{}, anim_duration{ duration }
 	{
 		range = framerange.col_end - framerange.col_start;
 		m_uv_width = static_cast<float>(imageWidthPixels) / static_cast<float>(m_total_cols);
@@ -60,12 +64,14 @@ namespace Animator {
 			m_current_row = frames.row;
 			m_current_col = frames.col_start;
 			if (frames.col_end - frames.col_start != 0)
-			{ throw std::runtime_error("sumting wong, u call 0 duration but only 1 frame? check ur code or call jq\n"); }
+			{
+				throw std::runtime_error("sumting wong, u call 0 duration but only 1 frame? check ur code or call jq\n");
+			}
 			return;
 		}
 
 		// anim_timer = 0;		// okay i cant set this to 0, needs to be able to keep looping for looped animations, but have functionality to call a reset
-		
+
 		range = frames.col_end - frames.col_start;
 		m_current_row = frames.row;
 		m_current_col = frames.col_start;
@@ -73,12 +79,16 @@ namespace Animator {
 	}
 
 	void AnimatorComponent::ResetTimer()
-	{ anim_timer = 0; }
+	{
+		anim_timer = 0;
+	}
 
 	void Loop_Timer(float& timer, const float& limit)
 	{
 		while (timer > limit)
-		{ timer -= limit; }
+		{
+			timer -= limit;
+		}
 	}
 
 
@@ -102,7 +112,7 @@ namespace Animator {
 
 		// Assign current row and col
 		m_current_row = frames.row;
-		m_current_col = frames.col_start + static_cast<int>((anim_timer / anim_duration) * (range+1));
+		m_current_col = frames.col_start + static_cast<int>((anim_timer / anim_duration) * (range + 1));
 		if (m_current_col > frames.col_end)
 		{
 			m_current_col = frames.col_end;
@@ -134,7 +144,7 @@ namespace Animator {
 			UpdateUV();
 			ResetTimer();
 		}
-		 m_current_state = state;
+		m_current_state = state;
 	}
 
 	void AnimatorComponent::AddState(int state, ActiveFrames const& framerange)
@@ -176,27 +186,48 @@ namespace Animator {
 		json j = json::parse(data);
 
 		ActiveFrames frames;
-		frames.row = j["frameRow"];
-		frames.col_start = j["frameColStart"];
-		frames.col_end = j["frameColEnd"];
+		frames.row = j.value("frameRow", 0);
+		frames.col_start = j.value("frameColStart", 0);
+		frames.col_end = j.value("frameColEnd", 0);
 		frames.duration = j.value("frameDuration", 1.0f);
 
-		AnimatorComponent temp(j["totalRows"], j["totalCols"], j["imageWidth"], j["imageHeight"], frames, j.value("animDuration", 0.f));
+		// Get basic values
+		int totalRows = j.value("totalRows", 1);
+		int totalCols = j.value("totalCols", 1);
+		float animDuration = j.value("animDuration", 0.0f);
+
+		int imageWidth = j.value("imageWidth", 0);
+		int imageHeight = j.value("imageHeight", 0);
+
+		if (imageWidth == 0 || imageHeight == 0) {
+			std::cout << "NEE NAW WARNING: USING DEFAULTS FOR ANIMATOR!!!\n";
+
+			// 32x32 pixels per frame as default val 
+			if (imageWidth == 0) {
+				imageWidth = totalCols * 32;
+			}
+			if (imageHeight == 0) {
+				imageHeight = totalRows * 32;
+			}
+		}
+
+		AnimatorComponent temp(totalRows, totalCols, imageWidth, imageHeight, frames, animDuration);
 
 		if (j.contains("states")) {
-			for (auto& [stateKey, stateData] : j["states"].items()){
+			for (auto& [stateKey, stateData] : j["states"].items()) {
 				int stateID = std::stoi(stateKey);
 				ActiveFrames stateFrames;
-				stateFrames.row = stateData["row"];
-				stateFrames.col_start = stateData["col_start"];
-				stateFrames.col_end = stateData["col_end"];
+				stateFrames.row = stateData.value("row", 0);
+				stateFrames.col_start = stateData.value("col_start", 0);
+				stateFrames.col_end = stateData.value("col_end", 0);
 				stateFrames.duration = stateData.value("duration", 1.0f);
 
 				temp.AddState(stateID, stateFrames);
 			}
 		}
 
-		if (j.contains("currentState") && j["currentState"] != -1) {
+		// check for null
+		if (j.contains("currentState") && !j["currentState"].is_null() && j["currentState"] != -1) {
 			temp.SetState(j["currentState"]);
 		}
 

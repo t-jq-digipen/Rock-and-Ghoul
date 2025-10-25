@@ -78,4 +78,4 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);
  * entity prefabs (Player, Waffle, Rectangle, Circle). 
  *
  */
-void GenerateInitialPrefabs();
+void GenerateInitialPrefabs(bool forceRegenerate);
