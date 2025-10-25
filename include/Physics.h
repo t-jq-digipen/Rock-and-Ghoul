@@ -2,7 +2,7 @@
  * @file		Physics.h
  * @author		Tan Jun Quan | t.junquan@digipen.edu
  * @co-author	Yasmin Tazi	 | yasmin.t@digipen.edu
- * @date		24 SEP 2025
+ * @date		24 OCT 2025
  *
  * @brief	Physics component for ECS
  *

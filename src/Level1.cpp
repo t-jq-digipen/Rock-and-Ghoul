@@ -9,7 +9,7 @@
  * used by the Level 1. While in Level 1, the game is in
  * its playing state.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -58,37 +58,83 @@ void Level1::Load()
 
 		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
-	});
+		});
+
+	// ===== FIX: Ensure prefabs folder exists =====
+	std::cout << "\n=== CHECKING PREFABS FOLDER ===" << std::endl;
+	std::cout << "Prefabs folder path: " << FilePath::PREFABS_FOLDER << std::endl;
 
 	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER)) {
-		std::cout << "FOLDER DOESNT EXIST, CREATING" << std::endl;
-		std::filesystem::create_directories(FilePath::PREFABS_FOLDER);
-		GenerateInitialPrefabs(true);
+		std::cout << "FOLDER DOESNT EXIST, CREATING..." << std::endl;
+		try {
+			std::filesystem::create_directories(FilePath::PREFABS_FOLDER);
+			std::cout << "Created prefabs directory successfully!" << std::endl;
+		}
+		catch (const std::exception& e) {
+			std::cerr << "ERROR: Failed to create prefabs directory: " << e.what() << std::endl;
+		}
 	}
-	else {
-		// Check if individual prefab files exist
-		bool needsGeneration = false;
+
+	// Check if individual prefab files exist
+	bool needsGeneration = false;
+	std::vector<std::string> missingPrefabs;
+
+	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Player.json")) {
+		needsGeneration = true;
+		missingPrefabs.push_back("Player.json");
+	}
+	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Waffle.json")) {
+		needsGeneration = true;
+		missingPrefabs.push_back("Waffle.json");
+	}
+	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Rectangle.json")) {
+		needsGeneration = true;
+		missingPrefabs.push_back("Rectangle.json");
+	}
+	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Circle.json")) {
+		needsGeneration = true;
+		missingPrefabs.push_back("Circle.json");
+	}
+
+	if (needsGeneration) {
+		std::cout << "=== MISSING PREFABS ===" << std::endl;
+		for (const auto& prefab : missingPrefabs) {
+			std::cout << "  - " << prefab << std::endl;
+		}
+		std::cout << "GENERATING PREFABS NOW..." << std::endl;
+		GenerateInitialPrefabs(false);
+
+		// ===== FIX: Verify prefabs were actually created =====
+		std::cout << "\n=== VERIFYING PREFAB GENERATION ===" << std::endl;
+		bool allGenerated = true;
 		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Player.json")) {
-			needsGeneration = true;
+			std::cerr << "ERROR: Player.json was NOT generated!" << std::endl;
+			allGenerated = false;
 		}
 		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Waffle.json")) {
-			needsGeneration = true;
+			std::cerr << "ERROR: Waffle.json was NOT generated!" << std::endl;
+			allGenerated = false;
 		}
 		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Rectangle.json")) {
-			needsGeneration = true;
+			std::cerr << "ERROR: Rectangle.json was NOT generated!" << std::endl;
+			allGenerated = false;
 		}
 		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Circle.json")) {
-			needsGeneration = true;
+			std::cerr << "ERROR: Circle.json was NOT generated!" << std::endl;
+			allGenerated = false;
 		}
 
-		if (needsGeneration) {
-			std::cout << "GENERATING PREFABS YAY" << std::endl;
-			GenerateInitialPrefabs(false);
+		if (allGenerated) {
+			std::cout << "SUCCESS: All prefabs generated correctly!" << std::endl;
 		}
 		else {
-			std::cout << "NVM ALL PREFABS EXIST" << std::endl;
+			std::cerr << "WARNING: Some prefabs failed to generate. Check error messages above." << std::endl;
 		}
 	}
+	else {
+		std::cout << "All prefabs already exist!" << std::endl;
+	}
+	std::cout << "==============================\n" << std::endl;
 }
 
 // Initializes Level 1
@@ -107,43 +153,86 @@ void Level1::Init()
 		fretboard->LoadTextures();
 		fretboard->StartGame();
 
-	// 3. NOW load textures (OpenGL is ready)
-	bgTexture = renderer.LoadTexture("../Assets/background.jpg");
+		// 3. NOW load textures (OpenGL is ready)
+		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 
-	// 4. Create FretBoard after OpenGL is ready
-	if (!fretboard) {
-		fretboard = new FretBoard(0, 0, 800, 200);
-	}
-	fretboard->LoadTextures();
-	fretboard->StartGame();
+		// 4. Create FretBoard after OpenGL is ready (duplicate - can remove)
+		if (!fretboard) {
+			fretboard = new FretBoard(0, 0, 800, 200);
+		}
+		fretboard->LoadTextures();
+		fretboard->StartGame();
 
-	// 5. Create entities
-	// If there is no pre-existing/saved scene, it will generate prefabs
-	// Otherwise, it will load the saved scene
-	bool sceneLoaded = false;
-	if (std::filesystem::exists(FilePath::LEVEL1_SCENE)) {
-		sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
-	}
+		// 5. Create entities
+		// If there is no pre-existing/saved scene, it will load from prefabs
+		// Otherwise, it will load the saved scene
+		std::cout << "\n=== LOADING ENTITIES ===" << std::endl;
+		bool sceneLoaded = false;
+		if (std::filesystem::exists(FilePath::LEVEL1_SCENE)) {
+			std::cout << "Found level1.json, attempting to load..." << std::endl;
+			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+			if (sceneLoaded) {
+				std::cout << "Scene loaded successfully from level1.json!" << std::endl;
+			}
+			else {
+				std::cout << "Failed to load scene from level1.json, will create from prefabs instead." << std::endl;
+			}
+		}
+		else {
+			std::cout << "No level1.json found, will create entities from prefabs." << std::endl;
+		}
 
-	if (!sceneLoaded) {
-		// Create fresh entities from prefabs
-		waffle = Create_Waffle(400.f, 400.f);
-		rock = Create_Player(200.f, 500.f);
-		square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
-		roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
-	}
-	});	
+		if (!sceneLoaded) {
+			// ===== FIX: Better error handling when creating from prefabs =====
+			std::cout << "Creating fresh entities from prefabs..." << std::endl;
+
+			waffle = Create_Waffle(400.f, 400.f);
+			if (waffle == 0) {
+				std::cerr << "ERROR: Failed to create Waffle! Check if Waffle.json exists." << std::endl;
+			}
+			else {
+				std::cout << "Created Waffle (Entity " << waffle << ")" << std::endl;
+			}
+
+			rock = Create_Player(200.f, 500.f);
+			if (rock == 0) {
+				std::cerr << "ERROR: Failed to create Player! Check if Player.json exists." << std::endl;
+			}
+			else {
+				std::cout << "Created Player (Entity " << rock << ")" << std::endl;
+			}
+
+			square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
+			if (square == 0) {
+				std::cerr << "ERROR: Failed to create Rectangle! Check if Rectangle.json exists." << std::endl;
+			}
+			else {
+				std::cout << "Created Rectangle (Entity " << square << ")" << std::endl;
+			}
+
+			roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
+			if (roundy == 0) {
+				std::cerr << "ERROR: Failed to create Circle! Check if Circle.json exists." << std::endl;
+			}
+			else {
+				std::cout << "Created Circle (Entity " << roundy << ")" << std::endl;
+			}
+
+			std::cout << "Finished creating entities from prefabs." << std::endl;
+		}
+		std::cout << "==============================\n" << std::endl;
+		});
 	// Top wall
-	Create_Wall(LEVEL_WIDTH/2, LEVEL_HEIGHT - WALL_THICKNESS/2, LEVEL_WIDTH, WALL_THICKNESS);
+	Create_Wall(LEVEL_WIDTH / 2, LEVEL_HEIGHT - WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
 
 	// Bottom wall
-	Create_Wall(LEVEL_WIDTH/2, WALL_THICKNESS/2,LEVEL_WIDTH, WALL_THICKNESS);
+	Create_Wall(LEVEL_WIDTH / 2, WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
 
 	// Left wall
-	Create_Wall(WALL_THICKNESS/2, LEVEL_HEIGHT/2,WALL_THICKNESS, LEVEL_HEIGHT);
+	Create_Wall(WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
 
 	// Right wall
-	Create_Wall(LEVEL_WIDTH - WALL_THICKNESS/2, LEVEL_HEIGHT/2,WALL_THICKNESS, LEVEL_HEIGHT);
+	Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
 
 }
 
@@ -215,7 +304,7 @@ void Level1::Update()
 		}
 	}
 
-	
+
 	//std::cout << "Level 1 Updating!!!" << std::endl;
 	// Save scene on F5
 	if (Input::IsKeyPressed(GLFW_KEY_F5)) {
@@ -266,12 +355,12 @@ void Level1::Update()
 		if (fretboard) {
 			fretboard->PlayerInput();
 		}
-	});
+		});
 }
 
 // Draws Level 1
 void Level1::Draw()
-{	
+{
 	Render& renderer = Render::GetInstance();
 	CrashHandler::Safe("Level1", "Draw", [&] {
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -288,7 +377,7 @@ void Level1::Draw()
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
 		}
-	});
+		});
 }
 
 // Frees Level 1
@@ -307,7 +396,7 @@ void Level1::Free()
 	CrashHandler::Safe("Level1", "Free", [&] {
 		std::cout << "Level 1 Freed!!!" << std::endl;
 		Render::GetInstance().ClearAllTextures();
-	});
+		});
 }
 
 // Unloads Level 1
@@ -321,10 +410,10 @@ void Level1::Unload()
 
 	CrashHandler::Safe("Level1", "Unload", [&] {
 		if (fretboard) {
-		// FretBoard should clean its own textures before deletion
-		delete fretboard;
-		fretboard = nullptr;
-	}
+			// FretBoard should clean its own textures before deletion
+			delete fretboard;
+			fretboard = nullptr;
+		}
 		/*if (bgTexture) {
 			glDeleteTextures(1, &bgTexture);
 			bgTexture = 0;
@@ -332,6 +421,5 @@ void Level1::Unload()
 
 		renderer.UnloadTexture(bgTexture);
 		std::cout << "Level 1 Unloaded!!!" << std::endl;
-	});
+		});
 }
-

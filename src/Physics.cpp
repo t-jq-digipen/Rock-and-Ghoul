@@ -253,4 +253,75 @@ namespace Physics {
 		}
 	}
 
+
+	// SERIALIZATION METHODS
+	std::string PhysicsComponent::Serialize() const {
+		// Calculate center from AABB for saving
+		float centerX = (aabbhitbox.min.x + aabbhitbox.max.x) * 0.5f;
+		float centerY = (aabbhitbox.min.y + aabbhitbox.max.y) * 0.5f;
+
+		nlohmann::json j = {
+			{"velX", vel.x},
+			{"velY", vel.y},
+			{"decay", decay},
+			{"isStatic", isStatic},
+			{"willCollide", willCollide},
+			{"mass", mass},
+			{"restitution", restitution},
+			{"aabb", {
+				{"centerX", centerX},
+				{"centerY", centerY},
+				{"dimX", aabbhitbox.dim.x},
+				{"dimY", aabbhitbox.dim.y}
+			}},
+			{"circle", {
+				{"posX", circlehitbox.pos.x},
+				{"posY", circlehitbox.pos.y},
+				{"rad", circlehitbox.rad}
+			}}
+		};
+		return j.dump();
+	}
+
+	PhysicsComponent PhysicsComponent::DeSerialize(const std::string& data) {
+		nlohmann::json j = nlohmann::json::parse(data);
+
+		PhysicsComponent phys;
+
+		// Deserialize velocity
+		phys.vel.x = j.value("velX", 0.0f);
+		phys.vel.y = j.value("velY", 0.0f);
+
+		// Deserialize basic properties
+		phys.decay = j.value("decay", 0.015f);
+		phys.isStatic = j.value("isStatic", false);
+		phys.willCollide = j.value("willCollide", false);
+		phys.mass = j.value("mass", 1.0f);
+		phys.restitution = j.value("restitution", 0.5f);
+
+		// Deserialize AABB
+		if (j.contains("aabb")) {
+			const auto& aabbJson = j["aabb"];
+			Vec2 center = {
+				aabbJson.value("centerX", 0.0f),
+				aabbJson.value("centerY", 0.0f)
+			};
+			Vec2 dimensions = {
+				aabbJson.value("dimX", 0.0f),
+				aabbJson.value("dimY", 0.0f)
+			};
+			phys.aabbhitbox = Create_AABB(center, dimensions);
+		}
+
+		// Deserialize Circle
+		if (j.contains("circle")) {
+			const auto& circleJson = j["circle"];
+			phys.circlehitbox.pos.x = circleJson.value("posX", 0.0f);
+			phys.circlehitbox.pos.y = circleJson.value("posY", 0.0f);
+			phys.circlehitbox.rad = circleJson.value("rad", 0.0f);
+		}
+
+		return phys;
+	}
+
 }
