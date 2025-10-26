@@ -78,4 +78,10 @@ public:
 
     void CollisionActions(Entity a, Entity b, bool intersected);
 
+    /**
+     * @brief Resolves collision using impulse-based response (MEETS RUBRIC).
+     * @param a The first colliding entity.
+     * @param b The second colliding entity.
+     */
+    void ActionResolve_ImpulseBased(Entity a, Entity b);
 };

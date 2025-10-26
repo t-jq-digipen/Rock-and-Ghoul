@@ -1,7 +1,7 @@
-/* ========================================================
+ï»¿/* ========================================================
  * @file		Sprite.h
- * @author		Tan Jun Quan
- * @date		29 SEP 2025
+ * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @date		26 OCT 2025
  *
  * @brief	Sprite component for ECS
  *
@@ -12,15 +12,18 @@
  *
  *
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright Â© 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
 #pragma once
 #include "Render.h"
+#include "DataDefs.h"
+#include <nlohmann/json.hpp>
+#include <string>
 
 namespace Sprite {
-	
+
 	/*!
 	 * @class SpriteComponent
 	 * @brief Sprite component for an entity.
@@ -38,7 +41,7 @@ namespace Sprite {
 		Colour3 tint;
 	public:
 		/**
-		 * @brief Default constructor. 
+		 * @brief Default constructor.
 		 * Initializes empty image with zero scale and zero rotation, with no animation.
 		 */
 		SpriteComponent();
@@ -71,18 +74,18 @@ namespace Sprite {
 		SpriteComponent(Image const& image, Vec2 const& dimensions, bool anim = false);
 
 		/**
-		 * @brief Set the sprite’s image.
+		 * @brief Set the sprite's image.
 		 * @param image New image to assign.
 		 */
 		void Set_Image(Image const& image);
 		/**
-		 * @brief Set the sprite’s size using width and height values.
+		 * @brief Set the sprite's size using width and height values.
 		 * @param width New width scaling factor.
 		 * @param height New height scaling factor.
 		 */
 		void Set_Size(float const& width, float const& height);
 		/**
-		 * @brief Set the sprite’s size using a 2D vector.
+		 * @brief Set the sprite's size using a 2D vector.
 		 * @param dimensions New scaling vector.
 		 */
 		void Set_Size(Vec2 const& dimensions);
@@ -93,12 +96,12 @@ namespace Sprite {
 		void Set_Animated(bool set);
 
 		/**
-		 * @brief Get the sprite’s image.
-		 * @return Constant reference to the sprite’s Image.
+		 * @brief Get the sprite's image.
+		 * @return Constant reference to the spriteï¿½s Image.
 		 */
 		const Image& Get_Image() const;
 		/**
-		 * @brief Get the sprite’s scaling factor.
+		 * @brief Get the sprite's scaling factor.
 		 * @return Constant reference to the scaling vector.
 		 */
 		const Vec2& Get_Scale() const;
@@ -106,13 +109,13 @@ namespace Sprite {
 		 * @brief Check if the sprite is animated. (A spritesheet)
 		 * @return True if animated, false otherwise.
 		 */
-		bool IsAnimated();
-		
+		bool IsAnimated() const;
+
 		/**
 		 * @brief Get the file path of the texture associated with this sprite.
-		 * @return String representing the texture’s file path.
+		 * @return String representing the texture's file path.
 		 */
-		std::string Get_TexturePath();
+		std::string Get_TexturePath() const;
 
 		/**
 		 * @brief Set the rotation value of the sprite.
@@ -130,6 +133,13 @@ namespace Sprite {
 
 		void Set_Tint(const Colour3& color) { tint = color; }
 		const Colour3& Get_Tint() const { return tint; }
+
+
+		std::string Serialize() const;
+
+		static SpriteComponent DeSerialize(const std::string& data);
+
+		Editor::ComponentData EditorData();
 	};
 
-}
+	};

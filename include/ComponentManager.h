@@ -1,7 +1,7 @@
 /* ========================================================
  * @file		ComponentManager.h
  * @author		Tan Jun Quan | t.junquan@digipen.edu
- * @date		27 SEP 2025
+ * @date		26 OCT 2025
  *
  * @brief	Component Manager template for ECS
  * 
@@ -25,12 +25,20 @@
 #include <unordered_map>
 #include <iostream>
 #include <string>
+#include "DataDefs.h"
 
 // type erased component manager for registry storage
 class IComponentManager {
 public:
 	virtual ~IComponentManager() = default;
 	virtual void removeComponent(Entity eID) = 0;
+
+	virtual bool hasComponent(Entity eID) = 0;
+
+	virtual std::string SaveComponent(Entity eID) = 0;
+	virtual void LoadComponent(Entity eID, const std::string& data) = 0;
+
+	virtual Editor::ComponentData GetComponentEditorData(Entity eID) = 0;
 };
 
 // template for component manager for each component
@@ -109,5 +117,59 @@ public:
 	 */
 	const std::unordered_map<Entity, Component>& getComponents() const { return components; }
 
+	std::string SaveComponent(Entity eID) override
+	{
+		auto it = components.find(eID);
+		if (it != components.end())
+		{
+			return it->second.Serialize();
+		}
+		return "";
+	}
+
+	void LoadComponent(Entity eID, const std::string& data) override
+	{
+		Component newComp = Component::DeSerialize(data);
+		addComponent(eID, newComp);
+	}
+
+	Editor::ComponentData GetComponentEditorData(Entity eID) override
+	{
+		return getComponent(eID).EditorData();
+	}
+
 };
 
+// Class for serialization of components
+//class ComponentSerializer {
+//public:
+//	// Save function pointer, returns a string
+//	using SaveFn = std::function<std::string(void*)>;
+//	// Load function pointer, returns void and takes const std::string&
+//	using LoadFn = std::function<void(void*, const std::string&)>;
+//
+//private:
+//	ComponentSerializer() {}
+//	ComponentSerializer(const ComponentSerializer&) = delete;
+//
+//	// Map of functions keyed with type_index
+//	std::unordered_map<std::type_index, SaveFn> saveFunctions;
+//	std::unordered_map<std::type_index, LoadFn> loadFunctions;
+//
+//public:
+//	// Singleton access
+//	static ComponentSerializer& Get() {
+//		static ComponentSerializer instance;
+//		return instance;
+//	}
+//
+//	template<typename Component>
+//	void Register() {
+//		std::type_index typeIndex(typeid(Component));
+//
+//		saveFunctions[typeIndex] = 
+//	}
+//
+//
+//
+//};

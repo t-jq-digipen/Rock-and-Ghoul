@@ -1,7 +1,7 @@
 /* ========================================================
  * @file	Animator.h
  * @author	Tan Jun Quan | t.junquan@digipen.edu
- * @date	01 OCT 2025
+ * @date	26 OCT 2025
  *
  * @brief	Animator component for ECS
  *
@@ -23,6 +23,8 @@
 
 #pragma once
 #include <unordered_map>
+#include "DataDefs.h"
+#include <nlohmann/json.hpp>
 namespace Animator {
 
 	/**
@@ -165,8 +167,11 @@ namespace Animator {
 		 */
 		int GetCurrentState() const { return m_current_state; }
 
+		std::string Serialize() const;
 
+		static AnimatorComponent DeSerialize(const std::string& data);
 		
+		Editor::ComponentData EditorData();
 	};
 
 }

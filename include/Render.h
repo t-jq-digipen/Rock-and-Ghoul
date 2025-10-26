@@ -1,7 +1,8 @@
 /* ========================================================
  * @file        Render.h
  * @author      Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
- * @date        02 OCT 2025
+ * @co-author   Tan Jun Quan          | t.junquan@digipen.edu
+ * @date        26 OCT 2025
  *
  * @brief   Rendering system class, consisting function declarations for drawing 2D
  *          primitives, images, and text using OpenGL.
@@ -33,6 +34,7 @@
 #include <sstream>
 #include <nlohmann/json.hpp>
 #include <filesystem>
+#include "DataDefs.h"
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
@@ -484,6 +486,7 @@ public:
 
     Vec2 CalculateTextSize(const std::string& text, float scale);
 
+
 private:
 
     /**
@@ -549,4 +552,8 @@ private:
 
     
     glm::vec3 currentTint = { 1.f, 1.f, 1.f };
+
+public:
+
+    std::unordered_map<std::string, GLuint> Get_TextureCache() { return textureCache; }
 };

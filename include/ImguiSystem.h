@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        ImGuiSystem.h
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
  * @date        01 OCT 2025
  *
  * @brief
@@ -16,6 +16,7 @@
  *
  * Integrates with the engine's system interface (ISystem) and
  * provides hooks for initialization, update, render, and shutdown.
+ * 
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -26,6 +27,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include "DataDefs.h"
 
 /**
  * @class ImGuiSystem
@@ -85,3 +87,4 @@ private:
 
     void ShowAssetPreviewWindow();
 };
+

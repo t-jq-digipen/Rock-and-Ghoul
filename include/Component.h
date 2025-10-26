@@ -2,7 +2,7 @@
  * @file		Component.h
  * @author		Tan Jun Quan		| t.junquan@digipen.edu
  * @co-author	Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
- * @date		29 SEP 2025
+ * @date		26 OCT 2025
  *
  * @brief	Declaration of ECS component type IDs and minor
  *			components found within
@@ -42,6 +42,13 @@
 #include "Remath.h"
 #include "Render.h"
 #include "Collision.h"
+#include "Entity.h"
+
+#include "DataDefs.h"
+#include <nlohmann/json.hpp>
+
+#include "Registry.h"
+
 
 // System notes:
 
@@ -82,6 +89,7 @@ enum ComponentTypeID
 // basically for faster reading, consider implementing later
 using ComponentMask = std::bitset<32>;
 
+
 // BASE
 // COMP_1
 struct TransformComponent {
@@ -90,50 +98,108 @@ struct TransformComponent {
 	Vec2 scale	{ 1.0f, 1.0f };
 	Vec2 Prevpos;
 	float rot{0.0f};
+
+	std::string Serialize() const {
+		// does serialization things here
+		json j = {
+			{"posX", pos.x},
+			{"posY", pos.y},
+			{"scaleX", scale.x},
+			{"scaleY", scale.y},
+			{"rot", rot}
+		};
+		return j.dump();
+	}
+
+	static TransformComponent DeSerialize(const std::string& data)  {
+		// does deserialization things here
+		json j = json::parse(data);
+		TransformComponent temp;
+		temp.pos.x = j["posX"];
+		temp.pos.y = j["posY"];
+		temp.scale.x = j["scaleX"];
+		temp.scale.y = j["scaleY"];
+		temp.rot = j.value("rot", 0.0f);
+		return temp;
+	}
+
+
+	Editor::ComponentData EditorData() {
+
+		Editor::ComponentData ret("Transform");
+		ret.Add_Data("posX",		{ Editor::Widget_Float{ &pos.x , true, 0.f, 1920.f } });
+		ret.Add_Data("posY",		{ Editor::Widget_Float{ &pos.y , true, 0.f, 1080.f } });
+		ret.Add_Data("Rotation",	{ Editor::Widget_Float{ &rot , true, -360.f, 360.f } });
+
+		return ret;
+	}
 };
 // BASE END
 
-// GRAPHICS
-// COMP_2
-//struct SpriteComponent {
-//	// Texture* tex;	// texture file (to check w reg/kerv)
-//	unsigned int textureID = 0;   // OpenGL texture handle
-//	Vec2 size	{ 50.0f, 50.0f }; // default size
-//	Vec3 color	{ 1.0f, 1.0f, 1.0f}; // white (no tint)
-//};
-
-// COMP_3
-//struct AnimatorComponent {
-//	unsigned int total_cols, total_rows;
-//	unsigned int curr_col, curr_row;
+//struct AudioComponent {
+//	// Audiofile audio;
+//	std::string Serialize() const {
+//		json j = {
+//			{"",""}
+//		};
+//		return j.dump();
+//	}
 //
-//	std::string state;
 //};
-// GRAPHICS END
-
-// PHYSICS
-//struct PhysicsComponent {
-//	Vec2 vel	{ 0.f,0.f };
-//	Vec2 accel	{ 0.f,0.f };
-//	//bool collide (maybe can use bitwise checking to see WHAT things it will collide with? to consider)
-//	//aabb hitbox;
-//	bool active { false };
-//	float width{ 0.f };
-//	float height{ 0.f };
-//};
-
-
-struct AudioComponent {
-	// Audiofile audio;
-};
 
 struct LifetimeComponent {
 	float time;
+
+	std::string Serialize() const {
+		json j = {
+			{"time", time}
+		};
+		return j.dump();
+	}
+
+	static LifetimeComponent DeSerialize(const std::string& data) {
+		json j = json::parse(data);
+		LifetimeComponent temp;
+		temp.time = j.value("time", 0.0f);
+		return temp;
+	}
+
+	Editor::ComponentData EditorData() {
+		Editor::ComponentData ret("Lifetime");
+		ret.Add_Data("time", { Editor::Widget_Float{&time, true, 0.f, 100.f} });
+
+		return ret;
+
+	}
 };
 
 struct HealthComponent {
 	float currhp;
 	float maxhp;
+
+	std::string Serialize() const {
+		json j = {
+			{"currentHP", currhp},
+			{"maxHP", maxhp}
+		};
+		return j.dump();
+	}
+
+	static HealthComponent DeSerialize(const std::string& data) {
+		json j = json::parse(data);
+		HealthComponent temp;
+		temp.currhp = j.value("currentHP", 100.0f);
+		temp.maxhp = j.value("maxHP", 100.0f);
+		return temp;
+	}
+
+	Editor::ComponentData EditorData() {
+		Editor::ComponentData ret("Health");
+		ret.Add_Data("currentHP",	Editor::Widget_Float{&currhp, true, 0.f, maxhp} );
+		ret.Add_Data("maxHP",		Editor::Widget_Float{&maxhp, true, 0.f, 100.f} );
+
+		return ret;
+	}
 };
 
 enum C_TagID {
@@ -146,6 +212,33 @@ enum C_TagID {
 
 struct TagComponent {
 	C_TagID tag = T_PLAYER;
+
+	std::string Serialize() const {
+		json j = {
+			{"tagID", static_cast<int>(tag)}
+		};
+		return j.dump();
+	}
+
+	static TagComponent DeSerialize(const std::string& data) {
+		json j = json::parse(data);
+		return TagComponent(static_cast<C_TagID>(static_cast<int>(j["tagID"])));
+	}
+
+	Editor::ComponentData EditorData() {
+		Editor::ComponentData ret("Tag");
+		Editor::Widget_Dropdown dropdown;
+		dropdown.ref = reinterpret_cast<unsigned int*>(&tag);
+		dropdown.Add_Option("Player", static_cast<unsigned int>(T_PLAYER));
+		dropdown.Add_Option("Player", static_cast<unsigned int>(T_ENEMY));
+		dropdown.Add_Option("Player", static_cast<unsigned int>(T_PROJECTILE));
+		dropdown.Add_Option("Player", static_cast<unsigned int>(T_WALL));
+		dropdown.Add_Option("Player", static_cast<unsigned int>(T_INSTANCING));
+
+		ret.Add_Data("Tag",  dropdown );
+
+		return ret;
+	}
 };
 
 enum ControlScheme {
@@ -156,6 +249,33 @@ enum ControlScheme {
 
 struct InputComponent {
 	ControlScheme scheme = CS_WASD;
+
+	std::string Serialize() const {
+		json j = {
+			{"scheme", static_cast<int>(scheme)}
+		};
+		return j.dump();
+	}
+
+	static InputComponent DeSerialize(const std::string& data) {
+		json j = json::parse(data);
+		InputComponent temp;
+		temp.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
+		return temp;
+	}
+
+	Editor::ComponentData EditorData() {
+		Editor::ComponentData ret("Input");
+		Editor::Widget_Dropdown dropdown;
+		dropdown.ref = reinterpret_cast<unsigned int*>(&scheme);
+		dropdown.Add_Option("WASD", static_cast<unsigned int>(CS_WASD));
+		dropdown.Add_Option("IJKL", static_cast<unsigned int>(CS_IJKL));
+		dropdown.Add_Option("Arrows", static_cast<unsigned int>(CS_ARROWS));
+
+		ret.Add_Data("Scheme",  dropdown );
+
+		return ret;
+	}
 };
 
 enum ShapeType {
@@ -167,16 +287,62 @@ struct ShapeComponent {
 	ShapeType shape = SHAPE_RECTANGLE;
 	Vec2 dimensions = { 1.f, 1.f };
 	Vec3 color = { 1.0f, 1.0f, 1.0f };
+
+	std::string Serialize() const {
+		json j = {
+			{"shapeType", static_cast<int>(shape)},
+			{"dimX", dimensions.x},
+			{"dimY", dimensions.y},
+			{"colorX", color.x},
+			{"colorY", color.y},
+			{"colorZ", color.z}
+		};
+		return j.dump();
+	}
+
+	static ShapeComponent DeSerialize(const std::string& data) {
+		json j = json::parse(data);
+
+		ShapeComponent s;
+
+		s.shape = static_cast<ShapeType>(static_cast<int>(j["shapeType"]));
+		s.dimensions.x = j["dimX"];
+		s.dimensions.y = j["dimY"];
+		s.color.x = j["colorX"];
+		s.color.y = j["colorY"];
+		s.color.z = j["colorZ"];
+
+		return s;
+	}
+
+	Editor::ComponentData EditorData() {
+		Editor::ComponentData ret("Shape");
+		Editor::Widget_Dropdown dropdown;
+		dropdown.ref = reinterpret_cast<unsigned int*>(&shape);
+		dropdown.Add_Option("WASD", static_cast<unsigned int>(CS_WASD));
+		dropdown.Add_Option("IJKL", static_cast<unsigned int>(CS_IJKL));
+		dropdown.Add_Option("Arrows", static_cast<unsigned int>(CS_ARROWS));
+		ret.Add_Data("Scheme", dropdown );
+
+		ret.Add_Data("Width",		  Editor::Widget_Float{&dimensions.x, true, 0.f, 100.f});
+		ret.Add_Data("Height",		  Editor::Widget_Float{&dimensions.y, true, 0.f, 100.f});
+
+		ret.Add_Data("Color:Red",	 Editor::Widget_Float{&color.x, true, 0.f, 1.f});
+		ret.Add_Data("Color:Green",  Editor::Widget_Float{&color.y, true, 0.f, 1.f});
+		ret.Add_Data("Color:Blue",   Editor::Widget_Float{&color.z, true, 0.f, 1.f});
+
+		return ret;
+	}
 };
 
-enum Element {
-	ELEMENT_NONE,
-	ELEMENT_FIRE,
-	ELEMENT_ICE,
-	ELEMENT_WIND,
-	ELEMENT_LIGHTNING
-};
-
-struct ElementComponent {
-	Element element = ELEMENT_NONE;
-};
+//enum Element {
+//	ELEMENT_NONE,
+//	ELEMENT_FIRE,
+//	ELEMENT_ICE,
+//	ELEMENT_WIND,
+//	ELEMENT_LIGHTNING
+//};
+//
+//struct ElementComponent {
+//	Element element = ELEMENT_NONE;
+//};

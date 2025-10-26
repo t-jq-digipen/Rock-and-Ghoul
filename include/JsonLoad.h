@@ -96,7 +96,7 @@ private:
      * @return SavedEntity Structure containing the entity's ID, name, and all
      *         component data as JSON strings indexed by component type.
      */
-    static SavedEntity EntityToSaved(Entity eID);
+    //static SavedEntity EntityToSaved(Entity eID);
 
     /**
      * @brief Creates live entity from SavedEntity structure.
@@ -104,7 +104,7 @@ private:
      * @param saved The SavedEntity structure containing serialized component data.
      * @return Entity The ID of the newly created entity with all components attached.
      */
-    static Entity SavedToEntity(const SavedEntity& saved);
+    // static Entity SavedToEntity(const SavedEntity& saved);
 
     // Component loaders
 
@@ -114,7 +114,7 @@ private:
      * @param eID The entity ID to which the component should be added.
      * @param data JSON string containing transform data.
      */
-    static void Load_Transform(Entity eID, const std::string& data);
+    // static void Load_Transform(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads Sprite component onto entity.
@@ -122,7 +122,7 @@ private:
      * @param eID The entity ID to which the Sprite component should be added.
      * @param data JSON string containing sprite data (texturePath, scale, animated).
      */
-    static void Load_Sprite(Entity eID, const std::string& data);
+    // static void Load_Sprite(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads a Physics component onto an entity.
@@ -133,7 +133,7 @@ private:
      * @param eID The entity ID to which the component should be added.
      * @param data JSON string containing physics data.
      */
-    static void Load_Physics(Entity eID, const std::string& data);
+    // static void Load_Physics(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads a Shape component onto an entity.
@@ -141,7 +141,7 @@ private:
      * @param eID The entity ID to which the component should be added.
      * @param data JSON string containing shape data.
      */
-    static void Load_Shape(Entity eID, const std::string& data);
+    //static void Load_Shape(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads a Health component onto an entity.
@@ -149,7 +149,7 @@ private:
      * @param eID The entity ID to which the component should be added.
      * @param data JSON string containing health data.
      */
-    static void Load_Health(Entity eID, const std::string& data);
+    //static void Load_Health(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads a Tag component onto an entity.
@@ -157,7 +157,7 @@ private:
      * @param eID The entity ID to which the component should be added.
      * @param data JSON string containing tag data.
      */
-    static void Load_Tag(Entity eID, const std::string& data);
+    //static void Load_Tag(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads an Input component onto an entity.
@@ -165,7 +165,7 @@ private:
      * @param eID The entity ID to which the component should be added.
      * @param data JSON string containing input data.
      */
-    static void Load_Input(Entity eID, const std::string& data);
+    //static void Load_Input(Entity eID, const std::string& data);
 
     /**
      * @brief Deserializes and loads Animator component onto entity.
@@ -174,7 +174,7 @@ private:
      * @param data JSON string containing animator data.
      * @throws std::runtime_error If the entity doesn't have a Sprite component.
      */
-    static void Load_Animator(Entity eID, const std::string& data);
+    // static void Load_Animator(Entity eID, const std::string& data);
 
     // Component savers
 
@@ -184,7 +184,7 @@ private:
      * @param eID The entity ID whose Transform component should be serialized.
      * @return std::string JSON string containing transform data.
      */
-    static std::string Save_Transform(Entity eID);
+    // static std::string Save_Transform(Entity eID);
 
     /**
      * @brief Serializes a Sprite component to JSON string.
@@ -195,7 +195,7 @@ private:
      * @param eID The entity ID whose Sprite component should be serialized.
      * @return std::string JSON string containing sprite data.
      */
-    static std::string Save_Sprite(Entity eID);
+    // static std::string Save_Sprite(Entity eID);
 
     /**
      * @brief Serializes Physics component to JSON string.
@@ -203,7 +203,7 @@ private:
      * @param eID The entity ID whose Physics component should be serialized.
      * @return std::string JSON string containing the physics data.
      */
-    static std::string Save_Physics(Entity eID);
+    // static std::string Save_Physics(Entity eID);
 
     /**
      * @brief Serializes Shape component to JSON string.
@@ -211,7 +211,7 @@ private:
      * @param eID Entity ID Shape component should be serialized.
      * @return std::string JSON string containing the shape data
      */
-    static std::string Save_Shape(Entity eID);
+    // static std::string Save_Shape(Entity eID);
 
     /**
      * @brief Serializes Health component to JSON string.
@@ -219,7 +219,7 @@ private:
      * @param eID The entity ID where Health component should be serialized.
      * @return std::string JSON string containing the health data.
      */
-    static std::string Save_Health(Entity eID);
+    // static std::string Save_Health(Entity eID);
 
     /**
      * @brief Serializes Tag component to JSON string.
@@ -227,7 +227,7 @@ private:
      * @param eID The entity ID whose Tag component should be serialized.
      * @return std::string JSON string containing the tag data.
      */
-    static std::string Save_Tag(Entity eID);
+    //static std::string Save_Tag(Entity eID);
 
     /**
      * @brief Serializes Input component to JSON string.
@@ -235,7 +235,7 @@ private:
      * @param eID The entity ID where Input component should be serialized.
      * @return std::string JSON string containing the input data.
      */
-    static std::string Save_Input(Entity eID);
+    //static std::string Save_Input(Entity eID);
     
     /**
      * @brief Serializes Animator component to JSON string.
@@ -245,7 +245,7 @@ private:
      *         totalRows, totalCols, animDuration, frame configuration,
      *         currentState, all animation states, and UV coordinates (u0, v0, u1, v1).
      */
-    static std::string Save_Animator(Entity eID);
+    // static std::string Save_Animator(Entity eID);
 
     // JSON serialization
 

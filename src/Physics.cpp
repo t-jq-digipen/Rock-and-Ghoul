@@ -1,14 +1,15 @@
 /* ========================================================
  * @file		Physics.cpp
  * @author		Tan Jun Quan | t.junquan@digipen.edu
- * @date		29 SEP 2025
+ * @co-author	Yasmin Tazi	 | yasmin.t@digipen.edu
+ * @date		26 OCT 2025
  *
  * @brief	Physics component for ECS
  *
  * This file implements physics related components and utilities
  * such as managing forces, calculating net velocities and
  * updating an entity based on the forces applied.
- * 
+ *
  * The bulk of the updates happen in PhysicsSystem.cpp
  *
  * Copyright © 2025 DigiPen, All rights reserved.
@@ -23,8 +24,8 @@ namespace Physics {
 
 	// Ctor
 	ForceComp::ForceComp() : dir{ 0.f,0.f }, mag{ 0.f }, force{ 0.f,0.f }, age{}, lifetime{} {}
-	
-	ForceComp::ForceComp(Vec2 direction, float magnitude, float duration) : dir{ direction }, mag{ magnitude }, force{ 0.f,0.f }, age{}, lifetime{duration}
+
+	ForceComp::ForceComp(Vec2 direction, float magnitude, float duration) : dir{ direction }, mag{ magnitude }, force{ 0.f,0.f }, age{}, lifetime{ duration }
 	{
 		dir = RG_Normalize(direction);
 		force = RG_Scale(dir, mag);
@@ -34,23 +35,35 @@ namespace Physics {
 	{
 		force = RG_Scale(dir, mag);
 		if (lifetime)
-		{ age += g_dt; }
+		{
+			age += g_dt;
+		}
 	}
 
 	Vec2 ForceComp::GetForce()
-	{ return force; }
+	{
+		return force;
+	}
 
 	void ForceComp::Set_Dir(Vec2 direction)
-	{ dir = RG_Normalize(direction); }
+	{
+		dir = RG_Normalize(direction);
+	}
 
 	void ForceComp::Set_Magnitude(float magnitude)
-	{ mag = magnitude; }
-	
+	{
+		mag = magnitude;
+	}
+
 	bool ForceComp::IsImpulse()
-	{ return lifetime == 0.f; }
+	{
+		return lifetime == 0.f;
+	}
 
 	bool ForceComp::Expired()
-	{ return (age >= lifetime); }
+	{
+		return (age >= lifetime);
+	}
 
 
 
@@ -58,7 +71,9 @@ namespace Physics {
 
 	// Add Force to ForceList
 	void ForceList::Add_Force(ForceComp force)
-	{ forces.push_back(force); }
+	{
+		forces.push_back(force);
+	}
 
 	Vec2 ForceList::Update_NetVel(ForceComp force)
 	{
@@ -82,7 +97,7 @@ namespace Physics {
 			{
 				forcecomp.Update();
 				// Update net_vel change!
-				net_vel = RG_Add(net_vel,Update_NetVel(forcecomp));
+				net_vel = RG_Add(net_vel, Update_NetVel(forcecomp));
 			}
 
 			// Remove expired
@@ -104,15 +119,21 @@ namespace Physics {
 
 	// Check if list has forces
 	bool ForceList::HasForces()
-	{ return !forces.empty(); }
+	{
+		return !forces.empty();
+	}
 
 	// Get net velocity change
 	const Vec2& ForceList::Get_NetVel() const
-	{ return net_vel; }
+	{
+		return net_vel;
+	}
 
 	// Reset ForceList
 	void ForceList::Reset()
-	{ forces.clear(); }
+	{
+		forces.clear();
+	}
 
 
 
@@ -121,9 +142,29 @@ namespace Physics {
 	// ================================================================================
 
 	// ctors hehe
-	PhysicsComponent::PhysicsComponent() : vel{ 0.f,0.f }, decay{ 0.f }, willCollide{ false }, isStatic{ false }, aabbhitbox{ { 0.f, 0.f }, { 0.f,0.f }, {0.f,0.f} }, circlehitbox{ {0.f,0.f}, 0.f } {}
+	PhysicsComponent::PhysicsComponent() :
+		vel{ 0.f,0.f },
+		decay{ 0.f },
+		willCollide{ false },
+		isStatic{ false },
+		aabbhitbox{ { 0.f, 0.f }, { 0.f,0.f }, {0.f,0.f} },
+		circlehitbox{ {0.f,0.f}, 0.f },
+		mass(1.f),
+		restitution(0.5f)
+	{
+	}
 
-	PhysicsComponent::PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref, bool makeStatic) : vel{ 0.f,0.f }, decay{ decayval }, willCollide{ solid }, aabbhitbox{ aabbref }, circlehitbox{ circleref }, isStatic{ makeStatic } {}
+	PhysicsComponent::PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref, bool makeStatic) :
+		vel{ 0.f,0.f },
+		decay{ decayval },
+		willCollide{ solid },
+		aabbhitbox{ aabbref },
+		circlehitbox{ circleref },
+		isStatic{ makeStatic },
+		mass(1.f),
+		restitution(0.5f)
+	{
+	}
 
 
 	// FORCES
@@ -157,29 +198,37 @@ namespace Physics {
 	void PhysicsComponent::Damping()
 	{
 		if (decay)
-		{ vel = RG_Scale(vel, std::pow(decay, g_dt)); }
+		{
+			vel = RG_Scale(vel, std::pow(decay, g_dt));
+		}
 	}
 
 	// GETTERS
 	const Vec2& PhysicsComponent::Get_Vel() const
-	{ return vel; }
+	{
+		return vel;
+	}
 
 	const AABB& PhysicsComponent::Get_AABB() const
-	{ return aabbhitbox; }
+	{
+		return aabbhitbox;
+	}
 
 	const Circle& PhysicsComponent::Get_Circle() const
-	{ return circlehitbox; }
+	{
+		return circlehitbox;
+	}
 
 	const bool& PhysicsComponent::CollisionActive() const
-	{ return willCollide; }
+	{
+		return willCollide;
+	}
 
 	// SETTERS
-	// set vel by ?? seems dangerous
-	// set aabb by size
-	// set circle by radius
-
 	void PhysicsComponent::Set_Collision(bool set)
-	{ willCollide = set; }
+	{
+		willCollide = set;
+	}
 
 	void PhysicsComponent::Set_Vel(Vec2 const& newVel)
 	{
@@ -196,4 +245,95 @@ namespace Physics {
 		circlehitbox = newCircle;
 	}
 
+	// LINEAR IMPULSE METHOD
+	void PhysicsComponent::ApplyLinearImpulse(const Vec2& impulse) {
+		if (!isStatic) {
+			Vec2 deltaV = RG_Scale(impulse, 1.0f / mass);
+			vel = RG_Add(vel, deltaV);
+		}
+	}
+
+
+	// SERIALIZATION METHODS
+	std::string PhysicsComponent::Serialize() const {
+		// Calculate center from AABB for saving
+		float centerX = (aabbhitbox.min.x + aabbhitbox.max.x) * 0.5f;
+		float centerY = (aabbhitbox.min.y + aabbhitbox.max.y) * 0.5f;
+
+		nlohmann::json j = {
+			{"velX", vel.x},
+			{"velY", vel.y},
+			{"decay", decay},
+			{"isStatic", isStatic},
+			{"willCollide", willCollide},
+			{"mass", mass},
+			{"restitution", restitution},
+			{"aabb", {
+				{"centerX", centerX},
+				{"centerY", centerY},
+				{"dimX", aabbhitbox.dim.x},
+				{"dimY", aabbhitbox.dim.y}
+			}},
+			{"circle", {
+				{"posX", circlehitbox.pos.x},
+				{"posY", circlehitbox.pos.y},
+				{"rad", circlehitbox.rad}
+			}}
+		};
+		return j.dump();
+	}
+
+	PhysicsComponent PhysicsComponent::DeSerialize(const std::string& data) {
+		nlohmann::json j = nlohmann::json::parse(data);
+
+		PhysicsComponent phys;
+
+		// Deserialize velocity
+		phys.vel.x = j.value("velX", 0.0f);
+		phys.vel.y = j.value("velY", 0.0f);
+
+		// Deserialize basic properties
+		phys.decay = j.value("decay", 0.015f);
+		phys.isStatic = j.value("isStatic", false);
+		phys.willCollide = j.value("willCollide", false);
+		phys.mass = j.value("mass", 1.0f);
+		phys.restitution = j.value("restitution", 0.5f);
+
+		// Deserialize AABB
+		if (j.contains("aabb")) {
+			const auto& aabbJson = j["aabb"];
+			Vec2 center = {
+				aabbJson.value("centerX", 0.0f),
+				aabbJson.value("centerY", 0.0f)
+			};
+			Vec2 dimensions = {
+				aabbJson.value("dimX", 0.0f),
+				aabbJson.value("dimY", 0.0f)
+			};
+			phys.aabbhitbox = Create_AABB(center, dimensions);
+		}
+
+		// Deserialize Circle
+		if (j.contains("circle")) {
+			const auto& circleJson = j["circle"];
+			phys.circlehitbox.pos.x = circleJson.value("posX", 0.0f);
+			phys.circlehitbox.pos.y = circleJson.value("posY", 0.0f);
+			phys.circlehitbox.rad = circleJson.value("rad", 0.0f);
+		}
+
+		return phys;
+	}
+
+	Editor::ComponentData PhysicsComponent::EditorData() {
+		Editor::ComponentData ret("Physics");
+
+		ret.Add_Data("WillCollide", Editor::Widget_Checkmark{ &willCollide });
+
+		ret.Add_Data("AABB width", Editor::Widget_Float{ &aabbhitbox.dim.x, true, 10.f, 1000.f });
+		ret.Add_Data("AABB height", Editor::Widget_Float{ &aabbhitbox.dim.y, true, 10.f, 1000.f });
+
+		ret.Add_Data("Cirle radius", Editor::Widget_Float{ &circlehitbox.rad, true, 10.f, 500.f });
+
+		return ret;
+	}
 }

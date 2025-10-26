@@ -1,7 +1,8 @@
 /* ========================================================
  * @file        CollisionManager.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        01 OCT 2025
+ * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu
+ * @date        24 OCT 2025
  *
  * @brief
  *
@@ -147,24 +148,95 @@ void CollisionManager::ActionStop_Static(Entity dynamic, Entity staticObj) {
     }
 }
 
+// IMPULSE-BASED COLLISION (LINEAR PHYSICS SYSTEM)
+void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
+        auto& transA = m_registry.Get_Component<TransformComponent>(a);
+        auto& physA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
+        auto& transB = m_registry.Get_Component<TransformComponent>(b);
+        auto& physB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
+
+        const AABB& aabbA = physA.Get_AABB();
+        const AABB& aabbB = physB.Get_AABB();
+
+        // Calculate collision normal
+        Vec2 diff = RG_Subtract(transB.pos, transA.pos);
+        float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - fabs(diff.x);
+        float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - fabs(diff.y);
+
+        if (overlapX <= 0 || overlapY <= 0) return;
+
+        // Find collision normal
+        Vec2 normal;
+        float penetrationDepth;
+
+        if (overlapX < overlapY) {
+            normal = (diff.x > 0) ? Vec2{ 1.0f, 0.0f } : Vec2{ -1.0f, 0.0f };
+            penetrationDepth = overlapX;
+        }
+        else {
+            normal = (diff.y > 0) ? Vec2{ 0.0f, 1.0f } : Vec2{ 0.0f, -1.0f };
+            penetrationDepth = overlapY;
+        }
+
+        // Minimal position correction to prevent sinking
+        bool aStatic = physA.IsStatic();
+        bool bStatic = physB.IsStatic();
+
+        if (!aStatic && !bStatic) {
+            float halfPen = penetrationDepth / 2.0f;
+            Vec2 correction = RG_Scale(normal, halfPen);
+            transA.pos = RG_Subtract(transA.pos, correction);
+            transB.pos = RG_Add(transB.pos, correction);
+            physA.UpdateHitboxes(transA.pos);
+            physB.UpdateHitboxes(transB.pos);
+        }
+        else if (!aStatic) {
+            Vec2 correction = RG_Scale(normal, -penetrationDepth);
+            transA.pos = RG_Add(transA.pos, correction);
+            physA.UpdateHitboxes(transA.pos);
+        }
+        else if (!bStatic) {
+            Vec2 correction = RG_Scale(normal, penetrationDepth);
+            transB.pos = RG_Add(transB.pos, correction);
+            physB.UpdateHitboxes(transB.pos);
+        }
+
+        // Calculate relative velocity
+        Vec2 velA = physA.Get_Vel();
+        Vec2 velB = physB.Get_Vel();
+        Vec2 relativeVel = RG_Subtract(velA, velB);
+        float velAlongNormal = RG_DotProduct(relativeVel, normal);
+
+        // Don't resolve if separating
+        if (velAlongNormal > 0) return;
+
+        // Calculate impulse magnitude using physics formula
+        // j = -(1 + e) * v_rel / (1/m_a + 1/m_b)
+        float e = std::min(physA.GetRestitution(), physB.GetRestitution());
+        float invMassA = aStatic ? 0.0f : 1.0f / physA.GetMass();
+        float invMassB = bStatic ? 0.0f : 1.0f / physB.GetMass();
+
+        float j = -(1.0f + e) * velAlongNormal / (invMassA + invMassB);
+        Vec2 impulse = RG_Scale(normal, j);
+
+        // Apply impulses time-based
+        if (!aStatic) {
+            physA.ApplyLinearImpulse(impulse);
+        }
+        if (!bStatic) {
+            physB.ApplyLinearImpulse(RG_Scale(impulse, -1.0f));
+        }
+    
+}
+
+// Replaced ActionStop with Impulse method
 void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected)
 {
     if (!intersected) return;
 
     AddEvent(a, b);
 
-    auto& compA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
-    auto& compB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
-
-    if (compA.IsStatic() && !compB.IsStatic()) {
-        ActionStop_Static(b, a);
-    }
-    else if (!compA.IsStatic() && compB.IsStatic()) {
-        ActionStop_Static(a, b);
-    }
-    else {
-        ActionStop(a, b);
-    }
+    ActionResolve_ImpulseBased(a, b);
 }
 
 void CollisionManager::CheckCollisions() {

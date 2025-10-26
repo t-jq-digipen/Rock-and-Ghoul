@@ -1,7 +1,7 @@
 /* ========================================================
  * @file	Sprite.cpp
  * @author	Tan Jun Quan | t.junquan@digipen.edu
- * @date	29 SEP 2025
+ * @date	26 OCT 2025
  *
  * @brief	Sprite component for ECS
  *
@@ -70,10 +70,10 @@ namespace Sprite {
 		return m_scale;
 	}
 
-	bool SpriteComponent::IsAnimated()
+	bool SpriteComponent::IsAnimated() const
 	{ return m_anim; }
 
-	std::string SpriteComponent::Get_TexturePath()
+	std::string SpriteComponent::Get_TexturePath() const
 	{ return Render::GetInstance().Get_TexturePath(m_image.textureID); }
 
 
@@ -88,5 +88,41 @@ namespace Sprite {
 	void SpriteComponent::Rotate(float deltaRot) {
 		m_rot += deltaRot;
 
+	}
+
+	std::string SpriteComponent::Serialize() const {
+
+		json j = {
+			{"texturePath", Get_TexturePath()},
+			{"scaleX", m_scale.x},
+			{"scaleY", m_scale.y},
+			{"animated", m_anim}
+
+		};
+		return j.dump();
+	}
+
+	SpriteComponent SpriteComponent::DeSerialize(const std::string& data) {
+		json j = json::parse(data);
+
+		return SpriteComponent(j["texturePath"], { j["scaleX"], j["scaleY"] }, j["animated"]);
+	}
+
+	Editor::ComponentData SpriteComponent::EditorData() {
+		Editor::ComponentData ret("Sprite");
+
+		Editor::Widget_Dropdown dropdown{};
+		dropdown.ref = &m_image.textureID;
+		dropdown.enumMap = Render::GetInstance().Get_TextureCache();
+		ret.Add_Data("TextureID", Editor::Widget_String{});
+
+		ret.Add_Data("ScaleX", Editor::Widget_Float(&m_scale.x));
+		ret.Add_Data("ScaleY", Editor::Widget_Float(&m_scale.y));
+
+		ret.Add_Data("Rotation", Editor::Widget_Float{ &m_rot, true, -360.f, 360.f });
+
+		ret.Add_Data("Animated", Editor::Widget_Checkmark{ &m_anim });
+
+		return ret;
 	}
 }
