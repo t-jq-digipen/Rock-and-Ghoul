@@ -110,7 +110,8 @@ int main() {
             mono.Initialize("../Assets/Scripts/GameScripts.dll");
 
             // Register the MonoScript component with the ECS registry
-            Registry::Get().Register_Component<MonoScriptComponent>();
+            Registry::Get().Register_Component<MonoScriptComponent>("MonoScriptComponent");
+
 
             // Add the MonoSystem to the engine so it runs every frame
             engine.AddSystem(new MonoSystem());

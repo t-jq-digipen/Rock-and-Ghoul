@@ -161,179 +161,244 @@ void MainMenu::Init()
 }
 
 // Updates Main Menu
+//void MainMenu::Update()
+//{
+//    Render& renderer = Render::GetInstance();
+//    CrashHandler::Safe("MainMenu", "Update", [&] {
+//
+//        // Clear background, add background color
+//        renderer.ClearBackground({ 0.5f, 0.f, 0.7f, 1.f });
+//      //if (MainMenuTexture)
+//       // {
+//            //renderer.DrawTexturedQuad({ GLApp::width * 0.5f, GLApp::height * 0.5f }, { 1920.f, 1080.f}, MainMenuTexture);
+//        //    if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+//        //    {
+//        //        if (audio) 
+//        //        {
+//        //            audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
+//        //        }
+//        //        else
+//        //        {
+//        //            CrashHandler::Log("AudioManager is null on PLAY click");
+//        //        }
+//
+//
+//
+//        //        // test to hear audio on LEFT SPEAKER
+//        //        //std::cout << "[Test] Playing PLAY click on LEFT" << std::endl;
+//        //        //AudioSystem::PlaySoundAt("button_play", -300.0f, 0.0f, 1.0f);
+//        //        //GSM_SetNextState(GameState::GS_LEVEL1);
+//        //    }
+//        //}
+//        //else
+//        //{
+//        //    CrashHandler::Log("MainMenuTexture texture missing; skipping draw!");
+//        //    if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+//        //    {
+//        //        if (audio) 
+//        //        {
+//        //            audio->PlayButtonSound(AudioSystem::ButtonType::QUIT);
+//        //        }
+//        //        else
+//        //        {
+//        //            CrashHandler::Log("AudioManager is null on QUIT click");
+//        //        }
+//        //        // test to hear audio on the RIGHT SPEAKER
+//        //        //std::cout << "[Test] Playing QUIT click on RIGHT" << std::endl;
+//        //        //AudioSystem::PlaySoundAt("button_quit", 300.0f, 0.0f, 1.0f);
+//
+//        //        // Wait a bit for the sound to play before quitting
+//        //        double startTime = glfwGetTime();
+//        //        while (glfwGetTime() - startTime < 0.5) // Wait 500ms
+//        //        {
+//        //            // Keep updating audio system during the wait
+//        //            AudioSystem::Update();
+//        //            glfwPollEvents();
+//        //        }
+//        //        //GSM_SetNextState(GameState::GS_QUIT);
+//        //    }
+//        //}
+//        //guiSystem.Update(0.0f);
+//        // 
+//            if (MainMenuTexture)
+//            {
+//                renderer.DrawTexturedQuad({ GLApp::width * 0.5f, GLApp::height * 0.5f }, { 1920.f, 1080.f }, MainMenuTexture);
+//            }
+//            else
+//            {
+//            CrashHandler::Log("MainMenuTexture texture missing; skipping draw!");
+//            }
+//
+//            guiSystem.Update(0.0f);
+//        // Alternatively press SPACE to enter LEVEL 1
+//        if (Input::IsKeyPressed(GLFW_KEY_8))
+//        {
+//            std::cout << "PLAY CLICKED switching to Level1\n";
+//            if (audio) 
+//            {
+//                audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
+//            }
+//            else
+//            {
+//                CrashHandler::Log("AudioManager is null on SPACE press");
+//            }
+//            // test to hear centred audio
+//            //std::cout << "[Test] Playing SPACE at CENTER" << std::endl;
+//            //AudioSystem::PlaySoundAt("button_play", 0.0f, 0.0f, 1.0f);
+//            GSM_SetNextState(GameState::GS_LEVEL1);
+//        }
+//
+//        // Non-fatal test: press F2 to simulate a runtime error, writes to log file (should NOT quit the program!)
+//        if (Input::IsKeyPressed(GLFW_KEY_F2))
+//        {
+//            int rc = CrashHandler::RunProtected([] {
+//                throw std::runtime_error("F2 has been pressed! std::exception test successful!");
+//            });
+//            CrashHandler::Logf("int rc = %d (expected value: 1)", rc);
+//            return;
+//        }
+//
+//        // Fatal test: press F3 to simulate a crash, program automatically hard-exits
+//        if (Input::IsKeyPressed(GLFW_KEY_F3))
+//        {
+//            throw std::runtime_error("F3 has been pressed! std::terminate handler test successful!");
+//        }
+//
+//        // Fatal signal test: press F4 to simulate an abortion (DON'T ALT + F4 THOUGH)
+//        if (Input::IsKeyPressed(GLFW_KEY_F4))
+//        {
+//            CrashHandler::Log("F4 has been pressed! std::abort test successful!");
+//            std::abort();
+//        }
+//    });
+//
+//
+//
+//    // Render main menu textures (placeholders rn)
+//    
+//    //just testing stuff for rendering (can delete)
+//    //renderer.DrawImage(titleImage, 400.f, 400.f);
+//    //renderer.DrawImageRotated(titleImage, 400.f, 400.f, 1.57f);
+//    //renderer.DrawImageSub(titleImage, 400.f, 400.f, 100.f, 400.f, 0.f, 0.f, 256.f, 256.f);
+//    //renderer.DrawText("Let's play", 400.f, 700.f, 0.75f, { 0.f,0.f,1.f });
+//    //renderer.DrawText("Game Over", 1400.f, 700.f, 0.75f, { 1.f,1.f,1.f });
+////
+////    if (Input::IsKeyPressed(GLFW_KEY_B)) {
+////        //std::cout << showInstancingDemo << std::endl;
+////        showInstancingDemo = !showInstancingDemo;
+////    }
+////    if (showInstancingDemo) {
+////        std::vector<InstanceData> instances;
+////
+////        int totalInstances = 2500;
+////        
+////        // Calculate grid dimensions that fit the screen
+////        float aspectRatio = (float)GLApp::width / (float)GLApp::height;
+////        int cols = static_cast<int>(std::sqrt(totalInstances * aspectRatio));
+////        int rows = static_cast<int>(std::ceil((float)totalInstances / cols));
+////
+////        // Calculate space to fit screen
+////        float paddingX = 5.0f;
+////        float paddingY = 5.0f;
+////        float spacingX = (GLApp::width - 2 * paddingX) / cols;
+////        float spacingY = (GLApp::height - 2 * paddingY) / rows;
+////
+////        // Use the smaller spacing to ensure everything fits
+////        float spacing = std::min(spacingX, spacingY);
+////
+////        // Calculate sprite size 
+////        float spriteSize = spacing * 0.8f;
+////
+////        for (int i = 0; i < totalInstances; i++) {
+////            InstanceData data;
+////
+////            // Grid layout centered on screen
+////            int col = i % cols;
+////            int row = i / cols;
+////
+////            data.position = glm::vec2(
+////                paddingX + col * spacing + spacing * 0.5f,  // Center
+////                paddingY + row * spacing + spacing * 0.5f
+////            );
+////
+////            // Sprite size
+////            data.scale = glm::vec2(spriteSize, spriteSize);
+////
+////            // Rotation over time (animation)
+////            data.rotation = static_cast<float>(glfwGetTime() + i * 0.1f);
+////
+////            // Full texture
+////            data.uvRect = glm::vec4(0, 0, 1, 1);
+////
+////            instances.push_back(data);
+////        }
+////        double currentTime = glfwGetTime();
+////        frames++;
+////        if (currentTime - lastTime >= 1.0) { // update once per second
+////            fps = double(frames) / (currentTime - lastTime);
+////            frames = 0;
+////            lastTime = currentTime;
+////        }
+////        renderer.DrawImageInstanced(titleImage, instances);
+////        std::ostringstream oss;
+////        oss << "Rock & Ghoul - Instancing: " << totalInstances << " | FPS: " << int(fps);
+////        glfwSetWindowTitle(GLApp::ptr_window, oss.str().c_str());
+////    }
+////
+//}
 void MainMenu::Update()
 {
     Render& renderer = Render::GetInstance();
     CrashHandler::Safe("MainMenu", "Update", [&] {
 
-        // Clear background, add background color
+        // Clear background
         renderer.ClearBackground({ 0.5f, 0.f, 0.7f, 1.f });
+
         if (MainMenuTexture)
         {
-            renderer.DrawTexturedQuad({ GLApp::width * 0.5f, GLApp::height * 0.5f }, { 1920.f, 1080.f}, MainMenuTexture);
-            if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
-            {
-                if (audio) 
-                {
-                    audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
-                }
-                else
-                {
-                    CrashHandler::Log("AudioManager is null on PLAY click");
-                }
-
-                // test to hear audio on LEFT SPEAKER
-                //std::cout << "[Test] Playing PLAY click on LEFT" << std::endl;
-                //AudioSystem::PlaySoundAt("button_play", -300.0f, 0.0f, 1.0f);
-                GSM_SetNextState(GameState::GS_LEVEL1);
-            }
+            renderer.DrawTexturedQuad(
+                { GLApp::width * 0.5f, GLApp::height * 0.5f },
+                { 1920.f, 1080.f },
+                MainMenuTexture
+            );
         }
         else
         {
             CrashHandler::Log("MainMenuTexture texture missing; skipping draw!");
-            if (Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
-            {
-                if (audio) 
-                {
-                    audio->PlayButtonSound(AudioSystem::ButtonType::QUIT);
-                }
-                else
-                {
-                    CrashHandler::Log("AudioManager is null on QUIT click");
-                }
-                // test to hear audio on the RIGHT SPEAKER
-                //std::cout << "[Test] Playing QUIT click on RIGHT" << std::endl;
-                //AudioSystem::PlaySoundAt("button_quit", 300.0f, 0.0f, 1.0f);
-
-                // Wait a bit for the sound to play before quitting
-                double startTime = glfwGetTime();
-                while (glfwGetTime() - startTime < 0.5) // Wait 500ms
-                {
-                    // Keep updating audio system during the wait
-                    AudioSystem::Update();
-                    glfwPollEvents();
-                }
-                GSM_SetNextState(GameState::GS_QUIT);
-            }
         }
+
         guiSystem.Update(0.0f);
-        // Alternatively press SPACE to enter LEVEL 1
+
         if (Input::IsKeyPressed(GLFW_KEY_8))
         {
-            std::cout << "PLAY CLICKED � switching to Level1\n";
-            if (audio) 
-            {
+            std::cout << "PLAY CLICKED switching to Level1\n";
+            if (audio)
                 audio->PlayButtonSound(AudioSystem::ButtonType::PLAY);
-            }
             else
-            {
                 CrashHandler::Log("AudioManager is null on SPACE press");
-            }
-            // test to hear centred audio
-            //std::cout << "[Test] Playing SPACE at CENTER" << std::endl;
-            //AudioSystem::PlaySoundAt("button_play", 0.0f, 0.0f, 1.0f);
+
             GSM_SetNextState(GameState::GS_LEVEL1);
         }
 
-        // Non-fatal test: press F2 to simulate a runtime error, writes to log file (should NOT quit the program!)
         if (Input::IsKeyPressed(GLFW_KEY_F2))
         {
             int rc = CrashHandler::RunProtected([] {
                 throw std::runtime_error("F2 has been pressed! std::exception test successful!");
-            });
+                });
             CrashHandler::Logf("int rc = %d (expected value: 1)", rc);
             return;
         }
 
-        // Fatal test: press F3 to simulate a crash, program automatically hard-exits
         if (Input::IsKeyPressed(GLFW_KEY_F3))
-        {
             throw std::runtime_error("F3 has been pressed! std::terminate handler test successful!");
-        }
 
-        // Fatal signal test: press F4 to simulate an abortion (DON'T ALT + F4 THOUGH)
         if (Input::IsKeyPressed(GLFW_KEY_F4))
         {
             CrashHandler::Log("F4 has been pressed! std::abort test successful!");
             std::abort();
         }
-    });
-
-
-
-    // Render main menu textures (placeholders rn)
-    
-    //just testing stuff for rendering (can delete)
-    //renderer.DrawImage(titleImage, 400.f, 400.f);
-    //renderer.DrawImageRotated(titleImage, 400.f, 400.f, 1.57f);
-    //renderer.DrawImageSub(titleImage, 400.f, 400.f, 100.f, 400.f, 0.f, 0.f, 256.f, 256.f);
-    //renderer.DrawText("Let's play", 400.f, 700.f, 0.75f, { 0.f,0.f,1.f });
-    //renderer.DrawText("Game Over", 1400.f, 700.f, 0.75f, { 1.f,1.f,1.f });
-//
-//    if (Input::IsKeyPressed(GLFW_KEY_B)) {
-//        //std::cout << showInstancingDemo << std::endl;
-//        showInstancingDemo = !showInstancingDemo;
-//    }
-//    if (showInstancingDemo) {
-//        std::vector<InstanceData> instances;
-//
-//        int totalInstances = 2500;
-//        
-//        // Calculate grid dimensions that fit the screen
-//        float aspectRatio = (float)GLApp::width / (float)GLApp::height;
-//        int cols = static_cast<int>(std::sqrt(totalInstances * aspectRatio));
-//        int rows = static_cast<int>(std::ceil((float)totalInstances / cols));
-//
-//        // Calculate space to fit screen
-//        float paddingX = 5.0f;
-//        float paddingY = 5.0f;
-//        float spacingX = (GLApp::width - 2 * paddingX) / cols;
-//        float spacingY = (GLApp::height - 2 * paddingY) / rows;
-//
-//        // Use the smaller spacing to ensure everything fits
-//        float spacing = std::min(spacingX, spacingY);
-//
-//        // Calculate sprite size 
-//        float spriteSize = spacing * 0.8f;
-//
-//        for (int i = 0; i < totalInstances; i++) {
-//            InstanceData data;
-//
-//            // Grid layout centered on screen
-//            int col = i % cols;
-//            int row = i / cols;
-//
-//            data.position = glm::vec2(
-//                paddingX + col * spacing + spacing * 0.5f,  // Center
-//                paddingY + row * spacing + spacing * 0.5f
-//            );
-//
-//            // Sprite size
-//            data.scale = glm::vec2(spriteSize, spriteSize);
-//
-//            // Rotation over time (animation)
-//            data.rotation = static_cast<float>(glfwGetTime() + i * 0.1f);
-//
-//            // Full texture
-//            data.uvRect = glm::vec4(0, 0, 1, 1);
-//
-//            instances.push_back(data);
-//        }
-//        double currentTime = glfwGetTime();
-//        frames++;
-//        if (currentTime - lastTime >= 1.0) { // update once per second
-//            fps = double(frames) / (currentTime - lastTime);
-//            frames = 0;
-//            lastTime = currentTime;
-//        }
-//        renderer.DrawImageInstanced(titleImage, instances);
-//        std::ostringstream oss;
-//        oss << "Rock & Ghoul - Instancing: " << totalInstances << " | FPS: " << int(fps);
-//        glfwSetWindowTitle(GLApp::ptr_window, oss.str().c_str());
-//    }
-//
+        });
 }
-
 // Draws Main Menu
 void MainMenu::Draw()
 {
