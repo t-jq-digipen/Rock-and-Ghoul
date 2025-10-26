@@ -155,43 +155,48 @@ endmacro()
 # ==============================
 macro(import_mono)
     if (NOT TARGET mono)
+        message(STATUS "Importing local Mono from deps/mono...")
+
+        # Path to your local Mono SDK inside the repo
         set(MONO_ROOT "${CMAKE_SOURCE_DIR}/deps/mono")
 
-        # Check if Mono SDK exists
-        if (EXISTS "${MONO_ROOT}/include/mono-2.0")
-            message(STATUS "✓ Found local Mono SDK, using deps/mono")
-            
-            include_directories(${MONO_ROOT}/include/mono-2.0)
-            add_library(mono INTERFACE)
-            target_include_directories(mono INTERFACE ${MONO_ROOT}/include/mono-2.0)
+        # Include directories for Mono headers
+        include_directories(${MONO_ROOT}/include/mono-2.0)
 
-            if (WIN32)
-                if (EXISTS "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
-                    target_link_libraries(mono INTERFACE "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
-                    message(STATUS "✓ Linked mono-2.0-sgen.lib")
-                else()
-                    message(WARNING "Mono static lib not found — dynamic linking only")
-                endif()
+        # Create an INTERFACE library target so we can link it easily
+        add_library(mono INTERFACE)
 
-                if (EXISTS "${MONO_ROOT}/bin/mono-2.0-sgen.dll")
-                    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        "${MONO_ROOT}/bin/mono-2.0-sgen.dll"
-                        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>
-                    )
-                    message(STATUS "✓ Will copy mono-2.0-sgen.dll at build")
-                else()
-                    message(WARNING "Mono DLL not found in deps/mono/bin — skipping copy")
-                endif()
+        # Mono headers
+        target_include_directories(mono INTERFACE
+            ${MONO_ROOT}/include/mono-2.0
+        )
+
+        # Mono runtime lib for linking (optional; only needed if you statically link .lib)
+        if (WIN32)
+            if (EXISTS "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
+                target_link_libraries(mono INTERFACE "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
+                message(STATUS "✓ Found mono-2.0-sgen.lib for linking.")
+            else()
+                message(WARNING "✗ mono-2.0-sgen.lib not found — only dynamic DLL loading will work.")
             endif()
-        else()
-            message(WARNING "✗ Mono SDK not found. Skipping Mono integration.")
-            add_library(mono INTERFACE)
-            # No includes or linking, empty placeholder target
+        endif()
+
+        # Copy runtime DLL beside exe after build
+        if (WIN32)
+            set(MONO_DLL_PATH "${MONO_ROOT}/bin/mono-2.0-sgen.dll")
+            if (EXISTS "${MONO_DLL_PATH}")
+                add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${MONO_DLL_PATH}"
+                    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>
+                )
+                message(STATUS "✓ Will copy mono-2.0-sgen.dll to build output.")
+            else()
+                message(WARNING "✗ Mono runtime DLL not found in ${MONO_DLL_PATH}")
+            endif()
         endif()
     endif()
 endmacro()
-
 
 
 # Macro to import all dependencies
