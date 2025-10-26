@@ -238,9 +238,11 @@ namespace Animator {
 	Editor::ComponentData AnimatorComponent::EditorData() {
 		Editor::ComponentData ret("Animator");
 
-		ret.Add_Data("Total Rows", Editor::Widget_Int(&m_total_rows));
-		ret.Add_Data("Total Cols", Editor::Widget_Int(&m_total_cols));
+		//ret.Add_Data("Total Rows", Editor::Widget_Int(&m_total_rows));
+		//ret.Add_Data("Total Cols", Editor::Widget_Int(&m_total_cols));
 
+		ret.Add_Data("Total Rows", Editor::Widget_Int{ reinterpret_cast<int*>(&m_total_rows) });
+		ret.Add_Data("Total Cols", Editor::Widget_Int{ reinterpret_cast<int*>(&m_total_cols) });
 
 		return ret;
 	}

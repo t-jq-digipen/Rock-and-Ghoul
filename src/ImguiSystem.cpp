@@ -31,41 +31,60 @@
 #include "Audio.h"
 #include <fstream>
 #include <nlohmann/json.hpp>
-
+#include <unordered_set> 
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 bool ImGuiSystem::guiEnabled = false;
 static FMOD::Channel* previewChannel = nullptr;
+#include "DataDefs.h"
 
-static std::unordered_map<ComponentTypeID, std::vector<ComponentTypeID>> dependencies = {
-    { CT_Animator, { CT_Sprite } },      // Animator needs Sprite
-    { CT_Physics,  { CT_Transform } },   // Physics needs Transform
-    { CT_Shape,    { CT_Transform } },   // Shape needs Transform
-    { CT_Sprite,   { CT_Transform } },   // Sprite needs Transform
-    { CT_Audio,    {} },                 // Audio independent
-    { CT_Tag,      {} },                 // Tag independent
-    { CT_Input,    {} }                  // Input independent
-};
-using HasFunc = std::function<bool(Entity, Registry&)>;
-static std::unordered_map<ComponentTypeID, HasFunc> HasComponentMap = {
-    { CT_Transform, [](Entity e, Registry& r) { return r.Has_Component<TransformComponent>(e); } },
-    { CT_Sprite,    [](Entity e, Registry& r) { return r.Has_Component<Sprite::SpriteComponent>(e); } },
-    { CT_Animator,  [](Entity e, Registry& r) { return r.Has_Component<Animator::AnimatorComponent>(e); } },
-    { CT_Physics,   [](Entity e, Registry& r) { return r.Has_Component<Physics::PhysicsComponent>(e); } },
-    { CT_Shape,     [](Entity e, Registry& r) { return r.Has_Component<ShapeComponent>(e); } },
-    //{ CT_Audio,     [](Entity e, Registry& r) { return r.Has_Component<AudioComponent>(e); } },
-    { CT_Input,     [](Entity e, Registry& r) { return r.Has_Component<InputComponent>(e); } },
-    { CT_Tag,       [](Entity e, Registry& r) { return r.Has_Component<TagComponent>(e); } }
-};
-
-bool HasComponentByType(Entity e, Registry& registry, ComponentTypeID id)
-{
-    auto it = HasComponentMap.find(id);
-    if (it != HasComponentMap.end())
-        return it->second(e, registry);
-    return false;
+// Checkbox
+static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
+    if (!w.ref) return;
+    ImGui::Checkbox(label.c_str(), w.ref);
 }
+
+// String
+static void MakeWidget(Editor::Widget_String& w, const std::string& label) {
+    if (!w.ref) return;
+    char buf[128];
+    strncpy(buf, w.ref->c_str(), sizeof(buf));
+    if (ImGui::InputText(label.c_str(), buf, IM_ARRAYSIZE(buf))) {
+        *w.ref = buf;
+    }
+}
+
+// Dropdown
+static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label) {
+    if (!w.ref || w.options.empty()) return;
+    std::vector<const char*> items;
+    for (auto& opt : w.options) items.push_back(opt.c_str());
+    int current = static_cast<int>(*w.ref);
+    if (ImGui::Combo(label.c_str(), &current, items.data(), (int)items.size())) {
+        *w.ref = static_cast<unsigned int>(current);
+    }
+}
+
+// Int
+static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
+    if (!w.ref) return;
+    if (w.slider && w.min != w.max)
+        ImGui::SliderInt(label.c_str(), w.ref, w.min, w.max);
+    else
+        ImGui::InputInt(label.c_str(), w.ref);
+}
+
+// Float
+static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
+    if (!w.ref) return;
+    if (w.slider && w.min != w.max)
+        ImGui::SliderFloat(label.c_str(), w.ref, w.min, w.max);
+    else
+        ImGui::InputFloat(label.c_str(), w.ref);
+}
+
+
 using json = nlohmann::json;
 
 
@@ -374,6 +393,39 @@ void ImGuiSystem::ShowHierarchyWindow() {
         m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
 
     }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
+    {
+        Registry& reg = Registry::Get();
+        SavedEntity src = reg.Save_Entity(selectedEntity);
+
+        //filter out empty json data
+        for (auto it = src.componentData.begin(); it != src.componentData.end();)
+        {
+            if (it->second.empty() || it->second == "{}" || it->second == "null")
+            {
+                std::cout << "[Clone Warning] Skipping empty component: " << it->first << "\n";
+                it = src.componentData.erase(it);
+            }
+            else
+                ++it;
+        }
+
+        Entity clone = reg.Load_Entity(src);
+    }
+
+
+
+    ImGui::SameLine();
+    if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
+    {
+        m_registry.Remove_Entity(selectedEntity);
+        selectedEntity = INVALID_ENTITY;
+    }
+    ImGui::Separator();
+
+
     // show all known entities (even blank)
     auto& nameMap = m_registry.Get_EntityNameMap();
 
@@ -383,237 +435,16 @@ void ImGuiSystem::ShowHierarchyWindow() {
             continue;
 
         bool selected = (entity == selectedEntity);
+        //Cant select old entity after clone
+        //Use ImGui::PushID(entity) so diff imguiID
+        ImGui::PushID((int)entity);
         if (ImGui::Selectable(name.c_str(), selected))
             selectedEntity = entity;
+        ImGui::PopID();
     }
 
 
 }
-
-namespace {
-    template<typename T>
-    void DrawAddComponentButton(
-        const char* label,
-        Entity entity,
-        Registry& registry,
-        bool canAdd = true)
-    {
-        if (registry.Has_Component<T>(entity))
-        {
-            ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "%s (already added)", label);
-            return;
-        }
-
-        if (!canAdd)
-            ImGui::BeginDisabled();
-
-       // ==== Special case: Animator ====
-        if constexpr (std::is_same_v<T, Animator::AnimatorComponent>)
-        {
-            if (ImGui::Button(label, ImVec2(140, 0)) && canAdd)
-            {
-                if (registry.Has_Component<Sprite::SpriteComponent>(entity))
-                {
-                    auto& sprite = registry.Get_Component<Sprite::SpriteComponent>(entity);
-                    const Image& img = sprite.Get_Image();
-
-                    // Default to a 1x1 "no animation" animator
-                    Animator::ActiveFrames fr{ 0, 0, 0, 0.0f };
-                    Animator::AnimatorComponent anim(1, 1, img.widthPixels, img.heightPixels, fr, 0.0f);
-
-                    registry.Add_Component<Animator::AnimatorComponent>(entity, anim);
-                    sprite.Set_Animated(true);
-                    std::cout << "[ImGui] Added AnimatorComponent to Entity " << entity << "\n";
-                }
-                else
-                {
-                    std::cout << "[ImGui] Animator requires Sprite component!\n";
-                }
-            }
-
-            if (!canAdd)
-            {
-                ImGui::EndDisabled();
-                ImGui::SameLine();
-                ImGui::TextDisabled("(requires dependency)");
-            }
-            return;
-        }
-
-
-
-        // ==== Generic components (everything except Sprite/Animator) ====
-        if constexpr (!std::is_same_v<T, Sprite::SpriteComponent>)
-        {
-            if (ImGui::Button(label, ImVec2(140, 0)) && canAdd)
-            {
-                registry.Add_Component<T>(entity, T{});
-                std::cout << "[ImGui] Added component " << label
-                    << " to Entity " << entity << std::endl;
-            }
-        }
-        // ==== Sprite special case — open texture popup only ====
-        else
-        {
-            if (ImGui::Button(label, ImVec2(140, 0)) && canAdd)
-            {
-                ImGui::OpenPopup("Add Sprite Texture");
-            }
-        }
-
-        if (!canAdd)
-        {
-            ImGui::EndDisabled();
-            ImGui::SameLine();
-            ImGui::TextDisabled("(requires dependency)");
-        }
-    }
-
-
-
-
-
-
-
-
-    template<typename T>
-    void CloneComponent(Entity src, Entity dst, Registry& registry)
-    {
-        if (registry.Has_Component<T>(src))
-        {
-            const T& comp = registry.Get_Component<T>(src);
-            registry.Add_Component<T>(dst, comp);
-        }
-    }
-
-    // Specialize for xform so we can offset the new position
-    template<>
-    void CloneComponent<TransformComponent>(Entity src, Entity dst, Registry& registry)
-    {
-        if (registry.Has_Component<TransformComponent>(src))
-        {
-            const auto& t = registry.Get_Component<TransformComponent>(src);
-            TransformComponent newT = t;
-            newT.pos.x += 50.f; // so it not exactly on top
-            registry.Add_Component<TransformComponent>(dst, newT);
-        }
-    }
-
-
-
-    template<typename T>
-    void DrawRemoveComponentButton(
-        Entity entity,
-        Registry& registry,
-        const char* label,
-        const std::unordered_map<ComponentTypeID, std::vector<ComponentTypeID>>& dependencies)
-    {
-        ComponentTypeID typeID =
-            std::is_same_v<T, TransformComponent> ? CT_Transform :
-            std::is_same_v<T, Sprite::SpriteComponent> ? CT_Sprite :
-            std::is_same_v<T, Animator::AnimatorComponent> ? CT_Animator :
-            std::is_same_v<T, Physics::PhysicsComponent> ? CT_Physics :
-            std::is_same_v<T, ShapeComponent> ? CT_Shape :
-            // std::is_same_v<T, AudioComponent> ? CT_Audio :
-            std::is_same_v<T, InputComponent> ? CT_Input :
-            std::is_same_v<T, TagComponent> ? CT_Tag :
-            CT_None;
-
-        bool blocked = false;
-        std::string reason;
-
-        // check if any dependent component requires this one
-        for (auto const& [dependent, prereqs] : dependencies)
-        {
-            for (auto const& prereq : prereqs)
-            {
-                if (prereq == typeID && HasComponentByType(entity, registry, dependent))
-                {
-                    blocked = true;
-                    reason = "Cannot remove " + std::string(label) + "\n(required by another component)";
-                    break;
-                }
-            }
-            if (blocked) break;
-        }
-
-        // draw the button (disabled if blocked)
-        if (blocked)
-        {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
-            ImGui::Button(("Remove " + std::string(label)).c_str());
-            ImGui::PopStyleColor();
-            ImGui::SameLine();
-            ImGui::TextDisabled("%s", reason.c_str());
-        }
-        else
-        {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-            if (ImGui::Button(("Remove " + std::string(label)).c_str()))
-            {
-                registry.Remove_Component<T>(entity);
-                std::cout << "[ImGui] Removed component: " << label
-                    << " from Entity " << entity << "\n";
-            }
-            ImGui::PopStyleColor();
-        }
-    }
-
-
-}
-
-static void SpriteTexturePopup(Entity entity, Registry& registry)
-{
-    if (ImGui::BeginPopupModal("Add Sprite Texture", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        static char texPathBuf[256] = "";
-        ImGui::Text("Enter texture filename (inside Assets/):");
-        ImGui::InputText("##texpath", texPathBuf, IM_ARRAYSIZE(texPathBuf));
-        ImGui::Separator();
-
-        if (ImGui::Button("Confirm"))
-        {
-
-            std::string fullPath = "../Assets/" + std::string(texPathBuf);
-            if (!std::filesystem::exists(fullPath)) {
-                //errorMsg = "File does not exist: " + std::string(texPathBuf);
-                ImGui::TextColored(ImVec4(1, 0, 0, 1), "Failed to load image!");
-            }
-            else {
-                Image img = CreateImage(fullPath);
-
-                //Image img = CreateImage(fullPath);
-                if (img.IsValid())
-                {
-                    // only now create the SpriteComponent
-                    Sprite::SpriteComponent newSprite;
-                    newSprite.Set_Image(img);
-                    newSprite.Set_Size({ (float)img.widthPixels, (float)img.heightPixels });
-                    registry.Add_Component<Sprite::SpriteComponent>(entity, newSprite);
-
-                    std::cout << "[ImGui] Added SpriteComponent with texture: " << texPathBuf << "\n";
-                    ImGui::CloseCurrentPopup();
-                    texPathBuf[0] = '\0'; // clear buffer
-                }
-                else
-                {
-                    ImGui::TextColored(ImVec4(1, 0, 0, 1), "Failed to load image!");
-                }
-            }
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel"))
-        {
-            ImGui::CloseCurrentPopup(); // just close, nothing was added
-        }
-
-        ImGui::EndPopup();
-    }
-
-}
-
-
 
 void ImGuiSystem::ShowInspectorWindow() {
 
@@ -627,217 +458,138 @@ void ImGuiSystem::ShowInspectorWindow() {
     ImGui::Text("Entity %d", selectedEntity);
     ImGui::Separator();
 
-    // --- Transform ---
-    if (m_registry.Has_Component<TransformComponent>(selectedEntity)) {
-        auto& t = m_registry.Get_Component<TransformComponent>(selectedEntity);
-        // collapsible tree node for Transform data
-        if (ImGui::TreeNode("Transform")) {
-            ImGui::SliderFloat("X", &t.pos.x, 0.f, 1920.f);
-            ImGui::SliderFloat("Y", &t.pos.y, 0.f, 1080.f);
-            ImGui::SliderAngle("Rotation", &t.rot, -360.0f, 360.0f);
+    std::vector<Editor::ComponentData> compDataVec = m_registry.Get_EntityData(selectedEntity);
+    for (auto& componentData : compDataVec)
+    {
+        if (ImGui::TreeNode(componentData.GetComponentName().c_str()))
+        {
+            for (auto& [name, widgetVariant] : componentData.GetDataMap())
+            {
+                // create a unique ID scope using the field name
+                ImGui::PushID(name.c_str());
 
-            ImGui::Separator();
-            DrawRemoveComponentButton<TransformComponent>(
-                selectedEntity, m_registry, "Transform", dependencies);
+                std::visit([&](auto& widget) {
+                    MakeWidget(widget, name);
+                    }, widgetVariant);
+
+                ImGui::PopID();
+            }
 
             ImGui::TreePop();
         }
     }
 
-    // --- Sprite ---
-    if (m_registry.Has_Component<Sprite::SpriteComponent>(selectedEntity)) {
-        auto& s = m_registry.Get_Component<Sprite::SpriteComponent>(selectedEntity);
-        if (ImGui::TreeNode("Sprite")) {
-            std::string texPath = s.Get_TexturePath();
-            ImGui::Text("Texture: %s", texPath.c_str());
 
-            //scale/dimensions
-            Vec2 scale = s.Get_Scale();
-            if (ImGui::InputFloat2("Scale", &scale.x)) {
-                s.Set_Size(scale);
-            }
+    //ImGui::Separator();
+    //ImGui::Text("Component Management");
+    //ImGui::Separator();
 
-            float rot = s.Get_Rotation();
-            if (ImGui::SliderAngle("Rotation", &rot, -360.0f, 360.0f)) {
-                s.Set_Rotation(rot);
-            }
+    //Registry& reg = Registry::Get();
 
-            ImGui::Separator();
-            DrawRemoveComponentButton<Sprite::SpriteComponent>(
-                selectedEntity, m_registry, "Sprite", dependencies);
+    //// current components of selected entity
+    ////std::vector<Editor::ComponentData> compDataVec = reg.Get_EntityData(selectedEntity);
+    //std::unordered_set<std::string> currentNames;
+    //for (auto& c : compDataVec)
+    //    currentNames.insert(c.GetComponentName());
 
-            ImGui::TreePop();
-        }
-    }
-    // --- Animator ---
-    if (m_registry.Has_Component<Animator::AnimatorComponent>(selectedEntity)) {
-        auto& anim = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
-        if (ImGui::TreeNode("Animator")) {
-            static int editRows = 0, editCols = 0;
-            static Animator::ActiveFrames editFr;
-            static float editDuration = 0.f;
+    //// auto-discover all registered components dynamically
+    //std::unordered_set<std::string> allComponentNames;
 
-            // load values from anim only once when entity changes
-            static Entity lastEntity = INVALID_ENTITY;
-            if (selectedEntity != lastEntity) {
-                editRows = anim.GetTotalRows();
-                editCols = anim.GetTotalCols();
-                editFr = anim.GetFrames();
-                editDuration = anim.GetAnimDuration();
-                lastEntity = selectedEntity;
-            }
+    //// scan every entity for component types (covers all registered managers)
+    //for (auto& [e, _] : reg.Get_EntityNameMap())
+    //{
+    //    if (!EntityManager::get().isAlive(e))
+    //        continue;
 
-            ImGui::InputInt("Total Rows", &editRows);
-            ImGui::InputInt("Total Cols", &editCols);
-            ImGui::InputInt("Row (animation row)", &editFr.row);
-            ImGui::InputInt("Start Column", &editFr.col_start);
-            ImGui::InputInt("End Column", &editFr.col_end);
-            ImGui::InputFloat("Duration (seconds)", &editDuration);
-
-            if (ImGui::Button("Apply Changes")) {
-                if (m_registry.Has_Component<Sprite::SpriteComponent>(selectedEntity)) {
-                    auto& sprite = m_registry.Get_Component<Sprite::SpriteComponent>(selectedEntity);
-                    const Image& img = sprite.Get_Image();
-
-                    if (editRows > 0 && editCols > 0 && editFr.col_end >= editFr.col_start) {
-                        Animator::AnimatorComponent newAnim(editRows, editCols,
-                            img.widthPixels, img.heightPixels,
-                            editFr, editDuration);
-                        anim = newAnim;
-                        sprite.Set_Animated(true);
-                        std::cout << "[ImGui] Updated animator for Entity "
-                            << selectedEntity << " (" << editRows << "x" << editCols
-                            << ", row=" << editFr.row << ", cols=" << editFr.col_start
-                            << "-" << editFr.col_end << ", dur=" << editDuration << "s)\n";
-                    }
-                }
-            }
-            ImGui::Separator();
-            DrawRemoveComponentButton<Animator::AnimatorComponent>(
-                selectedEntity, m_registry, "Animator", dependencies);
-            ImGui::TreePop();
-        }
-    }
-    if (m_registry.Has_Component<ShapeComponent>(selectedEntity)) {
-        auto& s = m_registry.Get_Component<ShapeComponent>(selectedEntity);
-        if (ImGui::TreeNode("Shape")) {
-            const char* shapeTypes[] = { "Rectangle", "Circle" };
-            int currentShape = static_cast<int>(s.shape);
-            if (ImGui::Combo("Shape Type", &currentShape, shapeTypes, 2)) {
-                s.shape = static_cast<ShapeType>(currentShape);
-            }
-            ImGui::DragFloat2("Dimensions", &s.dimensions.x, 1.0f, 10.0f, 1000.0f);
-            ImGui::ColorEdit3("Color", &s.color.x);
-
-            ImGui::Separator();
-            DrawRemoveComponentButton<ShapeComponent>(
-                selectedEntity, m_registry, "Shape", dependencies);
-            ImGui::TreePop();
-        }
-    }
-
-    // --- Physics ---
-    if (m_registry.Has_Component<Physics::PhysicsComponent>(selectedEntity)) {
-        auto& p = m_registry.Get_Component<Physics::PhysicsComponent>(selectedEntity);
-        if (ImGui::TreeNode("Physics")) {
-            auto& aabb = p.Get_AABB();
-            auto& circ = p.Get_Circle();
-            ImGui::Checkbox("Collision Active", const_cast<bool*>(&p.CollisionActive()));
-            Vec2 aabbSize = aabb.dim;
-            if (ImGui::DragFloat2("AABB Size", &aabbSize.x, 1.0f, 10.0f, 1000.0f)) {
-                auto& trans = m_registry.Get_Component<TransformComponent>(selectedEntity);
-                AABB newAABB = Create_AABB(trans.pos, aabbSize);
-                p.Set_AABB(newAABB);
-            }
-            float circRad = circ.rad;
-            if (ImGui::DragFloat("Circle Radius", &circRad, 1.0f, 10.0f, 500.0f)) {
-                Circle newCircle = circ;
-                newCircle.rad = circRad;
-                p.Set_Circle(newCircle);
-            }
-            ImGui::Text("AABB: min: (%.1f, %.1f), max: (%.1f, %.1f)", aabb.min.x, aabb.min.y, aabb.max.x, aabb.max.y);
-            ImGui::Text("Circle: center(%.1f, %.1f), r=%.1f", circ.pos.x, circ.pos.y, circ.rad);
-
-            ImGui::Separator();
-            DrawRemoveComponentButton<Physics::PhysicsComponent>(
-                selectedEntity, m_registry, "Physics", dependencies);
-            ImGui::TreePop();
-        }
-    }
-
-    //// --- Health ????????????????/ ---
-    //if (Has_Component(selectedEntity, CT_Health)) {
-    //    auto& h = Get_HealthComponent(selectedEntity);
-    //    if (ImGui::TreeNode("Health")) {
-    //        ImGui::SliderFloat("HP", &h.currhp, 0.f, h.maxhp);
-    //        ImGui::Text("Max HP: %.1f", h.maxhp);
-    //        ImGui::TreePop();
-    //    }
+    //    auto data = reg.Get_EntityData(e);
+    //    for (auto& c : data)
+    //        allComponentNames.insert(c.GetComponentName());
     //}
 
-    // --- Tag ---
-    if (m_registry.Has_Component<TagComponent>(selectedEntity)) {
-        auto& tg = m_registry.Get_Component<TagComponent>(selectedEntity);
-        if (ImGui::TreeNode("Tag")) {
-            int tagVal = (int)tg.tag;
-            const char* items[] = { "Player", "Enemy", "Projectile" };
-            if (ImGui::Combo("Type", &tagVal, items, IM_ARRAYSIZE(items))) {
-                tg.tag = (C_TagID)tagVal;
-            }
-            ImGui::Separator();
-            DrawRemoveComponentButton<TagComponent>(
-                selectedEntity, m_registry, "Tag", dependencies);
-            ImGui::TreePop();
-        }
-    }
-    ImGui::Separator();
-    ImGui::Text("Add Component:");
-    auto& r = m_registry;
+    // build a list of components that this entity doesn't yet have
+    //std::vector<std::string> addable;
+    //for (auto& name : allComponentNames)
+    //{
+    //    if (!currentNames.contains(name))
+    //        addable.push_back(name);
+    //}
 
-    DrawAddComponentButton<TransformComponent>("Transform", selectedEntity, r);
-    DrawAddComponentButton<Sprite::SpriteComponent>("Sprite", selectedEntity, r, r.Has_Component<TransformComponent>(selectedEntity)); // needs Transform
-    DrawAddComponentButton<Animator::AnimatorComponent>("Animator", selectedEntity, r,r.Has_Component<Sprite::SpriteComponent>(selectedEntity)); // needs Sprite
-    DrawAddComponentButton<Physics::PhysicsComponent>("Physics", selectedEntity, r, r.Has_Component<TransformComponent>(selectedEntity)); // needs Transform
-    DrawAddComponentButton<ShapeComponent>("Shape", selectedEntity, r, r.Has_Component<TransformComponent>(selectedEntity)); // needs Transform
-    // DrawAddComponentButton<AudioComponent>("Audio", selectedEntity, r);
-    DrawAddComponentButton<InputComponent>("Input", selectedEntity, r);
-    DrawAddComponentButton<TagComponent>("Tag", selectedEntity, r);
-    SpriteTexturePopup(selectedEntity, m_registry);
+    //// show "Add Component" dropdown
+    //if (!addable.empty())
+    //{
+    //    static int addIndex = 0;
+    //    ImGui::Combo("Add Component", &addIndex,
+    //        [](void* data, int idx, const char** out_text)
+    //        {
+    //            const auto& v = *reinterpret_cast<const std::vector<std::string>*>(data);
+    //            *out_text = v[idx].c_str();
+    //            return true;
+    //        },
+    //        (void*)&addable, (int)addable.size());
 
-    ImGui::Separator();
-    if (ImGui::Button("Clone")) {
-        Entity clone = m_registry.Create_Entity();
+    //    if (ImGui::Button("Add Selected Component"))
+    //    {
+    //        Registry& reg = Registry::Get();
+    //        std::string compToAdd = addable[addIndex];
 
-        CloneComponent<TransformComponent>(selectedEntity, clone, m_registry);
-        CloneComponent<Physics::PhysicsComponent>(selectedEntity, clone, m_registry);
-        CloneComponent<ShapeComponent>(selectedEntity, clone, m_registry);
-        CloneComponent<Sprite::SpriteComponent>(selectedEntity, clone, m_registry);
-        CloneComponent<Animator::AnimatorComponent>(selectedEntity, clone, m_registry);
-        CloneComponent<TagComponent>(selectedEntity, clone, m_registry);
-        CloneComponent<InputComponent>(selectedEntity, clone, m_registry);
-        auto& nameMap = m_registry.Get_EntityNameMap();
-        std::string baseName = nameMap.contains(selectedEntity) ? nameMap[selectedEntity] : ("Entity " + std::to_string(selectedEntity));
-        nameMap[clone] = baseName + " (Clone)";
+    //        // Step 1: Save the selected entity
+    //        SavedEntity saved = reg.Save_Entity(selectedEntity);
 
-        selectedEntity = clone;  // focus new clone
-        //// Copy Health
-        //if (Has_Component(selectedEntity, CT_Health)) {
-        //    auto& h = Get_HealthComponent(selectedEntity);
-        //    Add_Component(clone, h);
-        //}
+    //        // Step 2: Create a temporary entity
+    //        Entity temp = reg.Create_Entity();
+    //        reg.Set_EntityName(temp, "TempEntityForAdd");
 
-        //selectedEntity = clone;  // select new clone
-    }
+    //        // Step 3: Try to add the component using serialization system
+    //        std::string defaultData = "{}";
+    //        try
+    //        {
+    //            // Build a SavedEntity with only this new component
+    //            SavedEntity tempSave;
+    //            tempSave.name = "TempEntityForAdd";
+    //            tempSave.componentData[compToAdd] = "{}";  // empty data is OK if DeSerialize() is safe
 
+    //            // Load to get proper default internal state
+    //            Entity temp2 = reg.Load_Entity(tempSave);
 
+    //            // Serialize that component back out to get valid default JSON
+    //            defaultData = reg.Save_Entity(temp2).componentData[compToAdd];
 
-    ImGui::SameLine();
-    if (ImGui::Button("Delete")) {
-            m_registry.Remove_Entity(selectedEntity);
-            selectedEntity = INVALID_ENTITY;
-     
-    }
+    //            // cleanup
+    //            reg.Remove_Entity(temp2);
+    //        }
+    //        catch (...)
+    //        {
+    //            std::cout << "[AddComponent Warning] Default data generation failed for "
+    //                << compToAdd << ", using empty {}\n";
+    //        }
 
+    //        // Step 4: Merge the new component into the entity
+    //        nlohmann::json j;
+    //        j["name"] = saved.name;
+    //        for (auto& [key, val] : saved.componentData)
+    //            j["componentData"][key] = val;
+
+    //        j["componentData"][compToAdd] = defaultData;
+
+    //        // Step 5: Rebuild SavedEntity manually (no private Registry calls)
+    //        SavedEntity modified;
+    //        modified.name = j["name"];
+    //        for (auto& [key, val] : j["componentData"].items())
+    //            modified.componentData[key] = val.dump();
+
+    //        // Step 6: Replace the entity safely
+    //        reg.Remove_Entity(selectedEntity);
+    //        selectedEntity = reg.Load_Entity(modified);
+
+    //        std::cout << "[ImGui] Added component: " << compToAdd
+    //            << " to entity " << selectedEntity << "\n";
+    //    }
+
+    //}
+    //else
+    //{
+    //    ImGui::TextDisabled("(All registered components already added)");
+    //}
 
 }
 void ImGuiSystem::ShowAssetPreviewWindow()
