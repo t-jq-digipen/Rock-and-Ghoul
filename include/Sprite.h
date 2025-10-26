@@ -1,7 +1,7 @@
 ﻿/* ========================================================
  * @file		Sprite.h
  * @author		Tan Jun Quan | t.junquan@digipen.edu
- * @date		29 SEP 2025
+ * @date		26 OCT 2025
  *
  * @brief	Sprite component for ECS
  *
@@ -138,6 +138,8 @@ namespace Sprite {
 		std::string Serialize() const;
 
 		static SpriteComponent DeSerialize(const std::string& data);
+
+		Editor::ComponentData EditorData();
 	};
 
 	};

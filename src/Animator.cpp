@@ -1,7 +1,7 @@
 /* ========================================================
  * @file	Animator.cpp
  * @author	Tan Jun Quan | t.junquan@digipen.edu
- * @date	01 OCT 2025
+ * @date	26 OCT 2025
  *
  * @brief	Animator component for ECS
  *
@@ -233,5 +233,15 @@ namespace Animator {
 		}
 
 		return temp;
+	}
+
+	Editor::ComponentData AnimatorComponent::EditorData() {
+		Editor::ComponentData ret("Animator");
+
+		ret.Add_Data("Total Rows", Editor::Widget_Int(&m_total_rows));
+		ret.Add_Data("Total Cols", Editor::Widget_Int(&m_total_cols));
+
+
+		return ret;
 	}
 }

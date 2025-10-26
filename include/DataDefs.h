@@ -2,7 +2,8 @@
  * @file        DataDefs.h
  * @author      Yasmin Tazi         | yasmin.t@digipen.edu
  * @co-author   Tan Ying Clarissa   | t.yingclarissa@digipen.edu
- * @date        26 SEP 2025
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @date        26 OCT 2025
  *
  * @brief   Data structures for game serialization
  *
@@ -11,6 +12,11 @@
  * These structures bridge the runtime ECS and persistent
  * storage formats.
  *
+ * Declares Editor data to extract editable values from components to
+ * be utilized in the editor.
+ * For each component, developer MUST provide an interface function to
+ * acquire this data in order to use the editor.
+ * 
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
@@ -18,7 +24,8 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include "Component.h"
+#include <map>
+#include <variant>
 
  /**
   * @struct SavedEntity
@@ -82,3 +89,95 @@ struct GameSettings {
      */
     GameSettings() : volume(1.0f), resolutionWidth(1920), resolutionHeight(1080), fullscreen(false) {}
 };
+
+namespace Editor {
+    // Determines the type of editing widget
+    enum WidgetType {
+        WIDGET_CHECKMARK,
+        WIDGET_DROPDOWN,
+        WIDGET_INT,
+        WIDGET_FLOAT,
+        WIDGET_STRING
+    };
+
+    // Widget data variants based on widget type
+#pragma region WidgetData
+    struct Widget_Checkmark {
+        bool* ref = nullptr;
+        bool check;
+    };
+
+    struct Widget_String {
+        std::string* ref = nullptr;
+        std::string string;
+    };
+
+    struct Widget_Dropdown {
+        unsigned int* ref = nullptr;
+        std::vector<std::string> options;
+        std::unordered_map<std::string, unsigned int> enumMap;
+
+        // NEED TO MAKE DEBUG CASES IF FAIL
+        void Add_Option(std::string const& name, unsigned int val) {
+            options.push_back(name);
+            enumMap[name] = val;
+        }
+    };
+
+    struct Widget_Int {
+        int* ref = nullptr;
+        bool slider = false;
+        int min = 0;
+        int max = 0;
+
+        Widget_Int(int* val) : ref{ val } {}
+    };
+
+    struct Widget_Float {
+        float* ref = nullptr;
+        bool slider = false;
+        float min = 0.f;
+        float max = 0.f;
+    };
+
+    using WidgetData = std::variant<Widget_Checkmark, Widget_String, Widget_Dropdown, Widget_Int, Widget_Float>;
+
+#pragma endregion WidgetData
+
+
+
+
+    // Keyed with VALUE NAME
+    using DataName = std::string;
+
+    // Keyed with VALUE NAME
+    // Data holds 
+    class ComponentData {
+    private:
+        std::string ComponentName;
+        std::map<DataName, WidgetData> ComponentInfo;
+    public:
+        ComponentData(const std::string& name) : ComponentName{ name }, ComponentInfo{} {}
+
+        void Add_Data(const DataName& name, const WidgetData& dataf) {
+            ComponentInfo[name] = dataf;
+        }
+
+        void Clear_Data() {
+            for (auto& [name, data] : ComponentInfo) {
+                std::visit([](auto& widget) {
+                    // For any widget type that has a `ref` member, set it to nullptr
+                    if constexpr (requires { widget.ref; }) {
+                        widget.ref = nullptr;
+                    }
+                    }, data);
+            }
+        }
+
+        std::map<DataName, WidgetData>& GetDataMap() { return ComponentInfo; }
+
+        const std::string& GetComponentName() const { return ComponentName; }
+
+    };
+
+}

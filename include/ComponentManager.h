@@ -1,7 +1,7 @@
 /* ========================================================
  * @file		ComponentManager.h
  * @author		Tan Jun Quan | t.junquan@digipen.edu
- * @date		27 SEP 2025
+ * @date		26 OCT 2025
  *
  * @brief	Component Manager template for ECS
  * 
@@ -25,7 +25,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <string>
-#include "ImguiSystem.h"
+#include "DataDefs.h"
 
 // type erased component manager for registry storage
 class IComponentManager {

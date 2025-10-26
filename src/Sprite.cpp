@@ -1,7 +1,7 @@
 /* ========================================================
  * @file	Sprite.cpp
  * @author	Tan Jun Quan | t.junquan@digipen.edu
- * @date	29 SEP 2025
+ * @date	26 OCT 2025
  *
  * @brief	Sprite component for ECS
  *
@@ -106,5 +106,23 @@ namespace Sprite {
 		json j = json::parse(data);
 
 		return SpriteComponent(j["texturePath"], { j["scaleX"], j["scaleY"] }, j["animated"]);
+	}
+
+	Editor::ComponentData SpriteComponent::EditorData() {
+		Editor::ComponentData ret("Sprite");
+
+		Editor::Widget_Dropdown dropdown{};
+		dropdown.ref = &m_image.textureID;
+		dropdown.enumMap = Render::GetInstance().Get_TextureCache();
+		ret.Add_Data("TextureID", Editor::Widget_String{});
+
+		ret.Add_Data("ScaleX", Editor::Widget_Float(&m_scale.x));
+		ret.Add_Data("ScaleY", Editor::Widget_Float(&m_scale.y));
+
+		ret.Add_Data("Rotation", Editor::Widget_Float{ &m_rot, true, -360.f, 360.f });
+
+		ret.Add_Data("Animated", Editor::Widget_Checkmark{ &m_anim });
+
+		return ret;
 	}
 }
