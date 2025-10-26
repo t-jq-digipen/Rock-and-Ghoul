@@ -129,7 +129,7 @@ public:
 
 	void LoadComponent(Entity eID, const std::string& data) override
 	{
-		Component newComp = Component::DeSerialize(data);
+		Component newComp = Component::DeSerialize(eID, data);
 		addComponent(eID, newComp);
 	}
 
