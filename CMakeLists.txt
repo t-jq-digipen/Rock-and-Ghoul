@@ -110,22 +110,20 @@ endif()
 # ======================= Copy Mono Runtime DLL =========================
 
 
-if(WIN32)
-    set(MONO_DLL_PATH "${CMAKE_SOURCE_DIR}/deps/mono/bin/mono-2.0-sgen.dll")
-
-    if(EXISTS "${MONO_DLL_PATH}")
-       add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    	COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-        "${MONO_DLL_PATH}"
-        "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>"
-	)
-
-        message(STATUS "Will copy mono-2.0-sgen.dll from: ${MONO_DLL_PATH}")
+if (WIN32)
+    set(MONO_DLL_PATH "${MONO_ROOT}/bin/mono-2.0-sgen.dll")
+    if (EXISTS "${MONO_DLL_PATH}")
+        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E echo "Copying Mono runtime DLL..."
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "${MONO_DLL_PATH}"
+                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>"
+        )
+        message(STATUS "Will copy mono-2.0-sgen.dll to build output.")
     else()
-        message(WARNING "Mono DLL not found at: ${MONO_DLL_PATH}")
+        message(WARNING "Mono runtime DLL not found at ${MONO_DLL_PATH}. Skipping copy.")
     endif()
 endif()
-
 # ======================= Copy GameScripts DLL =========================
 set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/Debug/GameScripts.dll")
 set(GAMESCRIPTS_TARGET_DIR "${CMAKE_SOURCE_DIR}/Assets/Scripts")
