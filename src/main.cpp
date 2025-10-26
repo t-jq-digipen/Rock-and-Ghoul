@@ -40,6 +40,8 @@
 #include "FilePath.h"
 
 #include "MonoManager.h"
+#include "MonoScriptComponent.h"
+#include "MonoSystem.h"
 #include <crtdbg.h>
 
 void EnableMemoryLeakChecking(int breakAlloc = -1)
@@ -98,7 +100,7 @@ int main() {
             engine.AddSystem(new PlayerSystem());
             engine.AddSystem(new PhysicsSystem());
             engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
-
+           
             // initialize all systems (FMOD, OpenGL, etc.)
             engine.Initialize();
             CrashHandler::Log("Engine initialized");
@@ -106,9 +108,13 @@ int main() {
 
             MonoManager& mono = MonoManager::Get();
             mono.Initialize("../Assets/Scripts/GameScripts.dll");
-            float dt = 0.016f;
-            mono.InvokeMethod("Rotator", "Update", dt);
-            mono.InvokeMethod("Mover", "Update", dt);
+
+            // Register the MonoScript component with the ECS registry
+            Registry::Get().Register_Component<MonoScriptComponent>();
+
+            // Add the MonoSystem to the engine so it runs every frame
+            engine.AddSystem(new MonoSystem());
+
             engine.Run();
             CrashHandler::Log("Engine run returned");
             std::cout << "GETS PAST ENGINE RUN\n";

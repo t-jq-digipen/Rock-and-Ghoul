@@ -79,3 +79,8 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);
  *
  */
 void GenerateInitialPrefabs();
+
+
+Entity Create_RotatingObject(float x, float y);
+Entity Create_MovingObject(float x, float y);
+

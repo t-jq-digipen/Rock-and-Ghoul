@@ -106,21 +106,22 @@ void Level1::Init()
 		rock = Create_Player(200.f, 500.f);
 		square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
 		roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
+		// Top wall
+		Create_Wall(LEVEL_WIDTH/2, LEVEL_HEIGHT - WALL_THICKNESS/2, LEVEL_WIDTH, WALL_THICKNESS);
 
+		// Bottom wall
+		Create_Wall(LEVEL_WIDTH/2, WALL_THICKNESS/2,LEVEL_WIDTH, WALL_THICKNESS);
+
+		// Left wall
+		Create_Wall(WALL_THICKNESS/2, LEVEL_HEIGHT/2,WALL_THICKNESS, LEVEL_HEIGHT);
+
+		// Right wall
+		Create_Wall(LEVEL_WIDTH - WALL_THICKNESS/2, LEVEL_HEIGHT/2,WALL_THICKNESS, LEVEL_HEIGHT);
 	}
 	});	
-	// Top wall
-	Create_Wall(LEVEL_WIDTH/2, LEVEL_HEIGHT - WALL_THICKNESS/2, LEVEL_WIDTH, WALL_THICKNESS);
 
-	// Bottom wall
-	Create_Wall(LEVEL_WIDTH/2, WALL_THICKNESS/2,LEVEL_WIDTH, WALL_THICKNESS);
-
-	// Left wall
-	Create_Wall(WALL_THICKNESS/2, LEVEL_HEIGHT/2,WALL_THICKNESS, LEVEL_HEIGHT);
-
-	// Right wall
-	Create_Wall(LEVEL_WIDTH - WALL_THICKNESS/2, LEVEL_HEIGHT/2,WALL_THICKNESS, LEVEL_HEIGHT);
-
+	Create_RotatingObject(500.f, 400.f);
+	Create_MovingObject(800.f, 400.f);
 }
 
 // Updates Level 1

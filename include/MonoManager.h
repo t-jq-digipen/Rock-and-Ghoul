@@ -17,7 +17,8 @@ public:
     void Initialize(const std::string& assemblyPath);
     void InvokeMethod(const std::string& className, const std::string& methodName, float dt);
     void Shutdown();
-
+    MonoDomain* GetDomain() { return domain; }
+    MonoImage* GetImage() { return image; }
 private:
     MonoManager() = default;
     ~MonoManager() = default;
