@@ -4,12 +4,6 @@ project(team_aviddivas)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-# Only include ImportDependencies if the file exists
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/cmake/ImportDependencies.cmake")
-    include(ImportDependencies)
-    importDependencies()
-endif()
-
 add_definitions(-DGLEW_STATIC)
 add_definitions(-DUSE_CSD3151_AUTOMATION=0)
 
@@ -47,6 +41,11 @@ add_executable(${CMAKE_PROJECT_NAME}
     ${SOURCES}
     ${HEADERS}
 )
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/cmake/ImportDependencies.cmake")
+    include(ImportDependencies)
+    importDependencies()
+endif()
 
 # ======================= FMOD Setup =========================
 # Use the correct FMOD path structure
@@ -126,6 +125,21 @@ if(WIN32)
     endif()
 endif()
 
+# ======================= Copy GameScripts DLL =========================
+set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/Debug/GameScripts.dll")
+set(GAMESCRIPTS_TARGET_DIR "${CMAKE_SOURCE_DIR}/Assets/Scripts")
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll to Assets/Scripts..."
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${GAMESCRIPTS_DLL_PATH}"
+        "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
+)
+
+
+
+
 # ======================= Set C++ Standard ===========================
 set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 
@@ -172,7 +186,7 @@ source_group("BaseEngine\\Scripting" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoSystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoScriptComponent.h
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoBindings.cpp
 )
 
 
