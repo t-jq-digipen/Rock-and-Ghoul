@@ -171,7 +171,7 @@ public:
 			for (const std::string& dep : dependencies)
 			{
 				std::type_index depTypeIdx = Get_ComponentTypeIndex(dep);
-				if (componentManagers.find(depTypeIdx)!= componentManagers.end())
+				if (componentManagers.find(depTypeIdx) == componentManagers.end())
 				{
 					throw std::runtime_error("DEPENDENCY NOT REGISTERED\n");
 				}
