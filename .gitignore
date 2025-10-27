@@ -27,7 +27,7 @@ Makefile
 *.VC.db
 *.VC.opendb
 /.vs/
-
+.\vs
 # ===================== Xcode (macOS) =====================
 *.xcworkspace/
 *.xcuserstate

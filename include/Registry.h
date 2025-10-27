@@ -109,18 +109,18 @@ private:
 public:
 	// REGISTRY
 	// ================================================================================
+#pragma region REGISTRY
 	// Getter for registry instance
 	static Registry& Get() {
 		static Registry instance;
 		return instance;
 	}
+#pragma endregion REGISTRY
 	// ================================================================================
 
 	// COMPONENTS
 	// ================================================================================
-
-
-
+#pragma region COMPONENTS
 	/**
 	 * @brief Registers a Component Type to the registry.
 	 * @param eID Entity identifier.
@@ -131,11 +131,13 @@ public:
 		// Assign type index
 		std::type_index typeID(typeid(Component));
 		// Check if component is already registered
-		if ((componentManagers.find(typeID)) != componentManagers.end()) 
-		{ throw std::runtime_error("COMPONENT ALREADY REGISTERED\n"); }
+		if ((componentManagers.find(typeID)) != componentManagers.end())
+		{
+			throw std::runtime_error("COMPONENT ALREADY REGISTERED\n");
+		}
 		else // Component not registered yet, safe to register :)
-		{ 
-			componentManagers[typeID] = std::make_unique<ComponentManager<Component>>(); 
+		{
+			componentManagers[typeID] = std::make_unique<ComponentManager<Component>>();
 			componentTypeNames.emplace(name, typeID);
 		}
 	}
@@ -146,10 +148,10 @@ public:
 	 * @param component Component instance to add.
 	 */
 	template<typename Component>
-	void Add_Component(Entity eID, const Component& component) 
-	{ 
+	void Add_Component(Entity eID, const Component& component)
+	{
 		ComponentManager<Component>* manager = Get_Manager<Component>();
-		manager->addComponent(eID, component); 
+		manager->addComponent(eID, component);
 	}
 
 	/**
@@ -202,10 +204,12 @@ public:
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 		manager->LoadComponent(eID, data);
 	}
+#pragma endregion
 	// ================================================================================
 
 	// ENTITY
 	// ================================================================================
+#pragma region ENTITY
 	/**
 	 * @brief Creates a new entity.
 	 * @return The unique ID of the created entity.
@@ -220,20 +224,43 @@ public:
 	{
 		// Remove every component!!
 		for (auto& [type, manager] : componentManagers)
-		{ manager->removeComponent(eID); }
+		{
+			manager->removeComponent(eID);
+		}
 
 		entityManager.destroyEntity(eID);
 	}
 
 	std::unordered_map<Entity, std::string>& Get_EntityNameMap()
-	{ return entityManager.GetEntityNameMap(); }
+	{
+		return entityManager.GetEntityNameMap();
+	}
 
 	void Set_EntityName(Entity eID, const std::string& name)
-	{ entityManager.SetEntityName(eID, name); }
+	{
+		entityManager.SetEntityName(eID, name);
+	}
 
 	std::string Get_EntityName(Entity eID)
-	{ return entityManager.GetEntityName(eID); }
+	{
+		return entityManager.GetEntityName(eID);
+	}
+#pragma endregion
+	// ================================================================================
 
+	// EDITOR
+	// ================================================================================
+#pragma region EDITOR
+	template<typename Component>
+	Editor::ComponentData Get_ComponentEditorData(Entity eID);
+
+	std::vector<Editor::ComponentData> Get_EntityData(Entity eID);
+#pragma endregion
+	// ================================================================================
+
+	// SERIALIZATION
+	// ================================================================================
+#pragma region SERIALIZATION
 	SavedEntity Save_Entity(Entity eID)
 	{
 		SavedEntity saved;
@@ -262,7 +289,11 @@ public:
 
 		return eID;
 	}
+#pragma endregion
 	// ================================================================================
+
+
+
 
 
 };

@@ -389,3 +389,14 @@
 //	}
 //	return "Entity_" + std::to_string(eID);
 //}
+
+std::vector<Editor::ComponentData> Registry::Get_EntityData(Entity eID) {
+	std::vector<Editor::ComponentData> ret;
+	for (auto& [type, manager] : componentManagers)
+	{
+		if (manager->hasComponent(eID))
+		{ ret.push_back(manager->GetComponentEditorData(eID)); }
+	}
+
+	return ret;
+}

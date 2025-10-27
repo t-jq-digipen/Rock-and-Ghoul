@@ -1,7 +1,7 @@
 /* ========================================================
  * @file	Animator.h
  * @author	Tan Jun Quan | t.junquan@digipen.edu
- * @date	01 OCT 2025
+ * @date	26 OCT 2025
  *
  * @brief	Animator component for ECS
  *
@@ -169,8 +169,9 @@ namespace Animator {
 
 		std::string Serialize() const;
 
-		static AnimatorComponent DeSerialize(const std::string& data);
+		static AnimatorComponent DeSerialize(Entity eID, const std::string& data);
 		
+		Editor::ComponentData EditorData();
 	};
 
 }

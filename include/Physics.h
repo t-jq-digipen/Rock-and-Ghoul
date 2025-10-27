@@ -2,7 +2,7 @@
  * @file		Physics.h
  * @author		Tan Jun Quan | t.junquan@digipen.edu
  * @co-author	Yasmin Tazi	 | yasmin.t@digipen.edu
- * @date		24 OCT 2025
+ * @date		26 OCT 2025
  *
  * @brief	Physics component for ECS
  *
@@ -263,7 +263,9 @@ namespace Physics {
 
 		std::string Serialize() const;
 
-		static PhysicsComponent DeSerialize(const std::string& data);
+		static PhysicsComponent DeSerialize(Entity eID, const std::string& data);
+
+		Editor::ComponentData EditorData();
 	};
 }
 

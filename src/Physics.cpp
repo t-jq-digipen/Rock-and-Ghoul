@@ -2,7 +2,7 @@
  * @file		Physics.cpp
  * @author		Tan Jun Quan | t.junquan@digipen.edu
  * @co-author	Yasmin Tazi	 | yasmin.t@digipen.edu
- * @date		24 OCT 2025
+ * @date		26 OCT 2025
  *
  * @brief	Physics component for ECS
  *
@@ -283,7 +283,8 @@ namespace Physics {
 		return j.dump();
 	}
 
-	PhysicsComponent PhysicsComponent::DeSerialize(const std::string& data) {
+	PhysicsComponent PhysicsComponent::DeSerialize(Entity eID, const std::string& data) {
+		(void)eID;
 		nlohmann::json j = nlohmann::json::parse(data);
 
 		PhysicsComponent phys;
@@ -324,4 +325,16 @@ namespace Physics {
 		return phys;
 	}
 
+	Editor::ComponentData PhysicsComponent::EditorData() {
+		Editor::ComponentData ret("Physics");
+
+		ret.Add_Data("WillCollide", Editor::Widget_Checkmark{ &willCollide });
+
+		ret.Add_Data("AABB width", Editor::Widget_Float{ &aabbhitbox.dim.x, true, 10.f, 1000.f });
+		ret.Add_Data("AABB height", Editor::Widget_Float{ &aabbhitbox.dim.y, true, 10.f, 1000.f });
+
+		ret.Add_Data("Cirle radius", Editor::Widget_Float{ &circlehitbox.rad, true, 10.f, 500.f });
+
+		return ret;
+	}
 }
