@@ -1,105 +1,78 @@
 @echo off
+setlocal enabledelayedexpansion
+title Mono Installer (Debug Mode)
 echo ==========================================================
-echo       Mono Runtime Installer + Auto Detection + Copy
+echo         DEBUG MODE - Mono Installer + Copy
 echo ==========================================================
 echo.
 
-REM === 1. set download info ===
+REM 1. download info
 set MONO_URL=https://download.mono-project.com/archive/6.12.0/windows-installer/mono-6.12.0.206-x64-0.msi
 set MONO_FILE=%TEMP%\mono-installer.msi
-
-REM repo paths
 set REPO_DIR=%~dp0
 set REPO_MONO_DIR=%REPO_DIR%deps\Mono
 
-echo This script will:
-echo  - Download Mono (6.12.0) for Windows
-echo  - Install it silently if needed
-echo  - Auto-detect install path (x64 or x86)
-echo  - Copy into local deps\Mono folder
+echo Repo path: %REPO_DIR%
+echo Target deps\Mono folder: %REPO_MONO_DIR%
 echo.
 pause
 
-REM === 2. download installer ===
-echo Downloading Mono installer...
+echo [STEP 1] Downloading Mono installer...
 powershell -Command "(New-Object Net.WebClient).DownloadFile('%MONO_URL%', '%MONO_FILE%')"
-
 if not exist "%MONO_FILE%" (
     echo ❌ Failed to download Mono installer.
     pause
     exit /b 1
 )
+echo ✅ Download complete: %MONO_FILE%
+pause
 
-REM === 3. install silently ===
-echo Installing Mono silently (please wait)...
+echo [STEP 2] Installing Mono silently...
 msiexec /i "%MONO_FILE%" /quiet /norestart
-
-REM wait a bit for installation to finish
+if errorlevel 1 (
+    echo ⚠️  msiexec returned error code %errorlevel%
+)
 timeout /t 5 >nul
+echo Installation attempt complete.
+pause
 
-REM === 4. auto-detect install location ===
+echo [STEP 3] Searching for Mono installation...
 set MONO_INSTALL_PATH=
-
-REM check typical 64-bit location
-if exist "C:\Program Files\Mono\bin\mono.exe" (
-    set MONO_INSTALL_PATH=C:\Program Files\Mono
-)
-
-REM fallback to 32-bit location
-if exist "C:\Program Files (x86)\Mono\bin\mono.exe" (
-    set MONO_INSTALL_PATH=C:\Program Files (x86)\Mono
-)
-
-REM === 5. handle detection failure ===
-if "%MONO_INSTALL_PATH%"=="" (
-    echo ❌ Could not detect Mono installation automatically.
-    echo Searching manually...
-    for /d %%D in ("C:\Program Files*\Mono") do (
-        if exist "%%D\bin\mono.exe" (
-            set MONO_INSTALL_PATH=%%D
-        )
+for /d %%D in ("C:\Program Files*\Mono") do (
+    if exist "%%D\bin\mono.exe" (
+        set "MONO_INSTALL_PATH=%%D"
     )
 )
-
-REM final check
 if "%MONO_INSTALL_PATH%"=="" (
-    echo ❌ Mono installation not found anywhere under Program Files.
-    echo Please install manually from https://www.mono-project.com/download/stable/#download-win
-    pause
-    exit /b 1
+    echo ❌ Could not find mono.exe under Program Files.
+) else (
+    echo ✅ Found Mono at: !MONO_INSTALL_PATH!
 )
+pause
 
-echo ✅ Mono detected at:
-echo   %MONO_INSTALL_PATH%
-echo.
-
-REM === 6. create deps\Mono folder ===
+echo [STEP 4] Creating deps\Mono folder if missing...
 if not exist "%REPO_DIR%deps" mkdir "%REPO_DIR%deps"
 if not exist "%REPO_MONO_DIR%" mkdir "%REPO_MONO_DIR%"
-echo Ensured deps\Mono folder exists.
+echo Folder ready: %REPO_MONO_DIR%
+pause
 
-REM === 7. copy contents ===
-echo Copying Mono SDK into your local repo...
-xcopy "%MONO_INSTALL_PATH%\*" "%REPO_MONO_DIR%\" /E /I /Y >nul
-
-if %ERRORLEVEL%==0 (
-    echo ✅ Copied Mono successfully to:
-    echo   %REPO_MONO_DIR%
+echo [STEP 5] Copying Mono files...
+if not "%MONO_INSTALL_PATH%"=="" (
+    xcopy "%MONO_INSTALL_PATH%\*" "%REPO_MONO_DIR%\" /E /I /Y
+    echo ✅ Copy complete.
 ) else (
-    echo ⚠️  Copy operation completed with some warnings.
+    echo ⚠️  Skipped copy — install path not found.
 )
+pause
 
-REM === 8. verify runtime DLL ===
+echo [STEP 6] Verifying copy...
 if exist "%REPO_MONO_DIR%\bin\mono-2.0-sgen.dll" (
-    echo ✅ Mono runtime DLL found in deps\Mono\bin\
+    echo ✅ DLL found: deps\Mono\bin\mono-2.0-sgen.dll
 ) else (
-    echo ⚠️  Mono runtime DLL not found after copy.
+    echo ❌ DLL not found.
 )
-
 echo.
 echo ==========================================================
-echo     Installation + Copy completed successfully!
-echo     You can now build your CMake project.
+echo        Debug completed — check output above
 echo ==========================================================
-echo.
 pause
