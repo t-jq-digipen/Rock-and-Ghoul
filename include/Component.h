@@ -111,8 +111,7 @@ struct TransformComponent {
 		return j.dump();
 	}
 
-	static TransformComponent DeSerialize(Entity eID, const std::string& data)  {
-		(void)eID;
+	static TransformComponent DeSerialize(const std::string& data)  {
 		// does deserialization things here
 		json j = json::parse(data);
 		TransformComponent temp;
@@ -158,8 +157,7 @@ struct LifetimeComponent {
 		return j.dump();
 	}
 
-	static LifetimeComponent DeSerialize(Entity eID, const std::string& data) {
-		(void)eID;
+	static LifetimeComponent DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 		LifetimeComponent temp;
 		temp.time = j.value("time", 0.0f);
@@ -187,8 +185,7 @@ struct HealthComponent {
 		return j.dump();
 	}
 
-	static HealthComponent DeSerialize(Entity eID, const std::string& data) {
-		(void)eID;
+	static HealthComponent DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 		HealthComponent temp;
 		temp.currhp = j.value("currentHP", 100.0f);
@@ -223,8 +220,7 @@ struct TagComponent {
 		return j.dump();
 	}
 
-	static TagComponent DeSerialize(Entity eID, const std::string& data) {
-		(void)eID;
+	static TagComponent DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 		return TagComponent(static_cast<C_TagID>(static_cast<int>(j["tagID"])));
 	}
@@ -261,8 +257,7 @@ struct InputComponent {
 		return j.dump();
 	}
 
-	static InputComponent DeSerialize(Entity eID, const std::string& data) {
-		(void)eID;
+	static InputComponent DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 		InputComponent temp;
 		temp.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
@@ -305,8 +300,7 @@ struct ShapeComponent {
 		return j.dump();
 	}
 
-	static ShapeComponent DeSerialize(Entity eID, const std::string& data) {
-		(void)eID;
+	static ShapeComponent DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 
 		ShapeComponent s;

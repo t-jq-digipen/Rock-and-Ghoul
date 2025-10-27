@@ -176,12 +176,14 @@ namespace Animator {
 		{"frameColStart", GetFrames().col_start},
 		{"frameColEnd", GetFrames().col_end},
 		{"currentState", GetCurrentState()},
-		{"states", statesJson}
+		{"states", statesJson},
+		{"imageWidth", static_cast<int>(m_uv_width * m_total_cols)},
+		{"imageHeight", static_cast<int>(m_uv_height * m_total_rows)},
 		};
 		return j.dump();
 	}
 
-	AnimatorComponent AnimatorComponent::DeSerialize(Entity eID, const std::string& data) {
+	AnimatorComponent AnimatorComponent::DeSerialize(const std::string& data) {
 		json j = json::parse(data);
 
 		ActiveFrames frames;
@@ -195,23 +197,20 @@ namespace Animator {
 		int totalCols = j.value("totalCols", 1);
 		float animDuration = j.value("animDuration", 0.0f);
 
-		int imageWidth = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID).Get_Image().widthPixels;
-		int imageHeight = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID).Get_Image().heightPixels;
+		int imageWidth = j.value("imageWidth", 0);
+		int imageHeight = j.value("imageHeight", 0);
 
-		//int imageWidth = j.value("imageWidth", 0);
-		//int imageHeight = j.value("imageHeight", 0);
+		if (imageWidth == 0 || imageHeight == 0) {
+			std::cout << "NEE NAW WARNING: USING DEFAULTS FOR ANIMATOR!!!\n";
 
-		//if (imageWidth == 0 || imageHeight == 0) {
-		//	std::cout << "NEE NAW WARNING: USING DEFAULTS FOR ANIMATOR!!!\n";
-
-		//	// 32x32 pixels per frame as default val 
-		//	if (imageWidth == 0) {
-		//		imageWidth = totalCols * 32;
-		//	}
-		//	if (imageHeight == 0) {
-		//		imageHeight = totalRows * 32;
-		//	}
-		//}
+			// 32x32 pixels per frame as default val 
+			if (imageWidth == 0) {
+				imageWidth = totalCols * 32;
+			}
+			if (imageHeight == 0) {
+				imageHeight = totalRows * 32;
+			}
+		}
 
 		AnimatorComponent temp(totalRows, totalCols, imageWidth, imageHeight, frames, animDuration);
 

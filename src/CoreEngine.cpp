@@ -55,13 +55,13 @@ void CoreEngine::Initialize() {
     registry.Register_Component<TransformComponent>("Transform");
     std::cout << "REGISTRY | REGISTERED TRANSFORM COMPONENT\n";
 
-    registry.Register_Component<Sprite::SpriteComponent>("Sprite", { "Transform" });
+    registry.Register_Component<Sprite::SpriteComponent>("Sprite");
     std::cout << "REGISTRY | REGISTERED SPRITE COMPONENT\n";
 
-    registry.Register_Component<Animator::AnimatorComponent>("Animator", {"Transform", "Sprite"});
+    registry.Register_Component<Animator::AnimatorComponent>("Animator");
     std::cout << "REGISTRY | REGISTERED ANIMATOR COMPONENT\n";
 
-    registry.Register_Component<Physics::PhysicsComponent>("Physics", { "Transform" });
+    registry.Register_Component<Physics::PhysicsComponent>("Physics");
     std::cout << "REGISTRY | REGISTERED PHYSICS COMPONENT\n";
 
     //registry.Register_Component<AudioComponent>("Audio");
@@ -73,7 +73,7 @@ void CoreEngine::Initialize() {
     registry.Register_Component<InputComponent>("Input");
     std::cout << "REGISTRY | REGISTERED INPUT COMPONENT\n";
 
-    registry.Register_Component<ShapeComponent>("Shape", { "Transform" });
+    registry.Register_Component<ShapeComponent>("Shape");
     std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";
 
     // marker for non-standard components which should be shifted out to game files

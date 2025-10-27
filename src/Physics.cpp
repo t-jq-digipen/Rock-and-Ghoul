@@ -283,8 +283,7 @@ namespace Physics {
 		return j.dump();
 	}
 
-	PhysicsComponent PhysicsComponent::DeSerialize(Entity eID, const std::string& data) {
-		(void)eID;
+	PhysicsComponent PhysicsComponent::DeSerialize(const std::string& data) {
 		nlohmann::json j = nlohmann::json::parse(data);
 
 		PhysicsComponent phys;
@@ -326,7 +325,7 @@ namespace Physics {
 	}
 
 	Editor::ComponentData PhysicsComponent::EditorData() {
-		Editor::ComponentData ret(Registry::Get().Get_ComponentTypeName(typeid(PhysicsComponent)));
+		Editor::ComponentData ret("Physics");
 
 		ret.Add_Data("WillCollide", Editor::Widget_Checkmark{ &willCollide });
 
