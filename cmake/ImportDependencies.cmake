@@ -158,7 +158,7 @@ macro(import_mono)
         message(STATUS "Importing local Mono from deps/mono...")
 
         # Path to your local Mono SDK inside the repo
-        set(MONO_ROOT "${CMAKE_SOURCE_DIR}/deps/mono")
+        set(MONO_ROOT "${CMAKE_SOURCE_DIR}/deps/Mono")
 
         # Include directories for Mono headers
         include_directories(${MONO_ROOT}/include/mono-2.0)
