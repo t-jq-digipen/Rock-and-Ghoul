@@ -26,6 +26,10 @@
 #include <unordered_map>
 #include <map>
 #include <variant>
+#include "Entity.h"
+
+// First string would be the data type name, second string would hold the value
+using SerializedComponent = std::unordered_map<std::string, std::string>;
 
  /**
   * @struct SavedEntity
@@ -89,6 +93,7 @@ struct GameSettings {
      */
     GameSettings() : volume(1.0f), resolutionWidth(1920), resolutionHeight(1080), fullscreen(false) {}
 };
+
 
 namespace Editor {
     // Determines the type of editing widget

@@ -263,7 +263,7 @@ namespace Physics {
 
 		std::string Serialize() const;
 
-		static PhysicsComponent DeSerialize(const std::string& data);
+		static PhysicsComponent DeSerialize(Entity eID, const std::string& data);
 
 		Editor::ComponentData EditorData();
 	};
