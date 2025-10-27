@@ -68,7 +68,7 @@ public:
 	 * @param comp The component instance to add.
 	 * @throws std::runtime_error if the entity already has this component.
 	 */
-	void		addComponent(Entity eID, Component const& comp)
+	void		addComponent(Entity eID, Component const& comp = {})
 	{
 		// check if entity already has component
 		if (hasComponent(eID))
@@ -129,7 +129,7 @@ public:
 
 	void LoadComponent(Entity eID, const std::string& data) override
 	{
-		Component newComp = Component::DeSerialize(data);
+		Component newComp = Component::DeSerialize(eID, data);
 		addComponent(eID, newComp);
 	}
 

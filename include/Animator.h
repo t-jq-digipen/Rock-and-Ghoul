@@ -169,7 +169,7 @@ namespace Animator {
 
 		std::string Serialize() const;
 
-		static AnimatorComponent DeSerialize(const std::string& data);
+		static AnimatorComponent DeSerialize(Entity eID, const std::string& data);
 		
 		Editor::ComponentData EditorData();
 	};
