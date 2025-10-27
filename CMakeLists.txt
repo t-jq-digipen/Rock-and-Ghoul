@@ -436,10 +436,15 @@ add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
 
 # Copy save files from source to build directory
 file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
+
 foreach(save_file ${SAVE_FILES})
-    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${save_file}
-        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
-    )
+    if(EXISTS "${save_file}")
+        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${save_file}"
+                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves"
+        )
+    else()
+        message(WARNING "Skipping missing save file: ${save_file}")
+    endif()
 endforeach()
