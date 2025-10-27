@@ -127,13 +127,18 @@ endif()
 set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/Debug/GameScripts.dll")
 set(GAMESCRIPTS_TARGET_DIR "${CMAKE_SOURCE_DIR}/Assets/Scripts")
 
-add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll to Assets/Scripts..."
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${GAMESCRIPTS_DLL_PATH}"
-        "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
-)
+if (EXISTS "${GAMESCRIPTS_DLL_PATH}")
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll to Assets/Scripts..."
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${GAMESCRIPTS_DLL_PATH}"
+            "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
+    )
+else()
+    message(WARNING "GameScripts.dll not found at ${GAMESCRIPTS_DLL_PATH}. Skipping copy.")
+endif()
+
 
 
 
