@@ -96,3 +96,7 @@ Temporary Items
 deps/fmod/lib/*
 !deps/fmod/include/*
 /deps/Mono
+!GameScripts/
+GameScripts/bin/*
+!GameScripts/bin/Debug/
+!GameScripts/bin/Debug/GameScripts.dll
