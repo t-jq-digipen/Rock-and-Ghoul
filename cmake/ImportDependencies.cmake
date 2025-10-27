@@ -150,6 +150,54 @@ macro(import_json)
     endif()
 endmacro()
 
+# ==============================
+# Macro to import local Mono
+# ==============================
+macro(import_mono)
+    if (NOT TARGET mono)
+        message(STATUS "Importing local Mono from deps/mono...")
+
+        # Path to your local Mono SDK inside the repo
+        set(MONO_ROOT "${CMAKE_SOURCE_DIR}/deps/Mono")
+
+        # Include directories for Mono headers
+        include_directories(${MONO_ROOT}/include/mono-2.0)
+
+        # Create an INTERFACE library target so we can link it easily
+        add_library(mono INTERFACE)
+
+        # Mono headers
+        target_include_directories(mono INTERFACE
+            ${MONO_ROOT}/include/mono-2.0
+        )
+
+        # Mono runtime lib for linking (optional; only needed if you statically link .lib)
+        if (WIN32)
+            if (EXISTS "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
+                target_link_libraries(mono INTERFACE "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
+                message(STATUS "✓ Found mono-2.0-sgen.lib for linking.")
+            else()
+                message(WARNING "✗ mono-2.0-sgen.lib not found — only dynamic DLL loading will work.")
+            endif()
+        endif()
+
+        # Copy runtime DLL beside exe after build
+        if (WIN32)
+            set(MONO_DLL_PATH "${MONO_ROOT}/bin/mono-2.0-sgen.dll")
+            if (EXISTS "${MONO_DLL_PATH}")
+                add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${MONO_DLL_PATH}"
+                    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>
+                )
+                message(STATUS "✓ Will copy mono-2.0-sgen.dll to build output.")
+            else()
+                message(WARNING "✗ Mono runtime DLL not found in ${MONO_DLL_PATH}")
+            endif()
+        endif()
+    endif()
+endmacro()
+
 
 # Macro to import all dependencies
 macro(importDependencies)
@@ -177,5 +225,5 @@ macro(importDependencies)
     message(STATUS "stb imported successfully.")
     import_json()
     message(STATUS "All dependencies have been imported successfully.")
-
+    import_mono()
 endmacro()
