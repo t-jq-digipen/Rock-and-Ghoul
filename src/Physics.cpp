@@ -326,7 +326,7 @@ namespace Physics {
 	}
 
 	Editor::ComponentData PhysicsComponent::EditorData() {
-		Editor::ComponentData ret("Physics");
+		Editor::ComponentData ret(Registry::Get().Get_ComponentTypeName(typeid(PhysicsComponent)));
 
 		ret.Add_Data("WillCollide", Editor::Widget_Checkmark{ &willCollide });
 
