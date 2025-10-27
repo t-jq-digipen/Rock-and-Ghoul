@@ -12,7 +12,7 @@
  * for creating, removing, and accessing entities and
  * their components, as well as accessors for the
  * component managers.
- * 
+ *
  * UPDATE 23 OCT 2025 - Tan Jun Quan
  * Registry is being overhauled to a singleton class with
  * the ability to register component types dynamically,
@@ -24,7 +24,7 @@
  * RegisterComponent function, e.g:
  * - Registry::Get().Register_Component<ComponentTypename>();
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright   2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -62,13 +62,21 @@ private:
 
 	// Map of component managers
 	std::unordered_map<std::type_index, std::unique_ptr<IComponentManager>> componentManagers;
+	// Vector of type index in order of registration
+	std::vector<std::type_index> componentTypeList;
+	// Map of component type names to type index
 	std::unordered_map<std::string, std::type_index> componentTypeNames;
+	// Map of type index with a list of dependencies
+	std::unordered_map<std::type_index, std::vector<std::type_index>> componentDependencies;
+	std::unordered_map<std::type_index, std::vector<std::type_index>> componentDependents;
 
 	template<typename Component>
 	ComponentManager<Component>* Get_Manager() {
 		auto it = componentManagers.find(std::type_index(typeid(Component)));
 		if (it == componentManagers.end())
-		{ throw std::runtime_error("COMPONENT NOT REGISTERED ???\n"); }
+		{
+			throw std::runtime_error("COMPONENT NOT REGISTERED ???\n");
+		}
 
 		return static_cast<ComponentManager<Component>*>(it->second.get());
 	}
@@ -90,20 +98,8 @@ private:
 	void IsComponentRegistered(std::type_index typeID) {
 		if (componentManagers.find(typeID) == componentManagers.end())
 		{
-			if (typeIndex == it.second)
-			{ return it.first; }
+			throw std::runtime_error("COMPONENT TYPE NOT REGISTERED");
 		}
-		// return "No such component name... :(\n";
-		throw std::runtime_error("Component name not registered properly\n");
-	}
-
-	std::type_index Get_ComponentTypeIndex(std::string name)
-	{
-		if (componentTypeNames.find(name) == componentTypeNames.end())
-		{
-			throw std::runtime_error("CANNOT FIND COMPONENT TYPE " + name);
-		}
-		return componentTypeNames.at(name);
 	}
 
 public:
@@ -115,6 +111,7 @@ public:
 		static Registry instance;
 		return instance;
 	}
+
 #pragma endregion REGISTRY
 	// ================================================================================
 
@@ -157,7 +154,7 @@ public:
 	 * @param component Component instance to add.
 	 */
 	template<typename Component>
-	void Register_Component(const std::string& name) {
+	void Register_Component(const std::string& name, const std::vector<std::string>& dependencies = {}) {
 		// Assign type index
 		std::type_index typeID(typeid(Component));
 		// Check if component is already registered
@@ -171,7 +168,9 @@ public:
 			componentTypeNames.emplace(name, typeID);
 
 			if (dependencies.empty())
-			{ return; }
+			{
+				return;
+			}
 
 			for (const std::string& dep : dependencies)
 			{
@@ -195,8 +194,22 @@ public:
 	void Add_Component(Entity eID, const Component& component)
 	{
 		ComponentManager<Component>* manager = Get_Manager<Component>();
+		// Check if this component has dependencies
+		auto deplist = componentDependencies.find(typeid(Component));
+		if (deplist != componentDependencies.end())
+		{
+			for (std::type_index dep : deplist->second)
+			{
+				if (!HasDependencies(eID, dep))
+				{
+					std::cout << "Entity " << eID << " Component " << Get_ComponentTypeName(typeid(Component)) << " does not have dependency " << Get_ComponentTypeName(dep) << '\n';
+					return;
+				}
+			}
+		}
 		manager->addComponent(eID, component);
 	}
+
 
 	/**
 	 * @brief Removes a specific component type from an entity.
@@ -206,6 +219,7 @@ public:
 	void Remove_Component(Entity eID)
 	{
 		ComponentManager<Component>* manager = Get_Manager<Component>();
+
 		manager->removeComponent(eID);
 	}
 
@@ -219,7 +233,7 @@ public:
 	/**
 	 * @brief Retrieves the Component of an entity.
 	 * @param eID Entity identifier.
-	 * @return Reference to the entity�s Component.
+	 * @return Reference to the entity s Component.
 	 */
 	template<typename Component>
 	Component& Get_Component(Entity eID)
@@ -247,6 +261,29 @@ public:
 	{
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 		manager->LoadComponent(eID, data);
+	}
+
+
+	std::string Get_ComponentTypeName(std::type_index typeIndex)
+	{
+		for (auto it : componentTypeNames)
+		{
+			if (typeIndex == it.second)
+			{
+				return it.first;
+			}
+		}
+		// return "No such component name... :(\n";
+		throw std::runtime_error("Component name not registered properly\n");
+	}
+
+	std::type_index Get_ComponentTypeIndex(std::string name)
+	{
+		if (componentTypeNames.find(name) == componentTypeNames.end())
+		{
+			throw std::runtime_error("CANNOT FIND COMPONENT TYPE " + name);
+		}
+		return componentTypeNames.at(name);
 	}
 #pragma endregion
 	// ================================================================================
@@ -310,11 +347,18 @@ public:
 		SavedEntity saved;
 		saved.name = Get_EntityName(eID);
 
+		for (std::type_index typeID : componentTypeList)
+		{
+			if (!componentManagers[typeID]->hasComponent(eID)) { continue; }
+			std::string compType = Get_ComponentTypeName(typeID);
+			saved.componentData[compType] = componentManagers[typeID]->SaveComponent(eID);
+		}
+		/*
 		for (auto& [typeIndex, manager] : componentManagers)
 		{
 			std::string compType = Get_ComponentTypeName(typeIndex);
 			saved.componentData[compType] = manager->SaveComponent(eID);
-		}
+		}*/
 		return saved;
 	}
 
@@ -406,7 +450,7 @@ public:
 ///**
 // * @brief Retrieves the Component of an entity.
 // * @param eID Entity identifier.
-// * @return Reference to the entity�s Component.
+// * @return Reference to the entity s Component.
 // */
 //// ========================================================
 //TransformComponent			& Get_TransformComponent(Entity eID);
@@ -449,25 +493,25 @@ public:
  *
  * @return std::unordered_map<Entity, std::string>& Reference to the name map.
  */
-//std::unordered_map<Entity, std::string>& GetEntityNameMap();
-// 
-// /**
-// * @brief Assigns a nice readable name to an entity
-// *
-// * Used for debugging, serialization, and editor display.
-// *
-// * @param eID The entity ID to name.
-// * @param name The string name to assign (e.g., "Player").
-// */
-//void SetEntityName(Entity eID, const std::string& name);
-//
-///**
-// * @brief Retrieves the name associated with an entity.
-// *
-// * Returns the custom name if one was set via SetEntityName(), otherwise
-// * generates a default name in the format "Entity_{ID}".
-// *
-// * @param eID The entity ID to query.
-// * @return std::string The entity's name or auto-generated fallback.
-// */
-//std::string GetEntityName(Entity eID);
+ //std::unordered_map<Entity, std::string>& GetEntityNameMap();
+ // 
+ // /**
+ // * @brief Assigns a nice readable name to an entity
+ // *
+ // * Used for debugging, serialization, and editor display.
+ // *
+ // * @param eID The entity ID to name.
+ // * @param name The string name to assign (e.g., "Player").
+ // */
+ //void SetEntityName(Entity eID, const std::string& name);
+ //
+ ///**
+ // * @brief Retrieves the name associated with an entity.
+ // *
+ // * Returns the custom name if one was set via SetEntityName(), otherwise
+ // * generates a default name in the format "Entity_{ID}".
+ // *
+ // * @param eID The entity ID to query.
+ // * @return std::string The entity's name or auto-generated fallback.
+ // */
+ //std::string GetEntityName(Entity eID);
