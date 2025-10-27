@@ -1,78 +1,77 @@
 @echo off
 setlocal enabledelayedexpansion
-title Mono Installer (Debug Mode)
+title Mono Installer + Forced Path + Auto Copy
 echo ==========================================================
-echo         DEBUG MODE - Mono Installer + Copy
+echo         Mono Installer - Forced Path + Copy
 echo ==========================================================
 echo.
 
-REM 1. download info
+REM === 1. Setup paths and variables ===
 set MONO_URL=https://download.mono-project.com/archive/6.12.0/windows-installer/mono-6.12.0.206-x64-0.msi
 set MONO_FILE=%TEMP%\mono-installer.msi
+set MONO_INSTALL_PATH=C:\Program Files\Mono
 set REPO_DIR=%~dp0
 set REPO_MONO_DIR=%REPO_DIR%deps\Mono
 
-echo Repo path: %REPO_DIR%
-echo Target deps\Mono folder: %REPO_MONO_DIR%
+echo This will:
+echo   1. Download Mono 6.12.0 for Windows
+echo   2. Force install it to "%MONO_INSTALL_PATH%"
+echo   3. Copy to "%REPO_MONO_DIR%"
 echo.
 pause
 
-echo [STEP 1] Downloading Mono installer...
+REM === 2. Download Mono MSI ===
+echo Downloading Mono installer...
 powershell -Command "(New-Object Net.WebClient).DownloadFile('%MONO_URL%', '%MONO_FILE%')"
+
 if not exist "%MONO_FILE%" (
     echo ❌ Failed to download Mono installer.
     pause
     exit /b 1
 )
-echo ✅ Download complete: %MONO_FILE%
-pause
 
-echo [STEP 2] Installing Mono silently...
-msiexec /i "%MONO_FILE%" /quiet /norestart
-if errorlevel 1 (
-    echo ⚠️  msiexec returned error code %errorlevel%
-)
+REM === 3. Install Mono (forced directory) ===
+echo Installing Mono silently to "%MONO_INSTALL_PATH%"...
+msiexec /i "%MONO_FILE%" TARGETDIR="%MONO_INSTALL_PATH%" /quiet /norestart
+
+echo Waiting for installer to complete...
 timeout /t 5 >nul
-echo Installation attempt complete.
+
+REM === 4. Verify installation ===
+if not exist "%MONO_INSTALL_PATH%\bin\mono.exe" (
+    echo ❌ Mono not found at "%MONO_INSTALL_PATH%".
+    echo Installation might have failed.
+    pause
+    exit /b 1
+)
+echo ✅ Mono installed at: %MONO_INSTALL_PATH%
 pause
 
-echo [STEP 3] Searching for Mono installation...
-set MONO_INSTALL_PATH=
-for /d %%D in ("C:\Program Files*\Mono") do (
-    if exist "%%D\bin\mono.exe" (
-        set "MONO_INSTALL_PATH=%%D"
-    )
-)
-if "%MONO_INSTALL_PATH%"=="" (
-    echo ❌ Could not find mono.exe under Program Files.
-) else (
-    echo ✅ Found Mono at: !MONO_INSTALL_PATH!
-)
-pause
-
-echo [STEP 4] Creating deps\Mono folder if missing...
+REM === 5. Create deps\Mono folder ===
 if not exist "%REPO_DIR%deps" mkdir "%REPO_DIR%deps"
 if not exist "%REPO_MONO_DIR%" mkdir "%REPO_MONO_DIR%"
-echo Folder ready: %REPO_MONO_DIR%
-pause
+echo Created deps\Mono folder if missing.
 
-echo [STEP 5] Copying Mono files...
-if not "%MONO_INSTALL_PATH%"=="" (
-    xcopy "%MONO_INSTALL_PATH%\*" "%REPO_MONO_DIR%\" /E /I /Y
-    echo ✅ Copy complete.
+REM === 6. Copy all Mono files into repo ===
+echo Copying Mono files to local deps\Mono...
+xcopy "%MONO_INSTALL_PATH%\*" "%REPO_MONO_DIR%\" /E /I /Y >nul
+
+if %ERRORLEVEL%==0 (
+    echo ✅ Copied Mono to %REPO_MONO_DIR%
 ) else (
-    echo ⚠️  Skipped copy — install path not found.
+    echo ⚠️  Copy operation encountered warnings.
 )
-pause
 
-echo [STEP 6] Verifying copy...
+REM === 7. Verify the runtime DLL ===
 if exist "%REPO_MONO_DIR%\bin\mono-2.0-sgen.dll" (
-    echo ✅ DLL found: deps\Mono\bin\mono-2.0-sgen.dll
+    echo ✅ Mono runtime DLL verified in deps\Mono\bin\
 ) else (
-    echo ❌ DLL not found.
+    echo ⚠️  mono-2.0-sgen.dll missing — please recheck copy.
 )
+
 echo.
 echo ==========================================================
-echo        Debug completed — check output above
+echo        Installation and Copy completed successfully!
 echo ==========================================================
+echo.
 pause
