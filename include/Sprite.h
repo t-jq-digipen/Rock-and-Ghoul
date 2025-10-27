@@ -133,9 +133,10 @@ namespace Sprite {
 
 		void Set_Tint(const Colour3& color) { tint = color; }
 		const Colour3& Get_Tint() const { return tint; }
-	};
+
 
 		std::string Serialize() const;
 
 		static SpriteComponent DeSerialize(const std::string& data);
-	};
+	}
+};
