@@ -24,7 +24,7 @@
  * RegisterComponent function, e.g:
  * - Registry::Get().Register_Component<ComponentTypename>();
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -86,9 +86,9 @@ private:
 	//	componentTypeNames[name] = typeIndex;
 	//}
 
-	std::string Get_ComponentTypeName(std::type_index typeIndex)
-	{
-		for (auto it : componentTypeNames)
+	// CRASH if never register component type
+	void IsComponentRegistered(std::type_index typeID) {
+		if (componentManagers.find(typeID) == componentManagers.end())
 		{
 			if (typeIndex == it.second)
 			{ return it.first; }
@@ -121,6 +121,36 @@ public:
 	// COMPONENTS
 	// ================================================================================
 #pragma region COMPONENTS
+
+
+	bool HasDependencies(Entity eID, std::type_index typeID) {
+		// IsComponentRegistered(typeID);
+
+		for (std::type_index dep : componentDependencies[typeID])
+		{
+			IsComponentRegistered(dep);
+			if (!componentManagers[dep]->hasComponent(eID))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool HasDependents(Entity eID, std::type_index typeID) {
+		IsComponentRegistered(typeID);
+
+		for (std::type_index reliant : componentDependents[typeID])
+		{
+			IsComponentRegistered(typeID);
+			if (componentManagers[reliant]->hasComponent(eID))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * @brief Registers a Component Type to the registry.
 	 * @param eID Entity identifier.
@@ -139,6 +169,20 @@ public:
 		{
 			componentManagers[typeID] = std::make_unique<ComponentManager<Component>>();
 			componentTypeNames.emplace(name, typeID);
+
+			if (dependencies.empty())
+			{ return; }
+
+			for (const std::string& dep : dependencies)
+			{
+				std::type_index depTypeIdx = Get_ComponentTypeIndex(dep);
+				if (componentManagers.find(depTypeIdx) == componentManagers.end())
+				{
+					throw std::runtime_error("DEPENDENCY NOT REGISTERED\n");
+				}
+				componentDependencies[typeID].push_back(depTypeIdx);
+				componentDependents[depTypeIdx].push_back(typeID);
+			}
 		}
 	}
 
@@ -175,7 +219,7 @@ public:
 	/**
 	 * @brief Retrieves the Component of an entity.
 	 * @param eID Entity identifier.
-	 * @return Reference to the entity’s Component.
+	 * @return Reference to the entityï¿½s Component.
 	 */
 	template<typename Component>
 	Component& Get_Component(Entity eID)
@@ -362,7 +406,7 @@ public:
 ///**
 // * @brief Retrieves the Component of an entity.
 // * @param eID Entity identifier.
-// * @return Reference to the entity’s Component.
+// * @return Reference to the entityï¿½s Component.
 // */
 //// ========================================================
 //TransformComponent			& Get_TransformComponent(Entity eID);

@@ -224,8 +224,14 @@ namespace Animator {
 				stateFrames.duration = stateData.value("duration", 1.0f);
 
 				temp.AddState(stateID, stateFrames);
+				temp.SetState(stateID);
 			}
 		}
+		//if (j.contains("currentState"))
+		//{
+		//	auto tempy = j["currentState"];
+		//	temp.SetState(j["currentState"]);
+		//}
 
 		// check for null
 		if (j.contains("currentState") && !j["currentState"].is_null() && j["currentState"] != -1) {
