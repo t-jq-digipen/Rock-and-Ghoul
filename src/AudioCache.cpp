@@ -55,6 +55,8 @@ bool AudioCache::ParseManifest(const std::string& manifestPath) {
                 asset.loop = assetData["loop"];
                 asset.group = assetData["group"];
                 asset.spatial = assetData.value("spatial", false);
+                asset.minDistance = assetData.value("minDistance", 1.0f);
+                asset.maxDistance = assetData.value("maxDistance", 100.0f);
                 asset.sound = nullptr;
 
                 assetsByName[asset.name] = asset;

@@ -89,7 +89,9 @@
       "path": "../Assets/audio/sfx/player/Walking on Wood.wav",
       "loop": true,
       "group": "SFX",
-      "spatial": true
+      "spatial": true,
+      "minDistance": 1.0,
+      "maxDistance": 20.0
     }
   },
   "ui": {
