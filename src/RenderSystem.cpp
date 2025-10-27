@@ -35,6 +35,93 @@ void RenderSystem::Initialize() {
 
 void RenderSystem::Update(float dt) {
 
+    //try batching version
+    renderInstance.BeginBatch(); //added for batch
+
+    for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
+    {
+
+        // Check if entity has the batching tag
+        bool isBatched = false;
+        if (m_registry.Has_Component<TagComponent>(entID))
+        {
+            const auto& tag = m_registry.Get_Component<TagComponent>(entID);
+            if (tag.tag == T_BATCH)
+                isBatched = true;
+        }
+
+        if (spriteComp.IsAnimated())
+        {
+            // draw animated logic
+            TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+            Animator::AnimatorComponent& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
+
+            animComp.UpdateFrame(dt);
+
+            //added for batch
+            Image img = spriteComp.Get_Image();
+            glm::vec4 uv(animComp.u0 / img.widthPixels,
+                (animComp.v1 / img.heightPixels),
+                animComp.u1 / img.widthPixels,
+                (animComp.v0 / img.heightPixels));
+
+            if (isBatched) {
+                renderInstance.SubmitSpriteBatchUV(img, transComp.pos, spriteComp.Get_Scale(), uv, transComp.rot + spriteComp.Get_Rotation());
+            }
+            //renderInstance.SubmitSpriteBatchUV(img, transComp.pos, spriteComp.Get_Scale(), uv, transComp.rot + spriteComp.Get_Rotation());
+            //end of added for batch
+            
+            else {
+                renderInstance.DrawImageSub(
+                    img,
+                    transComp.pos.x, transComp.pos.y,
+                    spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
+                    animComp.u0, animComp.v0, animComp.u1, animComp.v1,
+                    glm::radians(transComp.rot + spriteComp.Get_Rotation()));
+            }
+            //renderInstance.DrawImageSub(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, animComp.u0, animComp.v0, animComp.u1, animComp.v1, transComp.rot + spriteComp.Get_Rotation());
+        }
+        else
+        {
+            TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+
+            Image img = spriteComp.Get_Image();
+            Vec2 scaledSize = {
+                img.widthPixels * spriteComp.Get_Scale().x,
+                img.heightPixels * spriteComp.Get_Scale().y
+            };
+
+            if (isBatched) {
+                renderInstance.SubmitSpriteBatch(
+                    img,
+                    transComp.pos,
+                    scaledSize,
+                    transComp.rot + spriteComp.Get_Rotation());
+            }
+            /*renderInstance.SubmitSpriteBatch(
+                img,
+                transComp.pos,
+                scaledSize,
+                transComp.rot + spriteComp.Get_Rotation());*/
+
+            else {
+                renderInstance.DrawImageScaled(
+                    img,
+                    transComp.pos.x, transComp.pos.y,
+                    spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
+                    glm::radians(transComp.rot + spriteComp.Get_Rotation()));
+            }
+            //renderInstance.DrawImageScaled(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, transComp.rot + spriteComp.Get_Rotation());
+        }
+    }
+
+
+
+    renderInstance.EndBatch();
+    renderInstance.FlushBatch();
+
+
+/*  //Original version
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
         if (spriteComp.IsAnimated())
@@ -45,14 +132,18 @@ void RenderSystem::Update(float dt) {
 
             animComp.UpdateFrame(dt);
 
+
             renderInstance.DrawImageSub(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, animComp.u0, animComp.v0, animComp.u1, animComp.v1, transComp.rot + spriteComp.Get_Rotation());
         }
         else
         {
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+
+
             renderInstance.DrawImageScaled(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, transComp.rot + spriteComp.Get_Rotation());
         }
     }
+    */
 
     // Loop through all ShapeComponents in the ECS
     for (auto& [entID, shapeComp] : m_registry.Get_ComponentMap<ShapeComponent>())

@@ -79,3 +79,6 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);
  *
  */
 void GenerateInitialPrefabs();
+
+
+Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath);

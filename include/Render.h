@@ -518,7 +518,7 @@ public:
 
     //Batch rendering attempt
     // Call it once per frame before SubmitSpriteBatch()
-   /* void BeginBatch();
+   void BeginBatch();
 
     // Submit a sprite (full texture). pos is sprite world position, size is (w,h) in screen units.
    // rotation in radians, uvRect defaults to full texture.
@@ -531,7 +531,7 @@ public:
     void EndBatch();
 
     // Issue the actual glDrawElements for everything collected
-    void FlushBatch();*/
+    void FlushBatch();
 
 
 private:
@@ -558,7 +558,7 @@ private:
     GLuint vao, vbo, shaderProgram;
     GLuint InstanceVBO, InstanceShaderProgram;
     GLuint textVAO, textVBO;
-    //GLuint batchVAO, batchVBO, batchEBO, batchShader;
+    GLuint batchVAO, batchVBO, batchEBO, batchShader;
     glm::mat4 projection;
 
 
@@ -604,7 +604,7 @@ private:
 
 
      // ---- Batch rendering state data ----
-    /*struct BatchVertex {
+    struct BatchVertex {
         glm::vec2 position;   // screen/world coords
         glm::vec2 texCoord;   // normalized uv
         glm::vec4 color;      // tint (fixed to white for now)
@@ -615,7 +615,7 @@ private:
     static constexpr size_t kMaxQuads = 10000;
     static constexpr size_t kMaxVertices = kMaxQuads * 4;
     static constexpr size_t kMaxIndices = kMaxQuads * 6;
-    static constexpr size_t kMaxTexSlots = 8;      // keep in sync with shader's uTextures[]
+    static constexpr size_t kMaxTexSlots = 16;      // keep in sync with shader's uTextures[]
 
     //helper batch functions
     void InitBatch_();        // called inside Init()
@@ -630,7 +630,7 @@ private:
     std::vector<GLuint> batchTexSlots;
 
     // Convenience white tint (if you extend to per-vertex color, expose as param)
-    const glm::vec4 kWhite{ 1.0f,1.0f,1.0f,1.0f };*/
+    const glm::vec4 kWhite{ 1.0f,1.0f,1.0f,1.0f };
 
 
     

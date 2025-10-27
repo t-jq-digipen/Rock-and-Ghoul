@@ -38,10 +38,11 @@
 
 // Vertex + Fragment shaders loaded from file in Assets, any changes to shader code to be done inside those files
 
-Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0) {}
+//Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0) {}
+Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0), batchVAO(0), batchVBO(0), batchEBO(0), batchShader(0) {}
 
 Render::~Render() {
-    // Clean up OpenGL resources
+    // Clean up OpenGL resourcess
     if (vao) glDeleteVertexArrays(1, &vao);
     if (vbo) glDeleteBuffers(1, &vbo);
     if (shaderProgram) glDeleteProgram(shaderProgram);
@@ -138,6 +139,8 @@ void Render::Init() {
     );
 
     InitTextRendering();
+
+    InitBatch_(); //uncomment once batch shaders are ready
 }
 
 void Render::ClearBackground(const Colour4& color) {
@@ -1427,6 +1430,261 @@ void Render::SetUniformMat4(GLuint shaderID, const std::string& name, const glm:
     if (loc != -1)
         glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]);
 }
+
+
+
+//Batching stuff attempt=============================================================================================================================================================
+void Render::InitBatch_()
+{
+    //GPU buffers
+    glGenVertexArrays(1, &batchVAO);
+    glGenBuffers(1, &batchVBO);
+    glGenBuffers(1, &batchEBO);
+
+    glBindVertexArray(batchVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, batchVBO);
+    glBufferData(GL_ARRAY_BUFFER,
+        kMaxVertices * sizeof(BatchVertex),
+        nullptr,
+        GL_DYNAMIC_DRAW);
+
+    // Pre-build the index buffer for kMaxQuads
+    std::vector<unsigned int> indices;
+    indices.reserve(kMaxIndices);
+    unsigned int offset = 0;
+    for (size_t i = 0; i < kMaxQuads; ++i) {
+        // 2 triangles per quad: (0,1,2) (2,3,0)
+        indices.push_back(offset + 0);
+        indices.push_back(offset + 1);
+        indices.push_back(offset + 2);
+        indices.push_back(offset + 2);
+        indices.push_back(offset + 3);
+        indices.push_back(offset + 0);
+        offset += 4;
+    }
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batchEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+        indices.size() * sizeof(unsigned int),
+        indices.data(),
+        GL_STATIC_DRAW);
+
+    // Vertex layout
+    // layout(location=0) vec2 position
+    // layout(location=1) vec2 texCoord
+    // layout(location=2) vec4 color
+    // layout(location=3) float texIndex
+    GLsizei stride = static_cast<GLsizei>(sizeof(BatchVertex));
+    std::size_t off = 0;
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)off);
+    off += sizeof(glm::vec2);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)off);
+    off += sizeof(glm::vec2);
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, stride, (void*)off);
+    off += sizeof(glm::vec4);
+
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, stride, (void*)off);
+
+    glBindVertexArray(0);
+
+    //Shader program for batches (uses uProjection like your existing shader)
+    //    Put the two GLSL files next to your other shaders (paths are examples)
+    batchShader = CreateProgramFromFiles("../Assets/batch.vert", "../Assets/batch.frag"); //remember add this new files and correct path
+
+    //CPU buffer reserve
+    batchCPUBuffer.reserve(kMaxVertices);
+
+    //Sampler array binding (tell GLSL that uTextures[i] => texture unit i)
+    glUseProgram(batchShader);
+    GLint loc = glGetUniformLocation(batchShader, "uTextures");
+    int samplers[kMaxTexSlots];
+    for (int i = 0; i < static_cast<int>(kMaxTexSlots); ++i) samplers[i] = i;
+    if (loc >= 0) glUniform1iv(loc, static_cast<GLsizei>(kMaxTexSlots), samplers);
+
+    // Also set the projection once here (you update projection elsewhere as needed)
+    GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
+    if (projLoc >= 0) glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]); // reuse your existing projection
+
+    glUseProgram(0);
+
+    ResetBatch_();
+}
+
+
+void Render::ResetBatch_()
+{
+    batchCPUBuffer.clear();
+    batchIndexCount = 0;
+    batchTexSlots.clear();
+    batchTexSlots.reserve(kMaxTexSlots);
+}
+
+void Render::BeginBatch()
+{
+    ResetBatch_();
+}
+
+static inline glm::vec2 Rotate2D_(const glm::vec2& p, float radians)
+{
+    const float c = std::cos(radians);
+    const float s = std::sin(radians);
+    return glm::vec2(c * p.x - s * p.y, s * p.x + c * p.y);
+}
+
+void Render::FlushIfFull_(size_t quadCountNeeded, GLuint textureID)
+{
+    // If exceeding quad capacity, or no room for a new texture slot, flush.
+    bool needFlush = false;
+
+    if (batchIndexCount + quadCountNeeded * 6 > kMaxIndices) {
+        needFlush = true;
+    }
+    else {
+        // Check if textureID is already in slots
+        bool found = false;
+        for (size_t i = 0; i < batchTexSlots.size(); ++i) {
+            if (batchTexSlots[i] == textureID) { found = true; break; }
+        }
+        if (!found && batchTexSlots.size() >= kMaxTexSlots) {
+            needFlush = true;
+        }
+    }
+
+    if (needFlush) {
+        EndBatch();
+        FlushBatch();
+        ResetBatch_();
+    }
+}
+
+void Render::SubmitSpriteBatch(const Image& image,
+    const Vec2& pos,
+    const Vec2& size,
+    float rotation)
+{
+    // full texture
+    SubmitSpriteBatchUV(image, pos, size, glm::vec4(0.f, 1.f, 1.f, 0.f), rotation);
+
+    /*std::cout << "SpriteBatch: texID=" << image.textureID
+        << ", size=(" << size.x << "," << size.y << ")"
+        << ", pos=(" << pos.x << "," << pos.y << ")"
+        << std::endl;*/
+
+}
+
+void Render::SubmitSpriteBatchUV(const Image& image,
+    const Vec2& pos,
+    const Vec2& size,
+    const glm::vec4& uvRect,
+    float rotation)
+{
+    if (!image.IsValid()) return;
+
+    // Ensure capacity / texture slot availability
+    FlushIfFull_(1, image.textureID);
+
+    // Determine tex slot index
+    float texIndex = -1.0f;
+    for (size_t i = 0; i < batchTexSlots.size(); ++i) {
+        if (batchTexSlots[i] == image.textureID) { texIndex = static_cast<float>(i); break; }
+    }
+    if (texIndex < 0.0f) {
+        batchTexSlots.push_back(image.textureID);
+        texIndex = static_cast<float>(batchTexSlots.size() - 1); // 0..N-1
+    }
+
+    // Build a quad centered at (0,0), then rotate/translate to pos
+    // size = (w,h)
+    const glm::vec2 half = { size.x * 0.5f, size.y * 0.5f };
+
+    // CCW: bl, br, tr, tl  (match your index pattern 0-1-2, 2-3-0)
+    glm::vec2 local[4] = {
+        {-half.x, -half.y}, // 0
+        {+half.x, -half.y}, // 1
+        {+half.x, +half.y}, // 2
+        {-half.x, +half.y}  // 3
+    };
+
+    // Rotate then translate to world
+    glm::vec2 world[4];
+    for (int i = 0; i < 4; ++i) world[i] = Rotate2D_(local[i], rotation) + glm::vec2(pos.x, pos.y);
+
+    // UVs (u0,v0,u1,v1) => (bl, br, tr, tl)
+    const float u0 = uvRect.x, v0 = uvRect.y, u1 = uvRect.z, v1 = uvRect.w;
+    glm::vec2 uvs[4] = {
+        { u0, v1 }, // bl
+        { u1, v1 }, // br
+        { u1, v0 }, // tr
+        { u0, v0 }  // tl
+    };
+
+    // Push 4 vertices
+    BatchVertex v;
+    v.color = kWhite;
+    v.texIndex = texIndex;
+
+    for (int i = 0; i < 4; ++i) {
+        v.position = world[i];
+        v.texCoord = uvs[i];
+        batchCPUBuffer.push_back(v);
+    }
+
+    batchIndexCount += 6; // one more quad (two triangles)
+}
+
+void Render::EndBatch()
+{
+    if (batchCPUBuffer.empty()) return;
+
+    glBindBuffer(GL_ARRAY_BUFFER, batchVBO);
+    glBufferSubData(GL_ARRAY_BUFFER,
+        0,
+        static_cast<GLsizeiptr>(batchCPUBuffer.size() * sizeof(BatchVertex)),
+        batchCPUBuffer.data());
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void Render::FlushBatch()
+{
+    if (batchCPUBuffer.empty() || batchIndexCount == 0) return;
+
+    // Bind textures to slots 0..N-1
+    for (size_t i = 0; i < batchTexSlots.size(); ++i) {
+        glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(i));
+        glBindTexture(GL_TEXTURE_2D, batchTexSlots[i]);
+    }
+
+    glUseProgram(batchShader);
+
+    // Ensure projection is current (in case you change it elsewhere this frame)
+    GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
+    if (projLoc >= 0) glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+
+    glBindVertexArray(batchVAO);
+    glDrawElements(GL_TRIANGLES,
+        static_cast<GLsizei>(batchIndexCount),
+        GL_UNSIGNED_INT,
+        nullptr);
+
+    // Cleanup binds (optional)
+    glBindVertexArray(0);
+    glUseProgram(0);
+
+    //batch testing debug
+    /*std::cout << "[BatchRenderer] Flush: "
+        << batchTexSlots.size() << " textures, "
+        << batchIndexCount / 6 << " quads"
+        << std::endl;*/
+}
+
+//batch attempt end=========================================================================================================================================================================
+
 
 
 

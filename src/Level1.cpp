@@ -126,11 +126,61 @@ void Level1::Init()
 // Updates Level 1
 void Level1::Update()
 {
-	static bool spawned = false;
+	//static bool spawned = false;
+	//std::vector<Entity> toRemove;
+
+	static bool spawnedBatch = false;
 	std::vector<Entity> toRemove;
 
+	// === Toggle Batched Sprites with N key ===
+	if (Input::IsKeyPressed(GLFW_KEY_N))
+	{
+		if (!spawnedBatch)
+		{
+			int totalSprites = 1000;
+			float aspectRatio = (float)GLApp::width / (float)GLApp::height;
+			int cols = static_cast<int>(std::sqrt(totalSprites * aspectRatio));
+			int rows = static_cast<int>(std::ceil((float)totalSprites / cols));
+
+			float paddingX = 5.0f, paddingY = 5.0f;
+			float spacingX = (GLApp::width - 2 * paddingX) / cols;
+			float spacingY = (GLApp::height - 2 * paddingY) / rows;
+			float spacing = std::min(spacingX, spacingY);
+			//float size = spacing * 0.8f;
+			//float normalizedScale = size / 100.0f;
+
+			for (int i = 0; i < totalSprites; ++i)
+			{
+				int col = i % cols;
+				int row = i / cols;
+
+				float px = paddingX + col * spacing + spacing * 0.5f;
+				float py = paddingY + row * spacing + spacing * 0.5f;
+
+				Create_BatchedSprite(px, py, 50.f, "../Assets/Waffle_Sprites.png"); //lowkey hard coded the size but figure that out later
+			}
+
+			std::cout << "Spawned " << totalSprites << " batched sprites with N key!\n";
+			spawnedBatch = true;
+		}
+		else
+		{
+			// Clear all T_BATCH entities
+			for (auto& [e, tag] : registry.Get_ComponentMap<TagComponent>())
+			{
+				if (tag.tag == T_BATCH && EntityManager::get().isAlive(e))
+					toRemove.push_back(e);
+			}
+			for (Entity e : toRemove)
+				registry.Remove_Entity(e);
+
+			std::cout << "Cleared all batched sprites!\n";
+			spawnedBatch = false;
+		}
+	}
+
 	// Toggle with B key
-	if (Input::IsKeyPressed(GLFW_KEY_B))
+	/*if (Input::IsKeyPressed(GLFW_KEY_B))
 	{
 		if (!spawned)
 		{
@@ -189,7 +239,7 @@ void Level1::Update()
 				}
 			}
 		}
-	}
+	}*/
 
 	
 	//std::cout << "Level 1 Updating!!!" << std::endl;
