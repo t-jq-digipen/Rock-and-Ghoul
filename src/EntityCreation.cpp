@@ -367,51 +367,51 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color)
 //}
 
 // EntityCreation.cpp
-Entity Create_RotatingObject(float x, float y)
-{
-    Registry& reg = Registry::Get();
-    Entity e = reg.Create_Entity();
-
-    TransformComponent t;
-    t.pos = { x, y };
-    reg.Add_Component(e, t);
-
-    // Add a visible shape
-    ShapeComponent shape;
-    shape.shape = SHAPE_RECTANGLE;
-    shape.dimensions = { 50.f, 50.f };
-    shape.color = { 1.0f, 0.3f, 0.3f }; // red
-    reg.Add_Component(e, shape);
-
-    // Add script
-    MonoScriptComponent script;
-    script.className = "Rotator";
-    reg.Add_Component(e, script);
-
-    return e;
-}
-
-Entity Create_MovingObject(float x, float y)
-{
-    Registry& reg = Registry::Get();
-    Entity e = reg.Create_Entity();
-
-    TransformComponent t;
-    t.pos = { x, y };
-    reg.Add_Component(e, t);
-
-    // Add a visible shape
-    ShapeComponent shape;
-    shape.shape = SHAPE_CIRCLE;
-    shape.dimensions = { 50.f, 50.f };
-    shape.color = { 0.3f, 0.8f, 1.0f }; // blue
-    reg.Add_Component(e, shape);
-
-    // Add script
-    MonoScriptComponent script;
-    script.className = "Mover";
-    reg.Add_Component(e, script);
-
-    return e;
-}
+//Entity Create_RotatingObject(float x, float y)
+//{
+//    Registry& reg = Registry::Get();
+//    Entity e = reg.Create_Entity();
+//
+//    TransformComponent t;
+//    t.pos = { x, y };
+//    reg.Add_Component(e, t);
+//
+//    // Add a visible shape
+//    ShapeComponent shape;
+//    shape.shape = SHAPE_RECTANGLE;
+//    shape.dimensions = { 50.f, 50.f };
+//    shape.color = { 1.0f, 0.3f, 0.3f }; // red
+//    reg.Add_Component(e, shape);
+//
+//    // Add script
+//    MonoScriptComponent script;
+//    script.className = "Rotator";
+//    reg.Add_Component(e, script);
+//
+//    return e;
+//}
+//
+//Entity Create_MovingObject(float x, float y)
+//{
+//    Registry& reg = Registry::Get();
+//    Entity e = reg.Create_Entity();
+//
+//    TransformComponent t;
+//    t.pos = { x, y };
+//    reg.Add_Component(e, t);
+//
+//    // Add a visible shape
+//    ShapeComponent shape;
+//    shape.shape = SHAPE_CIRCLE;
+//    shape.dimensions = { 50.f, 50.f };
+//    shape.color = { 0.3f, 0.8f, 1.0f }; // blue
+//    reg.Add_Component(e, shape);
+//
+//    // Add script
+//    MonoScriptComponent script;
+//    script.className = "Mover";
+//    reg.Add_Component(e, script);
+//
+//    return e;
+//}
 

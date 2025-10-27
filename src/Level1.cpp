@@ -234,8 +234,8 @@ void Level1::Init()
 	// Right wall
 	Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
 
-	Create_RotatingObject(500.f, 400.f);
-	Create_MovingObject(800.f, 400.f);
+	//Create_RotatingObject(500.f, 400.f);
+	//Create_MovingObject(800.f, 400.f);
 }
 
 // Updates Level 1

@@ -106,15 +106,15 @@ int main() {
             CrashHandler::Log("Engine initialized");
             std::cout << "GETS PAST ENGINE INIT\n";
 
-            MonoManager& mono = MonoManager::Get();
-            mono.Initialize("../Assets/Scripts/GameScripts.dll");
+            //MonoManager& mono = MonoManager::Get();
+            //mono.Initialize("../Assets/Scripts/GameScripts.dll");
 
-            // Register the MonoScript component with the ECS registry
-            Registry::Get().Register_Component<MonoScriptComponent>("MonoScriptComponent");
+            //// Register the MonoScript component with the ECS registry
+            //Registry::Get().Register_Component<MonoScriptComponent>("MonoScriptComponent");
 
 
-            // Add the MonoSystem to the engine so it runs every frame
-            engine.AddSystem(new MonoSystem());
+            //// Add the MonoSystem to the engine so it runs every frame
+            //engine.AddSystem(new MonoSystem());
 
             engine.Run();
             CrashHandler::Log("Engine run returned");
@@ -122,7 +122,7 @@ int main() {
 
             engine.Shutdown();
             CrashHandler::Log("Engine shutdown complete");
-            mono.Shutdown();
+            //mono.Shutdown();
             return 0;
         });
 
