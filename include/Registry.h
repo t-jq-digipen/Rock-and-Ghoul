@@ -94,7 +94,7 @@ private:
 
 	// CRASH if never register component type
 	void IsComponentRegistered(std::type_index typeID) {
-		if (componentManagers.find(typeID) != componentManagers.end())
+		if (componentManagers.find(typeID) == componentManagers.end())
 		{
 			throw std::runtime_error("COMPONENT TYPE NOT REGISTERED");
 		}
@@ -119,7 +119,7 @@ public:
 
 
 	bool HasDependencies(Entity eID, std::type_index typeID) {
-		IsComponentRegistered(typeID);
+		// IsComponentRegistered(typeID);
 
 		for (std::type_index dep : componentDependencies[typeID])
 		{
