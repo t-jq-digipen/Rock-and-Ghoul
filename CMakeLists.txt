@@ -13,7 +13,6 @@ set(ALL_LIBS
     imgui
     freetype
     nlohmann_json::nlohmann_json
-    mono
 )
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
