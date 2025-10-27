@@ -285,6 +285,9 @@ namespace Physics {
 
 	PhysicsComponent PhysicsComponent::DeSerialize(Entity eID, const std::string& data) {
 		(void)eID;
+		if (data.empty()) {
+			return PhysicsComponent();
+		}
 		nlohmann::json j = nlohmann::json::parse(data);
 
 		PhysicsComponent phys;

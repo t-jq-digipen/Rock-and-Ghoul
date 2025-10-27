@@ -1,383 +1,125 @@
 {
     "entities": [
         {
-            "components": {
-                "Animator": {
-                    "animDuration": 1.0,
-                    "currentState": 0,
-                    "frameColEnd": 1,
-                    "frameColStart": 0,
-                    "frameRow": 3,
-                    "states": {
-                        "0": {
-                            "col_end": 1,
-                            "col_start": 0,
-                            "duration": 1.0,
-                            "row": 3
-                        },
-                        "1": {
-                            "col_end": 3,
-                            "col_start": 2,
-                            "duration": 0.5,
-                            "row": 3
-                        }
-                    },
-                    "totalCols": 6,
-                    "totalRows": 3,
-                    "u0": 18.0,
-                    "u1": 36.0,
-                    "v0": 54.0,
-                    "v1": 72.0
-                },
-                "Health": {
-                    "currentHP": 100.0,
-                    "maxHP": 100.0
-                },
-                "Input": {
-                    "scheme": 1
-                },
-                "Physics": {
-                    "aabb": {
-                        "centerX": 382.11212158203125,
-                        "centerY": 400.0,
-                        "dimX": 200.0,
-                        "dimY": 200.0
-                    },
-                    "circle": {
-                        "posX": 382.11212158203125,
-                        "posY": 400.0,
-                        "rad": 200.0
-                    },
-                    "decay": 0.014999999664723873,
-                    "velX": 0.0,
-                    "velY": 0.0,
-                    "willCollide": true
-                },
-                "Sprite": {
-                    "animated": true,
-                    "scaleX": 100.0,
-                    "scaleY": 100.0,
-                    "texturePath": "../Assets/Waffle_Sprites.png"
-                },
-                "Tag": {
-                    "tagID": 0
-                },
-                "Transform": {
-                    "posX": 382.11212158203125,
-                    "posY": 400.0,
-                    "rot": 0.0,
-                    "scaleX": 100.0,
-                    "scaleY": 100.0
-                }
-            },
-            "id": 0,
+            "components": {},
             "name": "Waffle"
         },
         {
             "components": {
-                "Health": {
-                    "currentHP": 100.0,
-                    "maxHP": 100.0
-                },
-                "Input": {
-                    "scheme": 0
-                },
-                "Physics": {
-                    "aabb": {
-                        "centerX": 382.4512634277344,
-                        "centerY": 930.0,
-                        "dimX": 200.0,
-                        "dimY": 200.0
-                    },
-                    "circle": {
-                        "posX": 382.4512634277344,
-                        "posY": 930.0,
-                        "rad": 200.0
-                    },
-                    "decay": 0.014999999664723873,
-                    "velX": 0.0,
-                    "velY": 0.0,
-                    "willCollide": true
-                },
-                "Sprite": {
-                    "animated": false,
-                    "scaleX": 0.10000000149011612,
-                    "scaleY": 0.10000000149011612,
-                    "texturePath": "../Assets/Rock_FightingPose_2048px.png"
-                },
-                "Tag": {
-                    "tagID": 0
-                },
-                "Transform": {
-                    "posX": 382.4512634277344,
-                    "posY": 930.0,
-                    "rot": 0.0,
-                    "scaleX": 100.0,
-                    "scaleY": 100.0
-                }
+                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+                "Input": "{\"scheme\":0}",
+                "Physics": "{\"aabb\":{\"centerX\":950.64501953125,\"centerY\":554.6735229492188,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":950.64501953125,\"posY\":554.6735229492188,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":-0.1467558741569519,\"velY\":0.02241252176463604,\"willCollide\":true}",
+                "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Rock_FightingPose_2048px.png\"}",
+                "Tag": "{\"tagID\":0}",
+                "Transform": "{\"posX\":950.64501953125,\"posY\":554.6735229492188,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
-            "id": 1,
             "name": "Player"
         },
         {
             "components": {
-                "Health": {
-                    "currentHP": 100.0,
-                    "maxHP": 100.0
-                },
-                "Input": {
-                    "scheme": 0
-                },
-                "Physics": {
-                    "aabb": {
-                        "centerX": 878.910888671875,
-                        "centerY": 930.0,
-                        "dimX": 200.0,
-                        "dimY": 200.0
-                    },
-                    "circle": {
-                        "posX": 878.910888671875,
-                        "posY": 930.0,
-                        "rad": 200.0
-                    },
-                    "decay": 0.014999999664723873,
-                    "velX": 0.0,
-                    "velY": 0.0,
-                    "willCollide": true
-                },
-                "Shape": {
-                    "colorX": 1.0,
-                    "colorY": 0.0,
-                    "colorZ": 0.0,
-                    "dimX": 200.0,
-                    "dimY": 200.0,
-                    "shapeType": 0
-                },
-                "Tag": {
-                    "tagID": 0
-                },
-                "Transform": {
-                    "posX": 878.910888671875,
-                    "posY": 930.0,
-                    "rot": 0.0,
-                    "scaleX": 100.0,
-                    "scaleY": 100.0
-                }
+                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+                "Input": "{\"scheme\":0}",
+                "Physics": "{\"aabb\":{\"centerX\":1274.666015625,\"centerY\":492.77374267578125,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1274.666015625,\"posY\":492.77374267578125,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":-0.1467558741569519,\"velY\":0.02241252176463604,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":0.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":0}",
+                "Transform": "{\"posX\":1274.666015625,\"posY\":492.77374267578125,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
-            "id": 2,
             "name": "Rectangle"
         },
         {
             "components": {
-                "Health": {
-                    "currentHP": 100.0,
-                    "maxHP": 100.0
-                },
-                "Input": {
-                    "scheme": 2
-                },
-                "Physics": {
-                    "aabb": {
-                        "centerX": 903.15380859375,
-                        "centerY": 500.0,
-                        "dimX": 200.0,
-                        "dimY": 200.0
-                    },
-                    "circle": {
-                        "posX": 903.15380859375,
-                        "posY": 500.0,
-                        "rad": 100.0
-                    },
-                    "decay": 0.014999999664723873,
-                    "velX": 0.0,
-                    "velY": 0.0,
-                    "willCollide": true
-                },
-                "Shape": {
-                    "colorX": 0.0,
-                    "colorY": 1.0,
-                    "colorZ": 0.0,
-                    "dimX": 200.0,
-                    "dimY": 200.0,
-                    "shapeType": 1
-                },
-                "Tag": {
-                    "tagID": 0
-                },
-                "Transform": {
-                    "posX": 903.15380859375,
-                    "posY": 500.0,
-                    "rot": 0.0,
-                    "scaleX": 100.0,
-                    "scaleY": 100.0
-                }
+                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+                "Input": "{\"scheme\":2}",
+                "Physics": "{\"aabb\":{\"centerX\":1278.605224609375,\"centerY\":692.7742919921875,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1278.605224609375,\"posY\":692.7742919921875,\"rad\":100.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0005303000216372311,\"willCollide\":true}",
+                "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":1}",
+                "Tag": "{\"tagID\":0}",
+                "Transform": "{\"posX\":1278.605224609375,\"posY\":692.7742919921875,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
-            "id": 3,
             "name": "Circle"
         },
         {
             "components": {
-                "Physics": {
-                    "aabb": {
-                        "centerX": 960.0,
-                        "centerY": 1055.0,
-                        "dimX": 1920.0,
-                        "dimY": 50.0
-                    },
-                    "circle": {
-                        "posX": 960.0,
-                        "posY": 1055.0,
-                        "rad": 0.0
-                    },
-                    "decay": 0.014999999664723873,
-                    "velX": 0.0,
-                    "velY": 0.0,
-                    "willCollide": true
-                },
-                "Shape": {
-                    "colorX": 0.0,
-                    "colorY": 0.0,
-                    "colorZ": 0.0,
-                    "dimX": 0.0,
-                    "dimY": 0.0,
-                    "shapeType": 0
-                },
-                "Tag": {
-                    "tagID": 3
-                },
-                "Transform": {
-                    "posX": 960.0,
-                    "posY": 1055.0,
-                    "rot": 0.0,
-                    "scaleX": 1920.0,
-                    "scaleY": 50.0
-                }
+                "Physics": "{\"aabb\":{\"centerX\":960.0,\"centerY\":1055.0,\"dimX\":1920.0,\"dimY\":50.0},\"circle\":{\"posX\":960.0,\"posY\":1055.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":960.0,\"posY\":1055.0,\"rot\":0.0,\"scaleX\":1920.0,\"scaleY\":50.0}"
             },
-            "id": 4,
             "name": "Entity_4"
         },
         {
             "components": {
-                "Physics": {
-                    "aabb": {
-                        "centerX": 960.0,
-                        "centerY": 25.0,
-                        "dimX": 1920.0,
-                        "dimY": 50.0
-                    },
-                    "circle": {
-                        "posX": 960.0,
-                        "posY": 25.0,
-                        "rad": 0.0
-                    },
-                    "decay": 0.014999999664723873,
-                    "velX": 0.0,
-                    "velY": 0.0,
-                    "willCollide": true
-                },
-                "Shape": {
-                    "colorX": 0.0,
-                    "colorY": 0.0,
-                    "colorZ": 0.0,
-                    "dimX": 0.0,
-                    "dimY": 0.0,
-                    "shapeType": 0
-                },
-                "Tag": {
-                    "tagID": 3
-                },
-                "Transform": {
-                    "posX": 960.0,
-                    "posY": 25.0,
-                    "rot": 0.0,
-                    "scaleX": 1920.0,
-                    "scaleY": 50.0
-                }
+                "Physics": "{\"aabb\":{\"centerX\":960.0,\"centerY\":25.0,\"dimX\":1920.0,\"dimY\":50.0},\"circle\":{\"posX\":960.0,\"posY\":25.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":960.0,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1920.0,\"scaleY\":50.0}"
             },
-            "id": 5,
             "name": "Entity_5"
         },
         {
             "components": {
-                "Physics": {
-                    "aabb": {
-                        "centerX": 25.0,
-                        "centerY": 540.0,
-                        "dimX": 50.0,
-                        "dimY": 1080.0
-                    },
-                    "circle": {
-                        "posX": 25.0,
-                        "posY": 540.0,
-                        "rad": 0.0
-                    },
-                    "decay": 0.014999999664723873,
-                    "velX": 0.0,
-                    "velY": 0.0,
-                    "willCollide": true
-                },
-                "Shape": {
-                    "colorX": 0.0,
-                    "colorY": 0.0,
-                    "colorZ": 0.0,
-                    "dimX": 0.0,
-                    "dimY": 0.0,
-                    "shapeType": 0
-                },
-                "Tag": {
-                    "tagID": 3
-                },
-                "Transform": {
-                    "posX": 25.0,
-                    "posY": 540.0,
-                    "rot": 0.0,
-                    "scaleX": 50.0,
-                    "scaleY": 1080.0
-                }
+                "Physics": "{\"aabb\":{\"centerX\":25.0,\"centerY\":540.0,\"dimX\":50.0,\"dimY\":1080.0},\"circle\":{\"posX\":25.0,\"posY\":540.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":25.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":50.0,\"scaleY\":1080.0}"
             },
-            "id": 6,
             "name": "Entity_6"
         },
         {
             "components": {
-                "Physics": {
-                    "aabb": {
-                        "centerX": 1879.43701171875,
-                        "centerY": 540.0,
-                        "dimX": 50.0,
-                        "dimY": 1080.0
-                    },
-                    "circle": {
-                        "posX": 1879.43701171875,
-                        "posY": 540.0,
-                        "rad": 0.0
-                    },
-                    "decay": 0.014999999664723873,
-                    "velX": 0.0,
-                    "velY": 0.0,
-                    "willCollide": true
-                },
-                "Shape": {
-                    "colorX": 0.0,
-                    "colorY": 0.0,
-                    "colorZ": 0.0,
-                    "dimX": 0.0,
-                    "dimY": 0.0,
-                    "shapeType": 0
-                },
-                "Tag": {
-                    "tagID": 3
-                },
-                "Transform": {
-                    "posX": 1879.43701171875,
-                    "posY": 540.0,
-                    "rot": 0.0,
-                    "scaleX": 50.0,
-                    "scaleY": 1080.0
-                }
+                "Physics": "{\"aabb\":{\"centerX\":1895.0,\"centerY\":540.0,\"dimX\":50.0,\"dimY\":1080.0},\"circle\":{\"posX\":1895.0,\"posY\":540.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":1895.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":50.0,\"scaleY\":1080.0}"
             },
-            "id": 7,
             "name": "Entity_7"
+        },
+        {
+            "components": {
+                "Physics": "{\"aabb\":{\"centerX\":960.0,\"centerY\":1055.0,\"dimX\":1920.0,\"dimY\":50.0},\"circle\":{\"posX\":960.0,\"posY\":1055.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":960.0,\"posY\":1055.0,\"rot\":0.0,\"scaleX\":1920.0,\"scaleY\":50.0}"
+            },
+            "name": "Entity_8"
+        },
+        {
+            "components": {
+                "Physics": "{\"aabb\":{\"centerX\":960.0,\"centerY\":25.0,\"dimX\":1920.0,\"dimY\":50.0},\"circle\":{\"posX\":960.0,\"posY\":25.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":960.0,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1920.0,\"scaleY\":50.0}"
+            },
+            "name": "Entity_9"
+        },
+        {
+            "components": {
+                "Physics": "{\"aabb\":{\"centerX\":25.0,\"centerY\":540.0,\"dimX\":50.0,\"dimY\":1080.0},\"circle\":{\"posX\":25.0,\"posY\":540.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":25.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":50.0,\"scaleY\":1080.0}"
+            },
+            "name": "Entity_10"
+        },
+        {
+            "components": {
+                "Physics": "{\"aabb\":{\"centerX\":1895.0,\"centerY\":540.0,\"dimX\":50.0,\"dimY\":1080.0},\"circle\":{\"posX\":1895.0,\"posY\":540.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":1895.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":50.0,\"scaleY\":1080.0}"
+            },
+            "name": "Entity_11"
+        },
+        {
+            "components": {
+                "Animator": "{\"animDuration\":1.0,\"currentState\":0,\"frameColEnd\":1,\"frameColStart\":0,\"frameRow\":3,\"states\":{\"0\":{\"col_end\":1,\"col_start\":0,\"duration\":1.0,\"row\":3},\"1\":{\"col_end\":3,\"col_start\":2,\"duration\":0.5,\"row\":3}},\"totalCols\":6,\"totalRows\":3}",
+                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+                "Input": "{\"scheme\":1}",
+                "Physics": "{\"aabb\":{\"centerX\":528.9154663085938,\"centerY\":150.0,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":528.9154663085938,\"posY\":150.0,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.014059901237487793,\"velY\":-0.23906177282333374,\"willCollide\":true}",
+                "Sprite": "{\"animated\":true,\"scaleX\":100.0,\"scaleY\":100.0,\"texturePath\":\"../Assets/Waffle_Sprites.png\"}",
+                "Tag": "{\"tagID\":0}",
+                "Transform": "{\"posX\":528.9154663085938,\"posY\":150.0,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+            },
+            "name": "Waffle"
         }
     ],
     "sceneName": "Level1"
