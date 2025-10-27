@@ -6,7 +6,26 @@ void MonoManager::Initialize(const std::string& assemblyPath)
     std::cout << "[MonoManager] Initializing Mono runtime...\n";
 
 #if _WIN32
-    mono_set_dirs("C:/Program Files/Mono/lib", "C:/Program Files/Mono/etc");
+    // Get the executable's directory
+    std::filesystem::path exePath = std::filesystem::path(__argv[0]).parent_path();
+
+    // Navigate from build/Debug up to project root, then into deps/Mono
+    // exePath is build/Debug, go up twice to reach project root
+    std::filesystem::path projectRoot = exePath.parent_path().parent_path();
+    std::filesystem::path monoLib = projectRoot / "deps" / "Mono" / "lib";
+    std::filesystem::path monoEtc = projectRoot / "deps" / "Mono" / "etc";
+
+    // Verify the path exists
+    if (!std::filesystem::exists(monoLib)) {
+        std::cerr << "[MonoManager] ERROR: Mono lib path does not exist: " << monoLib << "\n";
+        std::cerr << "[MonoManager] Executable directory: " << exePath << "\n";
+        std::cerr << "[MonoManager] Project root: " << projectRoot << "\n";
+        throw std::runtime_error("Mono libraries not found");
+    }
+
+    mono_set_dirs(monoLib.string().c_str(), monoEtc.string().c_str());
+    std::cout << "[MonoManager] Mono lib path: " << monoLib << "\n";
+    std::cout << "[MonoManager] Mono etc path: " << monoEtc << "\n";
 #elif __APPLE__
     mono_set_dirs("/Library/Frameworks/Mono.framework/Versions/Current/lib",
         "/Library/Frameworks/Mono.framework/Versions/Current/etc");
