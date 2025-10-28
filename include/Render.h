@@ -93,7 +93,7 @@ struct Character {
 
 //Struct for font 
 struct Font {
-    std::array<Character, 128> glyphs;
+    std::array<Character, 128> glyphs; //128 ASCII
     int sizePx = 0;
     std::string name; //i just put here first for debug
 };
@@ -612,15 +612,15 @@ private:
     };
 
     // Limits (tweakable)
-    static constexpr size_t kMaxQuads = 10000;
-    static constexpr size_t kMaxVertices = kMaxQuads * 4;
-    static constexpr size_t kMaxIndices = kMaxQuads * 6;
-    static constexpr size_t kMaxTexSlots = 16;      // keep in sync with shader's uTextures[]
+    static constexpr size_t MaxQuads = 10000;
+    static constexpr size_t MaxVertices = MaxQuads * 4;
+    static constexpr size_t MaxIndices = MaxQuads * 6;
+    static constexpr size_t MaxTexSlots = 16;      // keep in sync with frag shader's uTextures[]
 
     //helper batch functions
-    void InitBatch_();        // called inside Init()
-    void ResetBatch_();       // reset counters/buffer pointers
-    void FlushIfFull_(size_t quadCountNeeded, GLuint textureID);
+    void InitBatch();        // called inside Init()
+    void ResetBatch();       // reset counters/buffer pointers
+    void FlushIfFull(size_t quadCountNeeded, GLuint textureID);
 
     // CPU-side staging buffer
     std::vector<BatchVertex> batchCPUBuffer;

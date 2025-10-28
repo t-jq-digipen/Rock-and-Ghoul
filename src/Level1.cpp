@@ -29,6 +29,7 @@
 #include "FilePath.h"
 
 #include "CrashHandler.h"
+#include <PlayerSystem.h>
 
 static FretBoard* fretboard = nullptr;
 constexpr float LEVEL_WIDTH = 1920.f;
@@ -128,6 +129,22 @@ void Level1::Update()
 {
 	//static bool spawned = false;
 	//std::vector<Entity> toRemove;
+
+	//switch animation state
+	if (Input::IsKeyPressed(GLFW_KEY_U))  // U walk animation
+	{
+		for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>())
+		{
+			if (tag.tag == T_BATCH &&
+				registry.Has_Component<Animator::AnimatorComponent>(entID))
+			{
+				auto& anim = registry.Get_Component<Animator::AnimatorComponent>(entID);
+				anim.SetState(PS_WALK);
+			}
+		}
+
+		std::cout << "Switched animation from IDLE to WALK" << std::endl;
+	}
 
 	static bool spawnedBatch = false;
 	std::vector<Entity> toRemove;

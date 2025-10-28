@@ -223,9 +223,9 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
     anim.AddState(PS_IDLE, { 3, 0, 1, 1.0f });
     anim.AddState(PS_WALK, { 3, 2, 3, 0.5f });
 
-    // Randomize start time a bit to avoid perfect sync
-    float randomOffset = static_cast<float>(rand() % 100) / 100.0f;
-    anim.UpdateFrame(randomOffset);
+    // Randomize start time a bit to avoid maybe?
+    /*float randomOffset = static_cast<float>(rand() % 100) / 100.0f;
+    anim.UpdateFrame(randomOffset);*/
 
     Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
 

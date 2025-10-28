@@ -140,7 +140,7 @@ void Render::Init() {
 
     InitTextRendering();
 
-    InitBatch_(); //uncomment once batch shaders are ready
+    InitBatch(); //uncomment once batch shaders are ready
 }
 
 void Render::ClearBackground(const Colour4& color) {
@@ -1434,7 +1434,7 @@ void Render::SetUniformMat4(GLuint shaderID, const std::string& name, const glm:
 
 
 //Batching stuff attempt=============================================================================================================================================================
-void Render::InitBatch_()
+void Render::InitBatch()
 {
     //GPU buffers
     glGenVertexArrays(1, &batchVAO);
@@ -1444,15 +1444,15 @@ void Render::InitBatch_()
     glBindVertexArray(batchVAO);
     glBindBuffer(GL_ARRAY_BUFFER, batchVBO);
     glBufferData(GL_ARRAY_BUFFER,
-        kMaxVertices * sizeof(BatchVertex),
+        MaxVertices * sizeof(BatchVertex),
         nullptr,
         GL_DYNAMIC_DRAW);
 
-    // Pre-build the index buffer for kMaxQuads
+    // Pre-build the index buffer for MaxQuads
     std::vector<unsigned int> indices;
-    indices.reserve(kMaxIndices);
+    indices.reserve(MaxIndices);
     unsigned int offset = 0;
-    for (size_t i = 0; i < kMaxQuads; ++i) {
+    for (size_t i = 0; i < MaxQuads; ++i) {
         // 2 triangles per quad: (0,1,2) (2,3,0)
         indices.push_back(offset + 0);
         indices.push_back(offset + 1);
@@ -1498,14 +1498,14 @@ void Render::InitBatch_()
     batchShader = CreateProgramFromFiles("../Assets/batch.vert", "../Assets/batch.frag"); //remember add this new files and correct path
 
     //CPU buffer reserve
-    batchCPUBuffer.reserve(kMaxVertices);
+    batchCPUBuffer.reserve(MaxVertices);
 
     //Sampler array binding (tell GLSL that uTextures[i] => texture unit i)
     glUseProgram(batchShader);
     GLint loc = glGetUniformLocation(batchShader, "uTextures");
-    int samplers[kMaxTexSlots];
-    for (int i = 0; i < static_cast<int>(kMaxTexSlots); ++i) samplers[i] = i;
-    if (loc >= 0) glUniform1iv(loc, static_cast<GLsizei>(kMaxTexSlots), samplers);
+    int samplers[MaxTexSlots];
+    for (int i = 0; i < static_cast<int>(MaxTexSlots); ++i) samplers[i] = i;
+    if (loc >= 0) glUniform1iv(loc, static_cast<GLsizei>(MaxTexSlots), samplers);
 
     // Also set the projection once here (you update projection elsewhere as needed)
     GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
@@ -1513,36 +1513,36 @@ void Render::InitBatch_()
 
     glUseProgram(0);
 
-    ResetBatch_();
+    ResetBatch();
 }
 
 
-void Render::ResetBatch_()
+void Render::ResetBatch()
 {
     batchCPUBuffer.clear();
     batchIndexCount = 0;
     batchTexSlots.clear();
-    batchTexSlots.reserve(kMaxTexSlots);
+    batchTexSlots.reserve(MaxTexSlots);
 }
 
 void Render::BeginBatch()
 {
-    ResetBatch_();
+    ResetBatch();
 }
 
-static inline glm::vec2 Rotate2D_(const glm::vec2& p, float radians)
+static inline glm::vec2 Rotate2D(const glm::vec2& p, float radians)
 {
     const float c = std::cos(radians);
     const float s = std::sin(radians);
     return glm::vec2(c * p.x - s * p.y, s * p.x + c * p.y);
 }
 
-void Render::FlushIfFull_(size_t quadCountNeeded, GLuint textureID)
+void Render::FlushIfFull(size_t quadCountNeeded, GLuint textureID)
 {
     // If exceeding quad capacity, or no room for a new texture slot, flush.
     bool needFlush = false;
 
-    if (batchIndexCount + quadCountNeeded * 6 > kMaxIndices) {
+    if (batchIndexCount + quadCountNeeded * 6 > MaxIndices) {
         needFlush = true;
     }
     else {
@@ -1551,7 +1551,7 @@ void Render::FlushIfFull_(size_t quadCountNeeded, GLuint textureID)
         for (size_t i = 0; i < batchTexSlots.size(); ++i) {
             if (batchTexSlots[i] == textureID) { found = true; break; }
         }
-        if (!found && batchTexSlots.size() >= kMaxTexSlots) {
+        if (!found && batchTexSlots.size() >= MaxTexSlots) {
             needFlush = true;
         }
     }
@@ -1559,7 +1559,7 @@ void Render::FlushIfFull_(size_t quadCountNeeded, GLuint textureID)
     if (needFlush) {
         EndBatch();
         FlushBatch();
-        ResetBatch_();
+        ResetBatch();
     }
 }
 
@@ -1587,7 +1587,7 @@ void Render::SubmitSpriteBatchUV(const Image& image,
     if (!image.IsValid()) return;
 
     // Ensure capacity / texture slot availability
-    FlushIfFull_(1, image.textureID);
+    FlushIfFull(1, image.textureID);
 
     // Determine tex slot index
     float texIndex = -1.0f;
@@ -1613,7 +1613,7 @@ void Render::SubmitSpriteBatchUV(const Image& image,
 
     // Rotate then translate to world
     glm::vec2 world[4];
-    for (int i = 0; i < 4; ++i) world[i] = Rotate2D_(local[i], rotation) + glm::vec2(pos.x, pos.y);
+    for (int i = 0; i < 4; ++i) world[i] = Rotate2D(local[i], rotation) + glm::vec2(pos.x, pos.y);
 
     // UVs (u0,v0,u1,v1) => (bl, br, tr, tl)
     const float u0 = uvRect.x, v0 = uvRect.y, u1 = uvRect.z, v1 = uvRect.w;
