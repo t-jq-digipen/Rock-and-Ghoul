@@ -234,10 +234,10 @@ struct TagComponent {
 		Editor::Widget_Dropdown dropdown;
 		dropdown.ref = reinterpret_cast<unsigned int*>(&tag);
 		dropdown.Add_Option("Player", static_cast<unsigned int>(T_PLAYER));
-		dropdown.Add_Option("Player", static_cast<unsigned int>(T_ENEMY));
-		dropdown.Add_Option("Player", static_cast<unsigned int>(T_PROJECTILE));
-		dropdown.Add_Option("Player", static_cast<unsigned int>(T_WALL));
-		dropdown.Add_Option("Player", static_cast<unsigned int>(T_INSTANCING));
+		dropdown.Add_Option("Enemy", static_cast<unsigned int>(T_ENEMY));
+		dropdown.Add_Option("Projectile", static_cast<unsigned int>(T_PROJECTILE));
+		dropdown.Add_Option("Wall", static_cast<unsigned int>(T_WALL));
+		dropdown.Add_Option("Instancing", static_cast<unsigned int>(T_INSTANCING));
 
 		ret.Add_Data("Tag",  dropdown );
 
@@ -325,9 +325,8 @@ struct ShapeComponent {
 		Editor::ComponentData ret("Shape");
 		Editor::Widget_Dropdown dropdown;
 		dropdown.ref = reinterpret_cast<unsigned int*>(&shape);
-		dropdown.Add_Option("WASD", static_cast<unsigned int>(CS_WASD));
-		dropdown.Add_Option("IJKL", static_cast<unsigned int>(CS_IJKL));
-		dropdown.Add_Option("Arrows", static_cast<unsigned int>(CS_ARROWS));
+		dropdown.Add_Option("Rectangle", static_cast<unsigned int>(SHAPE_RECTANGLE));
+		dropdown.Add_Option("Circle", static_cast<unsigned int>(SHAPE_CIRCLE));
 		ret.Add_Data("Scheme", dropdown );
 
 		ret.Add_Data("Width",		  Editor::Widget_Float{&dimensions.x, true, 0.f, 100.f});

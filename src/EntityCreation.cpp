@@ -175,9 +175,12 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<Sprite::SpriteComponent>(waffle, Sprite::SpriteComponent{ imgtemp, {100.f,100.f }, true });
 
             // CRITICAL: Ensure imageWidth and imageHeight are set correctly!
-            Animator::AnimatorComponent animtemp(3, 6, imgtemp.widthPixels, imgtemp.heightPixels, { 2,0,1 }, 1.f);
+            Animator::AnimatorComponent animtemp(3, 6, { 2,0,1 }, 1.f);
             animtemp.AddState(PS_IDLE, { 3, 0, 1, 1.f });
             animtemp.AddState(PS_WALK, { 3,2,3,0.5f });
+
+            animtemp.UpdateUV(imgtemp.widthPixels, imgtemp.heightPixels);
+
             Registry::Get().Add_Component<Animator::AnimatorComponent>(waffle, animtemp);
 
             Registry::Get().Add_Component<HealthComponent>(waffle, HealthComponent{ 100.f, 100.f });

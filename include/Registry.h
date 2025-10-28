@@ -160,7 +160,7 @@ public:
 		// Check if component is already registered
 		if ((componentManagers.find(typeID)) != componentManagers.end())
 		{
-			throw std::runtime_error("COMPONENT ALREADY REGISTERED\n");
+			throw std::runtime_error("COMPONENT " + name + " ALREADY REGISTERED\n");
 		}
 		else // Component not registered yet, safe to register :)
 		{
@@ -177,7 +177,7 @@ public:
 				std::type_index depTypeIdx = Get_ComponentTypeIndex(dep);
 				if (componentManagers.find(depTypeIdx) == componentManagers.end())
 				{
-					throw std::runtime_error("DEPENDENCY NOT REGISTERED\n");
+					throw std::runtime_error("DEPENDENCY FOR " + name + ", " + dep + " NOT REGISTERED\n");
 				}
 				componentDependencies[typeID].push_back(depTypeIdx);
 				componentDependents[depTypeIdx].push_back(typeID);
@@ -191,7 +191,7 @@ public:
 	 * @param component Component instance to add.
 	 */
 	template<typename Component>
-	void Add_Component(Entity eID, const Component& component)
+	void Add_Component(Entity eID, const Component& component = {})
 	{
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 		// Check if this component has dependencies
@@ -368,6 +368,15 @@ public:
 		Set_EntityName(eID, saved.name);
 
 		std::cout << "Creating entity '" << saved.name << "' (ID: " << eID << ")\n";
+
+		//for (std::type_index typeID : componentTypeList)
+		//{
+		//	std::string typeName = Get_ComponentTypeName(typeID);
+		//	if (saved.componentData.contains(typeName))
+		//	{
+		//		componentManagers[typeID]->LoadComponent(eID, saved.componentData.find(typeName)->second);
+		//	}
+		//}
 
 		for (auto& [typeName, data] : saved.componentData)
 		{

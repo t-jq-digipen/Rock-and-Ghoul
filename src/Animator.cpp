@@ -30,21 +30,22 @@ namespace Animator {
 
 	AnimatorComponent::AnimatorComponent() :
 		m_total_rows{}, m_total_cols{}, m_current_row{}, m_current_col{},
-		u0{}, v0{}, u1{}, v1{}, anim_duration{}, anim_timer{}, frames{}
-	{
-		UpdateUV();
-	}
+		m_uv_height{}, m_uv_width{}, anim_duration{}, anim_timer{},
+		frames{}, range{}, u0{}, v0{}, u1{}, v1{}
+	{}
 
-	AnimatorComponent::AnimatorComponent(int total_rows, int total_cols, int imageWidthPixels, int imageHeightPixels, ActiveFrames const& framerange, float duration) :
+	AnimatorComponent::AnimatorComponent(int total_rows, int total_cols, ActiveFrames const& framerange, float duration) :
 		m_total_rows{ total_rows }, m_total_cols{ total_cols }, m_current_row{}, m_current_col{},
-		frames{ framerange }, anim_timer{}, anim_duration{ duration }
+		m_uv_height{}, m_uv_width{}, anim_duration{ duration }, anim_timer{},
+		frames{ framerange },
+		u0{}, v0{}, u1{}, v1{}
 	{
 		range = framerange.col_end - framerange.col_start;
-		m_uv_width = static_cast<float>(imageWidthPixels) / static_cast<float>(m_total_cols);
-		m_uv_height = static_cast<float>(imageHeightPixels) / static_cast<float>(m_total_rows);
-		m_current_row = frames.row;
-		m_current_col = frames.col_start;
-		UpdateUV();
+		//m_uv_width = static_cast<float>(imageWidthPixels) / static_cast<float>(m_total_cols);
+		//m_uv_height = static_cast<float>(imageHeightPixels) / static_cast<float>(m_total_rows);
+		//m_current_row = frames.row;
+		//m_current_col = frames.col_start;
+		//UpdateUV();
 	}
 
 	void AnimatorComponent::UpdateUV()
@@ -53,6 +54,15 @@ namespace Animator {
 		v0 = m_current_row * m_uv_height;
 		u1 = u0 + m_uv_width;
 		v1 = v0 + m_uv_height;
+	}
+
+	void AnimatorComponent::UpdateUV(int imageWidthPixels, int imageHeightPixels)
+	{
+		m_uv_width = static_cast<float>(imageWidthPixels) / static_cast<float>(m_total_cols);
+		m_uv_height = static_cast<float>(imageHeightPixels) / static_cast<float>(m_total_rows);
+		m_current_row = frames.row;
+		m_current_col = frames.col_start;
+		UpdateUV();
 	}
 
 	void AnimatorComponent::SetFrames(ActiveFrames const& framerange, float duration)
@@ -195,8 +205,6 @@ namespace Animator {
 		int totalCols = j.value("totalCols", 1);
 		float animDuration = j.value("animDuration", 0.0f);
 
-		int imageWidth = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID).Get_Image().widthPixels;
-		int imageHeight = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID).Get_Image().heightPixels;
 
 		//int imageWidth = j.value("imageWidth", 0);
 		//int imageHeight = j.value("imageHeight", 0);
@@ -213,7 +221,11 @@ namespace Animator {
 		//	}
 		//}
 
-		AnimatorComponent temp(totalRows, totalCols, imageWidth, imageHeight, frames, animDuration);
+		AnimatorComponent temp(totalRows, totalCols, frames, animDuration);
+
+		int imageWidth = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID).Get_Image().widthPixels;
+		int imageHeight = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID).Get_Image().heightPixels;
+
 
 		if (j.contains("states")) {
 			for (auto& [stateKey, stateData] : j["states"].items()) {
@@ -238,6 +250,8 @@ namespace Animator {
 		if (j.contains("currentState") && !j["currentState"].is_null() && j["currentState"] != -1) {
 			temp.SetState(j["currentState"]);
 		}
+
+		temp.UpdateUV(imageWidth, imageHeight);
 
 		return temp;
 	}
