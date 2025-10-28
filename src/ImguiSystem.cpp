@@ -47,6 +47,10 @@ static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
 bool ImGuiSystem::dragEditMode = false;
 
+static std::string pendingImportPath;
+static std::string pendingDestPath;
+static bool showReplacePopup = false;
+
 
 // Checkbox
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
@@ -111,16 +115,46 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
     std::cout << "[ImGui Drop] File dropped: " << filename << " (" << path << ")\n";
 
     // --- Image loading --- 
-    Image img = CreateImage(path);
+    //Image img = CreateImage(path);
     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
     {
-        g_loadedThumbnails.push_back(img);
-        g_imageNames.push_back(fs::path(path).filename().string());
-        if (img.IsValid())
+        namespace fs = std::filesystem;
+
+        // source file (dragged)
+        std::string src = path;
+
+        // destination directory
+        std::string destDir = "../Assets/";
+
+        // full destination file path
+        std::string destPath = destDir + fs::path(src).filename().string();
+
+        // make sure the folder exists
+        if (!fs::exists(destDir))
+            fs::create_directories(destDir);
+
+        // copy the file
+        try {
+            fs::copy_file(src, destPath, fs::copy_options::overwrite_existing);
+            std::cout << "[ImGui Drop] Imported: " << destPath << "\n";
+        }
+        catch (const fs::filesystem_error& e) {
+            std::cerr << "[ImGui Drop] Copy failed: " << e.what() << std::endl;
+            return;
+        }
+
+        Image img = CreateImage(path);
+
+        if (img.IsValid()) {
+            g_loadedThumbnails.push_back(img);
+            g_imageNames.push_back(fs::path(path).filename().string());
             std::cout << "[ImGui Drop] Loaded texture successfully.\n";
+        }
         else
             std::cerr << "[ImGui Drop] Failed to load image.\n";
         return;
+
+
     }
 
     // --- Prefab loading ---
@@ -505,8 +539,8 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
         ImGui::TextDisabled("No prefabs available in %s", FilePath::PREFABS_FOLDER.c_str());
     }
     // ==============================
-// Image loader (runtime only)
-// ==============================
+    // Image loader (runtime only)
+    // ==============================
     ImGui::Separator();
     ImGui::Text("Image Loader:");
 
@@ -659,6 +693,33 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
         ImGui::Separator();
     }
+    if (ImGui::Button("Refresh Assets"))
+    {
+        g_loadedThumbnails.clear();
+        g_imageNames.clear();
+
+        const std::string assetFolder = "../Assets/";
+        for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
+        {
+            if (!entry.is_regular_file()) continue;
+            std::string path = entry.path().string();
+            std::string ext = entry.path().extension().string();
+            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+            {
+                Image img = CreateImage(path);
+                if (img.IsValid())
+                {
+                    g_loadedThumbnails.push_back(img);
+                    g_imageNames.push_back(entry.path().filename().string());
+                }
+            }
+        }
+
+        std::cout << "[ImGui Assets] Refreshed from folder.\n";
+    }
+
     if (ImGui::BeginTabBar("AssetsTabs"))
     {
 
@@ -682,6 +743,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
                     {
+
                         try {
                             Image img = CreateImage(path);
                             if (img.IsValid()) {
@@ -731,14 +793,6 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                 ImGui::EndChild();
             }
-
-            if (ImGui::Button("Clear Loaded Thumbnails"))
-            {
-                g_loadedThumbnails.clear();
-                g_imageNames.clear();
-                std::cout << "[ImGui Assets] Cleared image cache.\n";
-            }
-
             ImGui::EndTabItem();
 
 
