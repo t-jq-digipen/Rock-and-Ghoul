@@ -333,8 +333,9 @@ public:
 	// EDITOR
 	// ================================================================================
 #pragma region EDITOR
-	template<typename Component>
-	Editor::ComponentData Get_ComponentEditorData(Entity eID);
+	const std::vector<std::type_index>& Get_ComponentOrder() {
+		return componentTypeList;
+	}
 
 	std::vector<Editor::ComponentData> Get_EntityData(Entity eID);
 #pragma endregion
