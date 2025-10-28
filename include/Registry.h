@@ -166,6 +166,7 @@ public:
 		{
 			componentManagers[typeID] = std::make_unique<ComponentManager<Component>>();
 			componentTypeNames.emplace(name, typeID);
+			componentTypeList.push_back(typeID);
 
 			if (dependencies.empty())
 			{
@@ -369,20 +370,21 @@ public:
 
 		std::cout << "Creating entity '" << saved.name << "' (ID: " << eID << ")\n";
 
-		//for (std::type_index typeID : componentTypeList)
-		//{
-		//	std::string typeName = Get_ComponentTypeName(typeID);
-		//	if (saved.componentData.contains(typeName))
-		//	{
-		//		componentManagers[typeID]->LoadComponent(eID, saved.componentData.find(typeName)->second);
-		//	}
-		//}
-
-		for (auto& [typeName, data] : saved.componentData)
+		for (std::type_index typeID : componentTypeList)
 		{
-			std::type_index typeIndex(Get_ComponentTypeIndex(typeName));
-			componentManagers[typeIndex]->LoadComponent(eID, data);
+			std::string typeName = Get_ComponentTypeName(typeID);
+			auto it = saved.componentData.find(typeName);
+			if (it != saved.componentData.end())
+			{
+				componentManagers[typeID]->LoadComponent(eID, it->second);
+			}
 		}
+
+		//for (auto& [typeName, data] : saved.componentData)
+		//{
+		//	std::type_index typeIndex(Get_ComponentTypeIndex(typeName));
+		//	componentManagers[typeIndex]->LoadComponent(eID, data);
+		//}
 
 		return eID;
 	}
