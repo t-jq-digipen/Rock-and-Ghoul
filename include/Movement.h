@@ -1,5 +1,4 @@
-// Movement.h
-
+#pragma once
 #include "Render.h"
 #include "DataDefs.h"
 #include <nlohmann/json.hpp>
@@ -22,7 +21,6 @@ namespace Movement {
 	};
 
 	class MovementComponent {
-	private:
 		float moveSpeed;
 		MovementDirection moveDirection;
 		MovementType moveType;
@@ -30,20 +28,22 @@ namespace Movement {
 	public:
 		// Default constructor
 		MovementComponent();
-		// Constructor (speed only)
-		MovementComponent(float speed);
 		// Move constructor
-		MovementComponent(float speed, MovementDirection const& dir, MovementType const& type, bool checkMoving = 0);
+		MovementComponent(float speed, MovementDirection dir, MovementType type, bool checkMoving = 0);
 		// Copy constructor
 		MovementComponent(const MovementComponent& other) = default;
 
+		// SETTERS
 		void SetMoveSpeed(float speed);
-		void SetMoveDirection(MovementDirection const& dir);
-		void SetMoveType(MovementType const& type);
+		void SetMoveDirection(MovementDirection dir);
+		void SetMoveType(MovementType type);
 		void SetIsMoving(bool checkMoving);
 
+		// GETTERS
 		const float& GetMoveSpeed() const;
-
+		MovementDirection GetMoveDirection() const;
+		MovementType GetMoveType() const;
+		bool GetIsMoving() const;
 
 		std::string Serialize() const;
 		static MovementComponent DeSerialize(Entity eID, const std::string& data);

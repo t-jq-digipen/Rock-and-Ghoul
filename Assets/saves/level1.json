@@ -114,6 +114,9 @@
                     "rot": 0.0,
                     "scaleX": 100.0,
                     "scaleY": 100.0
+                },
+                "Movement": {
+                    "moveSpeed" : 100.0
                 }
             },
             "id": 1,

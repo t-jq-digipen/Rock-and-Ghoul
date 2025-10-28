@@ -343,6 +343,13 @@ source_group("Systems\\Graphics" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
 )
 
+source_group("Systems\\Movement" FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Movement.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Movement.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementSystem.h
+)
+
 
 source_group("Physics\\System" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp

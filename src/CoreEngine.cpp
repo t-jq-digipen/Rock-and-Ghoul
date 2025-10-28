@@ -37,6 +37,7 @@
 #include "FrameRateController.h"
 #include <algorithm>
 #include "DataDefs.h"
+#include "MovementSystem.h"
 #include <nlohmann/json.hpp>
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
@@ -75,6 +76,9 @@ void CoreEngine::Initialize() {
 
     registry.Register_Component<ShapeComponent>("Shape", { "Transform" });
     std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";
+
+    registry.Register_Component<Movement::MovementComponent>("Movement", { "Transform", "Physics" });
+    std::cout << "REGISTRY | REGISTERED MOVEMENT COMPONENT\n";
 
     // marker for non-standard components which should be shifted out to game files
     std::cout << "NON DEFAULT COMPONENTS: \n==============================\n";

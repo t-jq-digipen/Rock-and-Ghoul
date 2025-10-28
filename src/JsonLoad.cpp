@@ -666,6 +666,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
                 if (Registry::Get().Has_Component<HealthComponent>(e)) std::cout << "  - Has Health" << std::endl;
                 if (Registry::Get().Has_Component<TagComponent>(e)) std::cout << "  - Has Tag" << std::endl;
                 if (Registry::Get().Has_Component<InputComponent>(e)) std::cout << "  - Has Input" << std::endl;
+                if (Registry::Get().Has_Component<Movement::MovementComponent>(e)) std::cout << "  - Has Movement" << std::endl;
 
                 SavedEntity saved = Registry::Get().Save_Entity(e);
                 scene.entities.push_back(saved);

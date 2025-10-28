@@ -16,7 +16,7 @@
 
 #include "PlayerSystem.h"
 #include "Registry.h"
-
+#include "MovementSystem.h"
 
 constexpr float dash = 10.f;
 constexpr float maxspeed = 10.f;
@@ -107,6 +107,7 @@ void PlayerSystem::Initialize()
 
 void PlayerSystem::Update(float dt)
 {
+	MovementSystem moveSystem;
 	for (auto& [entity, comp] : m_registry.Get_ComponentMap<TagComponent>())
 	{
 		if (!m_registry.Has_Component<TransformComponent>(entity))
@@ -114,8 +115,8 @@ void PlayerSystem::Update(float dt)
 		if (comp.tag == T_PLAYER)
 		{
 			// THIS IS A PLAYER, DO PLAYER THINGS
-			WASD_Movement(entity, dt);
-
+			// WASD_Movement(entity, dt);
+			moveSystem.Update(dt);
 		}
 	}
 }
