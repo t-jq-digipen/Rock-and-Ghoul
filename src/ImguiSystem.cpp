@@ -118,26 +118,40 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
     //Image img = CreateImage(path);
     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
     {
-        namespace fs = std::filesystem;
-
-        // source file (dragged)
         std::string src = path;
-
-        // destination directory
         std::string destDir = "../Assets/";
-
-        // full destination file path
         std::string destPath = destDir + fs::path(src).filename().string();
-
         // make sure the folder exists
         if (!fs::exists(destDir))
             fs::create_directories(destDir);
-        if (fs::exists(destPath))
+
+
+        // --- check for same base name even if different extension ---
+        std::string baseName = fs::path(src).stem().string(); // e.g., "MyTexture"
+        bool foundExistingVariant = false;
+        std::string existingVariantPath;
+
+        // loop through asset directory to find same basename
+        for (auto& entry : fs::directory_iterator(destDir))
+        {
+            if (!entry.is_regular_file()) continue;
+
+            std::string existingBase = entry.path().stem().string();
+            if (existingBase == baseName)
+            {
+                foundExistingVariant = true;
+                existingVariantPath = entry.path().string();
+                break;
+            }
+        }
+
+        if (foundExistingVariant)
         {
             pendingImportPath = src;
-            pendingDestPath = destPath;
+            pendingDestPath = existingVariantPath;
             showReplacePopup = true;
-            std::cout << "[ImGui Drop] File exists — prompting replace for: " << filename << "\n";
+            std::cout << "[ImGui Drop] Found variant of same asset ("
+                << existingVariantPath << "), prompting replace...\n";
             return;
         }
         // copy the file
@@ -149,12 +163,11 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
             std::cerr << "[ImGui Drop] Copy failed: " << e.what() << std::endl;
             return;
         }
-
-        Image img = CreateImage(path);
+        Image img = CreateImage(destPath);
 
         if (img.IsValid()) {
             g_loadedThumbnails.push_back(img);
-            g_imageNames.push_back(fs::path(path).filename().string());
+            g_imageNames.push_back(fs::path(destPath).filename().string());
             std::cout << "[ImGui Drop] Loaded texture successfully.\n";
         }
         else
@@ -693,33 +706,6 @@ void ImGuiSystem::ShowAssetPreviewWindow()
     ImGui::Text( "Asset Preview Browser");
     ImGui::Separator();
 
-    if (ImGui::Button("Refresh Assets"))
-    {
-        g_loadedThumbnails.clear();
-        g_imageNames.clear();
-
-        const std::string assetFolder = "../Assets/";
-        for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
-        {
-            if (!entry.is_regular_file()) continue;
-            std::string path = entry.path().string();
-            std::string ext = entry.path().extension().string();
-            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
-            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
-            {
-                Image img = CreateImage(path);
-                if (img.IsValid())
-                {
-                    g_loadedThumbnails.push_back(img);
-                    g_imageNames.push_back(entry.path().filename().string());
-                }
-            }
-        }
-
-        std::cout << "[ImGui Assets] Refreshed from folder.\n";
-    }
-
     if (ImGui::BeginTabBar("AssetsTabs"))
     {
         // ====================================================
@@ -731,6 +717,9 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
             if (!initialized)
             {
+                g_loadedThumbnails.clear();
+                g_imageNames.clear();
+
                 const std::string assetFolder = "../Assets/";
                 for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
                 {
@@ -806,34 +795,57 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 if (ImGui::Button("Yes, Replace", ImVec2(120, 0)))
                 {
                     try {
-                        // 1️⃣ remove the old texture from GPU if loaded
-                        auto it = std::find(g_imageNames.begin(), g_imageNames.end(),
-                            fs::path(pendingDestPath).filename().string());
-                        if (it != g_imageNames.end())
+                        namespace fs = std::filesystem;
+
+                        const std::string assetFolder = "../Assets/";
+                        const std::string newName = fs::path(pendingImportPath).filename().string(); // e.g., Luke2023.jpg
+                        const std::string newStem = fs::path(pendingImportPath).stem().string();     // Luke2023
+                        const std::string destNewPath = assetFolder + newName;
+
+                        // 1) Remove all existing variants (by stem) from disk
+                        for (auto& entry : fs::directory_iterator(assetFolder))
                         {
-                            size_t idx = std::distance(g_imageNames.begin(), it);
-                            if (idx < g_loadedThumbnails.size())
+                            if (!entry.is_regular_file()) continue;
+                            if (entry.path().stem().string() == newStem)
                             {
-                                glDeleteTextures(1, &g_loadedThumbnails[idx].textureID);
-                                g_loadedThumbnails.erase(g_loadedThumbnails.begin() + idx);
-                                g_imageNames.erase(it);
+                                fs::remove(entry.path());
+                                std::cout << "[ImGui Replace] Deleted old variant: "
+                                    << entry.path().filename().string() << "\n";
                             }
                         }
 
-                        // 2️⃣ copy new file to Assets/
-                        fs::copy_file(pendingImportPath, pendingDestPath, fs::copy_options::overwrite_existing);
+                        // 2) Copy the new file using its own filename (so extension is preserved)
+                        fs::copy_file(pendingImportPath, destNewPath, fs::copy_options::overwrite_existing);
+                        std::cout << "[ImGui Replace] Installed: " << destNewPath << "\n";
 
-                        // 3️⃣ reload it as a new texture
-                        Image newImg = CreateImage(pendingDestPath);
-                        if (newImg.IsValid())
+                        // 3) Load thumbnail for the new file
+                        if (Image newImg = CreateImage(destNewPath); newImg.IsValid())
                         {
                             g_loadedThumbnails.push_back(newImg);
-                            g_imageNames.push_back(fs::path(pendingDestPath).filename().string());
-                            std::cout << "[ImGui Replace] Replaced and reloaded: " << pendingDestPath << "\n";
+                            g_imageNames.push_back(fs::path(destNewPath).filename().string());
                         }
 
+                        // 4) Optionally, full refresh (keeps grid consistent if there are many files)
+                        g_loadedThumbnails.clear();
+                        g_imageNames.clear();
+                        for (auto& entry : fs::recursive_directory_iterator(assetFolder))
+                        {
+                            if (!entry.is_regular_file()) continue;
+                            auto ext = entry.path().extension().string();
+                            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+                            {
+                                if (Image img = CreateImage(entry.path().string()); img.IsValid())
+                                {
+                                    g_loadedThumbnails.push_back(img);
+                                    g_imageNames.push_back(entry.path().filename().string());
+                                }
+                            }
+                        }
+
+                        std::cout << "[ImGui Replace] Asset preview refreshed.\n";
                     }
-                    catch (const fs::filesystem_error& e)
+                    catch (const std::filesystem::filesystem_error& e)
                     {
                         std::cerr << "[ImGui Replace] Failed: " << e.what() << std::endl;
                     }
@@ -841,6 +853,8 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                     showReplacePopup = false;
                     ImGui::CloseCurrentPopup();
                 }
+
+
 
                 ImGui::SameLine();
                 if (ImGui::Button("Cancel", ImVec2(120, 0)))
@@ -1223,9 +1237,6 @@ void ImGuiSystem::HandleEntityDragging()
         draggedEntity = INVALID_ENTITY;
     }
 }
-
-
-
 
 
 void ImGuiSystem::Shutdown() {
