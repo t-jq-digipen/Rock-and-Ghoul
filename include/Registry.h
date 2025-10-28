@@ -160,12 +160,13 @@ public:
 		// Check if component is already registered
 		if ((componentManagers.find(typeID)) != componentManagers.end())
 		{
-			throw std::runtime_error("COMPONENT ALREADY REGISTERED\n");
+			throw std::runtime_error("COMPONENT " + name + " ALREADY REGISTERED\n");
 		}
 		else // Component not registered yet, safe to register :)
 		{
 			componentManagers[typeID] = std::make_unique<ComponentManager<Component>>();
 			componentTypeNames.emplace(name, typeID);
+			componentTypeList.push_back(typeID);
 
 			if (dependencies.empty())
 			{
@@ -177,7 +178,7 @@ public:
 				std::type_index depTypeIdx = Get_ComponentTypeIndex(dep);
 				if (componentManagers.find(depTypeIdx) == componentManagers.end())
 				{
-					throw std::runtime_error("DEPENDENCY NOT REGISTERED\n");
+					throw std::runtime_error("DEPENDENCY FOR " + name + ", " + dep + " NOT REGISTERED\n");
 				}
 				componentDependencies[typeID].push_back(depTypeIdx);
 				componentDependents[depTypeIdx].push_back(typeID);
@@ -191,7 +192,7 @@ public:
 	 * @param component Component instance to add.
 	 */
 	template<typename Component>
-	void Add_Component(Entity eID, const Component& component)
+	void Add_Component(Entity eID, const Component& component = {})
 	{
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 		// Check if this component has dependencies
@@ -369,11 +370,21 @@ public:
 
 		std::cout << "Creating entity '" << saved.name << "' (ID: " << eID << ")\n";
 
-		for (auto& [typeName, data] : saved.componentData)
+		for (std::type_index typeID : componentTypeList)
 		{
-			std::type_index typeIndex(Get_ComponentTypeIndex(typeName));
-			componentManagers[typeIndex]->LoadComponent(eID, data);
+			std::string typeName = Get_ComponentTypeName(typeID);
+			auto it = saved.componentData.find(typeName);
+			if (it != saved.componentData.end())
+			{
+				componentManagers[typeID]->LoadComponent(eID, it->second);
+			}
 		}
+
+		//for (auto& [typeName, data] : saved.componentData)
+		//{
+		//	std::type_index typeIndex(Get_ComponentTypeIndex(typeName));
+		//	componentManagers[typeIndex]->LoadComponent(eID, data);
+		//}
 
 		return eID;
 	}

@@ -104,6 +104,9 @@ namespace Sprite {
 
 	SpriteComponent SpriteComponent::DeSerialize(Entity eID, const std::string& data) {
 		(void)eID;
+		if (data.empty()) {
+			return SpriteComponent();
+		}
 		json j = json::parse(data);
 
 		return SpriteComponent(j["texturePath"], { j["scaleX"], j["scaleY"] }, j["animated"]);
@@ -114,7 +117,12 @@ namespace Sprite {
 
 		Editor::Widget_Dropdown dropdown{};
 		dropdown.ref = &m_image.textureID;
-		dropdown.enumMap = Render::GetInstance().Get_TextureCache();
+		// dropdown.enumMap = Render::GetInstance().Get_TextureCache();
+		for (auto const& [optname, optval] : Render::GetInstance().Get_TextureCache())
+		{
+			dropdown.Add_Option(optname, optval);
+		}
+		ret.Add_Data("TextureIDtest", dropdown);
 		ret.Add_Data("TextureID", Editor::Widget_String{});
 
 		ret.Add_Data("ScaleX", Editor::Widget_Float(&m_scale.x));

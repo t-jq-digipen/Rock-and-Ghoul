@@ -50,103 +50,103 @@ void CollisionManager::ProcessEvents() {
     Clear();
 }
 
-void CollisionManager::ActionStop(Entity a, Entity b) {
-    auto& transA = m_registry.Get_Component<TransformComponent>(a);
-    auto& physA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
-    auto& transB = m_registry.Get_Component<TransformComponent>(b);
-    auto& physB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
+//void CollisionManager::ActionStop(Entity a, Entity b) {
+//    auto& transA = m_registry.Get_Component<TransformComponent>(a);
+//    auto& physA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
+//    auto& transB = m_registry.Get_Component<TransformComponent>(b);
+//    auto& physB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
+//
+//    const AABB& aabbA = physA.Get_AABB();
+//    const AABB& aabbB = physB.Get_AABB();
+//
+//    //overlap
+//    Vec2 diff = RG_Subtract(transB.pos, transA.pos);
+//    float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - fabs(diff.x);
+//    float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - fabs(diff.y);
+//
+//    if (overlapX <= 0 || overlapY <= 0) return;
+//
+//    //  Separate along the axis of least overlap
+//    //both objects are movable, split the correction between them (so neither gets unfairly displaced)
+//    if (overlapX < overlapY) {
+//        float halfOverlap = overlapX / 2.0f;
+//        if (diff.x > 0) {
+//            transA.pos.x -= halfOverlap;
+//            transB.pos.x += halfOverlap;
+//        }
+//        else {
+//            transA.pos.x += halfOverlap;
+//            transB.pos.x -= halfOverlap;
+//        }
+//    }
+//    else {
+//        float halfOverlap = overlapY / 2.0f;
+//        if (diff.y > 0) {
+//            transA.pos.y -= halfOverlap;
+//            transB.pos.y += halfOverlap;
+//        }
+//        else {
+//            transA.pos.y += halfOverlap;
+//            transB.pos.y -= halfOverlap;
+//        }
+//    }
+//
+//    physA.UpdateHitboxes(transA.pos);
+//    physB.UpdateHitboxes(transB.pos);
+//
+//    // stop velocities
+//    physA.Set_Vel({ 0.0f, 0.0f });
+//    physB.Set_Vel({ 0.0f, 0.0f });
+//}
 
-    const AABB& aabbA = physA.Get_AABB();
-    const AABB& aabbB = physB.Get_AABB();
-
-    //overlap
-    Vec2 diff = RG_Subtract(transB.pos, transA.pos);
-    float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - fabs(diff.x);
-    float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - fabs(diff.y);
-
-    if (overlapX <= 0 || overlapY <= 0) return;
-
-    //  Separate along the axis of least overlap
-    //both objects are movable, split the correction between them (so neither gets unfairly displaced)
-    if (overlapX < overlapY) {
-        float halfOverlap = overlapX / 2.0f;
-        if (diff.x > 0) {
-            transA.pos.x -= halfOverlap;
-            transB.pos.x += halfOverlap;
-        }
-        else {
-            transA.pos.x += halfOverlap;
-            transB.pos.x -= halfOverlap;
-        }
-    }
-    else {
-        float halfOverlap = overlapY / 2.0f;
-        if (diff.y > 0) {
-            transA.pos.y -= halfOverlap;
-            transB.pos.y += halfOverlap;
-        }
-        else {
-            transA.pos.y += halfOverlap;
-            transB.pos.y -= halfOverlap;
-        }
-    }
-
-    physA.UpdateHitboxes(transA.pos);
-    physB.UpdateHitboxes(transB.pos);
-
-    // stop velocities
-    physA.Set_Vel({ 0.0f, 0.0f });
-    physB.Set_Vel({ 0.0f, 0.0f });
-}
-
-void CollisionManager::ActionStop_Static(Entity dynamic, Entity staticObj) {
-    auto& transDyn = m_registry.Get_Component<TransformComponent>(dynamic);
-    auto& physDyn = m_registry.Get_Component<Physics::PhysicsComponent>(dynamic);
-    auto& transStatic = m_registry.Get_Component<TransformComponent>(staticObj);
-    auto& physStatic = m_registry.Get_Component<Physics::PhysicsComponent>(staticObj);
-
-    const AABB& aabbDyn = physDyn.Get_AABB();
-    const AABB& aabbStatic = physStatic.Get_AABB();
-
-    if (!CollisionIntersection_RectRect_Static(aabbDyn, aabbStatic)) {
-        return;
-    }
-
-
-    //Lecture 6_2 and 7
-    //if (leftA > rightB) then no collision
-    //if (leftB > rightA) then no collision
-    //if (topA < bottomB) then no collision
-    //if (topB < bottomA) then no collision
-    Vec2 diff = RG_Subtract(transDyn.pos, transStatic.pos);
-    float overlapX = (aabbDyn.dim.x + aabbStatic.dim.x) / 2.0f - fabs(diff.x);
-    float overlapY = (aabbDyn.dim.y + aabbStatic.dim.y) / 2.0f - fabs(diff.y);
-
-    // collision normal
-    Vec2 normal;
-    if (overlapX < overlapY) {
-        normal = (diff.x > 0) ? Vec2{ 1.0f, 0.0f } : Vec2{ -1.0f, 0.0f };
-    }
-    else {
-        normal = (diff.y > 0) ? Vec2{ 0.0f, 1.0f } : Vec2{ 0.0f, -1.0f };
-    }
-
-    float minimum_overlap = std::min(overlapX, overlapY);
-    Vec2 displacement = RG_Scale(normal, minimum_overlap);
-    transDyn.pos = RG_Add(transDyn.pos, displacement);
-
-    physDyn.UpdateHitboxes(transDyn.pos);
-
-    //Lecture 16 � Animated Point to Line
-    Vec2 velDyn = physDyn.Get_Vel();
-    float velocitynorm = RG_DotProduct(velDyn, normal);
-    // If moving into the wall (negative dot product)
-    if (velocitynorm < 0) {
-        // Remove the normal component of velocity
-        Vec2 correctionstep = RG_Scale(normal, velocitynorm);
-        physDyn.Set_Vel(RG_Subtract(velDyn, correctionstep));
-    }
-}
+//void CollisionManager::ActionStop_Static(Entity dynamic, Entity staticObj) {
+//    auto& transDyn = m_registry.Get_Component<TransformComponent>(dynamic);
+//    auto& physDyn = m_registry.Get_Component<Physics::PhysicsComponent>(dynamic);
+//    auto& transStatic = m_registry.Get_Component<TransformComponent>(staticObj);
+//    auto& physStatic = m_registry.Get_Component<Physics::PhysicsComponent>(staticObj);
+//
+//    const AABB& aabbDyn = physDyn.Get_AABB();
+//    const AABB& aabbStatic = physStatic.Get_AABB();
+//
+//    if (!CollisionIntersection_RectRect_Static(aabbDyn, aabbStatic)) {
+//        return;
+//    }
+//
+//
+//    //Lecture 6_2 and 7
+//    //if (leftA > rightB) then no collision
+//    //if (leftB > rightA) then no collision
+//    //if (topA < bottomB) then no collision
+//    //if (topB < bottomA) then no collision
+//    Vec2 diff = RG_Subtract(transDyn.pos, transStatic.pos);
+//    float overlapX = (aabbDyn.dim.x + aabbStatic.dim.x) / 2.0f - fabs(diff.x);
+//    float overlapY = (aabbDyn.dim.y + aabbStatic.dim.y) / 2.0f - fabs(diff.y);
+//
+//    // collision normal
+//    Vec2 normal;
+//    if (overlapX < overlapY) {
+//        normal = (diff.x > 0) ? Vec2{ 1.0f, 0.0f } : Vec2{ -1.0f, 0.0f };
+//    }
+//    else {
+//        normal = (diff.y > 0) ? Vec2{ 0.0f, 1.0f } : Vec2{ 0.0f, -1.0f };
+//    }
+//
+//    float minimum_overlap = std::min(overlapX, overlapY);
+//    Vec2 displacement = RG_Scale(normal, minimum_overlap);
+//    transDyn.pos = RG_Add(transDyn.pos, displacement);
+//
+//    physDyn.UpdateHitboxes(transDyn.pos);
+//
+//    //Lecture 16 � Animated Point to Line
+//    Vec2 velDyn = physDyn.Get_Vel();
+//    float velocitynorm = RG_DotProduct(velDyn, normal);
+//    // If moving into the wall (negative dot product)
+//    if (velocitynorm < 0) {
+//        // Remove the normal component of velocity
+//        Vec2 correctionstep = RG_Scale(normal, velocitynorm);
+//        physDyn.Set_Vel(RG_Subtract(velDyn, correctionstep));
+//    }
+//}
 
 // IMPULSE-BASED COLLISION (LINEAR PHYSICS SYSTEM)
 void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
