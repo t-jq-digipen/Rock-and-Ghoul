@@ -132,7 +132,14 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         // make sure the folder exists
         if (!fs::exists(destDir))
             fs::create_directories(destDir);
-
+        if (fs::exists(destPath))
+        {
+            pendingImportPath = src;
+            pendingDestPath = destPath;
+            showReplacePopup = true;
+            std::cout << "[ImGui Drop] File exists — prompting replace for: " << filename << "\n";
+            return;
+        }
         // copy the file
         try {
             fs::copy_file(src, destPath, fs::copy_options::overwrite_existing);
@@ -686,13 +693,6 @@ void ImGuiSystem::ShowAssetPreviewWindow()
     ImGui::Text( "Asset Preview Browser");
     ImGui::Separator();
 
-    if (!droppedFiles.empty()) {
-        ImGui::Text("Recently Dropped Files:");
-        for (auto const& file : droppedFiles)
-            ImGui::BulletText("%s", file.c_str());
-
-        ImGui::Separator();
-    }
     if (ImGui::Button("Refresh Assets"))
     {
         g_loadedThumbnails.clear();
@@ -791,8 +791,70 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                 ImGui::EndChild();
             }
+            // --- replacement confirmation popup ---
+            if (showReplacePopup)
+            {
+                ImGui::OpenPopup("Replace Existing Asset?");
+            }
+
+            if (ImGui::BeginPopupModal("Replace Existing Asset?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("File already exists:\n%s\n", pendingDestPath.c_str());
+                ImGui::Text("Do you want to replace it with:\n%s ?", pendingImportPath.c_str());
+                ImGui::Separator();
+
+                if (ImGui::Button("Yes, Replace", ImVec2(120, 0)))
+                {
+                    try {
+                        // 1️⃣ remove the old texture from GPU if loaded
+                        auto it = std::find(g_imageNames.begin(), g_imageNames.end(),
+                            fs::path(pendingDestPath).filename().string());
+                        if (it != g_imageNames.end())
+                        {
+                            size_t idx = std::distance(g_imageNames.begin(), it);
+                            if (idx < g_loadedThumbnails.size())
+                            {
+                                glDeleteTextures(1, &g_loadedThumbnails[idx].textureID);
+                                g_loadedThumbnails.erase(g_loadedThumbnails.begin() + idx);
+                                g_imageNames.erase(it);
+                            }
+                        }
+
+                        // 2️⃣ copy new file to Assets/
+                        fs::copy_file(pendingImportPath, pendingDestPath, fs::copy_options::overwrite_existing);
+
+                        // 3️⃣ reload it as a new texture
+                        Image newImg = CreateImage(pendingDestPath);
+                        if (newImg.IsValid())
+                        {
+                            g_loadedThumbnails.push_back(newImg);
+                            g_imageNames.push_back(fs::path(pendingDestPath).filename().string());
+                            std::cout << "[ImGui Replace] Replaced and reloaded: " << pendingDestPath << "\n";
+                        }
+
+                    }
+                    catch (const fs::filesystem_error& e)
+                    {
+                        std::cerr << "[ImGui Replace] Failed: " << e.what() << std::endl;
+                    }
+
+                    showReplacePopup = false;
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    showReplacePopup = false;
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
 
             ImGui::EndTabItem();
+
+
 
 
         }
