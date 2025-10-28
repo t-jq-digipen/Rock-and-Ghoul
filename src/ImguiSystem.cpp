@@ -722,8 +722,6 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
     if (ImGui::BeginTabBar("AssetsTabs"))
     {
-
-
         // ====================================================
         // IMAGES TAB
         // ====================================================
@@ -793,6 +791,14 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                 ImGui::EndChild();
             }
+
+            if (ImGui::Button("Clear Loaded Thumbnails"))
+            {
+                g_loadedThumbnails.clear();
+                g_imageNames.clear();
+                std::cout << "[ImGui Assets] Cleared image cache.\n";
+            }
+
             ImGui::EndTabItem();
 
 
