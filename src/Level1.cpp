@@ -218,21 +218,22 @@ void Level1::Init()
 				std::cout << "Created Circle (Entity " << roundy << ")" << std::endl;
 			}
 
-			std::cout << "Finished creating entities from prefabs." << std::endl;
+			std::cout << "Finished creating entities from prefabs." << std::endl;	
+			Create_Wall(LEVEL_WIDTH / 2, LEVEL_HEIGHT - WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
+
+			// Bottom wall
+			Create_Wall(LEVEL_WIDTH / 2, WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
+
+			// Left wall
+			Create_Wall(WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
+
+			// Right wall
+			Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
 		}
 		std::cout << "==============================\n" << std::endl;
 		});
 	// Top wall
-	Create_Wall(LEVEL_WIDTH / 2, LEVEL_HEIGHT - WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
 
-	// Bottom wall
-	Create_Wall(LEVEL_WIDTH / 2, WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
-
-	// Left wall
-	Create_Wall(WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
-
-	// Right wall
-	Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
 
 	//Create_RotatingObject(500.f, 400.f);
 	//Create_MovingObject(800.f, 400.f);

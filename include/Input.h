@@ -102,7 +102,6 @@ public:
      * @param yoffset Vertical scroll offset.
      */
     static void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-
     
 private:
 

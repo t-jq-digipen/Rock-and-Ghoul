@@ -54,7 +54,7 @@ public:
     static bool showColliders;
     static bool showVelocity;
     static bool guiEnabled;
-
+    static void OnFileDropped(const std::string& path);
 private:
     /**
      * @brief Draw the Engine Debug panel.
@@ -86,5 +86,7 @@ private:
     void ShowInspectorWindow();
 
     void ShowAssetPreviewWindow();
+
+    void ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize);
 };
 
