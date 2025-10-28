@@ -52,7 +52,8 @@ public:
     GSM() {
         currentState = previousState = nextState = GameState::GS_MAIN_MENU;
     }
-
+    bool isPaused = false;      // Stops updates entirely
+    bool inEditMode = false;    // Allows editor open, dt = 0
     // Initialize Game State Manager
     void Init(GameState gameState);
 
@@ -67,6 +68,16 @@ public:
 
     // Change to Next Game State
     void ChangeNextState();
+
+    // new control helpers
+    void SetPaused(bool paused) { isPaused = paused; }
+    void TogglePaused() { isPaused = !isPaused; }
+
+    void SetEditMode(bool edit) { inEditMode = edit; }
+    void ToggleEditMode() { inEditMode = !inEditMode; }
+
+    bool IsPaused() const { return isPaused; }
+    bool InEditMode() const { return inEditMode; }
 #pragma endregion
 
     // GAME STATE CALLERS

@@ -50,7 +50,7 @@ bool ImGuiSystem::dragEditMode = false;
 static std::string pendingImportPath;
 static std::string pendingDestPath;
 static bool showReplacePopup = false;
-
+extern GSM gsm;
 
 // Checkbox
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
@@ -424,52 +424,58 @@ void ImGuiSystem::ShowEngineDebugWindow() {
         //visual bar
         ImGui::ProgressBar((float)(percent / 100.0f), ImVec2(-1, 0), (std::to_string((int)percent) + "%").c_str());
     }
-
-    // === Play / Stop controls ===
     static bool isPlaying = false;
-
+    // --- Editor Control Section ---
     ImGui::Separator();
-    ImGui::Text("Editor Controls:");
+    ImGui::Text("Simulation Controls:");
 
     if (!isPlaying)
     {
         if (ImGui::Button("Play"))
         {
-            // --- Start gameplay simulation ---
+            // Save the current edited scene before starting simulation
+            JsonLoad::SaveCurrentScene(FilePath::TEMP_SCENE, "TempScene");
+            std::cout << "[Editor] Temp scene saved before Play.\n";
+
+            gsm.isPaused = false;
+            gsm.inEditMode = false;
             isPlaying = true;
 
-            //CoreEngine::GetInstance().SetGameplayActive(true); // optional, if your engine has such a flag
-            std::cout << "[Editor] Gameplay started\n";
+            std::cout << "[Editor] Gameplay started.\n";
         }
     }
     else
     {
         if (ImGui::Button("Stop"))
         {
-            // --- Stop gameplay and restart scene ---
+            // Stop simulation
+            gsm.isPaused = true;
+            gsm.inEditMode = true;
             isPlaying = false;
-            //CoreEngine::GetInstance().SetGameplayActive(false); // optional
 
-            // Clear current entities and reload from your main scene file
+            std::cout << "[Editor] Gameplay stopped. Restoring temp scene...\n";
+
+            // clear the current entities
             JsonLoad::ClearAllEntities();
-            if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE))
+
+            // reload the scene you were editing before pressing Play
+            if (JsonLoad::LoadScene(FilePath::TEMP_SCENE))
             {
-                std::cout << "[Editor] Game reset to starting state\n";
+                std::cout << "[Editor] Restored scene from temp file.\n";
             }
             else
             {
-                std::cout << "[Editor] Failed to reload starting scene!\n";
+                std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
+                JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
             }
 
-            // Reset selection so editor doesn’t hold stale entities
             ImGuiSystem::selectedEntity = INVALID_ENTITY;
         }
     }
 
-    // status label
     ImGui::SameLine();
     ImGui::TextColored(
-        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.2f, 0.2f, 1.f),
+        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
         isPlaying ? "PLAYING" : "EDITING"
     );
     ImGui::Separator();
