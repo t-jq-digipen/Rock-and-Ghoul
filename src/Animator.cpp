@@ -192,6 +192,9 @@ namespace Animator {
 	}
 
 	AnimatorComponent AnimatorComponent::DeSerialize(Entity eID, const std::string& data) {
+		if (data.empty()) {
+			return AnimatorComponent();
+		}
 		json j = json::parse(data);
 
 		ActiveFrames frames;
@@ -205,7 +208,21 @@ namespace Animator {
 		int totalCols = j.value("totalCols", 1);
 		float animDuration = j.value("animDuration", 0.0f);
 
+		int imageWidth = j.value("imageWidth", 0);
+		int imageHeight = j.value("imageHeight", 0);
 
+		// Fallback: Try to get from Sprite if not saved (backward compatibility)
+		if (imageWidth == 0 || imageHeight == 0) {
+			if (Registry::Get().Has_Component<Sprite::SpriteComponent>(eID)) {
+				imageWidth = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID).Get_Image().widthPixels;
+				imageHeight = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID).Get_Image().heightPixels;
+			}
+			else {
+				// Use defaults if Sprite not available
+				imageWidth = totalCols * 32;
+				imageHeight = totalRows * 32;
+			}
+		}
 		//int imageWidth = j.value("imageWidth", 0);
 		//int imageHeight = j.value("imageHeight", 0);
 
@@ -222,10 +239,6 @@ namespace Animator {
 		//}
 
 		AnimatorComponent temp(totalRows, totalCols, frames, animDuration);
-
-		int imageWidth = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID).Get_Image().widthPixels;
-		int imageHeight = Registry::Get().Get_Component<Sprite::SpriteComponent>(eID).Get_Image().heightPixels;
-
 
 		if (j.contains("states")) {
 			for (auto& [stateKey, stateData] : j["states"].items()) {

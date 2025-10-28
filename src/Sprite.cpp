@@ -104,6 +104,9 @@ namespace Sprite {
 
 	SpriteComponent SpriteComponent::DeSerialize(Entity eID, const std::string& data) {
 		(void)eID;
+		if (data.empty()) {
+			return SpriteComponent();
+		}
 		json j = json::parse(data);
 
 		return SpriteComponent(j["texturePath"], { j["scaleX"], j["scaleY"] }, j["animated"]);

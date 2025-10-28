@@ -114,6 +114,10 @@ struct TransformComponent {
 	static TransformComponent DeSerialize(Entity eID, const std::string& data)  {
 		(void)eID;
 		// does deserialization things here
+		// check if empty string first, otherwise error
+		if (data.empty()) {
+			return TransformComponent();
+		}
 		json j = json::parse(data);
 		TransformComponent temp;
 		temp.pos.x = j["posX"];
@@ -160,6 +164,9 @@ struct LifetimeComponent {
 
 	static LifetimeComponent DeSerialize(Entity eID, const std::string& data) {
 		(void)eID;
+		if (data.empty()) {
+			return LifetimeComponent();
+		}
 		json j = json::parse(data);
 		LifetimeComponent temp;
 		temp.time = j.value("time", 0.0f);
@@ -189,6 +196,9 @@ struct HealthComponent {
 
 	static HealthComponent DeSerialize(Entity eID, const std::string& data) {
 		(void)eID;
+		if (data.empty()) {
+			return HealthComponent();
+		}
 		json j = json::parse(data);
 		HealthComponent temp;
 		temp.currhp = j.value("currentHP", 100.0f);
@@ -225,6 +235,9 @@ struct TagComponent {
 
 	static TagComponent DeSerialize(Entity eID, const std::string& data) {
 		(void)eID;
+		if (data.empty()) {
+			return TagComponent();
+		}
 		json j = json::parse(data);
 		return TagComponent(static_cast<C_TagID>(static_cast<int>(j["tagID"])));
 	}
@@ -263,6 +276,9 @@ struct InputComponent {
 
 	static InputComponent DeSerialize(Entity eID, const std::string& data) {
 		(void)eID;
+		if (data.empty()) {
+			return InputComponent();
+		}
 		json j = json::parse(data);
 		InputComponent temp;
 		temp.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
@@ -307,6 +323,9 @@ struct ShapeComponent {
 
 	static ShapeComponent DeSerialize(Entity eID, const std::string& data) {
 		(void)eID;
+		if (data.empty()) {
+			return ShapeComponent();
+		}
 		json j = json::parse(data);
 
 		ShapeComponent s;
