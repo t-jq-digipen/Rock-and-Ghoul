@@ -558,42 +558,42 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     else {
         ImGui::TextDisabled("No prefabs available in %s", FilePath::PREFABS_FOLDER.c_str());
     }
-    // ==============================
-    // Image loader (runtime only)
-    // ==============================
-    ImGui::Separator();
-    ImGui::Text("Image Loader:");
+    //// ==============================
+    //// Image loader (runtime only)
+    //// ==============================
+    //ImGui::Separator();
+    //ImGui::Text("Image Loader:");
 
-    static char imgNameBuf[128] = "";
-    static std::vector<std::string> loadedImages;
-
-
-    ImGui::InputText("Image Filename", imgNameBuf, IM_ARRAYSIZE(imgNameBuf));
-    ImGui::SameLine();
-
-    if (ImGui::Button("Add Image")) {
-        std::string filename = imgNameBuf;
+    //static char imgNameBuf[128] = "";
+    //static std::vector<std::string> loadedImages;
 
 
-        std::string fullPath = "../Assets/" + filename;
-        Image img = CreateImage(fullPath); // uses your Render.cpp helper
-        if (img.IsValid()) {
-            loadedImages.push_back(filename);
+    //ImGui::InputText("Image Filename", imgNameBuf, IM_ARRAYSIZE(imgNameBuf));
+    //ImGui::SameLine();
 
-        }
+    //if (ImGui::Button("Add Image")) {
+    //    std::string filename = imgNameBuf;
 
-    }
 
-    ImGui::Separator();
-    ImGui::Text("Loaded Images:");
-    if (loadedImages.empty()) {
-        ImGui::TextDisabled("(none yet)");
-    }
-    else {
-        for (auto const& name : loadedImages) {
-            ImGui::BulletText("%s", name.c_str());
-        }
-    }
+    //    std::string fullPath = "../Assets/" + filename;
+    //    Image img = CreateImage(fullPath); // uses your Render.cpp helper
+    //    if (img.IsValid()) {
+    //        loadedImages.push_back(filename);
+
+    //    }
+
+    //}
+
+    //ImGui::Separator();
+    //ImGui::Text("Loaded Images:");
+    //if (loadedImages.empty()) {
+    //    ImGui::TextDisabled("(none yet)");
+    //}
+    //else {
+    //    for (auto const& name : loadedImages) {
+    //        ImGui::BulletText("%s", name.c_str());
+    //    }
+    //}
 
 
 }
