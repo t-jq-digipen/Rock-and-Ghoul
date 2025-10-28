@@ -45,6 +45,8 @@ static std::vector<std::string> droppedFiles;
 // global (file-scope) thumbnail cache for runtime updates
 static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
+bool ImGuiSystem::dragEditMode = false;
+
 
 // Checkbox
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
@@ -271,39 +273,42 @@ void ImGuiSystem::Update(float dt) {
     if (Input::IsKeyPressed(GLFW_KEY_F1)) {
         guiEnabled = !guiEnabled; // toggle on/off
     }
-
+   
 
     if (!guiEnabled) return;
+
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame(); 
     ImGui::NewFrame();
-    // Choose where to place it
-    ImVec2 cornerPos(ImGui::GetIO().DisplaySize.x - 420, 10);   // top-right corner, 10 offset
-    ImGui::SetNextWindowPos(cornerPos, ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(400, 225));                 // 16:9
 
-    ImGui::SetNextWindowBgAlpha(0.8f);
+    HandleEntityDragging();
+    //// Choose where to place it
+    //ImVec2 cornerPos(ImGui::GetIO().DisplaySize.x - 420, 10);   // top-right corner, 10 offset
+    //ImGui::SetNextWindowPos(cornerPos, ImGuiCond_Always);
+    //ImGui::SetNextWindowSize(ImVec2(400, 225));                 // 16:9
+
+    //ImGui::SetNextWindowBgAlpha(0.8f);
 
    
-    if (ImGui::Begin("Scene Viewport",
-        nullptr,
-        ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoScrollbar |
-        ImGuiWindowFlags_NoScrollWithMouse |
-        ImGuiWindowFlags_NoTitleBar))
-    {
-        ImVec2 cursor = ImGui::GetCursorScreenPos();
-        ImVec2 size = ImGui::GetContentRegionAvail();
+    //if (ImGui::Begin("Scene Viewport",
+    //    nullptr,
+    //    ImGuiWindowFlags_NoResize |
+    //    ImGuiWindowFlags_NoMove |
+    //    ImGuiWindowFlags_NoCollapse |
+    //    ImGuiWindowFlags_NoScrollbar |
+    //    ImGuiWindowFlags_NoScrollWithMouse |
+    //    ImGuiWindowFlags_NoTitleBar))
+    //{
+    //    ImVec2 cursor = ImGui::GetCursorScreenPos();
+    //    ImVec2 size = ImGui::GetContentRegionAvail();
 
-        // Draw your overlay (entity boxes etc.)
-        ShowEntityInteractionOverlay(cursor, size);
+    //    // Draw your overlay (entity boxes etc.)
+    //    ShowEntityInteractionOverlay(cursor, size);
 
-        ImGui::Dummy(size); // keeps layout from collapsing
-    }
-    ImGui::End();
+    //    ImGui::Dummy(size); // keeps layout from collapsing
+    //}
+    //ImGui::End();
 
 
     ImGui::Begin("Game Editor");
@@ -413,6 +418,9 @@ void ImGuiSystem::ShowEngineDebugWindow() {
         isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.2f, 0.2f, 1.f),
         isPlaying ? "PLAYING" : "EDITING"
     );
+    ImGui::Separator();
+    ImGui::Checkbox("Enable Drag Handles", &dragEditMode);
+
 }
 
 //collili
@@ -638,6 +646,7 @@ void ImGuiSystem::ShowInspectorWindow() {
     }
 
 }
+
 void ImGuiSystem::ShowAssetPreviewWindow()
 {
     ImGui::Text( "Asset Preview Browser");
@@ -895,78 +904,176 @@ void ImGuiSystem::ShowAssetPreviewWindow()
     }
 }
 
-void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize)
+//void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize)
+//{
+//    Registry& reg = Registry::Get();
+//    ImDrawList* dl = ImGui::GetWindowDrawList();
+//
+//    // Mouse position relative to the viewport
+//    ImVec2 mousePos = ImGui::GetMousePos();
+//    Vec2 mouse(mousePos.x - viewportPos.x, mousePos.y - viewportPos.y);
+//
+//    // --- Define your full world dimensions ---
+//    const float worldWidth = 1920.f;
+//    const float worldHeight = 1080.f;
+//
+//    // --- Fixed mini-scale factor (smaller = more zoomed out) ---
+//    const float scale = 0.2f;  // 20% of the real world size (mini-map view)
+//
+//    // --- Center world inside the viewport ---
+//    Vec2 offset{0.0f,0.0f};
+//
+//    // --- Draw background rectangle for visual clarity ---
+//    dl->AddRectFilled(
+//        { viewportPos.x + offset.x, viewportPos.y + offset.y },
+//        { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
+//        IM_COL32(40, 40, 40, 255)
+//    );
+//    dl->AddRect(
+//        { viewportPos.x + offset.x, viewportPos.y + offset.y },
+//        { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
+//        IM_COL32(100, 100, 100, 255)
+//    );
+//
+//    // --- Mouse state ---
+//    bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+//    bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+//    bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+//
+//    static Entity draggedEntity = INVALID_ENTITY;
+//    static Vec2 dragOffset{ 0.f, 0.f };
+//    static bool isDragging = false;
+//
+//    Entity hovered = INVALID_ENTITY;
+//
+//    // === Draw all entities ===
+//    for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
+//    {
+//        Vec2 pos = transform.pos;
+//
+//        // Convert world → viewport (flip Y to top-left origin)
+//        Vec2 screenPos;
+//        screenPos.x = offset.x + pos.x * scale;
+//        screenPos.y = offset.y + (worldHeight - pos.y) * scale;
+//
+//        Vec2 half{ 25.f * scale, 25.f * scale };
+//
+//        ImVec2 min = { viewportPos.x + screenPos.x - half.x, viewportPos.y + screenPos.y - half.y };
+//        ImVec2 max = { viewportPos.x + screenPos.x + half.x, viewportPos.y + screenPos.y + half.y };
+//
+//        bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
+//            mousePos.y >= min.y && mousePos.y <= max.y);
+//
+//        ImU32 color =
+//            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
+//            inside ? IM_COL32(255, 255, 0, 200) :
+//            IM_COL32(255, 255, 255, 100);
+//
+//        dl->AddRect(min, max, color, 0.f, 0, 2.f);
+//
+//        if (inside)
+//            hovered = entity;
+//    }
+//
+//    // === Selection & dragging ===
+//    if (mouseClicked && hovered != INVALID_ENTITY)
+//    {
+//        selectedEntity = hovered;
+//        draggedEntity = hovered;
+//        isDragging = true;
+//
+//        auto& t = reg.Get_Component<TransformComponent>(hovered);
+//        Vec2 mouseWorld{
+//            (mouse.x - offset.x) / scale,
+//            worldHeight - (mouse.y - offset.y) / scale
+//        };
+//        dragOffset = t.pos - mouseWorld;
+//        std::cout << "[Editor] Selected entity " << hovered << std::endl;
+//    }
+//
+//    if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown)
+//    {
+//        auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
+//        Vec2 mouseWorld{
+//            (mouse.x - offset.x) / scale,
+//            worldHeight - (mouse.y - offset.y) / scale
+//        };
+//        t.pos = mouseWorld + dragOffset;
+//
+//        // Draw a blue outline for the dragged entity
+//        Vec2 pos = t.pos;
+//        Vec2 screenPos;
+//        screenPos.x = offset.x + pos.x * scale;
+//        screenPos.y = offset.y + (worldHeight - pos.y) * scale;
+//
+//        ImVec2 min = { viewportPos.x + screenPos.x - 25 * scale, viewportPos.y + screenPos.y - 25 * scale };
+//        ImVec2 max = { viewportPos.x + screenPos.x + 25 * scale, viewportPos.y + screenPos.y + 25 * scale };
+//        dl->AddRect(min, max, IM_COL32(0, 128, 255, 255), 0.f, 0, 2.5f);
+//    }
+//
+//    if (mouseReleased)
+//    {
+//        isDragging = false;
+//        draggedEntity = INVALID_ENTITY;
+//    }
+////}
+//
+
+void ImGuiSystem::HandleEntityDragging()
 {
+    if (!guiEnabled || !dragEditMode)
+        return;
+
     Registry& reg = Registry::Get();
-    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImDrawList* dl = ImGui::GetForegroundDrawList(); // draw directly on top of scene
 
-    // Mouse position relative to the viewport
-    ImVec2 mousePos = ImGui::GetMousePos();
-    Vec2 mouse(mousePos.x - viewportPos.x, mousePos.y - viewportPos.y);
-
-    // --- Define your full world dimensions ---
-    const float worldWidth = 1920.f;
-    const float worldHeight = 1080.f;
-
-    // --- Fixed mini-scale factor (smaller = more zoomed out) ---
-    const float scale = 0.2f;  // 20% of the real world size (mini-map view)
-
-    // --- Center world inside the viewport ---
-    Vec2 offset{0.0f,0.0f};
-
-    // --- Draw background rectangle for visual clarity ---
-    dl->AddRectFilled(
-        { viewportPos.x + offset.x, viewportPos.y + offset.y },
-        { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
-        IM_COL32(40, 40, 40, 255)
-    );
-    dl->AddRect(
-        { viewportPos.x + offset.x, viewportPos.y + offset.y },
-        { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
-        IM_COL32(100, 100, 100, 255)
-    );
+    const float worldHeight = static_cast<float>(GLApp::height);
 
     // --- Mouse state ---
-    bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-    bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-    bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+    Vec2 mouse = Input::GetMousePosition();
+    mouse.y = worldHeight - mouse.y;
+
+    bool mouseDown = Input::IsMouseHeld(GLFW_MOUSE_BUTTON_LEFT);
+    bool mouseClicked = Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT);
+    bool mouseReleased = Input::IsMouseReleased(GLFW_MOUSE_BUTTON_LEFT);
 
     static Entity draggedEntity = INVALID_ENTITY;
     static Vec2 dragOffset{ 0.f, 0.f };
     static bool isDragging = false;
-
     Entity hovered = INVALID_ENTITY;
 
-    // === Draw all entities ===
+    // --- constants ---
+    const float handleRadius = 10.f;
+
+    // === draw handles + hover detection ===
     for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
     {
-        Vec2 pos = transform.pos;
+        if (!EntityManager::get().isAlive(entity))
+            continue;
 
-        // Convert world → viewport (flip Y to top-left origin)
-        Vec2 screenPos;
-        screenPos.x = offset.x + pos.x * scale;
-        screenPos.y = offset.y + (worldHeight - pos.y) * scale;
+        Vec2 pos = transform.pos; // world position in screen space
+        ImVec2 handleCenter(pos.x, worldHeight - pos.y); // convert to top-left ImGui space
 
-        Vec2 half{ 25.f * scale, 25.f * scale };
+        // distance to mouse
+        float dx = mouse.x - pos.x;
+        float dy = mouse.y - pos.y;
+        float dist2 = dx * dx + dy * dy;
+        bool inside = dist2 <= (handleRadius * handleRadius);
 
-        ImVec2 min = { viewportPos.x + screenPos.x - half.x, viewportPos.y + screenPos.y - half.y };
-        ImVec2 max = { viewportPos.x + screenPos.x + half.x, viewportPos.y + screenPos.y + half.y };
-
-        bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
-            mousePos.y >= min.y && mousePos.y <= max.y);
-
+        // highlight color if hovered or selected
         ImU32 color =
-            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
-            inside ? IM_COL32(255, 255, 0, 200) :
-            IM_COL32(255, 255, 255, 100);
+            (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
+            inside ? IM_COL32(255, 255, 0, 255) :
+            IM_COL32(255, 255, 255, 180);
 
-        dl->AddRect(min, max, color, 0.f, 0, 2.f);
+        dl->AddCircleFilled(handleCenter, handleRadius, color, 24);
+        dl->AddCircle(handleCenter, handleRadius, IM_COL32(0, 0, 0, 200), 24, 1.5f);
 
         if (inside)
             hovered = entity;
     }
 
-    // === Selection & dragging ===
+    // === click to start drag ===
     if (mouseClicked && hovered != INVALID_ENTITY)
     {
         selectedEntity = hovered;
@@ -974,34 +1081,19 @@ void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewpo
         isDragging = true;
 
         auto& t = reg.Get_Component<TransformComponent>(hovered);
-        Vec2 mouseWorld{
-            (mouse.x - offset.x) / scale,
-            worldHeight - (mouse.y - offset.y) / scale
-        };
-        dragOffset = t.pos - mouseWorld;
-        std::cout << "[Editor] Selected entity " << hovered << std::endl;
+        dragOffset = t.pos - mouse;
+
+        std::cout << "[Editor] Drag handle start entity " << hovered << "\n";
     }
 
+    // === drag entity ===
     if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown)
     {
         auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
-        Vec2 mouseWorld{
-            (mouse.x - offset.x) / scale,
-            worldHeight - (mouse.y - offset.y) / scale
-        };
-        t.pos = mouseWorld + dragOffset;
-
-        // Draw a blue outline for the dragged entity
-        Vec2 pos = t.pos;
-        Vec2 screenPos;
-        screenPos.x = offset.x + pos.x * scale;
-        screenPos.y = offset.y + (worldHeight - pos.y) * scale;
-
-        ImVec2 min = { viewportPos.x + screenPos.x - 25 * scale, viewportPos.y + screenPos.y - 25 * scale };
-        ImVec2 max = { viewportPos.x + screenPos.x + 25 * scale, viewportPos.y + screenPos.y + 25 * scale };
-        dl->AddRect(min, max, IM_COL32(0, 128, 255, 255), 0.f, 0, 2.5f);
+        t.pos = mouse + dragOffset;
     }
 
+    // === release ===
     if (mouseReleased)
     {
         isDragging = false;
