@@ -606,7 +606,7 @@ void AudioManager::UpdateListenerToPlayer() {
  * @param dt Delta time in seconds.
  */
 void AudioManager::Update(float dt) {
-    // CRITICAL: Update listener to follow player EVERY FRAME
+    // listener follows PLAYER every frame
     UpdateListenerToPlayer();
 
     // Update FMOD system
