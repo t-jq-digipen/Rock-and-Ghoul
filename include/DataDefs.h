@@ -145,7 +145,14 @@ namespace Editor {
         float max = 0.f;
     };
 
-    using WidgetData = std::variant<Widget_Checkmark, Widget_String, Widget_Dropdown, Widget_Int, Widget_Float>;
+    struct Widget_Group;
+
+    using WidgetData = std::variant<Widget_Checkmark, Widget_String, Widget_Dropdown, Widget_Int, Widget_Float, Widget_Group>;
+
+    struct Widget_Group {
+        std::string label;
+        std::vector<WidgetData> childWidget;
+    };
 
 #pragma endregion WidgetData
 
