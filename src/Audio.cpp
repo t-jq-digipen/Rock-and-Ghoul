@@ -15,7 +15,7 @@
  * implements a flexible button sound system that maps button types
  * to specific sound effects.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "Audio.h"
@@ -327,7 +327,7 @@ void AudioManager::Initialize() {
         std::cerr << "AudioCache failed to initialize!" << std::endl;
     }
     std::cout << "=== AUDIOCACHE TEST COMPLETE ===\n" << std::endl;
-    
+
     AudioSystem::Init();
 
     AudioSystem::Configure2DSpatialAudio();      // SPATIAL AUDIO FUNCS
@@ -400,6 +400,42 @@ void AudioManager::HandleMusicForState(GameState currentState, GameState previou
             std::cerr << "[AudioManager] Error: Level 1 music not loaded!\n";
         }
     }
+}
+
+/**
+ * @brief Pauses the currently playing music.
+ *
+ * Stores the current playback position and pauses the music channel.
+ */
+void AudioManager::PauseMusic() {
+    if (!currentChannel || musicPaused) return;
+
+    bool isPlaying = false;
+    currentChannel->isPlaying(&isPlaying);
+
+    if (isPlaying) {
+        // Store current position
+        currentChannel->getPosition(&pausedPosition, FMOD_TIMEUNIT_MS);
+
+        // Pause the channel
+        currentChannel->setPaused(true);
+        musicPaused = true;
+
+        std::cout << "[AudioManager] Music paused at position: " << pausedPosition << "ms" << std::endl;
+    }
+}
+
+/**
+ * @brief Resumes paused music from where it was stopped.
+ */
+void AudioManager::ResumeMusic() {
+    if (!currentChannel || !musicPaused) return;
+
+    // Resume from paused position
+    currentChannel->setPaused(false);
+    musicPaused = false;
+
+    std::cout << "[AudioManager] Music resumed from position: " << pausedPosition << "ms" << std::endl;
 }
 
 /**
@@ -576,7 +612,20 @@ void AudioManager::Update(float dt) {
     // Update FMOD system
     AudioSystem::Update();
 
-    UpdateCrossfade(dt);
+    // Handle P key for pause/unpause toggle
+    if (Input::IsKeyPressed(GLFW_KEY_P)) {
+        if (musicPaused) {
+            ResumeMusic();
+        }
+        else {
+            PauseMusic();
+        }
+    }
+
+    // Don't update crossfade while paused
+    if (!musicPaused) {
+        UpdateCrossfade(dt);
+    }
 
     // STATE BASED MUSIC CHANGES
     GameState currentState = GSM_CurrentState();
@@ -669,14 +718,10 @@ FMOD::Channel* AudioSystem::PlaySoundAt(const std::string& assetName, float x, f
 
     // play normally without spatial sound if no need
     if (!asset->spatial) {
-        std::cout << "[AudioSystem] Playing non-spatial sound: " << assetName << std::endl;
         return PlaySoundGetChannel(sound, false);
     }
 
     // For spatial sounds, set up 3D positioning
-    std::cout << "[AudioSystem] Playing spatial sound: " << assetName
-        << " at position (" << x << ", " << y << ")" << std::endl;
-
     // Play the sound (start paused so we can set 3D attributes first)
     FMOD::Channel* channel = nullptr;
     FMOD_RESULT result = mSystem->playSound(sound, nullptr, true, &channel);

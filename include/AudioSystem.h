@@ -58,8 +58,36 @@ public:
      */
     void Shutdown() override;
 
-    // ADD DOCUMENTATION
+    /**
+     * @brief Updates the audio listener position to follow the player.
+     *
+     * This function should be called every frame to ensure spatial audio
+     * correctly positions sounds relative to the player's location.
+     */
     void UpdateListenerToPlayer();
+
+    /**
+     * @brief Pauses the currently playing music.
+     *
+     * Stores the current playback position and pauses the music channel.
+     * The music remains loaded in memory and can be resumed from the same position.
+     */
+    void PauseMusic();
+
+    /**
+     * @brief Resumes paused music from where it was stopped.
+     *
+     * Resumes playback of music that was previously paused, continuing
+     * from the exact position where it was paused.
+     */
+    void ResumeMusic();
+
+    /**
+     * @brief Checks if music is currently paused.
+     *
+     * @return bool True if music is paused, false otherwise.
+     */
+    bool IsMusicPaused() const { return musicPaused; }
 
     /**
      * @brief Loads a sound file and returns a pointer to it.
@@ -169,17 +197,21 @@ private:
     float musicVol = 0.1f;
 
     // Channel management
-    FMOD::Channel* currentChannel = nullptr; 
-    FMOD::Channel* nextChannel = nullptr;    
+    FMOD::Channel* currentChannel = nullptr;
+    FMOD::Channel* nextChannel = nullptr;
 
     // Crossfade state
-    float crossfadeTime = 0.0f;           
+    float crossfadeTime = 0.0f;
     float crossfadeDuration = 0.0f;
-    bool crossfadeActive = false; 
+    bool crossfadeActive = false;
+
+    // Pause state
+    bool musicPaused = false;
+    unsigned int pausedPosition = 0;  // Store position when paused
 
     // Preloaded music tracks
-    FMOD::Sound* mainMenuMusic = nullptr;   
-    FMOD::Sound* level1Music = nullptr;  
+    FMOD::Sound* mainMenuMusic = nullptr;
+    FMOD::Sound* level1Music = nullptr;
 
     // State tracking
     GameState lastState = GameState::GS_MAIN_MENU;
