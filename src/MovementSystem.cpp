@@ -21,9 +21,11 @@ void MovementSystem::Update(float dt)
 			scheme = m_registry.Get_Component<InputComponent>(entID).scheme;
 		}
 
+		// Movement check logic
 		Vec2 dir = ReadDirFromScheme(scheme);
 		const bool norm = Normalize(dir);
 
+		// Set isMoving to true if entity moving, otherwise false
 		moveComp.SetIsMoving(norm);
 		moveComp.SetMoveDirection(VelToDir(norm ? dir : Vec2{ 0.f, 0.f }));
 
@@ -31,6 +33,7 @@ void MovementSystem::Update(float dt)
 
 		const float speed = moveComp.GetMoveSpeed();
 
+		// Define if moving by position or velocity
 		switch (moveComp.GetMoveType())
 		{
 			case Movement::MOVE_POSITION:

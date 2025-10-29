@@ -35,6 +35,7 @@
 #include "PhysicsSystem.h"
 #include "ImguiSystem.h"
 #include "CrashHandler.h"
+#include "MovementSystem.h"
 
 #include "JsonLoad.h"
 #include "FilePath.h"
@@ -96,6 +97,7 @@ int main() {
             engine.AddSystem(audio);
             MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
 
+            engine.AddSystem(new MovementSystem());
             engine.AddSystem(new RenderSystem());
             engine.AddSystem(new PlayerSystem());
             engine.AddSystem(new PhysicsSystem());

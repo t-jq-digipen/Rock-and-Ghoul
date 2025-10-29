@@ -68,6 +68,9 @@
                     "rot": 0.0,
                     "scaleX": 100.0,
                     "scaleY": 100.0
+                },
+                "Movement": {
+                    "moveSpeed": 500.0
                 }
             },
             "id": 0,
@@ -165,6 +168,9 @@
                     "rot": 0.0,
                     "scaleX": 100.0,
                     "scaleY": 100.0
+                },
+                "Movement": {
+                    "moveSpeed" : 100.0
                 }
             },
             "id": 2,
@@ -213,6 +219,9 @@
                     "rot": 0.0,
                     "scaleX": 100.0,
                     "scaleY": 100.0
+                },
+                "Movement": {
+                    "moveSpeed" : 50.0
                 }
             },
             "id": 3,
