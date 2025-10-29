@@ -35,6 +35,7 @@ namespace Sprite {
 	class SpriteComponent {
 	private:
 		Image	m_image;	// Image struct
+		GLuint  m_oldtexID;	// old texID to check updates
 		Vec2	m_scale;	// Independant image scaling
 		bool	m_anim;		// Bool if sprite is animated or static
 		float	m_rot;		// Rotation value of image in degrees
@@ -129,6 +130,8 @@ namespace Sprite {
 		 */
 		float Get_Rotation() const;
 		void Rotate(float deltaRot);
+
+		void Update_ImageSize();
 
 
 		void Set_Tint(const Colour3& color) { tint = color; }
