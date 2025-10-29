@@ -96,8 +96,10 @@ namespace Sprite {
 	void SpriteComponent::Update_ImageSize() {
 		if (m_oldtexID == m_image.textureID) { return; }
 
+		glBindTexture(GL_TEXTURE_2D, m_image.textureID);
 		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &m_image.widthPixels);
 		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &m_image.heightPixels);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		m_oldtexID = m_image.textureID;
 		
 	}
