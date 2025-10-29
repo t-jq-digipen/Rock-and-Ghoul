@@ -17,6 +17,8 @@
 #include "PlayerSystem.h"
 #include "Registry.h"
 #include "Audio.h"
+#include "GameStateManager.h"
+#include "CoreEngine.h" // to check pause state for music
 
 
 constexpr float dash = 10.f;
@@ -108,6 +110,11 @@ void PlayerSystem::Initialize()
 
 void PlayerSystem::Update(float dt)
 {
+	// check if game paused
+	if (GSM_IsGamePaused()) {
+		return;  // Don't update player movement or footsteps when paused
+	}
+
 	for (auto& [entity, comp] : m_registry.Get_ComponentMap<TagComponent>())
 	{
 		if (!m_registry.Has_Component<TransformComponent>(entity))
@@ -121,7 +128,6 @@ void PlayerSystem::Update(float dt)
 
 	}
 }
-
 // ============================================================================
 // FOOTSTEP IMPLEMENTATION
 // ============================================================================

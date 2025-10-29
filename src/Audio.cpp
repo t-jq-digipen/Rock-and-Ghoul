@@ -23,6 +23,7 @@
 #include "AudioCache.h"
 #include "CoreEngine.h"
 #include "PlayerSystem.h"
+#include "GameStateManager.h"
 #include <iostream>
 
  // Static members
@@ -606,29 +607,25 @@ void AudioManager::UpdateListenerToPlayer() {
  * @param dt Delta time in seconds.
  */
 void AudioManager::Update(float dt) {
-    // listener follows PLAYER every frame
+    // Update listener to follow player EVERY FRAME
     UpdateListenerToPlayer();
 
     // Update FMOD system
     AudioSystem::Update();
 
-    // Handle P key for pause/unpause toggle
-    if (Input::IsKeyPressed(GLFW_KEY_P)) {
-        if (musicPaused) {
-            ResumeMusic();
-        }
-        else {
-            PauseMusic();
-        }
-    }
-
-    // Don't update crossfade while paused
-    if (!musicPaused) {
-        UpdateCrossfade(dt);
-    }
-
-    // STATE BASED MUSIC CHANGES
+    // Get current game state
     GameState currentState = GSM_CurrentState();
+
+    // Handle P key for game pause (music continues)
+    if (Input::IsKeyPressed(GLFW_KEY_P) && currentState == GameState::GS_LEVEL1) {
+        GSM_SetGamePaused(!GSM_IsGamePaused());
+        std::cout << (GSM_IsGamePaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+    }
+
+    // Music always updates (crossfade continues even when game is paused)
+    UpdateCrossfade(dt);
+
+    // Handle state-based music changes
     HandleMusicForState(currentState, lastState);
     lastState = currentState;
 }
