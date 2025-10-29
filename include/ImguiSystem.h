@@ -55,6 +55,7 @@ public:
     static bool showVelocity;
     static bool guiEnabled;
     static void OnFileDropped(const std::string& path);
+    static bool dragEditMode;
 private:
     /**
      * @brief Draw the Engine Debug panel.
@@ -87,6 +88,7 @@ private:
 
     void ShowAssetPreviewWindow();
 
-    void ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize);
+    //void ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize)
+    void HandleEntityDragging();
 };
 

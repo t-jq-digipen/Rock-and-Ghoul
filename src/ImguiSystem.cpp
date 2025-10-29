@@ -45,6 +45,12 @@ static std::vector<std::string> droppedFiles;
 // global (file-scope) thumbnail cache for runtime updates
 static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
+bool ImGuiSystem::dragEditMode = false;
+
+static std::string pendingImportPath;
+static std::string pendingDestPath;
+static bool showReplacePopup = false;
+extern GSM gsm;
 
 // Checkbox
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
@@ -63,15 +69,26 @@ static void MakeWidget(Editor::Widget_String& w, const std::string& label) {
 }
 
 // Dropdown
-static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label) {
+static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label)
+{
     if (!w.ref || w.options.empty()) return;
     std::vector<const char*> items;
+    items.reserve(w.options.size());
     for (auto& opt : w.options) items.push_back(opt.c_str());
-    int current = static_cast<int>(*w.ref);
-    if (ImGui::Combo(label.c_str(), &current, items.data(), (int)items.size())) {
-        *w.ref = static_cast<unsigned int>(current);
+    // find index of current value
+    int currentIndex = 0;
+    for (int i = 0; i < (int)w.options.size(); ++i) {
+        if (w.enumMap.at(w.options[i]) == *w.ref) {
+            currentIndex = i;
+            break;
+        }
+    }
+
+    if (ImGui::Combo(label.c_str(), &currentIndex, items.data(), (int)items.size())) {
+        *w.ref = w.enumMap[w.options[currentIndex]];
     }
 }
+
 
 // Int
 static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
@@ -109,16 +126,66 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
     std::cout << "[ImGui Drop] File dropped: " << filename << " (" << path << ")\n";
 
     // --- Image loading --- 
-    Image img = CreateImage(path);
+    //Image img = CreateImage(path);
     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
     {
-        g_loadedThumbnails.push_back(img);
-        g_imageNames.push_back(fs::path(path).filename().string());
-        if (img.IsValid())
+        std::string src = path;
+        std::string destDir = "../Assets/";
+        std::string destPath = destDir + fs::path(src).filename().string();
+        // make sure the folder exists
+        if (!fs::exists(destDir))
+            fs::create_directories(destDir);
+
+
+        // --- check for same base name even if different extension ---
+        std::string baseName = fs::path(src).stem().string(); // e.g., "MyTexture"
+        bool foundExistingVariant = false;
+        std::string existingVariantPath;
+
+        // loop through asset directory to find same basename
+        for (auto& entry : fs::directory_iterator(destDir))
+        {
+            if (!entry.is_regular_file()) continue;
+
+            std::string existingBase = entry.path().stem().string();
+            if (existingBase == baseName)
+            {
+                foundExistingVariant = true;
+                existingVariantPath = entry.path().string();
+                break;
+            }
+        }
+
+        if (foundExistingVariant)
+        {
+            pendingImportPath = src;
+            pendingDestPath = existingVariantPath;
+            showReplacePopup = true;
+            std::cout << "[ImGui Drop] Found variant of same asset ("
+                << existingVariantPath << "), prompting replace...\n";
+            return;
+        }
+        // copy the file
+        try {
+            fs::copy_file(src, destPath, fs::copy_options::overwrite_existing);
+            std::cout << "[ImGui Drop] Imported: " << destPath << "\n";
+        }
+        catch (const fs::filesystem_error& e) {
+            std::cerr << "[ImGui Drop] Copy failed: " << e.what() << std::endl;
+            return;
+        }
+        Image img = CreateImage(destPath);
+
+        if (img.IsValid()) {
+            g_loadedThumbnails.push_back(img);
+            g_imageNames.push_back(fs::path(destPath).filename().string());
             std::cout << "[ImGui Drop] Loaded texture successfully.\n";
+        }
         else
             std::cerr << "[ImGui Drop] Failed to load image.\n";
         return;
+
+
     }
 
     // --- Prefab loading ---
@@ -271,39 +338,42 @@ void ImGuiSystem::Update(float dt) {
     if (Input::IsKeyPressed(GLFW_KEY_F1)) {
         guiEnabled = !guiEnabled; // toggle on/off
     }
-
+   
 
     if (!guiEnabled) return;
+
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame(); 
     ImGui::NewFrame();
-    // Choose where to place it
-    ImVec2 cornerPos(ImGui::GetIO().DisplaySize.x - 420, 10);   // top-right corner, 10 offset
-    ImGui::SetNextWindowPos(cornerPos, ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(400, 225));                 // 16:9
 
-    ImGui::SetNextWindowBgAlpha(0.8f);
+    HandleEntityDragging();
+    //// Choose where to place it
+    //ImVec2 cornerPos(ImGui::GetIO().DisplaySize.x - 420, 10);   // top-right corner, 10 offset
+    //ImGui::SetNextWindowPos(cornerPos, ImGuiCond_Always);
+    //ImGui::SetNextWindowSize(ImVec2(400, 225));                 // 16:9
+
+    //ImGui::SetNextWindowBgAlpha(0.8f);
 
    
-    if (ImGui::Begin("Scene Viewport",
-        nullptr,
-        ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoScrollbar |
-        ImGuiWindowFlags_NoScrollWithMouse |
-        ImGuiWindowFlags_NoTitleBar))
-    {
-        ImVec2 cursor = ImGui::GetCursorScreenPos();
-        ImVec2 size = ImGui::GetContentRegionAvail();
+    //if (ImGui::Begin("Scene Viewport",
+    //    nullptr,
+    //    ImGuiWindowFlags_NoResize |
+    //    ImGuiWindowFlags_NoMove |
+    //    ImGuiWindowFlags_NoCollapse |
+    //    ImGuiWindowFlags_NoScrollbar |
+    //    ImGuiWindowFlags_NoScrollWithMouse |
+    //    ImGuiWindowFlags_NoTitleBar))
+    //{
+    //    ImVec2 cursor = ImGui::GetCursorScreenPos();
+    //    ImVec2 size = ImGui::GetContentRegionAvail();
 
-        // Draw your overlay (entity boxes etc.)
-        ShowEntityInteractionOverlay(cursor, size);
+    //    // Draw your overlay (entity boxes etc.)
+    //    ShowEntityInteractionOverlay(cursor, size);
 
-        ImGui::Dummy(size); // keeps layout from collapsing
-    }
-    ImGui::End();
+    //    ImGui::Dummy(size); // keeps layout from collapsing
+    //}
+    //ImGui::End();
 
 
     ImGui::Begin("Game Editor");
@@ -365,54 +435,63 @@ void ImGuiSystem::ShowEngineDebugWindow() {
         //visual bar
         ImGui::ProgressBar((float)(percent / 100.0f), ImVec2(-1, 0), (std::to_string((int)percent) + "%").c_str());
     }
-
-    // === Play / Stop controls ===
     static bool isPlaying = false;
-
+    // --- Editor Control Section ---
     ImGui::Separator();
-    ImGui::Text("Editor Controls:");
+    ImGui::Text("Simulation Controls:");
 
     if (!isPlaying)
     {
         if (ImGui::Button("Play"))
         {
-            // --- Start gameplay simulation ---
+            // Save the current edited scene before starting simulation
+            JsonLoad::SaveCurrentScene(FilePath::TEMP_SCENE, "TempScene");
+            std::cout << "[Editor] Temp scene saved before Play.\n";
+
+            gsm.isPaused = false;
+            gsm.inEditMode = false;
             isPlaying = true;
 
-            //CoreEngine::GetInstance().SetGameplayActive(true); // optional, if your engine has such a flag
-            std::cout << "[Editor] Gameplay started\n";
+            std::cout << "[Editor] Gameplay started.\n";
         }
     }
     else
     {
         if (ImGui::Button("Stop"))
         {
-            // --- Stop gameplay and restart scene ---
+            // Stop simulation
+            gsm.isPaused = true;
+            gsm.inEditMode = true;
             isPlaying = false;
-            //CoreEngine::GetInstance().SetGameplayActive(false); // optional
 
-            // Clear current entities and reload from your main scene file
+            std::cout << "[Editor] Gameplay stopped. Restoring temp scene...\n";
+
+            // clear the current entities
             JsonLoad::ClearAllEntities();
-            if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE))
+
+            // reload the scene you were editing before pressing Play
+            if (JsonLoad::LoadScene(FilePath::TEMP_SCENE))
             {
-                std::cout << "[Editor] Game reset to starting state\n";
+                std::cout << "[Editor] Restored scene from temp file.\n";
             }
             else
             {
-                std::cout << "[Editor] Failed to reload starting scene!\n";
+                std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
+                JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
             }
 
-            // Reset selection so editor doesn’t hold stale entities
             ImGuiSystem::selectedEntity = INVALID_ENTITY;
         }
     }
 
-    // status label
     ImGui::SameLine();
     ImGui::TextColored(
-        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.2f, 0.2f, 1.f),
+        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
         isPlaying ? "PLAYING" : "EDITING"
     );
+    ImGui::Separator();
+    ImGui::Checkbox("Enable Drag Handles", &dragEditMode);
+
 }
 
 //collili
@@ -496,42 +575,42 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     else {
         ImGui::TextDisabled("No prefabs available in %s", FilePath::PREFABS_FOLDER.c_str());
     }
-    // ==============================
-// Image loader (runtime only)
-// ==============================
-    ImGui::Separator();
-    ImGui::Text("Image Loader:");
+    //// ==============================
+    //// Image loader (runtime only)
+    //// ==============================
+    //ImGui::Separator();
+    //ImGui::Text("Image Loader:");
 
-    static char imgNameBuf[128] = "";
-    static std::vector<std::string> loadedImages;
-
-
-    ImGui::InputText("Image Filename", imgNameBuf, IM_ARRAYSIZE(imgNameBuf));
-    ImGui::SameLine();
-
-    if (ImGui::Button("Add Image")) {
-        std::string filename = imgNameBuf;
+    //static char imgNameBuf[128] = "";
+    //static std::vector<std::string> loadedImages;
 
 
-        std::string fullPath = "../Assets/" + filename;
-        Image img = CreateImage(fullPath); // uses your Render.cpp helper
-        if (img.IsValid()) {
-            loadedImages.push_back(filename);
+    //ImGui::InputText("Image Filename", imgNameBuf, IM_ARRAYSIZE(imgNameBuf));
+    //ImGui::SameLine();
 
-        }
+    //if (ImGui::Button("Add Image")) {
+    //    std::string filename = imgNameBuf;
 
-    }
 
-    ImGui::Separator();
-    ImGui::Text("Loaded Images:");
-    if (loadedImages.empty()) {
-        ImGui::TextDisabled("(none yet)");
-    }
-    else {
-        for (auto const& name : loadedImages) {
-            ImGui::BulletText("%s", name.c_str());
-        }
-    }
+    //    std::string fullPath = "../Assets/" + filename;
+    //    Image img = CreateImage(fullPath); // uses your Render.cpp helper
+    //    if (img.IsValid()) {
+    //        loadedImages.push_back(filename);
+
+    //    }
+
+    //}
+
+    //ImGui::Separator();
+    //ImGui::Text("Loaded Images:");
+    //if (loadedImages.empty()) {
+    //    ImGui::TextDisabled("(none yet)");
+    //}
+    //else {
+    //    for (auto const& name : loadedImages) {
+    //        ImGui::BulletText("%s", name.c_str());
+    //    }
+    //}
 
 
 }
@@ -638,22 +717,14 @@ void ImGuiSystem::ShowInspectorWindow() {
     }
 
 }
+
 void ImGuiSystem::ShowAssetPreviewWindow()
 {
     ImGui::Text( "Asset Preview Browser");
     ImGui::Separator();
 
-    if (!droppedFiles.empty()) {
-        ImGui::Text("Recently Dropped Files:");
-        for (auto const& file : droppedFiles)
-            ImGui::BulletText("%s", file.c_str());
-
-        ImGui::Separator();
-    }
     if (ImGui::BeginTabBar("AssetsTabs"))
     {
-
-
         // ====================================================
         // IMAGES TAB
         // ====================================================
@@ -663,6 +734,9 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
             if (!initialized)
             {
+                g_loadedThumbnails.clear();
+                g_imageNames.clear();
+
                 const std::string assetFolder = "../Assets/";
                 for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
                 {
@@ -673,6 +747,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
                     {
+
                         try {
                             Image img = CreateImage(path);
                             if (img.IsValid()) {
@@ -722,15 +797,95 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                 ImGui::EndChild();
             }
-
-            if (ImGui::Button("Clear Loaded Thumbnails"))
+            // --- replacement confirmation popup ---
+            if (showReplacePopup)
             {
-                g_loadedThumbnails.clear();
-                g_imageNames.clear();
-                std::cout << "[ImGui Assets] Cleared image cache.\n";
+                ImGui::OpenPopup("Replace Existing Asset?");
+            }
+
+            if (ImGui::BeginPopupModal("Replace Existing Asset?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("File already exists:\n%s\n", pendingDestPath.c_str());
+                ImGui::Text("Do you want to replace it with:\n%s ?", pendingImportPath.c_str());
+                ImGui::Separator();
+
+                if (ImGui::Button("Yes, Replace", ImVec2(120, 0)))
+                {
+                    try {
+                        namespace fs = std::filesystem;
+
+                        const std::string assetFolder = "../Assets/";
+                        const std::string newName = fs::path(pendingImportPath).filename().string(); // e.g., Luke2023.jpg
+                        const std::string newStem = fs::path(pendingImportPath).stem().string();     // Luke2023
+                        const std::string destNewPath = assetFolder + newName;
+
+                        // 1) Remove all existing variants (by stem) from disk
+                        for (auto& entry : fs::directory_iterator(assetFolder))
+                        {
+                            if (!entry.is_regular_file()) continue;
+                            if (entry.path().stem().string() == newStem)
+                            {
+                                fs::remove(entry.path());
+                                std::cout << "[ImGui Replace] Deleted old variant: "
+                                    << entry.path().filename().string() << "\n";
+                            }
+                        }
+
+                        // 2) Copy the new file using its own filename (so extension is preserved)
+                        fs::copy_file(pendingImportPath, destNewPath, fs::copy_options::overwrite_existing);
+                        std::cout << "[ImGui Replace] Installed: " << destNewPath << "\n";
+
+                        // 3) Load thumbnail for the new file
+                        if (Image newImg = CreateImage(destNewPath); newImg.IsValid())
+                        {
+                            g_loadedThumbnails.push_back(newImg);
+                            g_imageNames.push_back(fs::path(destNewPath).filename().string());
+                        }
+
+                        // 4) Optionally, full refresh (keeps grid consistent if there are many files)
+                        g_loadedThumbnails.clear();
+                        g_imageNames.clear();
+                        for (auto& entry : fs::recursive_directory_iterator(assetFolder))
+                        {
+                            if (!entry.is_regular_file()) continue;
+                            auto ext = entry.path().extension().string();
+                            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+                            {
+                                if (Image img = CreateImage(entry.path().string()); img.IsValid())
+                                {
+                                    g_loadedThumbnails.push_back(img);
+                                    g_imageNames.push_back(entry.path().filename().string());
+                                }
+                            }
+                        }
+
+                        std::cout << "[ImGui Replace] Asset preview refreshed.\n";
+                    }
+                    catch (const std::filesystem::filesystem_error& e)
+                    {
+                        std::cerr << "[ImGui Replace] Failed: " << e.what() << std::endl;
+                    }
+
+                    showReplacePopup = false;
+                    ImGui::CloseCurrentPopup();
+                }
+
+
+
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    showReplacePopup = false;
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
             }
 
             ImGui::EndTabItem();
+
+
 
 
         }
@@ -879,6 +1034,14 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                                 break;
                             }
                         }
+
+
+
+
+
+
+
+
                     }
                 }
             }
@@ -895,78 +1058,176 @@ void ImGuiSystem::ShowAssetPreviewWindow()
     }
 }
 
-void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize)
+//void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize)
+//{
+//    Registry& reg = Registry::Get();
+//    ImDrawList* dl = ImGui::GetWindowDrawList();
+//
+//    // Mouse position relative to the viewport
+//    ImVec2 mousePos = ImGui::GetMousePos();
+//    Vec2 mouse(mousePos.x - viewportPos.x, mousePos.y - viewportPos.y);
+//
+//    // --- Define your full world dimensions ---
+//    const float worldWidth = 1920.f;
+//    const float worldHeight = 1080.f;
+//
+//    // --- Fixed mini-scale factor (smaller = more zoomed out) ---
+//    const float scale = 0.2f;  // 20% of the real world size (mini-map view)
+//
+//    // --- Center world inside the viewport ---
+//    Vec2 offset{0.0f,0.0f};
+//
+//    // --- Draw background rectangle for visual clarity ---
+//    dl->AddRectFilled(
+//        { viewportPos.x + offset.x, viewportPos.y + offset.y },
+//        { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
+//        IM_COL32(40, 40, 40, 255)
+//    );
+//    dl->AddRect(
+//        { viewportPos.x + offset.x, viewportPos.y + offset.y },
+//        { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
+//        IM_COL32(100, 100, 100, 255)
+//    );
+//
+//    // --- Mouse state ---
+//    bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+//    bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+//    bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+//
+//    static Entity draggedEntity = INVALID_ENTITY;
+//    static Vec2 dragOffset{ 0.f, 0.f };
+//    static bool isDragging = false;
+//
+//    Entity hovered = INVALID_ENTITY;
+//
+//    // === Draw all entities ===
+//    for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
+//    {
+//        Vec2 pos = transform.pos;
+//
+//        // Convert world → viewport (flip Y to top-left origin)
+//        Vec2 screenPos;
+//        screenPos.x = offset.x + pos.x * scale;
+//        screenPos.y = offset.y + (worldHeight - pos.y) * scale;
+//
+//        Vec2 half{ 25.f * scale, 25.f * scale };
+//
+//        ImVec2 min = { viewportPos.x + screenPos.x - half.x, viewportPos.y + screenPos.y - half.y };
+//        ImVec2 max = { viewportPos.x + screenPos.x + half.x, viewportPos.y + screenPos.y + half.y };
+//
+//        bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
+//            mousePos.y >= min.y && mousePos.y <= max.y);
+//
+//        ImU32 color =
+//            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
+//            inside ? IM_COL32(255, 255, 0, 200) :
+//            IM_COL32(255, 255, 255, 100);
+//
+//        dl->AddRect(min, max, color, 0.f, 0, 2.f);
+//
+//        if (inside)
+//            hovered = entity;
+//    }
+//
+//    // === Selection & dragging ===
+//    if (mouseClicked && hovered != INVALID_ENTITY)
+//    {
+//        selectedEntity = hovered;
+//        draggedEntity = hovered;
+//        isDragging = true;
+//
+//        auto& t = reg.Get_Component<TransformComponent>(hovered);
+//        Vec2 mouseWorld{
+//            (mouse.x - offset.x) / scale,
+//            worldHeight - (mouse.y - offset.y) / scale
+//        };
+//        dragOffset = t.pos - mouseWorld;
+//        std::cout << "[Editor] Selected entity " << hovered << std::endl;
+//    }
+//
+//    if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown)
+//    {
+//        auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
+//        Vec2 mouseWorld{
+//            (mouse.x - offset.x) / scale,
+//            worldHeight - (mouse.y - offset.y) / scale
+//        };
+//        t.pos = mouseWorld + dragOffset;
+//
+//        // Draw a blue outline for the dragged entity
+//        Vec2 pos = t.pos;
+//        Vec2 screenPos;
+//        screenPos.x = offset.x + pos.x * scale;
+//        screenPos.y = offset.y + (worldHeight - pos.y) * scale;
+//
+//        ImVec2 min = { viewportPos.x + screenPos.x - 25 * scale, viewportPos.y + screenPos.y - 25 * scale };
+//        ImVec2 max = { viewportPos.x + screenPos.x + 25 * scale, viewportPos.y + screenPos.y + 25 * scale };
+//        dl->AddRect(min, max, IM_COL32(0, 128, 255, 255), 0.f, 0, 2.5f);
+//    }
+//
+//    if (mouseReleased)
+//    {
+//        isDragging = false;
+//        draggedEntity = INVALID_ENTITY;
+//    }
+////}
+//
+
+void ImGuiSystem::HandleEntityDragging()
 {
+    if (!guiEnabled || !dragEditMode)
+        return;
+
     Registry& reg = Registry::Get();
-    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImDrawList* dl = ImGui::GetForegroundDrawList(); // draw directly on top of scene
 
-    // Mouse position relative to the viewport
-    ImVec2 mousePos = ImGui::GetMousePos();
-    Vec2 mouse(mousePos.x - viewportPos.x, mousePos.y - viewportPos.y);
-
-    // --- Define your full world dimensions ---
-    const float worldWidth = 1920.f;
-    const float worldHeight = 1080.f;
-
-    // --- Fixed mini-scale factor (smaller = more zoomed out) ---
-    const float scale = 0.2f;  // 20% of the real world size (mini-map view)
-
-    // --- Center world inside the viewport ---
-    Vec2 offset{0.0f,0.0f};
-
-    // --- Draw background rectangle for visual clarity ---
-    dl->AddRectFilled(
-        { viewportPos.x + offset.x, viewportPos.y + offset.y },
-        { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
-        IM_COL32(40, 40, 40, 255)
-    );
-    dl->AddRect(
-        { viewportPos.x + offset.x, viewportPos.y + offset.y },
-        { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
-        IM_COL32(100, 100, 100, 255)
-    );
+    const float worldHeight = static_cast<float>(GLApp::height);
 
     // --- Mouse state ---
-    bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-    bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-    bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+    Vec2 mouse = Input::GetMousePosition();
+    mouse.y = worldHeight - mouse.y;
+
+    bool mouseDown = Input::IsMouseHeld(GLFW_MOUSE_BUTTON_LEFT);
+    bool mouseClicked = Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT);
+    bool mouseReleased = Input::IsMouseReleased(GLFW_MOUSE_BUTTON_LEFT);
 
     static Entity draggedEntity = INVALID_ENTITY;
     static Vec2 dragOffset{ 0.f, 0.f };
     static bool isDragging = false;
-
     Entity hovered = INVALID_ENTITY;
 
-    // === Draw all entities ===
+    // --- constants ---
+    const float handleRadius = 10.f;
+
+    // === draw handles + hover detection ===
     for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
     {
-        Vec2 pos = transform.pos;
+        if (!EntityManager::get().isAlive(entity))
+            continue;
 
-        // Convert world → viewport (flip Y to top-left origin)
-        Vec2 screenPos;
-        screenPos.x = offset.x + pos.x * scale;
-        screenPos.y = offset.y + (worldHeight - pos.y) * scale;
+        Vec2 pos = transform.pos; // world position in screen space
+        ImVec2 handleCenter(pos.x, worldHeight - pos.y); // convert to top-left ImGui space
 
-        Vec2 half{ 25.f * scale, 25.f * scale };
+        // distance to mouse
+        float dx = mouse.x - pos.x;
+        float dy = mouse.y - pos.y;
+        float dist2 = dx * dx + dy * dy;
+        bool inside = dist2 <= (handleRadius * handleRadius);
 
-        ImVec2 min = { viewportPos.x + screenPos.x - half.x, viewportPos.y + screenPos.y - half.y };
-        ImVec2 max = { viewportPos.x + screenPos.x + half.x, viewportPos.y + screenPos.y + half.y };
-
-        bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
-            mousePos.y >= min.y && mousePos.y <= max.y);
-
+        // highlight color if hovered or selected
         ImU32 color =
-            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
-            inside ? IM_COL32(255, 255, 0, 200) :
-            IM_COL32(255, 255, 255, 100);
+            (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
+            inside ? IM_COL32(255, 255, 0, 255) :
+            IM_COL32(255, 255, 255, 180);
 
-        dl->AddRect(min, max, color, 0.f, 0, 2.f);
+        dl->AddCircleFilled(handleCenter, handleRadius, color, 24);
+        dl->AddCircle(handleCenter, handleRadius, IM_COL32(0, 0, 0, 200), 24, 1.5f);
 
         if (inside)
             hovered = entity;
     }
 
-    // === Selection & dragging ===
+    // === click to start drag ===
     if (mouseClicked && hovered != INVALID_ENTITY)
     {
         selectedEntity = hovered;
@@ -974,43 +1235,25 @@ void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewpo
         isDragging = true;
 
         auto& t = reg.Get_Component<TransformComponent>(hovered);
-        Vec2 mouseWorld{
-            (mouse.x - offset.x) / scale,
-            worldHeight - (mouse.y - offset.y) / scale
-        };
-        dragOffset = t.pos - mouseWorld;
-        std::cout << "[Editor] Selected entity " << hovered << std::endl;
+        dragOffset = t.pos - mouse;
+
+        std::cout << "[Editor] Drag handle start entity " << hovered << "\n";
     }
 
+    // === drag entity ===
     if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown)
     {
         auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
-        Vec2 mouseWorld{
-            (mouse.x - offset.x) / scale,
-            worldHeight - (mouse.y - offset.y) / scale
-        };
-        t.pos = mouseWorld + dragOffset;
-
-        // Draw a blue outline for the dragged entity
-        Vec2 pos = t.pos;
-        Vec2 screenPos;
-        screenPos.x = offset.x + pos.x * scale;
-        screenPos.y = offset.y + (worldHeight - pos.y) * scale;
-
-        ImVec2 min = { viewportPos.x + screenPos.x - 25 * scale, viewportPos.y + screenPos.y - 25 * scale };
-        ImVec2 max = { viewportPos.x + screenPos.x + 25 * scale, viewportPos.y + screenPos.y + 25 * scale };
-        dl->AddRect(min, max, IM_COL32(0, 128, 255, 255), 0.f, 0, 2.5f);
+        t.pos = mouse + dragOffset;
     }
 
+    // === release ===
     if (mouseReleased)
     {
         isDragging = false;
         draggedEntity = INVALID_ENTITY;
     }
 }
-
-
-
 
 
 void ImGuiSystem::Shutdown() {

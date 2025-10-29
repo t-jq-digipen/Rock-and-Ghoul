@@ -37,12 +37,19 @@ void RenderSystem::Update(float dt) {
 
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
+        spriteComp.Update_ImageSize();
         if (spriteComp.IsAnimated())
         {
             // draw animated logic
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+            if (!m_registry.Has_Component<Animator::AnimatorComponent>(entID))
+            {
+                std::cout << "Warning, Entity: " << entID << " does NOT have AnimatorComponent\n";
+                continue;
+            }
             Animator::AnimatorComponent& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
 
+            animComp.UpdateUV(spriteComp.Get_Image().widthPixels, spriteComp.Get_Image().heightPixels);
             animComp.UpdateFrame(dt);
 
             renderInstance.DrawImageSub(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, animComp.u0, animComp.v0, animComp.u1, animComp.v1, transComp.rot + spriteComp.Get_Rotation());

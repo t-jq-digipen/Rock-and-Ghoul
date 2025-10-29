@@ -94,12 +94,14 @@ namespace Animator {
 		 * @param framerange The range of frames (row and start/end columns) for the animation.
 		 * @param duration Duration (in seconds) for one animation loop.
 		 */
-		AnimatorComponent(int total_rows, int total_cols, int imageWidthPixels, int imageHeightPixels, ActiveFrames const& framerange, float duration = 0.f);
+		AnimatorComponent(int total_rows, int total_cols, ActiveFrames const& framerange, float duration = 0.f);
 
 		/**
 		 * @brief Update UV coordinates based on the current row and column.
 		 */
 		void UpdateUV();
+
+		void UpdateUV(int imageWidthPixels, int imageHeightPixels);
 
 		/**
 		 * @brief Set the active animation frames and duration.

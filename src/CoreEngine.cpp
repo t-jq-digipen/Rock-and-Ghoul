@@ -39,6 +39,7 @@
 #include "DataDefs.h"
 #include "MovementSystem.h"
 #include <nlohmann/json.hpp>
+#include "RenderSystem.h"
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
 
@@ -123,8 +124,16 @@ void CoreEngine::Run() {
             glfwPollEvents();
             float dt = static_cast<float>(frameRate.GetDeltaTime());
             g_dt = std::clamp(dt, 0.0f, 0.05f);
-            
+
+            // Handle play/stop flags
+            if (gsm.isPaused && gsm.inEditMode)
+            {
+                // In edit mode freeze simulation
+                dt = 0.0f;
+            }
+            g_dt = dt;
             // 1. Update game state logic first
+
             gsm.CallUpdate();
 
             // 2. Draw background/UI (this calls glClear)
@@ -139,7 +148,19 @@ void CoreEngine::Run() {
                 // Record the starting timestamp before running the system update
                 auto start = clock::now();
                 // Call the system's update function, passing delta time for this frame
-                s->Update(g_dt);
+                if (!gsm.isPaused && !gsm.inEditMode)
+                {
+                    // Only update systems when in gameplay
+                    s->Update(g_dt);
+                }
+                else
+                {
+                    //Still render ImGui overlay while editing
+                    if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s))
+                        imguiSystem->Update(0.0f);
+                    else if (auto* renderSystem = dynamic_cast<RenderSystem*>(s))
+                        renderSystem->Update(0.0f);
+                }
                 // Record the ending timestamp immediately after update finishes
                 auto end = clock::now();
                 //how long the update took in milliseconds

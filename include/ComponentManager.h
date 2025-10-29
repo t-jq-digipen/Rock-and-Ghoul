@@ -35,6 +35,8 @@ public:
 
 	virtual bool hasComponent(Entity eID) = 0;
 
+	virtual void addComponent(Entity eID) = 0;
+
 	virtual std::string SaveComponent(Entity eID) = 0;
 	virtual void LoadComponent(Entity eID, const std::string& data) = 0;
 
@@ -42,6 +44,7 @@ public:
 };
 
 // template for component manager for each component
+
 template<typename Component>
 class ComponentManager : public IComponentManager {
 
@@ -68,7 +71,7 @@ public:
 	 * @param comp The component instance to add.
 	 * @throws std::runtime_error if the entity already has this component.
 	 */
-	void		addComponent(Entity eID, Component const& comp = {})
+	void		addComponent(Entity eID, Component const& comp = {}) 
 	{
 		// check if entity already has component
 		if (hasComponent(eID))
@@ -81,6 +84,16 @@ public:
 			components[eID] = comp;
 			std::cout << "Component created\n";
 		}
+	}
+
+	void		addComponent(Entity eID) override
+	{
+		if (hasComponent(eID))
+		{
+			throw std::runtime_error("Entity already has component");
+		}
+		components[eID] = Component();
+		std::cout << "Component created\n";
 	}
 
 	/**

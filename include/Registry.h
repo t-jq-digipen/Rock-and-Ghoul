@@ -122,13 +122,18 @@ public:
 
 
 	bool HasDependencies(Entity eID, std::type_index typeID) {
-		// IsComponentRegistered(typeID);
+		IsComponentRegistered(typeID);
+
+		// Component type has no dependencies!
+		if (componentDependencies.find(typeID) == componentDependencies.end())
+		{ return true; }
 
 		for (std::type_index dep : componentDependencies[typeID])
 		{
 			IsComponentRegistered(dep);
 			if (!componentManagers[dep]->hasComponent(eID))
 			{
+				std::cout << "Entity " << eID << " Dependency type " << Get_ComponentTypeName(dep) << " for " << Get_ComponentTypeName(typeID) << " not found\n";
 				return false;
 			}
 		}
@@ -138,11 +143,16 @@ public:
 	bool HasDependents(Entity eID, std::type_index typeID) {
 		IsComponentRegistered(typeID);
 
+		// Component type has no dependents!
+		if (componentDependents.find(typeID) == componentDependents.end())
+		{ return false; }
+
 		for (std::type_index reliant : componentDependents[typeID])
 		{
 			IsComponentRegistered(typeID);
 			if (componentManagers[reliant]->hasComponent(eID))
 			{
+				std::cout << "Entity " << eID << "Component type " << Get_ComponentTypeName(reliant) << " is relying on " << Get_ComponentTypeName(typeID) << '\n';
 				return true;
 			}
 		}
@@ -161,12 +171,13 @@ public:
 		// Check if component is already registered
 		if ((componentManagers.find(typeID)) != componentManagers.end())
 		{
-			throw std::runtime_error("COMPONENT ALREADY REGISTERED\n");
+			throw std::runtime_error("COMPONENT " + name + " ALREADY REGISTERED\n");
 		}
 		else // Component not registered yet, safe to register :)
 		{
 			componentManagers[typeID] = std::make_unique<ComponentManager<Component>>();
 			componentTypeNames.emplace(name, typeID);
+			componentTypeList.push_back(typeID);
 
 			if (dependencies.empty())
 			{
@@ -178,7 +189,7 @@ public:
 				std::type_index depTypeIdx = Get_ComponentTypeIndex(dep);
 				if (componentManagers.find(depTypeIdx) == componentManagers.end())
 				{
-					throw std::runtime_error("DEPENDENCY NOT REGISTERED\n");
+					throw std::runtime_error("DEPENDENCY FOR " + name + ", " + dep + " NOT REGISTERED\n");
 				}
 				componentDependencies[typeID].push_back(depTypeIdx);
 				componentDependents[depTypeIdx].push_back(typeID);
@@ -192,25 +203,34 @@ public:
 	 * @param component Component instance to add.
 	 */
 	template<typename Component>
-	void Add_Component(Entity eID, const Component& component)
+	void Add_Component(Entity eID, const Component& component = {})
 	{
+		if (!HasDependencies(eID, typeid(Component)))
+		{
+			return;
+		}
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 		// Check if this component has dependencies
-		auto deplist = componentDependencies.find(typeid(Component));
-		if (deplist != componentDependencies.end())
+		//auto deplist = componentDependencies.find(typeid(Component));
+		/*if (deplist != componentDependencies.end())
 		{
 			for (std::type_index dep : deplist->second)
 			{
-				if (!HasDependencies(eID, dep))
-				{
-					std::cout << "Entity " << eID << " Component " << Get_ComponentTypeName(typeid(Component)) << " does not have dependency " << Get_ComponentTypeName(dep) << '\n';
-					return;
-				}
 			}
-		}
+		}*/
 		manager->addComponent(eID, component);
 	}
 
+	// add default comp using typeID
+	void Add_Component(Entity eID, std::type_index typeID)
+	{
+		IsComponentRegistered(typeID);
+		if (!HasDependencies(eID, typeID))
+		{
+			return;
+		}
+		componentManagers[typeID]->addComponent(eID);
+	}
 
 	/**
 	 * @brief Removes a specific component type from an entity.
@@ -219,9 +239,26 @@ public:
 	template<typename Component>
 	void Remove_Component(Entity eID)
 	{
+		if (HasDependents(eID, typeid(Component)))
+		{
+			return;
+		}
+
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 
 		manager->removeComponent(eID);
+	}
+
+	// remove comp using typeID
+	void Remove_Component(Entity eID, std::type_index typeID)
+	{
+		IsComponentRegistered(typeID);
+		if (HasDependents(eID, typeID))
+		{
+			return;
+		}
+
+		componentManagers[typeID]->removeComponent(eID);
 	}
 
 	template<typename Component>
@@ -229,6 +266,13 @@ public:
 	{
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 		return manager->hasComponent(eID);
+	}
+
+	// check has component using typeID
+	bool Has_Component(Entity eID, std::type_index typeID)
+	{
+		IsComponentRegistered(typeID);
+		return componentManagers[typeID]->hasComponent(eID);
 	}
 
 	/**
@@ -333,8 +377,9 @@ public:
 	// EDITOR
 	// ================================================================================
 #pragma region EDITOR
-	template<typename Component>
-	Editor::ComponentData Get_ComponentEditorData(Entity eID);
+	const std::vector<std::type_index>& Get_ComponentOrder() {
+		return componentTypeList;
+	}
 
 	std::vector<Editor::ComponentData> Get_EntityData(Entity eID);
 #pragma endregion
@@ -370,11 +415,21 @@ public:
 
 		std::cout << "Creating entity '" << saved.name << "' (ID: " << eID << ")\n";
 
-		for (auto& [typeName, data] : saved.componentData)
+		for (std::type_index typeID : componentTypeList)
 		{
-			std::type_index typeIndex(Get_ComponentTypeIndex(typeName));
-			componentManagers[typeIndex]->LoadComponent(eID, data);
+			std::string typeName = Get_ComponentTypeName(typeID);
+			auto it = saved.componentData.find(typeName);
+			if (it != saved.componentData.end())
+			{
+				componentManagers[typeID]->LoadComponent(eID, it->second);
+			}
 		}
+
+		//for (auto& [typeName, data] : saved.componentData)
+		//{
+		//	std::type_index typeIndex(Get_ComponentTypeIndex(typeName));
+		//	componentManagers[typeIndex]->LoadComponent(eID, data);
+		//}
 
 		return eID;
 	}
