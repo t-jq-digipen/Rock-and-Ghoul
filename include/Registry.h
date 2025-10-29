@@ -121,13 +121,18 @@ public:
 
 
 	bool HasDependencies(Entity eID, std::type_index typeID) {
-		// IsComponentRegistered(typeID);
+		IsComponentRegistered(typeID);
+
+		// Component type has no dependencies!
+		if (componentDependencies.find(typeID) == componentDependencies.end())
+		{ return true; }
 
 		for (std::type_index dep : componentDependencies[typeID])
 		{
 			IsComponentRegistered(dep);
 			if (!componentManagers[dep]->hasComponent(eID))
 			{
+				std::cout << "Entity " << eID << " Dependency type " << Get_ComponentTypeName(dep) << " for " << Get_ComponentTypeName(typeID) << " not found\n";
 				return false;
 			}
 		}
@@ -137,11 +142,16 @@ public:
 	bool HasDependents(Entity eID, std::type_index typeID) {
 		IsComponentRegistered(typeID);
 
+		// Component type has no dependents!
+		if (componentDependents.find(typeID) == componentDependents.end())
+		{ return false; }
+
 		for (std::type_index reliant : componentDependents[typeID])
 		{
 			IsComponentRegistered(typeID);
 			if (componentManagers[reliant]->hasComponent(eID))
 			{
+				std::cout << "Entity " << eID << "Component type " << Get_ComponentTypeName(reliant) << " is relying on " << Get_ComponentTypeName(typeID) << '\n';
 				return true;
 			}
 		}
@@ -194,23 +204,32 @@ public:
 	template<typename Component>
 	void Add_Component(Entity eID, const Component& component = {})
 	{
+		if (!HasDependencies(eID, typeid(Component)))
+		{
+			return;
+		}
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 		// Check if this component has dependencies
-		auto deplist = componentDependencies.find(typeid(Component));
-		if (deplist != componentDependencies.end())
+		//auto deplist = componentDependencies.find(typeid(Component));
+		/*if (deplist != componentDependencies.end())
 		{
 			for (std::type_index dep : deplist->second)
 			{
-				if (!HasDependencies(eID, dep))
-				{
-					std::cout << "Entity " << eID << " Component " << Get_ComponentTypeName(typeid(Component)) << " does not have dependency " << Get_ComponentTypeName(dep) << '\n';
-					return;
-				}
 			}
-		}
+		}*/
 		manager->addComponent(eID, component);
 	}
 
+	// add default comp using typeID
+	void Add_Component(Entity eID, std::type_index typeID)
+	{
+		IsComponentRegistered(typeID);
+		if (!HasDependencies(eID, typeID))
+		{
+			return;
+		}
+		componentManagers[typeID]->addComponent(eID);
+	}
 
 	/**
 	 * @brief Removes a specific component type from an entity.
@@ -219,9 +238,26 @@ public:
 	template<typename Component>
 	void Remove_Component(Entity eID)
 	{
+		if (HasDependents(eID, typeid(Component)))
+		{
+			return;
+		}
+
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 
 		manager->removeComponent(eID);
+	}
+
+	// remove comp using typeID
+	void Remove_Component(Entity eID, std::type_index typeID)
+	{
+		IsComponentRegistered(typeID);
+		if (HasDependents(eID, typeID))
+		{
+			return;
+		}
+
+		componentManagers[typeID]->removeComponent(eID);
 	}
 
 	template<typename Component>
@@ -229,6 +265,13 @@ public:
 	{
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 		return manager->hasComponent(eID);
+	}
+
+	// check has component using typeID
+	bool Has_Component(Entity eID, std::type_index typeID)
+	{
+		IsComponentRegistered(typeID);
+		return componentManagers[typeID]->hasComponent(eID);
 	}
 
 	/**

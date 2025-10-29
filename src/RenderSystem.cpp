@@ -37,6 +37,7 @@ void RenderSystem::Update(float dt) {
 
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
+        spriteComp.Update_ImageSize();
         if (spriteComp.IsAnimated())
         {
             // draw animated logic

@@ -20,14 +20,16 @@ namespace Sprite {
 
 	// Sprite Component
 
-	SpriteComponent::SpriteComponent() : m_image(), m_scale{ 0.f,0.f }, m_anim{ false }, m_rot{ 0.f }, tint{ 0.0f, 0.0f, 0.0f } {}
+	SpriteComponent::SpriteComponent() : m_image(), m_oldtexID{}, m_scale { 0.f, 0.f }, m_anim{ false }, m_rot{ 0.f }, tint{ 0.0f, 0.0f, 0.0f } {}
 
 	SpriteComponent::SpriteComponent(std::string const& path, Vec2 scale_offset, bool anim) : m_scale{ scale_offset }, m_anim{ anim }, m_rot{ 0.f } {
 		m_image = CreateImage(path);
+		m_oldtexID = m_image.textureID;
 	}
 
 	SpriteComponent::SpriteComponent(Image const& image, float const& width, float const& height, bool anim) :
 		m_image(image),
+		m_oldtexID(m_image.textureID),
 		m_scale(width, height),
 		m_anim(anim),
 		m_rot{ 0.f }
@@ -35,6 +37,7 @@ namespace Sprite {
 
 	SpriteComponent::SpriteComponent(Image const& image, Vec2 const& dimensions, bool anim) :
 		m_image(image),
+		m_oldtexID(m_image.textureID),
 		m_scale(dimensions),
 		m_anim(anim),
 		m_rot{ 0.f }
@@ -90,6 +93,17 @@ namespace Sprite {
 
 	}
 
+	void SpriteComponent::Update_ImageSize() {
+		if (m_oldtexID == m_image.textureID) { return; }
+
+		glBindTexture(GL_TEXTURE_2D, m_image.textureID);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &m_image.widthPixels);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &m_image.heightPixels);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		m_oldtexID = m_image.textureID;
+		
+	}
+
 	std::string SpriteComponent::Serialize() const {
 
 		json j = {
@@ -116,7 +130,7 @@ namespace Sprite {
 		Editor::ComponentData ret("Sprite");
 
 		Editor::Widget_Dropdown dropdown{};
-		dropdown.ref = &m_image.textureID;
+		dropdown.ref = reinterpret_cast<unsigned int*>(&m_image.textureID);
 		// dropdown.enumMap = Render::GetInstance().Get_TextureCache();
 		for (auto const& [optname, optval] : Render::GetInstance().Get_TextureCache())
 		{

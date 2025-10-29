@@ -35,6 +35,7 @@ public:
 
 	virtual bool hasComponent(Entity eID) = 0;
 
+	virtual void addComponent(Entity eID) = 0;
 
 	virtual std::string SaveComponent(Entity eID) = 0;
 	virtual void LoadComponent(Entity eID, const std::string& data) = 0;
@@ -83,6 +84,16 @@ public:
 			components[eID] = comp;
 			std::cout << "Component created\n";
 		}
+	}
+
+	void		addComponent(Entity eID) override
+	{
+		if (hasComponent(eID))
+		{
+			throw std::runtime_error("Entity already has component");
+		}
+		components[eID] = Component();
+		std::cout << "Component created\n";
 	}
 
 	/**
