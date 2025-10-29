@@ -77,7 +77,15 @@ int main() {
     if (!GLApp::init(settings.resolutionWidth, settings.resolutionHeight, "Rock & Ghoul")) {
         return -1;
     }
-    CrashHandler::SetLogPath("rockandghoul_crash.log");
+    const char* LogPath = "rockandghoul_crash.log";
+
+    // Truncate the file at startup (creates it if missing)
+    {
+        std::ofstream trunc(LogPath, std::ios::out | std::ios::trunc);
+        // trunc goes out of scope and closes immediately
+    }
+    
+    CrashHandler::SetLogPath(LogPath);
     CrashHandler::Install();
     CrashHandler::Log("=== Rock & Ghoul starting ===");
     EnableMemoryLeakChecking();

@@ -22,6 +22,7 @@ private:
         return true;
     }
 
+    // Define movement direction by velocity
     inline Movement::MovementDirection VelToDir(const Vec2& v) {
         if (std::fabs(v.y) >= std::fabs(v.x)) {
             if (v.y > 0.f)  return Movement::MOVE_UP;
@@ -34,6 +35,7 @@ private:
         return Movement::MOVE_NONE;
     }
 
+    // Set horizontal and vertical movement based on respective control scheme and user input
     inline Vec2 ReadDirFromScheme(ControlScheme scheme) {
         int hor = 0, vert = 0;
         switch (scheme) {
