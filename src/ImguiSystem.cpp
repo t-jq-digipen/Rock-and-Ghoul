@@ -716,6 +716,48 @@ void ImGuiSystem::ShowInspectorWindow() {
         }
     }
 
+    Entity eID = selectedEntity; // use selected entity from inspector
+
+    for (std::type_index typeID : m_registry.Get_ComponentOrder())
+    {
+        std::string compName = m_registry.Get_ComponentTypeName(typeID);
+
+        // check if entity already has this component
+        bool hasComp = m_registry.Has_Component(eID, typeID);
+
+        // check dependencies
+        bool depsOK = m_registry.HasDependencies(eID, typeID);
+
+        if (hasComp)
+        {
+            ImGui::BeginDisabled();
+            ImGui::Button((compName + " (Has)").c_str());
+            ImGui::EndDisabled();
+
+            ImGui::SameLine();
+            if (ImGui::Button(("Remove##" + compName).c_str()))
+            {
+                m_registry.Remove_Component(eID, typeID);
+                std::cout << "[Editor] Removed " << compName << " from entity " << eID << "\n";
+            }
+        }
+        else
+        {
+            if (!depsOK) ImGui::BeginDisabled();
+            if (ImGui::Button(("Add " + compName).c_str()))
+            {
+                m_registry.Add_Component(eID, typeID);
+
+
+                std::cout << "[Editor] Added " << compName << " to entity " << eID << "\n";
+            }
+
+            if (!depsOK) ImGui::EndDisabled();
+        }
+    }
+
+
+
 }
 
 void ImGuiSystem::ShowAssetPreviewWindow()

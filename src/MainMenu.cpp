@@ -152,7 +152,7 @@ void MainMenu::Init()
         //    [] { GSM_SetNextState(GameState::GS_QUIT); },
         //    AudioSystem::ButtonType::QUIT);
         guiSystem.AddTextBox({
-            .text = "Press SPACE or Click Play",
+            .text = "Press 8 or Click Play",
             .pos = {1650, 50},
             .scale = 0.5f,
             .color = {0.f, 0.f, 0.f},
