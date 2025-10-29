@@ -22,43 +22,55 @@ private:
         return true;
     }
 
-    // Define movement direction by velocity
-    inline Movement::MovementDirection VelToDir(const Vec2& v) {
-        if (std::fabs(v.y) >= std::fabs(v.x)) {
-            if (v.y > 0.f)  return Movement::MOVE_UP;
-            if (v.y < 0.f)  return Movement::MOVE_DOWN;
+    // Define velocity by movement direction
+    static inline Vec2 DirToVec(Movement::MovementDirection dir)
+    {
+        switch (dir)
+        {
+            case Movement::MOVE_UP: return { 0.f, 1.f };
+            case Movement::MOVE_DOWN: return { 0.f, -1.f };
+            case Movement::MOVE_LEFT: return { -1.f, 0.f };
+            case Movement::MOVE_RIGHT: return { 1.f, 0.f };
+            default: return { 0.f, 0.f };
         }
-        else {
-            if (v.x > 0.f)  return Movement::MOVE_RIGHT;
-            if (v.x < 0.f)  return Movement::MOVE_LEFT;
-        }
-        return Movement::MOVE_NONE;
     }
 
-    // Set horizontal and vertical movement based on respective control scheme and user input
-    inline Vec2 ReadDirFromScheme(ControlScheme scheme) {
-        int hor = 0, vert = 0;
-        switch (scheme) {
-        case CS_WASD:
-            if (Input::IsKeyHeld(GLFW_KEY_W)) vert += 1;
-            if (Input::IsKeyHeld(GLFW_KEY_S)) vert -= 1;
-            if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
-            if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
-            break;
-        case CS_IJKL:
-            if (Input::IsKeyHeld(GLFW_KEY_I)) vert += 1;
-            if (Input::IsKeyHeld(GLFW_KEY_K)) vert -= 1;
-            if (Input::IsKeyHeld(GLFW_KEY_J)) hor -= 1;
-            if (Input::IsKeyHeld(GLFW_KEY_L)) hor += 1;
-            break;
-        case CS_ARROWS:
-            if (Input::IsKeyHeld(GLFW_KEY_UP))    vert += 1;
-            if (Input::IsKeyHeld(GLFW_KEY_DOWN))  vert -= 1;
-            if (Input::IsKeyHeld(GLFW_KEY_LEFT))  hor -= 1;
-            if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) hor += 1;
-            break;
-        default: break;
-        }
-        return { static_cast<float>(hor), static_cast<float>(vert) };
-    }
+    //inline Movement::MovementDirection VelToDir(const Vec2& v) {
+    //    if (std::fabs(v.y) >= std::fabs(v.x)) {
+    //        if (v.y > 0.f)  return Movement::MOVE_UP;
+    //        if (v.y < 0.f)  return Movement::MOVE_DOWN;
+    //    }
+    //    else {
+    //        if (v.x > 0.f)  return Movement::MOVE_RIGHT;
+    //        if (v.x < 0.f)  return Movement::MOVE_LEFT;
+    //    }
+    //    return Movement::MOVE_NONE;
+    //}
+
+    //// Set horizontal and vertical movement based on respective control scheme and user input
+    //inline Vec2 ReadDirFromScheme(ControlScheme scheme) {
+    //    int hor = 0, vert = 0;
+    //    switch (scheme) {
+    //    case CS_WASD:
+    //        if (Input::IsKeyHeld(GLFW_KEY_W)) vert += 1;
+    //        if (Input::IsKeyHeld(GLFW_KEY_S)) vert -= 1;
+    //        if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
+    //        if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+    //        break;
+    //    case CS_IJKL:
+    //        if (Input::IsKeyHeld(GLFW_KEY_I)) vert += 1;
+    //        if (Input::IsKeyHeld(GLFW_KEY_K)) vert -= 1;
+    //        if (Input::IsKeyHeld(GLFW_KEY_J)) hor -= 1;
+    //        if (Input::IsKeyHeld(GLFW_KEY_L)) hor += 1;
+    //        break;
+    //    case CS_ARROWS:
+    //        if (Input::IsKeyHeld(GLFW_KEY_UP))    vert += 1;
+    //        if (Input::IsKeyHeld(GLFW_KEY_DOWN))  vert -= 1;
+    //        if (Input::IsKeyHeld(GLFW_KEY_LEFT))  hor -= 1;
+    //        if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) hor += 1;
+    //        break;
+    //    default: break;
+    //    }
+    //    return { static_cast<float>(hor), static_cast<float>(vert) };
+    //}
 };

@@ -17,6 +17,7 @@
 #include "Registry.h"      // HasComponent / GetComponent
 #include "Component.h"    // All component structs
 #include "Input.h"
+#include "Movement.h"
 #include "GameStateManager.h"
 #include <iostream>
 
@@ -29,6 +30,8 @@ enum PlayerState : int {
 class PlayerSystem : public ISystem {
 private:
     void WASD_Movement(Entity eID, float& dt);
+
+    static inline Movement::MovementDirection VelToDir(float x, float y);
 
 public:
 

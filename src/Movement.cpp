@@ -19,6 +19,7 @@ namespace Movement {
 	MovementType MovementComponent::GetMoveType() const { return moveType; }
 	bool MovementComponent::GetIsMoving() const { return isMoving; }
 
+	// JSON
 	std::string MovementComponent::Serialize() const
 	{
 		json j = {
@@ -45,6 +46,13 @@ namespace Movement {
 	{
 		Editor::ComponentData ret("Movement");
 		ret.Add_Data("Movement Speed", Editor::Widget_Float(&moveSpeed));
+
+		Editor::Widget_Dropdown moveTypeDD;
+		moveTypeDD.ref = reinterpret_cast<unsigned int*>(&moveType);
+		moveTypeDD.Add_Option("Position", static_cast<unsigned int>(Movement::MOVE_POSITION));
+		moveTypeDD.Add_Option("Velocity", static_cast<unsigned int>(Movement::MOVE_VELOCITY));
+		ret.Add_Data("Movement Type", moveTypeDD);
+
 		return ret;
 	}
 }

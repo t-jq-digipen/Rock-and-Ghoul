@@ -45,6 +45,10 @@ namespace Movement {
 		MovementType GetMoveType() const;
 		bool GetIsMoving() const;
 
+		// Called by MovementSystem after consuming the current frame's input
+		void ResetFrameIntent() { isMoving = false; moveDirection = MOVE_NONE; }
+
+		// JSON
 		std::string Serialize() const;
 		static MovementComponent DeSerialize(Entity eID, const std::string& data);
 		Editor::ComponentData EditorData();

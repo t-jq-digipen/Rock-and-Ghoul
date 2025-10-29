@@ -8,7 +8,8 @@
                 "Physics": "{\"aabb\":{\"centerX\":650.3580322265625,\"centerY\":658.2086791992188,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":650.3580322265625,\"posY\":658.2086791992188,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":9.444792056931477e-22,\"velY\":-1.1810282468795776,\"willCollide\":true}",
                 "Sprite": "{\"animated\":true,\"scaleX\":100.0,\"scaleY\":100.0,\"texturePath\":\"../Assets/Waffle_Sprites.png\"}",
                 "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":650.3580322265625,\"posY\":658.2086791992188,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                "Transform": "{\"posX\":650.3580322265625,\"posY\":658.2086791992188,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}",
+                "Movement": "{\"moveSpeed\":500.0}"
             },
             "name": "Waffle"
         },
@@ -19,7 +20,8 @@
                 "Physics": "{\"aabb\":{\"centerX\":478.305908203125,\"centerY\":404.6636962890625,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":478.3059387207031,\"posY\":404.6636962890625,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":-14.886323928833008,\"velY\":-2.6053287982940674,\"willCollide\":true}",
                 "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Rock_FightingPose_2048px.png\"}",
                 "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":478.3059387207031,\"posY\":404.6636962890625,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                "Transform": "{\"posX\":478.3059387207031,\"posY\":404.6636962890625,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}",
+                "Movement": "{\"moveSpeed\":300.0}"
             },
             "name": "Player"
         },
@@ -30,7 +32,8 @@
                 "Physics": "{\"aabb\":{\"centerX\":983.5672607421875,\"centerY\":429.7080078125,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":983.5672607421875,\"posY\":429.7079772949219,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":-14.886323928833008,\"velY\":-3.938472032546997,\"willCollide\":true}",
                 "Shape": "{\"colorX\":1.0,\"colorY\":0.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":0}",
                 "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":983.5672607421875,\"posY\":429.7079772949219,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                "Transform": "{\"posX\":983.5672607421875,\"posY\":429.7079772949219,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}",
+                "Movement": "{\"moveSpeed\":300.0}"
             },
             "name": "Rectangle"
         },
@@ -41,7 +44,8 @@
                 "Physics": "{\"aabb\":{\"centerX\":1009.7008056640625,\"centerY\":697.3485717773438,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1009.7008056640625,\"posY\":697.3485717773438,\"rad\":100.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":6.612851079383194e-22,\"velY\":-3.566729696010847e-21,\"willCollide\":true}",
                 "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":1}",
                 "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":1009.7008056640625,\"posY\":697.3485717773438,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                "Transform": "{\"posX\":1009.7008056640625,\"posY\":697.3485717773438,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}",
+                "Movement": "{\"moveSpeed\":100.0}"
             },
             "name": "Circle"
         },

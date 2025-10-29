@@ -12,25 +12,27 @@ void MovementSystem::Update(float dt)
 {
 	(void)dt;
 
+	// Define movement logic (player input handled in PlayerSystem)
+
 	for (auto& [entID, moveComp] : m_registry.Get_ComponentMap<Movement::MovementComponent>())
 	{
-		// Get respective input scheme
-		ControlScheme scheme = CS_WASD;
-		if (m_registry.Has_Component<InputComponent>(entID))
+		// Check if entity is moving
+		const bool moving = moveComp.GetIsMoving();
+		if (!moving)
 		{
-			scheme = m_registry.Get_Component<InputComponent>(entID).scheme;
+			moveComp.ResetFrameIntent();
+			continue;
 		}
 
-		// Movement check logic
-		Vec2 dir = ReadDirFromScheme(scheme);
-		const bool norm = Normalize(dir);
+		// Get entity movement direction
+		Vec2 dir = DirToVec(moveComp.GetMoveDirection());
+		if (!Normalize(dir))
+		{
+			moveComp.ResetFrameIntent();
+			continue;
+		}
 
-		// Set isMoving to true if entity moving, otherwise false
-		moveComp.SetIsMoving(norm);
-		moveComp.SetMoveDirection(VelToDir(norm ? dir : Vec2{ 0.f, 0.f }));
-
-		if (!norm) continue;
-
+		// Get entity speed (different for each entity)
 		const float speed = moveComp.GetMoveSpeed();
 
 		// Define if moving by position or velocity
@@ -48,12 +50,20 @@ void MovementSystem::Update(float dt)
 			{
 				if (!m_registry.Has_Component<Physics::PhysicsComponent>(entID)) break;
 				auto& phys = m_registry.Get_Component<Physics::PhysicsComponent>(entID);
-				phys.AddForce(dir, speed, 0.f);
+				Vec2 vel{ dir.x * speed * dt, dir.y * speed * dt };
+				phys.Set_Vel(vel);
+				if (!moveComp.GetIsMoving())
+				{
+					phys.Set_Vel({ 0.f, 0.f });
+				}
 				break;
 			}
 			default:
 				break;
 		}
+
+		// Reset move component to 0 after each frame
+		moveComp.ResetFrameIntent();
 	}
 }
 

@@ -16,86 +16,132 @@
 
 #include "PlayerSystem.h"
 #include "Registry.h"
-#include "MovementSystem.h"
 
 constexpr float dash = 10.f;
 constexpr float maxspeed = 10.f;
 constexpr float speed = 500.f;
 
+inline Movement::MovementDirection PlayerSystem::VelToDir(float x, float y)
+{
+	if (std::abs(y) >= std::abs(x)) return (y > 0.f) ? Movement::MOVE_UP : (y < 0.f ? Movement::MOVE_DOWN : Movement::MOVE_NONE);
+	return (x > 0.f) ? Movement::MOVE_RIGHT : (x < 0.f ? Movement::MOVE_LEFT : Movement::MOVE_NONE);
+}
+
 void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 {
 	(void)dt;
-	auto& physics = m_registry.Get_Component<Physics::PhysicsComponent>(eID);
+
+	if (!m_registry.Has_Component<Movement::MovementComponent>(eID)) return;
+	auto& moveComp = m_registry.Get_Component<Movement::MovementComponent>(eID);
+
+	// To be reworked when InputComponent no longer needed???
 
 	if (!m_registry.Has_Component<InputComponent>(eID)) {
-		return; // No input component, skip movement
+		moveComp.SetIsMoving(false);
+		moveComp.SetMoveDirection(Movement::MOVE_NONE);
+		return;
 	}
-	auto& input = m_registry.Get_Component<InputComponent>(eID);
 
-	// Handle movement based on control scheme
-	switch (input.scheme) {
+	const auto& input = m_registry.Get_Component<InputComponent>(eID);
+
+	int hor = 0, ver = 0;
+	switch (input.scheme)
+	{
 	case CS_WASD:
-		//if (Input::IsKeyHeld(GLFW_KEY_W)) transform.pos.y += speed * dt;
-		//if (Input::IsKeyHeld(GLFW_KEY_S)) transform.pos.y -= speed * dt;
-		//if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
-		//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
-		//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt; 
-	    if (Input::IsKeyHeld(GLFW_KEY_W)) physics.AddForce({ 0,1 }, 1.f, 0.f);
-		if (Input::IsKeyHeld(GLFW_KEY_S)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
-		if (Input::IsKeyHeld(GLFW_KEY_A)) physics.AddForce({ -1,0 }, 1.f, 0.f);
-		if (Input::IsKeyHeld(GLFW_KEY_D)) physics.AddForce({ 1,0 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
+		if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
 		break;
-
 	case CS_IJKL:
-		//if (Input::IsKeyHeld(GLFW_KEY_I)) transform.pos.y += speed * dt;
-		//if (Input::IsKeyHeld(GLFW_KEY_K)) transform.pos.y -= speed * dt;
-		//if (Input::IsKeyHeld(GLFW_KEY_J)) transform.pos.x -= speed * dt;
-		//if (Input::IsKeyHeld(GLFW_KEY_L)) transform.pos.x += speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_I)) physics.AddForce({ 0,1 }, 1.f, 0.f);
-		if (Input::IsKeyHeld(GLFW_KEY_K)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
-		if (Input::IsKeyHeld(GLFW_KEY_J)) physics.AddForce({ -1,0 }, 1.f, 0.f);
-		if (Input::IsKeyHeld(GLFW_KEY_L)) physics.AddForce({ 1,0 }, 1.f, 0.f);
-		if (m_registry.Has_Component<Animator::AnimatorComponent>(eID))
-		{
-			if ((Input::IsKeyHeld(GLFW_KEY_I) || Input::IsKeyHeld(GLFW_KEY_J) || Input::IsKeyHeld(GLFW_KEY_K) || Input::IsKeyHeld(GLFW_KEY_L)))
-			{
-				m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(PS_WALK);
-			}
-			else
-			{
-				m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(PS_IDLE);
-			}
-
-		}
+		if (Input::IsKeyHeld(GLFW_KEY_I)) ver += 1;
+		if (Input::IsKeyHeld(GLFW_KEY_K)) ver -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_J)) hor -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_L)) hor += 1;
 		break;
 	case CS_ARROWS:
-		//if (Input::IsKeyHeld(GLFW_KEY_UP)) transform.pos.y += speed * dt;
-		//if (Input::IsKeyHeld(GLFW_KEY_DOWN)) transform.pos.y -= speed * dt;
-		//if (Input::IsKeyHeld(GLFW_KEY_LEFT)) transform.pos.x -= speed * dt;
-		//if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) transform.pos.x += speed * dt;
-		if (Input::IsKeyHeld(GLFW_KEY_UP)) physics.AddForce({ 0,1 }, 1.f, 0.f);
-		if (Input::IsKeyHeld(GLFW_KEY_DOWN)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
-		if (Input::IsKeyHeld(GLFW_KEY_LEFT)) physics.AddForce({ -1,0 }, 1.f, 0.f);
-		if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) physics.AddForce({ 1,0 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_UP))    ver += 1;
+		if (Input::IsKeyHeld(GLFW_KEY_DOWN))  ver -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_LEFT))  hor -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) hor += 1;
 		break;
+	default: break;
 	}
 
-	// knockback test
-	int vert{0};
-	int hor{0};
-	if (Input::IsKeyHeld(GLFW_KEY_W)) vert += 1;
-	if (Input::IsKeyHeld(GLFW_KEY_S)) vert -= 1;
-	if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
-	if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+	const bool moving = (hor != 0 || ver != 0);
+	moveComp.SetIsMoving(moving);
+	moveComp.SetMoveDirection(VelToDir(static_cast<float>(hor), static_cast<float>(ver)));
+	//auto& physics = m_registry.Get_Component<Physics::PhysicsComponent>(eID);
 
-	Vec2 dir{ (float)hor, (float)vert };
+	//if (!m_registry.Has_Component<InputComponent>(eID)) {
+	//	return; // No input component, skip movement
+	//}
+	//auto& input = m_registry.Get_Component<InputComponent>(eID);
 
-	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) physics.AddForce(dir, dash);
+	//// Handle movement based on control scheme
+	//switch (input.scheme) {
+	//case CS_WASD:
+	//	//if (Input::IsKeyHeld(GLFW_KEY_W)) transform.pos.y += speed * dt;
+	//	//if (Input::IsKeyHeld(GLFW_KEY_S)) transform.pos.y -= speed * dt;
+	//	//if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
+	//	//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
+	//	//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt; 
+	//    if (Input::IsKeyHeld(GLFW_KEY_W)) physics.AddForce({ 0,1 }, 1.f, 0.f);
+	//	if (Input::IsKeyHeld(GLFW_KEY_S)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
+	//	if (Input::IsKeyHeld(GLFW_KEY_A)) physics.AddForce({ -1,0 }, 1.f, 0.f);
+	//	if (Input::IsKeyHeld(GLFW_KEY_D)) physics.AddForce({ 1,0 }, 1.f, 0.f);
+	//	break;
 
-	/*if (Input::IsKeyHeld(GLFW_KEY_W) && vel.y < maxspeed) physics.AddForce({ 0.f,1.f }, accel);
-	if (Input::IsKeyHeld(GLFW_KEY_S) && vel.y > -maxspeed) physics.AddForce({ 0.f,-1.f }, accel);
-	if (Input::IsKeyHeld(GLFW_KEY_A) && vel.x > -maxspeed) physics.AddForce({ -1.f,0.f }, accel);
-	if (Input::IsKeyHeld(GLFW_KEY_D) && vel.x < maxspeed) physics.AddForce({ 1.f,0.f }, accel);*/
+	//case CS_IJKL:
+	//	//if (Input::IsKeyHeld(GLFW_KEY_I)) transform.pos.y += speed * dt;
+	//	//if (Input::IsKeyHeld(GLFW_KEY_K)) transform.pos.y -= speed * dt;
+	//	//if (Input::IsKeyHeld(GLFW_KEY_J)) transform.pos.x -= speed * dt;
+	//	//if (Input::IsKeyHeld(GLFW_KEY_L)) transform.pos.x += speed * dt;
+	//	if (Input::IsKeyHeld(GLFW_KEY_I)) physics.AddForce({ 0,1 }, 1.f, 0.f);
+	//	if (Input::IsKeyHeld(GLFW_KEY_K)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
+	//	if (Input::IsKeyHeld(GLFW_KEY_J)) physics.AddForce({ -1,0 }, 1.f, 0.f);
+	//	if (Input::IsKeyHeld(GLFW_KEY_L)) physics.AddForce({ 1,0 }, 1.f, 0.f);
+	//	if (m_registry.Has_Component<Animator::AnimatorComponent>(eID))
+	//	{
+	//		if ((Input::IsKeyHeld(GLFW_KEY_I) || Input::IsKeyHeld(GLFW_KEY_J) || Input::IsKeyHeld(GLFW_KEY_K) || Input::IsKeyHeld(GLFW_KEY_L)))
+	//		{
+	//			m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(PS_WALK);
+	//		}
+	//		else
+	//		{
+	//			m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(PS_IDLE);
+	//		}
+
+	//	}
+	//	break;
+	//case CS_ARROWS:
+	//	//if (Input::IsKeyHeld(GLFW_KEY_UP)) transform.pos.y += speed * dt;
+	//	//if (Input::IsKeyHeld(GLFW_KEY_DOWN)) transform.pos.y -= speed * dt;
+	//	//if (Input::IsKeyHeld(GLFW_KEY_LEFT)) transform.pos.x -= speed * dt;
+	//	//if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) transform.pos.x += speed * dt;
+	//	if (Input::IsKeyHeld(GLFW_KEY_UP)) physics.AddForce({ 0,1 }, 1.f, 0.f);
+	//	if (Input::IsKeyHeld(GLFW_KEY_DOWN)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
+	//	if (Input::IsKeyHeld(GLFW_KEY_LEFT)) physics.AddForce({ -1,0 }, 1.f, 0.f);
+	//	if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) physics.AddForce({ 1,0 }, 1.f, 0.f);
+	//	break;
+	//}
+
+	//// knockback test
+	//int vert{0};
+	//int hor{0};
+	//if (Input::IsKeyHeld(GLFW_KEY_W)) vert += 1;
+	//if (Input::IsKeyHeld(GLFW_KEY_S)) vert -= 1;
+	//if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
+	//if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+
+	//Vec2 dir{ (float)hor, (float)vert };
+
+	//if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) physics.AddForce(dir, dash);
+
+	///*if (Input::IsKeyHeld(GLFW_KEY_W) && vel.y < maxspeed) physics.AddForce({ 0.f,1.f }, accel);
+	//if (Input::IsKeyHeld(GLFW_KEY_S) && vel.y > -maxspeed) physics.AddForce({ 0.f,-1.f }, accel);
+	//if (Input::IsKeyHeld(GLFW_KEY_A) && vel.x > -maxspeed) physics.AddForce({ -1.f,0.f }, accel);
+	//if (Input::IsKeyHeld(GLFW_KEY_D) && vel.x < maxspeed) physics.AddForce({ 1.f,0.f }, accel);*/
 
 
 }
@@ -107,7 +153,6 @@ void PlayerSystem::Initialize()
 
 void PlayerSystem::Update(float dt)
 {
-	MovementSystem moveSystem;
 	for (auto& [entity, comp] : m_registry.Get_ComponentMap<TagComponent>())
 	{
 		if (!m_registry.Has_Component<TransformComponent>(entity))
@@ -115,8 +160,7 @@ void PlayerSystem::Update(float dt)
 		if (comp.tag == T_PLAYER)
 		{
 			// THIS IS A PLAYER, DO PLAYER THINGS
-			// WASD_Movement(entity, dt);
-			moveSystem.Update(dt);
+			WASD_Movement(entity, dt);
 		}
 	}
 }
