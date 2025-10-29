@@ -346,7 +346,7 @@ struct ShapeComponent {
 		dropdown.ref = reinterpret_cast<unsigned int*>(&shape);
 		dropdown.Add_Option("Rectangle", static_cast<unsigned int>(SHAPE_RECTANGLE));
 		dropdown.Add_Option("Circle", static_cast<unsigned int>(SHAPE_CIRCLE));
-		ret.Add_Data("Scheme", dropdown );
+		ret.Add_Data("Shape", dropdown );
 
 		ret.Add_Data("Width",		  Editor::Widget_Float{&dimensions.x, true, 0.f, 100.f});
 		ret.Add_Data("Height",		  Editor::Widget_Float{&dimensions.y, true, 0.f, 100.f});

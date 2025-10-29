@@ -336,7 +336,7 @@ namespace Physics {
 		ret.Add_Data("AABB width", Editor::Widget_Float{ &aabbhitbox.dim.x, true, 10.f, 1000.f });
 		ret.Add_Data("AABB height", Editor::Widget_Float{ &aabbhitbox.dim.y, true, 10.f, 1000.f });
 
-		ret.Add_Data("Cirle radius", Editor::Widget_Float{ &circlehitbox.rad, true, 10.f, 500.f });
+		ret.Add_Data("Circle radius", Editor::Widget_Float{ &circlehitbox.rad, true, 10.f, 500.f });
 
 		return ret;
 	}
