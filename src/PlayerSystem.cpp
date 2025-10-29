@@ -1,4 +1,4 @@
-/* ========================================================
+﻿/* ========================================================
  * @file	    PlayerSystem.cpp
  * @author	    Tan Jun Quan | t.junquan@digipen.edu
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
@@ -10,12 +10,13 @@
  * entity based on forces, has a dash, and switches player
  * states accordingly.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
 #include "PlayerSystem.h"
 #include "Registry.h"
+#include "Audio.h"
 
 
 constexpr float dash = 10.f;
@@ -40,7 +41,7 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 		//if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
 		//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
 		//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt; 
-	    if (Input::IsKeyHeld(GLFW_KEY_W)) physics.AddForce({ 0,1 }, 1.f, 0.f);
+		if (Input::IsKeyHeld(GLFW_KEY_W)) physics.AddForce({ 0,1 }, 1.f, 0.f);
 		if (Input::IsKeyHeld(GLFW_KEY_S)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
 		if (Input::IsKeyHeld(GLFW_KEY_A)) physics.AddForce({ -1,0 }, 1.f, 0.f);
 		if (Input::IsKeyHeld(GLFW_KEY_D)) physics.AddForce({ 1,0 }, 1.f, 0.f);
@@ -81,8 +82,8 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	}
 
 	// knockback test
-	int vert{0};
-	int hor{0};
+	int vert{ 0 };
+	int hor{ 0 };
 	if (Input::IsKeyHeld(GLFW_KEY_W)) vert += 1;
 	if (Input::IsKeyHeld(GLFW_KEY_S)) vert -= 1;
 	if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
@@ -115,7 +116,87 @@ void PlayerSystem::Update(float dt)
 		{
 			// THIS IS A PLAYER, DO PLAYER THINGS
 			WASD_Movement(entity, dt);
+			UpdateFootsteps(entity, dt);
+		}
 
+	}
+}
+
+// ============================================================================
+// FOOTSTEP IMPLEMENTATION
+// ============================================================================
+
+void PlayerSystem::UpdateFootsteps(Entity eID, float dt) {
+	// Check if player is moving by checking input
+	bool isMoving = false;
+
+	if (m_registry.Has_Component<InputComponent>(eID)) {
+		auto& input = m_registry.Get_Component<InputComponent>(eID);
+
+		// Check movement keys based on control scheme
+		switch (input.scheme) {
+		case CS_WASD:
+			isMoving = Input::IsKeyHeld(GLFW_KEY_W) ||
+				Input::IsKeyHeld(GLFW_KEY_A) ||
+				Input::IsKeyHeld(GLFW_KEY_S) ||
+				Input::IsKeyHeld(GLFW_KEY_D);
+			break;
+
+		case CS_IJKL:
+			isMoving = Input::IsKeyHeld(GLFW_KEY_I) ||
+				Input::IsKeyHeld(GLFW_KEY_J) ||
+				Input::IsKeyHeld(GLFW_KEY_K) ||
+				Input::IsKeyHeld(GLFW_KEY_L);
+			break;
+
+		case CS_ARROWS:
+			isMoving = Input::IsKeyHeld(GLFW_KEY_UP) ||
+				Input::IsKeyHeld(GLFW_KEY_LEFT) ||
+				Input::IsKeyHeld(GLFW_KEY_DOWN) ||
+				Input::IsKeyHeld(GLFW_KEY_RIGHT);
+			break;
 		}
 	}
+	else {
+		return;
+	}
+
+	// DEBUG: Print movement state once per second
+	static float debugTimer = 0.0f;
+	debugTimer += dt;
+	if (debugTimer >= 1.0f) {
+		debugTimer = 0.0f;
+	}
+
+	// Reset timer when not moving
+	if (!isMoving) {
+		footstepTimers[eID] = 0.0f;
+		return;
+	}
+
+	// Increment timer
+	footstepTimers[eID] += dt;
+
+	// Play footstep when timer exceeds interval
+	if (footstepTimers[eID] >= footstepInterval) {
+		PlayFootstep(eID);
+		footstepTimers[eID] = 0.0f;  // Reset timer
+	}
+}
+
+void PlayerSystem::PlayFootstep(Entity eID) {
+	// Get player position from transform
+	if (!m_registry.Has_Component<TransformComponent>(eID)) {
+		return;
+	}
+
+	auto& transform = m_registry.Get_Component<TransformComponent>(eID);
+
+	// Play footstep sound at player position using spatial audio
+	AudioSystem::PlaySoundAt(
+		"player_footstep_wood",
+		transform.pos.x,
+		transform.pos.y,
+		1.0f
+	);
 }

@@ -87,11 +87,11 @@
     "player_footstep_wood": {
       "id": 109,
       "path": "../Assets/audio/sfx/player/Walking on Wood.wav",
-      "loop": true,
+      "loop": false,
       "group": "SFX",
       "spatial": true,
-      "minDistance": 1.0,
-      "maxDistance": 20.0
+      "minDistance": 100.0,
+      "maxDistance": 2000.0
     }
   },
   "ui": {
@@ -121,7 +121,8 @@
       "button_quit"
     ],
     "level1": [
-      "level_1"
+      "level_1",
+      "player_footstep_wood"
     ]
   }
 }

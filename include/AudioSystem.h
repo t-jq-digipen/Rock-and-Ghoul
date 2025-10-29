@@ -58,6 +58,9 @@ public:
      */
     void Shutdown() override;
 
+    // ADD DOCUMENTATION
+    void UpdateListenerToPlayer();
+
     /**
      * @brief Loads a sound file and returns a pointer to it.
      *
