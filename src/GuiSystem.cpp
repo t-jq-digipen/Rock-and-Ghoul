@@ -15,11 +15,19 @@ void GuiSystem::Initialize() {
 
 void GuiSystem::AddButton(const ButtonConfig& cfg)
 {
-    buttons.push_back(cfg);
+    ButtonConfig copy = cfg;
+    copy.basePos = cfg.pos;
+    copy.baseSize = cfg.size;
+    copy.baseTextScale = cfg.textScale;
+    buttons.push_back(copy);
 }
 void GuiSystem::AddTextBox(const TextBoxConfig& cfg)
 {
-    textboxes.push_back(cfg);
+    TextBoxConfig copy = cfg;
+    copy.basePos = cfg.pos;
+    copy.baseScale = cfg.scale;
+    textboxes.push_back(copy);
+
 }
 
 void GuiSystem::Update(float dt) {
@@ -27,7 +35,16 @@ void GuiSystem::Update(float dt) {
         editMode = !editMode;
     Vec2 mouse = Input::GetMousePosition();
     Render& r = Render::GetInstance();
+
+    const float uiScale = std::min(GLApp::width / 1920.0f, GLApp::height / 1080.0f);
+
     for (auto& cfg : buttons) {
+        cfg.size = cfg.baseSize * uiScale;
+        cfg.textScale = cfg.baseTextScale * uiScale;
+
+        // Scale position relative to baseline resolution
+        cfg.pos.x = cfg.basePos.x * (GLApp::width / 1920.0f);
+        cfg.pos.y = cfg.basePos.y * (GLApp::height / 1080.0f);
         bool hover = false;
         if (cfg.shape == ButtonShape::Circle) {
 
@@ -80,11 +97,14 @@ void GuiSystem::Update(float dt) {
             if (cfg.onClick) cfg.onClick();
         }
     }
-
+    const float scaleX = GLApp::width / 1920.0f;
+    const float scaleY = GLApp::height / 1080.0f;
     for (auto& tb : textboxes)
     {
-        float textScale = tb.scale;
-        Vec2 textSize = render.CalculateTextSize(tb.text, textScale);
+        tb.pos.x = tb.basePos.x * scaleX;
+        tb.pos.y = tb.basePos.y * scaleY;
+        tb.scale = tb.baseScale * uiScale;
+        Vec2 textSize = render.CalculateTextSize(tb.text, tb.scale);
 
         float drawX = tb.pos.x;
         float drawY = tb.pos.y;
@@ -96,7 +116,7 @@ void GuiSystem::Update(float dt) {
             // drawY += textSize.y * 0.15f;
         }
 
-        render.DrawText(tb.text, drawX, drawY, textScale, tb.color);
+        r.DrawText(tb.text, drawX, drawY, tb.scale, tb.color);
     }
 
     if (editMode) {

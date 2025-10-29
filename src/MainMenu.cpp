@@ -349,6 +349,7 @@ void MainMenu::Init()
 void MainMenu::Update()
 {
     Render& renderer = Render::GetInstance();
+    renderer.UpdateProjection();
     CrashHandler::Safe("MainMenu", "Update", [&] {
 
         // Clear background
@@ -356,11 +357,7 @@ void MainMenu::Update()
 
         if (MainMenuTexture)
         {
-            renderer.DrawTexturedQuad(
-                { GLApp::width * 0.5f, GLApp::height * 0.5f },
-                { 1920.f, 1080.f },
-                MainMenuTexture
-            );
+            renderer.DrawFullscreenTexture(MainMenuTexture, true);
         }
         else
         {

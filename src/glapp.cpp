@@ -79,7 +79,7 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
   // default behavior: colorbuffer is 32-bit RGBA, depthbuffer is 24-bits
   // don't change size of window
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
   // size of viewport: width x height
   GLApp::ptr_window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
@@ -376,7 +376,9 @@ of the window in pixels.
 void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
   // use the entire framebuffer as drawing region
     (void)ptr_win;
-  glViewport(0, 0, newwidth, newheight);
+    GLApp::width = newwidth;
+    GLApp::height = newheight;
+    glViewport(0, 0, newwidth, newheight);
   // later, if working in 3D, we'll have to set the projection matrix here ...
 }
 

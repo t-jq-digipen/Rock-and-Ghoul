@@ -34,7 +34,7 @@ void RenderSystem::Initialize() {
 }
 
 void RenderSystem::Update(float dt) {
-
+    Render::GetInstance().UpdateProjection();
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
         spriteComp.Update_ImageSize();

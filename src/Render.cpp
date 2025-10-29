@@ -131,14 +131,22 @@ void Render::Init() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Setup projection
+    //// Setup projection
+    //projection = glm::ortho(
+    //    0.0f, static_cast<float>(GLApp::width),
+    //    0.0f, static_cast<float>(GLApp::height),
+    //    -1.0f, 1.0f
+    //);
+
+    InitTextRendering();
+}
+void Render::UpdateProjection()
+{
     projection = glm::ortho(
         0.0f, static_cast<float>(GLApp::width),
         0.0f, static_cast<float>(GLApp::height),
         -1.0f, 1.0f
     );
-
-    InitTextRendering();
 }
 
 void Render::ClearBackground(const Colour4& color) {
@@ -1153,6 +1161,33 @@ void Render::DrawRoundedRect(const Vec2& pos, float width, float height, float r
     };
     for (auto& c : corners)
         DrawCircle(c, radius, color, 16);
+}
+void Render::DrawFullscreenTexture(GLuint texture, bool cover)
+{
+    if (!texture) return;
+
+    // 1. Get texture dimensions
+    int texW = 0, texH = 0;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texW);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &texH);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    if (texW == 0 || texH == 0)
+        return; // invalid texture, skip draw
+
+    // 2. Compute scaling that maintains aspect ratio
+    const float winW = static_cast<float>(GLApp::width);
+    const float winH = static_cast<float>(GLApp::height);
+    const float wr = winW / texW;
+    const float hr = winH / texH;
+
+    // "cover" fills & crops, "contain" fits & letterboxes
+    const float s = cover ? std::max(wr, hr) : std::min(wr, hr);
+    const Vec2 drawSize = { texW * s, texH * s };
+
+    // 3. Center and draw
+    DrawTexturedQuad({ winW * 0.5f, winH * 0.5f }, drawSize, texture);
 }
 
 
