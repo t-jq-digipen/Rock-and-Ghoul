@@ -69,15 +69,26 @@ static void MakeWidget(Editor::Widget_String& w, const std::string& label) {
 }
 
 // Dropdown
-static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label) {
+static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label)
+{
     if (!w.ref || w.options.empty()) return;
     std::vector<const char*> items;
+    items.reserve(w.options.size());
     for (auto& opt : w.options) items.push_back(opt.c_str());
-    int current = static_cast<int>(*w.ref);
-    if (ImGui::Combo(label.c_str(), &current, items.data(), (int)items.size())) {
-        *w.ref = static_cast<unsigned int>(current);
+    // find index of current value
+    int currentIndex = 0;
+    for (int i = 0; i < (int)w.options.size(); ++i) {
+        if (w.enumMap.at(w.options[i]) == *w.ref) {
+            currentIndex = i;
+            break;
+        }
+    }
+
+    if (ImGui::Combo(label.c_str(), &currentIndex, items.data(), (int)items.size())) {
+        *w.ref = w.enumMap[w.options[currentIndex]];
     }
 }
+
 
 // Int
 static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
