@@ -90,5 +90,6 @@ private:
 
     //void ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize)
     void HandleEntityDragging();
+
 };
 

@@ -59,7 +59,7 @@ void Level1::Load()
 		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
 		});
-
+		RenderSystem::SetBackgroundTexture(bgTexture);
 	// ===== FIX: Ensure prefabs folder exists =====
 	std::cout << "\n=== CHECKING PREFABS FOLDER ===" << std::endl;
 	std::cout << "Prefabs folder path: " << FilePath::PREFABS_FOLDER << std::endl;
@@ -154,7 +154,7 @@ void Level1::Init()
 		fretboard->StartGame();
 
 		// 3. NOW load textures (OpenGL is ready)
-		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
+		//bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 
 		// 4. Create FretBoard after OpenGL is ready (duplicate - can remove)
 		if (!fretboard) {

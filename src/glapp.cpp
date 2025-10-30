@@ -19,7 +19,7 @@ to OpenGL implementations.
 #include <sstream>
 #include <iomanip>
 #include "Input.h" 
-
+#include "Render.h"
 // Before asking GLFW to create an OpenGL context, we specify the minimum constraints
 // in that context:
 #define GL_MINOR 5
@@ -27,13 +27,13 @@ to OpenGL implementations.
 
 /*                                                   objects with file scope
 ----------------------------------------------------------------------------- */
-GLint GLApp::width;
-GLint GLApp::height;
-GLdouble GLApp::fps;
-GLdouble GLApp::delta_time;
+GLint GLApp::width = 0;
+GLint GLApp::height = 0;
+GLdouble GLApp::fps = 0.0;
+GLdouble GLApp::delta_time = 0.0;
 std::string GLApp::title;
-GLFWwindow* GLApp::ptr_window;
-GLfloat GLApp::clear_color[] = {0.0f, 1.0f, 0.0f, 1.0f};
+GLFWwindow* GLApp::ptr_window = nullptr;
+GLfloat GLApp::clear_color[4] = { 0.f, 0.f, 0.f, 1.f };
 
 
 /*  _________________________________________________________________________ */
@@ -379,6 +379,7 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
     GLApp::width = newwidth;
     GLApp::height = newheight;
     glViewport(0, 0, newwidth, newheight);
+    Render::GetInstance().InitSceneFramebuffer(newwidth, newheight);
   // later, if working in 3D, we'll have to set the projection matrix here ...
 }
 

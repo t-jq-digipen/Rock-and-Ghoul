@@ -488,8 +488,11 @@ public:
     void UpdateProjection();
     void DrawFullscreenTexture(GLuint texture, bool cover = true);
 
-private:
+   
 
+
+private:
+    glm::vec2 uiScale = { 1.0f, 1.0f };
     /**
      * @brief Default constructor for the Render system.
      *        Initializes internal members and sets up default OpenGL state.
@@ -554,7 +557,18 @@ private:
     
     glm::vec3 currentTint = { 1.f, 1.f, 1.f };
 
+
+
+
 public:
 
     std::unordered_map<std::string, GLuint> Get_TextureCache() { return textureCache; }
+    GLuint sceneFBO = 0;
+    GLuint sceneColor = 0;
+    GLuint sceneDepth = 0;
+
+    void InitSceneFramebuffer(int width, int height);
+    void BeginSceneCapture();
+    void EndSceneCapture();
+    GLuint GetSceneTexture() const { return sceneColor; }
 };

@@ -20,6 +20,9 @@
  * ========================================================
  */
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+
+#include "imgui_internal.h"
 #include "ImGuiSystem.h"
 #include "Registry.h"
 #include "glapp.h"
@@ -32,6 +35,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <unordered_set> 
+#include "Render.h" 
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
@@ -306,6 +310,8 @@ void ImGuiSystem::InitializeImGui() {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); //imgui i/o settings
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; //enable keyboard nav in imgui
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable Docking
+   // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     ImGui::StyleColorsDark(); //dark themed lol
     ImGui_ImplGlfw_InitForOpenGL(GLApp::ptr_window, true);
@@ -329,83 +335,288 @@ void ImGuiSystem::InitializeImGui() {
 
 //init hear so is easier
 void ImGuiSystem::Initialize() {
-    InitializeImGui();  // Do it here instead of main
+
+
+    InitializeImGui();
    
 }
 
-void ImGuiSystem::Update(float dt) {
+//void ImGuiSystem::Update(float dt) {
+//
+//    (void)dt;
+//    if (Input::IsKeyPressed(GLFW_KEY_F1)) {
+//        guiEnabled = !guiEnabled; // toggle on/off
+//    }
+//   
+//
+//    if (!guiEnabled) return;
+//
+//
+//    ImGui_ImplOpenGL3_NewFrame();
+//    ImGui_ImplGlfw_NewFrame(); 
+//    ImGui::NewFrame();
+//
+//    HandleEntityDragging();
+//    //// Choose where to place it
+//    //ImVec2 cornerPos(ImGui::GetIO().DisplaySize.x - 420, 10);   // top-right corner, 10 offset
+//    //ImGui::SetNextWindowPos(cornerPos, ImGuiCond_Always);
+//    //ImGui::SetNextWindowSize(ImVec2(400, 225));                 // 16:9
+//
+//    //ImGui::SetNextWindowBgAlpha(0.8f);
+//
+//   
+//    //if (ImGui::Begin("Scene Viewport",
+//    //    nullptr,
+//    //    ImGuiWindowFlags_NoResize |
+//    //    ImGuiWindowFlags_NoMove |
+//    //    ImGuiWindowFlags_NoCollapse |
+//    //    ImGuiWindowFlags_NoScrollbar |
+//    //    ImGuiWindowFlags_NoScrollWithMouse |
+//    //    ImGuiWindowFlags_NoTitleBar))
+//    //{
+//    //    ImVec2 cursor = ImGui::GetCursorScreenPos();
+//    //    ImVec2 size = ImGui::GetContentRegionAvail();
+//
+//    //    // Draw your overlay (entity boxes etc.)
+//    //    ShowEntityInteractionOverlay(cursor, size);
+//
+//    //    ImGui::Dummy(size); // keeps layout from collapsing
+//    //}
+//    //ImGui::End();
+//
+//    ImGuiViewport* viewport = ImGui::GetMainViewport();
+//    ImGui::SetNextWindowPos(viewport->WorkPos);
+//    ImGui::SetNextWindowSize(viewport->WorkSize);
+//    ImGui::SetNextWindowViewport(viewport->ID);
+//
+//    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+//    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+//    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+//
+//    ImGuiWindowFlags dockspaceFlags =
+//        ImGuiWindowFlags_NoDocking |
+//        ImGuiWindowFlags_NoTitleBar |
+//        ImGuiWindowFlags_NoCollapse |
+//        ImGuiWindowFlags_NoResize |
+//        ImGuiWindowFlags_NoMove |
+//        ImGuiWindowFlags_NoBringToFrontOnFocus |
+//        ImGuiWindowFlags_NoNavFocus;
+//
+//    ImGui::Begin("EditorRoot", nullptr, dockspaceFlags);
+//    ImGui::PopStyleVar(3);
+//
+//    ImGuiID dockspaceID = ImGui::GetID("MainDockspace");
+//    ImGui::DockSpace(dockspaceID, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
+//
+//    // 🟩 Do this *only once*, not every frame
+//    static bool firstDock = true;
+//    if (firstDock)
+//    {
+//        firstDock = false;
+//        ImGui::DockBuilderRemoveNode(dockspaceID); // clear previous
+//        ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
+//        ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->WorkSize);
+//
+//        ImGuiID dock_left = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left, 0.20f, nullptr, &dockspaceID);
+//        ImGuiID dock_right = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, nullptr, &dockspaceID);
+//        ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.25f, nullptr, &dockspaceID);
+//
+//        ImGui::DockBuilderDockWindow("Engine Info", dock_left);
+//        ImGui::DockBuilderDockWindow("Entity Editor", dock_right);
+//        ImGui::DockBuilderDockWindow("Collision + Prefabs", dock_bottom);
+//        ImGui::DockBuilderDockWindow("Assets", dock_bottom);
+//        ImGui::DockBuilderDockWindow("Game View", dockspaceID);
+//
+//        ImGui::DockBuilderFinish(dockspaceID);
+//    }
+//    ImGui::End(); // End EditorRoot
+//
+//
+//    // === Menu bar ===
+//    if (ImGui::BeginMenuBar()) {
+//        if (ImGui::BeginMenu("File")) {
+//            if (ImGui::MenuItem("Exit Editor", "F1"))
+//                guiEnabled = false;
+//            ImGui::EndMenu();
+//        }
+//        if (ImGui::BeginMenu("View")) {
+//            ImGui::MenuItem("Engine Info");
+//            ImGui::MenuItem("Collision + Prefabs");
+//            ImGui::MenuItem("Entity Editor");
+//            ImGui::MenuItem("Assets");
+//            ImGui::EndMenu();
+//        }
+//        ImGui::EndMenuBar();
+//    }
+//    // === Dockable panels ===
+//    ImGui::Begin("Engine Info");
+//    ShowEngineDebugWindow();
+//    ImGui::End();
+//
+//    ImGui::Begin("Collision + Prefabs");
+//    ShowCollisionDebugWindow();
+//    ImGui::End();
+//
+//    ImGui::Begin("Entity Editor");
+//    ImGui::Columns(2);
+//    ShowHierarchyWindow();
+//    ImGui::NextColumn();
+//    ShowInspectorWindow();
+//    ImGui::Columns(1);
+//    ImGui::End();
+//
+//    ImGui::Begin("Assets");
+//    ShowAssetPreviewWindow();
+//    ImGui::End();
+//    
+//    //ImGui::Begin("Game Editor");
+//
+//    //if (ImGui::BeginTabBar("EditorTabs")) {
+//    //    if (ImGui::BeginTabItem("Engine Info")) {
+//    //        ShowEngineDebugWindow();
+//    //        ImGui::EndTabItem();
+//    //    }
+//    //    if (ImGui::BeginTabItem("Collision + Prefabs")) {
+//    //        ShowCollisionDebugWindow();
+//    //        ImGui::EndTabItem();
+//    //    }
+//    //    if (ImGui::BeginTabItem("Entity Editor")) {
+//    //        //splits the into two columns
+//    //        ImGui::Columns(2);
+//    //        ShowHierarchyWindow();
+//
+//    //        ImGui::NextColumn();
+//    //        ShowInspectorWindow();
+//    //        //resets back to a single column layout for the rest of the UI
+//    //        ImGui::Columns(1);
+//    //        ImGui::EndTabItem();
+//    //    }
+//    //    if (ImGui::BeginTabItem("Assets")) {
+//    //        ShowAssetPreviewWindow();
+//    //        ImGui::EndTabItem();
+//    //    }
+//    //    ImGui::EndTabBar();
+//    //}
+//    //ImGui::End();
+//}
+void ImGuiSystem::Update(float dt)
+{
     (void)dt;
-    if (Input::IsKeyPressed(GLFW_KEY_F1)) {
-        guiEnabled = !guiEnabled; // toggle on/off
-    }
-   
+    if (Input::IsKeyPressed(GLFW_KEY_F1))
+        guiEnabled = !guiEnabled;
 
     if (!guiEnabled) return;
 
-
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame(); 
+    ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     HandleEntityDragging();
-    //// Choose where to place it
-    //ImVec2 cornerPos(ImGui::GetIO().DisplaySize.x - 420, 10);   // top-right corner, 10 offset
-    //ImGui::SetNextWindowPos(cornerPos, ImGuiCond_Always);
-    //ImGui::SetNextWindowSize(ImVec2(400, 225));                 // 16:9
 
-    //ImGui::SetNextWindowBgAlpha(0.8f);
+    // --- create full-screen root window + dockspace ---
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
 
-   
-    //if (ImGui::Begin("Scene Viewport",
-    //    nullptr,
-    //    ImGuiWindowFlags_NoResize |
-    //    ImGuiWindowFlags_NoMove |
-    //    ImGuiWindowFlags_NoCollapse |
-    //    ImGuiWindowFlags_NoScrollbar |
-    //    ImGuiWindowFlags_NoScrollWithMouse |
-    //    ImGuiWindowFlags_NoTitleBar))
-    //{
-    //    ImVec2 cursor = ImGui::GetCursorScreenPos();
-    //    ImVec2 size = ImGui::GetContentRegionAvail();
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-    //    // Draw your overlay (entity boxes etc.)
-    //    ShowEntityInteractionOverlay(cursor, size);
+    ImGuiWindowFlags dockspaceFlags =
+        ImGuiWindowFlags_NoDocking |
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoNavFocus;
 
-    //    ImGui::Dummy(size); // keeps layout from collapsing
-    //}
-    //ImGui::End();
+    ImGui::Begin("EditorRoot", nullptr, dockspaceFlags);
+    ImGui::PopStyleVar(3);
 
+    ImGuiID dockspaceID = ImGui::GetID("MainDockspace");
+    ImGui::DockSpace(dockspaceID, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
 
-    ImGui::Begin("Game Editor");
+    // setup layout ONCE
+    static bool firstDock = true;
+    if (firstDock)
+    {
+        firstDock = false;
+        ImGui::DockBuilderRemoveNode(dockspaceID);
+        ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
+        ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->WorkSize);
 
-    if (ImGui::BeginTabBar("EditorTabs")) {
-        if (ImGui::BeginTabItem("Engine Info")) {
-            ShowEngineDebugWindow();
-            ImGui::EndTabItem();
-        }
-        if (ImGui::BeginTabItem("Collision + Prefabs")) {
-            ShowCollisionDebugWindow();
-            ImGui::EndTabItem();
-        }
-        if (ImGui::BeginTabItem("Entity Editor")) {
-            //splits the into two columns
-            ImGui::Columns(2);
-            ShowHierarchyWindow();
+        ImGuiID dock_left = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left, 0.20f, nullptr, &dockspaceID);
+        ImGuiID dock_right = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, nullptr, &dockspaceID);
+        ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.25f, nullptr, &dockspaceID);
 
-            ImGui::NextColumn();
-            ShowInspectorWindow();
-            //resets back to a single column layout for the rest of the UI
-            ImGui::Columns(1);
-            ImGui::EndTabItem();
-        }
-        if (ImGui::BeginTabItem("Assets")) {
-            ShowAssetPreviewWindow();
-            ImGui::EndTabItem();
-        }
-        ImGui::EndTabBar();
+        ImGui::DockBuilderDockWindow("Engine Info", dock_left);
+        ImGui::DockBuilderDockWindow("Entity Editor", dock_right);
+        ImGui::DockBuilderDockWindow("Collision + Prefabs", dock_bottom);
+        ImGui::DockBuilderDockWindow("Assets", dock_bottom);
+        ImGui::DockBuilderDockWindow("Game View", dockspaceID);
+        ImGui::DockBuilderFinish(dockspaceID);
+    }
+
+    // --- Now define the actual dockable windows ---
+    if (ImGui::Begin("Engine Info")) {
+        ShowEngineDebugWindow();
     }
     ImGui::End();
+
+    if (ImGui::Begin("Collision + Prefabs")) {
+        ShowCollisionDebugWindow();
+    }
+    ImGui::End();
+
+    if (ImGui::Begin("Entity Editor")) {
+        ImGui::Columns(2);
+        ShowHierarchyWindow();
+        ImGui::NextColumn();
+        ShowInspectorWindow();
+        ImGui::Columns(1);
+    }
+    ImGui::End();
+
+    if (ImGui::Begin("Assets")) {
+        ShowAssetPreviewWindow();
+    }
+    ImGui::End();
+
+    // game view panel
+    if (ImGui::Begin("Game View")) {
+        ImVec2 avail = ImGui::GetContentRegionAvail();
+
+        // maintain 16:9 aspect
+        float aspect = 16.0f / 9.0f;
+        float newWidth = avail.x;
+        float newHeight = newWidth / aspect;
+        if (newHeight > avail.y) {
+            newHeight = avail.y;
+            newWidth = newHeight * aspect;
+        }
+
+        ImVec2 cursor = ImGui::GetCursorScreenPos();
+
+        // Get texture from renderer
+        ::Render& renderer = Render::GetInstance();
+        GLuint texID = renderer.GetSceneTexture();
+
+        // show it
+        ImGui::Image(
+            (ImTextureID)(intptr_t)texID,
+            ImVec2(newWidth, newHeight),
+            ImVec2(0, 1), ImVec2(1, 0)
+        );
+    }
+    ImGui::End();
+
+    // --- END EditorRoot LAST ---
+    ImGui::End();
 }
+
+
 // called every frame after Update() to actually render ImGui to screen in core engine!!!!!!!!!!!!!!!!!!!!
 void ImGuiSystem::Render() {
     if (!guiEnabled) return; //skip if GUI is off

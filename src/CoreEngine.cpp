@@ -82,7 +82,6 @@ void CoreEngine::Initialize() {
 
     registry.Register_Component<TagComponent>("Tag");
     std::cout << "REGISTRY | REGISTERED TAG COMPONENT\n";
-
     /*registry.Register_Component<ElementComponent>("Element");
     std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";*/
 

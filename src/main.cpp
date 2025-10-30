@@ -76,6 +76,8 @@ int main() {
     if (!GLApp::init(settings.resolutionWidth, settings.resolutionHeight, "Rock & Ghoul")) {
         return -1;
     }
+    std::cout << "[Main] GLApp::ptr_window = " << GLApp::ptr_window
+        << " at " << (void*)&GLApp::ptr_window << std::endl;
     CrashHandler::SetLogPath("rockandghoul_crash.log");
     CrashHandler::Install();
     CrashHandler::Log("=== Rock & Ghoul starting ===");
@@ -100,7 +102,8 @@ int main() {
             engine.AddSystem(new PlayerSystem());
             engine.AddSystem(new PhysicsSystem());
             engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
-           
+            std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
+                << " at " << (void*)&GLApp::ptr_window << std::endl;
             // initialize all systems (FMOD, OpenGL, etc.)
             engine.Initialize();
             CrashHandler::Log("Engine initialized");

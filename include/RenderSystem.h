@@ -31,4 +31,10 @@ public:
     void Initialize() override;
     void Update(float dt) override;
     void Shutdown() override;
+
+    static void SetBackgroundTexture(GLuint texID);
+    static GLuint GetBackgroundTexture();
+private:
+    Registry& m_registry = Registry::Get();
+    static GLuint s_backgroundTexture; // Static background texture
 };

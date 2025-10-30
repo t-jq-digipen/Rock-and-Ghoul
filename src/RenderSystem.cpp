@@ -28,13 +28,42 @@
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
+GLuint RenderSystem::s_backgroundTexture = 0;
+
+void RenderSystem::SetBackgroundTexture(GLuint texID) {
+    s_backgroundTexture = texID;
+}
+
+GLuint RenderSystem::GetBackgroundTexture() {
+    return s_backgroundTexture;
+}
 
 void RenderSystem::Initialize() {
     // ? 
+    std::cout << "[RenderSystem] Initializing..." << std::endl;
+
+    Render& renderer = Render::GetInstance();
+
+    // Initialize your offscreen framebuffer for Game View
+    renderer.InitSceneFramebuffer(GLApp::width, GLApp::height);
+
+    std::cout << "[RenderSystem] Scene framebuffer created ("
+        << GLApp::width << "x" << GLApp::height << ")\n";
 }
 
 void RenderSystem::Update(float dt) {
+    Render& renderer = Render::GetInstance();
+    if (ImGuiSystem::guiEnabled) {
+        renderer.BeginSceneCapture();
+        renderer.ClearBackground({ 0.1f, 0.1f, 0.1f, 1.0f }); // Background for game view
+    }
     Render::GetInstance().UpdateProjection();
+    // ===== DRAW BACKGROUND IF SET =====
+    if (s_backgroundTexture != 0) {
+        renderer.DrawFullscreenTexture(s_backgroundTexture, true);
+    }
+   
+
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
         spriteComp.Update_ImageSize();
@@ -145,7 +174,9 @@ void RenderSystem::Update(float dt) {
         renderInstance.DrawRectInstanced(batch, { 0.2f, 0.8f, 1.0f });
         batch.clear();
     }
-    
+    if (ImGuiSystem::guiEnabled) {
+        renderer.EndSceneCapture();
+    }
 }
 
 void RenderSystem::Shutdown() {
