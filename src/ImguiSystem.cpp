@@ -108,6 +108,11 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
         ImGui::InputFloat(label.c_str(), w.ref);
 }
 
+// AnimatorFrames
+//static void MakeWidget(Editor::Widget_Group& w, const std::string& label) {
+//
+//}
+
 void ImGuiSystem::OnFileDropped(const std::string& path)
 {
     namespace fs = std::filesystem;

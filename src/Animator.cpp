@@ -56,8 +56,19 @@ namespace Animator {
 		v1 = v0 + m_uv_height;
 	}
 
+	bool IsStateCorrect(int row, int col, int state, const std::unordered_map<unsigned int, ActiveFrames>& statemap)
+	{
+		if (row != statemap.find(state)->second.row) { return false; }
+		if (col < statemap.find(state)->second.col_start || col > statemap.find(state)->second.col_end) { return false; }
+		return true;
+	}
+
 	void AnimatorComponent::UpdateUV(int imageWidthPixels, int imageHeightPixels)
 	{
+		if (!IsStateCorrect(m_current_row, m_current_col, m_current_state, stateframe))
+		{
+			SetFrames(stateframe[m_current_state]);
+		}
 		m_uv_width = static_cast<float>(imageWidthPixels) / static_cast<float>(m_total_cols);
 		m_uv_height = static_cast<float>(imageHeightPixels) / static_cast<float>(m_total_rows);
 		m_current_row = frames.row;
@@ -65,11 +76,11 @@ namespace Animator {
 		UpdateUV();
 	}
 
-	void AnimatorComponent::SetFrames(ActiveFrames const& framerange, float duration)
+	void AnimatorComponent::SetFrames(ActiveFrames const& framerange)
 	{
-		anim_duration = duration;
+		anim_duration = framerange.duration;
 		frames = framerange;
-		if (duration == 0)
+		if (anim_duration == 0)
 		{
 			anim_timer = 0;
 			m_current_row = frames.row;

@@ -94,6 +94,26 @@ struct GameSettings {
     GameSettings() : volume(1.0f), resolutionWidth(1920), resolutionHeight(1080), fullscreen(false) {}
 };
 
+namespace Animator {
+
+    /**
+    * @struct ActiveFrames
+    * @brief Represents a set of frames for a given animation and a duration it should take to play it.
+    */
+    struct ActiveFrames {
+        int row = 0;	// Row index
+        int col_start = 0;	// First column index
+        int col_end = 0;	// Last column index
+        float duration = 0.f;	// Duration of time in seconds the animation takes to go from first column to last column
+
+        /**
+         * @brief Equality operator for ActiveFrames.
+         * @param rhs The ActiveFrames object to compare with.
+         * @return True if all fields (row, col_start, col_end, duration) match, false otherwise.
+         */
+        bool operator==(const ActiveFrames& rhs) const;
+    };
+}
 
 namespace Editor {
     // Determines the type of editing widget
@@ -145,14 +165,30 @@ namespace Editor {
         float max = 0.f;
     };
 
-    struct Widget_Group;
+    /*struct Widget_Group;
 
-    using WidgetData = std::variant<Widget_Checkmark, Widget_String, Widget_Dropdown, Widget_Int, Widget_Float, Widget_Group>;
+    struct Widget_List {
+        std::vector<std::string> options;
+        std::unordered_map<std::string, Widget_Group> widgetMap;
+    };*/
 
-    struct Widget_Group {
+
+    struct Widget_AnimatorStates {
+        std::unordered_map<unsigned int, Animator::ActiveFrames>* ref = nullptr;
+        std::vector<std::string> options;
+        std::unordered_map<std::string, unsigned int> stateMap;
+
+        void Add_Option(std::string const& name) {
+            options.push_back(name);
+        }
+    };
+
+    using WidgetData = std::variant<Widget_Checkmark, Widget_String, Widget_Dropdown, Widget_Int, Widget_Float>;
+
+    /*struct Widget_Group {
         std::string label;
         std::vector<WidgetData> childWidget;
-    };
+    };*/
 
 #pragma endregion WidgetData
 
