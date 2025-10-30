@@ -414,7 +414,7 @@ void MainMenu::Update()
 // Draws Main Menu
 void MainMenu::Draw()
 {
-    GuiSystem::Get().Update(0.0f);
+    //GuiSystem::Get().Update(0.0f);
 //    Render& renderer = Render::GetInstance();
 //    CrashHandler::Safe("MainMenu", "Draw", [&] {
 //        //// Game Title

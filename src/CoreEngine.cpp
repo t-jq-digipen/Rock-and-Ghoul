@@ -140,12 +140,12 @@ void CoreEngine::Run() {
             // Draw the current game scene or main menu
             gsm.CallDraw();
 
-            // Draw GUI buttons (Play, Quit, etc.) inside the same framebuffer
-            GuiSystem::Get().Update(0.0f);
+            
+           
 
             // Finish capture — ImGui will display this texture inside "Game View"
             renderer.EndSceneCapture();
-
+            GuiSystem::Get().Update(0.0f);
             // NEED TO FIGURE OUT HOW TO SPLIT THIS PER DRAW/UPDATE
 
             //loop through all systems managed by the engine
@@ -222,8 +222,9 @@ void CoreEngine::Run() {
 void CoreEngine::Shutdown() {
     GLApp::gameInitialized = false;
     for (int i = (int)systems.size() - 1; i >= 0; --i) {
-        systems[i]->Shutdown();
-        //delete systems[i];
+        systems[i]->Shutdown(); 
+        if (systems[i] != &GuiSystem::Get())
+            delete systems[i];
     }
     systems.clear();
     gsm.Close();   // To exit the game state manager
