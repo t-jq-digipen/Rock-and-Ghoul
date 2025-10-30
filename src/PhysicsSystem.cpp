@@ -46,8 +46,8 @@ void PhysicsSystem::Update(float dt) {
         // Get transform component (you gonna need it!)
         TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
 
-        // Update physics component
-        phyComp.Update();
+        // Update physics component (applies forces, damping...)
+        phyComp.Update(dt);
 
         // Update transform positions
         transComp.pos = RG_Add(transComp.pos, phyComp.Get_Vel());

@@ -2,7 +2,7 @@
  * @file		Physics.cpp
  * @author		Tan Jun Quan | t.junquan@digipen.edu
  * @co-author	Yasmin Tazi	 | yasmin.t@digipen.edu
- * @date		26 OCT 2025
+ * @date		30 OCT 2025
  *
  * @brief	Physics component for ECS
  *
@@ -18,234 +18,261 @@
 
 #include "Physics.h"
 #include "CoreEngine.h"
+#include <cmath>
 
 namespace Physics {
-	// Force Component
 
-	// Ctor
-	ForceComp::ForceComp() : dir{ 0.f,0.f }, mag{ 0.f }, force{ 0.f,0.f }, age{}, lifetime{} {}
+	// ================================================================================
+	// FORCE COMPONENT
+	// ================================================================================
 
-	ForceComp::ForceComp(Vec2 direction, float magnitude, float duration) : dir{ direction }, mag{ magnitude }, force{ 0.f,0.f }, age{}, lifetime{ duration }
+	ForceComp::ForceComp()
+		: dir{ 0.f, 0.f }
+		, mag{ 0.f }
+		, force{ 0.f, 0.f }
+		, age{ 0.f }
+		, lifetime{ 0.f }
+		, forceDirty{ false }
 	{
-		dir = RG_Normalize(direction);
-		force = RG_Scale(dir, mag);
 	}
 
-	void ForceComp::Update()
+	ForceComp::ForceComp(Vec2 direction, float magnitude, float duration)
+		: dir{ RG_Normalize(direction) }
+		, mag{ magnitude }
+		, force{ 0.f, 0.f }
+		, age{ 0.f }
+		, lifetime{ duration }
+		, forceDirty{ true }
 	{
+		RecalculateForce();
+	}
+
+	void ForceComp::RecalculateForce() {
 		force = RG_Scale(dir, mag);
-		if (lifetime)
-		{
-			age += g_dt;
+		forceDirty = false;
+	}
+
+	void ForceComp::Update(float dt) {
+		// Only recalculate if force vector has changed
+		if (forceDirty) {
+			RecalculateForce();
+		}
+
+		// Update age for non-impulse forces
+		if (lifetime > 0.f) {
+			age += dt;
 		}
 	}
 
-	Vec2 ForceComp::GetForce()
-	{
+	const Vec2& ForceComp::GetForce() const {
 		return force;
 	}
 
-	void ForceComp::Set_Dir(Vec2 direction)
-	{
+	void ForceComp::Set_Dir(Vec2 direction) {
 		dir = RG_Normalize(direction);
+		forceDirty = true;
 	}
 
-	void ForceComp::Set_Magnitude(float magnitude)
-	{
+	void ForceComp::Set_Magnitude(float magnitude) {
 		mag = magnitude;
+		forceDirty = true;
 	}
 
-	bool ForceComp::IsImpulse()
-	{
+	bool ForceComp::IsImpulse() const {
 		return lifetime == 0.f;
 	}
 
-	bool ForceComp::Expired()
-	{
-		return (age >= lifetime);
+	bool ForceComp::Expired() const {
+		return (lifetime > 0.f && age >= lifetime);
 	}
 
-
-
-	// Force List Management
-
-	// Add Force to ForceList
-	void ForceList::Add_Force(ForceComp force)
-	{
-		forces.push_back(force);
-	}
-
-	Vec2 ForceList::Update_NetVel(ForceComp force)
-	{
-		if (force.IsImpulse())
-		{
-			return force.GetForce();
-		}
-		return RG_Scale(force.GetForce(), g_dt);
-	}
-
-	// Update ForceList
-	void ForceList::Update()
-	{
-		// Reset net_vel to 0
-		net_vel = { 0.f,0.f };
-
-		if (HasForces())
-		{
-			// Update force time and magnitude!!!
-			for (ForceComp& forcecomp : forces)
-			{
-				forcecomp.Update();
-				// Update net_vel change!
-				net_vel = RG_Add(net_vel, Update_NetVel(forcecomp));
-			}
-
-			// Remove expired
-			for (auto forcecomp = forces.begin(); forcecomp != forces.end();)
-			{
-				if (forcecomp->Expired())
-				{
-					// Erase, return to next valid iterator
-					forcecomp = forces.erase(forcecomp);
-				}
-				else
-				{
-					// Go to next iterator if not erased
-					forcecomp++;
-				}
-			}
-		}
-	}
-
-	// Check if list has forces
-	bool ForceList::HasForces()
-	{
-		return !forces.empty();
-	}
-
-	// Get net velocity change
-	const Vec2& ForceList::Get_NetVel() const
-	{
-		return net_vel;
-	}
-
-	// Reset ForceList
-	void ForceList::Reset()
-	{
-		forces.clear();
-	}
-
-
-
-
+	// ================================================================================
 	// PHYSICS COMPONENT
 	// ================================================================================
 
-	// ctors hehe
-	PhysicsComponent::PhysicsComponent() :
-		vel{ 0.f,0.f },
-		decay{ 0.f },
-		willCollide{ false },
-		isStatic{ false },
-		aabbhitbox{ { 0.f, 0.f }, { 0.f,0.f }, {0.f,0.f} },
-		circlehitbox{ {0.f,0.f}, 0.f },
-		mass(1.f),
-		restitution(0.5f)
+	PhysicsComponent::PhysicsComponent()
+		: vel{ 0.f, 0.f }
+		, decay{ 0.f }
+		, isStatic{ false }
+		, willCollide{ false }
+		, aabbhitbox{ { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, 0.f } }
+		, circlehitbox{ { 0.f, 0.f }, 0.f }
+		, mass{ 1.f }
+		, restitution{ 0.5f }
 	{
+		forces.reserve(8); // Reserve space for common case
 	}
 
-	PhysicsComponent::PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref, bool makeStatic) :
-		vel{ 0.f,0.f },
-		decay{ decayval },
-		willCollide{ solid },
-		aabbhitbox{ aabbref },
-		circlehitbox{ circleref },
-		isStatic{ makeStatic },
-		mass(1.f),
-		restitution(0.5f)
+	PhysicsComponent::PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref, bool makeStatic)
+		: vel{ 0.f, 0.f }
+		, decay{ decayval }
+		, isStatic{ makeStatic }
+		, willCollide{ solid }
+		, aabbhitbox{ aabbref }
+		, circlehitbox{ circleref }
+		, mass{ 1.f }
+		, restitution{ 0.5f }
 	{
+		forces.reserve(8);
 	}
 
+	// ================================================================================
+	// FORCE MANAGEMENT
+	// ================================================================================
 
-	// FORCES
-	void PhysicsComponent::AddForce(Vec2 const& direction, float magnitude, float duration)
-	{
-		ForceComp temp(direction, magnitude, duration);
-		forcelist.Add_Force(temp);
+	void PhysicsComponent::AddForce(Vec2 const& direction, float magnitude, float duration) {
+		forces.emplace_back(direction, magnitude, duration);
 	}
 
-	void PhysicsComponent::UpdateForces()
-	{
-		forcelist.Update();
-		vel = RG_Add(vel, forcelist.Get_NetVel());
+	void PhysicsComponent::ClearForces() {
+		forces.clear();
 	}
 
-
-
-	// COMPONENT STUFF
-	void PhysicsComponent::Update()
-	{
-		Damping();
-		UpdateForces();
+	bool PhysicsComponent::HasForces() const {
+		return !forces.empty();
 	}
 
-	void PhysicsComponent::UpdateHitboxes(Vec2 const& pos)
-	{
+	void PhysicsComponent::UpdateForces(float dt) {
+		if (forces.empty()) {
+			return;
+		}
+
+		Vec2 netVelChange{ 0.f, 0.f };
+
+		// Single pass: update forces and accumulate velocity changes
+		for (auto it = forces.begin(); it != forces.end(); ) {
+			it->Update(dt);
+
+			// Calculate velocity contribution
+			const Vec2& force = it->GetForce();
+			if (it->IsImpulse()) {
+				netVelChange = RG_Add(netVelChange, force);
+			}
+			else {
+				netVelChange = RG_Add(netVelChange, RG_Scale(force, dt));
+			}
+
+			// Remove if expired
+			if (it->Expired()) {
+				it = forces.erase(it);
+			}
+			else {
+				++it;
+			}
+		}
+
+		// Apply accumulated velocity change
+		vel = RG_Add(vel, netVelChange);
+	}
+
+	// ================================================================================
+	// UPDATE METHODS
+	// ================================================================================
+
+	void PhysicsComponent::ApplyDamping(float dt) {
+		if (decay > 0.f) {
+			vel = RG_Scale(vel, std::pow(decay, dt));
+		}
+	}
+
+	void PhysicsComponent::Update(float dt) {
+		ApplyDamping(dt);
+		UpdateForces(dt);
+	}
+
+	void PhysicsComponent::UpdateHitboxes(Vec2 const& pos) {
 		Update_AABB(aabbhitbox, pos);
 		circlehitbox.pos = pos;
 	}
 
-	void PhysicsComponent::Damping()
-	{
-		if (decay)
-		{
-			vel = RG_Scale(vel, std::pow(decay, g_dt));
-		}
-	}
+	// ================================================================================
+	// VELOCITY CONTROL
+	// ================================================================================
 
-	// GETTERS
-	const Vec2& PhysicsComponent::Get_Vel() const
-	{
+	const Vec2& PhysicsComponent::Get_Vel() const {
 		return vel;
 	}
 
-	const AABB& PhysicsComponent::Get_AABB() const
-	{
-		return aabbhitbox;
-	}
-
-	const Circle& PhysicsComponent::Get_Circle() const
-	{
-		return circlehitbox;
-	}
-
-	const bool& PhysicsComponent::CollisionActive() const
-	{
-		return willCollide;
-	}
-
-	// SETTERS
-	void PhysicsComponent::Set_Collision(bool set)
-	{
-		willCollide = set;
-	}
-
-	void PhysicsComponent::Set_Vel(Vec2 const& newVel)
-	{
+	void PhysicsComponent::Set_Vel(Vec2 const& newVel) {
 		vel = newVel;
 	}
 
-	void PhysicsComponent::Set_AABB(AABB const& newAABB)
-	{
+	void PhysicsComponent::StopX() {
+		vel.x = 0.f;
+	}
+
+	void PhysicsComponent::StopY() {
+		vel.y = 0.f;
+	}
+
+	// ================================================================================
+	// COLLISION GETTERS/SETTERS
+	// ================================================================================
+
+	void PhysicsComponent::Set_Collision(bool set) {
+		willCollide = set;
+	}
+
+	const bool& PhysicsComponent::CollisionActive() const {
+		return willCollide;
+	}
+
+	// ================================================================================
+	// HITBOX GETTERS/SETTERS
+	// ================================================================================
+
+	const AABB& PhysicsComponent::Get_AABB() const {
+		return aabbhitbox;
+	}
+
+	const Circle& PhysicsComponent::Get_Circle() const {
+		return circlehitbox;
+	}
+
+	void PhysicsComponent::Set_AABB(AABB const& newAABB) {
 		aabbhitbox = newAABB;
 	}
 
-	void PhysicsComponent::Set_Circle(Circle const& newCircle)
-	{
+	void PhysicsComponent::Set_Circle(Circle const& newCircle) {
 		circlehitbox = newCircle;
 	}
 
-	// LINEAR IMPULSE METHOD
+	// ================================================================================
+	// STATIC/DYNAMIC CONTROL
+	// ================================================================================
+
+	bool PhysicsComponent::IsStatic() const {
+		return isStatic;
+	}
+
+	void PhysicsComponent::SetStatic(bool s) {
+		isStatic = s;
+	}
+
+	// ================================================================================
+	// PHYSICAL PROPERTIES
+	// ================================================================================
+
+	float PhysicsComponent::GetMass() const {
+		return mass;
+	}
+
+	float PhysicsComponent::GetRestitution() const {
+		return restitution;
+	}
+
+	void PhysicsComponent::SetMass(float m) {
+		mass = m;
+	}
+
+	void PhysicsComponent::SetRestitution(float e) {
+		restitution = std::max(0.f, std::min(1.f, e));
+	}
+
+	// ================================================================================
+	// IMPULSE PHYSICS
+	// ================================================================================
+
 	void PhysicsComponent::ApplyLinearImpulse(const Vec2& impulse) {
 		if (!isStatic) {
 			Vec2 deltaV = RG_Scale(impulse, 1.0f / mass);
@@ -254,7 +281,10 @@ namespace Physics {
 	}
 
 
-	// SERIALIZATION METHODS
+	// ================================================================================
+	// SERIALIZATION
+	// ================================================================================
+
 	std::string PhysicsComponent::Serialize() const {
 		// Calculate center from AABB for saving
 		float centerX = (aabbhitbox.min.x + aabbhitbox.max.x) * 0.5f;
@@ -327,6 +357,10 @@ namespace Physics {
 
 		return phys;
 	}
+
+	// ================================================================================
+	// EDITOR
+	// ================================================================================
 
 	Editor::ComponentData PhysicsComponent::EditorData() {
 		Editor::ComponentData ret(Registry::Get().Get_ComponentTypeName(typeid(PhysicsComponent)));
