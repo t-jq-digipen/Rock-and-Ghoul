@@ -219,6 +219,8 @@ namespace Physics {
 		return circlehitbox;
 	}
 
+
+
 	const bool& PhysicsComponent::CollisionActive() const
 	{
 		return willCollide;

@@ -157,11 +157,11 @@ void Level1::Init()
 		//bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 
 		// 4. Create FretBoard after OpenGL is ready (duplicate - can remove)
-		if (!fretboard) {
-			fretboard = new FretBoard(0, 0, 800, 200);
-		}
-		fretboard->LoadTextures();
-		fretboard->StartGame();
+		//if (!fretboard) {
+		//	fretboard = new FretBoard(0, 0, 800, 200);
+		//}
+		//fretboard->LoadTextures();
+		//fretboard->StartGame();
 
 		// 5. Create entities
 		// If there is no pre-existing/saved scene, it will load from prefabs
@@ -366,15 +366,16 @@ void Level1::Draw()
 {
 	Render& renderer = Render::GetInstance();
 	CrashHandler::Safe("Level1", "Draw", [&] {
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		if (bgTexture) {
-			renderer.DrawTexturedQuad(
-				{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
-				{ (float)GLApp::width, (float)GLApp::height },   // full screen size
-				bgTexture
-			);
-		}
+		//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		//glClear(GL_COLOR_BUFFER_BIT);
+		//if (bgTexture) {
+		//	renderer.DrawTexturedQuad(
+		//		{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
+		//		{ (float)GLApp::width, (float)GLApp::height },   // full screen size
+		//		bgTexture
+		//	);
+		//}
+
 
 		if (fretboard) {
 			fretboard->Draw(renderer);
@@ -407,7 +408,7 @@ void Level1::Unload()
 {
 	// Clean up background texture
 	Render& renderer = Render::GetInstance();
-	renderer.ClearAllTextures();
+	//renderer.ClearAllTextures();
 
 	std::cout << "Level 1 Unloaded!!!" << std::endl;
 

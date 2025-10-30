@@ -39,6 +39,7 @@
 #include "DataDefs.h"
 #include <nlohmann/json.hpp>
 #include "RenderSystem.h"
+
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
 
@@ -88,6 +89,7 @@ void CoreEngine::Initialize() {
 
     for (auto s : systems) s->Initialize();
     gsm.Init(GameState::GS_MAIN_MENU);
+    GLApp::gameInitialized = true;
 
 }
 
@@ -147,6 +149,7 @@ void CoreEngine::Run() {
                 {
                     // Only update systems when in gameplay
                     s->Update(g_dt);
+
                 }
                 else
                 {
@@ -172,7 +175,7 @@ void CoreEngine::Run() {
                     imguiSystem->Render();
                 }
             }
-
+            gsm.CallDraw();
             if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
                 GSM_SetNextState(GameState::GS_QUIT);
 
@@ -207,12 +210,14 @@ void CoreEngine::Run() {
 
 
 void CoreEngine::Shutdown() {
+    GLApp::gameInitialized = false;
     for (int i = (int)systems.size() - 1; i >= 0; --i) {
         systems[i]->Shutdown();
         delete systems[i];
     }
     systems.clear();
     gsm.Close();   // To exit the game state manager
+
 }
 
 void CoreEngine::Quit() {

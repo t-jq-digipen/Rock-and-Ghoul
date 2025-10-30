@@ -266,6 +266,8 @@ namespace Physics {
 		static PhysicsComponent DeSerialize(Entity eID, const std::string& data);
 
 		Editor::ComponentData EditorData();
+		AABB& Get_AABB() { return aabbhitbox; }
+		Circle& Get_Circle() { return circlehitbox; }
 	};
 }
 
