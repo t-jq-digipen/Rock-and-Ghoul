@@ -39,6 +39,7 @@
 #include "DataDefs.h"
 #include <nlohmann/json.hpp>
 #include "RenderSystem.h"
+#include "GuiSystem.h"
 
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
@@ -129,15 +130,24 @@ void CoreEngine::Run() {
                 dt = 0.0f;
             }
             g_dt = dt;
-            // 1. Update game state logic first
-
+            // --- 1. Update logic ---
             gsm.CallUpdate();
 
-            // 2. Draw background/UI (this calls glClear)
+            // --- 2. Capture game view for ImGui ---
+            Render& renderer = Render::GetInstance();
+            renderer.BeginSceneCapture();
+
+            // Draw the current game scene or main menu
             gsm.CallDraw();
 
+            // Draw GUI buttons (Play, Quit, etc.) inside the same framebuffer
+            GuiSystem::Get().Update(0.0f);
+
+            // Finish capture — ImGui will display this texture inside "Game View"
+            renderer.EndSceneCapture();
+
             // NEED TO FIGURE OUT HOW TO SPLIT THIS PER DRAW/UPDATE
-            
+
             //loop through all systems managed by the engine
             for (auto s : systems) {
                 //high-resolution clock
@@ -213,7 +223,7 @@ void CoreEngine::Shutdown() {
     GLApp::gameInitialized = false;
     for (int i = (int)systems.size() - 1; i >= 0; --i) {
         systems[i]->Shutdown();
-        delete systems[i];
+        //delete systems[i];
     }
     systems.clear();
     gsm.Close();   // To exit the game state manager

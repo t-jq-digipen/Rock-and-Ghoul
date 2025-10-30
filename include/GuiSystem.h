@@ -45,6 +45,10 @@ struct Button {
 };
 class GuiSystem : public ISystem {
 public:
+    static GuiSystem& Get() {
+        static GuiSystem instance;
+        return instance;
+    }
     void Initialize() override;
     void Update(float dt) override;
     void Shutdown() override;
@@ -54,6 +58,8 @@ public:
     static void SetAudioManager(AudioManager* audioMgr);
 
 private:
+    GuiSystem() = default;
+    ~GuiSystem() = default;
     std::vector<ButtonConfig> buttons;
     std::vector<TextBoxConfig> textboxes;
     static AudioManager* audio;

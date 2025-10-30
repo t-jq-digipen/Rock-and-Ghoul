@@ -28,15 +28,16 @@
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
-GLuint RenderSystem::s_backgroundTexture = 0;
+static std::vector<GLuint> s_backgroundTextures;
 
-void RenderSystem::SetBackgroundTexture(GLuint texID) {
-    s_backgroundTexture = texID;
+void RenderSystem::AddBackgroundTexture(GLuint tex) {
+    s_backgroundTextures.push_back(tex);
 }
 
-GLuint RenderSystem::GetBackgroundTexture() {
-    return s_backgroundTexture;
+void RenderSystem::ClearBackgroundTextures() {
+    s_backgroundTextures.clear();
 }
+
 
 void RenderSystem::Initialize() {
     // ? 
@@ -58,10 +59,11 @@ void RenderSystem::Update(float dt) {
         renderer.ClearBackground({ 0.1f, 0.1f, 0.1f, 1.0f }); // Background for game view
     }
     Render::GetInstance().UpdateProjection();
+   // renderer.ClearBackground({ 0.05f, 0.0f, 0.1f, 1.0f });
     // ===== DRAW BACKGROUND IF SET =====
-    if (s_backgroundTexture != 0) {
-        renderer.DrawFullscreenTexture(s_backgroundTexture, true);
-    }
+  
+    for (GLuint tex : s_backgroundTextures)
+        renderer.DrawFullscreenTexture(tex, true);
    
 
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())

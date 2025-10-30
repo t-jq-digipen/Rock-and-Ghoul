@@ -32,8 +32,8 @@ public:
     void Update(float dt) override;
     void Shutdown() override;
 
-    static void SetBackgroundTexture(GLuint texID);
-    static GLuint GetBackgroundTexture();
+    static void AddBackgroundTexture(GLuint texID);
+    void ClearBackgroundTextures();
 private:
     Registry& m_registry = Registry::Get();
     static GLuint s_backgroundTexture; // Static background texture
