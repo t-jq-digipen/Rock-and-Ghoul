@@ -242,6 +242,8 @@ void Level1::Init()
 // Updates Level 1
 void Level1::Update()
 {
+	Render& renderer = Render::GetInstance();
+
 	static bool spawned = false;
 	std::vector<Entity> toRemove;
 
@@ -355,6 +357,16 @@ void Level1::Update()
 			//nextState = GameState::GS_RESTART;       // restart state
 			std::cout << "Level 1 Restarted!!!" << std::endl;
 		}
+
+		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused())
+		{
+			GSM_SetIsPaused(true);
+		}
+		else if (Input::IsKeyPressed(GLFW_KEY_P) && GSM_IsPaused())
+		{
+			GSM_SetIsPaused(false);
+		}
+
 		if (fretboard) {
 			fretboard->PlayerInput();
 		}

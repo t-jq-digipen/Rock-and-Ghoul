@@ -78,6 +78,7 @@ public:
 
     bool IsPaused() const { return isPaused; }
     bool InEditMode() const { return inEditMode; }
+
 #pragma endregion
 
     // GAME STATE CALLERS
@@ -93,9 +94,10 @@ public:
 
 #pragma endregion STATE CALLERS
 
-    // GAME STATE ACCESSORS
-    // ----------------------------------------
 #pragma region ACCESSORS
+
+    // GAME STATE ACCESSORS
+    // ========================================
 
     // GETTERS
     // ----------------------------------------
@@ -116,6 +118,8 @@ public:
     // Set Previous Game State
     void SetPreviousState(GameState state);
     // ----------------------------------------
+
+    // ========================================
 
 #pragma endregion ACCESSORS
     // ----------------------------------------

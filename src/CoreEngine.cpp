@@ -232,6 +232,8 @@ void CoreEngine::Quit() {
 const GameState& GSM_PreviousState()    { return gsm.GetPreviousState(); }
 const GameState& GSM_CurrentState()     { return gsm.GetCurrentState(); }
 const GameState& GSM_NextState()        { return gsm.GetNextState(); }
+const bool GSM_IsPaused()               { return gsm.IsPaused(); }
+const bool GSM_InEditMode()             { return gsm.InEditMode(); }
 // ----------------------------------------
 
 
@@ -240,6 +242,8 @@ const GameState& GSM_NextState()        { return gsm.GetNextState(); }
 void GSM_SetPreviousState(GameState state)  { gsm.SetPreviousState(state); }
 void GSM_SetCurrentState(GameState state)   { gsm.SetCurrentState(state); }
 void GSM_SetNextState(GameState state)      { gsm.SetNextState(state); }
+void GSM_SetIsPaused(bool isPaused)         { gsm.SetPaused(isPaused); }
+void GSM_SetInEditMode(bool inEditMode)     { gsm.SetEditMode(inEditMode); }
 // ----------------------------------------
 
 // DEBUGGER
