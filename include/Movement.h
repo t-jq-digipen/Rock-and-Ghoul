@@ -5,7 +5,7 @@
 #include <string>
 
 namespace Movement {
-	enum MovementDirection
+	enum InputDirection
 	{
 		MOVE_NONE,
 		MOVE_UP,
@@ -21,32 +21,36 @@ namespace Movement {
 	};
 
 	class MovementComponent {
-		float moveSpeed;
-		MovementDirection moveDirection;
-		MovementType moveType;
-		bool isMoving;
+		float moveSpeed;					// to determine how fast entity go nyoom
+		InputDirection inputDirection;		// to get direction based on player input
+		Vec2 moveDirection;					// to ensure diagonal movement (aka overall movement direction)
+		MovementType moveType;				// to check whether to move entity by position or velocity
+		bool isMoving;						// to check if entity is moving
+
 	public:
 		// Default constructor
 		MovementComponent();
 		// Move constructor
-		MovementComponent(float speed, MovementDirection dir, MovementType type, bool checkMoving = 0);
+		MovementComponent(float speed, InputDirection dir, Vec2 inputDir, MovementType type, bool checkMoving = 0);
 		// Copy constructor
 		MovementComponent(const MovementComponent& other) = default;
 
 		// SETTERS
 		void SetMoveSpeed(float speed);
-		void SetMoveDirection(MovementDirection dir);
+		void SetInputDirection(InputDirection inputDir);
+		void SetMovementDirection(const Vec2& moveDir);
 		void SetMoveType(MovementType type);
 		void SetIsMoving(bool checkMoving);
 
 		// GETTERS
 		const float& GetMoveSpeed() const;
-		MovementDirection GetMoveDirection() const;
+		InputDirection GetInputDirection() const;
+		Vec2 GetMovementDirection() const;
 		MovementType GetMoveType() const;
 		bool GetIsMoving() const;
 
 		// Called by MovementSystem after consuming the current frame's input
-		void ResetFrameIntent() { isMoving = false; moveDirection = MOVE_NONE; }
+		void ResetFrameIntent() { isMoving = false; inputDirection = MOVE_NONE; moveDirection = { 0.f, 0.f }; }
 
 		// JSON
 		std::string Serialize() const;

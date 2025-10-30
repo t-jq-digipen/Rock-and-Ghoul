@@ -21,7 +21,19 @@ constexpr float dash = 10.f;
 constexpr float maxspeed = 10.f;
 constexpr float speed = 500.f;
 
-inline Movement::MovementDirection PlayerSystem::VelToDir(float x, float y)
+inline void PlayerSystem::NormalizeDiagonalMovement(float& x, float& y)
+{
+	const float l2 = x*x + y*y;
+	if (l2 <= 0.f)
+	{
+		x = y = 0.f;
+		return;
+	}
+	const float inv = 1.f / std::sqrt(l2);
+	x *= inv; y *= inv;
+}
+
+inline Movement::InputDirection PlayerSystem::VelToDir(float x, float y)
 {
 	if (std::abs(y) >= std::abs(x)) return (y > 0.f) ? Movement::MOVE_UP : (y < 0.f ? Movement::MOVE_DOWN : Movement::MOVE_NONE);
 	return (x > 0.f) ? Movement::MOVE_RIGHT : (x < 0.f ? Movement::MOVE_LEFT : Movement::MOVE_NONE);
@@ -38,7 +50,8 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 
 	if (!m_registry.Has_Component<InputComponent>(eID)) {
 		moveComp.SetIsMoving(false);
-		moveComp.SetMoveDirection(Movement::MOVE_NONE);
+		moveComp.SetInputDirection(Movement::MOVE_NONE);
+		moveComp.SetMovementDirection({ 0.f, 0.f });
 		return;
 	}
 
@@ -68,9 +81,14 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	default: break;
 	}
 
-	const bool moving = (hor != 0 || ver != 0);
+	float fx = static_cast<float>(hor);
+	float fy = static_cast<float>(ver);
+	NormalizeDiagonalMovement(fx, fy);
+
+	const bool moving = (fx != 0.f || fy != 0.f);
 	moveComp.SetIsMoving(moving);
-	moveComp.SetMoveDirection(VelToDir(static_cast<float>(hor), static_cast<float>(ver)));
+	moveComp.SetInputDirection(VelToDir(fx, fy));
+	moveComp.SetMovementDirection({ fx, fy });
 	//auto& physics = m_registry.Get_Component<Physics::PhysicsComponent>(eID);
 
 	//if (!m_registry.Has_Component<InputComponent>(eID)) {

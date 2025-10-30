@@ -17,16 +17,8 @@ void MovementSystem::Update(float dt)
 	for (auto& [entID, moveComp] : m_registry.Get_ComponentMap<Movement::MovementComponent>())
 	{
 		// Check if entity is moving
-		const bool moving = moveComp.GetIsMoving();
-		if (!moving)
-		{
-			moveComp.ResetFrameIntent();
-			continue;
-		}
-
-		// Get entity movement direction
-		Vec2 dir = DirToVec(moveComp.GetMoveDirection());
-		if (!Normalize(dir))
+		const Vec2 dir = moveComp.GetMovementDirection();
+		if (!moveComp.GetIsMoving() || (dir.x == 0.f && dir.y == 0.f))
 		{
 			moveComp.ResetFrameIntent();
 			continue;

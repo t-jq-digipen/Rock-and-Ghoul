@@ -4,18 +4,21 @@
 namespace Movement {
 	MovementComponent::MovementComponent() {}
 
-	MovementComponent::MovementComponent(float speed, MovementDirection dir, MovementType type, bool checkMoving)
-		: moveSpeed{ speed }, moveDirection{ dir }, moveType{ type }, isMoving{ checkMoving } {}
+	MovementComponent::MovementComponent(float speed, InputDirection inputDir, Vec2 moveDir, MovementType type, bool checkMoving)
+		: moveSpeed{ speed }, inputDirection{ inputDir }, moveDirection{ moveDir }, moveType{ type }, isMoving{ checkMoving } {}
 
 	// SETTERS
 	void MovementComponent::SetMoveSpeed(float speed) { moveSpeed = speed; }
-	void MovementComponent::SetMoveDirection(MovementDirection dir) { moveDirection = dir; }
+	void MovementComponent::SetInputDirection(InputDirection inputDir) { inputDirection = inputDir; }
+	void MovementComponent::SetMovementDirection(const Vec2& moveDir) { moveDirection = moveDir; }
 	void MovementComponent::SetMoveType(MovementType type) { moveType = type; }
 	void MovementComponent::SetIsMoving(bool checkMoving) { isMoving = checkMoving; }
 
+
 	// GETTERS
 	const float& MovementComponent::GetMoveSpeed() const { return moveSpeed; }
-	MovementDirection MovementComponent::GetMoveDirection() const { return moveDirection; }
+	InputDirection MovementComponent::GetInputDirection() const { return inputDirection; }
+	Vec2 MovementComponent::GetMovementDirection() const { return moveDirection; }
 	MovementType MovementComponent::GetMoveType() const { return moveType; }
 	bool MovementComponent::GetIsMoving() const { return isMoving; }
 
@@ -35,9 +38,10 @@ namespace Movement {
 
 		MovementComponent move;
 		move.moveSpeed = j.value("moveSpeed", 5.f);
-		move.moveDirection = MOVE_NONE;
+		move.inputDirection = MOVE_NONE;
 		move.moveType = MOVE_POSITION;
 		move.isMoving = false;
+		move.moveDirection = { 0.f, 0.f };
 
 		return move;
 	}

@@ -137,7 +137,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Registry::Get().Add_Component<HealthComponent>(player, HealthComponent{ 100.f, 100.f });
 
-            Registry::Get().Add_Component<Movement::MovementComponent>(player, Movement::MovementComponent{ 5.f, Movement::MOVE_NONE, Movement::MOVE_POSITION, false });
+            Registry::Get().Add_Component<Movement::MovementComponent>(player, Movement::MovementComponent{ 5.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
 
             if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Player.json", player)) {
                 std::cout << "Player.json saved successfully" << std::endl;

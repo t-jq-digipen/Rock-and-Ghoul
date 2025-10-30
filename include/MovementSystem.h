@@ -23,7 +23,7 @@ private:
     }
 
     // Define velocity by movement direction
-    static inline Vec2 DirToVec(Movement::MovementDirection dir)
+    static inline Vec2 DirToVec(Movement::InputDirection dir)
     {
         switch (dir)
         {

@@ -31,7 +31,9 @@ class PlayerSystem : public ISystem {
 private:
     void WASD_Movement(Entity eID, float& dt);
 
-    static inline Movement::MovementDirection VelToDir(float x, float y);
+    static inline Movement::InputDirection VelToDir(float x, float y);
+
+    static inline void NormalizeDiagonalMovement(float& x, float& y);
 
 public:
 
