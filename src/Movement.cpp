@@ -1,3 +1,20 @@
+/* ========================================================
+ * @file		Movement.cpp
+ * @author		Manfred Sim | manfred.sim@digipen.edu
+ * @date		30 OCT 2025
+ *
+ * @brief	Movement component for ECS
+ *
+ * This file implements movement related components and utilities
+ * such as managing input direction, toggling movement types and
+ * updating an entity based on the movement applied.
+ *
+ * The bulk of the updates happen in PhysicsSystem.cpp
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #include "Movement.h"
 

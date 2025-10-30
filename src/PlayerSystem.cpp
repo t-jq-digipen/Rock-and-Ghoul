@@ -2,6 +2,7 @@
  * @file	    PlayerSystem.cpp
  * @author	    Tan Jun Quan | t.junquan@digipen.edu
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @co-author   Manfred Sim | manfred.sim@digipen.edu
  * @date	    29 SEP 2025
  *
  * @brief	Player System for handling player behaviour.

@@ -1,3 +1,16 @@
+/* ========================================================
+ * @file	    MovementSystem.h
+ * @author	    Manfred Sim | manfred.sim@digipen.edu
+ * @date	    30 OCT 2025
+ *
+ * @brief	Movement system for ECS
+ *
+ * This file declares the Movement system for the ECS.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #include "System.h"
 #include "Render.h"

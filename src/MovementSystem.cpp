@@ -1,3 +1,19 @@
+/* ========================================================
+ * @file	    MovementSystem.cpp
+ * @author	    Manfred Sim | manfred.sim@digipen.edu
+ * @date	    30 OCT 2025
+ *
+ * @brief	Movement system for ECS
+ *
+ * This file implements the update order of the various
+ * parts in the movement component, with reference to other
+ * components such as Transform (for movement by position) and 
+ * Physics (for movement by velocity).
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #include "MovementSystem.h"
 #include "PhysicsSystem.h"
