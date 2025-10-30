@@ -356,6 +356,8 @@ source_group("Physics\\System\\Collision" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/SpatialGrid.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/SpatialGrid.h
 )
 
 source_group("Game\\State\\GameStates" FILES 
