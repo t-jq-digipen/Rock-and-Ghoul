@@ -91,8 +91,6 @@ void GuiSystem::Update(float dt) {
         textY += textSize.y * 0.15f;
 
         render.DrawText(cfg.label, textX, textY, textScale, { 0, 0, 0 });
-        r.DrawRect(btn.pos, btn.size.x, btn.size.y, drawColor);
-        r.DrawText(btn.label, btn.pos.x - btn.size.x * 0.15f, btn.pos.y - 10.f, 1.2f, { 1, 1, 1 }, "Marker"); //added an extra param for font type
 
         if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
             if (audio) audio->PlayButtonSound(cfg.soundType);
@@ -254,7 +252,7 @@ void GuiSystem::Update(float dt) {
                 y -= 30;
 
                 if (editingLabel) {
-                    // letters (Aï¿½Z)
+                    // letters (A–Z)
                     for (int key = GLFW_KEY_A; key <= GLFW_KEY_Z; ++key) {
                         if (Input::IsKeyPressed(key)) {
                             bool shift = Input::IsKeyHeld(GLFW_KEY_LEFT_SHIFT) || Input::IsKeyHeld(GLFW_KEY_RIGHT_SHIFT);
@@ -264,7 +262,7 @@ void GuiSystem::Update(float dt) {
                         }
                     }
 
-                    // numbers (0ï¿½9)
+                    // numbers (0–9)
                     for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key) {
                         if (Input::IsKeyPressed(key)) {
                             tempLabel.push_back(static_cast<char>('0' + (key - GLFW_KEY_0)));
@@ -437,7 +435,7 @@ void GuiSystem::Update(float dt) {
                 y -= 30;
 
                 if (editingText) {
-                    // letters (Aï¿½Z)
+                    // letters (A–Z)
                     for (int key = GLFW_KEY_A; key <= GLFW_KEY_Z; ++key) {
                         if (Input::IsKeyPressed(key)) {
                             bool shift = Input::IsKeyHeld(GLFW_KEY_LEFT_SHIFT) || Input::IsKeyHeld(GLFW_KEY_RIGHT_SHIFT);
@@ -447,7 +445,7 @@ void GuiSystem::Update(float dt) {
                         }
                     }
 
-                    // numbers (0ï¿½9)
+                    // numbers (0–9)
                     for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key) {
                         if (Input::IsKeyPressed(key)) {
                             tempText.push_back(static_cast<char>('0' + (key - GLFW_KEY_0)));

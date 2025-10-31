@@ -220,8 +220,7 @@ enum C_TagID {
 	T_ENEMY,
 	T_PROJECTILE,
 	T_WALL,
-	T_INSTANCING,
-	T_BATCH
+	T_INSTANCING
 };
 
 struct TagComponent {

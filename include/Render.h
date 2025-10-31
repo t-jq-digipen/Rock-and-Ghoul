@@ -93,13 +93,6 @@ struct Character {
     unsigned int Advance; // Offset in pixels to advance to next glyph
 };
 
-//Struct for font 
-struct Font {
-    std::array<Character, 128> glyphs; //128 ASCII
-    int sizePx = 0;
-    std::string name; //i just put here first for debug
-};
-
 
 
 /**
@@ -317,7 +310,7 @@ public:
 
     //Draw text
     /**
-    * @brief Initializes FreeType resources for text rendering. (sets up VAO/VBO)
+    * @brief Initializes FreeType resources for text rendering.
     */
     void InitTextRendering();
 
@@ -330,8 +323,7 @@ public:
     * @param scale Scale factor for text size.
     * @param color The RGB color of the text.
     */
-    //void DrawText(std::string text, float x, float y, float scale, const Colour3& color); //need edit, add one more param for fonttype
-    void DrawText(std::string text, float x, float y, float scale, const Colour3& color, const std::string& fontKey);
+    void DrawText(std::string text, float x, float y, float scale, const Colour3& color);
 
     /**
     * @brief Draws text on screen bounded by a textbox using a loaded FreeType font.
@@ -342,14 +334,7 @@ public:
     * @param scale Scale factor for text size.
     * @param color The RGB color of the text.
     */
-    //void DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color); //for dialogue, need edit, add one more param for fonttype
-    void DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color, const std::string& fontKey);
-
-
-    //Extra functions for font loading
-    bool LoadFont(const std::string& fontPath, int sizePx, const std::string& key);
-    void UnloadFont(const std::string& key);
-    void UnloadAllFonts();
+    void DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color); //for dialogue
 
 
 
@@ -403,26 +388,6 @@ public:
     * @return std::unordered_map<std::string, GLuint> Mapping of alias (key) to texture ID (value).
     */
     std::unordered_map<std::string, GLuint> LoadImageAssetsFromJSON(const std::string& jsonPath);
-
-
-    // Loading multiple fonts from JSON file
-    /**
-    * @brief Loads font assets defined in a JSON file and initializes them into the font cache.
-    *
-    * Example JSON:
-    * {
-    *   "fonts": [
-    *     { "name": "Marker", "path": "../Assets/PermanentMarker-Regular.ttf", "size": 48 },
-    *     { "name": "Bold", "path": "../Assets/Antonio-Bold.ttf", "size": 36 }
-    *   ]
-    * }
-    *
-    * @param jsonPath Path to the JSON file containing font definitions.
-    * @return std::unordered_map<std::string, Font> Mapping of font name (key) to Font object (value).
-    */
-
-    std::unordered_map<std::string, Font> LoadFontAssetsFromJSON(const std::string& jsonPath);
-
 
 
 
@@ -526,104 +491,6 @@ public:
    
 
 
-                                                        
-
-
-
-    //Batch rendering attempt
-    
-    // Call it once per frame before SubmitSpriteBatch()
-    /**
-    * @brief Begins a new sprite batch for batched rendering.Call this before submitting any batched sprites each frame.
-    *
-    * Prepares internal CPU-side buffers for collecting sprite draw data.
-    * Must be called once per frame before any calls to SubmitSpriteBatch()
-    * or SubmitSpriteBatchUV().
-    *
-    * Typical use and the flow:
-    * @code
-    * renderInstance.BeginBatch();
-    * renderInstance.SubmitSpriteBatch(...);
-    * renderInstance.SubmitSpriteBatch(...);
-    * renderInstance.EndBatch();
-    * renderInstance.FlushBatch();
-    * @endcode
-    *
-    */
-   void BeginBatch();
-
-
-
-   /**
-    * @brief Submits a sprite to the active batch using the full texture region.
-    *
-    * Queues a textured quad into the current batch with the specified
-    * position, size, and rotation. The entire texture is used
-    * (UVs = (0,0,1,1)) by default.
-    *
-    * @param image     Reference to the Image structure containing the OpenGL texture ID.
-    * @param pos       World position of the sprite center (in screen or world units).
-    * @param size      Sprite dimensions (width, height) in screen units.
-    * @param rotation  Optional rotation angle in radians (default = 0.0f).
-    *
-    * @note This function does not issue a draw call immediately.
-    * The sprite will be rendered only after EndBatch() and FlushBatch() are called.
-    */
-    void SubmitSpriteBatch(const Image& image, const Vec2& pos, const Vec2& size, float rotation = 0.0f);
-
-
-
-    /**
-    * @brief Submits a sprite to the active batch with custom UV coordinates.
-    *
-    * Similar to SubmitSpriteBatch(), but allows specifying a sub-region of the
-    * texture using normalized UV coordinates in the range [0,1].
-    * Would be use for rendering spritesheets or partial textures.
-    *
-    * @param image     Reference to the Image structure containing the OpenGL texture ID.
-    * @param pos       World position of the sprite center (in screen or world units).
-    * @param size      Sprite dimensions (width, height) in screen units.
-    * @param uvRect    Normalized UV rectangle {u0, v0, u1, v1} defining the texture region.
-    * @param rotation  Optional rotation angle in radians (default = 0.0f).
-    *
-    * @note This does not immediately draw, sprites are collected until FlushBatch() is called.
-    */
-    void SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2& size, const glm::vec4& uvRect, float rotation = 0.0f);
-
-
-
-
-    /**
-    * @brief Finalizes CPU-side batching and uploads vertex data to the GPU.
-    *
-    * Transfers all the accumulated sprite instance data (vertices, UVs, transforms)
-    * to the GPU vertex buffer in preparing for drawing.
-    * Must be called after all SubmitSpriteBatch() calls and before FlushBatch().
-    *
-    * @note Calling this multiple times per frame is allowed but will
-    * reset the current batch and overwrite the previous buffer contents.
-    */
-    void EndBatch();
-
-
-
-
-    /**
-    * @brief Executes the actual draw call for all batched sprites. where da draw happens
-    *
-    * Issues a single OpenGL draw command
-    * for all sprites submitted since BeginBatch().
-    * This function completes the batch rendering cycle for the frame.
-    *
-    * @note After calling FlushBatch(), the batch is considered done.
-    * To render additional sprites in the same frame, call BeginBatch() again.
-    */
-    void FlushBatch();
-
-
-    //camera to see which uses camera and which doesnt etc in main menu dont need
-    bool useCamera = true;
-
 private:
     glm::vec2 uiScale = { 1.0f, 1.0f };
     /**
@@ -648,7 +515,6 @@ private:
     GLuint vao, vbo, shaderProgram;
     GLuint InstanceVBO, InstanceShaderProgram;
     GLuint textVAO, textVBO;
-    GLuint batchVAO, batchVBO, batchEBO, batchShader;
     glm::mat4 projection;
 
 
@@ -684,85 +550,9 @@ private:
     std::unordered_map<std::string, GLuint> textureCache; //Cache of loaded textures mapped by file path
     std::unordered_map<GLuint, std::string> pathCache; //Reverse lookup cache mapping texture IDs to file paths.
     std::map<char, Character> Characters; //Character map storing FreeType glyph data for text rendering
-    std::unordered_map<std::string, Font> fontCache; //Cache to store the key/font pair of font types
 
     // to load for json
     // std::unordered_map<GLuint, std::string> texturePathMap;
-
-
-
-
-
-     // Batch render data
-    struct BatchVertex {
-        glm::vec2 position;   // screen/world coords (where on screen the corner goes)
-        glm::vec2 texCoord;   // normalized uv (what part of the texture to show)
-        glm::vec4 color;      // tint (fixed to white for now)
-        float     texIndex;   // which texture slot [0..N-1] (which texture slot this corner uses)
-    };
-
-    // Limits (tweakable)
-    static constexpr size_t MaxQuads = 10000; // (we can draw up to 10,000 sprites per batch)
-    static constexpr size_t MaxVertices = MaxQuads * 4; // 4 corners each
-    static constexpr size_t MaxIndices = MaxQuads * 6; // 2 triangles (3 indices each)
-    static constexpr size_t MaxTexSlots = 16;      //frag shader's uTextures[] need be same as this (we can use up to 16 unique textures at once)
-
-    //helper batch functions
-    /**
-    * @brief Initializes all GPU and CPU resources used for sprite batching.
-    *
-    * Allocates and configures the OpenGL buffers (VAO, VBO, EBO) required
-    * for batch rendering. This function also preallocates the CPU-side
-    * staging buffer and index data used to draw quads efficiently.
-    *
-    * @note This should be called once during renderer initialization (e.g., in render::Init()).
-    * Calling it multiple times will reinitialize internal buffers.
-    */
-    void InitBatch();       
-
-
-    /**
-    * @brief Resets internal batch counters and buffer pointers.
-    *
-    * Clears the CPU-side batch data in preparation for a new frame or a new batch.
-    * This function does not free GPU memory, it resets index counts,
-    * vertex offsets, and texture slot tracking to zero.
-    *
-    * @note usually call at the start of each BeginBatch() or immediately
-    * after a FlushBatch() to prepare for the next group of sprites.
-    */
-    void ResetBatch();   
-
-
-    /**
-    * @brief Checks if the current batch has enough room for additional sprites, and flushes it to the GPU if necessary.
-    *
-    * Before adding a new quad, this function ensures that the internal CPU buffer
-    * and texture slot array have sufficient space to store it.
-    * If the buffer is full or the texture limit is reached, the batch is flushed
-    * (drawn to the GPU) and then reset for new data.
-    *
-    * @param quadCountNeeded  Number of quads to be added to the current batch.
-    * @param textureID        OpenGL texture handle required by the next sprite.
-    *
-    * @note This function is automatically called by SubmitSpriteBatch() and
-    * SubmitSpriteBatchUV() before append new draw data.
-    */
-    void FlushIfFull(size_t quadCountNeeded, GLuint textureID);
-
-
-
-
-    // CPU-side staging buffer (Holds all sprite data before drawing)
-    std::vector<BatchVertex> batchCPUBuffer;
-    size_t batchIndexCount{ 0 };
-
-    // Textures bound for the current batch (Tracks which textures are currently active)
-    std::vector<GLuint> batchTexSlots;
-
-    //white tint
-    const glm::vec4 kWhite{ 1.0f,1.0f,1.0f,1.0f };
-
 
     
     glm::vec3 currentTint = { 1.f, 1.f, 1.f };
