@@ -46,6 +46,7 @@ FrameRateController frameRate(60);
 
 GSM gsm;
 float g_dt; // Global dt
+bool g_gamePaused = false; // pause state flag
 
 void CoreEngine::AddSystem(ISystem* sys) {
     systems.push_back(sys);
@@ -252,6 +253,11 @@ void GSM_SetPreviousState(GameState state)  { gsm.SetPreviousState(state); }
 void GSM_SetCurrentState(GameState state)   { gsm.SetCurrentState(state); }
 void GSM_SetNextState(GameState state)      { gsm.SetNextState(state); }
 // ----------------------------------------
+
+// PAUSE STATE
+// ----------------------------------------
+bool GSM_IsGamePaused() { return g_gamePaused; }
+void GSM_SetGamePaused(bool paused) { g_gamePaused = paused; }
 
 // DEBUGGER
 std::ostream& operator<<(std::ostream& os, const GameState& state)

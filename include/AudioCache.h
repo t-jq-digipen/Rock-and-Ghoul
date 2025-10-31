@@ -16,9 +16,11 @@ struct AudioAsset {
     std::string group;
     bool loop;
     bool spatial;
+    float minDistance;
+    float maxDistance;
     FMOD::Sound* sound;
 
-    AudioAsset() : id(-1), loop(false), spatial(false), sound(nullptr) {}
+    AudioAsset() : id(-1), loop(false), spatial(false), minDistance(1.0f), maxDistance(100.0f), sound(nullptr) {}
 };
 
 enum class AudioGroup {
