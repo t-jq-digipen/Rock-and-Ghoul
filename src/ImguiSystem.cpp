@@ -1458,7 +1458,6 @@ void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewpo
     static Vec2 dragOffset{ 0.f, 0.f };
     static bool isDragging = false;
 
-    Entity hovered = INVALID_ENTITY;
 
     // === Draw all entities ===
     for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
@@ -1478,7 +1477,6 @@ void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewpo
         ImU32 color = (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) : IM_COL32(255, 255, 255, 100);
 
         dl->AddRect(min, max, color, 0.f, 0, 2.f);
-        
     }
 
     // === Selection & dragging ===
@@ -1502,22 +1500,21 @@ void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewpo
         
         cam.SetPosition(mouseWorld + dragOffset);
 
+        float zoom = cam.GetZoom();
+        
+        zoom += ImGui::GetIO().MouseWheel * 0.2;
 
-        // Draw a blue outline for the dragged entity
-        /*Vec2 pos = t.pos;
-        Vec2 screenPos;
-        screenPos.x = offset.x + pos.x * scale;
-        screenPos.y = offset.y + (worldHeight - pos.y) * scale;
-
-        ImVec2 min = { viewportPos.x + screenPos.x - 25 * scale, viewportPos.y + screenPos.y - 25 * scale };
-        ImVec2 max = { viewportPos.x + screenPos.x + 25 * scale, viewportPos.y + screenPos.y + 25 * scale };
-        dl->AddRect(min, max, IM_COL32(0, 128, 255, 255), 0.f, 0, 2.5f);*/
+        cam.SetZoom(zoom);
     }
 
     if (mouseReleased)
     {
         isDragging = false;
     }
+
+    // REGINEHELP
+    // maybe add a reset zoom button idk
+    // cam.SetZoom(1.0);
 }
 
 #include "Camera.h"
