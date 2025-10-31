@@ -291,7 +291,7 @@ void Level1::Update()
 	{
 		for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>())
 		{
-			if (tag.tag == T_BATCH &&
+			if (tag.tag == T_PLAYER &&
 				registry.Has_Component<Animator::AnimatorComponent>(entID))
 			{
 				auto& anim = registry.Get_Component<Animator::AnimatorComponent>(entID);

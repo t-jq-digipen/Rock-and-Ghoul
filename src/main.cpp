@@ -107,9 +107,9 @@ int main() {
             MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
 
             engine.AddSystem(new MovementSystem());
-            engine.AddSystem(new RenderSystem());
             engine.AddSystem(new PlayerSystem());
             engine.AddSystem(new PhysicsSystem());
+            engine.AddSystem(new RenderSystem());
             engine.AddSystem(&GuiSystem::Get());
             engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
             std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window

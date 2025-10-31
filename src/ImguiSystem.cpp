@@ -36,6 +36,7 @@
 #include <nlohmann/json.hpp>
 #include <unordered_set> 
 #include "Render.h" 
+#include "Camera.h"
 //static Camera editorCamera;
 //static bool useEditorCamera = true;
 bool ImGuiSystem::showColliders = false;
@@ -569,7 +570,7 @@ void ImGuiSystem::Update(float dt)
         ImGuiID dock_right = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, nullptr, &dockspaceID);
         ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.25f, nullptr, &dockspaceID);
 
-        ImGui::DockBuilderDockWindow("Scene Overview", dock_right);
+        ImGui::DockBuilderDockWindow("Scene Overview", dock_left);
         ImGui::DockBuilderDockWindow("Engine Info", dock_left);
         ImGui::DockBuilderDockWindow("Entity Editor", dock_right);
         ImGui::DockBuilderDockWindow("Collision + Prefabs", dock_bottom);
@@ -1394,6 +1395,8 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
 void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize)
 {
+
+    ::Render& renderer = Render::GetInstance();
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
@@ -1423,12 +1426,35 @@ void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewpo
         IM_COL32(100, 100, 100, 255)
     );
 
+    // --- Draw Camera zone ---
+
+    Camera& cam = Camera::GetInstance();
+    bool camHover = false;
+    Vec2 camOffset = cam.GetPosition();
+    {
+        float camZoom = cam.GetZoom();
+        camZoom *= scale;
+
+        ImVec2 min = { viewportPos.x + (camOffset.x * scale) - worldWidth * camZoom / 2, 
+                       viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - worldHeight * camZoom / 2 };
+
+        ImVec2 max = { viewportPos.x + (camOffset.x * scale) + worldWidth * camZoom / 2, 
+                       viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + worldHeight * camZoom / 2 };
+
+        bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
+            mousePos.y >= min.y && mousePos.y <= max.y);
+
+        ImU32 color = inside ? IM_COL32(255, 192, 203, 255) : IM_COL32(255, 0, 255, 255);
+
+        dl->AddRect( min, max, color );
+        if (inside) { camHover = true; }
+    }
+
     // --- Mouse state ---
     bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
     bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
     bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
 
-    static Entity draggedEntity = INVALID_ENTITY;
     static Vec2 dragOffset{ 0.f, 0.f };
     static bool isDragging = false;
 
@@ -1449,60 +1475,48 @@ void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewpo
         ImVec2 min = { viewportPos.x + screenPos.x - half.x, viewportPos.y + screenPos.y - half.y };
         ImVec2 max = { viewportPos.x + screenPos.x + half.x, viewportPos.y + screenPos.y + half.y };
 
-        bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
-            mousePos.y >= min.y && mousePos.y <= max.y);
-
-        ImU32 color =
-            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
-            inside ? IM_COL32(255, 255, 0, 200) :
-            IM_COL32(255, 255, 255, 100);
+        ImU32 color = (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) : IM_COL32(255, 255, 255, 100);
 
         dl->AddRect(min, max, color, 0.f, 0, 2.f);
-
-        if (inside)
-            hovered = entity;
+        
     }
 
     // === Selection & dragging ===
-    if (mouseClicked && hovered != INVALID_ENTITY)
+    if (mouseClicked && camHover)
     {
-        selectedEntity = hovered;
-        draggedEntity = hovered;
         isDragging = true;
 
-        auto& t = reg.Get_Component<TransformComponent>(hovered);
         Vec2 mouseWorld{
             (mouse.x - offset.x) / scale,
             worldHeight - (mouse.y - offset.y) / scale
         };
-        dragOffset = t.pos - mouseWorld;
-        std::cout << "[Editor] Selected entity " << hovered << std::endl;
+        dragOffset = camOffset - mouseWorld;
     }
 
-    if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown)
+    if (isDragging && mouseDown)
     {
-        auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
         Vec2 mouseWorld{
             (mouse.x - offset.x) / scale,
             worldHeight - (mouse.y - offset.y) / scale
         };
-        t.pos = mouseWorld + dragOffset;
+        
+        cam.SetPosition(mouseWorld + dragOffset);
+
 
         // Draw a blue outline for the dragged entity
-        Vec2 pos = t.pos;
+        /*Vec2 pos = t.pos;
         Vec2 screenPos;
         screenPos.x = offset.x + pos.x * scale;
         screenPos.y = offset.y + (worldHeight - pos.y) * scale;
 
         ImVec2 min = { viewportPos.x + screenPos.x - 25 * scale, viewportPos.y + screenPos.y - 25 * scale };
         ImVec2 max = { viewportPos.x + screenPos.x + 25 * scale, viewportPos.y + screenPos.y + 25 * scale };
-        dl->AddRect(min, max, IM_COL32(0, 128, 255, 255), 0.f, 0, 2.5f);
+        dl->AddRect(min, max, IM_COL32(0, 128, 255, 255), 0.f, 0, 2.5f);*/
     }
 
     if (mouseReleased)
     {
         isDragging = false;
-        draggedEntity = INVALID_ENTITY;
     }
 }
 
