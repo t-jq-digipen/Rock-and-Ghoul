@@ -91,6 +91,7 @@ void MainMenu::Load()
     //    std::cout << "Main Menu Loaded!!!" << std::endl;
     Render& renderer = Render::GetInstance();
     renderer.useCamera = false;
+    auto FontAssets = renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
     CrashHandler::Safe("MainMenu", "Load", [&] {
         std::cout << "Main Menu Loaded!!!" << std::endl;
         mainMenuBG1 = renderer.LoadTexture("../Assets/MainMenu_Background.JPG");
@@ -580,5 +581,6 @@ void MainMenu::Unload()
         renderer.UnloadTexture(mainMenuBG1);
         mainMenuBG = 0;
         mainMenuBG1 = 0;
+        renderer.UnloadAllFonts();
         });
 }

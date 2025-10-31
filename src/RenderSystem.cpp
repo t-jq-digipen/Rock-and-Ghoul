@@ -64,7 +64,7 @@ void RenderSystem::Update(float dt) {
     Render::GetInstance().UpdateProjection();
    // renderer.ClearBackground({ 0.05f, 0.0f, 0.1f, 1.0f });
     // ===== DRAW BACKGROUND IF SET =====
-  
+
     for (GLuint tex : s_backgroundTextures)
         renderer.DrawFullscreenTexture(tex, true);
    

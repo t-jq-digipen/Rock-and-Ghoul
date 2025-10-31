@@ -59,6 +59,7 @@ void Level1::Load()
 	Render& renderer = Render::GetInstance();
 	
 	renderer.useCamera = true;
+	auto FontAssets = renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
 	CrashHandler::Safe("Level1", "Load", [&] {
 		std::cout << "Level 1 Loaded!!!" << std::endl;
 
@@ -148,6 +149,7 @@ void Level1::Load()
 // Initializes Level 1
 void Level1::Init()
 {
+	
 	Render& renderer = Render::GetInstance();
 	
 	CrashHandler::Safe("Level1", "Init", [&] {
@@ -519,6 +521,7 @@ void Level1::Unload()
 			bgTexture = 0;
 		}*/
 
+		renderer.UnloadAllFonts();
 		renderer.UnloadTexture(bgTexture);
 		std::cout << "Level 1 Unloaded!!!" << std::endl;
 		});
