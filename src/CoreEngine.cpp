@@ -37,6 +37,7 @@
 #include "FrameRateController.h"
 #include <algorithm>
 #include "DataDefs.h"
+#include "MovementSystem.h"
 #include <nlohmann/json.hpp>
 #include "RenderSystem.h"
 #include "GuiSystem.h"
@@ -79,6 +80,9 @@ void CoreEngine::Initialize() {
 
     registry.Register_Component<ShapeComponent>("Shape", { "Transform" });
     std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";
+
+    registry.Register_Component<Movement::MovementComponent>("Movement", { "Transform", "Physics" });
+    std::cout << "REGISTRY | REGISTERED MOVEMENT COMPONENT\n";
 
     // marker for non-standard components which should be shifted out to game files
     std::cout << "NON DEFAULT COMPONENTS: \n==============================\n";
@@ -244,6 +248,8 @@ void CoreEngine::Quit() {
 const GameState& GSM_PreviousState()    { return gsm.GetPreviousState(); }
 const GameState& GSM_CurrentState()     { return gsm.GetCurrentState(); }
 const GameState& GSM_NextState()        { return gsm.GetNextState(); }
+const bool GSM_IsPaused()               { return gsm.IsPaused(); }
+const bool GSM_InEditMode()             { return gsm.InEditMode(); }
 // ----------------------------------------
 
 
@@ -252,6 +258,8 @@ const GameState& GSM_NextState()        { return gsm.GetNextState(); }
 void GSM_SetPreviousState(GameState state)  { gsm.SetPreviousState(state); }
 void GSM_SetCurrentState(GameState state)   { gsm.SetCurrentState(state); }
 void GSM_SetNextState(GameState state)      { gsm.SetNextState(state); }
+void GSM_SetIsPaused(bool isPaused)         { gsm.SetPaused(isPaused); }
+void GSM_SetInEditMode(bool inEditMode)     { gsm.SetEditMode(inEditMode); }
 // ----------------------------------------
 
 // PAUSE STATE

@@ -27,6 +27,7 @@
 #include "EntityCreation.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
+#include "GuiSystem.h"
 
 #include "CrashHandler.h"
 #include <PlayerSystem.h>
@@ -167,14 +168,23 @@ void Level1::Init()
 		// 3. NOW load textures (OpenGL is ready)
 		//bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 
-		// 4. Create FretBoard after OpenGL is ready (duplicate - can remove)
-		//if (!fretboard) {
-		//	fretboard = new FretBoard(0, 0, 800, 200);
-		//}
-		//fretboard->LoadTextures();
-		//fretboard->StartGame();
+		// 4. Add Gui Editor
+		guiSystem.Initialize();
+		guiSystem.AddTextBox({
+			.text = "Insert Dialogue HERE",
+			.pos = {1650, 50},
+			.scale = 0.5f,
+			.color = {0.f, 0.f, 0.f},
+			.centered = true });
 
-		// 5. Create entities
+		// 5. Create FretBoard after OpenGL is ready (duplicate - can remove)
+		if (!fretboard) {
+			fretboard = new FretBoard(0, 0, 800, 200);
+		}
+		fretboard->LoadTextures();
+		fretboard->StartGame();
+
+		// 6. Create entities
 		// If there is no pre-existing/saved scene, it will load from prefabs
 		// Otherwise, it will load the saved scene
 		std::cout << "\n=== LOADING ENTITIES ===" << std::endl;
@@ -288,6 +298,9 @@ void Level1::Update()
 	}
 
 	static bool spawnedBatch = false;
+	Render& renderer = Render::GetInstance();
+
+	static bool spawned = false;
 	std::vector<Entity> toRemove;
 
 	// === Toggle Batched Sprites with N key (for rubrics demo) ===
@@ -437,18 +450,28 @@ void Level1::Update()
 	}
 
 	CrashHandler::Safe("Level1", "Update", [&] {
-		// to test game state changes
-		if (Input::IsKeyPressed(GLFW_KEY_M))
+		// to test game state changes (do not trigger if GUI Editor is open)
+		if (Input::IsKeyPressed(GLFW_KEY_M) && !guiSystem.GetEditMode())
 		{
 			GSM_SetNextState(GameState::GS_MAIN_MENU);
 			//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
 		}
-		else if (Input::IsKeyPressed(GLFW_KEY_R))
+		else if (Input::IsKeyPressed(GLFW_KEY_R) && !guiSystem.GetEditMode())
 		{
 			GSM_SetNextState(GameState::GS_RESTART);
 			//nextState = GameState::GS_RESTART;       // restart state
 			std::cout << "Level 1 Restarted!!!" << std::endl;
 		}
+
+		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !guiSystem.GetEditMode())
+		{
+			GSM_SetIsPaused(true);
+		}
+		else if (Input::IsKeyPressed(GLFW_KEY_P) && GSM_IsPaused() && !guiSystem.GetEditMode())
+		{
+			GSM_SetIsPaused(false);
+		}
+
 		if (fretboard) {
 			fretboard->PlayerInput();
 		}
@@ -479,7 +502,9 @@ void Level1::Draw()
 			fretboard->GetSpellManager().Draw(renderer);
 			//renderer.useCamera = true;
 		}
-		});
+
+		guiSystem.Update(0.0f);
+	});
 }
 
 // Frees Level 1
@@ -498,6 +523,7 @@ void Level1::Free()
 	CrashHandler::Safe("Level1", "Free", [&] {
 		std::cout << "Level 1 Freed!!!" << std::endl;
 		Render::GetInstance().ClearAllTextures();
+		guiSystem.Shutdown();
 		});
 }
 

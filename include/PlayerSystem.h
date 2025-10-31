@@ -8,7 +8,7 @@
  * This file declares a player system for the ECS, managing
  * control inputs and reactions.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -16,6 +16,7 @@
 #include "Registry.h"      // HasComponent / GetComponent
 #include "Component.h"     // All component structs
 #include "Input.h"
+#include "Movement.h"
 #include "GameStateManager.h"
 #include <iostream>
 #include <unordered_map>
@@ -36,6 +37,9 @@ private:
 
     void UpdateFootsteps(Entity eID, float dt);
     void PlayFootstep(Entity eID);
+    static inline Movement::InputDirection VelToDir(float x, float y);
+
+    static inline void NormalizeDiagonalMovement(float& x, float& y);
 
 public:
     void Initialize() override;

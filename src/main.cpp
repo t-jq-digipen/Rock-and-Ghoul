@@ -36,6 +36,8 @@
 #include "ImguiSystem.h"
 #include "CrashHandler.h"
 #include "GuiSystem.h"
+#include "MovementSystem.h"
+
 #include "JsonLoad.h"
 #include "FilePath.h"
 
@@ -76,9 +78,15 @@ int main() {
     if (!GLApp::init(settings.resolutionWidth, settings.resolutionHeight, "Rock & Ghoul")) {
         return -1;
     }
-    std::cout << "[Main] GLApp::ptr_window = " << GLApp::ptr_window
-        << " at " << (void*)&GLApp::ptr_window << std::endl;
-    CrashHandler::SetLogPath("rockandghoul_crash.log");
+    const char* LogPath = "rockandghoul_crash.log";
+
+    // Truncate the file at startup (creates it if missing)
+    {
+        std::ofstream trunc(LogPath, std::ios::out | std::ios::trunc);
+        // trunc goes out of scope and closes immediately
+    }
+    
+    CrashHandler::SetLogPath(LogPath);
     CrashHandler::Install();
     CrashHandler::Log("=== Rock & Ghoul starting ===");
     EnableMemoryLeakChecking();
@@ -98,6 +106,7 @@ int main() {
             engine.AddSystem(audio);
             MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
 
+            engine.AddSystem(new MovementSystem());
             engine.AddSystem(new RenderSystem());
             engine.AddSystem(new PlayerSystem());
             engine.AddSystem(new PhysicsSystem());

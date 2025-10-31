@@ -11,6 +11,7 @@ void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
 
 void GuiSystem::Initialize() {
     buttons.clear();
+    textboxes.clear();
 }
 
 void GuiSystem::AddButton(const ButtonConfig& cfg)
@@ -28,6 +29,16 @@ void GuiSystem::AddTextBox(const TextBoxConfig& cfg)
     copy.basePos = cfg.pos;
     copy.baseScale = cfg.scale;
     textboxes.push_back(copy);
+}
+
+void GuiSystem::SetEditMode(bool isEditing)
+{
+    editMode = isEditing;
+}
+
+bool GuiSystem::GetEditMode() const
+{
+    return editMode;
 }
 
 void GuiSystem::Update(float dt) {

@@ -31,6 +31,7 @@ AudioManager* MainMenu::audio = nullptr;
 bool showInstancingDemo = false;
 
 GLuint mainMenuBG = 0;
+// static GuiSystem guiSystem;
 /**
 * @brief Sets the AudioManager instance for the MainMenu.
 *

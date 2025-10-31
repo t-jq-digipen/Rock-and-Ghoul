@@ -46,6 +46,7 @@
 #include "Physics.h"		// Physics Component
 #include "Sprite.h"			// Sprite Component
 #include "Animator.h"		// Animator Component
+#include "Movement.h"
 #include "DataDefs.h"
 #include <nlohmann/json.hpp>
 

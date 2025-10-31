@@ -74,6 +74,8 @@ public:
 const GameState& GSM_PreviousState();
 const GameState& GSM_CurrentState();
 const GameState& GSM_NextState();
+const bool GSM_IsPaused();
+const bool GSM_InEditMode();
 // ----------------------------------------
 
 // SETTERS
@@ -81,6 +83,8 @@ const GameState& GSM_NextState();
 void GSM_SetPreviousState(GameState state);
 void GSM_SetCurrentState(GameState state);
 void GSM_SetNextState(GameState state);
+void GSM_SetIsPaused(bool isPaused);
+void GSM_SetInEditMode(bool inEditMode);
 // ----------------------------------------
 
 // PAUSE STATE FUNCTIONS
