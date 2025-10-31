@@ -193,6 +193,11 @@ void Level1::Init()
 			std::cout << "Found level1.json, attempting to load..." << std::endl;
 			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
 			if (sceneLoaded) {
+				waffle = registry.Get_EntityID("Waffle");
+				rock = registry.Get_EntityID("Player");
+				square = registry.Get_EntityID("Rectangle");
+				roundy = registry.Get_EntityID("Circle");
+
 				std::cout << "Scene loaded successfully from level1.json!" << std::endl;
 			}
 			else {

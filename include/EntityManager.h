@@ -133,5 +133,5 @@ public:
 	 */
 	std::string GetEntityName(Entity eID);
 
-
+	Entity GetEntityFromName(const std::string& name);
 };
