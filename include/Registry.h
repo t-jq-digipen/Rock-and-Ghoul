@@ -370,6 +370,11 @@ public:
 	{
 		return entityManager.GetEntityName(eID);
 	}
+
+	Entity Get_EntityID(const std::string& name)
+	{
+		return entityManager.GetEntityFromName(name);
+	}
 #pragma endregion
 	// ================================================================================
 
