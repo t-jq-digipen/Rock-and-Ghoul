@@ -511,7 +511,7 @@ void ImGuiSystem::Update(float dt)
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    HandleEntityDragging();
+    //HandleEntityDragging();
 
     // --- create full-screen root window + dockspace ---
     ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -609,6 +609,9 @@ void ImGuiSystem::Update(float dt)
             ImVec2(newWidth, newHeight),
             ImVec2(0, 1), ImVec2(1, 0)
         );
+        if (dragEditMode) {
+            DrawEntityDragHandles(cursor, ImVec2(newWidth, newHeight));
+        }
     }
     ImGui::End();
 
@@ -1425,54 +1428,99 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 //    }
 ////}
 //
+#include "Camera.h"
+// FIXED: DrawEntityDragHandles with proper camera access
 
-void ImGuiSystem::HandleEntityDragging()
+void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
 {
-    if (!guiEnabled || !dragEditMode)
-        return;
-
     Registry& reg = Registry::Get();
-    ImDrawList* dl = ImGui::GetForegroundDrawList(); // draw directly on top of scene
+    ImDrawList* dl = ImGui::GetWindowDrawList();
 
-    const float worldHeight = static_cast<float>(GLApp::height);
+    // ✅ GET YOUR CAMERA - Choose ONE of these options based on where your camera lives:
 
-    // --- Mouse state ---
-    Vec2 mouse = Input::GetMousePosition();
-    mouse.y = worldHeight - mouse.y;
 
-    bool mouseDown = Input::IsMouseHeld(GLFW_MOUSE_BUTTON_LEFT);
-    bool mouseClicked = Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT);
-    bool mouseReleased = Input::IsMouseReleased(GLFW_MOUSE_BUTTON_LEFT);
+    Camera& cam = Camera::GetInstance();
+
+    // OPTION 3: If camera is in CoreEngine (uncomment if this is your setup)
+    // Camera& cam = CoreEngine::GetInstance().GetCamera();
+
+    // World dimensions
+    const float worldWidth = 1920.f;
+    const float worldHeight = 1080.f;
+
+    // Scale factors to convert world coords to panel coords
+    float scaleX = panelSize.x / worldWidth;
+    float scaleY = panelSize.y / worldHeight;
+
+    // ✅ Apply camera zoom to scale
+    scaleX *= cam.GetZoom();
+    scaleY *= cam.GetZoom();
+
+    // Get mouse position in absolute screen space
+    ImVec2 mouseScreen = ImGui::GetMousePos();
+
+    // Convert mouse to panel local space
+    Vec2 mousePanelLocal(
+        mouseScreen.x - panelPos.x,
+        mouseScreen.y - panelPos.y
+    );
+
+    // ✅ Convert mouse to world space (accounting for camera position)
+    Vec2 camPos = cam.GetPosition();
+    Vec2 mouseWorld(
+        (mousePanelLocal.x / scaleX) + camPos.x - (worldWidth / 2.0f),
+        worldHeight - ((mousePanelLocal.y / scaleY) + camPos.y - (worldHeight / 2.0f))
+    );
+
+    // Check if mouse is within the panel bounds
+    bool mouseInPanel = (mousePanelLocal.x >= 0 && mousePanelLocal.x <= panelSize.x &&
+        mousePanelLocal.y >= 0 && mousePanelLocal.y <= panelSize.y);
+
+    // Mouse state
+    bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+    bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+    bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
 
     static Entity draggedEntity = INVALID_ENTITY;
     static Vec2 dragOffset{ 0.f, 0.f };
     static bool isDragging = false;
     Entity hovered = INVALID_ENTITY;
 
-    // --- constants ---
     const float handleRadius = 10.f;
 
-    // === draw handles + hover detection ===
+    // === Draw handles and detect hover ===
     for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
     {
         if (!EntityManager::get().isAlive(entity))
             continue;
 
-        Vec2 pos = transform.pos; // world position in screen space
-        ImVec2 handleCenter(pos.x, worldHeight - pos.y); // convert to top-left ImGui space
+        Vec2 worldPos = transform.pos;
 
-        // distance to mouse
-        float dx = mouse.x - pos.x;
-        float dy = mouse.y - pos.y;
+        // ✅ Convert world position to screen position (accounting for camera)
+        Vec2 relativeToCamera(
+            worldPos.x - camPos.x + (worldWidth / 2.0f),
+            worldPos.y - camPos.y + (worldHeight / 2.0f)
+        );
+
+        ImVec2 handleCenter(
+            panelPos.x + relativeToCamera.x * scaleX,
+            panelPos.y + (worldHeight - relativeToCamera.y) * scaleY
+        );
+
+        // Calculate distance from mouse to handle (in screen space)
+        float dx = mouseScreen.x - handleCenter.x;
+        float dy = mouseScreen.y - handleCenter.y;
         float dist2 = dx * dx + dy * dy;
-        bool inside = dist2 <= (handleRadius * handleRadius);
+        bool inside = mouseInPanel && (dist2 <= (handleRadius * handleRadius));
 
-        // highlight color if hovered or selected
+        // Color based on state
         ImU32 color =
-            (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
-            inside ? IM_COL32(255, 255, 0, 255) :
-            IM_COL32(255, 255, 255, 180);
+            (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :  // Blue when dragging
+            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :   // Green when selected
+            inside ? IM_COL32(255, 255, 0, 255) :                      // Yellow when hovered
+            IM_COL32(255, 255, 255, 180);                              // White normally
 
+        // Draw the handle
         dl->AddCircleFilled(handleCenter, handleRadius, color, 24);
         dl->AddCircle(handleCenter, handleRadius, IM_COL32(0, 0, 0, 200), 24, 1.5f);
 
@@ -1480,29 +1528,32 @@ void ImGuiSystem::HandleEntityDragging()
             hovered = entity;
     }
 
-    // === click to start drag ===
-    if (mouseClicked && hovered != INVALID_ENTITY)
+    // === Click to start dragging ===
+    if (mouseClicked && mouseInPanel && hovered != INVALID_ENTITY)
     {
         selectedEntity = hovered;
         draggedEntity = hovered;
         isDragging = true;
 
         auto& t = reg.Get_Component<TransformComponent>(hovered);
-        dragOffset = t.pos - mouse;
+        dragOffset = t.pos - mouseWorld;
 
-        std::cout << "[Editor] Drag handle start entity " << hovered << "\n";
+        std::cout << "[Editor] Started dragging entity " << hovered << "\n";
     }
 
-    // === drag entity ===
-    if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown)
+    // === Update entity position while dragging ===
+    if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown && mouseInPanel)
     {
         auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
-        t.pos = mouse + dragOffset;
+        t.pos = mouseWorld + dragOffset;
     }
 
-    // === release ===
+    // === Release to stop dragging ===
     if (mouseReleased)
     {
+        if (isDragging && draggedEntity != INVALID_ENTITY) {
+            std::cout << "[Editor] Released entity " << draggedEntity << "\n";
+        }
         isDragging = false;
         draggedEntity = INVALID_ENTITY;
     }
