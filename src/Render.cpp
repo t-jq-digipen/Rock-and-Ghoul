@@ -230,6 +230,7 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), scale.x, scale.y);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation); //added rotation
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0, 1.0, 1.0);
 
     // enable texture
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_TRUE);
