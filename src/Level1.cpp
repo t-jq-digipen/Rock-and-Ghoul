@@ -169,8 +169,8 @@ void Level1::Init()
 		//bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 
 		// 4. Add Gui Editor
-		guiSystem.Initialize();
-		guiSystem.AddTextBox({
+		GuiSystem::Get().Initialize();
+		GuiSystem::Get().AddTextBox({
 			.text = "Insert Dialogue HERE",
 			.pos = {1650, 50},
 			.scale = 0.5f,
@@ -281,9 +281,6 @@ void Level1::Update()
 	// Update camera position
 	UpdateCamera(Camera::GetInstance(), playerTransform.pos, dt);
 	//std::cout << "Camera Pos: " << mainCamera.position.x << ", " << mainCamera.position.y << std::endl;
-
-
-	
 
 
 	//switch animation state
@@ -456,23 +453,23 @@ void Level1::Update()
 
 	CrashHandler::Safe("Level1", "Update", [&] {
 		// to test game state changes (do not trigger if GUI Editor is open)
-		if (Input::IsKeyPressed(GLFW_KEY_M) && !guiSystem.GetEditMode())
+		if (Input::IsKeyPressed(GLFW_KEY_M) && !GuiSystem::Get().GetEditMode())
 		{
 			GSM_SetNextState(GameState::GS_MAIN_MENU);
 			//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
 		}
-		else if (Input::IsKeyPressed(GLFW_KEY_R) && !guiSystem.GetEditMode())
+		else if (Input::IsKeyPressed(GLFW_KEY_R) && !GuiSystem::Get().GetEditMode())
 		{
 			GSM_SetNextState(GameState::GS_RESTART);
 			//nextState = GameState::GS_RESTART;       // restart state
 			std::cout << "Level 1 Restarted!!!" << std::endl;
 		}
 
-		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !guiSystem.GetEditMode())
+		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
 		{
 			GSM_SetIsPaused(true);
 		}
-		else if (Input::IsKeyPressed(GLFW_KEY_P) && GSM_IsPaused() && !guiSystem.GetEditMode())
+		else if (Input::IsKeyPressed(GLFW_KEY_P) && GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
 		{
 			GSM_SetIsPaused(false);
 		}
@@ -508,7 +505,8 @@ void Level1::Draw()
 			//renderer.useCamera = true;
 		}
 
-		guiSystem.Update(0.0f);
+		// update gui system
+		GuiSystem::Get().Update(0.f);
 	});
 }
 
@@ -528,8 +526,8 @@ void Level1::Free()
 	CrashHandler::Safe("Level1", "Free", [&] {
 		std::cout << "Level 1 Freed!!!" << std::endl;
 		Render::GetInstance().ClearAllTextures();
-		guiSystem.Shutdown();
-		});
+		GuiSystem::Get().Shutdown();
+	});
 }
 
 // Unloads Level 1
