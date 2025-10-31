@@ -57,10 +57,22 @@ void RenderSystem::Initialize() {
 
 void RenderSystem::Update(float dt) {
     Render& renderer = Render::GetInstance();
+
     if (ImGuiSystem::guiEnabled) {
+        renderer.BeginSceneCapture(); 
+        renderer.ClearBackground({ 0.1f, 0.1f, 0.1f, 1.0f });
+    }
+    else {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, GLApp::width, GLApp::height);
+        renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f }); // clear main framebuffer
+    }
+
+    /*if (ImGuiSystem::guiEnabled) {
         renderer.BeginSceneCapture();
         renderer.ClearBackground({ 0.1f, 0.1f, 0.1f, 1.0f }); // Background for game view
-    }
+    }*/
+
     Render::GetInstance().UpdateProjection();
    // renderer.ClearBackground({ 0.05f, 0.0f, 0.1f, 1.0f });
     // ===== DRAW BACKGROUND IF SET =====
