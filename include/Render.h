@@ -513,26 +513,103 @@ public:
     GLuint GetSpriteShader() const { return shaderProgram; } //for now this, can added instancedShader in the future
 
 
+                                                        
 
 
 
     //Batch rendering attempt
+    
     // Call it once per frame before SubmitSpriteBatch()
+    /**
+    * @brief Begins a new sprite batch for batched rendering.Call this before submitting any batched sprites each frame.
+    *
+    * Prepares internal CPU-side buffers for collecting sprite draw data.
+    * Must be called once per frame before any calls to SubmitSpriteBatch()
+    * or SubmitSpriteBatchUV().
+    *
+    * Typical use and the flow:
+    * @code
+    * renderInstance.BeginBatch();
+    * renderInstance.SubmitSpriteBatch(...);
+    * renderInstance.SubmitSpriteBatch(...);
+    * renderInstance.EndBatch();
+    * renderInstance.FlushBatch();
+    * @endcode
+    *
+    */
    void BeginBatch();
 
-    // Submit a sprite (full texture). pos is sprite world position, size is (w,h) in screen units.
-   // rotation in radians, uvRect defaults to full texture.
+
+
+   /**
+    * @brief Submits a sprite to the active batch using the full texture region.
+    *
+    * Queues a textured quad into the current batch with the specified
+    * position, size, and rotation. The entire texture is used
+    * (UVs = (0,0,1,1)) by default.
+    *
+    * @param image     Reference to the Image structure containing the OpenGL texture ID.
+    * @param pos       World position of the sprite center (in screen or world units).
+    * @param size      Sprite dimensions (width, height) in screen units.
+    * @param rotation  Optional rotation angle in radians (default = 0.0f).
+    *
+    * @note This function does not issue a draw call immediately.
+    * The sprite will be rendered only after EndBatch() and FlushBatch() are called.
+    */
     void SubmitSpriteBatch(const Image& image, const Vec2& pos, const Vec2& size, float rotation = 0.0f);
 
-    // Submit a sprite with a normalized UV rectangle (u0,v0,u1,v1) in [0,1].
+
+
+    /**
+    * @brief Submits a sprite to the active batch with custom UV coordinates.
+    *
+    * Similar to SubmitSpriteBatch(), but allows specifying a sub-region of the
+    * texture using normalized UV coordinates in the range [0,1].
+    * Would be use for rendering spritesheets or partial textures.
+    *
+    * @param image     Reference to the Image structure containing the OpenGL texture ID.
+    * @param pos       World position of the sprite center (in screen or world units).
+    * @param size      Sprite dimensions (width, height) in screen units.
+    * @param uvRect    Normalized UV rectangle {u0, v0, u1, v1} defining the texture region.
+    * @param rotation  Optional rotation angle in radians (default = 0.0f).
+    *
+    * @note This does not immediately draw, sprites are collected until FlushBatch() is called.
+    */
     void SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2& size, const glm::vec4& uvRect, float rotation = 0.0f);
 
-    // Upload CPU batch buffer to GPU
+
+
+
+    /**
+    * @brief Finalizes CPU-side batching and uploads vertex data to the GPU.
+    *
+    * Transfers all the accumulated sprite instance data (vertices, UVs, transforms)
+    * to the GPU vertex buffer in preparing for drawing.
+    * Must be called after all SubmitSpriteBatch() calls and before FlushBatch().
+    *
+    * @note Calling this multiple times per frame is allowed but will
+    * reset the current batch and overwrite the previous buffer contents.
+    */
     void EndBatch();
 
-    // Issue the actual glDrawElements for everything collected
+
+
+
+    /**
+    * @brief Executes the actual draw call for all batched sprites. where da draw happens
+    *
+    * Issues a single OpenGL draw command
+    * for all sprites submitted since BeginBatch().
+    * This function completes the batch rendering cycle for the frame.
+    *
+    * @note After calling FlushBatch(), the batch is considered done.
+    * To render additional sprites in the same frame, call BeginBatch() again.
+    */
     void FlushBatch();
 
+
+    //camera to see which uses camera and which doesnt etc in main menu dont need
+    bool useCamera = true;
 
 private:
 
@@ -603,33 +680,74 @@ private:
 
 
 
-     // ---- Batch rendering state data ----
+     // Batch render data
     struct BatchVertex {
-        glm::vec2 position;   // screen/world coords
-        glm::vec2 texCoord;   // normalized uv
+        glm::vec2 position;   // screen/world coords (where on screen the corner goes)
+        glm::vec2 texCoord;   // normalized uv (what part of the texture to show)
         glm::vec4 color;      // tint (fixed to white for now)
-        float     texIndex;   // which texture slot [0..N-1]
+        float     texIndex;   // which texture slot [0..N-1] (which texture slot this corner uses)
     };
 
     // Limits (tweakable)
-    static constexpr size_t MaxQuads = 10000;
-    static constexpr size_t MaxVertices = MaxQuads * 4;
-    static constexpr size_t MaxIndices = MaxQuads * 6;
-    static constexpr size_t MaxTexSlots = 16;      // keep in sync with frag shader's uTextures[]
+    static constexpr size_t MaxQuads = 10000; // (we can draw up to 10,000 sprites per batch)
+    static constexpr size_t MaxVertices = MaxQuads * 4; // 4 corners each
+    static constexpr size_t MaxIndices = MaxQuads * 6; // 2 triangles (3 indices each)
+    static constexpr size_t MaxTexSlots = 16;      //frag shader's uTextures[] need be same as this (we can use up to 16 unique textures at once)
 
     //helper batch functions
-    void InitBatch();        // called inside Init()
-    void ResetBatch();       // reset counters/buffer pointers
+    /**
+    * @brief Initializes all GPU and CPU resources used for sprite batching.
+    *
+    * Allocates and configures the OpenGL buffers (VAO, VBO, EBO) required
+    * for batch rendering. This function also preallocates the CPU-side
+    * staging buffer and index data used to draw quads efficiently.
+    *
+    * @note This should be called once during renderer initialization (e.g., in render::Init()).
+    * Calling it multiple times will reinitialize internal buffers.
+    */
+    void InitBatch();       
+
+
+    /**
+    * @brief Resets internal batch counters and buffer pointers.
+    *
+    * Clears the CPU-side batch data in preparation for a new frame or a new batch.
+    * This function does not free GPU memory, it resets index counts,
+    * vertex offsets, and texture slot tracking to zero.
+    *
+    * @note usually call at the start of each BeginBatch() or immediately
+    * after a FlushBatch() to prepare for the next group of sprites.
+    */
+    void ResetBatch();   
+
+
+    /**
+    * @brief Checks if the current batch has enough room for additional sprites, and flushes it to the GPU if necessary.
+    *
+    * Before adding a new quad, this function ensures that the internal CPU buffer
+    * and texture slot array have sufficient space to store it.
+    * If the buffer is full or the texture limit is reached, the batch is flushed
+    * (drawn to the GPU) and then reset for new data.
+    *
+    * @param quadCountNeeded  Number of quads to be added to the current batch.
+    * @param textureID        OpenGL texture handle required by the next sprite.
+    *
+    * @note This function is automatically called by SubmitSpriteBatch() and
+    * SubmitSpriteBatchUV() before append new draw data.
+    */
     void FlushIfFull(size_t quadCountNeeded, GLuint textureID);
 
-    // CPU-side staging buffer
+
+
+
+    // CPU-side staging buffer (Holds all sprite data before drawing)
     std::vector<BatchVertex> batchCPUBuffer;
     size_t batchIndexCount{ 0 };
 
-    // Textures bound for the current batch (slot i => GL_TEXTURE0 + i)
+    // Textures bound for the current batch (Tracks which textures are currently active)
     std::vector<GLuint> batchTexSlots;
 
-    // Convenience white tint (if you extend to per-vertex color, expose as param)
+    //white tint
     const glm::vec4 kWhite{ 1.0f,1.0f,1.0f,1.0f };
 
 

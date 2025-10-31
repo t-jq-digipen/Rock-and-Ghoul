@@ -204,22 +204,22 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
     Registry::Get().Add_Component<TransformComponent>(
         instance, TransformComponent{ {x, y}, {size, size} });
 
-    // Sprite (static or animated)
+    // Sprite (static(false) or animated(true))
     Sprite::SpriteComponent sprite(texturePath, { size, size }, true);
     Registry::Get().Add_Component<Sprite::SpriteComponent>(instance, sprite);
 
     // --- Animator ---
     Image img = sprite.Get_Image();
 
-    // Mimic your original Waffle prefab setup
+    // using original Waffle prefab setup
     Animator::AnimatorComponent anim(
         3, 6,  // total rows, total columns
         img.widthPixels, img.heightPixels,
-        { 2, 0, 1 }, // starting frame: row 2, columns 0 → 1
+        { 2, 0, 1 }, // starting frame
         1.0f         // duration
     );
 
-    // Add states (optional)
+    // Add states
     anim.AddState(PS_IDLE, { 3, 0, 1, 1.0f });
     anim.AddState(PS_WALK, { 3, 2, 3, 0.5f });
 
@@ -229,9 +229,9 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
 
     Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
 
-    // Optional Tag for filtering
+    //Tag for filtering
     Registry::Get().Add_Component<TagComponent>(
-        instance, TagComponent{ T_BATCH });
+        instance, TagComponent{ T_BATCH }); //T_BATCH added in C_TagID enum
 
     return instance;
 }

@@ -30,6 +30,7 @@
 
 #include "CrashHandler.h"
 #include <PlayerSystem.h>
+#include <Camera.h>
 
 static FretBoard* fretboard = nullptr;
 constexpr float LEVEL_WIDTH = 1920.f;
@@ -49,11 +50,15 @@ Entity waffle;
 
 // Registry ref
 Registry& registry = Registry::Get();
+//Camera mainCamera;
+
 
 // Loads Level 1
 void Level1::Load()
 {
 	Render& renderer = Render::GetInstance();
+	
+	renderer.useCamera = true;
 	CrashHandler::Safe("Level1", "Load", [&] {
 		std::cout << "Level 1 Loaded!!!" << std::endl;
 
@@ -76,6 +81,7 @@ void Level1::Load()
 void Level1::Init()
 {
 	Render& renderer = Render::GetInstance();
+	
 	CrashHandler::Safe("Level1", "Init", [&] {
 		std::cout << "Level 1 Initialized!!!" << std::endl;
 		// 1. Initialize the Renderer
@@ -127,8 +133,23 @@ void Level1::Init()
 // Updates Level 1
 void Level1::Update()
 {
-	//static bool spawned = false;
-	//std::vector<Entity> toRemove;
+	//Camera& mainCamera = Camera::GetInstance();
+
+	//test camera on an entity
+	auto& playerTransform = registry.Get_Component<TransformComponent>(waffle);
+
+	static double lastTime = glfwGetTime();
+	double currentTime = glfwGetTime();
+	float dt = static_cast<float>(currentTime - lastTime);
+	lastTime = currentTime;
+
+	// Update camera position
+	UpdateCamera(Camera::GetInstance(), playerTransform.pos, dt);
+	//std::cout << "Camera Pos: " << mainCamera.position.x << ", " << mainCamera.position.y << std::endl;
+
+
+	
+
 
 	//switch animation state
 	if (Input::IsKeyPressed(GLFW_KEY_U))  // U walk animation
@@ -149,7 +170,7 @@ void Level1::Update()
 	static bool spawnedBatch = false;
 	std::vector<Entity> toRemove;
 
-	// === Toggle Batched Sprites with N key ===
+	// === Toggle Batched Sprites with N key (for rubrics demo) ===
 	if (Input::IsKeyPressed(GLFW_KEY_N))
 	{
 		if (!spawnedBatch)
@@ -174,7 +195,7 @@ void Level1::Update()
 				float px = paddingX + col * spacing + spacing * 0.5f;
 				float py = paddingY + row * spacing + spacing * 0.5f;
 
-				Create_BatchedSprite(px, py, 50.f, "../Assets/Waffle_Sprites.png"); //lowkey hard coded the size but figure that out later
+				Create_BatchedSprite(px, py, 50.f, "../Assets/Waffle_Sprites.png"); //siz e figure that out later
 			}
 
 			std::cout << "Spawned " << totalSprites << " batched sprites with N key!\n";
@@ -196,10 +217,12 @@ void Level1::Update()
 		}
 	}
 
+	static bool spawnedInst = false;
+	std::vector<Entity> toRemoveInst;
 	// Toggle with B key
-	/*if (Input::IsKeyPressed(GLFW_KEY_B))
+	if (Input::IsKeyPressed(GLFW_KEY_B))
 	{
-		if (!spawned)
+		if (!spawnedInst)
 		{
 			int totalEntities = 2500;
 			float aspectRatio = (float)GLApp::width / (float)GLApp::height;
@@ -222,31 +245,31 @@ void Level1::Update()
 				Create_InstancedSquare(px, py, size, { 0.2f, 0.8f, 1.0f }); //u are calling drawrect per entity, not all at once. lagg
 			}
 
-			std::cout << "Spawned " << totalEntities << " squares with B key!\n";
-			spawned = true;
+			std::cout << "spawnedInst " << totalEntities << " squares with B key!\n";
+			spawnedInst = true;
 		}
 		else
 		{
 			// === Clear all ===
 			for (auto& [e, tag] : registry.Get_ComponentMap<TagComponent>()) {
 				if (tag.tag == T_INSTANCING && EntityManager::get().isAlive(e)) {
-					toRemove.push_back(e);
+					toRemoveInst.push_back(e);
 				}
 			}
-			for (Entity e : toRemove) {
+			for (Entity e : toRemoveInst) {
 				registry.Remove_Entity(e);
 			}
-			std::cout << "Cleared all spawned squares!\n";
-			spawned = false;
+			std::cout << "Cleared all spawnedInst squares!\n";
+			spawnedInst = false;
 		}
 	}
 
-	// === Rotation update for spawned squares ===
-	if (spawned) {
-		static double lastTime = glfwGetTime();
+	// === Rotation update for spawnedInst squares ===
+	if (spawnedInst) {
+		/*static double lastTime = glfwGetTime();
 		double currentTime = glfwGetTime();
 		float dt = static_cast<float>(currentTime - lastTime);
-		lastTime = currentTime;
+		lastTime = currentTime;*/
 
 		for (auto& [e, t] : registry.Get_ComponentMap<TransformComponent>()) {
 			if (registry.Has_Component<TagComponent>(e)) {
@@ -256,7 +279,7 @@ void Level1::Update()
 				}
 			}
 		}
-	}*/
+	}
 
 	
 	//std::cout << "Level 1 Updating!!!" << std::endl;
@@ -316,16 +339,20 @@ void Level1::Draw()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		if (bgTexture) {
+			//renderer.useCamera = false; //uncomment then bg text will cover whole screen but look abit funny
 			renderer.DrawTexturedQuad(
 				{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
 				{ (float)GLApp::width, (float)GLApp::height },   // full screen size
 				bgTexture
 			);
+			//renderer.useCamera = true; //uncomment then bg text will cover whole screen but look abit funny
 		}
 
 		if (fretboard) {
+			//renderer.useCamera = false;
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
+			//renderer.useCamera = true;
 		}
 	});
 }

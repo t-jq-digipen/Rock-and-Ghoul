@@ -35,8 +35,11 @@
 // stb_image
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <Camera.h>
 
 // Vertex + Fragment shaders loaded from file in Assets, any changes to shader code to be done inside those files
+//extern Camera mainCamera;
+Camera& mainCamera = Camera::GetInstance();
 
 //Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0) {}
 Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0), batchVAO(0), batchVBO(0), batchEBO(0), batchShader(0) {}
@@ -153,8 +156,14 @@ void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color
     glUseProgram(shaderProgram);
 
     // upload projection
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);*/
+
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);
+        1, GL_FALSE, &projMatrix[0][0]);
 
     // upload pos, size (use size for both X and Y), color
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
@@ -177,8 +186,17 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glUseProgram(shaderProgram);
 
     // upload ortho projection
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);*/
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &mainCamera.GetViewProjection()[0][0]); //testing move bg */
+
+    //added this one for camera, need pass camera view projection matrix 
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);
+        1, GL_FALSE, &projMatrix[0][0]);
 
     // upload pos + scale + rotation
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
@@ -218,8 +236,13 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
     glUseProgram(shaderProgram);
 
     // Set required uniforms
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);*/
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);
+        1, GL_FALSE, &projMatrix[0][0]);
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
@@ -273,8 +296,17 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     glUseProgram(shaderProgram);
 
     // Upload uniforms
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);*/
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &mainCamera.GetViewProjection()[0][0]); //testing roundy atm*/
+
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);
+        1, GL_FALSE, &projMatrix[0][0]);
+
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
@@ -306,8 +338,15 @@ void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3&
     glUseProgram(shaderProgram);
 
     // upload projection
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);*/
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &mainCamera.GetViewProjection()[0][0]);*/
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);
+        1, GL_FALSE, &projMatrix[0][0]);
 
     //set uniforms
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
@@ -614,8 +653,13 @@ void Render::DrawImageSub(const Image& Image,
     glUseProgram(shaderProgram);
 
     //Projection
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, glm::value_ptr(projection));*/
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, glm::value_ptr(projection));
+        1, GL_FALSE, &projMatrix[0][0]);
 
     //Position, scale, rotation uniforma
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), x, y);
@@ -1448,10 +1492,11 @@ void Render::InitBatch()
         nullptr,
         GL_DYNAMIC_DRAW);
 
-    // Pre-build the index buffer for MaxQuads
+    //build the index buffer for MaxQuads
     std::vector<unsigned int> indices;
     indices.reserve(MaxIndices);
     unsigned int offset = 0;
+
     for (size_t i = 0; i < MaxQuads; ++i) {
         // 2 triangles per quad: (0,1,2) (2,3,0)
         indices.push_back(offset + 0);
@@ -1462,13 +1507,14 @@ void Render::InitBatch()
         indices.push_back(offset + 0);
         offset += 4;
     }
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batchEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,
         indices.size() * sizeof(unsigned int),
         indices.data(),
         GL_STATIC_DRAW);
 
-    // Vertex layout
+    // Vertex layout (as in the batch vertex shader)
     // layout(location=0) vec2 position
     // layout(location=1) vec2 texCoord
     // layout(location=2) vec4 color
@@ -1493,23 +1539,30 @@ void Render::InitBatch()
 
     glBindVertexArray(0);
 
-    //Shader program for batches (uses uProjection like your existing shader)
-    //    Put the two GLSL files next to your other shaders (paths are examples)
+    //Shader program for batches
     batchShader = CreateProgramFromFiles("../Assets/batch.vert", "../Assets/batch.frag"); //remember add this new files and correct path
 
-    //CPU buffer reserve
+    //CPU buffer reserve mem
     batchCPUBuffer.reserve(MaxVertices);
 
-    //Sampler array binding (tell GLSL that uTextures[i] => texture unit i)
+    //Sampler array binding, telling GLSL that uTextures[i] is the texture unit i
     glUseProgram(batchShader);
     GLint loc = glGetUniformLocation(batchShader, "uTextures");
     int samplers[MaxTexSlots];
-    for (int i = 0; i < static_cast<int>(MaxTexSlots); ++i) samplers[i] = i;
-    if (loc >= 0) glUniform1iv(loc, static_cast<GLsizei>(MaxTexSlots), samplers);
 
-    // Also set the projection once here (you update projection elsewhere as needed)
+    for (int i = 0; i < static_cast<int>(MaxTexSlots); ++i) {
+        samplers[i] = i;
+    }
+
+    if (loc >= 0) {
+        glUniform1iv(loc, static_cast<GLsizei>(MaxTexSlots), samplers);
+    }
+
+    // Also set the projection once here, update projection elsewhere if needed
     GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
-    if (projLoc >= 0) glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]); // reuse your existing projection
+    if (projLoc >= 0) {
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+    } // reuse existing projection (see first if need use camera view project matrix)
 
     glUseProgram(0);
 
@@ -1519,6 +1572,7 @@ void Render::InitBatch()
 
 void Render::ResetBatch()
 {
+    //reset everything
     batchCPUBuffer.clear();
     batchIndexCount = 0;
     batchTexSlots.clear();
@@ -1549,7 +1603,10 @@ void Render::FlushIfFull(size_t quadCountNeeded, GLuint textureID)
         // Check if textureID is already in slots
         bool found = false;
         for (size_t i = 0; i < batchTexSlots.size(); ++i) {
-            if (batchTexSlots[i] == textureID) { found = true; break; }
+            if (batchTexSlots[i] == textureID) { 
+                found = true; 
+                break; 
+            }
         }
         if (!found && batchTexSlots.size() >= MaxTexSlots) {
             needFlush = true;
@@ -1563,10 +1620,7 @@ void Render::FlushIfFull(size_t quadCountNeeded, GLuint textureID)
     }
 }
 
-void Render::SubmitSpriteBatch(const Image& image,
-    const Vec2& pos,
-    const Vec2& size,
-    float rotation)
+void Render::SubmitSpriteBatch(const Image& image, const Vec2& pos, const Vec2& size, float rotation)
 {
     // full texture
     SubmitSpriteBatchUV(image, pos, size, glm::vec4(0.f, 1.f, 1.f, 0.f), rotation);
@@ -1578,13 +1632,11 @@ void Render::SubmitSpriteBatch(const Image& image,
 
 }
 
-void Render::SubmitSpriteBatchUV(const Image& image,
-    const Vec2& pos,
-    const Vec2& size,
-    const glm::vec4& uvRect,
-    float rotation)
+void Render::SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2& size, const glm::vec4& uvRect, float rotation)
 {
-    if (!image.IsValid()) return;
+    if (!image.IsValid()) {
+        return;
+    }
 
     // Ensure capacity / texture slot availability
     FlushIfFull(1, image.textureID);
@@ -1603,7 +1655,7 @@ void Render::SubmitSpriteBatchUV(const Image& image,
     // size = (w,h)
     const glm::vec2 half = { size.x * 0.5f, size.y * 0.5f };
 
-    // CCW: bl, br, tr, tl  (match your index pattern 0-1-2, 2-3-0)
+    // CCW: bl, br, tr, tl  (match index pattern 0-1-2, 2-3-0)
     glm::vec2 local[4] = {
         {-half.x, -half.y}, // 0
         {+half.x, -half.y}, // 1
@@ -1613,10 +1665,13 @@ void Render::SubmitSpriteBatchUV(const Image& image,
 
     // Rotate then translate to world
     glm::vec2 world[4];
-    for (int i = 0; i < 4; ++i) world[i] = Rotate2D(local[i], rotation) + glm::vec2(pos.x, pos.y);
+    for (int i = 0; i < 4; ++i) {
+        world[i] = Rotate2D(local[i], rotation) + glm::vec2(pos.x, pos.y);
+    }
 
     // UVs (u0,v0,u1,v1) => (bl, br, tr, tl)
     const float u0 = uvRect.x, v0 = uvRect.y, u1 = uvRect.z, v1 = uvRect.w;
+
     glm::vec2 uvs[4] = {
         { u0, v1 }, // bl
         { u1, v1 }, // br
@@ -1640,21 +1695,26 @@ void Render::SubmitSpriteBatchUV(const Image& image,
 
 void Render::EndBatch()
 {
-    if (batchCPUBuffer.empty()) return;
+    if (batchCPUBuffer.empty()) {
+        return;
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, batchVBO);
     glBufferSubData(GL_ARRAY_BUFFER,
         0,
         static_cast<GLsizeiptr>(batchCPUBuffer.size() * sizeof(BatchVertex)),
         batchCPUBuffer.data());
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void Render::FlushBatch()
 {
-    if (batchCPUBuffer.empty() || batchIndexCount == 0) return;
+    if (batchCPUBuffer.empty() || batchIndexCount == 0) {
+        return;
+    }
 
-    // Bind textures to slots 0..N-1
+    // Bind textures to slots 0..till N-1
     for (size_t i = 0; i < batchTexSlots.size(); ++i) {
         glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(i));
         glBindTexture(GL_TEXTURE_2D, batchTexSlots[i]);
@@ -1662,9 +1722,11 @@ void Render::FlushBatch()
 
     glUseProgram(batchShader);
 
-    // Ensure projection is current (in case you change it elsewhere this frame)
+    // Ensure projection is current (note might need use camera view projection)
     GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
-    if (projLoc >= 0) glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+    if (projLoc >= 0) {
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+    }
 
     glBindVertexArray(batchVAO);
     glDrawElements(GL_TRIANGLES,
@@ -1672,7 +1734,7 @@ void Render::FlushBatch()
         GL_UNSIGNED_INT,
         nullptr);
 
-    // Cleanup binds (optional)
+    // Cleanup binds
     glBindVertexArray(0);
     glUseProgram(0);
 
@@ -1683,7 +1745,7 @@ void Render::FlushBatch()
         << std::endl;*/
 }
 
-//batch attempt end=========================================================================================================================================================================
+//batch attempt end =========================================================================================================================================================================
 
 
 

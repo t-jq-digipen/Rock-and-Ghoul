@@ -25,15 +25,41 @@
 #include "RenderSystem.h"
 #include "Render.h"
 #include "Animator.h"
+#include <Camera.h>
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
+//extern Camera mainCamera;
+//Camera& mainCamera = Camera::GetInstance();
+
 
 void RenderSystem::Initialize() {
     // ? 
 }
 
 void RenderSystem::Update(float dt) {
+
+
+    // Use the camera for all subsequent draw calls (ok why this not workinGGGGGGGG AJBFEEUFBUJFBFDJSBJF)
+    //mainCamera.UpdateMatrices();
+    Camera::GetInstance().UpdateMatrices();
+
+    //glm::mat4 viewProj = mainCamera.GetViewProjection();
+    glm::mat4 viewProj = Camera::GetInstance().GetViewProjection();
+
+    renderInstance.SetUniformMat4(renderInstance.GetSpriteShader(), "uProjection", viewProj);
+    
+
+
+    /*glm::mat4 viewProj = mainCamera.GetViewProjection();
+    GLuint shader = renderInstance.GetSpriteShader();
+    glUseProgram(shader);
+    glUniformMatrix4fv(glGetUniformLocation(shader, "uProjection"), 1, GL_FALSE, &viewProj[0][0]);*/
+
+    //glUseProgram(renderInstance.GetSpriteShader());
+    //glUniformMatrix4fv(glGetUniformLocation(renderInstance.GetSpriteShader(), "uProjection"), 1, GL_FALSE, &viewProj[0][0]);
+
+
 
     //try batching version
     renderInstance.BeginBatch(); //added for batch
@@ -121,7 +147,7 @@ void RenderSystem::Update(float dt) {
     renderInstance.FlushBatch();
 
 
-/*  //Original version
+/*  //Original version in case need ref
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
         if (spriteComp.IsAnimated())

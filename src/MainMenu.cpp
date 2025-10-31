@@ -88,6 +88,7 @@ void MainMenu::Load()
     //renderer.LoadFont("../Assets/PermanentMarker-regular.ttf", 48, "Marker"); //48 is the pixel font height, so smaller will appear smaller etc.
     //renderer.LoadFont("../Assets/Antonio-Bold.ttf", 48, "Bold");
     auto fontAssets = renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json"); //i added an fontAssets.json inside assets folder
+    renderer.useCamera = false;
 
     CrashHandler::Safe("MainMenu", "Load", [&] {
         std::cout << "Main Menu Loaded!!!" << std::endl;
@@ -153,6 +154,7 @@ void MainMenu::Update()
         renderer.ClearBackground({ 0.5f, 0.f, 0.7f, 1.f });
         if (MainMenuTexture)
         {
+            
             renderer.DrawTexturedQuad({ GLApp::width * 0.5f, GLApp::height * 0.5f }, { 1920.f, 1080.f}, MainMenuTexture);
         }
         else
