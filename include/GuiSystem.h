@@ -61,8 +61,7 @@ public:
     bool GetEditMode() const;
 
 private:
-    GuiSystem() = default;
-    ~GuiSystem() = default;
+
     std::vector<ButtonConfig> buttons;
     std::vector<TextBoxConfig> textboxes;
     static AudioManager* audio;
