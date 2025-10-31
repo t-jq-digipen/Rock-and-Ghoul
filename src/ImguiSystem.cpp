@@ -957,9 +957,14 @@ void ImGuiSystem::ShowInspectorWindow() {
                     Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());
                     Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, animcomp.GetTotalCols());
                     Editor::Widget_Float widgetduration(&temp.duration);
+
+                    ImGui::PushItemWidth(80);
                     MakeWidget(widgetrow, "state rows");
+                    ImGui::SameLine();
                     MakeWidget(widgetcolstart, "first col");
+                    ImGui::SameLine();
                     MakeWidget(widgetcolend, "last col");
+                    ImGui::PopItemWidth();
                     MakeWidget(widgetduration, "duration");
                     
                     animcomp.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);
