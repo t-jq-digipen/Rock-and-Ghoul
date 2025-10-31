@@ -14,8 +14,9 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 /build/_deps/
-
+/deps/mono/
 # ===================== Visual Studio =====================
+.vs/
 *.sln
 *.vcxproj*
 *.vcxproj.filters
@@ -27,7 +28,7 @@ Makefile
 *.VC.db
 *.VC.opendb
 /.vs/
-
+.\vs
 # ===================== Xcode (macOS) =====================
 *.xcworkspace/
 *.xcuserstate
@@ -48,7 +49,7 @@ ui_*.h
 *.old
 *.orig
 *.tlog
-*.json
+- *.json
 *.html
 
 # ===================== Compiled binaries =====================
@@ -94,3 +95,8 @@ Temporary Items
 # Ignore FMOD libs and DLLs, but keep headers
 deps/fmod/lib/*
 !deps/fmod/include/*
+/deps/Mono
+!GameScripts/
+GameScripts/bin/*
+!GameScripts/bin/Debug/
+!GameScripts/bin/Debug/GameScripts.dll
