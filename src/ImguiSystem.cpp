@@ -36,6 +36,8 @@
 #include <nlohmann/json.hpp>
 #include <unordered_set> 
 #include "Render.h" 
+static Camera editorCamera;
+static bool useEditorCamera = true;
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
@@ -1491,8 +1493,6 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
-    // ✅ GET YOUR CAMERA - Choose ONE of these options based on where your camera lives:
-
 
     Camera& cam = Camera::GetInstance();
 
@@ -1507,7 +1507,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
     float scaleX = panelSize.x / worldWidth;
     float scaleY = panelSize.y / worldHeight;
 
-    // ✅ Apply camera zoom to scale
+    // Apply camera zoom to scale
     scaleX *= cam.GetZoom();
     scaleY *= cam.GetZoom();
 
@@ -1520,7 +1520,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         mouseScreen.y - panelPos.y
     );
 
-    // ✅ Convert mouse to world space (accounting for camera position)
+    // Convert mouse to world space (accounting for camera position)
     Vec2 camPos = cam.GetPosition();
     Vec2 mouseWorld(
         (mousePanelLocal.x / scaleX) + camPos.x - (worldWidth / 2.0f),
@@ -1551,7 +1551,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
 
         Vec2 worldPos = transform.pos;
 
-        // ✅ Convert world position to screen position (accounting for camera)
+        // Convert world position to screen position (accounting for camera)
         Vec2 relativeToCamera(
             worldPos.x - camPos.x + (worldWidth / 2.0f),
             worldPos.y - camPos.y + (worldHeight / 2.0f)
