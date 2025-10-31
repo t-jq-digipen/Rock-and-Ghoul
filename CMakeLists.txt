@@ -350,6 +350,11 @@ source_group("Systems\\Movement" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementSystem.h
 )
 
+source_group("Systems\\Text" FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/TextSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/TextSystem.h
+)
+
 
 source_group("Physics\\System" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp

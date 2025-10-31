@@ -335,36 +335,8 @@ void ImGuiSystem::Initialize() {
 
 void ImGuiSystem::Update(float dt) {
     (void)dt;
-    if (GSM_IsPaused())
-    {
-        // Ensures gui editor is only visible when in edit mode
-        // Edit Mode can only be on when game is in pause state
-        if (Input::IsKeyPressed(GLFW_KEY_F1))
-        {
-            if (!GSM_InEditMode())
-            {
-                GSM_SetInEditMode(true);
-            }
-            else
-            {
-                GSM_SetInEditMode(false);
-            }
-        }
-
-        if (GSM_InEditMode())
-        {
-            guiEnabled = true;
-        }
-        else
-        {
-            guiEnabled = false;
-        }
-    }
-    else
-    {
-        GSM_SetInEditMode(false);
-        guiEnabled = false;
-    }
+    if (Input::IsKeyPressed(GLFW_KEY_F1))
+        guiEnabled = !guiEnabled;
 
     if (!guiEnabled) return;
 
