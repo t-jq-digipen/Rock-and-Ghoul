@@ -20,7 +20,7 @@
 #include "GameStateManager.h"
 #include <iostream>
 
-enum PlayerState : int {
+enum PlayerState : unsigned int {
     PS_IDLE,
     PS_WALK,
     PS_SLIDE

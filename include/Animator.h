@@ -74,8 +74,12 @@ namespace Animator {
 		// using int for key for enumeration
 		std::unordered_map<unsigned int, ActiveFrames> stateframe;	// A map with int key for active frames
 
+		// store state names
+		std::unordered_map<std::string, unsigned int> stateNames;
+
 		// Using int for enumeration compatibility with developers
-		int m_current_state = -1;							// Animation state
+		unsigned int m_current_state = 0;							// Animation state
+
 
 	public:
 		float u0, v0, u1, v1;								// For sub image drawing
@@ -103,6 +107,8 @@ namespace Animator {
 		void UpdateUV();
 
 		void UpdateUV(int imageWidthPixels, int imageHeightPixels);
+
+		// void UpdateStateFrames();
 
 		/**
 		 * @brief Set the active animation frames and duration.
@@ -149,7 +155,7 @@ namespace Animator {
 		 * @param state The state identifier to switch to.
 		 * @throws std::runtime_error if the state was not registered with AddState().
 		 */
-		void SetState(int state);
+		void SetState(unsigned int state);
 		/**
 		 * @brief Add a new animation state.
 		 * @param state The state identifier.
@@ -157,13 +163,17 @@ namespace Animator {
 		 *
 		 * If the state already exists, no action is taken (prints a warning).
 		 */
-		void AddState(int state, ActiveFrames const& framerange);
+		void AddState(int state, ActiveFrames const& framerange, const std::string& statename = "");
 
 		/**
 		 * @brief Get all registered animation states.
 		 * @return An unordered_map of state IDs mapped to their corresponding ActiveFrames.
 		 */
-		std::unordered_map<unsigned int, ActiveFrames> GetStateFrames() const { return stateframe; }
+		std::unordered_map<unsigned int, ActiveFrames>& GetStateFrames() { return stateframe; }
+
+		void EditFrames(int row, int colstart, int colend, float duration);
+
+
 		/**
 		 * @brief Get the current active animation state.
 		 * @return The integer identifier of the current state.

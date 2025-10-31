@@ -26,6 +26,7 @@
 #include <unordered_map>
 #include <map>
 #include <variant>
+#include <iostream>
 #include "Entity.h"
 
 // First string would be the data type name, second string would hold the value
@@ -144,8 +145,34 @@ namespace Editor {
 
         // NEED TO MAKE DEBUG CASES IF FAIL
         void Add_Option(std::string const& name, unsigned int val) {
+            if (enumMap.find(name) != enumMap.end())
+            { 
+                std::cout << "Dropdown Widget option " << name << "is already registered, please do not duplicate names in editor widgets\n"; 
+                return;
+            }
             options.push_back(name);
             enumMap[name] = val;
+        }
+
+        void Rename_Option(std::string const& name, unsigned int val) {
+            bool exists = false;
+            std::string toremove = "";
+            for (auto& [key,srcval] : enumMap) {
+                if (key == name) // Key already exists in map!
+                {
+                    return;
+                }
+                if (srcval == val)
+                {
+                    toremove = key;
+                    exists = true;
+                }
+            }
+            if (!exists) { return; }
+
+            enumMap.erase(toremove);
+            enumMap[name] = val;
+
         }
     };
 
@@ -155,7 +182,6 @@ namespace Editor {
         int min = 0;
         int max = 0;
 
-        Widget_Int(int* val) : ref{ val } {}
     };
 
     struct Widget_Float {
@@ -163,6 +189,7 @@ namespace Editor {
         bool slider = false;
         float min = 0.f;
         float max = 0.f;
+
     };
 
     /*struct Widget_Group;
@@ -173,17 +200,64 @@ namespace Editor {
     };*/
 
 
-    struct Widget_AnimatorStates {
+    struct Widget_Animator {
         std::unordered_map<unsigned int, Animator::ActiveFrames>* ref = nullptr;
-        std::vector<std::string> options;
-        std::unordered_map<std::string, unsigned int> stateMap;
 
-        void Add_Option(std::string const& name) {
-            options.push_back(name);
+        Widget_Int total_rows;
+        Widget_Int total_cols;
+
+        Widget_Dropdown current_state;
+
+
+        Widget_Animator(std::unordered_map<unsigned int, Animator::ActiveFrames>* src, int* totrow, int* totcol, 
+                                unsigned int* currentstate) :
+            ref{src}, total_rows{totrow}, total_cols{totcol}, 
+            current_state{currentstate}
+        {
+            for (auto& [state, frame] : *src)
+            {
+                current_state.Add_Option(std::to_string(state), state);
+            }
         }
+
+        // returns outcome in message format
+        std::string Add_New_AnimState(const std::string& name) {
+            if (!ref) { return "Component data problem! reference has no data"; }   // can only add if ref is valid!
+
+            unsigned int key{ 0 };
+            if (current_state.enumMap.find(name) != current_state.enumMap.end())
+            {
+                return "State " + name + " already exists!";
+            }
+            // find available key position
+            while (!(ref->try_emplace(++key, Animator::ActiveFrames{}).second));
+
+            current_state.Add_Option(name, key);
+
+            return "State " + name + "successfully added with key " + std::to_string(key) + "!";
+        }
+
+        // returns outcome in message format
+        std::string Remove_AnimState(const std::string& name) {
+            if (!ref) { return "Component data problem! reference has no data"; }   // can only remove if ref is valid!
+
+            auto it = current_state.enumMap.find(name);
+            if (it == current_state.enumMap.end()) { return "State does not exist!"; }
+
+            unsigned int keyval = it->second;
+
+
+            // current state is the state to be removed
+            if (*current_state.ref == keyval) { return "Cannot remove currently active state!"; }
+
+            // if if fail to remove, return false
+            if (!ref->erase(keyval)) { return "Could not remove this state :o"; }
+
+        }
+
     };
 
-    using WidgetData = std::variant<Widget_Checkmark, Widget_String, Widget_Dropdown, Widget_Int, Widget_Float>;
+    using WidgetData = std::variant<Widget_Checkmark, Widget_String, Widget_Dropdown, Widget_Int, Widget_Float, Widget_Animator>;
 
     /*struct Widget_Group {
         std::string label;
