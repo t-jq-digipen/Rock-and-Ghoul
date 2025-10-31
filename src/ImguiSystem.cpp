@@ -36,8 +36,8 @@
 #include <nlohmann/json.hpp>
 #include <unordered_set> 
 #include "Render.h" 
-static Camera editorCamera;
-static bool useEditorCamera = true;
+//static Camera editorCamera;
+//static bool useEditorCamera = true;
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
