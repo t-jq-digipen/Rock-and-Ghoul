@@ -569,6 +569,7 @@ void ImGuiSystem::Update(float dt)
         ImGuiID dock_right = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, nullptr, &dockspaceID);
         ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.25f, nullptr, &dockspaceID);
 
+        ImGui::DockBuilderDockWindow("Scene Overview", dock_right);
         ImGui::DockBuilderDockWindow("Engine Info", dock_left);
         ImGui::DockBuilderDockWindow("Entity Editor", dock_right);
         ImGui::DockBuilderDockWindow("Collision + Prefabs", dock_bottom);
@@ -577,7 +578,22 @@ void ImGuiSystem::Update(float dt)
         ImGui::DockBuilderFinish(dockspaceID);
     }
 
-    // --- Now define the actual dockable windows ---
+
+    if (ImGui::Begin("Scene Overview")) {
+        ImVec2 cursor = ImGui::GetCursorScreenPos();
+        ImVec2 size = ImGui::GetContentRegionAvail();
+
+        // minimum size 
+        if (size.x > 50 && size.y > 50) {
+            ShowEntityInteractionOverlay(cursor, size);
+            ImGui::Dummy(size); 
+        }
+        else {
+            ImGui::TextDisabled("Panel too small to display");
+        }
+    }
+
+    ImGui::End();
     if (ImGui::Begin("Engine Info")) {
         ShowEngineDebugWindow();
     }
