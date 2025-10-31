@@ -13,7 +13,7 @@
  * input, health, etc.), and sets defaults such as position,
  * scale, collision bounds, and textures.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright   2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "EntityCreation.h"
@@ -55,7 +55,7 @@ Entity Create_Waffle(float const& x, float const& y) {
 }
 
 Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme scheme) {
-     Entity shape = 0;
+    Entity shape = 0;
     if (shapeType == SHAPE_RECTANGLE) {
         return LoadEntity("Rectangle", spawnx, spawny);
     }
@@ -76,7 +76,7 @@ Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeTyp
  *
  * Creates the prefabs directory if missing and generates default
  * entity prefabs (Player, Waffle, Rectangle, Circle).
- * 
+ *
  */
  /**
   * @brief Generates initial prefab JSON files in Assets/prefabs/.
@@ -327,13 +327,19 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
     Image img = sprite.Get_Image();
 
     // using original Waffle prefab setup
-    Animator::AnimatorComponent anim(
-        3, 6,  // total rows, total columns
-        img.widthPixels, img.heightPixels,
-        { 2, 0, 1 }, // starting frame
-        1.0f         // duration
-    );
+    //Animator::AnimatorComponent anim(
+    //    3, 6,  // total rows, total columns
+    //    img.widthPixels, img.heightPixels,
+    //    { 2, 0, 1 }, // starting frame
+    //    1.0f         // duration
+    //);
 
+    Animator::AnimatorComponent anim(
+        3, 6,           // total rows, total columns
+        { 2, 0, 1, 1.0f }, // ActiveFrames: row=2, col_start=0, col_end=1, duration=1.0f
+        1.0f            // animation duration (or you can omit this since it's in ActiveFrames)
+    );
+    anim.UpdateUV(img.widthPixels, img.heightPixels);
     // Add states
     anim.AddState(PS_IDLE, { 3, 0, 1, 1.0f });
     anim.AddState(PS_WALK, { 3, 2, 3, 0.5f });
@@ -457,4 +463,3 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
 //
 //    return e;
 //}
-
