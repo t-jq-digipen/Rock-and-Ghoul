@@ -33,7 +33,7 @@ public:
     void Shutdown() override;
 
     static void AddBackgroundTexture(GLuint texID);
-    void ClearBackgroundTextures();
+    static void ClearBackgroundTextures();
 private:
     Registry& m_registry = Registry::Get();
     static GLuint s_backgroundTexture; // Static background texture

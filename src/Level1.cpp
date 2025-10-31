@@ -66,7 +66,7 @@ void Level1::Load()
 		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
 		});
-
+		RenderSystem::ClearBackgroundTextures();
 		RenderSystem::AddBackgroundTexture(bgTexture);
 
 	// ===== FIX: Ensure prefabs folder exists =====
