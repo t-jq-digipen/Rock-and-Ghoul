@@ -15,19 +15,36 @@ void GuiSystem::Initialize() {
 
 void GuiSystem::AddButton(const ButtonConfig& cfg)
 {
-    buttons.push_back(cfg);
+    ButtonConfig copy = cfg;
+    copy.basePos = cfg.pos;
+    copy.baseSize = cfg.size;
+    copy.baseTextScale = cfg.textScale;
+    buttons.push_back(copy);
 }
+
 void GuiSystem::AddTextBox(const TextBoxConfig& cfg)
 {
-    textboxes.push_back(cfg);
+    TextBoxConfig copy = cfg;
+    copy.basePos = cfg.pos;
+    copy.baseScale = cfg.scale;
+    textboxes.push_back(copy);
 }
 
 void GuiSystem::Update(float dt) {
     if (Input::IsKeyPressed(GLFW_KEY_F8))
         editMode = !editMode;
     Vec2 mouse = Input::GetMousePosition();
-    Render& r = Render::GetInstance();
+    Render& render = Render::GetInstance();
+
+    const float uiScale = std::min(GLApp::width / 1920.0f, GLApp::height / 1080.0f);
+
     for (auto& cfg : buttons) {
+        cfg.size = cfg.baseSize * uiScale;
+        cfg.textScale = cfg.baseTextScale * uiScale;
+
+        // Scale position relative to baseline resolution
+        cfg.pos.x = cfg.basePos.x * (GLApp::width / 1920.0f);
+        cfg.pos.y = cfg.basePos.y * (GLApp::height / 1080.0f);
         bool hover = false;
         if (cfg.shape == ButtonShape::Circle) {
 
@@ -40,7 +57,7 @@ void GuiSystem::Update(float dt) {
             hover = dist <= radius;
         }
         else {
-            hover = r.IsAreaTouched(mouse, cfg.pos, cfg.size.x, cfg.size.y);
+            hover = render.IsAreaTouched(mouse, cfg.pos, cfg.size.x, cfg.size.y);
         }
 
         Colour3 drawColor = hover
@@ -49,22 +66,22 @@ void GuiSystem::Update(float dt) {
 
         switch (cfg.shape) {
         case ButtonShape::Rectangle:
-            r.DrawRect(cfg.pos, cfg.size.x, cfg.size.y, drawColor);
+            render.DrawRect(cfg.pos, cfg.size.x, cfg.size.y, drawColor);
             break;
         case ButtonShape::Circle: {
             float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
-            r.DrawCircle(cfg.pos, radius, drawColor, 48);
+            render.DrawCircle(cfg.pos, radius, drawColor, 48);
             break;
         }
         case ButtonShape::Rounded: {
             float corner = std::min(cfg.size.x, cfg.size.y) * 0.5f;
-            r.DrawRoundedRect(cfg.pos, cfg.size.x, cfg.size.y, corner, drawColor);
+            render.DrawRoundedRect(cfg.pos, cfg.size.x, cfg.size.y, corner, drawColor);
             break;
         }
         }
 
         float textScale = cfg.textScale;
-        Vec2 textSize = r.CalculateTextSize(cfg.label, textScale);
+        Vec2 textSize = render.CalculateTextSize(cfg.label, textScale);
 
         // text horizontally and vertically on the button
         float textX = cfg.pos.x - textSize.x * 0.5f;
@@ -73,7 +90,8 @@ void GuiSystem::Update(float dt) {
         //small vertical offset
         textY += textSize.y * 0.15f;
 
-        r.DrawText(cfg.label, textX, textY, textScale, { 0, 0, 0 });
+        // UPDATED: Added font parameter to DrawText
+        render.DrawText(cfg.label, textX, textY, textScale, { 1, 1, 1 }, "Marker");
 
         if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
             if (audio) audio->PlayButtonSound(cfg.soundType);
@@ -81,10 +99,14 @@ void GuiSystem::Update(float dt) {
         }
     }
 
+    const float scaleX = GLApp::width / 1920.0f;
+    const float scaleY = GLApp::height / 1080.0f;
     for (auto& tb : textboxes)
     {
-        float textScale = tb.scale;
-        Vec2 textSize = render.CalculateTextSize(tb.text, textScale);
+        tb.pos.x = tb.basePos.x * scaleX;
+        tb.pos.y = tb.basePos.y * scaleY;
+        tb.scale = tb.baseScale * uiScale;
+        Vec2 textSize = render.CalculateTextSize(tb.text, tb.scale);
 
         float drawX = tb.pos.x;
         float drawY = tb.pos.y;
@@ -96,13 +118,15 @@ void GuiSystem::Update(float dt) {
             // drawY += textSize.y * 0.15f;
         }
 
-        render.DrawText(tb.text, drawX, drawY, textScale, tb.color);
+        // UPDATED: Added font parameter to DrawText
+        render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, "Marker");
     }
 
     if (editMode) {
         // Background panel
         render.DrawRect({ 250, 540 }, 500, 1000, { 0.15f, 0.15f, 0.15f });
-        render.DrawText("UI ELEMENTS", 50, 900, 1.0f, { 1,1,1 });
+        // UPDATED: Added font parameter to DrawText
+        render.DrawText("UI ELEMENTS", 50, 900, 1.0f, { 1,1,1 }, "Marker");
 
         float y = 850;
         bool buttondeleted = false;
@@ -113,15 +137,16 @@ void GuiSystem::Update(float dt) {
             bool isSelected = (selectedType == SelectedType::Button && selectedIndex == i);
 
             Colour3 color = isSelected ? Colour3{ 0.9f,0.6f,0.2f } : Colour3{ 0.25f,0.25f,0.25f };
-            render.DrawRect({ 150, y }, 600 , 50, color);
-            render.DrawText("Button: " + b.label, 20, y - 10, 0.5f, { 1,1,1 });
+            render.DrawRect({ 150, y }, 600, 50, color);
+            // UPDATED: Added font parameter to DrawText
+            render.DrawText("Button: " + b.label, 20, y - 10, 0.5f, { 1,1,1 }, "Marker");
             //delete box position
             Vec2 delPos = { 150 + 300 + 20, y }; // right of the entry
             float delW = 40, delH = 40;
-            //Colour3 delColor = { 0.7f, 0.2f, 0.2f };
 
             // draw delete box
-            render.DrawText("X", delPos.x - 10, y - 10, 1.0f, { 1,0,0 });
+            // UPDATED: Added font parameter to DrawText
+            render.DrawText("X", delPos.x - 10, y - 10, 1.0f, { 1,0,0 }, "Marker");
 
             // if clicked, delete button
             if (render.IsAreaTouched(mouse, delPos, delW, delH) &&
@@ -139,7 +164,7 @@ void GuiSystem::Update(float dt) {
             }
 
             if (render.IsAreaTouched(mouse, { 150, y }, 300, 50) &&
-                Input::IsMouseHeld(GLFW_MOUSE_BUTTON_LEFT))
+                Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
             {
                 selectedType = SelectedType::Button;
                 selectedIndex = i;
@@ -148,7 +173,6 @@ void GuiSystem::Update(float dt) {
             y -= 60;
             if (buttondeleted)
                 return;
-           // index++;
         }
 
         // --- List TextBoxes ---
@@ -161,14 +185,15 @@ void GuiSystem::Update(float dt) {
 
             Colour3 color = isSelected ? Colour3{ 0.9f,0.6f,0.2f } : Colour3{ 0.25f,0.25f,0.25f };
             render.DrawRect({ 150, y }, 600, 50, color);
-            render.DrawText("Text: " + t.text, 20, y - 10, 0.5f, { 1,1,1 });
+            // UPDATED: Added font parameter to DrawText
+            render.DrawText("Text: " + t.text, 20, y - 10, 0.5f, { 1,1,1 }, "Marker");
             //delete box position
             Vec2 delPos = { 150 + 300 + 20, y }; // right of the entry
             float delW = 40, delH = 40;
-            //Colour3 delColor = { 0.7f, 0.2f, 0.2f };
 
             // draw delete box
-            render.DrawText("X", delPos.x - 10, y - 10, 1.0f, { 1,0,0 });
+            // UPDATED: Added font parameter to DrawText
+            render.DrawText("X", delPos.x - 10, y - 10, 1.0f, { 1,0,0 }, "Marker");
 
             // if clicked, delete button
             if (render.IsAreaTouched(mouse, delPos, delW, delH) &&
@@ -186,7 +211,7 @@ void GuiSystem::Update(float dt) {
             }
 
             if (render.IsAreaTouched(mouse, { 150, y }, 300, 50) &&
-                Input::IsMouseHeld(GLFW_MOUSE_BUTTON_LEFT))
+                Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
             {
                 selectedType = SelectedType::TextBox;
                 selectedIndex = textIndex;
@@ -200,7 +225,8 @@ void GuiSystem::Update(float dt) {
 
         if (selectedType != SelectedType::None)
         {
-            render.DrawText("PROPERTIES", 50, 400, 1.2f, { 1,1,1 });
+            // UPDATED: Added font parameter to DrawText
+            render.DrawText("PROPERTIES", 50, 400, 1.2f, { 1,1,1 }, "Marker");
             float y = 360;
 
             if (selectedType == SelectedType::Button && selectedIndex < buttons.size())
@@ -224,15 +250,17 @@ void GuiSystem::Update(float dt) {
                 }
 
                 if (editingLabel) {
-                    render.DrawText("Editing Label: " + tempLabel + "_", 50, y, 0.5f, { 1, 1, 0 });
+                    // UPDATED: Added font parameter to DrawText
+                    render.DrawText("Editing Label: " + tempLabel + "_", 50, y, 0.5f, { 1, 1, 0 }, "Marker");
                 }
                 else {
-                    render.DrawText("Label: " + b.label, 50, y, 0.5f, { 1, 1, 1 });
+                    // UPDATED: Added font parameter to DrawText
+                    render.DrawText("Label: " + b.label, 50, y, 0.5f, { 1, 1, 1 }, "Marker");
                 }
                 y -= 30;
 
                 if (editingLabel) {
-                    // letters (A–Z)
+                    // letters (Aâ€“Z)
                     for (int key = GLFW_KEY_A; key <= GLFW_KEY_Z; ++key) {
                         if (Input::IsKeyPressed(key)) {
                             bool shift = Input::IsKeyHeld(GLFW_KEY_LEFT_SHIFT) || Input::IsKeyHeld(GLFW_KEY_RIGHT_SHIFT);
@@ -242,7 +270,7 @@ void GuiSystem::Update(float dt) {
                         }
                     }
 
-                    // numbers (0–9)
+                    // numbers (0â€“9)
                     for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key) {
                         if (Input::IsKeyPressed(key)) {
                             tempLabel.push_back(static_cast<char>('0' + (key - GLFW_KEY_0)));
@@ -257,55 +285,51 @@ void GuiSystem::Update(float dt) {
                     if (Input::IsKeyPressed(GLFW_KEY_BACKSPACE) && !tempLabel.empty())
                         tempLabel.pop_back();
                 }
+                // UPDATED: Added font parameter to DrawText
                 render.DrawText("Pos: (" + std::to_string((int)b.pos.x) + ", " +
-                    std::to_string((int)b.pos.y) + ")", 50, y, 0.5f, { 1,1,1 });
+                    std::to_string((int)b.pos.y) + ")", 50, y, 0.5f, { 1,1,1 }, "Marker");
                 y -= 30;
+                // UPDATED: Added font parameter to DrawText
                 render.DrawText("Size: (" + std::to_string((int)b.size.x) + ", " +
-                    std::to_string((int)b.size.y) + ")", 50, y, 0.5f, { 1,1,1 });
+                    std::to_string((int)b.size.y) + ")", 50, y, 0.5f, { 1,1,1 }, "Marker");
                 y -= 30;
 
-                render.DrawText("Text Size: (" + std::to_string(b.textScale) + ")", 50, y, 0.5f, { 1,1,1 });
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("Text Size: (" + std::to_string(b.textScale) + ")", 50, y, 0.5f, { 1,1,1 }, "Marker");
                 y -= 30;
 
-
-                //if (Input::IsKeyHeld(GLFW_KEY_EQUAL)) {
-                //    b.size.x += 4; b.size.y += 2; // grow faster horizontally
-                //}
-                //if (Input::IsKeyHeld(GLFW_KEY_MINUS)) {
-                //    b.size.x = std::max(20.0f, b.size.x - 4);
-                //    b.size.y = std::max(10.0f, b.size.y - 2);
-                //}
                 // Width Control
                 if (Input::IsKeyHeld(GLFW_KEY_RIGHT_BRACKET)) {    // ]
-                    b.size.x += 4.0f;   // increase width
+                    b.baseSize.x += 4.0f;   // increase width
                 }
                 if (Input::IsKeyHeld(GLFW_KEY_LEFT_BRACKET)) {     // [
-                    b.size.x = std::max(20.0f, b.size.x - 4.0f);   // decrease width
+                    b.baseSize.x = std::max(20.0f, b.baseSize.x - 4.0f);   // decrease width
                 }
 
                 // Height Control
                 if (Input::IsKeyHeld(GLFW_KEY_APOSTROPHE)) {       // '
-                    b.size.y += 2.0f;   // increase height
+                    b.baseSize.y += 2.0f;   // increase height
                 }
                 if (Input::IsKeyHeld(GLFW_KEY_SEMICOLON)) {        // ;
-                    b.size.y = std::max(10.0f, b.size.y - 2.0f);   // decrease height
+                    b.baseSize.y = std::max(10.0f, b.baseSize.y - 2.0f);   // decrease height
                 }
 
                 // maybe arrow keys to tweak position
-                if (Input::IsKeyHeld(GLFW_KEY_UP))    b.pos.y += 2;
-                if (Input::IsKeyHeld(GLFW_KEY_DOWN))  b.pos.y -= 2;
-                if (Input::IsKeyHeld(GLFW_KEY_LEFT))  b.pos.x -= 2;
+                if (Input::IsKeyHeld(GLFW_KEY_UP))    b.basePos.y += 2;
+                if (Input::IsKeyHeld(GLFW_KEY_DOWN))  b.basePos.y -= 2;
+                if (Input::IsKeyHeld(GLFW_KEY_LEFT))  b.basePos.x -= 2;
 
                 if (Input::IsKeyHeld(GLFW_KEY_O))     // smaller text
-                    b.textScale = std::max(0.2f, b.textScale - 0.02f);
+                    b.baseTextScale = std::max(0.2f, b.baseTextScale - 0.02f);
                 if (Input::IsKeyHeld(GLFW_KEY_P))     // bigger text
-                    b.textScale = std::min(3.0f, b.textScale + 0.02f);
+                    b.baseTextScale = std::min(3.0f, b.baseTextScale + 0.02f);
 
-                if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) b.pos.x += 2;
+                if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) b.basePos.x += 2;
 
-                // SELECT SHAPESSSSSSSSSSSSSSSSSSSSSSSSSSSS
+                // SELECT SHAPES
                 float boxY = y;  // current vertical cursor
-                render.DrawText("Shape:", 50, boxY, 0.5f, { 1,1,1 });
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("Shape:", 50, boxY, 0.5f, { 1,1,1 }, "Marker");
                 boxY -= 40;
 
                 float startX = 80;
@@ -328,7 +352,8 @@ void GuiSystem::Update(float dt) {
 
                     Vec2 boxPos = { startX + i * gap, boxY };
                     render.DrawRect(boxPos, boxW, boxH, c);
-                    render.DrawText(opt.name, boxPos.x - 35, boxPos.y - 10, 0.5f, { 1,1,1 });
+                    // UPDATED: Added font parameter to DrawText
+                    render.DrawText(opt.name, boxPos.x - 35, boxPos.y - 10, 0.5f, { 1,1,1 }, "Marker");
 
                     // check click
                     if (render.IsAreaTouched(mouse, boxPos, boxW, boxH) &&
@@ -339,10 +364,9 @@ void GuiSystem::Update(float dt) {
                 }
                 y = boxY - 50;  // move property panel cursor below shapes
 
-
-
-                //COLORRRRRRRRRRRRRRRRRRRRRRRRRR
-                render.DrawText("Color (0-255):", 50, y, 0.5f, { 1,1,1 });
+                //COLOR
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("Color (0-255):", 50, y, 0.5f, { 1,1,1 }, "Marker");
                 y -= 30;
 
                 //store RGB as integer temp for display/edit
@@ -350,12 +374,13 @@ void GuiSystem::Update(float dt) {
                 int gVal = static_cast<int>(b.color.g * 255.0f);
                 int bVal = static_cast<int>(b.color.b * 255.0f);
 
-                render.DrawText("R:", 60, y, 0.5f, { 1,0,0 });
-                render.DrawText(std::to_string(rVal), 100, y, 0.5f, { 1,1,1 });
-                render.DrawText("G:", 200, y, 0.5f, { 0,1,0 });
-                render.DrawText(std::to_string(gVal), 240, y, 0.5f, { 1,1,1 });
-                render.DrawText("B:", 340, y, 0.5f, { 0,0,1 });
-                render.DrawText(std::to_string(bVal), 380, y, 0.5f, { 1,1,1 });
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("R:", 60, y, 0.5f, { 1,0,0 }, "Marker");
+                render.DrawText(std::to_string(rVal), 100, y, 0.5f, { 1,1,1 }, "Marker");
+                render.DrawText("G:", 200, y, 0.5f, { 0,1,0 }, "Marker");
+                render.DrawText(std::to_string(gVal), 240, y, 0.5f, { 1,1,1 }, "Marker");
+                render.DrawText("B:", 340, y, 0.5f, { 0,0,1 }, "Marker");
+                render.DrawText(std::to_string(bVal), 380, y, 0.5f, { 1,1,1 }, "Marker");
 
                 // simple keyboard-based editing
                 static int channel = 0; // 0=R,1=G,2=B
@@ -382,8 +407,6 @@ void GuiSystem::Update(float dt) {
                 render.DrawCircle({ circleX, indicatorY }, 6.f, c, 24);
 
                 y -= 40;
-
-
             }
 
             else if (selectedType == SelectedType::TextBox && selectedIndex - buttons.size() < textboxes.size())
@@ -409,13 +432,15 @@ void GuiSystem::Update(float dt) {
                     }
                 }
                 if (editingText)
-                    render.DrawText("Editing Text: " + tempText + "_", 50, y, 0.5f, { 1,1,0 });
+                    // UPDATED: Added font parameter to DrawText
+                    render.DrawText("Editing Text: " + tempText + "_", 50, y, 0.5f, { 1,1,0 }, "Marker");
                 else
-                    render.DrawText("Text: " + t.text, 50, y, 0.5f, { 1,1,1 });
+                    // UPDATED: Added font parameter to DrawText
+                    render.DrawText("Text: " + t.text, 50, y, 0.5f, { 1,1,1 }, "Marker");
                 y -= 30;
 
                 if (editingText) {
-                    // letters (A–Z)
+                    // letters (Aâ€“Z)
                     for (int key = GLFW_KEY_A; key <= GLFW_KEY_Z; ++key) {
                         if (Input::IsKeyPressed(key)) {
                             bool shift = Input::IsKeyHeld(GLFW_KEY_LEFT_SHIFT) || Input::IsKeyHeld(GLFW_KEY_RIGHT_SHIFT);
@@ -425,7 +450,7 @@ void GuiSystem::Update(float dt) {
                         }
                     }
 
-                    // numbers (0–9)
+                    // numbers (0â€“9)
                     for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key) {
                         if (Input::IsKeyPressed(key)) {
                             tempText.push_back(static_cast<char>('0' + (key - GLFW_KEY_0)));
@@ -440,25 +465,29 @@ void GuiSystem::Update(float dt) {
                     if (Input::IsKeyPressed(GLFW_KEY_BACKSPACE) && !tempText.empty())
                         tempText.pop_back();
                 }
+                // UPDATED: Added font parameter to DrawText
                 render.DrawText("Pos: (" + std::to_string((int)t.pos.x) + ", " +
-                    std::to_string((int)t.pos.y) + ")", 50, y, 0.5f, { 1,1,1 });
+                    std::to_string((int)t.pos.y) + ")", 50, y, 0.5f, { 1,1,1 }, "Marker");
                 y -= 30;
-                render.DrawText("Size: (" + std::to_string(t.scale) + ")", 50, y, 0.5f, { 1,1,1 });
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("Size: (" + std::to_string(t.scale) + ")", 50, y, 0.5f, { 1,1,1 }, "Marker");
                 y -= 30;
 
-                render.DrawText("Text Color (0-255):", 50, y, 0.5f, { 1,1,1 });
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("Text Color (0-255):", 50, y, 0.5f, { 1,1,1 }, "Marker");
                 y -= 30;
 
                 int rVal = static_cast<int>(t.color.r * 255.0f);
                 int gVal = static_cast<int>(t.color.g * 255.0f);
                 int bVal = static_cast<int>(t.color.b * 255.0f);
 
-                render.DrawText("R:", 60, y, 0.5f, { 1,0,0 });
-                render.DrawText(std::to_string(rVal), 100, y, 0.5f, { 1,1,1 });
-                render.DrawText("G:", 200, y, 0.5f, { 0,1,0 });
-                render.DrawText(std::to_string(gVal), 240, y, 0.5f, { 1,1,1 });
-                render.DrawText("B:", 340, y, 0.5f, { 0,0,1 });
-                render.DrawText(std::to_string(bVal), 380, y, 0.5f, { 1,1,1 });
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("R:", 60, y, 0.5f, { 1,0,0 }, "Marker");
+                render.DrawText(std::to_string(rVal), 100, y, 0.5f, { 1,1,1 }, "Marker");
+                render.DrawText("G:", 200, y, 0.5f, { 0,1,0 }, "Marker");
+                render.DrawText(std::to_string(gVal), 240, y, 0.5f, { 1,1,1 }, "Marker");
+                render.DrawText("B:", 340, y, 0.5f, { 0,0,1 }, "Marker");
+                render.DrawText(std::to_string(bVal), 380, y, 0.5f, { 1,1,1 }, "Marker");
 
                 // cycle active color channel using TAB
                 static int textColorChannel = 0; // 0=R,1=G,2=B
@@ -486,25 +515,23 @@ void GuiSystem::Update(float dt) {
 
                 y -= 40;
                 // maybe arrow keys to tweak position
-                if (Input::IsKeyHeld(GLFW_KEY_UP))    t.pos.y += 2;
-                if (Input::IsKeyHeld(GLFW_KEY_DOWN))  t.pos.y -= 2;
-                if (Input::IsKeyHeld(GLFW_KEY_LEFT))  t.pos.x -= 2;
-                if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) t.pos.x += 2;
+                if (Input::IsKeyHeld(GLFW_KEY_UP))    t.basePos.y += 2;
+                if (Input::IsKeyHeld(GLFW_KEY_DOWN))  t.basePos.y -= 2;
+                if (Input::IsKeyHeld(GLFW_KEY_LEFT))  t.basePos.x -= 2;
+                if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) t.basePos.x += 2;
 
                 if (Input::IsKeyHeld(GLFW_KEY_O))     // smaller text
-                    t.scale = std::max(0.2f, t.scale - 0.02f);
+                    t.baseScale = std::max(0.2f, t.baseScale - 0.02f);
                 if (Input::IsKeyHeld(GLFW_KEY_P))     // bigger text
-                    t.scale = std::min(3.0f, t.scale + 0.02f);
-
+                    t.baseScale = std::min(3.0f, t.baseScale + 0.02f);
             }
         }
 
         render.DrawRect({ 150, 990 }, 140, 50, { 0.3f, 0.6f, 0.3f });
         render.DrawRect({ 330, 990 }, 140, 50, { 0.3f, 0.6f, 0.3f });
-        render.DrawText("+Button", 100, 980, 0.5f, { 1,1,1 });
-        render.DrawText("+Text", 300, 980, 0.5f, { 1,1,1 });
-
-        //Vec2 mouse = Input::GetMousePosition(); mouse.y = GLApp::height - mouse.y;
+        // UPDATED: Added font parameter to DrawText
+        render.DrawText("+Button", 100, 980, 0.5f, { 1,1,1 }, "Marker");
+        render.DrawText("+Text", 300, 980, 0.5f, { 1,1,1 }, "Marker");
 
         if (render.IsAreaTouched(mouse, { 150, 990 }, 140, 50) &&
             Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
@@ -514,6 +541,12 @@ void GuiSystem::Update(float dt) {
             newBtn.pos = { 960, 540 };
             newBtn.size = { 200, 100 };
             newBtn.color = { 0.4f, 0.7f, 0.9f };
+            newBtn.textScale = 1.0f;
+
+            newBtn.basePos = newBtn.pos;
+            newBtn.baseSize = newBtn.size;
+            newBtn.baseTextScale = newBtn.textScale;
+
             buttons.push_back(newBtn);
 
             selectedType = SelectedType::Button;
@@ -528,6 +561,11 @@ void GuiSystem::Update(float dt) {
             newText.text = "New Text " + std::to_string((int)textboxes.size() + 1);
             newText.pos = { 960, 600 };
             newText.scale = 1.2f;
+            newText.color = { 1, 1, 1 };
+
+            newText.basePos = newText.pos;
+            newText.baseScale = newText.scale;
+
             textboxes.push_back(newText);
 
             selectedType = SelectedType::TextBox;

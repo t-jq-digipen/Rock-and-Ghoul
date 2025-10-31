@@ -35,7 +35,7 @@
 #include "PhysicsSystem.h"
 #include "ImguiSystem.h"
 #include "CrashHandler.h"
-
+#include "GuiSystem.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
 
@@ -76,6 +76,8 @@ int main() {
     if (!GLApp::init(settings.resolutionWidth, settings.resolutionHeight, "Rock & Ghoul")) {
         return -1;
     }
+    std::cout << "[Main] GLApp::ptr_window = " << GLApp::ptr_window
+        << " at " << (void*)&GLApp::ptr_window << std::endl;
     CrashHandler::SetLogPath("rockandghoul_crash.log");
     CrashHandler::Install();
     CrashHandler::Log("=== Rock & Ghoul starting ===");
@@ -99,8 +101,10 @@ int main() {
             engine.AddSystem(new RenderSystem());
             engine.AddSystem(new PlayerSystem());
             engine.AddSystem(new PhysicsSystem());
+            engine.AddSystem(&GuiSystem::Get());
             engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
-           
+            std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
+                << " at " << (void*)&GLApp::ptr_window << std::endl;
             // initialize all systems (FMOD, OpenGL, etc.)
             engine.Initialize();
             CrashHandler::Log("Engine initialized");
@@ -121,6 +125,7 @@ int main() {
             std::cout << "GETS PAST ENGINE RUN\n";
 
             engine.Shutdown();
+            GLApp::cleanup();
             CrashHandler::Log("Engine shutdown complete");
             //mono.Shutdown();
             return 0;
@@ -128,7 +133,7 @@ int main() {
 
     // ---- explicit cleanup order ----
     Render::GetInstance().Shutdown();   // free GPU resources
-    GLApp::cleanup();                   // destroy GLFW + GL context
+    //GLApp::cleanup();                   // destroy GLFW + GL context
     CrashHandler::Uninstall();          //crash handler last
 
     return rc;

@@ -83,5 +83,11 @@ void GSM_SetCurrentState(GameState state);
 void GSM_SetNextState(GameState state);
 // ----------------------------------------
 
+// PAUSE STATE FUNCTIONS
+// ----------------------------------------
+// wannna pause all of gameplay where it is. when state changes entirely it'll unload so pause needs to have its own thing otherwise it'll unload and reload level each time
+bool GSM_IsGamePaused();
+void GSM_SetGamePaused(bool paused);
+
 // DEBUGGER
 std::ostream& operator<<(std::ostream& os, const GameState& state);

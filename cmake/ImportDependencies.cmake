@@ -60,7 +60,7 @@ macro(import_imgui)
         FetchContent_Declare(
             imgui
             GIT_REPOSITORY https://github.com/ocornut/imgui.git
-            GIT_TAG v1.90.4
+            GIT_TAG docking
         )
         if(NOT imgui_POPULATED)
             FetchContent_Populate(imgui)
@@ -83,6 +83,12 @@ macro(import_imgui)
             ${imgui_SOURCE_DIR}/backends
         )
         target_link_libraries(imgui PUBLIC glfw libglew_static)
+
+        # Enable docking + multi-viewport in your compile definitions
+        target_compile_definitions(imgui PUBLIC
+            IMGUI_ENABLE_DOCKING
+            IMGUI_ENABLE_VIEWPORTS
+        )
         
         # Set C++ standard for ImGui (required for constexpr support)
         set_property(TARGET imgui PROPERTY CXX_STANDARD 11)

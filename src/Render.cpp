@@ -1,8 +1,7 @@
 /* ========================================================
  * @file        Render.cpp
  * @author      Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
- * @co-author   Tan Jun Quan          | t.junquan@digipen.edu
- * @date        26 OCT 2025
+ * @date        02 OCT 2025
  *
  * @brief   Rendering system class, consisting function definitions for drawing 2D
  *          primitives, images, and text using OpenGL.
@@ -33,16 +32,20 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-// stb_image
+ // stb_image
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <Camera.h>
 
 // Vertex + Fragment shaders loaded from file in Assets, any changes to shader code to be done inside those files
+//extern Camera mainCamera;
+Camera& mainCamera = Camera::GetInstance();
 
-Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0), currentTint(1.f,1.f,1.f) {}
+//Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0) {}
+Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0), batchVAO(0), batchVBO(0), batchEBO(0), batchShader(0) {}
 
 Render::~Render() {
-    // Clean up OpenGL resources
+    // Clean up OpenGL resourcess
     if (vao) glDeleteVertexArrays(1, &vao);
     if (vbo) glDeleteBuffers(1, &vbo);
     if (shaderProgram) glDeleteProgram(shaderProgram);
@@ -132,18 +135,48 @@ void Render::Init() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Setup projection
-    projection = glm::ortho(
-        0.0f, static_cast<float>(GLApp::width),
-        0.0f, static_cast<float>(GLApp::height),
-        -1.0f, 1.0f
-    );
-
+    UpdateProjection();
     InitTextRendering();
+
+    InitBatch(); //uncomment once batch shaders are ready
+
+    // --- create framebuffer for editor viewport ---
+    glGenFramebuffers(1, &sceneFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
+
+    // color texture
+    glGenTextures(1, &sceneColor);
+    glBindTexture(GL_TEXTURE_2D, sceneColor);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, GLApp::width, GLApp::height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneColor, 0);
+
+    // depth-stencil buffer
+    glGenRenderbuffers(1, &sceneDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, sceneDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, GLApp::width, GLApp::height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, sceneDepth);
+
+    // verify
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "[Render] Scene framebuffer incomplete!\n";
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 }
 
 void Render::ClearBackground(const Colour4& color) {
     glClearColor(color.r, color.g, color.b, color.a);
     glClear(GL_COLOR_BUFFER_BIT);
+}
+void Render::UpdateProjection()
+{
+    projection = glm::ortho(
+        0.0f, static_cast<float>(GLApp::width),
+        0.0f, static_cast<float>(GLApp::height),
+        -1.0f, 1.0f
+    );
 }
 
 
@@ -151,8 +184,14 @@ void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color
     glUseProgram(shaderProgram);
 
     // upload projection
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);*/
+
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);
+        1, GL_FALSE, &projMatrix[0][0]);
 
     // upload pos, size (use size for both X and Y), color
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
@@ -175,17 +214,24 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glUseProgram(shaderProgram);
 
     // upload ortho projection
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);*/
+        /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+            1, GL_FALSE, &mainCamera.GetViewProjection()[0][0]); //testing move bg */
+
+            //added this one for camera, need pass camera view projection matrix 
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);
+        1, GL_FALSE, &projMatrix[0][0]);
 
     // upload pos + scale + rotation
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), scale.x, scale.y);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation); //added rotation
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0, 1.0, 1.0);
 
-    GLint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
-    if (colorLoc != -1)
-        glUniform3f(colorLoc, currentTint.x, currentTint.y, currentTint.z);
     // enable texture
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_TRUE);
 
@@ -219,8 +265,13 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
     glUseProgram(shaderProgram);
 
     // Set required uniforms
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);*/
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);
+        1, GL_FALSE, &projMatrix[0][0]);
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
@@ -274,8 +325,17 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     glUseProgram(shaderProgram);
 
     // Upload uniforms
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);*/
+        /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+            1, GL_FALSE, &mainCamera.GetViewProjection()[0][0]); //testing roundy atm*/
+
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);
+        1, GL_FALSE, &projMatrix[0][0]);
+
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
@@ -307,8 +367,15 @@ void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3&
     glUseProgram(shaderProgram);
 
     // upload projection
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projection[0][0]);*/
+        /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+            1, GL_FALSE, &mainCamera.GetViewProjection()[0][0]);*/
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);
+        1, GL_FALSE, &projMatrix[0][0]);
 
     //set uniforms
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
@@ -602,7 +669,7 @@ void Render::DrawImageRotated(const Image& image, float x, float y, float angleR
 
     //draw
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);   
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
 
     glUseProgram(0);
@@ -615,8 +682,13 @@ void Render::DrawImageSub(const Image& Image,
     glUseProgram(shaderProgram);
 
     //Projection
+    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, glm::value_ptr(projection));*/
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, glm::value_ptr(projection));
+        1, GL_FALSE, &projMatrix[0][0]);
 
     //Position, scale, rotation uniforma
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), x, y);
@@ -646,9 +718,7 @@ void Render::DrawImageSub(const Image& Image,
     // Tell shader we be using texture mode
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), true);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), false);
-    GLint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
-    if (colorLoc != -1)
-        glUniform3f(colorLoc, currentTint.x, currentTint.y, currentTint.z);
+
     // Draw quad 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -728,7 +798,7 @@ void Render::DrawRectInstanced(const std::vector<InstanceData>& instances, const
 }
 
 //text rendering
-void Render::InitTextRendering() {
+/*void Render::InitTextRendering() {
     // If InitTextRendering can be called multiple times,
     // first clear any previous GPU objects it created.
     if (!Characters.empty()) {
@@ -776,7 +846,7 @@ void Render::InitTextRendering() {
     for (unsigned char c = 0; c < 128; ++c) {
         if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
             std::cout << "ERROR::FREETYPE: Failed to load Glyph '" << (int)c << "'\n";
-            continue;  
+            continue;
         }
 
         unsigned int texture = 0;
@@ -815,7 +885,7 @@ void Render::InitTextRendering() {
     // Always release FreeType objects on every path
     cleanupFT();
 
-    // VAO/VBO for text quads 
+    // VAO/VBO for text quads
     glGenVertexArrays(1, &textVAO);
     glGenBuffers(1, &textVBO);
     glBindVertexArray(textVAO);
@@ -832,37 +902,145 @@ void Render::InitTextRendering() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-}
+}*/
 
-Vec2 Render::CalculateTextSize(const std::string& text, float scale)
-{
-    float width = 0.0f;
-    float height = 0.0f;
-
-    for (char c : text)
-    {
-        if (Characters.find(c) == Characters.end())
-            continue;
-
-        const Character& ch = Characters[c];
-        width += (ch.Advance >> 6) * scale; // Advance in pixels
-        height = std::max(height, (float)ch.Size.y * scale);
+void Render::InitTextRendering() {
+    // recreate VAO/VBO safely
+    if (!Characters.empty()) {
+        for (auto& [c, ch] : Characters) {
+            glDeleteTextures(1, &ch.TextureID);
+        }
+        Characters.clear();
+    }
+    if (textVAO) {
+        glDeleteVertexArrays(1, &textVAO);
+        textVAO = 0;
+    }
+    if (textVBO) {
+        glDeleteBuffers(1, &textVBO);
+        textVBO = 0;
     }
 
-    return { width, height };
+    glGenVertexArrays(1, &textVAO);
+    glGenBuffers(1, &textVBO);
+
+    glBindVertexArray(textVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
+
+    // aPos (x,y)
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    // aTex (u,v)
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+bool Render::LoadFont(const std::string& fontPath, int sizePx, const std::string& key) {
+    // If already loaded, do nothing
+    if (fontCache.find(key) != fontCache.end()) {
+        return true;
+    }
+
+    FT_Library ft = nullptr;
+    FT_Face face = nullptr;
+
+    auto cleanupFT = [&]() {
+        if (face) { FT_Done_Face(face); face = nullptr; }
+        if (ft) { FT_Done_FreeType(ft); ft = nullptr; }
+        };
+
+    if (FT_Init_FreeType(&ft)) {
+        std::cerr << "FREETYPE: Could not init library\n";
+        cleanupFT(); return false;
+    }
+    if (FT_New_Face(ft, fontPath.c_str(), 0, &face)) {
+        std::cerr << "FREETYPE: Failed to load font: " << fontPath << "\n";
+        cleanupFT(); return false;
+    }
+
+    FT_Set_Pixel_Sizes(face, 0, static_cast<FT_UInt>(sizePx));
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // glyph bitmaps are byte-aligned
+
+    Font font;
+    font.sizePx = sizePx;
+    font.name = key;
+
+    for (unsigned char c = 0; c < 128; ++c) {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+            std::cerr << "FREETYPE: Failed glyph " << (int)c << "\n";
+            // make an empty glyph to avoid UB
+            font.glyphs[c] = Character{ 0, {0,0}, {0,0}, 0 };
+            continue;
+        }
+
+        GLuint tex = 0;
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows, 0,
+            GL_RED, GL_UNSIGNED_BYTE,
+            face->glyph->bitmap.buffer);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // try GL_NEAREST if you want crisper pixels
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        Character ch{
+            tex,
+            { static_cast<int>(face->glyph->bitmap.width),
+              static_cast<int>(face->glyph->bitmap.rows) },
+            { face->glyph->bitmap_left, face->glyph->bitmap_top },
+            static_cast<unsigned int>(face->glyph->advance.x >> 6) // *pixels*
+        };
+        font.glyphs[c] = ch;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    cleanupFT();
+
+    fontCache.emplace(key, std::move(font));
+    return true;
+}
+
+void Render::UnloadFont(const std::string& key) {
+    auto it = fontCache.find(key);
+    if (it == fontCache.end()) return;
+    for (auto const& ch : it->second.glyphs) {
+        if (ch.TextureID) {
+            glDeleteTextures(1, &const_cast<unsigned int&>(ch.TextureID));
+        }
+    }
+    fontCache.erase(it);
+}
+
+void Render::UnloadAllFonts() {
+    for (auto& [k, f] : fontCache)
+        for (auto const& ch : f.glyphs)
+            if (ch.TextureID) {
+                glDeleteTextures(1, &const_cast<unsigned int&>(ch.TextureID));
+            }
+    fontCache.clear();
 }
 
 
-void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color) {
+
+
+/*void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color) {
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // activate render state	
+    // activate render state
     glUseProgram(shaderProgram);
 
     //set uniforms
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]); 
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]);
     glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
     glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
@@ -904,7 +1082,7 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
 
         // update content of VBO memory
         glBindBuffer(GL_ARRAY_BUFFER, textVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // use glBufferSubData 
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // use glBufferSubData
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // render quad
@@ -917,15 +1095,90 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
-}
+}*/
+void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color, const std::string& fontkey) {
 
+    auto it = fontCache.find(fontkey);
+    if (it == fontCache.end()) {
+        std::cerr << "This font type does not exists: " << fontkey << std::endl;
+        return;
+    }
 
-void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color) {
+    const Font& font = it->second;
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // activate render state	
+    glUseProgram(shaderProgram);
+
+    //set uniforms
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]);
+    glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+
+    //text no need, so set them transform uniforms to defaults
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(textVAO);
+
+
+    // iterate through all characters
+    std::string::const_iterator c;
+
+    for (c = text.begin(); c != text.end(); c++)
+    {
+        //Character ch = Characters[*c];
+        Character ch = font.glyphs[*c];
+
+        float xpos = x + ch.Bearing.x * scale;
+        float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+
+        float w = ch.Size.x * scale;
+        float h = ch.Size.y * scale;
+        // update VBO for each character
+        float vertices[6][4] = {
+            { xpos,     ypos + h,   0.0f, 0.0f },
+            { xpos,     ypos,       0.0f, 1.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+
+            { xpos,     ypos + h,   0.0f, 0.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+            { xpos + w, ypos + h,   1.0f, 0.0f }
+        };
+
+        // render glyph texture over quad
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+
+        // update content of VBO memory
+        glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // use glBufferSubData 
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // render quad
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // advance cursors for next glyph (advance is number of 1/64 pixels)
+        //x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+        x += (ch.Advance) * scale; //THIS IS WHERE I WENT WRONG, DONT NEED BITSHIFT AGAIN
+    }
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
+}
+
+
+/*void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color) {
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // activate render state
     glUseProgram(shaderProgram);
 
     //set uniforms
@@ -995,7 +1248,7 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glDrawArrays(GL_TRIANGLES, 0, 6);
 
-            nextX += (ch.Advance >> 6) * scale; //position next char 
+            nextX += (ch.Advance >> 6) * scale; //position next char
         }
 
         nextX += spaceWidth; // Add space
@@ -1006,7 +1259,95 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
 
+}*/
+
+
+void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color, const std::string& fontKey)
+{
+    auto it = fontCache.find(fontKey);
+    if (it == fontCache.end()) {
+        std::cerr << "This font type does not exists: " << fontKey << std::endl;
+        return;
+    }
+
+    const Font& font = it->second;
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glUseProgram(shaderProgram);
+
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"), 1, GL_FALSE, &projection[0][0]);
+    glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(textVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+
+    float nextX = x;
+    float nextY = y;
+    float spaceWidth = static_cast<float>(font.glyphs[' '].Advance) * scale;
+    float lineHeight = font.glyphs['H'].Size.y * 1.2f * scale;
+
+    std::istringstream iss(text);
+    std::string word;
+
+    while (iss >> word) {
+        // measure word width
+        float wordWidth = 0.0f;
+        for (char c : word) {
+            const Character& ch = font.glyphs[c];
+            wordWidth += static_cast<float>(ch.Advance) * scale;
+        }
+
+        // wrap if need, see if it will flow out the width of row
+        if (nextX + wordWidth > x + rowWidth && nextX > x) {
+            nextX = x;
+            nextY -= lineHeight;
+        }
+
+        // render the each character
+        for (char c : word) {
+            const Character& ch = font.glyphs[c];
+
+            float xpos = nextX + ch.Bearing.x * scale;
+            float ypos = nextY - (ch.Size.y - ch.Bearing.y) * scale;
+            float w = ch.Size.x * scale;
+            float h = ch.Size.y * scale;
+
+            float vertices[6][4] = {
+                { xpos,     ypos + h,   0.0f, 0.0f },
+                { xpos,     ypos,       0.0f, 1.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+                { xpos,     ypos + h,   0.0f, 0.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+                { xpos + w, ypos + h,   1.0f, 0.0f }
+            };
+
+            glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            nextX += static_cast<float>(ch.Advance) * scale;
+        }
+
+        nextX += spaceWidth;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE);
+
 }
+
+
+
 
 
 //Load all image assets from JSON file (containing the image paths)
@@ -1014,7 +1355,7 @@ std::unordered_map<std::string, GLuint> Render::LoadImageAssetsFromJSON(const st
 
     //maybe can default create a json for image if doesnt exists?
     std::unordered_map<std::string, GLuint> result;
-    
+
     //read file
     std::ifstream file{ jsonPath };
     //check if the json file for images exists
@@ -1038,29 +1379,6 @@ std::unordered_map<std::string, GLuint> Render::LoadImageAssetsFromJSON(const st
         return result;
     }
 
-    //for each entry in the images array...
-    /*for (const auto& path : j["images"]) {
-
-        //ignores if entry is not a string
-        if (!path.is_string()) {
-            std::cerr << "Skipping invalid image entry (not a string)" << std::endl;
-            continue;
-        }
-
-        std::string texPath = path.get<std::string>();
-
-        // Check if the file actually exists
-        if (!fs::exists(texPath)) {
-            std::cerr << "Warning: Texture file not found: " << texPath << std::endl;
-            continue; // Skip this one
-        }
-
-        //Load the texture
-        GLuint texID = LoadTexture(texPath);
-
-        loadedCount++;
-
-    }*/
     for (const auto& entry : j["images"]) {
 
         std::string path;
@@ -1097,6 +1415,62 @@ std::unordered_map<std::string, GLuint> Render::LoadImageAssetsFromJSON(const st
     return result;
 }
 
+
+
+
+//Load font assets from json file (contain the fonts type)
+std::unordered_map<std::string, Font> Render::LoadFontAssetsFromJSON(const std::string& jsonPath) {
+    std::unordered_map<std::string, Font> result;
+
+    std::ifstream file{ jsonPath };
+    if (!file.is_open()) {
+        std::cerr << "Failed to open Font Asset JSON: " << jsonPath << std::endl;
+        return result;
+    }
+
+    json j;
+    try {
+
+        file >> j;
+    }
+
+    catch (const std::exception& e) {
+        std::cerr << "Error parsing Font JSON: " << e.what() << std::endl;
+        return result;
+    }
+
+    if (!j.contains("fonts") || !j["fonts"].is_array()) {
+        std::cerr << "Invalid JSON format: missing \"fonts\" array in " << jsonPath << std::endl;
+        return result;
+    }
+
+    for (const auto& entry : j["fonts"]) {
+
+        if (!entry.contains("name") || !entry.contains("path") || !entry.contains("size")) {
+            std::cerr << "Invalid font entry in JSON (missing name/path/size)" << std::endl;
+            continue;
+        }
+
+        std::string fontName = entry["name"].get<std::string>();
+        std::string fontPath = entry["path"].get<std::string>();
+        int fontSize = entry["size"].get<int>();
+
+        if (LoadFont(fontPath, fontSize, fontName)) {
+            std::cout << "Loaded font: " << fontName << " (" << fontSize << "px)" << std::endl;
+            result[fontName] = fontCache[fontName];
+        }
+        else {
+            std::cerr << "Failed to load font: " << fontName << std::endl;
+        }
+    }
+
+    //just checking if logic works
+    std::cout << "[Font] Loaded " << result.size() << " fonts from " << jsonPath << std::endl;
+
+    return result;
+}
+
+
 //shader interface functions
 void Render::ApplyShader(GLuint shaderID) {
     glUseProgram(shaderID);
@@ -1131,11 +1505,299 @@ void Render::SetUniformMat4(GLuint shaderID, const std::string& name, const glm:
 }
 
 
-void Render::SetTint(const Colour3& tint) {
-    currentTint = { tint.r, tint.g, tint.b };
+
+//Batching stuff attempt=============================================================================================================================================================
+void Render::InitBatch()
+{
+    //GPU buffers
+    glGenVertexArrays(1, &batchVAO);
+    glGenBuffers(1, &batchVBO);
+    glGenBuffers(1, &batchEBO);
+
+    glBindVertexArray(batchVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, batchVBO);
+    glBufferData(GL_ARRAY_BUFFER,
+        MaxVertices * sizeof(BatchVertex),
+        nullptr,
+        GL_DYNAMIC_DRAW);
+
+    //build the index buffer for MaxQuads
+    std::vector<unsigned int> indices;
+    indices.reserve(MaxIndices);
+    unsigned int offset = 0;
+
+    for (size_t i = 0; i < MaxQuads; ++i) {
+        // 2 triangles per quad: (0,1,2) (2,3,0)
+        indices.push_back(offset + 0);
+        indices.push_back(offset + 1);
+        indices.push_back(offset + 2);
+        indices.push_back(offset + 2);
+        indices.push_back(offset + 3);
+        indices.push_back(offset + 0);
+        offset += 4;
+    }
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batchEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+        indices.size() * sizeof(unsigned int),
+        indices.data(),
+        GL_STATIC_DRAW);
+
+    // Vertex layout (as in the batch vertex shader)
+    // layout(location=0) vec2 position
+    // layout(location=1) vec2 texCoord
+    // layout(location=2) vec4 color
+    // layout(location=3) float texIndex
+    GLsizei stride = static_cast<GLsizei>(sizeof(BatchVertex));
+    std::size_t off = 0;
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)off);
+    off += sizeof(glm::vec2);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)off);
+    off += sizeof(glm::vec2);
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, stride, (void*)off);
+    off += sizeof(glm::vec4);
+
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, stride, (void*)off);
+
+    glBindVertexArray(0);
+
+    //Shader program for batches
+    batchShader = CreateProgramFromFiles("../Assets/batch.vert", "../Assets/batch.frag"); //remember add this new files and correct path
+
+    //CPU buffer reserve mem
+    batchCPUBuffer.reserve(MaxVertices);
+
+    //Sampler array binding, telling GLSL that uTextures[i] is the texture unit i
+    glUseProgram(batchShader);
+    GLint loc = glGetUniformLocation(batchShader, "uTextures");
+    int samplers[MaxTexSlots];
+
+    for (int i = 0; i < static_cast<int>(MaxTexSlots); ++i) {
+        samplers[i] = i;
+    }
+
+    if (loc >= 0) {
+        glUniform1iv(loc, static_cast<GLsizei>(MaxTexSlots), samplers);
+    }
+
+    // Also set the projection once here, update projection elsewhere if needed
+    GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
+    if (projLoc >= 0) {
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+    } // reuse existing projection (see first if need use camera view project matrix)
+
+    glUseProgram(0);
+
+    ResetBatch();
 }
-void Render::ClearTint() {
-    currentTint = { 1.f, 1.f, 1.f };
+
+
+void Render::ResetBatch()
+{
+    //reset everything
+    batchCPUBuffer.clear();
+    batchIndexCount = 0;
+    batchTexSlots.clear();
+    batchTexSlots.reserve(MaxTexSlots);
+}
+
+void Render::BeginBatch()
+{
+    ResetBatch();
+}
+
+static inline glm::vec2 Rotate2D(const glm::vec2& p, float radians)
+{
+    const float c = std::cos(radians);
+    const float s = std::sin(radians);
+    return glm::vec2(c * p.x - s * p.y, s * p.x + c * p.y);
+}
+
+void Render::FlushIfFull(size_t quadCountNeeded, GLuint textureID)
+{
+    // If exceeding quad capacity, or no room for a new texture slot, flush.
+    bool needFlush = false;
+
+    if (batchIndexCount + quadCountNeeded * 6 > MaxIndices) {
+        needFlush = true;
+    }
+    else {
+        // Check if textureID is already in slots
+        bool found = false;
+        for (size_t i = 0; i < batchTexSlots.size(); ++i) {
+            if (batchTexSlots[i] == textureID) {
+                found = true;
+                break;
+            }
+        }
+        if (!found && batchTexSlots.size() >= MaxTexSlots) {
+            needFlush = true;
+        }
+    }
+
+    if (needFlush) {
+        EndBatch();
+        FlushBatch();
+        ResetBatch();
+    }
+}
+
+void Render::SubmitSpriteBatch(const Image& image, const Vec2& pos, const Vec2& size, float rotation)
+{
+    // full texture
+    SubmitSpriteBatchUV(image, pos, size, glm::vec4(0.f, 1.f, 1.f, 0.f), rotation);
+
+    /*std::cout << "SpriteBatch: texID=" << image.textureID
+        << ", size=(" << size.x << "," << size.y << ")"
+        << ", pos=(" << pos.x << "," << pos.y << ")"
+        << std::endl;*/
+
+}
+
+void Render::SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2& size, const glm::vec4& uvRect, float rotation)
+{
+    if (!image.IsValid()) {
+        return;
+    }
+
+    // Ensure capacity / texture slot availability
+    FlushIfFull(1, image.textureID);
+
+    // Determine tex slot index
+    float texIndex = -1.0f;
+    for (size_t i = 0; i < batchTexSlots.size(); ++i) {
+        if (batchTexSlots[i] == image.textureID) { texIndex = static_cast<float>(i); break; }
+    }
+    if (texIndex < 0.0f) {
+        batchTexSlots.push_back(image.textureID);
+        texIndex = static_cast<float>(batchTexSlots.size() - 1); // 0..N-1
+    }
+
+    // Build a quad centered at (0,0), then rotate/translate to pos
+    // size = (w,h)
+    const glm::vec2 half = { size.x * 0.5f, size.y * 0.5f };
+
+    // CCW: bl, br, tr, tl  (match index pattern 0-1-2, 2-3-0)
+    glm::vec2 local[4] = {
+        {-half.x, -half.y}, // 0
+        {+half.x, -half.y}, // 1
+        {+half.x, +half.y}, // 2
+        {-half.x, +half.y}  // 3
+    };
+
+    // Rotate then translate to world
+    glm::vec2 world[4];
+    for (int i = 0; i < 4; ++i) {
+        world[i] = Rotate2D(local[i], rotation) + glm::vec2(pos.x, pos.y);
+    }
+
+    // UVs (u0,v0,u1,v1) => (bl, br, tr, tl)
+    const float u0 = uvRect.x, v0 = uvRect.y, u1 = uvRect.z, v1 = uvRect.w;
+
+    glm::vec2 uvs[4] = {
+        { u0, v1 }, // bl
+        { u1, v1 }, // br
+        { u1, v0 }, // tr
+        { u0, v0 }  // tl
+    };
+
+    // Push 4 vertices
+    BatchVertex v;
+    v.color = kWhite;
+    v.texIndex = texIndex;
+
+    for (int i = 0; i < 4; ++i) {
+        v.position = world[i];
+        v.texCoord = uvs[i];
+        batchCPUBuffer.push_back(v);
+    }
+
+    batchIndexCount += 6; // one more quad (two triangles)
+}
+
+void Render::EndBatch()
+{
+    if (batchCPUBuffer.empty()) {
+        return;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, batchVBO);
+    glBufferSubData(GL_ARRAY_BUFFER,
+        0,
+        static_cast<GLsizeiptr>(batchCPUBuffer.size() * sizeof(BatchVertex)),
+        batchCPUBuffer.data());
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void Render::FlushBatch()
+{
+    if (batchCPUBuffer.empty() || batchIndexCount == 0) {
+        return;
+    }
+
+    // Bind textures to slots 0..till N-1
+    for (size_t i = 0; i < batchTexSlots.size(); ++i) {
+        glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(i));
+        glBindTexture(GL_TEXTURE_2D, batchTexSlots[i]);
+    }
+
+    glUseProgram(batchShader);
+
+    // Ensure projection is current (note might need use camera view projection)
+    GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
+    if (projLoc >= 0) {
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+    }
+
+    glBindVertexArray(batchVAO);
+    glDrawElements(GL_TRIANGLES,
+        static_cast<GLsizei>(batchIndexCount),
+        GL_UNSIGNED_INT,
+        nullptr);
+
+    // Cleanup binds
+    glBindVertexArray(0);
+    glUseProgram(0);
+
+    //batch testing debug
+    /*std::cout << "[BatchRenderer] Flush: "
+        << batchTexSlots.size() << " textures, "
+        << batchIndexCount / 6 << " quads"
+        << std::endl;*/
+}
+
+//batch attempt end =========================================================================================================================================================================
+//void Render::SetTint(const Colour3& tint) {
+//    currentTint = { tint.r, tint.g, tint.b };
+//}
+//void Render::ClearTint() {
+//    currentTint = { 1.f, 1.f, 1.f };
+//}
+
+Vec2 Render::CalculateTextSize(const std::string& text, float scale)
+{
+    float width = 0.0f;
+    float height = 0.0f;
+
+    for (char c : text)
+    {
+        if (Characters.find(c) == Characters.end())
+            continue;
+
+        const Character& ch = Characters[c];
+        width += (ch.Advance >> 6) * scale; // Advance in pixels
+        height = std::max(height, (float)ch.Size.y * scale);
+    }
+
+    return { width, height };
 }
 
 
@@ -1153,6 +1815,82 @@ void Render::DrawRoundedRect(const Vec2& pos, float width, float height, float r
     };
     for (auto& c : corners)
         DrawCircle(c, radius, color, 16);
+}
+void Render::DrawFullscreenTexture(GLuint texture, bool cover)
+{
+    if (!texture) return;
+
+    // 1. Get texture dimensions
+    int texW = 0, texH = 0;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texW);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &texH);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    if (texW == 0 || texH == 0)
+        return; // invalid texture, skip draw
+
+    // 2. Compute scaling that maintains aspect ratio
+    const float winW = static_cast<float>(GLApp::width);
+    const float winH = static_cast<float>(GLApp::height);
+    const float wr = winW / texW;
+    const float hr = winH / texH;
+
+    // "cover" fills & crops, "contain" fits & letterboxes
+    const float s = cover ? std::max(wr, hr) : std::min(wr, hr);
+    const Vec2 drawSize = { texW * s, texH * s };
+
+    // 3. Center and draw
+    DrawTexturedQuad({ winW * 0.5f, winH * 0.5f }, drawSize, texture);
+}
+
+
+void Render::InitSceneFramebuffer(int width, int height)
+{
+    if (sceneFBO) {
+        glDeleteFramebuffers(1, &sceneFBO);
+        glDeleteTextures(1, &sceneColor);
+        glDeleteRenderbuffers(1, &sceneDepth);
+    }
+
+    glGenFramebuffers(1, &sceneFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
+
+    // Create color texture
+    glGenTextures(1, &sceneColor);
+    glBindTexture(GL_TEXTURE_2D, sceneColor);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+        GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D, sceneColor, 0);
+
+    // Depth buffer
+    glGenRenderbuffers(1, &sceneDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, sceneDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+        GL_RENDERBUFFER, sceneDepth);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "[Render] Scene framebuffer incomplete!\n";
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+
+void Render::BeginSceneCapture()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
+    glViewport(0, 0, GLApp::width, GLApp::height);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void Render::EndSceneCapture()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 

@@ -89,6 +89,7 @@ private:
     void ShowAssetPreviewWindow();
 
     //void ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize)
-    void HandleEntityDragging();
+    void DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize);
+
 };
 

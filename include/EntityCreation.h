@@ -75,12 +75,16 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);
  * @brief Generates initial prefab JSON files in Assets/prefabs/.
  *
  * Creates the prefabs directory if missing and generates default
- * entity prefabs (Player, Waffle, Rectangle, Circle). 
+ * entity prefabs (Player, Waffle, Rectangle, Circle).
  *
  */
 void GenerateInitialPrefabs(bool forceRegenerate);
 
 
-Entity Create_RotatingObject(float x, float y);
-Entity Create_MovingObject(float x, float y);
+// Entity Create_RotatingObject(float x, float y);
+// Entity Create_MovingObject(float x, float y);
 
+// void GenerateInitialPrefabs();
+
+
+Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath);

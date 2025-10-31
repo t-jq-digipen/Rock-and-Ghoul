@@ -15,7 +15,7 @@
  */
 #include "Debug.h"
 #include <unordered_map>
-
+#include "glapp.h"
 void DebugDraw::DrawAABB(const AABB& box, Render& renderer) {
     Vec2 topLeft{ box.min.x, box.max.y };
     Vec2 topRight{ box.max.x, box.max.y };
@@ -24,18 +24,28 @@ void DebugDraw::DrawAABB(const AABB& box, Render& renderer) {
 
     Colour3 color{ 0.f, 1.f, 0.f }; // green
 
+    float lineWidth = (GLApp::width / 1920.0f) * 2.0f; // 2.0 at 1920 width
+    glLineWidth(std::max(1.0f, lineWidth));
+
     renderer.DrawLine(topLeft, topRight, color);
     renderer.DrawLine(topRight, bottomRight, color);
     renderer.DrawLine(bottomRight, bottomLeft, color);
     renderer.DrawLine(bottomLeft, topLeft, color);
+
+    glLineWidth(1.0f); // Reset
 }
 
 void DebugDraw::DrawHotspot(const Vec2& pos, Render& renderer) {
-    float r = 5.f;
-    Colour3 color{ 1.f, 0.f, 0.f }; // red cross
+    float baseRadius = 5.f;
+    float windowScale = GLApp::width / 1920.0f;
+    float r = baseRadius * windowScale;
 
+    Colour3 color{ 1.f, 0.f, 0.f }; // red cross
+    float lineWidth = windowScale * 2.0f;
+    glLineWidth(std::max(1.0f, lineWidth));
     renderer.DrawLine({ pos.x - r, pos.y }, { pos.x + r, pos.y }, color);
     renderer.DrawLine({ pos.x, pos.y - r }, { pos.x, pos.y + r }, color);
+    glLineWidth(1.0f);
 }
 
 
@@ -70,6 +80,11 @@ void DebugDraw::DrawVelocity(Entity e, const TransformComponent& t, Render& rend
 
 void DebugDraw::DrawCircleCollider(const Circle& circle, Render& renderer) {
     Colour3 color{ 0.f, 1.f, 1.f }; // cyan
+    // Scale line width
+    float windowScale = GLApp::width / 1920.0f;
+    float lineWidth = windowScale * 2.0f;
+    glLineWidth(std::max(1.0f, lineWidth));
     renderer.DrawCircle({ circle.pos.x, circle.pos.y }, circle.rad, color, 32);
+    glLineWidth(1.0f);
 }
 

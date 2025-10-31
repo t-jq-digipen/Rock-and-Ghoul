@@ -25,16 +25,171 @@
 #include "RenderSystem.h"
 #include "Render.h"
 #include "Animator.h"
+#include <Camera.h>
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
+static std::vector<GLuint> s_backgroundTextures;
+
+void RenderSystem::AddBackgroundTexture(GLuint tex) {
+    s_backgroundTextures.push_back(tex);
+}
+
+void RenderSystem::ClearBackgroundTextures() {
+    s_backgroundTextures.clear();
+}
+//extern Camera mainCamera;
+//Camera& mainCamera = Camera::GetInstance();
+
 
 void RenderSystem::Initialize() {
     // ? 
+    std::cout << "[RenderSystem] Initializing..." << std::endl;
+
+    Render& renderer = Render::GetInstance();
+
+    // Initialize your offscreen framebuffer for Game View
+    renderer.InitSceneFramebuffer(GLApp::width, GLApp::height);
+
+    std::cout << "[RenderSystem] Scene framebuffer created ("
+        << GLApp::width << "x" << GLApp::height << ")\n";
 }
 
 void RenderSystem::Update(float dt) {
+    Render& renderer = Render::GetInstance();
 
+    if (ImGuiSystem::guiEnabled) {
+        renderer.BeginSceneCapture(); 
+        renderer.ClearBackground({ 0.1f, 0.1f, 0.1f, 1.0f });
+    }
+    else {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, GLApp::width, GLApp::height);
+        renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f }); // clear main framebuffer
+    }
+
+    /*if (ImGuiSystem::guiEnabled) {
+        renderer.BeginSceneCapture();
+        renderer.ClearBackground({ 0.1f, 0.1f, 0.1f, 1.0f }); // Background for game view
+    }*/
+
+    Render::GetInstance().UpdateProjection();
+   // renderer.ClearBackground({ 0.05f, 0.0f, 0.1f, 1.0f });
+    // ===== DRAW BACKGROUND IF SET =====
+
+    for (GLuint tex : s_backgroundTextures)
+        renderer.DrawFullscreenTexture(tex, true);
+   
+
+
+    // Use the camera for all subsequent draw calls (ok why this not workinGGGGGGGG AJBFEEUFBUJFBFDJSBJF)
+    //mainCamera.UpdateMatrices();
+    Camera::GetInstance().UpdateMatrices();
+
+    //glm::mat4 viewProj = mainCamera.GetViewProjection();
+    glm::mat4 viewProj = Camera::GetInstance().GetViewProjection();
+
+    renderInstance.SetUniformMat4(renderInstance.GetSpriteShader(), "uProjection", viewProj);
+    
+
+
+    /*glm::mat4 viewProj = mainCamera.GetViewProjection();
+    GLuint shader = renderInstance.GetSpriteShader();
+    glUseProgram(shader);
+    glUniformMatrix4fv(glGetUniformLocation(shader, "uProjection"), 1, GL_FALSE, &viewProj[0][0]);*/
+
+    //glUseProgram(renderInstance.GetSpriteShader());
+    //glUniformMatrix4fv(glGetUniformLocation(renderInstance.GetSpriteShader(), "uProjection"), 1, GL_FALSE, &viewProj[0][0]);
+
+
+
+    //try batching version
+    renderInstance.BeginBatch(); //added for batch
+
+    for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
+    {
+
+        // Check if entity has the batching tag
+        bool isBatched = false;
+        if (m_registry.Has_Component<TagComponent>(entID))
+        {
+            const auto& tag = m_registry.Get_Component<TagComponent>(entID);
+            if (tag.tag == T_BATCH)
+                isBatched = true;
+        }
+
+        if (spriteComp.IsAnimated())
+        {
+            // draw animated logic
+            TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+            Animator::AnimatorComponent& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
+
+            animComp.UpdateFrame(dt);
+
+            //added for batch
+            Image img = spriteComp.Get_Image();
+            glm::vec4 uv(animComp.u0 / img.widthPixels,
+                (animComp.v1 / img.heightPixels),
+                animComp.u1 / img.widthPixels,
+                (animComp.v0 / img.heightPixels));
+
+            if (isBatched) {
+                renderInstance.SubmitSpriteBatchUV(img, transComp.pos, spriteComp.Get_Scale(), uv, transComp.rot + spriteComp.Get_Rotation());
+            }
+            //renderInstance.SubmitSpriteBatchUV(img, transComp.pos, spriteComp.Get_Scale(), uv, transComp.rot + spriteComp.Get_Rotation());
+            //end of added for batch
+            
+            else {
+                renderInstance.DrawImageSub(
+                    img,
+                    transComp.pos.x, transComp.pos.y,
+                    spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
+                    animComp.u0, animComp.v0, animComp.u1, animComp.v1,
+                    glm::radians(transComp.rot + spriteComp.Get_Rotation()));
+            }
+            //renderInstance.DrawImageSub(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, animComp.u0, animComp.v0, animComp.u1, animComp.v1, transComp.rot + spriteComp.Get_Rotation());
+        }
+        else
+        {
+            TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+
+            Image img = spriteComp.Get_Image();
+            Vec2 scaledSize = {
+                img.widthPixels * spriteComp.Get_Scale().x,
+                img.heightPixels * spriteComp.Get_Scale().y
+            };
+
+            if (isBatched) {
+                renderInstance.SubmitSpriteBatch(
+                    img,
+                    transComp.pos,
+                    scaledSize,
+                    transComp.rot + spriteComp.Get_Rotation());
+            }
+            /*renderInstance.SubmitSpriteBatch(
+                img,
+                transComp.pos,
+                scaledSize,
+                transComp.rot + spriteComp.Get_Rotation());*/
+
+            else {
+                renderInstance.DrawImageScaled(
+                    img,
+                    transComp.pos.x, transComp.pos.y,
+                    spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
+                    glm::radians(transComp.rot + spriteComp.Get_Rotation()));
+            }
+            //renderInstance.DrawImageScaled(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, transComp.rot + spriteComp.Get_Rotation());
+        }
+    }
+
+
+
+    renderInstance.EndBatch();
+    renderInstance.FlushBatch();
+
+
+/*  //Original version in case need ref
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
         spriteComp.Update_ImageSize();
@@ -52,6 +207,7 @@ void RenderSystem::Update(float dt) {
             animComp.UpdateUV(spriteComp.Get_Image().widthPixels, spriteComp.Get_Image().heightPixels);
             animComp.UpdateFrame(dt);
 
+
             renderInstance.DrawImageSub(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, animComp.u0, animComp.v0, animComp.u1, animComp.v1, transComp.rot + spriteComp.Get_Rotation());
         }
         else
@@ -63,11 +219,14 @@ void RenderSystem::Update(float dt) {
                 spriteComp.Set_Tint({ 1.0f, 1.0f, 1.0f });
             renderInstance.SetTint(spriteComp.Get_Tint());
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+
+
             renderInstance.DrawImageScaled(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, transComp.rot + spriteComp.Get_Rotation());
             renderInstance.ClearTint();
 
         }
     }
+    */
 
     // Loop through all ShapeComponents in the ECS
     for (auto& [entID, shapeComp] : m_registry.Get_ComponentMap<ShapeComponent>())
@@ -145,7 +304,9 @@ void RenderSystem::Update(float dt) {
         renderInstance.DrawRectInstanced(batch, { 0.2f, 0.8f, 1.0f });
         batch.clear();
     }
-    
+    if (ImGuiSystem::guiEnabled) {
+        renderer.EndSceneCapture();
+    }
 }
 
 void RenderSystem::Shutdown() {
