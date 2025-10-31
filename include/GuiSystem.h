@@ -48,6 +48,9 @@ public:
     void AddTextBox(const TextBoxConfig& cfg);
     static void SetAudioManager(AudioManager* audioMgr);
 
+    void SetEditMode(bool isEditing);
+    bool GetEditMode() const;
+
 private:
     std::vector<ButtonConfig> buttons;
     std::vector<TextBoxConfig> textboxes;
@@ -59,3 +62,5 @@ private:
     int selectedIndex = -1;
     enum class SelectedType { None, Button, TextBox } selectedType = SelectedType::None;
 };
+
+inline GuiSystem guiSystem;

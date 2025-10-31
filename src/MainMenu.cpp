@@ -29,7 +29,7 @@
 // Initialize Audio Manager
 AudioManager* MainMenu::audio = nullptr;
 bool showInstancingDemo = false;
-static GuiSystem guiSystem;
+// static GuiSystem guiSystem;
 /**
 * @brief Sets the AudioManager instance for the MainMenu.
 *
