@@ -380,6 +380,11 @@ source_group("Game\\State\\Levels" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Level1.h
 )
 
+source_group("Game\\State\\Levels" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Level2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Level2.h
+)
+
 source_group("Game\\State\\MainMenu" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MainMenu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MainMenu.h

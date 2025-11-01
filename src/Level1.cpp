@@ -170,12 +170,23 @@ void Level1::Init()
 
 		// 4. Add Gui Editor
 		GuiSystem::Get().Initialize();
-		GuiSystem::Get().AddTextBox({
-			.text = "Insert Dialogue HERE",
-			.pos = {1650, 50},
-			.scale = 0.5f,
-			.color = {0.f, 0.f, 0.f},
-			.centered = true });
+		//GuiSystem::Get().AddTextBox({
+		//	.text = "Insert Dialogue HERE",
+		//	.pos = {1650, 50},
+		//	.scale = 0.5f,
+		//	.color = {0.f, 0.f, 0.f},
+		//	.centered = true });
+		
+		// Button to go to Level 2
+		GuiSystem::Get().AddButton({
+			.label = "LEVEL 2",
+			.pos = {1650.0f, 150.0f},
+			.size = {300.0f, 150.0f},
+			.color = {20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f},
+			.onClick = [] { GSM_SetNextState(GameState::GS_LEVEL2); },
+			.soundType = AudioSystem::ButtonType::PLAY,
+			.shape = ButtonShape::Rounded
+		});
 
 		// 5. Create FretBoard after OpenGL is ready (duplicate - can remove)
 		if (!fretboard) {

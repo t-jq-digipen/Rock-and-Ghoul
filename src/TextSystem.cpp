@@ -54,4 +54,49 @@ namespace TextSystem
 		const int n = std::clamp(txt.visibleChars, 0, (int)fullLine.size());
 		return fullLine.substr(0, n);
 	}
+
+	bool LoadDialogueFromJson(const std::string& filepath, TextComponent& textComp)
+	{
+		const std::string content = FileIO::ReadFile(filepath);
+		if (content.empty()) {
+			std::cerr << "Failed to load dialogue from: " << filepath << '\n';
+			return false;
+		}
+
+		try {
+			nlohmann::json j = nlohmann::json::parse(content);
+
+			// Fields with defaults
+			std::vector<std::string> lines = j.value("lines", std::vector<std::string>{""});
+			if (lines.empty()) lines.push_back("");
+
+			const float textSpeed = j.value("textSpeed", 24.0f);
+			const int speakerID = j.value("speakerID", 0);
+			const std::string fontPath = j.value("fontPath", std::string{});
+			const float fontSize = j.value("fontSize", 32.0f);
+
+			Vec3 color{ 1.f, 1.f, 1.f };
+			if (j.contains("color") && j["color"].is_array() && j["color"].size() >= 3) {
+				color.x = j["color"][0].get<float>();
+				color.y = j["color"][1].get<float>();
+				color.z = j["color"][2].get<float>();
+			}
+
+			// Apply to component
+			textComp.SetLines(lines);
+			textComp.SetCurrentLineIndex(0);
+			textComp.SetTextSpeed(textSpeed);
+			textComp.SetSpeakerID(speakerID);
+			textComp.SetFontPath(fontPath);
+			textComp.SetFontSize(fontSize);
+			textComp.SetColor(color);
+			textComp.StartTyping(); // begin typewriter effect
+
+			return true;
+		}
+		catch (const std::exception& e) {
+			std::cerr << "Dialogue json parse error (" << filepath << "): " << e.what() << '\n';
+			return false;
+		}
+	}
 }

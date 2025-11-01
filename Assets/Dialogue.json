@@ -1,0 +1,13 @@
+{
+  "lines": [
+    "Hey Ghoul, are you excited for the Jam Out SG?",
+    "You betcha! I'll go poo first!",
+    "Be back quick!",
+    "What's taking her so long? I should find her."
+  ],
+  "textSpeed": 30.0,
+  "speakerID": 0,
+  "fontPath": "../Assets/fonts/Marker.ttf",
+  "fontSize": 1.0,
+  "color": [1.0, 1.0, 1.0]
+}

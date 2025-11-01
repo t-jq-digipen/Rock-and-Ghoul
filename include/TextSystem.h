@@ -3,6 +3,11 @@
 #include <vector>
 #include <algorithm>
 #include <Remath.h>
+#include <nlohmann/json.hpp>
+#include <iostream>
+#include "FileIO.h"
+
+using json = nlohmann::json;
 
 namespace TextSystem
 {
@@ -62,4 +67,7 @@ namespace TextSystem
 	// Helpers (for automatically "typing" each line)
 	void UpdateTyping(TextComponent& txt, float dt, float speedMul = 1.f);
 	std::string GetVisibleText(const TextComponent& txt);
+
+	// Get Dialogue From Json
+	bool LoadDialogueFromJson(const std::string& path, TextComponent& out);
 }

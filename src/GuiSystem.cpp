@@ -31,6 +31,24 @@ void GuiSystem::AddTextBox(const TextBoxConfig& cfg)
     textboxes.push_back(copy);
 }
 
+void GuiSystem::AddDialogue(const DialogueConfig& cfg)
+{
+    dialogues.push_back(cfg);
+}
+
+int GuiSystem::AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox)
+{
+    auto owned = std::make_shared<TextSystem::TextComponent>();
+    if (!TextSystem::LoadDialogueFromJson(jsonPath, *owned)) return -1;
+    DialogueConfig d;
+    d.owned = std::move(owned);
+    d.textComp = nullptr;
+    d.textBox = textBox;
+    d.jsonPath = jsonPath;
+    dialogues.push_back(std::move(d));
+    return static_cast<int>(dialogues.size()) - 1;
+}
+
 void GuiSystem::SetEditMode(bool isEditing)
 {
     editMode = isEditing;
@@ -137,6 +155,38 @@ void GuiSystem::Update(float dt) {
         render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, "Marker");
     }
 
+    for (auto& d : dialogues)
+    {
+        TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+        if (!comp) continue;
+
+        // scale skin
+        d.textBox.pos.x = d.textBox.basePos.x * scaleX;
+        d.textBox.pos.y = d.textBox.basePos.y * scaleY;
+        d.textBox.scale = d.textBox.baseScale * uiScale;
+
+        // advance typewriter
+        TextSystem::UpdateTyping(*comp, dt, 1.0f);
+
+        // line & visible substring
+        const std::string& full = comp->GetCurrentLine(comp->GetCurrentLineIndex());
+        const std::string  vis = TextSystem::GetVisibleText(*comp);
+
+        // color: prefer component color if non-zero, else skin color
+        Colour3 drawCol = d.textBox.color;
+        const Vec3& c = comp->GetColor();
+        if (c.x != 0.f || c.y != 0.f || c.z != 0.f) drawCol = { c.x, c.y, c.z };
+
+        Vec2 textSize = render.CalculateTextSize(vis, d.textBox.scale);
+        float drawX = d.textBox.pos.x, drawY = d.textBox.pos.y;
+        if (d.textBox.centered) { drawX -= textSize.x * 0.5f; drawY -= textSize.y * 0.5f; }
+
+        // Optional background panel (simple) – comment out if not needed
+        // r.DrawRoundedRect({d.textBox.pos.x, d.textBox.pos.y}, textSize.x + 24, textSize.y + 16, 8.f, {0.f,0.f,0.f});
+
+        render.DrawText(vis, drawX, drawY, d.textBox.scale, drawCol, "Marker");
+    }
+
     if (editMode) {
         // Background panel
         render.DrawRect({ 250, 540 }, 500, 1000, { 0.15f, 0.15f, 0.15f });
@@ -235,6 +285,28 @@ void GuiSystem::Update(float dt) {
             y -= 60;
             if (textDeleted)
                 return;
+        }
+
+
+        // List Dialogues
+        for (int i = 0; i < (int)dialogues.size(); ++i) {
+            int idx = (int)buttons.size() + (int)textboxes.size() + i;
+            bool sel = (selectedType == SelectedType::Dialogue && selectedIndex == idx);
+            render.DrawRect({ 150, y }, 600, 50, sel ? Colour3{ 0.9f,0.6f,0.2f } : Colour3{ 0.25f,0.25f,0.25f });
+
+            // label from current line head (preview)
+            TextSystem::TextComponent* comp = dialogues[i].textComp ? dialogues[i].textComp : dialogues[i].owned.get();
+            std::string label = "Dialogue";
+            if (comp && !comp->GetLines().empty()) {
+                const std::string& ln = comp->GetLines()[comp->GetCurrentLineIndex()];
+                label += ": " + (ln.size() > 24 ? (ln.substr(0, 24) + "...") : ln);
+            }
+            render.DrawText(label, 20, y - 10, 0.5f, { 1,1,1 }, "Marker");
+
+            if (render.IsAreaTouched(mouse, { 150, y }, 300, 50) && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+                selectedType = SelectedType::Dialogue; selectedIndex = idx;
+            }
+            y -= 60;
         }
 
 
@@ -540,13 +612,31 @@ void GuiSystem::Update(float dt) {
                 if (Input::IsKeyHeld(GLFW_KEY_P))     // bigger text
                     t.baseScale = std::min(3.0f, t.baseScale + 0.02f);
             }
+
+            else if (selectedType == SelectedType::Dialogue && selectedIndex - buttons.size() < dialogues.size())
+            {
+                int dlgIdx = selectedIndex - ((int)buttons.size() + (int)textboxes.size());
+                if (dlgIdx >= 0 && dlgIdx < (int)dialogues.size()) {
+                    auto& d = dialogues[dlgIdx];
+
+                    // Move/scale with keys (quick + simple)
+                    if (Input::IsKeyHeld(GLFW_KEY_UP))    d.textBox.basePos.y += 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_DOWN))  d.textBox.basePos.y -= 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_LEFT))  d.textBox.basePos.x -= 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) d.textBox.basePos.x += 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_O))     d.textBox.baseScale = std::max(0.2f, d.textBox.baseScale - 0.02f);
+                    if (Input::IsKeyHeld(GLFW_KEY_P))     d.textBox.baseScale = std::min(3.0f, d.textBox.baseScale + 0.02f);
+                }
+            }
         }
 
         render.DrawRect({ 150, 990 }, 140, 50, { 0.3f, 0.6f, 0.3f });
         render.DrawRect({ 330, 990 }, 140, 50, { 0.3f, 0.6f, 0.3f });
+        render.DrawRect({ 510, 990 }, 180, 50, { 0.3f,0.6f,0.3f });
         // UPDATED: Added font parameter to DrawText
         render.DrawText("+Button", 100, 980, 0.5f, { 1,1,1 }, "Marker");
         render.DrawText("+Text", 300, 980, 0.5f, { 1,1,1 }, "Marker");
+        render.DrawText("+Dialogue", 470, 980, 0.5f, { 1,1,1 }, "Marker");
 
         if (render.IsAreaTouched(mouse, { 150, 990 }, 140, 50) &&
             Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
@@ -585,6 +675,26 @@ void GuiSystem::Update(float dt) {
 
             selectedType = SelectedType::TextBox;
             selectedIndex = (int)buttons.size() + (int)textboxes.size() - 1; // auto-select new
+        }
+
+        // +Dialogue
+        if (render.IsAreaTouched(mouse, { 510, 990 }, 180, 50) && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+            TextBoxConfig skin;
+            skin.text = "";
+            skin.basePos = { 960, 120 };
+            skin.baseScale = 0.9f;
+            skin.pos = skin.basePos;
+            skin.scale = skin.baseScale;
+            skin.color = { 1,1,1 };
+            skin.centered = true;
+
+            // default path; user can later edit in UI to reload a different JSON
+            const std::string path = "../Assets/Dialogue.json";
+            int idx = AddDialogueFromJson(path, skin);
+            if (idx >= 0) {
+                selectedType = SelectedType::Dialogue;
+                selectedIndex = (int)buttons.size() + (int)textboxes.size() + idx;
+            }
         }
     }
 
