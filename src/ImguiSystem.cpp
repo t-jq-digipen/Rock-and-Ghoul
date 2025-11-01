@@ -37,8 +37,8 @@
 #include <unordered_set> 
 #include "Render.h" 
 #include "Camera.h"
-//static Camera editorCamera;
-//static bool useEditorCamera = true;
+static bool isPlacingPrefab = false;
+static std::string pendingPrefabPath;
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
@@ -360,164 +360,7 @@ void ImGuiSystem::Initialize() {
    
 }
 
-//void ImGuiSystem::Update(float dt) {
-//
-//    (void)dt;
-//    if (Input::IsKeyPressed(GLFW_KEY_F1)) {
-//        guiEnabled = !guiEnabled; // toggle on/off
-//    }
-//   
-//
-//    if (!guiEnabled) return;
-//
-//
-//    ImGui_ImplOpenGL3_NewFrame();
-//    ImGui_ImplGlfw_NewFrame(); 
-//    ImGui::NewFrame();
-//
-//    HandleEntityDragging();
-//    //// Choose where to place it
-//    //ImVec2 cornerPos(ImGui::GetIO().DisplaySize.x - 420, 10);   // top-right corner, 10 offset
-//    //ImGui::SetNextWindowPos(cornerPos, ImGuiCond_Always);
-//    //ImGui::SetNextWindowSize(ImVec2(400, 225));                 // 16:9
-//
-//    //ImGui::SetNextWindowBgAlpha(0.8f);
-//
-//   
-//    //if (ImGui::Begin("Scene Viewport",
-//    //    nullptr,
-//    //    ImGuiWindowFlags_NoResize |
-//    //    ImGuiWindowFlags_NoMove |
-//    //    ImGuiWindowFlags_NoCollapse |
-//    //    ImGuiWindowFlags_NoScrollbar |
-//    //    ImGuiWindowFlags_NoScrollWithMouse |
-//    //    ImGuiWindowFlags_NoTitleBar))
-//    //{
-//    //    ImVec2 cursor = ImGui::GetCursorScreenPos();
-//    //    ImVec2 size = ImGui::GetContentRegionAvail();
-//
-//    //    // Draw your overlay (entity boxes etc.)
-//    //    ShowEntityInteractionOverlay(cursor, size);
-//
-//    //    ImGui::Dummy(size); // keeps layout from collapsing
-//    //}
-//    //ImGui::End();
-//
-//    ImGuiViewport* viewport = ImGui::GetMainViewport();
-//    ImGui::SetNextWindowPos(viewport->WorkPos);
-//    ImGui::SetNextWindowSize(viewport->WorkSize);
-//    ImGui::SetNextWindowViewport(viewport->ID);
-//
-//    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-//    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-//    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-//
-//    ImGuiWindowFlags dockspaceFlags =
-//        ImGuiWindowFlags_NoDocking |
-//        ImGuiWindowFlags_NoTitleBar |
-//        ImGuiWindowFlags_NoCollapse |
-//        ImGuiWindowFlags_NoResize |
-//        ImGuiWindowFlags_NoMove |
-//        ImGuiWindowFlags_NoBringToFrontOnFocus |
-//        ImGuiWindowFlags_NoNavFocus;
-//
-//    ImGui::Begin("EditorRoot", nullptr, dockspaceFlags);
-//    ImGui::PopStyleVar(3);
-//
-//    ImGuiID dockspaceID = ImGui::GetID("MainDockspace");
-//    ImGui::DockSpace(dockspaceID, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
-//
-//    // 🟩 Do this *only once*, not every frame
-//    static bool firstDock = true;
-//    if (firstDock)
-//    {
-//        firstDock = false;
-//        ImGui::DockBuilderRemoveNode(dockspaceID); // clear previous
-//        ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
-//        ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->WorkSize);
-//
-//        ImGuiID dock_left = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left, 0.20f, nullptr, &dockspaceID);
-//        ImGuiID dock_right = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, nullptr, &dockspaceID);
-//        ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.25f, nullptr, &dockspaceID);
-//
-//        ImGui::DockBuilderDockWindow("Engine Info", dock_left);
-//        ImGui::DockBuilderDockWindow("Entity Editor", dock_right);
-//        ImGui::DockBuilderDockWindow("Collision + Prefabs", dock_bottom);
-//        ImGui::DockBuilderDockWindow("Assets", dock_bottom);
-//        ImGui::DockBuilderDockWindow("Game View", dockspaceID);
-//
-//        ImGui::DockBuilderFinish(dockspaceID);
-//    }
-//    ImGui::End(); // End EditorRoot
-//
-//
-//    // === Menu bar ===
-//    if (ImGui::BeginMenuBar()) {
-//        if (ImGui::BeginMenu("File")) {
-//            if (ImGui::MenuItem("Exit Editor", "F1"))
-//                guiEnabled = false;
-//            ImGui::EndMenu();
-//        }
-//        if (ImGui::BeginMenu("View")) {
-//            ImGui::MenuItem("Engine Info");
-//            ImGui::MenuItem("Collision + Prefabs");
-//            ImGui::MenuItem("Entity Editor");
-//            ImGui::MenuItem("Assets");
-//            ImGui::EndMenu();
-//        }
-//        ImGui::EndMenuBar();
-//    }
-//    // === Dockable panels ===
-//    ImGui::Begin("Engine Info");
-//    ShowEngineDebugWindow();
-//    ImGui::End();
-//
-//    ImGui::Begin("Collision + Prefabs");
-//    ShowCollisionDebugWindow();
-//    ImGui::End();
-//
-//    ImGui::Begin("Entity Editor");
-//    ImGui::Columns(2);
-//    ShowHierarchyWindow();
-//    ImGui::NextColumn();
-//    ShowInspectorWindow();
-//    ImGui::Columns(1);
-//    ImGui::End();
-//
-//    ImGui::Begin("Assets");
-//    ShowAssetPreviewWindow();
-//    ImGui::End();
-//    
-//    //ImGui::Begin("Game Editor");
-//
-//    //if (ImGui::BeginTabBar("EditorTabs")) {
-//    //    if (ImGui::BeginTabItem("Engine Info")) {
-//    //        ShowEngineDebugWindow();
-//    //        ImGui::EndTabItem();
-//    //    }
-//    //    if (ImGui::BeginTabItem("Collision + Prefabs")) {
-//    //        ShowCollisionDebugWindow();
-//    //        ImGui::EndTabItem();
-//    //    }
-//    //    if (ImGui::BeginTabItem("Entity Editor")) {
-//    //        //splits the into two columns
-//    //        ImGui::Columns(2);
-//    //        ShowHierarchyWindow();
-//
-//    //        ImGui::NextColumn();
-//    //        ShowInspectorWindow();
-//    //        //resets back to a single column layout for the rest of the UI
-//    //        ImGui::Columns(1);
-//    //        ImGui::EndTabItem();
-//    //    }
-//    //    if (ImGui::BeginTabItem("Assets")) {
-//    //        ShowAssetPreviewWindow();
-//    //        ImGui::EndTabItem();
-//    //    }
-//    //    ImGui::EndTabBar();
-//    //}
-//    //ImGui::End();
-//}
+
 void ImGuiSystem::Update(float dt)
 {
     (void)dt;
@@ -570,7 +413,7 @@ void ImGuiSystem::Update(float dt)
         ImGuiID dock_right = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, nullptr, &dockspaceID);
         ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.25f, nullptr, &dockspaceID);
 
-        ImGui::DockBuilderDockWindow("Scene Overview", dock_left);
+        ImGui::DockBuilderDockWindow("Editor Camera", dock_left);
         ImGui::DockBuilderDockWindow("Engine Info", dock_left);
         ImGui::DockBuilderDockWindow("Entity Editor", dock_right);
         ImGui::DockBuilderDockWindow("Collision + Prefabs", dock_bottom);
@@ -580,13 +423,13 @@ void ImGuiSystem::Update(float dt)
     }
 
 
-    if (ImGui::Begin("Scene Overview")) {
+    if (ImGui::Begin("Editor Camera")) {
         ImVec2 cursor = ImGui::GetCursorScreenPos();
         ImVec2 size = ImGui::GetContentRegionAvail();
 
         // minimum size 
         if (size.x > 50 && size.y > 50) {
-            ShowEntityInteractionOverlay(cursor, size);
+            ShowEntityCamera(cursor, size);
             ImGui::Dummy(size); 
         }
         else {
@@ -611,6 +454,8 @@ void ImGuiSystem::Update(float dt)
         ImGui::NextColumn();
         ShowInspectorWindow();
         ImGui::Columns(1);
+        ImGui::Separator();
+        ShowPrefabControls();
     }
     ImGui::End();
 
@@ -647,6 +492,80 @@ void ImGuiSystem::Update(float dt)
         if (dragEditMode) {
             DrawEntityDragHandles(cursor, ImVec2(newWidth, newHeight));
         }
+
+        // ---------------------------------------------------------
+        // Prefab placement handler (multi-placement version)
+        // ---------------------------------------------------------
+        // ---------------------------------------------------------
+// Prefab placement handler (multi-placement version)
+// ---------------------------------------------------------
+        if (isPlacingPrefab && ImGui::IsItemHovered())
+        {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+                // mouse in screen space
+                ImVec2 mouse = ImGui::GetMousePos();
+
+                // the image rect in screen space
+                ImVec2 imgMin = cursor;                         // top-left of the ImGui::Image
+                ImVec2 imgMax = ImVec2(cursor.x + newWidth,
+                    cursor.y + newHeight);   // bottom-right
+
+                // early out if somehow not inside (should be hovered anyway)
+                if (mouse.x < imgMin.x || mouse.x > imgMax.x ||
+                    mouse.y < imgMin.y || mouse.y > imgMax.y)
+                    goto end_prefab;
+
+                // panel-local uv in [0,1]
+                float u = (mouse.x - imgMin.x) / (imgMax.x - imgMin.x);
+                float v = (mouse.y - imgMin.y) / (imgMax.y - imgMin.y);
+
+                // because we drew the texture with flipped UVs (0,1) -> (1,0),
+                // v grows downward in screen space, but NDC expects up to be +Y.
+                // so flip v here.
+                float ndcX = u * 2.0f - 1.0f;     // [0,1] -> [-1,1]
+                float ndcY = (1.0f - v) * 2.0f - 1.0f;
+
+                Camera& cam = Camera::GetInstance();
+                glm::mat4 invVP = glm::inverse(cam.GetViewProjection());
+
+                // for 2D ortho this hits z=0 plane fine
+                glm::vec4 world = invVP * glm::vec4(ndcX, ndcY, 0.0f, 1.0f);
+                if (world.w != 0.0f) world /= world.w;
+
+                float worldX = world.x;
+                float worldY = world.y;
+
+                // OPTIONAL: if your prefab’s pivot is top-left and you want cursor-centre placement,
+                // subtract half extents here (if you can query them). Example for a 50x50 box:
+                // worldX -= 25.0f; worldY -= 25.0f;
+
+                Entity newEnt = JsonLoad::LoadEntityFromFile(pendingPrefabPath, worldX, worldY);
+                if (newEnt != INVALID_ENTITY)
+                {
+                    selectedEntity = newEnt;
+                    std::cout << "[Editor] Spawned prefab at (" << worldX << ", " << worldY << ")\n";
+                }
+                else
+                {
+                    std::cerr << "[Editor] Failed to spawn prefab!\n";
+                }
+            }
+
+            if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+            {
+                isPlacingPrefab = false;
+                pendingPrefabPath.clear();
+                std::cout << "[Editor] Prefab placement canceled.\n";
+            }
+        }
+
+    end_prefab:;
+
+
+
     }
     ImGui::End();
 
@@ -931,94 +850,51 @@ void ImGuiSystem::ShowHierarchyWindow() {
 
 }
 
-void ImGuiSystem::ShowInspectorWindow() {
-
+void ImGuiSystem::ShowInspectorWindow()
+{
     EnsureSelectionValid();
-    //if no entity is selected, just show a message and return
-    if (selectedEntity == INVALID_ENTITY) {
+
+    ImGui::Text("Entity Editor");
+    ImGui::Separator();
+
+    if (selectedEntity == INVALID_ENTITY)
+    {
         ImGui::Text("No entity selected");
+        ImGui::Columns(1); // reset
         return;
     }
-    // show the entity ID at top
+
     ImGui::Text("Entity %d", selectedEntity);
     ImGui::Separator();
 
+    // show all editable components for the selected entity
     std::vector<Editor::ComponentData> compDataVec = m_registry.Get_EntityData(selectedEntity);
     for (auto& componentData : compDataVec)
     {
         const std::string& compName = componentData.GetComponentName();
 
-        if (compName == "Animator")
-        {
-            Animator::AnimatorComponent& animcomp = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
-            if (ImGui::TreeNode(compName.c_str()))
-            {
-                // --- show component fields ---
-                for (auto& [name, widgetVariant] : componentData.GetDataMap())
-                {
-                    ImGui::PushID(name.c_str());
-                    std::visit([&](auto& widget) {
-                        MakeWidget(widget, name);
-                        }, widgetVariant);
-                    ImGui::PopID();
-                }
-                
-                // REGINEHELP i want to split this "if true" scope like, look nicer abit, this group is to edit the frame data!
-                if (true)
-                {
-                    // need to figure out how to call add state or change state...
-                    animcomp.UpdateUV();
-                    Animator::ActiveFrames temp = animcomp.GetFrames();
-                    
-                    Editor::Widget_Int widgetrow(&temp.row, true, 0, animcomp.GetTotalRows());
-                    Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());
-                    Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, animcomp.GetTotalCols());
-                    Editor::Widget_Float widgetduration(&temp.duration);
-
-                    ImGui::PushItemWidth(80);
-                    MakeWidget(widgetrow, "state rows");
-                    ImGui::SameLine();
-                    MakeWidget(widgetcolstart, "first col");
-                    ImGui::SameLine();
-                    MakeWidget(widgetcolend, "last col");
-                    ImGui::PopItemWidth();
-                    MakeWidget(widgetduration, "duration");
-                    
-                    animcomp.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);
-                }
-
-                ImGui::TreePop();
-            }
-
-        }
-        else
         if (ImGui::TreeNode(compName.c_str()))
         {
-            // --- show component fields ---
             for (auto& [name, widgetVariant] : componentData.GetDataMap())
             {
                 ImGui::PushID(name.c_str());
-                std::visit([&](auto& widget) {
-                    MakeWidget(widget, name);
-                    }, widgetVariant);
+                std::visit([&](auto& widget)
+                    { MakeWidget(widget, name); }, widgetVariant);
                 ImGui::PopID();
             }
-
-
             ImGui::TreePop();
         }
     }
 
-    Entity eID = selectedEntity; // use selected entity from inspector
+    // --- Add/Remove Components ---
+    ImGui::Separator();
+    ImGui::Text("Add / Remove Components");
 
+    Entity eID = selectedEntity;
     for (std::type_index typeID : m_registry.Get_ComponentOrder())
     {
         std::string compName = m_registry.Get_ComponentTypeName(typeID);
-
-        // check if entity already has this component
         bool hasComp = m_registry.Has_Component(eID, typeID);
-
-        // check dependencies
         bool depsOK = m_registry.HasDependencies(eID, typeID);
 
         if (hasComp)
@@ -1040,18 +916,13 @@ void ImGuiSystem::ShowInspectorWindow() {
             if (ImGui::Button(("Add " + compName).c_str()))
             {
                 m_registry.Add_Component(eID, typeID);
-
-
                 std::cout << "[Editor] Added " << compName << " to entity " << eID << "\n";
             }
-
             if (!depsOK) ImGui::EndDisabled();
         }
     }
-
-
-
 }
+
 
 void ImGuiSystem::ShowAssetPreviewWindow()
 {
@@ -1393,7 +1264,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
     }
 }
 
-void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewportSize)
+void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
 
     ::Render& renderer = Render::GetInstance();
@@ -1648,6 +1519,75 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         }
         isDragging = false;
         draggedEntity = INVALID_ENTITY;
+    }
+}
+
+void ImGuiSystem::ShowPrefabControls()
+{
+    ImGui::Text("Prefab Management:");
+
+    // --- Save selected entity as prefab ---
+    if (selectedEntity != INVALID_ENTITY)
+    {
+        static char prefabNameBuf[64] = "";
+        ImGui::InputText("Prefab Name", prefabNameBuf, IM_ARRAYSIZE(prefabNameBuf));
+        ImGui::SameLine();
+        if (ImGui::Button("Save As Prefab"))
+        {
+            std::string prefabName = prefabNameBuf;
+            if (!prefabName.empty())
+            {
+                std::string outPath = FilePath::PREFABS_FOLDER + prefabName + ".json";
+                if (JsonLoad::SaveEntity(outPath, selectedEntity))
+                    std::cout << "[Editor] Saved entity " << selectedEntity
+                    << " as prefab: " << outPath << "\n";
+            }
+            else
+            {
+                std::cout << "[Editor] Prefab name cannot be empty.\n";
+            }
+        }
+    }
+    else
+    {
+        ImGui::TextDisabled("Select an entity to save as prefab");
+    }
+
+    ImGui::Separator();
+    ImGui::Text("Spawn Prefab (click to select, then click in Game View):");
+
+    static std::vector<std::string> prefabList;
+    prefabList.clear();
+    for (auto& entry : std::filesystem::directory_iterator(FilePath::PREFABS_FOLDER))
+    {
+        if (entry.path().extension() == ".json")
+            prefabList.push_back(entry.path().stem().string());
+    }
+
+    if (prefabList.empty())
+    {
+        ImGui::TextDisabled("No prefabs found in %s", FilePath::PREFABS_FOLDER.c_str());
+        return;
+    }
+
+    ImGui::BeginChild("PrefabList", ImVec2(0, 150), true, ImGuiWindowFlags_HorizontalScrollbar);
+
+    for (const auto& prefabName : prefabList)
+    {
+        bool selected = (pendingPrefabPath == FilePath::PREFABS_FOLDER + prefabName + ".json");
+        if (ImGui::Selectable(prefabName.c_str(), selected))
+        {
+            pendingPrefabPath = FilePath::PREFABS_FOLDER + prefabName + ".json";
+            isPlacingPrefab = true;
+            std::cout << "[Editor] Prefab '" << prefabName << "' selected for placement mode.\n";
+        }
+    }
+    ImGui::EndChild();
+
+    if (isPlacingPrefab)
+    {
+        ImGui::TextColored(ImVec4(0.2f, 1.f, 0.2f, 1.f),
+            "Placement Mode Active: Click in Game View to spawn. (ESC to cancel)");
     }
 }
 
