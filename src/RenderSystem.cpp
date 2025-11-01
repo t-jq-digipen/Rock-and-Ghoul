@@ -108,6 +108,8 @@ void RenderSystem::Update(float dt) {
 
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
+        // Update image size (need to link to event manager probably)
+        spriteComp.Update_ImageSize();
 
         // Check if entity has the batching tag
         bool isBatched = false;
