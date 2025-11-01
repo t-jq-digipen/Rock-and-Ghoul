@@ -1398,55 +1398,47 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 }
 
 #include "Camera.h"
-// FIXED: DrawEntityDragHandles with proper camera access
 
 void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
 {
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
-
-
     Camera& cam = Camera::GetInstance();
 
-    // OPTION 3: If camera is in CoreEngine (uncomment if this is your setup)
-    // Camera& cam = CoreEngine::GetInstance().GetCamera();
+    glm::mat4 VP = cam.GetViewProjection();
+    glm::mat4 invVP = glm::inverse(VP);
 
-    // World dimensions
-    const float worldWidth = 1920.f;
-    const float worldHeight = 1080.f;
+    auto WorldToPanel = [&](const Vec2& world) -> ImVec2 {
+        glm::vec4 clip = VP * glm::vec4(world.x, world.y, 0.f, 1.f);
+        if (clip.w != 0.f) clip /= clip.w;
 
-    // Scale factors to convert world coords to panel coords
-    float scaleX = panelSize.x / worldWidth;
-    float scaleY = panelSize.y / worldHeight;
+        float u = clip.x * 0.5f + 0.5f;
+        float v = 1.f - (clip.y * 0.5f + 0.5f); // flip vertically
+        return ImVec2(
+            panelPos.x + u * panelSize.x,
+            panelPos.y + v * panelSize.y
+        );
+        };
 
-    // Apply camera zoom to scale
-    scaleX *= cam.GetZoom();
-    scaleY *= cam.GetZoom();
+    auto PanelToWorld = [&](const ImVec2& screen) -> Vec2 {
+        float u = (screen.x - panelPos.x) / panelSize.x;
+        float v = (screen.y - panelPos.y) / panelSize.y;
+        v = 1.f - v;
+        glm::vec4 ndc(u * 2.f - 1.f, v * 2.f - 1.f, 0.f, 1.f);
+        glm::vec4 world = invVP * ndc;
+        if (world.w != 0.f) world /= world.w;
+        return { world.x, world.y };
+        };
 
-    // Get mouse position in absolute screen space
+    // mouse + panel state
     ImVec2 mouseScreen = ImGui::GetMousePos();
-
-    // Convert mouse to panel local space
-    Vec2 mousePanelLocal(
-        mouseScreen.x - panelPos.x,
-        mouseScreen.y - panelPos.y
-    );
-
-    // Convert mouse to world space (accounting for camera position)
-    Vec2 camPos = cam.GetPosition();
-    Vec2 mouseWorld(
-        (mousePanelLocal.x / scaleX) + camPos.x - (worldWidth / 2.0f),
-        worldHeight - ((mousePanelLocal.y / scaleY) + camPos.y - (worldHeight / 2.0f))
-    );
-
-    // Check if mouse is within the panel bounds
-    bool mouseInPanel = (mousePanelLocal.x >= 0 && mousePanelLocal.x <= panelSize.x &&
-        mousePanelLocal.y >= 0 && mousePanelLocal.y <= panelSize.y);
-
-    // Mouse state
     bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
     bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
     bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+
+    bool mouseInPanel =
+        (mouseScreen.x >= panelPos.x && mouseScreen.x <= panelPos.x + panelSize.x) &&
+        (mouseScreen.y >= panelPos.y && mouseScreen.y <= panelPos.y + panelSize.y);
 
     static Entity draggedEntity = INVALID_ENTITY;
     static Vec2 dragOffset{ 0.f, 0.f };
@@ -1455,39 +1447,24 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
 
     const float handleRadius = 10.f;
 
-    // === Draw handles and detect hover ===
+    // === handles linked to entities ===
     for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
     {
         if (!EntityManager::get().isAlive(entity))
             continue;
 
-        Vec2 worldPos = transform.pos;
+        ImVec2 handleCenter = WorldToPanel(transform.pos);
 
-        // Convert world position to screen position (accounting for camera)
-        Vec2 relativeToCamera(
-            worldPos.x - camPos.x + (worldWidth / 2.0f),
-            worldPos.y - camPos.y + (worldHeight / 2.0f)
-        );
-
-        ImVec2 handleCenter(
-            panelPos.x + relativeToCamera.x * scaleX,
-            panelPos.y + (worldHeight - relativeToCamera.y) * scaleY
-        );
-
-        // Calculate distance from mouse to handle (in screen space)
         float dx = mouseScreen.x - handleCenter.x;
         float dy = mouseScreen.y - handleCenter.y;
-        float dist2 = dx * dx + dy * dy;
-        bool inside = mouseInPanel && (dist2 <= (handleRadius * handleRadius));
+        bool inside = mouseInPanel && (dx * dx + dy * dy <= handleRadius * handleRadius);
 
-        // Color based on state
         ImU32 color =
-            (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :  // Blue when dragging
-            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :   // Green when selected
-            inside ? IM_COL32(255, 255, 0, 255) :                      // Yellow when hovered
-            IM_COL32(255, 255, 255, 180);                              // White normally
+            (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
+            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
+            inside ? IM_COL32(255, 255, 0, 255) :
+            IM_COL32(255, 255, 255, 180);
 
-        // Draw the handle
         dl->AddCircleFilled(handleCenter, handleRadius, color, 24);
         dl->AddCircle(handleCenter, handleRadius, IM_COL32(0, 0, 0, 200), 24, 1.5f);
 
@@ -1495,7 +1472,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
             hovered = entity;
     }
 
-    // === Click to start dragging ===
+    // === Begin ===
     if (mouseClicked && mouseInPanel && hovered != INVALID_ENTITY)
     {
         selectedEntity = hovered;
@@ -1503,28 +1480,28 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         isDragging = true;
 
         auto& t = reg.Get_Component<TransformComponent>(hovered);
-        dragOffset = t.pos - mouseWorld;
+        dragOffset = t.pos - PanelToWorld(mouseScreen);
 
         std::cout << "[Editor] Started dragging entity " << hovered << "\n";
     }
 
-    // === Update entity position while dragging ===
+    // === While ===
     if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown && mouseInPanel)
     {
         auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
-        t.pos = mouseWorld + dragOffset;
+        t.pos = PanelToWorld(mouseScreen) + dragOffset;
     }
 
-    // === Release to stop dragging ===
+    // === End ===
     if (mouseReleased)
     {
-        if (isDragging && draggedEntity != INVALID_ENTITY) {
+        if (isDragging && draggedEntity != INVALID_ENTITY)
             std::cout << "[Editor] Released entity " << draggedEntity << "\n";
-        }
         isDragging = false;
         draggedEntity = INVALID_ENTITY;
     }
 }
+
 
 void ImGuiSystem::ShowPrefabControls()
 {
