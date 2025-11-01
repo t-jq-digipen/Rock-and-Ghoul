@@ -296,13 +296,14 @@ void Level1::Update()
 
 	
 
-
+	//========== stress test demo start =========================================
+	
 	//switch animation state
 	if (Input::IsKeyPressed(GLFW_KEY_U))  // U walk animation
 	{
 		for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>())
 		{
-			if (tag.tag == T_PLAYER &&
+			if ((tag.tag == T_BATCH ) &&
 				registry.Has_Component<Animator::AnimatorComponent>(entID))
 			{
 				auto& anim = registry.Get_Component<Animator::AnimatorComponent>(entID);
@@ -312,11 +313,8 @@ void Level1::Update()
 
 		std::cout << "Switched animation from IDLE to WALK" << std::endl;
 	}
-
+	
 	static bool spawnedBatch = false;
-	Render& renderer = Render::GetInstance();
-
-	static bool spawned = false;
 	std::vector<Entity> toRemove;
 
 	// === Toggle Batched Sprites with N key (for rubrics demo) ===
@@ -365,6 +363,7 @@ void Level1::Update()
 			spawnedBatch = false;
 		}
 	}
+	//======================= stress test demon end ===============================
 
 	static bool spawnedInst = false;
 	std::vector<Entity> toRemoveInst;
