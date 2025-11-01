@@ -1433,13 +1433,18 @@ void ImGuiSystem::ShowEntityInteractionOverlay(ImVec2 viewportPos, ImVec2 viewpo
     Vec2 camOffset = cam.GetPosition();
     {
         float camZoom = cam.GetZoom();
+        if (camZoom != 0.f)
+        { camZoom = 1/camZoom; }
+        else
+        { camZoom = 0; }
         camZoom *= scale;
+        
 
-        ImVec2 min = { viewportPos.x + (camOffset.x * scale) - worldWidth * camZoom / 2, 
-                       viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - worldHeight * camZoom / 2 };
+        ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (worldWidth * camZoom) / 2,
+                       viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - (worldHeight * camZoom) / 2 };
 
-        ImVec2 max = { viewportPos.x + (camOffset.x * scale) + worldWidth * camZoom / 2, 
-                       viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + worldHeight * camZoom / 2 };
+        ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (worldWidth * camZoom) / 2,
+                       viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + (worldHeight * camZoom) / 2 };
 
         bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
             mousePos.y >= min.y && mousePos.y <= max.y);
