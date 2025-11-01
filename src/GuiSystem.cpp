@@ -47,15 +47,21 @@ void GuiSystem::Update(float dt) {
     Vec2 mouse = Input::GetMousePosition();
     Render& render = Render::GetInstance();
 
-    const float uiScale = std::min(GLApp::width / 1920.0f, GLApp::height / 1080.0f);
+    // to force GUI editor to be written on screen
+    const bool prevCam = render.useCamera;
+    render.useCamera = false;
+
+    const float scaleX = GLApp::width / 1920.f;
+    const float scaleY = GLApp::height / 1080.f;
+    const float uiScale = std::min(scaleX, scaleY);
 
     for (auto& cfg : buttons) {
         cfg.size = cfg.baseSize * uiScale;
         cfg.textScale = cfg.baseTextScale * uiScale;
 
         // Scale position relative to baseline resolution
-        cfg.pos.x = cfg.basePos.x * (GLApp::width / 1920.0f);
-        cfg.pos.y = cfg.basePos.y * (GLApp::height / 1080.0f);
+        cfg.pos.x = cfg.basePos.x * scaleX;
+        cfg.pos.y = cfg.basePos.y * scaleY;
         bool hover = false;
         if (cfg.shape == ButtonShape::Circle) {
 
@@ -110,8 +116,6 @@ void GuiSystem::Update(float dt) {
         }
     }
 
-    const float scaleX = GLApp::width / 1920.0f;
-    const float scaleY = GLApp::height / 1080.0f;
     for (auto& tb : textboxes)
     {
         tb.pos.x = tb.basePos.x * scaleX;
@@ -583,9 +587,13 @@ void GuiSystem::Update(float dt) {
             selectedIndex = (int)buttons.size() + (int)textboxes.size() - 1; // auto-select new
         }
     }
+
+    // restore camera back to world
+    render.useCamera = prevCam;
 }
 
 void GuiSystem::Shutdown() {
     buttons.clear();
+    textboxes.clear();
     audio = nullptr;
 }

@@ -477,6 +477,8 @@ void Level1::Update()
 		if (fretboard) {
 			fretboard->PlayerInput();
 		}
+
+		GuiSystem::Get().Update(0.f);
 		});
 }
 
@@ -504,9 +506,6 @@ void Level1::Draw()
 			fretboard->GetSpellManager().Draw(renderer);
 			//renderer.useCamera = true;
 		}
-
-		// update gui system
-		GuiSystem::Get().Update(0.f);
 	});
 }
 
