@@ -393,12 +393,25 @@ void AudioManager::UpdateCrossfade(float dt) {
 void AudioManager::HandleMusicForState(GameState currentState, GameState previousState) {
     // DETECT TRANSITION TO LEVEL 1!
     if (currentState == GameState::GS_LEVEL1 && previousState != GameState::GS_LEVEL1) {
-        std::cout << "[AudioManager] Level 1 started - crossfading music...\n";
         if (level1Music) {
             CrossfadeTo(level1Music, 4.0f);
         }
         else {
-            std::cerr << "[AudioManager] Error: Level 1 music not loaded!\n";
+            std::cerr << "[AudioManager] ERROR: level1Music is NULL!" << std::endl;
+        }
+    }
+
+    // DETECT TRANSITION BACK TO MAIN MENU FROM LEVEL 1!
+    if (currentState == GameState::GS_MAIN_MENU && previousState == GameState::GS_LEVEL1) {
+        // Play button sound
+        AudioSystem::PlayButtonSound(AudioSystem::ButtonType::PLAY);
+
+        // Crossfade back to main menu music
+        if (mainMenuMusic) {
+            CrossfadeTo(mainMenuMusic, 4.0f);
+        }
+        else {
+            std::cerr << "[AudioManager] ERROR: mainMenuMusic is NULL!" << std::endl;
         }
     }
 }

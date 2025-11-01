@@ -587,5 +587,5 @@ void GuiSystem::Update(float dt) {
 
 void GuiSystem::Shutdown() {
     buttons.clear();
-    audio = nullptr;
+    //audio = nullptr;
 }
