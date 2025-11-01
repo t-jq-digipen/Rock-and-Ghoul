@@ -203,6 +203,13 @@ source_group("BaseEngine\\BaseSystems\\FrameRateController" FILES
 )
 # ================================================= FRAMERATE
 
+# BASE ENG SYSTEMS | MESSAGING
+# =================================================
+source_group("BaseEngine\\BaseSystems\\EventBus" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/EventBus.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/EventBus.h
+)
+# ================================================= MESSAGING
 
 
 # BASE ENG SYSTEMS | AUDIO
