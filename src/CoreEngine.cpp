@@ -173,6 +173,7 @@ void CoreEngine::Run() {
                         imguiSystem->Update(0.0f);
                     else if (auto* renderSystem = dynamic_cast<RenderSystem*>(s))
                         renderSystem->Update(0.0f);
+                    GuiSystem::Get().Update(0.0f);
                 }
                 // Record the ending timestamp immediately after update finishes
                 auto end = clock::now();

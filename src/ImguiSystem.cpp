@@ -357,7 +357,9 @@ void ImGuiSystem::Initialize() {
 
 
     InitializeImGui();
-   
+   // guiEnabled = false;          // editor window closed by default
+    gsm.inEditMode = true;       // game logic knows we're editing
+    gsm.isPaused = true;         // pause gameplay / physics update
 }
 
 
@@ -413,8 +415,12 @@ void ImGuiSystem::Update(float dt)
         ImGuiID dock_right = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, nullptr, &dockspaceID);
         ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.25f, nullptr, &dockspaceID);
 
-        ImGui::DockBuilderDockWindow("Editor Camera", dock_left);
-        ImGui::DockBuilderDockWindow("Engine Info", dock_left);
+
+        ImGuiID dock_left_top = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.6f, nullptr, &dock_left);
+        ImGuiID dock_left_bottom = dock_left;
+
+        ImGui::DockBuilderDockWindow("Editor Camera", dock_left_top);
+        ImGui::DockBuilderDockWindow("Engine Info", dock_left_bottom);
         ImGui::DockBuilderDockWindow("Entity Editor", dock_right);
         ImGui::DockBuilderDockWindow("Collision + Prefabs", dock_bottom);
         ImGui::DockBuilderDockWindow("Assets", dock_bottom);
