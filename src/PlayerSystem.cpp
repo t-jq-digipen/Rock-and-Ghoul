@@ -51,6 +51,7 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 
 	if (!m_registry.Has_Component<Movement::MovementComponent>(eID)) return;
 	auto& moveComp = m_registry.Get_Component<Movement::MovementComponent>(eID);
+	auto& physics = m_registry.Get_Component<Physics::PhysicsComponent>(eID);
 
 	// To be reworked when InputComponent no longer needed???
 
@@ -71,80 +72,12 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	// Track input direction for dash
 	int vert = 0;
 	int hor = 0;
-
-	// Handle movement based on control scheme
-	switch (input.scheme) {
-		case CS_WASD :
-		if (Input::IsKeyHeld(GLFW_KEY_W)) {
-			physics.AddForce({ 0, 1 }, MOVE_FORCE, 0.f);
-			vert += 1;
-		}
-		if (Input::IsKeyHeld(GLFW_KEY_S)) {
-			physics.AddForce({ 0, -1 }, MOVE_FORCE, 0.f);
-			vert -= 1;
-		}
-		if (Input::IsKeyHeld(GLFW_KEY_A)) {
-			physics.AddForce({ -1, 0 }, MOVE_FORCE, 0.f);
-			hor -= 1;
-		}
-		if (Input::IsKeyHeld(GLFW_KEY_D)) {
-			physics.AddForce({ 1, 0 }, MOVE_FORCE, 0.f);
-			hor += 1;
-		}
-		break;
-
-		case CS_IJKL:
-			if (Input::IsKeyHeld(GLFW_KEY_I)) {
-				physics.AddForce({ 0, 1 }, MOVE_FORCE, 0.f);
-				vert += 1;
-			}
-			if (Input::IsKeyHeld(GLFW_KEY_K)) {
-				physics.AddForce({ 0, -1 }, MOVE_FORCE, 0.f);
-				vert -= 1;
-			}
-			if (Input::IsKeyHeld(GLFW_KEY_J)) {
-				physics.AddForce({ -1, 0 }, MOVE_FORCE, 0.f);
-				hor -= 1;
-			}
-			if (Input::IsKeyHeld(GLFW_KEY_L)) {
-				physics.AddForce({ 1, 0 }, MOVE_FORCE, 0.f);
-				hor += 1;
-			}
-			// Update animation state
-			if (m_registry.Has_Component<Animator::AnimatorComponent>(eID))
-			{
-				bool isMoving = (Input::IsKeyHeld(GLFW_KEY_I) || Input::IsKeyHeld(GLFW_KEY_J) ||
-					Input::IsKeyHeld(GLFW_KEY_K) || Input::IsKeyHeld(GLFW_KEY_L));
-				m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(
-					isMoving ? PS_WALK : PS_IDLE
-				);
-			}
-			break;
-		case CS_ARROWS:
-			if (Input::IsKeyHeld(GLFW_KEY_UP)) {
-				physics.AddForce({ 0, 1 }, MOVE_FORCE, 0.f);
-				vert += 1;
-			}
-			if (Input::IsKeyHeld(GLFW_KEY_DOWN)) {
-				physics.AddForce({ 0, -1 }, MOVE_FORCE, 0.f);
-				vert -= 1;
-			}
-			if (Input::IsKeyHeld(GLFW_KEY_LEFT)) {
-				physics.AddForce({ -1, 0 }, MOVE_FORCE, 0.f);
-				hor -= 1;
-			}
-			if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) {
-				physics.AddForce({ 1, 0 }, MOVE_FORCE, 0.f);
-				hor += 1;
-			}
-			break;
-	}
 	// DASH - Working impulse
 	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
 		Vec2 dashDir{ (float)hor, (float)vert };
 
 	float fx = static_cast<float>(hor);
-	float fy = static_cast<float>(ver);
+	float fy = static_cast<float>(vert);
 	NormalizeDiagonalMovement(fx, fy);
 
 	const bool moving = (fx != 0.f || fy != 0.f);
