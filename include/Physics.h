@@ -69,7 +69,9 @@ namespace Physics {
 	class PhysicsComponent {
 		// Movement
 		Vec2 vel;
+		Vec2 acceleration;
 		float decay;
+		float maxSpeed;
 
 		// Collision properties
 		bool isStatic;
@@ -83,9 +85,15 @@ namespace Physics {
 		// Physical properties
 		float mass;
 		float restitution;
+		float friction;
+
+		// Collision tracking
+		bool onGround;
+		int collisionFrameCount; // prevents jitter effect
 
 		void UpdateForces(float dt);
 		void ApplyDamping(float dt);
+		void ClampVelocity();
 
 	public:
 		PhysicsComponent();
@@ -94,12 +102,14 @@ namespace Physics {
 
 		// Force management
 		void AddForce(Vec2 const& direction, float magnitude, float duration = 0);
+		void AddImpulse(Vec2 const& impulse); // Direct velocity change
 		void ClearForces();
 		bool HasForces() const;
 
 		// Update methods
 		void Update(float dt);
 		void UpdateHitboxes(Vec2 const& pos);
+		void IntegrateVelocity(Vec2& position, float dt); // Proper time-based integration
 
 		// Collision setters/getters
 		void Set_Collision(bool set);
@@ -116,6 +126,7 @@ namespace Physics {
 		void Set_Vel(Vec2 const& newVel);
 		void StopX();
 		void StopY();
+		void Stop(); // stop all movement
 
 		// Static/dynamic control
 		bool IsStatic() const;
@@ -124,11 +135,22 @@ namespace Physics {
 		// Physical properties
 		float GetMass() const;
 		float GetRestitution() const;
+		float GetFriction() const;
+		float GetMaxSpeed() const;
 		void SetMass(float m);
 		void SetRestitution(float e);
+		void SetFriction(float f);
+		void SetMaxSpeed(float maxSpd);
 
 		// Impulse physics
 		void ApplyLinearImpulse(const Vec2& impulse);
+		void ApplyFriction(float dt);
+
+		// Collision state (IDK IF NEED)
+		bool IsOnGround() const;
+		void SetOnGround(bool grounded);
+		void ResetCollisionFrame();
+		bool ShouldSkipCollision() const;
 
 		// Serialization
 		std::string Serialize() const;
