@@ -27,8 +27,11 @@
 #include "EntityCreation.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
+#include "GuiSystem.h"
 
 #include "CrashHandler.h"
+#include <PlayerSystem.h>
+#include <Camera.h>
 
 static FretBoard* fretboard = nullptr;
 constexpr float LEVEL_WIDTH = 1920.f;
@@ -48,17 +51,24 @@ Entity waffle;
 
 // Registry ref
 Registry& registry = Registry::Get();
+//Camera mainCamera;
+
 
 // Loads Level 1
 void Level1::Load()
 {
 	Render& renderer = Render::GetInstance();
+	
+	renderer.useCamera = true;
+	auto FontAssets = renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
 	CrashHandler::Safe("Level1", "Load", [&] {
 		std::cout << "Level 1 Loaded!!!" << std::endl;
 
 		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
 		});
+		RenderSystem::ClearBackgroundTextures();
+		RenderSystem::AddBackgroundTexture(bgTexture);
 
 	// ===== FIX: Ensure prefabs folder exists =====
 	std::cout << "\n=== CHECKING PREFABS FOLDER ===" << std::endl;
@@ -140,12 +150,20 @@ void Level1::Load()
 // Initializes Level 1
 void Level1::Init()
 {
+	
 	Render& renderer = Render::GetInstance();
+	
 	CrashHandler::Safe("Level1", "Init", [&] {
 		std::cout << "Level 1 Initialized!!!" << std::endl;
 		// 1. Initialize the Renderer
 		renderer.Init();
-
+		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
+		if (!bgTexture)
+			std::cerr << "[Level1] Failed to reload background texture!" << std::endl;
+		else {
+			RenderSystem::ClearBackgroundTextures();
+			RenderSystem::AddBackgroundTexture(bgTexture);
+		}
 		// 2. Create FretBoard after OpenGL is ready
 		if (!fretboard) {
 			fretboard = new FretBoard(0, 0, 800, 200);
@@ -154,16 +172,25 @@ void Level1::Init()
 		fretboard->StartGame();
 
 		// 3. NOW load textures (OpenGL is ready)
-		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
+		//bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 
-		// 4. Create FretBoard after OpenGL is ready (duplicate - can remove)
+		// 4. Add Gui Editor
+		guiSystem.Initialize();
+		guiSystem.AddTextBox({
+			.text = "Insert Dialogue HERE",
+			.pos = {1650, 50},
+			.scale = 0.5f,
+			.color = {0.f, 0.f, 0.f},
+			.centered = true });
+
+		// 5. Create FretBoard after OpenGL is ready (duplicate - can remove)
 		if (!fretboard) {
 			fretboard = new FretBoard(0, 0, 800, 200);
 		}
 		fretboard->LoadTextures();
 		fretboard->StartGame();
 
-		// 5. Create entities
+		// 6. Create entities
 		// If there is no pre-existing/saved scene, it will load from prefabs
 		// Otherwise, it will load the saved scene
 		std::cout << "\n=== LOADING ENTITIES ===" << std::endl;
@@ -172,6 +199,11 @@ void Level1::Init()
 			std::cout << "Found level1.json, attempting to load..." << std::endl;
 			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
 			if (sceneLoaded) {
+				waffle = registry.Get_EntityID("Waffle");
+				rock = registry.Get_EntityID("Player");
+				square = registry.Get_EntityID("Rectangle");
+				roundy = registry.Get_EntityID("Circle");
+
 				std::cout << "Scene loaded successfully from level1.json!" << std::endl;
 			}
 			else {
@@ -242,13 +274,110 @@ void Level1::Init()
 // Updates Level 1
 void Level1::Update()
 {
+	//Camera& mainCamera = Camera::GetInstance();
+
+	// Check names correct
+	// NEEDTOREPLACE with messaging system
+	if (registry.Get_EntityName(waffle) != "Waffle")	
+	{ waffle = registry.Get_EntityID("Waffle"); }
+	if (registry.Get_EntityName(rock) != "Player")		
+	{ rock = registry.Get_EntityID("Player"); }
+	if (registry.Get_EntityName(square) != "Rectangle")	
+	{ square = registry.Get_EntityID("Rectangle"); }
+	if (registry.Get_EntityName(roundy) != "Circle")	
+	{ roundy = registry.Get_EntityID("Circle"); }
+
+	//test camera on an entity
+	auto& playerTransform = registry.Get_Component<TransformComponent>(waffle);
+
+	static double lastTime = glfwGetTime();
+	double currentTime = glfwGetTime();
+	float dt = static_cast<float>(currentTime - lastTime);
+	lastTime = currentTime;
+
+	// Update camera position
+	UpdateCamera(Camera::GetInstance(), playerTransform.pos, g_dt);
+	//std::cout << "Camera Pos: " << mainCamera.position.x << ", " << mainCamera.position.y << std::endl;
+
+
+	
+
+
+	//switch animation state
+	if (Input::IsKeyPressed(GLFW_KEY_U))  // U walk animation
+	{
+		for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>())
+		{
+			if (tag.tag == T_PLAYER &&
+				registry.Has_Component<Animator::AnimatorComponent>(entID))
+			{
+				auto& anim = registry.Get_Component<Animator::AnimatorComponent>(entID);
+				anim.SetState(PS_WALK);
+			}
+		}
+
+		std::cout << "Switched animation from IDLE to WALK" << std::endl;
+	}
+
+	static bool spawnedBatch = false;
+	Render& renderer = Render::GetInstance();
+
 	static bool spawned = false;
 	std::vector<Entity> toRemove;
 
+	// === Toggle Batched Sprites with N key (for rubrics demo) ===
+	if (Input::IsKeyPressed(GLFW_KEY_N))
+	{
+		if (!spawnedBatch)
+		{
+			int totalSprites = 1000;
+			float aspectRatio = (float)GLApp::width / (float)GLApp::height;
+			int cols = static_cast<int>(std::sqrt(totalSprites * aspectRatio));
+			int rows = static_cast<int>(std::ceil((float)totalSprites / cols));
+
+			float paddingX = 5.0f, paddingY = 5.0f;
+			float spacingX = (GLApp::width - 2 * paddingX) / cols;
+			float spacingY = (GLApp::height - 2 * paddingY) / rows;
+			float spacing = std::min(spacingX, spacingY);
+			//float size = spacing * 0.8f;
+			//float normalizedScale = size / 100.0f;
+
+			for (int i = 0; i < totalSprites; ++i)
+			{
+				int col = i % cols;
+				int row = i / cols;
+
+				float px = paddingX + col * spacing + spacing * 0.5f;
+				float py = paddingY + row * spacing + spacing * 0.5f;
+
+				Create_BatchedSprite(px, py, 50.f, "../Assets/Waffle_Sprites.png"); //siz e figure that out later
+			}
+
+			std::cout << "Spawned " << totalSprites << " batched sprites with N key!\n";
+			spawnedBatch = true;
+		}
+		else
+		{
+			// Clear all T_BATCH entities
+			for (auto& [e, tag] : registry.Get_ComponentMap<TagComponent>())
+			{
+				if (tag.tag == T_BATCH && EntityManager::get().isAlive(e))
+					toRemove.push_back(e);
+			}
+			for (Entity e : toRemove)
+				registry.Remove_Entity(e);
+
+			std::cout << "Cleared all batched sprites!\n";
+			spawnedBatch = false;
+		}
+	}
+
+	static bool spawnedInst = false;
+	std::vector<Entity> toRemoveInst;
 	// Toggle with B key
 	if (Input::IsKeyPressed(GLFW_KEY_B))
 	{
-		if (!spawned)
+		if (!spawnedInst)
 		{
 			int totalEntities = 2500;
 			float aspectRatio = (float)GLApp::width / (float)GLApp::height;
@@ -271,31 +400,31 @@ void Level1::Update()
 				Create_InstancedSquare(px, py, size, { 0.2f, 0.8f, 1.0f }); //u are calling drawrect per entity, not all at once. lagg
 			}
 
-			std::cout << "Spawned " << totalEntities << " squares with B key!\n";
-			spawned = true;
+			std::cout << "spawnedInst " << totalEntities << " squares with B key!\n";
+			spawnedInst = true;
 		}
 		else
 		{
 			// === Clear all ===
 			for (auto& [e, tag] : registry.Get_ComponentMap<TagComponent>()) {
 				if (tag.tag == T_INSTANCING && EntityManager::get().isAlive(e)) {
-					toRemove.push_back(e);
+					toRemoveInst.push_back(e);
 				}
 			}
-			for (Entity e : toRemove) {
+			for (Entity e : toRemoveInst) {
 				registry.Remove_Entity(e);
 			}
-			std::cout << "Cleared all spawned squares!\n";
-			spawned = false;
+			std::cout << "Cleared all spawnedInst squares!\n";
+			spawnedInst = false;
 		}
 	}
 
-	// === Rotation update for spawned squares ===
-	if (spawned) {
-		static double lastTime = glfwGetTime();
+	// === Rotation update for spawnedInst squares ===
+	if (spawnedInst) {
+		/*static double lastTime = glfwGetTime();
 		double currentTime = glfwGetTime();
 		float dt = static_cast<float>(currentTime - lastTime);
-		lastTime = currentTime;
+		lastTime = currentTime;*/
 
 		for (auto& [e, t] : registry.Get_ComponentMap<TransformComponent>()) {
 			if (registry.Has_Component<TagComponent>(e)) {
@@ -343,18 +472,37 @@ void Level1::Update()
 	}
 
 	CrashHandler::Safe("Level1", "Update", [&] {
-		// to test game state changes
-		if (Input::IsKeyPressed(GLFW_KEY_M))
+		// to test game state changes (do not trigger if GUI Editor is open)
+		if (Input::IsKeyPressed(GLFW_KEY_M) && !guiSystem.GetEditMode())
 		{
 			GSM_SetNextState(GameState::GS_MAIN_MENU);
 			//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
 		}
-		else if (Input::IsKeyPressed(GLFW_KEY_R))
+		// --- Restart level with R key (disabled while ImGui editor is active) ---
+		if (Input::IsKeyPressed(GLFW_KEY_R))
 		{
-			GSM_SetNextState(GameState::GS_RESTART);
-			//nextState = GameState::GS_RESTART;       // restart state
-			std::cout << "Level 1 Restarted!!!" << std::endl;
+			// don't trigger restart while editing or paused
+			if (!ImGuiSystem::guiEnabled && !GSM_IsPaused() && !guiSystem.GetEditMode())
+			{
+				GSM_SetNextState(GameState::GS_RESTART);
+				std::cout << "Level 1 Restarted!!!" << std::endl;
+			}
+			else
+			{
+				std::cout << "[DEBUG] Ignored R press (editor or paused mode active)\n";
+			}
 		}
+
+
+		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !guiSystem.GetEditMode())
+		{
+			GSM_SetIsPaused(true);
+		}
+		else if (Input::IsKeyPressed(GLFW_KEY_P) && GSM_IsPaused() && !guiSystem.GetEditMode())
+		{
+			GSM_SetIsPaused(false);
+		}
+
 		if (fretboard) {
 			fretboard->PlayerInput();
 		}
@@ -366,21 +514,28 @@ void Level1::Draw()
 {
 	Render& renderer = Render::GetInstance();
 	CrashHandler::Safe("Level1", "Draw", [&] {
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		if (bgTexture) {
-			renderer.DrawTexturedQuad(
-				{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
-				{ (float)GLApp::width, (float)GLApp::height },   // full screen size
-				bgTexture
-			);
-		}
+		//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		//glClear(GL_COLOR_BUFFER_BIT);
+		//if (bgTexture) {
+			//renderer.useCamera = false; //uncomment then bg text will cover whole screen but look abit funny
+		//	renderer.DrawTexturedQuad(
+		//		{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
+		//		{ (float)GLApp::width, (float)GLApp::height },   // full screen size
+		//		bgTexture
+		//	);
+		//renderer.useCamera = true; //uncomment then bg text will cover whole screen but look abit funny
+		//}
+
 
 		if (fretboard) {
+			//renderer.useCamera = false;
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
+			//renderer.useCamera = true;
 		}
-		});
+
+		guiSystem.Update(0.0f);
+	});
 }
 
 // Frees Level 1
@@ -399,6 +554,7 @@ void Level1::Free()
 	CrashHandler::Safe("Level1", "Free", [&] {
 		std::cout << "Level 1 Freed!!!" << std::endl;
 		Render::GetInstance().ClearAllTextures();
+		guiSystem.Shutdown();
 		});
 }
 
@@ -407,7 +563,7 @@ void Level1::Unload()
 {
 	// Clean up background texture
 	Render& renderer = Render::GetInstance();
-	renderer.ClearAllTextures();
+	//renderer.ClearAllTextures();
 
 	std::cout << "Level 1 Unloaded!!!" << std::endl;
 
@@ -422,6 +578,7 @@ void Level1::Unload()
 			bgTexture = 0;
 		}*/
 
+		renderer.UnloadAllFonts();
 		renderer.UnloadTexture(bgTexture);
 		std::cout << "Level 1 Unloaded!!!" << std::endl;
 		});

@@ -19,22 +19,24 @@ to OpenGL implementations.
 #include <sstream>
 #include <iomanip>
 #include "Input.h" 
-
+#include "Render.h"
+#include "Registry.h"
+#include "CoreEngine.h"
 // Before asking GLFW to create an OpenGL context, we specify the minimum constraints
 // in that context:
 #define GL_MINOR 5
 #define GL_MAJOR 4
 
+bool GLApp::gameInitialized = false;
 /*                                                   objects with file scope
 ----------------------------------------------------------------------------- */
-GLint GLApp::width;
-GLint GLApp::height;
-GLdouble GLApp::fps;
-GLdouble GLApp::delta_time;
+GLint GLApp::width = 0;
+GLint GLApp::height = 0;
+GLdouble GLApp::fps = 0.0;
+GLdouble GLApp::delta_time = 0.0;
 std::string GLApp::title;
-GLFWwindow* GLApp::ptr_window;
-GLfloat GLApp::clear_color[] = {0.0f, 1.0f, 0.0f, 1.0f};
-
+GLFWwindow* GLApp::ptr_window = nullptr;
+GLfloat GLApp::clear_color[4] = { 0.f, 0.f, 0.f, 1.f };
 
 /*  _________________________________________________________________________ */
 /*! init
@@ -79,7 +81,7 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
   // default behavior: colorbuffer is 32-bit RGBA, depthbuffer is 24-bits
   // don't change size of window
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
   // size of viewport: width x height
   GLApp::ptr_window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
@@ -376,8 +378,64 @@ of the window in pixels.
 void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
   // use the entire framebuffer as drawing region
     (void)ptr_win;
-  glViewport(0, 0, newwidth, newheight);
-  // later, if working in 3D, we'll have to set the projection matrix here ...
+    // Calculate scale factors BEFORE updating GLApp::width/height
+    float scaleX = (float)newwidth / (float)GLApp::width;
+    float scaleY = (float)newheight / (float)GLApp::height;
+
+    // Now update the global width/height
+    GLApp::width = newwidth;
+    GLApp::height = newheight;
+
+    glViewport(0, 0, newwidth, newheight);
+    Render::GetInstance().InitSceneFramebuffer(newwidth, newheight);
+
+    if (GLApp::gameInitialized) {
+        Registry& reg = Registry::Get();
+
+        // Scale all entity positions
+        for (auto& [entID, transform] : reg.Get_ComponentMap<TransformComponent>()) {
+            transform.pos.x *= scaleX;
+            transform.pos.y *= scaleY;
+            transform.scale.x *= scaleX;
+            transform.scale.y *= scaleY;
+        }
+
+        // Update physics AABBs
+        for (auto& [entID, physics] : reg.Get_ComponentMap<Physics::PhysicsComponent>()) {
+            if (reg.Has_Component<TransformComponent>(entID)) {
+                auto& transform = reg.Get_Component<TransformComponent>(entID);
+                // Scale AABB (axis-aligned bounding box)
+                AABB& aabb = physics.Get_AABB();
+                aabb.min.x *= scaleX;
+                aabb.max.x *= scaleX;
+                aabb.min.y *= scaleY;
+                aabb.max.y *= scaleY;
+                aabb.dim.x *= scaleX;
+                aabb.dim.y *= scaleY;
+                // Scale circle collider (if used)
+                Circle& circle = physics.Get_Circle();
+                circle.pos.x = transform.pos.x;
+                circle.pos.y = transform.pos.y;
+                circle.rad *= (scaleX + scaleY) * 0.5f;
+
+                // Update cached hitboxes if your PhysicsComponent stores computed data
+                physics.UpdateHitboxes(transform.pos);
+            }
+        }
+        // 2. Scale all sprite components
+        for (auto& [entID, sprite] : reg.Get_ComponentMap<Sprite::SpriteComponent>()) {
+            Vec2 currentScale = sprite.Get_Scale();
+            sprite.Set_Size({
+                currentScale.x * scaleX,
+                currentScale.y * scaleY
+                });
+        }
+
+        for (auto& [entID, shape] : reg.Get_ComponentMap<ShapeComponent>()) {
+            shape.dimensions.x *= scaleX;
+            shape.dimensions.y *= scaleY;
+        }
+    }
 }
 
 /*  _________________________________________________________________________*/

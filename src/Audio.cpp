@@ -15,13 +15,15 @@
  * implements a flexible button sound system that maps button types
  * to specific sound effects.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "Audio.h"
 #include "AudioSystem.h"
 #include "AudioCache.h"
 #include "CoreEngine.h"
+#include "PlayerSystem.h"
+#include "GameStateManager.h"
 #include <iostream>
 
  // Static members
@@ -29,6 +31,12 @@ FMOD::System* AudioSystem::mSystem = nullptr;
 
 // button sound storage
 std::unordered_map<AudioSystem::ButtonType, FMOD::Sound*> AudioSystem::buttonSounds;
+
+// listener state for spatial audio
+static FMOD_VECTOR listenerPos = { 0.0f, 0.0f, 0.0f };
+static FMOD_VECTOR listenerVel = { 0.0f, 0.0f, 0.0f };
+static FMOD_VECTOR listenerForward = { 0.0f, 0.0f, 1.0f };
+static FMOD_VECTOR listenerUp = { 0.0f, 1.0f, 0.0f };
 
 /**
  * @brief Initializes the FMOD audio system.
@@ -320,7 +328,7 @@ void AudioManager::Initialize() {
         std::cerr << "AudioCache failed to initialize!" << std::endl;
     }
     std::cout << "=== AUDIOCACHE TEST COMPLETE ===\n" << std::endl;
-    
+
     AudioSystem::Init();
 
     AudioSystem::Configure2DSpatialAudio();      // SPATIAL AUDIO FUNCS
@@ -340,26 +348,6 @@ void AudioManager::Initialize() {
     }
 
     lastState = GameState::GS_MAIN_MENU;
-}
-
-/**
- * @brief Updates the AudioManager each frame.
- *
- * This function updates the FMOD system, processes active crossfades,
- * and handles music transitions based on game state changes.
- *
- * @param dt Delta time in seconds.
- */
-void AudioManager::Update(float dt) {
-    AudioSystem::SetListenerPosition(0.0f, 0.0f);  // Update listener position for spatial audio
-    AudioSystem::Update();
-
-    UpdateCrossfade(dt);
-
-    // STATE BASED MUSIC CHANGES
-    GameState currentState = GSM_CurrentState();
-    HandleMusicForState(currentState, lastState);
-    lastState = currentState;
 }
 
 /**
@@ -413,6 +401,42 @@ void AudioManager::HandleMusicForState(GameState currentState, GameState previou
             std::cerr << "[AudioManager] Error: Level 1 music not loaded!\n";
         }
     }
+}
+
+/**
+ * @brief Pauses the currently playing music.
+ *
+ * Stores the current playback position and pauses the music channel.
+ */
+void AudioManager::PauseMusic() {
+    if (!currentChannel || musicPaused) return;
+
+    bool isPlaying = false;
+    currentChannel->isPlaying(&isPlaying);
+
+    if (isPlaying) {
+        // Store current position
+        currentChannel->getPosition(&pausedPosition, FMOD_TIMEUNIT_MS);
+
+        // Pause the channel
+        currentChannel->setPaused(true);
+        musicPaused = true;
+
+        std::cout << "[AudioManager] Music paused at position: " << pausedPosition << "ms" << std::endl;
+    }
+}
+
+/**
+ * @brief Resumes paused music from where it was stopped.
+ */
+void AudioManager::ResumeMusic() {
+    if (!currentChannel || !musicPaused) return;
+
+    // Resume from paused position
+    currentChannel->setPaused(false);
+    musicPaused = false;
+
+    std::cout << "[AudioManager] Music resumed from position: " << pausedPosition << "ms" << std::endl;
 }
 
 /**
@@ -553,57 +577,176 @@ void AudioManager::CrossfadeTo(FMOD::Sound* newTrack, float duration) {
     std::cout << "[AudioManager] Starting crossfade (" << duration << "s)\n";
 }
 
+// Add this function to AudioManager
+void AudioManager::UpdateListenerToPlayer() {
+    Registry& registry = Registry::Get();
+
+    // Find player and update listener to follow them
+    for (auto& [entity, tag] : registry.Get_ComponentMap<TagComponent>()) {
+        if (tag.tag == T_PLAYER) {
+            if (registry.Has_Component<TransformComponent>(entity)) {
+                auto& transform = registry.Get_Component<TransformComponent>(entity);
+
+                // Update listener position to player position
+                AudioSystem::SetListenerPosition(transform.pos.x, transform.pos.y);
+                return;
+            }
+        }
+    }
+
+    // No player found, keep listener at origin
+    AudioSystem::SetListenerPosition(0.0f, 0.0f);
+}
+
+/**
+ * @brief Updates the AudioManager each frame.
+ *
+ * This function updates the FMOD system, processes active crossfades,
+ * and handles music transitions based on game state changes.
+ *
+ * @param dt Delta time in seconds.
+ */
+void AudioManager::Update(float dt) {
+    // Update listener to follow player EVERY FRAME
+    UpdateListenerToPlayer();
+
+    // Update FMOD system
+    AudioSystem::Update();
+
+    // Get current game state
+    GameState currentState = GSM_CurrentState();
+
+    // Handle P key for game pause (music continues)
+    if (Input::IsKeyPressed(GLFW_KEY_P) && currentState == GameState::GS_LEVEL1) {
+        GSM_SetGamePaused(!GSM_IsGamePaused());
+        std::cout << (GSM_IsGamePaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+    }
+
+    // Music always updates (crossfade continues even when game is paused)
+    UpdateCrossfade(dt);
+
+    // Handle state-based music changes
+    HandleMusicForState(currentState, lastState);
+    lastState = currentState;
+}
+
 // ============================================================================
 // Spatial Audio Implementation
 // ============================================================================
 
-
 void AudioSystem::Configure2DSpatialAudio() {
-    if (!system) return;
+    if (!mSystem) return;
 
-    // Disable doppler, use simple distance calculations
-    mSystem->set3DSettings(
-        0.0f,  // No doppler effect (we're in 2D)
-        1.0f,  // Distance factor
-        1.0f   // Rolloff scale
+    std::cout << "[AudioSystem] Configuring 2D spatial audio..." << std::endl;
+
+    // Set 3D settings for 2D spatial audio
+    // Parameters: doppler scale (0.0 for 2D), distance factor, rolloff scale
+    FMOD_RESULT result = mSystem->set3DSettings(0.0f, 0.05f, 1.0f);
+    if (result != FMOD_OK) {
+        std::cerr << "[AudioSystem] Failed to set 3D settings!" << std::endl;
+        return;
+    }
+
+    // init listener state and set
+    listenerPos = { 0.0f, 0.0f, 0.0f };
+    listenerVel = { 0.0f, 0.0f, 0.0f };
+    listenerForward = { 0.0f, 0.0f, 1.0f };
+    listenerUp = { 0.0f, 1.0f, 0.0f };
+
+    result = mSystem->set3DListenerAttributes(
+        0,                  // Listener index (0 for single listener)
+        &listenerPos,
+        &listenerVel,
+        &listenerForward,
+        &listenerUp
     );
 
-    std::cout << "[AudioSystem] 2D spatial audio configured" << std::endl;
+    if (result != FMOD_OK) {
+        std::cerr << "[AudioSystem] Failed to set listener attributes!" << std::endl;
+        return;
+    }
+
+    std::cout << "[AudioSystem] 2D spatial audio configured successfully" << std::endl;
 }
 
 void AudioSystem::SetListenerPosition(float x, float y) {
     if (!mSystem) return;
 
-    FMOD_VECTOR position = { x, y, 0.0f };
-    FMOD_VECTOR velocity = { 0.0f, 0.0f, 0.0f };
-    FMOD_VECTOR forward = { 0.0f, 0.0f, 1.0f };  // Into screen
-    FMOD_VECTOR up = { 0.0f, 1.0f, 0.0f };       // Up
+    // Update listener position (Z is always 0 for 2D)
+    listenerPos.x = x;
+    listenerPos.y = y;
+    listenerPos.z = 0.0f;
 
-    mSystem->set3DListenerAttributes(0, &position, &velocity, &forward, &up);
+    // Velocity is zero for static camera/player
+    listenerVel.x = 0.0f;
+    listenerVel.y = 0.0f;
+    listenerVel.z = 0.0f;
+
+    // Apply updated listener attributes to FMOD
+    FMOD_RESULT result = mSystem->set3DListenerAttributes(
+        0,
+        &listenerPos,
+        &listenerVel,
+        &listenerForward,
+        &listenerUp
+    );
+
+    if (result != FMOD_OK) {
+        std::cerr << "[AudioSystem] Failed to update listener position!" << std::endl;
+    }
 }
 
 FMOD::Channel* AudioSystem::PlaySoundAt(const std::string& assetName, float x, float y, float volume) {
-    FMOD::Sound* sound = AudioCache::GetSound(assetName);
-    if (!sound || !mSystem) return nullptr;
+    if (!mSystem) return nullptr;
 
-    FMOD::Channel* channel = nullptr;
-    mSystem->playSound(sound, nullptr, true, &channel);
-
-    if (channel) {
-        // Set position in 2D space
-        FMOD_VECTOR position = { x, y, 0.0f };
-        FMOD_VECTOR velocity = { 0.0f, 0.0f, 0.0f };
-        channel->set3DAttributes(&position, &velocity);
-
-        // Set distance range (adjust to your game scale)
-        channel->set3DMinMaxDistance(
-            50.0f,   // Full volume within 50 units
-            500.0f   // Silent beyond 500 units
-        );
-
-        channel->setVolume(volume);
-        channel->setPaused(false);
+    // check if spatial is true and find distance
+    AudioAsset* asset = AudioCache::GetAsset(assetName);
+    if (!asset) {
+        std::cerr << "[AudioSystem] Asset not found: " << assetName << std::endl;
+        return nullptr;
     }
+
+    // Get the loaded sound
+    FMOD::Sound* sound = AudioCache::GetSound(assetName);
+    if (!sound) {
+        std::cerr << "[AudioSystem] Failed to get sound: " << assetName << std::endl;
+        return nullptr;
+    }
+
+    // play normally without spatial sound if no need
+    if (!asset->spatial) {
+        return PlaySoundGetChannel(sound, false);
+    }
+
+    // For spatial sounds, set up 3D positioning
+    // Play the sound (start paused so we can set 3D attributes first)
+    FMOD::Channel* channel = nullptr;
+    FMOD_RESULT result = mSystem->playSound(sound, nullptr, true, &channel);
+
+    if (result != FMOD_OK || !channel) {
+        std::cerr << "[AudioSystem] Failed to play sound: " << assetName << std::endl;
+        return nullptr;
+    }
+
+    // Set 3D position
+    FMOD_VECTOR soundPos = { x, y, 0.0f };  // Z is 0 for 2D
+    FMOD_VECTOR soundVel = { 0.0f, 0.0f, 0.0f };
+
+    result = channel->set3DAttributes(&soundPos, &soundVel);
+    if (result != FMOD_OK) {
+        std::cerr << "[AudioSystem] Failed to set 3D attributes for: " << assetName << std::endl;
+    }
+
+    result = channel->set3DMinMaxDistance(asset->minDistance, asset->maxDistance);
+    if (result != FMOD_OK) {
+        std::cerr << "[AudioSystem] Failed to set 3D distances for: " << assetName << std::endl;
+    }
+
+    // Set volume
+    channel->setVolume(volume);
+
+    // Unpause to start playback
+    channel->setPaused(false);
 
     return channel;
 }

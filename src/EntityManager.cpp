@@ -46,6 +46,13 @@ Entity EntityManager::createEntity()
 	if (alive.size() < next_entID)
 	{	alive.resize(next_entID, false);	}
 
+	// Remove a name if already assigned?
+	if (entityNames.find(e) != entityNames.end())
+	{
+		nameToEntity.erase(entityNames[e]);
+		entityNames.erase(e);
+	}
+
 
 	alive[e] = true;	// set new entity to alive ^^
 	return e;
@@ -64,6 +71,12 @@ void EntityManager::destroyEntity(Entity eID)
 	// Set alive flag to false, and add ID to list of free IDs
 	alive[eID] = false;
 	freeID.push_back(eID);
+
+	if (entityNames.find(eID) != entityNames.end())
+	{
+		nameToEntity.erase(entityNames[eID]);
+		entityNames.erase(eID);
+	}
 
 	// NOTE: COMPONENTS removed in REGISTRY
 }
@@ -85,7 +98,10 @@ std::unordered_map<Entity,std::string>& EntityManager::GetEntityNameMap()
 { return entityNames; }
 
 void EntityManager::SetEntityName(Entity eID, const std::string& name)
-{ entityNames[eID] = name; }
+{ 
+	entityNames[eID] = name; 
+	nameToEntity[name] = eID;
+}
 
 std::string EntityManager::GetEntityName(Entity eID)
 {
@@ -95,4 +111,11 @@ std::string EntityManager::GetEntityName(Entity eID)
 		return "Entity_" + std::to_string(eID);
 	}
 	return entityNames[eID];
+}
+
+Entity EntityManager::GetEntityFromName(const std::string& name)
+{
+	if (nameToEntity.find(name) == nameToEntity.end()) { throw std::runtime_error("Entity " + name + " does not have an ID!\n"); }
+
+	return nameToEntity[name];
 }

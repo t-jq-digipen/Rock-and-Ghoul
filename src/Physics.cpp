@@ -12,7 +12,7 @@
  *
  * The bulk of the updates happen in PhysicsSystem.cpp
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 

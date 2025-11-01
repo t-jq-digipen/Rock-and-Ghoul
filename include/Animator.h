@@ -27,23 +27,24 @@
 #include <nlohmann/json.hpp>
 namespace Animator {
 
-	/**
-	* @struct ActiveFrames
-	* @brief Represents a set of frames for a given animation and a duration it should take to play it.
-	*/
-	struct ActiveFrames {
-		int row			= 0;	// Row index
-		int col_start	= 0;	// First column index
-		int col_end		= 0;	// Last column index
-		float duration	= 0.f;	// Duration of time in seconds the animation takes to go from first column to last column
+	// shift ActiveFrames into DataDefs.h
+	///**
+	//* @struct ActiveFrames
+	//* @brief Represents a set of frames for a given animation and a duration it should take to play it.
+	//*/
+	//struct ActiveFrames {
+	//	int row			= 0;	// Row index
+	//	int col_start	= 0;	// First column index
+	//	int col_end		= 0;	// Last column index
+	//	float duration	= 0.f;	// Duration of time in seconds the animation takes to go from first column to last column
 
-		/**
-		 * @brief Equality operator for ActiveFrames.
-		 * @param rhs The ActiveFrames object to compare with.
-		 * @return True if all fields (row, col_start, col_end, duration) match, false otherwise.
-		 */
-		bool operator==(const ActiveFrames& rhs) const;
-	};
+	//	/**
+	//	 * @brief Equality operator for ActiveFrames.
+	//	 * @param rhs The ActiveFrames object to compare with.
+	//	 * @return True if all fields (row, col_start, col_end, duration) match, false otherwise.
+	//	 */
+	//	bool operator==(const ActiveFrames& rhs) const;
+	//};
 
 
 
@@ -71,10 +72,14 @@ namespace Animator {
 		int range;				// Number of frames we are looping through
 
 		// using int for key for enumeration
-		std::unordered_map<int, ActiveFrames> stateframe;	// A map with int key for active frames
+		std::unordered_map<unsigned int, ActiveFrames> stateframe;	// A map with int key for active frames
+
+		// store state names
+		std::unordered_map<std::string, unsigned int> stateNames;
 
 		// Using int for enumeration compatibility with developers
-		int m_current_state = -1;							// Animation state
+		unsigned int m_current_state = 0;							// Animation state
+
 
 	public:
 		float u0, v0, u1, v1;								// For sub image drawing
@@ -103,13 +108,15 @@ namespace Animator {
 
 		void UpdateUV(int imageWidthPixels, int imageHeightPixels);
 
+		// void UpdateStateFrames();
+
 		/**
 		 * @brief Set the active animation frames and duration.
 		 * @param framerange The range of frames (row and column indices).
 		 * @param duration Duration (in seconds) of the animation cycle. Zero means a single-frame animation.
 		 * @throws std::runtime_error if duration == 0 but multiple frames are specified.
 		 */
-		void SetFrames(ActiveFrames const& framerange, float duration);
+		void SetFrames(ActiveFrames const& framerange);
 
 		/**
 		 * @brief Reset the animation timer to zero.
@@ -148,7 +155,7 @@ namespace Animator {
 		 * @param state The state identifier to switch to.
 		 * @throws std::runtime_error if the state was not registered with AddState().
 		 */
-		void SetState(int state);
+		void SetState(unsigned int state);
 		/**
 		 * @brief Add a new animation state.
 		 * @param state The state identifier.
@@ -156,13 +163,17 @@ namespace Animator {
 		 *
 		 * If the state already exists, no action is taken (prints a warning).
 		 */
-		void AddState(int state, ActiveFrames const& framerange);
+		void AddState(int state, ActiveFrames const& framerange, const std::string& statename = "");
 
 		/**
 		 * @brief Get all registered animation states.
 		 * @return An unordered_map of state IDs mapped to their corresponding ActiveFrames.
 		 */
-		std::unordered_map<int, ActiveFrames> GetStateFrames() const { return stateframe; }
+		std::unordered_map<unsigned int, ActiveFrames>& GetStateFrames() { return stateframe; }
+
+		void EditFrames(int row, int colstart, int colend, float duration);
+
+
 		/**
 		 * @brief Get the current active animation state.
 		 * @return The integer identifier of the current state.

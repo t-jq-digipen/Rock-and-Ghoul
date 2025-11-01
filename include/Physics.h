@@ -158,5 +158,7 @@ namespace Physics {
 
 		// Editor
 		Editor::ComponentData EditorData();
+		AABB& Get_AABB() { return aabbhitbox; }
+		Circle& Get_Circle() { return circlehitbox; }
 	};
 }

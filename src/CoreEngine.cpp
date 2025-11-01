@@ -37,13 +37,17 @@
 #include "FrameRateController.h"
 #include <algorithm>
 #include "DataDefs.h"
+#include "MovementSystem.h"
 #include <nlohmann/json.hpp>
 #include "RenderSystem.h"
+#include "GuiSystem.h"
+
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
 
 GSM gsm;
 float g_dt; // Global dt
+bool g_gamePaused = false; // pause state flag
 
 void CoreEngine::AddSystem(ISystem* sys) {
     systems.push_back(sys);
@@ -77,18 +81,21 @@ void CoreEngine::Initialize() {
     registry.Register_Component<ShapeComponent>("Shape", { "Transform" });
     std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";
 
+    registry.Register_Component<Movement::MovementComponent>("Movement", { "Transform", "Physics" });
+    std::cout << "REGISTRY | REGISTERED MOVEMENT COMPONENT\n";
+
     // marker for non-standard components which should be shifted out to game files
     std::cout << "NON DEFAULT COMPONENTS: \n==============================\n";
 
     registry.Register_Component<TagComponent>("Tag");
     std::cout << "REGISTRY | REGISTERED TAG COMPONENT\n";
-
     /*registry.Register_Component<ElementComponent>("Element");
     std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";*/
 
 
     for (auto s : systems) s->Initialize();
     gsm.Init(GameState::GS_MAIN_MENU);
+    GLApp::gameInitialized = true;
 
 }
 
@@ -128,15 +135,24 @@ void CoreEngine::Run() {
                 dt = 0.0f;
             }
             g_dt = dt;
-            // 1. Update game state logic first
-
+            // --- 1. Update logic ---
             gsm.CallUpdate();
 
-            // 2. Draw background/UI (this calls glClear)
+            // --- 2. Capture game view for ImGui ---
+            Render& renderer = Render::GetInstance();
+            renderer.BeginSceneCapture();
+
+            // Draw the current game scene or main menu
             gsm.CallDraw();
 
-            // NEED TO FIGURE OUT HOW TO SPLIT THIS PER DRAW/UPDATE
             
+           
+
+            // Finish capture — ImGui will display this texture inside "Game View"
+            renderer.EndSceneCapture();
+            GuiSystem::Get().Update(0.0f);
+            // NEED TO FIGURE OUT HOW TO SPLIT THIS PER DRAW/UPDATE
+
             //loop through all systems managed by the engine
             for (auto s : systems) {
                 //high-resolution clock
@@ -148,6 +164,7 @@ void CoreEngine::Run() {
                 {
                     // Only update systems when in gameplay
                     s->Update(g_dt);
+
                 }
                 else
                 {
@@ -156,6 +173,7 @@ void CoreEngine::Run() {
                         imguiSystem->Update(0.0f);
                     else if (auto* renderSystem = dynamic_cast<RenderSystem*>(s))
                         renderSystem->Update(0.0f);
+                    GuiSystem::Get().Update(0.0f);
                 }
                 // Record the ending timestamp immediately after update finishes
                 auto end = clock::now();
@@ -173,7 +191,7 @@ void CoreEngine::Run() {
                     imguiSystem->Render();
                 }
             }
-
+            gsm.CallDraw();
             if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
                 GSM_SetNextState(GameState::GS_QUIT);
 
@@ -208,12 +226,15 @@ void CoreEngine::Run() {
 
 
 void CoreEngine::Shutdown() {
+    GLApp::gameInitialized = false;
     for (int i = (int)systems.size() - 1; i >= 0; --i) {
-        systems[i]->Shutdown();
-        delete systems[i];
+        systems[i]->Shutdown(); 
+        if (systems[i] != &GuiSystem::Get())
+            delete systems[i];
     }
     systems.clear();
     gsm.Close();   // To exit the game state manager
+
 }
 
 void CoreEngine::Quit() {
@@ -228,6 +249,8 @@ void CoreEngine::Quit() {
 const GameState& GSM_PreviousState()    { return gsm.GetPreviousState(); }
 const GameState& GSM_CurrentState()     { return gsm.GetCurrentState(); }
 const GameState& GSM_NextState()        { return gsm.GetNextState(); }
+const bool GSM_IsPaused()               { return gsm.IsPaused(); }
+const bool GSM_InEditMode()             { return gsm.InEditMode(); }
 // ----------------------------------------
 
 
@@ -236,7 +259,14 @@ const GameState& GSM_NextState()        { return gsm.GetNextState(); }
 void GSM_SetPreviousState(GameState state)  { gsm.SetPreviousState(state); }
 void GSM_SetCurrentState(GameState state)   { gsm.SetCurrentState(state); }
 void GSM_SetNextState(GameState state)      { gsm.SetNextState(state); }
+void GSM_SetIsPaused(bool isPaused)         { gsm.SetPaused(isPaused); }
+void GSM_SetInEditMode(bool inEditMode)     { gsm.SetEditMode(inEditMode); }
 // ----------------------------------------
+
+// PAUSE STATE
+// ----------------------------------------
+bool GSM_IsGamePaused() { return g_gamePaused; }
+void GSM_SetGamePaused(bool paused) { g_gamePaused = paused; }
 
 // DEBUGGER
 std::ostream& operator<<(std::ostream& os, const GameState& state)

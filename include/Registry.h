@@ -46,6 +46,7 @@
 #include "Physics.h"		// Physics Component
 #include "Sprite.h"			// Sprite Component
 #include "Animator.h"		// Animator Component
+#include "Movement.h"
 #include "DataDefs.h"
 #include <nlohmann/json.hpp>
 
@@ -369,6 +370,11 @@ public:
 	std::string Get_EntityName(Entity eID)
 	{
 		return entityManager.GetEntityName(eID);
+	}
+
+	Entity Get_EntityID(const std::string& name)
+	{
+		return entityManager.GetEntityFromName(name);
 	}
 #pragma endregion
 	// ================================================================================

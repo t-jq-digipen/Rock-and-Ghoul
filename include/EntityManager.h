@@ -45,6 +45,7 @@ private:
 	std::vector<bool>	alive;		// Track which ID is alive, vector grows as new entities are added
 
 	std::unordered_map<Entity, std::string> entityNames;	// Map to store entity names
+	std::unordered_map<std::string, Entity> nameToEntity;
 private:
 	// Private ctor for singleton
 	EntityManager()									= default;
@@ -132,5 +133,5 @@ public:
 	 */
 	std::string GetEntityName(Entity eID);
 
-
+	Entity GetEntityFromName(const std::string& name);
 };

@@ -16,18 +16,23 @@ enum class ButtonShape {
 struct ButtonConfig {
     std::string label;
     Vec2 pos;
+    Vec2 basePos;         // base position for scaling (1920x1080)
     Vec2 size{ 200.f, 100.f };
+    Vec2 baseSize;
     Colour3 color{ 0.3f, 0.3f, 0.3f };
     std::function<void()> onClick = nullptr;
     AudioSystem::ButtonType soundType = AudioSystem::ButtonType::PLAY;
     ButtonShape shape = ButtonShape::Rectangle;
     float textScale = 1.0f;
+    float baseTextScale = 1.f;
 };
 
 struct TextBoxConfig {
     std::string text;
+    Vec2 basePos;
     Vec2 pos;
     float scale = 1.0f;
+    float baseScale = 1.f;
     Colour3 color{ 0, 0, 0 };   //black text
     bool centered = false;      //centering
 };
@@ -40,6 +45,10 @@ struct Button {
 };
 class GuiSystem : public ISystem {
 public:
+    static GuiSystem& Get() {
+        static GuiSystem instance;
+        return instance;
+    }
     void Initialize() override;
     void Update(float dt) override;
     void Shutdown() override;
@@ -48,7 +57,11 @@ public:
     void AddTextBox(const TextBoxConfig& cfg);
     static void SetAudioManager(AudioManager* audioMgr);
 
+    void SetEditMode(bool isEditing);
+    bool GetEditMode() const;
+
 private:
+
     std::vector<ButtonConfig> buttons;
     std::vector<TextBoxConfig> textboxes;
     static AudioManager* audio;
@@ -59,3 +72,5 @@ private:
     int selectedIndex = -1;
     enum class SelectedType { None, Button, TextBox } selectedType = SelectedType::None;
 };
+
+inline GuiSystem guiSystem;

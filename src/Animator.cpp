@@ -48,35 +48,65 @@ namespace Animator {
 		//UpdateUV();
 	}
 
+	bool IsStateCorrect(int row, int col, int state, const std::unordered_map<unsigned int, ActiveFrames>& statemap)
+	{
+		if (row != statemap.find(state)->second.row) { return false; }
+		if (col < statemap.find(state)->second.col_start || col > statemap.find(state)->second.col_end) { return false; }
+		return true;
+	}
+
 	void AnimatorComponent::UpdateUV()
 	{
+		if (frames != stateframe[m_current_state])
+		{
+			SetFrames(stateframe[m_current_state]);
+		}
 		u0 = m_current_col * m_uv_width;
 		v0 = m_current_row * m_uv_height;
 		u1 = u0 + m_uv_width;
 		v1 = v0 + m_uv_height;
 	}
 
+
 	void AnimatorComponent::UpdateUV(int imageWidthPixels, int imageHeightPixels)
 	{
+		if (!IsStateCorrect(m_current_row, m_current_col, m_current_state, stateframe))
+		{
+			SetFrames(stateframe[m_current_state]);
+		}
 		m_uv_width = static_cast<float>(imageWidthPixels) / static_cast<float>(m_total_cols);
 		m_uv_height = static_cast<float>(imageHeightPixels) / static_cast<float>(m_total_rows);
 		m_current_row = frames.row;
 		m_current_col = frames.col_start;
-		UpdateUV();
+		u0 = m_current_col * m_uv_width;
+		v0 = m_current_row * m_uv_height;
+		u1 = u0 + m_uv_width;
+		v1 = v0 + m_uv_height;
 	}
 
-	void AnimatorComponent::SetFrames(ActiveFrames const& framerange, float duration)
+	/*void AnimatorComponent::UpdateStateFrames()
 	{
-		anim_duration = duration;
+		ActiveFrames& check = stateframe[m_current_state];
+		check.row		= frames.row;
+		check.col_start	= frames.col_start;
+		check.col_end	= frames.col_end;
+		check.duration	= frames.duration; 
+	}*/
+
+	void AnimatorComponent::SetFrames(ActiveFrames const& framerange)
+	{
+		anim_duration = framerange.duration;
 		frames = framerange;
-		if (duration == 0)
+		if (anim_duration == 0)
 		{
 			anim_timer = 0;
 			m_current_row = frames.row;
 			m_current_col = frames.col_start;
-			if (frames.col_end - frames.col_start != 0)
+			if (frames.col_end - frames.col_start <= 0)
 			{
-				throw std::runtime_error("sumting wong, u call 0 duration but only 1 frame? check ur code or call jq\n");
+				// something wrong here
+				// throw std::runtime_error("sumting wong, u call 0 duration but only 1 frame? check ur code or call jq\n");
+				return;
 			}
 			return;
 		}
@@ -133,7 +163,7 @@ namespace Animator {
 		// std::cout << "u0 " << u0 << " v0 " << v0 << " u1 " << u1 << " v1 " << v1 << '\n';
 	}
 
-	void AnimatorComponent::SetState(int state)
+	void AnimatorComponent::SetState(unsigned int state)
 	{
 		auto it = stateframe.find(state);
 		if (it == stateframe.end())
@@ -158,7 +188,7 @@ namespace Animator {
 		m_current_state = state;
 	}
 
-	void AnimatorComponent::AddState(int state, ActiveFrames const& framerange)
+	void AnimatorComponent::AddState(int state, ActiveFrames const& framerange, std::string const& statename)
 	{
 		auto it = stateframe.find(state);
 		if (it != stateframe.end())
@@ -166,8 +196,18 @@ namespace Animator {
 			std::cout << "THIS STATE ALREADY SET!!! but i dont runtime error u bc i feeling nice\n";
 			return;
 		}
+		std::string name = statename;
+		if (name == "") { name = std::to_string(state); }
 
+		stateNames[statename] = state;
 		stateframe[state] = framerange;
+	}
+
+	void AnimatorComponent::EditFrames(int row, int colstart, int colend, float duration) {
+		stateframe[m_current_state].row = row;
+		stateframe[m_current_state].col_start = colstart;
+		stateframe[m_current_state].col_end = colend;
+		stateframe[m_current_state].duration = duration;
 	}
 
 	std::string AnimatorComponent::Serialize() const {
@@ -275,8 +315,17 @@ namespace Animator {
 		//ret.Add_Data("Total Rows", Editor::Widget_Int(&m_total_rows));
 		//ret.Add_Data("Total Cols", Editor::Widget_Int(&m_total_cols));
 
-		ret.Add_Data("Total Rows", Editor::Widget_Int{ reinterpret_cast<int*>(&m_total_rows) });
-		ret.Add_Data("Total Cols", Editor::Widget_Int{ reinterpret_cast<int*>(&m_total_cols) });
+		//ret.Add_Data("Total Rows", Editor::Widget_Int{ reinterpret_cast<int*>(&m_total_rows) });
+		//ret.Add_Data("Total Cols", Editor::Widget_Int{ reinterpret_cast<int*>(&m_total_cols) });
+
+		Editor::Widget_Animator animwidget(&stateframe, &m_total_rows, &m_total_cols, &m_current_state);
+		/*for (auto& [name, state] : stateNames)
+		{
+			animwidget.current_state.Add_Option(name, state);
+		}*/
+
+		ret.Add_Data("Animator values", animwidget);
+		// ret.Add_Data("Animator States", animwidget);
 
 		return ret;
 	}
