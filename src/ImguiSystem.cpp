@@ -496,9 +496,7 @@ void ImGuiSystem::Update(float dt)
         // ---------------------------------------------------------
         // Prefab placement handler (multi-placement version)
         // ---------------------------------------------------------
-        // ---------------------------------------------------------
-// Prefab placement handler (multi-placement version)
-// ---------------------------------------------------------
+
         if (isPlacingPrefab && ImGui::IsItemHovered())
         {
             ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
@@ -554,7 +552,7 @@ void ImGuiSystem::Update(float dt)
                 }
             }
 
-            if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+            if (Input::IsKeyPressed(GLFW_KEY_0))
             {
                 isPlacingPrefab = false;
                 pendingPrefabPath.clear();
@@ -1526,26 +1524,110 @@ void ImGuiSystem::ShowPrefabControls()
 {
     ImGui::Text("Prefab Management:");
 
+    static std::string pendingPrefabName;
+    static bool triggerPopupNextFrame = false;
+    static std::string pendingDeletePrefab;
+    static bool triggerDeletePopupNextFrame = false;
+
     // --- Save selected entity as prefab ---
     if (selectedEntity != INVALID_ENTITY)
     {
         static char prefabNameBuf[64] = "";
-        ImGui::InputText("Prefab Name", prefabNameBuf, IM_ARRAYSIZE(prefabNameBuf));
+        // --- live rename updates hierarchy ---
+        if (ImGui::InputText("Prefab Name", prefabNameBuf, IM_ARRAYSIZE(prefabNameBuf)))
+        {
+            std::string newName = prefabNameBuf;
+            if (!newName.empty())
+                Registry::Get().Get_EntityNameMap()[selectedEntity] = newName;
+        }
+
         ImGui::SameLine();
+
         if (ImGui::Button("Save As Prefab"))
         {
             std::string prefabName = prefabNameBuf;
-            if (!prefabName.empty())
-            {
-                std::string outPath = FilePath::PREFABS_FOLDER + prefabName + ".json";
-                if (JsonLoad::SaveEntity(outPath, selectedEntity))
-                    std::cout << "[Editor] Saved entity " << selectedEntity
-                    << " as prefab: " << outPath << "\n";
-            }
-            else
+            if (prefabName.empty())
             {
                 std::cout << "[Editor] Prefab name cannot be empty.\n";
             }
+            else
+            {
+                std::string outPath = FilePath::PREFABS_FOLDER + prefabName + ".json";
+
+                // === CASE-INSENSITIVE CHECK ===
+                bool prefabExists = false;
+                std::string existingMatch;
+                std::string lowerInput = prefabName;
+                std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), ::tolower);
+
+                for (auto& entry : std::filesystem::directory_iterator(FilePath::PREFABS_FOLDER))
+                {
+                    if (entry.path().extension() == ".json")
+                    {
+                        std::string existing = entry.path().stem().string();
+                        std::string lowerExisting = existing;
+                        std::transform(lowerExisting.begin(), lowerExisting.end(), lowerExisting.begin(), ::tolower);
+
+                        if (lowerExisting == lowerInput)
+                        {
+                            prefabExists = true;
+                            existingMatch = existing;
+                            break;
+                        }
+                    }
+                }
+
+                if (prefabExists)
+                {
+                    pendingPrefabName = prefabName;
+                    triggerPopupNextFrame = true;
+                    std::cout << "[Editor] Prefab '" << existingMatch
+                        << "' already exists (case-insensitive match).\n";
+                }
+                else
+                {
+                    if (JsonLoad::SaveEntity(outPath, selectedEntity))
+                    {
+                        Registry::Get().Get_EntityNameMap()[selectedEntity] = prefabName;
+                        std::cout << "[Editor] Saved new prefab: " << outPath << "\n";
+                    }
+                }
+            }
+        }
+
+        // --- open replace popup next frame (prevents flicker) ---
+        if (triggerPopupNextFrame)
+        {
+            ImGui::OpenPopup("Prefab Replace Confirmation");
+            triggerPopupNextFrame = false;
+        }
+
+        if (ImGui::BeginPopupModal("Prefab Replace Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Prefab '%s' already exists.\nReplace it?", pendingPrefabName.c_str());
+            ImGui::Separator();
+
+            if (ImGui::Button("Yes", ImVec2(120, 0)))
+            {
+                std::string outPath = FilePath::PREFABS_FOLDER + pendingPrefabName + ".json";
+                if (JsonLoad::SaveEntity(outPath, selectedEntity))
+                {
+                    Registry::Get().Get_EntityNameMap()[selectedEntity] = pendingPrefabName;
+                    std::cout << "[Editor] Replaced prefab: " << outPath << "\n";
+                }
+                pendingPrefabName.clear();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("No", ImVec2(120, 0)))
+            {
+                pendingPrefabName.clear();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
         }
     }
     else
@@ -1553,11 +1635,13 @@ void ImGuiSystem::ShowPrefabControls()
         ImGui::TextDisabled("Select an entity to save as prefab");
     }
 
+    // --- Prefab list ---
     ImGui::Separator();
-    ImGui::Text("Spawn Prefab (click to select, then click in Game View):");
+    ImGui::Text("Spawn / Manage Prefabs:");
 
     static std::vector<std::string> prefabList;
     prefabList.clear();
+
     for (auto& entry : std::filesystem::directory_iterator(FilePath::PREFABS_FOLDER))
     {
         if (entry.path().extension() == ".json")
@@ -1570,19 +1654,77 @@ void ImGuiSystem::ShowPrefabControls()
         return;
     }
 
-    ImGui::BeginChild("PrefabList", ImVec2(0, 150), true, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::BeginChild("PrefabList", ImVec2(0, 180), true, ImGuiWindowFlags_HorizontalScrollbar);
 
     for (const auto& prefabName : prefabList)
     {
         bool selected = (pendingPrefabPath == FilePath::PREFABS_FOLDER + prefabName + ".json");
+        ImGui::PushID(prefabName.c_str());
+
+        // Regular selectable item
         if (ImGui::Selectable(prefabName.c_str(), selected))
         {
             pendingPrefabPath = FilePath::PREFABS_FOLDER + prefabName + ".json";
             isPlacingPrefab = true;
             std::cout << "[Editor] Prefab '" << prefabName << "' selected for placement mode.\n";
         }
+
+        // Right-click context menu
+        if (ImGui::BeginPopupContextItem("PrefabContext"))
+        {
+            if (ImGui::MenuItem("Delete Prefab"))
+            {
+                pendingDeletePrefab = prefabName;
+                triggerDeletePopupNextFrame = true;
+            }
+            ImGui::EndPopup();
+        }
+
+        ImGui::PopID();
     }
+
     ImGui::EndChild();
+
+    // --- open delete popup next frame ---
+    if (triggerDeletePopupNextFrame)
+    {
+        ImGui::OpenPopup("Delete Prefab Confirmation");
+        triggerDeletePopupNextFrame = false;
+    }
+
+    // --- Deletion Confirmation Popup ---
+    if (ImGui::BeginPopupModal("Delete Prefab Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Are you sure you want to delete prefab '%s'?\nThis action cannot be undone.",
+            pendingDeletePrefab.c_str());
+        ImGui::Separator();
+
+        if (ImGui::Button("Yes, Delete", ImVec2(130, 0)))
+        {
+            std::string filePath = FilePath::PREFABS_FOLDER + pendingDeletePrefab + ".json";
+            try
+            {
+                std::filesystem::remove(filePath);
+                std::cout << "[Editor] Deleted prefab: " << filePath << "\n";
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << "[Editor] Failed to delete prefab: " << e.what() << "\n";
+            }
+
+            pendingDeletePrefab.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+        {
+            pendingDeletePrefab.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
 
     if (isPlacingPrefab)
     {
@@ -1590,6 +1732,8 @@ void ImGuiSystem::ShowPrefabControls()
             "Placement Mode Active: Click in Game View to spawn. (ESC to cancel)");
     }
 }
+
+
 
 
 void ImGuiSystem::Shutdown() {

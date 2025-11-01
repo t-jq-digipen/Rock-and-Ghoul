@@ -157,7 +157,13 @@ void Level1::Init()
 		std::cout << "Level 1 Initialized!!!" << std::endl;
 		// 1. Initialize the Renderer
 		renderer.Init();
-
+		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
+		if (!bgTexture)
+			std::cerr << "[Level1] Failed to reload background texture!" << std::endl;
+		else {
+			RenderSystem::ClearBackgroundTextures();
+			RenderSystem::AddBackgroundTexture(bgTexture);
+		}
 		// 2. Create FretBoard after OpenGL is ready
 		if (!fretboard) {
 			fretboard = new FretBoard(0, 0, 800, 200);
@@ -472,12 +478,21 @@ void Level1::Update()
 			GSM_SetNextState(GameState::GS_MAIN_MENU);
 			//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
 		}
-		else if (Input::IsKeyPressed(GLFW_KEY_R) && !guiSystem.GetEditMode())
+		// --- Restart level with R key (disabled while ImGui editor is active) ---
+		if (Input::IsKeyPressed(GLFW_KEY_R))
 		{
-			GSM_SetNextState(GameState::GS_RESTART);
-			//nextState = GameState::GS_RESTART;       // restart state
-			std::cout << "Level 1 Restarted!!!" << std::endl;
+			// don't trigger restart while editing or paused
+			if (!ImGuiSystem::guiEnabled && !GSM_IsPaused() && !guiSystem.GetEditMode())
+			{
+				GSM_SetNextState(GameState::GS_RESTART);
+				std::cout << "Level 1 Restarted!!!" << std::endl;
+			}
+			else
+			{
+				std::cout << "[DEBUG] Ignored R press (editor or paused mode active)\n";
+			}
 		}
+
 
 		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !guiSystem.GetEditMode())
 		{
