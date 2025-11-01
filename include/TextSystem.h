@@ -52,7 +52,7 @@ namespace TextSystem
 		void SetSpeakerID(int id);
 		void SetFontPath(const std::string& path);
 		void SetFontSize(float size);
-		void SetIsTyping(bool isTyping);
+		void SetIsTyping(bool isType);
 		void SetColor(Vec3 const& colorVec);
 
 		// TYPE TEXT CALL FUNCTIONS

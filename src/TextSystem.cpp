@@ -24,7 +24,7 @@ namespace TextSystem
 	void TextComponent::SetSpeakerID(int id) { speakerID = id; }
 	void TextComponent::SetFontPath(const std::string& path) { fontPath = path; }
 	void TextComponent::SetFontSize(float size) { fontSize = size; }
-	void TextComponent::SetIsTyping(bool isTyping) { isTyping = isTyping; }
+	void TextComponent::SetIsTyping(bool isType) { isTyping = isType; }
 	void TextComponent::SetColor(Vec3 const& colorVec) { color = colorVec; }
 
 	// Toggle text behavior (if isTyping = true, text gets rendered from left to right)
@@ -70,17 +70,12 @@ namespace TextSystem
 			std::vector<std::string> lines = j.value("lines", std::vector<std::string>{""});
 			if (lines.empty()) lines.push_back("");
 
-			const float textSpeed = j.value("textSpeed", 24.0f);
+			const float textSpeed = j.value("textSpeed", 1.f);
 			const int speakerID = j.value("speakerID", 0);
 			const std::string fontPath = j.value("fontPath", std::string{});
-			const float fontSize = j.value("fontSize", 32.0f);
+			const float fontSize = j.value("fontSize", 1.f);
 
-			Vec3 color{ 1.f, 1.f, 1.f };
-			if (j.contains("color") && j["color"].is_array() && j["color"].size() >= 3) {
-				color.x = j["color"][0].get<float>();
-				color.y = j["color"][1].get<float>();
-				color.z = j["color"][2].get<float>();
-			}
+			const Vec3& color{ j.value("colorX", 1.f), j.value("colorY", 1.f), j.value("colorZ", 1.f) };
 
 			// Apply to component
 			textComp.SetLines(lines);
