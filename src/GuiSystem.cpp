@@ -62,6 +62,52 @@ bool GuiSystem::GetEditMode() const
 void GuiSystem::Update(float dt) {
     if (Input::IsKeyPressed(GLFW_KEY_F8))
         editMode = !editMode;
+
+    // --- Press SPACE to advance dialogues (while not editing the GUI) ---
+    static bool spaceLatch = false;
+    const bool spaceHeld = Input::IsKeyHeld(GLFW_KEY_SPACE);
+    const bool spaceEdge = !spaceLatch && spaceHeld; // rising edge (manual)
+
+    if (!editMode && spaceEdge) {
+        bool revealedAny = false;
+        std::vector<TextSystem::TextComponent*> processed;
+
+        for (auto& d : dialogues) {
+            auto* comp = d.textComp ? d.textComp : d.owned.get();
+            if (!comp) continue;
+            if (std::find(processed.begin(), processed.end(), comp) != processed.end()) continue;
+            processed.push_back(comp);
+
+            if (comp->CheckIfTyping()) {
+                comp->StopTyping();   // reveal full current line
+                revealedAny = true;
+            }
+        }
+
+        if (!revealedAny) {
+            processed.clear();
+            for (auto& d : dialogues) {
+                auto* comp = d.textComp ? d.textComp : d.owned.get();
+                if (!comp) continue;
+                if (std::find(processed.begin(), processed.end(), comp) != processed.end()) continue;
+                processed.push_back(comp);
+
+                const auto& lines = comp->GetLines();
+                const int idx = comp->GetCurrentLineIndex();
+                if (idx + 1 < static_cast<int>(lines.size())) {
+                    comp->SetCurrentLineIndex(idx + 1);
+                    comp->StartTyping();   // reset typewriter for the new line
+                }
+                else {
+                    comp->SetIsTyping(false); // stay fully shown at last line
+                }
+            }
+        }
+    }
+
+    // update latch
+    spaceLatch = spaceHeld;
+
     Vec2 mouse = Input::GetMousePosition();
     Render& render = Render::GetInstance();
 
@@ -171,9 +217,8 @@ void GuiSystem::Update(float dt) {
         // line & visible substring
         const std::string vis = TextSystem::GetVisibleText(*comp);
 
-        // color: prefer component color if non-zero, else skin color
-        Vec3 c = comp->GetColor();
-        const Colour3 drawColor{ c.x, c.y, c.z };
+        // text color
+        Colour3 drawColor = d.textBox.color;
 
         Vec2 textSize = render.CalculateTextSize(vis, d.textBox.scale);
         float drawX = d.textBox.pos.x, drawY = d.textBox.pos.y;

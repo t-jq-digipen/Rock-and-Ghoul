@@ -76,9 +76,9 @@ namespace TextSystem
 			const float fontSize = j.value("fontSize", 1.f);
 
 			Vec3 color{ 0.f, 0.f, 0.f };
-			color.x = j.value("colorR", 1.f);
-			color.y = j.value("colorG", 1.f);
-			color.z = j.value("colorB", 1.f);
+			color.x = j.contains("colorR") ? j["colorR"].get<float>() : 1.f;
+			color.y = j.contains("colorG") ? j["colorG"].get<float>() : 1.f;
+			color.z = j.contains("colorB") ? j["colorB"].get<float>() : 1.f;
 
 			// Apply to component
 			textComp.SetLines(lines);

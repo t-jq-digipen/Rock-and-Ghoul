@@ -188,6 +188,18 @@ void Level1::Init()
 			.shape = ButtonShape::Rounded
 		});
 
+		// Initial dialogue box when opening Level 1 state
+		TextBoxConfig initDialogue;
+		initDialogue.text = "";
+		initDialogue.basePos = { 450, 150 };
+		initDialogue.baseScale = 0.9f;
+		initDialogue.pos = initDialogue.basePos;
+		initDialogue.scale = initDialogue.baseScale;
+		initDialogue.color = { 0,0,0 };
+		initDialogue.centered = true;
+
+		GuiSystem::Get().AddDialogueFromJson("../Assets/Dialogue.json", initDialogue);
+
 		// 5. Create FretBoard after OpenGL is ready (duplicate - can remove)
 		if (!fretboard) {
 			fretboard = new FretBoard(0, 0, 800, 200);
