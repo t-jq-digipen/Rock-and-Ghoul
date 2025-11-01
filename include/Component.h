@@ -134,6 +134,8 @@ struct TransformComponent {
 		Editor::ComponentData ret("Transform");
 		ret.Add_Data("posX",		{ Editor::Widget_Float{ &pos.x , true, 0.f, 1920.f } });
 		ret.Add_Data("posY",		{ Editor::Widget_Float{ &pos.y , true, 0.f, 1080.f } });
+		ret.Add_Data("scaleX",		{ Editor::Widget_Float{ &scale.x , true, 0.1f, 50.f } });
+		ret.Add_Data("scaleY",		{ Editor::Widget_Float{ &scale.y , true, 0.1f, 50.f } });
 		ret.Add_Data("Rotation",	{ Editor::Widget_Float{ &rot , true, -360.f, 360.f } });
 
 		return ret;
