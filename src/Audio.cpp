@@ -368,9 +368,9 @@ void AudioManager::UpdateCrossfade(float dt) {
     if (t > 1.0f) t = 1.0f;
 
     if (currentChannel)
-        currentChannel->setVolume(musicVol * (1.0f - t));  // Fade from musicVol to 0
+        currentChannel->setVolume(musicVol * (1.0f - t));
     if (nextChannel)
-        nextChannel->setVolume(musicVol * t);              // Fade from 0 to musicVol
+        nextChannel->setVolume(musicVol * t);
 
     if (t >= 1.0f) {
         if (currentChannel) currentChannel->stop();
