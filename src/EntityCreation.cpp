@@ -314,7 +314,7 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color)
     return instance;
 }
 
-Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath)
+/*Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath)
 {
     Entity instance = Registry::Get().Create_Entity();
 
@@ -351,11 +351,49 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
     /*float randomOffset = static_cast<float>(rand() % 100) / 100.0f;
     anim.UpdateFrame(randomOffset);*/
 
-    Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
+    /*Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
 
     //Tag for filtering
     Registry::Get().Add_Component<TagComponent>(
         instance, TagComponent{ T_BATCH }); //T_BATCH added in C_TagID enum
+
+    return instance;
+}*/
+
+Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath)
+{
+    Entity instance = Registry::Get().Create_Entity();
+
+    // Transform
+    Registry::Get().Add_Component<TransformComponent>(
+        instance, TransformComponent{ {x, y}, {size, size} });
+
+    // Sprite (animated true)
+    Sprite::SpriteComponent sprite(texturePath, { size, size }, true);
+    Registry::Get().Add_Component<Sprite::SpriteComponent>(instance, sprite);
+
+    // Load texture safely through Render texture cache (ensures reuse)
+    Image img = sprite.Get_Image();
+
+    // Correct constructor: include width and height explicitly
+    Animator::AnimatorComponent anim(
+        3, 6,                      // rows, columns
+        //img.widthPixels, img.heightPixels, // actual texture size
+        { 2, 0, 1 },               // starting frame (row=2, col=0..1)
+        1.0f                       // duration
+    );
+
+    // Add proper states like the prefab does
+    anim.AddState(PS_IDLE, { 3, 0, 1, 1.0f });
+    anim.AddState(PS_WALK, { 3, 2, 3, 0.5f });
+
+    // Update initial UVs
+    anim.UpdateUV(img.widthPixels, img.heightPixels);
+
+    Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
+
+    // Tag for batching
+    Registry::Get().Add_Component<TagComponent>(instance, TagComponent{ T_BATCH });
 
     return instance;
 }
