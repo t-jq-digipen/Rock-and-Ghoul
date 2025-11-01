@@ -75,7 +75,10 @@ namespace TextSystem
 			const std::string fontPath = j.value("fontPath", std::string{});
 			const float fontSize = j.value("fontSize", 1.f);
 
-			const Vec3& color{ j.value("colorX", 1.f), j.value("colorY", 1.f), j.value("colorZ", 1.f) };
+			Vec3 color{ 0.f, 0.f, 0.f };
+			color.x = j.value("colorR", 1.f);
+			color.y = j.value("colorG", 1.f);
+			color.z = j.value("colorB", 1.f);
 
 			// Apply to component
 			textComp.SetLines(lines);

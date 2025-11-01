@@ -9,7 +9,7 @@
   "speakerID": 0,
   "fontPath": "../Assets/fonts/Marker.ttf",
   "fontSize": 1.0,
-  "colorX": 0.0,
-  "colorY": 0.0,
-  "colorZ": 0.0
+  "colorR": 0.0,
+  "colorG": 0.0,
+  "colorB": 0.0
 }
