@@ -725,7 +725,15 @@ void ImGuiSystem::ShowEngineDebugWindow() {
             else
             {
                 std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
-                JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+                if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
+                {
+                    JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+                }
+                else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
+                {
+                    JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
+                }
+
             }
 
             ImGuiSystem::selectedEntity = INVALID_ENTITY;
