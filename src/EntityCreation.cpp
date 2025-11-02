@@ -71,16 +71,12 @@ Entity Create_Ghoul(float const& x, float const& y) {
    
     Entity ghoul = LoadEntity("ghoul", x, y);
 
-    if (ghoul != 0) {
-        // Add behaviour component
-        BehaviourComponent bc;
-        bc.scriptName = "GhoulScript";  // Use the string name!
-        bc.started = false;
+    // Add behaviour component
+    BehaviourComponent bc;
+    bc.scriptName = "GhoulScript";  // Use the string name!
+    bc.started = false;
 
-        Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
-
-        std::cout << "Attached rotation script to ghoul (Entity " << ghoul << ")" << std::endl;
-    }
+    Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
 
     return ghoul;
 }
