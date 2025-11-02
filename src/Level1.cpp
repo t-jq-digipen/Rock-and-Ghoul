@@ -296,9 +296,13 @@ void Level1::Update()
 	lastTime = currentTime;
 
 	// Update camera position
-	UpdateCamera(Camera::GetInstance(), playerTransform.pos, g_dt);
+	//UpdateCamera(Camera::GetInstance(), playerTransform.pos, g_dt);
 	//std::cout << "Camera Pos: " << mainCamera.position.x << ", " << mainCamera.position.y << std::endl;
-
+	Camera& cam = Camera::GetInstance();
+	if (cam.GetMode() == Camera::Mode::GAME)
+	{
+		UpdateCamera(cam, playerTransform.pos, g_dt);
+	}
 
 	
 

@@ -75,7 +75,7 @@ public:
     /**************************************************************************/
     glm::mat4 GetViewProjection() const { return projMatrix * viewMatrix; }
 
-
+    enum class Mode { EDITOR, GAME };
 
 
     // Modifiers for camera data
@@ -85,6 +85,10 @@ public:
     void SetAspectRatio(float a) { aspectRatio = a; }
     void SetViewWidth(float w) { viewWidth = w; }
 
+    void SetMode(Mode m) { mode = m; }
+    Mode GetMode() const { return mode; }
+    void ResetToCenter();
+    void FollowTarget(const Vec2& targetPos, float dt);
     // Accessors for camera data
     const Vec2& GetPosition() const { return position; }
     float GetZoom() const { return zoom; }
@@ -110,6 +114,8 @@ private:
 
     glm::mat4 viewMatrix; //world to cam transform
     glm::mat4 projMatrix; //ortho proj matrix
+
+    Mode mode = Mode::EDITOR;
 };
 
 /**

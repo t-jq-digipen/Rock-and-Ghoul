@@ -622,6 +622,11 @@ void ImGuiSystem::ShowEngineDebugWindow() {
 
             gsm.isPaused = false;
             gsm.inEditMode = false;
+            Camera& cam = Camera::GetInstance();
+            cam.SetMode(Camera::Mode::GAME);
+            cam.SetZoom(1.0f);          
+            cam.ResetToCenter();
+            std::cout << "[Camera] Switched to GAME mode\n";
             isPlaying = true;
 
             std::cout << "[Editor] Gameplay started.\n";
@@ -631,26 +636,19 @@ void ImGuiSystem::ShowEngineDebugWindow() {
     {
         if (ImGui::Button("Stop"))
         {
-            // Stop simulation
             gsm.isPaused = true;
             gsm.inEditMode = true;
-            isPlaying = false;
 
-            std::cout << "[Editor] Gameplay stopped. Restoring temp scene...\n";
+            Camera& cam = Camera::GetInstance();
+            cam.SetMode(Camera::Mode::EDITOR);
+            cam.ResetToCenter();       
 
-            // clear the current entities
             JsonLoad::ClearAllEntities();
-
-            // reload the scene you were editing before pressing Play
-            if (JsonLoad::LoadScene(FilePath::TEMP_SCENE))
-            {
-                std::cout << "[Editor] Restored scene from temp file.\n";
-            }
-            else
-            {
-                std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
+            if (!JsonLoad::LoadScene(FilePath::TEMP_SCENE))
                 JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
-            }
+
+            std::cout << "[Camera] Switched to EDITOR mode\n";
+            isPlaying = false;
 
             ImGuiSystem::selectedEntity = INVALID_ENTITY;
         }
