@@ -54,8 +54,8 @@ void Level2::Load()
 
 	renderer.useCamera = true;
 	auto FontAssets = renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
-	CrashHandler::Safe("Level1", "Load", [&] {
-		std::cout << "Level 1 Loaded!!!" << std::endl;
+	CrashHandler::Safe("Level2", "Load", [&] {
+		std::cout << "Level 2 Loaded!!!" << std::endl;
 
 		bgTexture2 = renderer.LoadTexture("../Assets/MainMenu_Background.jpg");
 		CrashHandler::LogIfZeroTexture(bgTexture2, "../Assets/MainMenu_Background.jpg");
@@ -144,8 +144,8 @@ void Level2::Init()
 {
 	Render& renderer = Render::GetInstance();
 
-	CrashHandler::Safe("Level1", "Init", [&] {
-		std::cout << "Level 1 Initialized!!!" << std::endl;
+	CrashHandler::Safe("Level2", "Init", [&] {
+		std::cout << "Level 2 Initialized!!!" << std::endl;
 		// 1. Initialize the Renderer
 		renderer.Init();
 
@@ -191,20 +191,20 @@ void Level2::Init()
 		// Otherwise, it will load the saved scene
 		std::cout << "\n=== LOADING ENTITIES ===" << std::endl;
 		bool sceneLoaded = false;
-		if (std::filesystem::exists(FilePath::LEVEL1_SCENE)) {
-			std::cout << "Found level1.json, attempting to load..." << std::endl;
-			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+		if (std::filesystem::exists(FilePath::LEVEL2_SCENE)) {
+			std::cout << "Found level2.json, attempting to load..." << std::endl;
+			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
 			if (sceneLoaded) {
 				rock2 = registry2.Get_EntityID("Player");
 
-				std::cout << "Scene loaded successfully from level1.json!" << std::endl;
+				std::cout << "Scene loaded successfully from level2.json!" << std::endl;
 			}
 			else {
-				std::cout << "Failed to load scene from level1.json, will create from prefabs instead." << std::endl;
+				std::cout << "Failed to load scene from level2.json, will create from prefabs instead." << std::endl;
 			}
 		}
 		else {
-			std::cout << "No level1.json found, will create entities from prefabs." << std::endl;
+			std::cout << "No level2.json found, will create entities from prefabs." << std::endl;
 		}
 
 		if (!sceneLoaded) {
@@ -389,7 +389,7 @@ void Level2::Update()
 			std::filesystem::create_directories(FilePath::SAVES_FOLDER);
 		}
 
-		JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "Level1");
+		JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "Level2");
 		std::cout << "Scene saved!" << std::endl;
 	}
 
@@ -397,7 +397,7 @@ void Level2::Update()
 	if (Input::IsKeyPressed(GLFW_KEY_F9)) {
 		JsonLoad::ClearAllEntities();
 
-		if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
+		if (JsonLoad::LoadScene(FilePath::LEVEL2_SCENE)) {
 			std::cout << "Scene loaded successfully!" << std::endl;
 
 			// Find waffle by checking for its sprite texture
@@ -416,7 +416,7 @@ void Level2::Update()
 		}
 	}
 
-	CrashHandler::Safe("Level1", "Update", [&] {
+	CrashHandler::Safe("Level2", "Update", [&] {
 		// to test game state changes (do not trigger if GUI Editor is open)
 		if (Input::IsKeyPressed(GLFW_KEY_M) && !GuiSystem::Get().GetEditMode())
 		{
@@ -427,7 +427,7 @@ void Level2::Update()
 		{
 			GSM_SetNextState(GameState::GS_RESTART);
 			//nextState = GameState::GS_RESTART;       // restart state
-			std::cout << "Level 1 Restarted!!!" << std::endl;
+			std::cout << "Level 2 Restarted!!!" << std::endl;
 		}
 
 		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
@@ -450,7 +450,7 @@ void Level2::Update()
 void Level2::Draw()
 {
 	Render& renderer = Render::GetInstance();
-	CrashHandler::Safe("Level1", "Draw", [&] {
+	CrashHandler::Safe("Level2", "Draw", [&] {
 		});
 }
 
@@ -465,8 +465,8 @@ void Level2::Free()
 	//Remove_Entity(ECSplayer);
 	//Remove_Entity(waffle);
 
-	CrashHandler::Safe("Level1", "Free", [&] {
-		std::cout << "Level 1 Freed!!!" << std::endl;
+	CrashHandler::Safe("Level2", "Free", [&] {
+		std::cout << "Level 2 Freed!!!" << std::endl;
 		Render::GetInstance().ClearAllTextures();
 		GuiSystem::Get().Shutdown();
 	});
@@ -478,11 +478,11 @@ void Level2::Unload()
 	Render& renderer = Render::GetInstance();
 	//renderer.ClearAllTextures();
 
-	std::cout << "Level 1 Unloaded!!!" << std::endl;
+	std::cout << "Level 2 Unloaded!!!" << std::endl;
 
-	CrashHandler::Safe("Level1", "Unload", [&] {
+	CrashHandler::Safe("Level2", "Unload", [&] {
 		renderer.UnloadAllFonts();
 		renderer.UnloadTexture(bgTexture2);
-		std::cout << "Level 1 Unloaded!!!" << std::endl;
+		std::cout << "Level 2 Unloaded!!!" << std::endl;
 	});
 }
