@@ -67,17 +67,38 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 		physics.SetMaxSpeed(MAX_SPEED);
 	}
 	// Clear forces every frame so that player instantly switches directions
-	physics.ClearForces();
+	// physics.ClearForces();
 
-	// Track input direction for dash
-	int vert = 0;
-	int hor = 0;
-	// DASH - Working impulse
-	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
-		Vec2 dashDir{ (float)hor, (float)vert };
+	const auto& input = m_registry.Get_Component<InputComponent>(eID);
+
+	int hor = 0, ver = 0;
+	switch (input.scheme)
+	{
+	case CS_WASD:
+		if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
+		if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+		break;
+	case CS_IJKL:
+		if (Input::IsKeyHeld(GLFW_KEY_I)) ver += 1;
+		if (Input::IsKeyHeld(GLFW_KEY_K)) ver -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_J)) hor -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_L)) hor += 1;
+		break;
+	case CS_ARROWS:
+		if (Input::IsKeyHeld(GLFW_KEY_UP))    ver += 1;
+		if (Input::IsKeyHeld(GLFW_KEY_DOWN))  ver -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_LEFT))  hor -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) hor += 1;
+		break;
+	default: break;
+	}
+
+
 
 	float fx = static_cast<float>(hor);
-	float fy = static_cast<float>(vert);
+	float fy = static_cast<float>(ver);
 	NormalizeDiagonalMovement(fx, fy);
 
 	const bool moving = (fx != 0.f || fy != 0.f);
@@ -156,6 +177,13 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	//if (Input::IsKeyHeld(GLFW_KEY_A) && vel.x > -maxspeed) physics.AddForce({ -1.f,0.f }, accel);
 	//if (Input::IsKeyHeld(GLFW_KEY_D) && vel.x < maxspeed) physics.AddForce({ 1.f,0.f }, accel);*/
 
+	// DASH - Working impulse
+	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+		Vec2 dashDir{ (float)hor, (float)ver };
+
+		float fx = static_cast<float>(hor);
+		float fy = static_cast<float>(ver);
+		NormalizeDiagonalMovement(fx, fy);
 
 		if (RG_LengthSquared(dashDir) > 0.01f) {
 			dashDir = RG_Normalize(dashDir);
