@@ -152,7 +152,7 @@ void Level1::Init()
 {
 	
 	Render& renderer = Render::GetInstance();
-	
+
 	CrashHandler::Safe("Level1", "Init", [&] {
 		std::cout << "Level 1 Initialized!!!" << std::endl;
 		// 1. Initialize the Renderer
@@ -215,7 +215,7 @@ void Level1::Init()
 		}
 
 		if (!sceneLoaded) {
-			// ===== FIX: Better error handling when creating from prefabs =====
+			// ===== Better error handling when creating from prefabs =====
 			std::cout << "Creating fresh entities from prefabs..." << std::endl;
 
 			waffle = Create_Waffle(400.f, 400.f);
@@ -265,7 +265,13 @@ void Level1::Init()
 		std::cout << "==============================\n" << std::endl;
 		});
 	// Top wall
+		Camera& cam = Camera::GetInstance();
+		cam.SetMode(Camera::Mode::GAME);
 
+		cam.SetPosition({ GLApp::width / 2.f, GLApp::height / 2.f });
+		cam.SetZoom(1.0f);
+		cam.UpdateMatrices();
+		Render::GetInstance().UpdateProjection();
 
 	//Create_RotatingObject(500.f, 400.f);
 	//Create_MovingObject(800.f, 400.f);
@@ -296,9 +302,13 @@ void Level1::Update()
 	lastTime = currentTime;
 
 	// Update camera position
-	UpdateCamera(Camera::GetInstance(), playerTransform.pos, g_dt);
+	//UpdateCamera(Camera::GetInstance(), playerTransform.pos, g_dt);
 	//std::cout << "Camera Pos: " << mainCamera.position.x << ", " << mainCamera.position.y << std::endl;
-
+	Camera& cam = Camera::GetInstance();
+	if (cam.GetMode() == Camera::Mode::GAME)
+	{
+		cam.FollowTarget(playerTransform.pos, dt);
+	}
 
 	
 

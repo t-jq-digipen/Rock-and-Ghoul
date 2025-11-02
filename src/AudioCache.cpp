@@ -17,15 +17,11 @@ std::unordered_map<int, std::string> AudioCache::idToName;
 std::unordered_map<std::string, std::vector<std::string>> AudioCache::banks;
 
 bool AudioCache::Initialize(const std::string& manifestPath) {
-    std::cout << "[AudioCache] Initializing from: " << manifestPath << std::endl;
-
     if (!ParseManifest(manifestPath)) {
         std::cerr << "[AudioCache] Failed to parse manifest!" << std::endl;
         return false;
     }
 
-    std::cout << "[AudioCache] Loaded " << assetsByName.size() << " audio assets" << std::endl;
-    std::cout << "[AudioCache] Loaded " << banks.size() << " banks" << std::endl;
     return true;
 }
 
@@ -61,9 +57,6 @@ bool AudioCache::ParseManifest(const std::string& manifestPath) {
 
                 assetsByName[asset.name] = asset;
                 idToName[asset.id] = asset.name;
-
-                std::cout << "[AudioCache]   - " << categoryName << ": " << assetName
-                    << " (ID: " << asset.id << ")" << std::endl;
             }
             };
 
@@ -85,8 +78,6 @@ bool AudioCache::ParseManifest(const std::string& manifestPath) {
                 }
 
                 banks[bankName] = assets;
-                std::cout << "[AudioCache]   - Bank: " << bankName
-                    << " (" << assets.size() << " assets)" << std::endl;
             }
         }
 
@@ -99,8 +90,6 @@ bool AudioCache::ParseManifest(const std::string& manifestPath) {
 }
 
 void AudioCache::Shutdown() {
-    std::cout << "[AudioCache] Shutting down..." << std::endl;
-
     for (auto& [name, asset] : assetsByName) {
         if (asset.sound) {
             asset.sound->release();
@@ -136,7 +125,6 @@ FMOD::Sound* AudioCache::GetSound(const std::string& name) {
     }
 
     if (asset && !asset->sound) {
-        std::cout << "[AudioCache] Auto-loading: " << name << std::endl;
         if (LoadAsset(name)) {
             return asset->sound;
         }
@@ -166,7 +154,6 @@ bool AudioCache::LoadAsset(const std::string& name) {
     }
 
     if (asset->sound) {
-        std::cout << "[AudioCache] Asset already loaded: " << name << std::endl;
         return true;
     }
 
@@ -174,8 +161,6 @@ bool AudioCache::LoadAsset(const std::string& name) {
 }
 
 bool AudioCache::LoadAudioFile(AudioAsset& asset) {
-    std::cout << "[AudioCache] Loading: " << asset.name << " from " << asset.path << std::endl;
-
     FMOD_MODE mode = asset.spatial ? FMOD_3D : FMOD_2D;
 
     if (asset.loop) mode |= FMOD_LOOP_NORMAL;
@@ -197,7 +182,6 @@ void AudioCache::UnloadAsset(const std::string& name) {
     if (!asset) return;
 
     if (asset->sound) {
-        std::cout << "[AudioCache] Unloading: " << name << std::endl;
         asset->sound->release();
         asset->sound = nullptr;
     }
@@ -214,8 +198,6 @@ bool AudioCache::LoadBank(const std::string& bankName) {
         return false;
     }
 
-    std::cout << "[AudioCache] Loading bank: " << bankName << std::endl;
-
     const std::vector<std::string>& assets = it->second;
     bool allLoaded = true;
 
@@ -224,11 +206,6 @@ bool AudioCache::LoadBank(const std::string& bankName) {
             std::cerr << "[AudioCache] Failed to load asset in bank: " << assetName << std::endl;
             allLoaded = false;
         }
-    }
-
-    if (allLoaded) {
-        std::cout << "[AudioCache] Bank loaded successfully: " << bankName
-            << " (" << assets.size() << " assets)" << std::endl;
     }
 
     return allLoaded;
@@ -241,14 +218,10 @@ void AudioCache::UnloadBank(const std::string& bankName) {
         return;
     }
 
-    std::cout << "[AudioCache] Unloading bank: " << bankName << std::endl;
-
     const std::vector<std::string>& assets = it->second;
     for (const std::string& assetName : assets) {
         UnloadAsset(assetName);
     }
-
-    std::cout << "[AudioCache] Bank unloaded: " << bankName << std::endl;
 }
 
 std::vector<std::string> AudioCache::GetBankAssets(const std::string& bankName) {

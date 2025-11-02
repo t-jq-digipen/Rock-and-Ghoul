@@ -51,3 +51,20 @@ void UpdateCamera(Camera& cam, const Vec2& targetPos, float dt)
     cam.SetPosition(newPos);
     cam.UpdateMatrices();
 }
+
+void Camera::ResetToCenter()
+{
+    position = { GLApp::width / 2.0f, GLApp::height / 2.0f };
+    zoom = 1.0f;
+    UpdateMatrices();
+}
+
+void Camera::FollowTarget(const Vec2& targetPos, float dt)
+{
+    if (mode != Mode::GAME)
+        return; // do nothing if in editor mode
+
+    const float followSpeed = 1.0f;
+    position = RG_Lerp(position, targetPos, followSpeed * dt);
+    UpdateMatrices();
+}
