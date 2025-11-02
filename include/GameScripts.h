@@ -37,11 +37,58 @@ namespace GhoulScript
         std::cout << "Ghoul script ended for entity " << gob << std::endl;
     }
 }
+// ============================================
+// PATROL ENEMY SCRIPT
+// ============================================
+namespace PatrolEnemyScript
+{
+    inline void Start(Entity e)
+    {
+        std::cout << "[PatrolEnemy] Starting patrol for entity " << e << std::endl;
 
-// ============================================
-// ADD MORE SCRIPTS HERE AS NEEDED
-// ============================================
-// Example: Player script, Enemy script, etc.
+        // Store initial position as patrol start point
+        Registry& reg = Registry::Get();
+        if (reg.Has_Component<TransformComponent>(e)) {
+            auto& transform = reg.Get_Component<TransformComponent>(e);
+            // You could add a custom data component to store patrol points
+            std::cout << "[PatrolEnemy] Starting position: (" << transform.pos.x << ", " << transform.pos.y << ")" << std::endl;
+        }
+    }
+
+    inline void Update(Entity e, float dt)
+    {
+        Registry& reg = Registry::Get();
+
+        if (!reg.Has_Component<TransformComponent>(e)) return;
+
+        auto& transform = reg.Get_Component<TransformComponent>(e);
+
+        // Simple back-and-forth patrol
+        static float patrolDistance = 200.0f;
+        static float speed = 100.0f;
+        static float startX = transform.pos.x;
+        static bool movingRight = true;
+
+        // Move back and forth
+        if (movingRight) {
+            transform.pos.x += speed * dt;
+            if (transform.pos.x >= startX + patrolDistance) {
+                movingRight = false;
+            }
+        }
+        else {
+            transform.pos.x -= speed * dt;
+            if (transform.pos.x <= startX - patrolDistance) {
+                movingRight = true;
+            }
+        }
+    }
+
+    inline void End(Entity e)
+    {
+        std::cout << "[PatrolEnemy] Patrol ended for entity " << e << std::endl;
+    }
+}
 /*
 namespace PlayerScript
 {
@@ -89,8 +136,16 @@ inline void RegisterAllGameScripts()
         std::cout << "Registered GhoulScript" << std::endl;
     }
 
+    {
+        BehaviourFCT patrolBehaviour;
+        patrolBehaviour.Init = [](Entity e) { PatrolEnemyScript::Start(e); };
+        patrolBehaviour.Update = [](Entity e, float dt) { PatrolEnemyScript::Update(e, dt); };
+        patrolBehaviour.End = [](Entity e) { PatrolEnemyScript::End(e); };
+        logicSys.RegisterScript("PatrolEnemy", patrolBehaviour);
+        std::cout << "Registered PatrolEnemy" << std::endl;
+    }
+
     // Register more scripts here in the future
-    // Example:
     /*
     {
         BehaviourFCT playerBehaviour;

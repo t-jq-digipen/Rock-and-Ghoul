@@ -17,7 +17,7 @@ public:
     LogicSystem(const LogicSystem&) = delete;
     LogicSystem& operator=(const LogicSystem&) = delete;
 
-    // ISystem interface methods - RETURN VOID NOT BOOL!
+    // ISystem interface
     void Initialize() override;
     void Update(float dt) override;  // Changed from bool to void
     void Shutdown() override;

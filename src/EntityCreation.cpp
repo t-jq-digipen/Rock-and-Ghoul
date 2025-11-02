@@ -52,10 +52,18 @@ Entity LoadEntity(const std::string& entityName, float x, float y) {
     return e;
 }
 
+//Entity Create_Player(float const& x, float const& y) {
+//    return LoadEntity("Player", x, y);
+//}
 Entity Create_Player(float const& x, float const& y) {
-    return LoadEntity("Player", x, y);
+    Entity patrol = LoadEntity("Player", 500.0f, 300.0f);
+    BehaviourComponent bc;
+    bc.scriptName = "PatrolEnemy";
+    bc.started = false;
+    Registry::Get().Add_Component<BehaviourComponent>(patrol, bc);
+    
+    return patrol;
 }
-
 Entity Create_Waffle(float const& x, float const& y) {
     return LoadEntity("Waffle", x, y);
 }
@@ -158,7 +166,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Registry::Get().Add_Component<HealthComponent>(player, HealthComponent{ 100.f, 100.f });
 
-            Registry::Get().Add_Component<Movement::MovementComponent>(player, Movement::MovementComponent{ 5.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
+            Registry::Get().Add_Component<Movement::MovementComponent>(player, Movement::MovementComponent{ 500.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
 
             if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Player.json", player)) {
                 std::cout << "Player.json saved successfully" << std::endl;
