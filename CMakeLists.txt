@@ -204,8 +204,8 @@ source_group("BaseEngine\\CScripting" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/LogicSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LogicSystem.cpp
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/WaffleLogic.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/WaffleLogic.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameScripts.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameScripts.cpp
 
 )
 source_group("BaseEngine\\Debug" FILES 

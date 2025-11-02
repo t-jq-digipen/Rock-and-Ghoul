@@ -33,6 +33,9 @@
 #include <PlayerSystem.h>
 #include <Camera.h>
 
+
+#include "LogicSystem.h"
+#include "GameScripts.h"
 static FretBoard* fretboard = nullptr;
 constexpr float LEVEL_WIDTH = 1920.f;
 constexpr float LEVEL_HEIGHT = 1080.f;
@@ -48,7 +51,7 @@ Entity rock;
 Entity square;
 Entity roundy;
 Entity waffle;
-
+Entity ghoul;
 // Registry ref
 Registry& registry = Registry::Get();
 //Camera mainCamera;
@@ -105,6 +108,10 @@ void Level1::Load()
 		needsGeneration = true;
 		missingPrefabs.push_back("Circle.json");
 	}
+	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "ghoul.json")) {
+		needsGeneration = true;
+		missingPrefabs.push_back("ghoul.json");
+	}
 
 	if (needsGeneration) {
 		std::cout << "=== MISSING PREFABS ===" << std::endl;
@@ -130,6 +137,10 @@ void Level1::Load()
 			allGenerated = false;
 		}
 		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Circle.json")) {
+			std::cerr << "ERROR: Circle.json was NOT generated!" << std::endl;
+			allGenerated = false;
+		}
+		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "ghoul.json")) {
 			std::cerr << "ERROR: Circle.json was NOT generated!" << std::endl;
 			allGenerated = false;
 		}
@@ -183,13 +194,6 @@ void Level1::Init()
 			.color = {0.f, 0.f, 0.f},
 			.centered = true });
 
-		// 5. Create FretBoard after OpenGL is ready (duplicate - can remove)
-		if (!fretboard) {
-			fretboard = new FretBoard(0, 0, 800, 200);
-		}
-		fretboard->LoadTextures();
-		fretboard->StartGame();
-
 		// 6. Create entities
 		// If there is no pre-existing/saved scene, it will load from prefabs
 		// Otherwise, it will load the saved scene
@@ -203,6 +207,7 @@ void Level1::Init()
 				rock = registry.Get_EntityID("Player");
 				square = registry.Get_EntityID("Rectangle");
 				roundy = registry.Get_EntityID("Circle");
+				ghoul = registry.Get_EntityID("ghoul");
 
 				std::cout << "Scene loaded successfully from level1.json!" << std::endl;
 			}
@@ -249,7 +254,13 @@ void Level1::Init()
 			else {
 				std::cout << "Created Circle (Entity " << roundy << ")" << std::endl;
 			}
-
+			ghoul = Create_Ghoul(1000.f, 500.f);
+			if (roundy == 0) {
+				std::cerr << "ERROR: Failed to create Circle! Check if Circle.json exists." << std::endl;
+			}
+			else {
+				std::cout << "Created Circle (Entity " << roundy << ")" << std::endl;
+			}
 			std::cout << "Finished creating entities from prefabs." << std::endl;	
 			Create_Wall(LEVEL_WIDTH / 2, LEVEL_HEIGHT - WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
 
@@ -273,6 +284,7 @@ void Level1::Init()
 		cam.UpdateMatrices();
 		Render::GetInstance().UpdateProjection();
 
+
 	//Create_RotatingObject(500.f, 400.f);
 	//Create_MovingObject(800.f, 400.f);
 }
@@ -292,7 +304,10 @@ void Level1::Update()
 	{ square = registry.Get_EntityID("Rectangle"); }
 	if (registry.Get_EntityName(roundy) != "Circle")	
 	{ roundy = registry.Get_EntityID("Circle"); }
-
+	if (registry.Get_EntityName(ghoul) != "ghoul")
+	{
+		ghoul = registry.Get_EntityID("ghoul");
+	}
 	//test camera on an entity
 	auto& playerTransform = registry.Get_Component<TransformComponent>(waffle);
 
@@ -552,6 +567,8 @@ void Level1::Draw()
 void Level1::Free()
 {
 	std::cout << "Level 1 Freed!!!" << std::endl;
+
+
 	JsonLoad::ClearAllEntities();
 	if (bgTexture) {
 		Render::GetInstance().UnloadTexture(bgTexture);

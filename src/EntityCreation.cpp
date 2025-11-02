@@ -28,6 +28,11 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include "MonoScriptComponent.h"
+
+#include "CoreEngine.h"
+#include "BehaviourComponent.h"
+#include "LogicSystem.h" 
+#include "GameScripts.h"
 using json = nlohmann::json;
 
 // Helper function to load from JSON
@@ -54,7 +59,23 @@ Entity Create_Player(float const& x, float const& y) {
 Entity Create_Waffle(float const& x, float const& y) {
     return LoadEntity("Waffle", x, y);
 }
+Entity Create_Ghoul(float const& x, float const& y) {
+   
+    Entity ghoul = LoadEntity("ghoul", x, y);
 
+    if (ghoul != 0) {
+        // Add behaviour component
+        BehaviourComponent bc;
+        bc.scriptName = "GhoulScript";  // Use the string name!
+        bc.started = false;
+
+        Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
+
+        std::cout << "Attached rotation script to ghoul (Entity " << ghoul << ")" << std::endl;
+    }
+
+    return ghoul;
+}
 Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme scheme) {
     Entity shape = 0;
     if (shapeType == SHAPE_RECTANGLE) {
@@ -359,110 +380,3 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
 
     return instance;
 }
-//Entity Create_Square(float x, float y) {
-//    Entity square = Create_Entity();
-//    Add_Component(square, TransformComponent{ {x, y}, {100.f, 100.f} });
-//
-//    {
-//        AABB aabb = Create_AABB({ x,y }, { 200.f,200.f });
-//        Circle circle = { {x,y},200.f };
-//        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-//        Add_Component(square, temp);
-//    }
-//
-//    //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
-//    Add_Component(square, InputComponent{ CS_IJKL });
-//    Add_Component(square, TagComponent{ T_PLAYER });
-//    Add_Component(square, SpriteComponent{ 0, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
-//    Add_Component(square, HealthComponent{ 100.f, 100.f });
-//    return square;
-//}
-
-//Entity Create_Circle(float x, float y) {
-//    Entity round = Create_Entity();
-//    Add_Component(round, TransformComponent{ {x, y}, {100.f, 100.f} });
-//    {
-//        AABB aabb = Create_AABB({ x,y }, { 200.f,200.f });
-//        Circle circle = { {x,y},100.f };
-//        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-//        Add_Component(round, temp);  // round refers to the entity
-//    }
-//
-//    Add_Component(round, InputComponent{ CS_ARROWS });
-//    Add_Component(round, TagComponent{ T_PLAYER });
-//    Add_Component(round, SpriteComponent{ 1, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} }); // textureID=1 for circle, green color
-//    Add_Component(round, HealthComponent{ 100.f, 100.f });
-//    return round;
-//}
-// 
-//Entity Create_Ghoul(float x, float y) {oe
-//    Entity ghoul = Create_Entity();
-//
-//    Add_Component(ghoul, TransformComponent{ {x, y}, {100.f, 100.f} });
-//    Add_Component(ghoul, BossGhoulComponent{
-//        100.f,   // max hp
-//        100.f,   // current hp
-//        0.f,     // ??? maybe speed or timer
-//        100.f,   // damage or cooldown
-//        0,       // phase index?
-//        GHOUL_ATTACKING // starting state
-//        });
-//    Add_Component(ghoul, TagComponent{ T_ENEMY });
-//    Add_Component(ghoul, AABBComponent{ true, {}, 200.0f, 200.0f });
-//    GLuint tex = Render::GetInstance().LoadTexture("../Assets/Ghoul_2048px.png");
-//    Add_Component(ghoul, SpriteComponent{ tex, {400.f, 400.f} });
-//    Add_Component(ghoul, PhysicsComponent{ {0.f, 0.f} });
-//    Add_Component(ghoul, HealthComponent{ 100.f, 100.f });
-//    bossGhoulSystem->AddEntity(ghoul);
-//
-//    return ghoul;
-//}
-
-// EntityCreation.cpp
-//Entity Create_RotatingObject(float x, float y)
-//{
-//    Registry& reg = Registry::Get();
-//    Entity e = reg.Create_Entity();
-//
-//    TransformComponent t;
-//    t.pos = { x, y };
-//    reg.Add_Component(e, t);
-//
-//    // Add a visible shape
-//    ShapeComponent shape;
-//    shape.shape = SHAPE_RECTANGLE;
-//    shape.dimensions = { 50.f, 50.f };
-//    shape.color = { 1.0f, 0.3f, 0.3f }; // red
-//    reg.Add_Component(e, shape);
-//
-//    // Add script
-//    MonoScriptComponent script;
-//    script.className = "Rotator";
-//    reg.Add_Component(e, script);
-//
-//    return e;
-//}
-//
-//Entity Create_MovingObject(float x, float y)
-//{
-//    Registry& reg = Registry::Get();
-//    Entity e = reg.Create_Entity();
-//
-//    TransformComponent t;
-//    t.pos = { x, y };
-//    reg.Add_Component(e, t);
-//
-//    // Add a visible shape
-//    ShapeComponent shape;
-//    shape.shape = SHAPE_CIRCLE;
-//    shape.dimensions = { 50.f, 50.f };
-//    shape.color = { 0.3f, 0.8f, 1.0f }; // blue
-//    reg.Add_Component(e, shape);
-//
-//    // Add script
-//    MonoScriptComponent script;
-//    script.className = "Mover";
-//    reg.Add_Component(e, script);
-//
-//    return e;
-//}

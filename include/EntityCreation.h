@@ -52,6 +52,8 @@ Entity Create_Waffle(float const& spawnx, float const& spawny);
  * @return The newly created Shape entity.
  */
 Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme controls);
+
+Entity Create_Ghoul(float const& x, float const& y);
 /**
  * @brief Create a wall entity with transform, physics, shape, and tag components.
  * @param x The x-position of the wall.
