@@ -127,18 +127,17 @@ endif()
 set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/Debug/GameScripts.dll")
 set(GAMESCRIPTS_TARGET_DIR "${CMAKE_SOURCE_DIR}/Assets/Scripts")
 
-if (EXISTS "${GAMESCRIPTS_DLL_PATH}")
-    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll to Assets/Scripts..."
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${GAMESCRIPTS_DLL_PATH}"
-            "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
-    )
-else()
-    message(WARNING "GameScripts.dll not found at ${GAMESCRIPTS_DLL_PATH}. Skipping copy.")
-endif()
-
+# if (EXISTS "${GAMESCRIPTS_DLL_PATH}")
+#     add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll to Assets/Scripts..."
+#         COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
+#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#             "${GAMESCRIPTS_DLL_PATH}"
+#             "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
+#     )
+# else()
+#     message(STATUS "GameScripts.dll not found, skipping copy step.")
+# endif()
 
 
 
@@ -188,7 +187,7 @@ source_group("BaseEngine\\Serialization" FILES
 )
 
 
-source_group("BaseEngine\\Scripting" FILES 
+source_group("BaseEngine\\Mono Scripting" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoManager.h
 
@@ -198,7 +197,17 @@ source_group("BaseEngine\\Scripting" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoBindings.cpp
 )
 
+source_group("BaseEngine\\CScripting" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/BehaviourFCT.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/BehaviourComponent.h
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/LogicSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/LogicSystem.cpp
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/WaffleLogic.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/WaffleLogic.cpp
+
+)
 source_group("BaseEngine\\Debug" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Debug.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Debug.h
@@ -238,6 +247,11 @@ source_group("BaseEngine\\ECS\\Component\\Physics" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
 )
+
+source_group("BaseEngine\\Systems" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h 
+)
+
 
 source_group("BaseEngine\\Systems\\Audio" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h 
