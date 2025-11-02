@@ -104,6 +104,9 @@ namespace Physics {
 		, friction{ 0.1f }     // Slight friction
 		, onGround{ false }
 		, collisionFrameCount{ 0 }
+		, layerBit{ 0 }
+		, maskBit{ 0 }
+		, isTrigger{ false }
 	{
 		forces.reserve(8); 
 	}
@@ -122,6 +125,9 @@ namespace Physics {
 		, friction{ 0.1f }
 		, onGround{ false }
 		, collisionFrameCount{ 0 }
+		, layerBit{ 0 }
+		, maskBit{ 0 }
+		, isTrigger{ false }
 	{
 		forces.reserve(8);
 	}
@@ -325,6 +331,34 @@ namespace Physics {
 
 	void PhysicsComponent::Set_Circle(Circle const& newCircle) {
 		circlehitbox = newCircle;
+	}
+
+	// ================================================================================
+	// FILTER GETTERS/SETTERS
+	// ================================================================================
+
+	void PhysicsComponent::SetLayer(uint32_t bit) {
+		layerBit = bit;
+	}
+
+	void PhysicsComponent::SetMask(uint32_t mask) {
+		maskBit = mask;
+	}
+
+	void PhysicsComponent::SetTrigger(bool trigger) {
+		isTrigger = trigger;
+	}
+
+	uint32_t PhysicsComponent::GetLayer() {
+		return layerBit;
+	}
+
+	uint32_t PhysicsComponent::GetMask() {
+		return maskBit;
+	}
+
+	bool PhysicsComponent::IsTrigger() {
+		return isTrigger;
 	}
 
 	// ================================================================================

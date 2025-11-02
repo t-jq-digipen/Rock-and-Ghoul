@@ -29,6 +29,54 @@
 // Spatial grid for broad-phase optimization
 static SpatialGrid spatialGrid(150.0f); // Cell size tuned for typical entity size
 
+uint32_t CollisionLayerManager::RegisterLayer(const std::string& name) {
+    if (layerBits.find(name) != layerBits.end()) { return layerBits[name]; }
+
+    if (nextBit >= 32) 
+    {
+        std::cout << "Cannot exceed 32 collision layers! Failed to register " << name << '\n';
+        return 0;
+    }
+
+    uint32_t bit = 1 << nextBit++;
+    layerBits[name] = bit;
+    layerNames[bit] = name;
+
+    return bit;
+}
+
+uint32_t CollisionLayerManager::GetLayerBit(const std::string& name) const {
+    auto it = layerBits.find(name);
+    if (it == layerBits.end()) 
+    { 
+        std::cerr << "Collision layer " << name << " not registered!\n";
+        return 0; 
+    }
+
+    return it->second;
+}
+
+std::string CollisionLayerManager::GetLayerName(uint32_t bit) const {
+    auto it = layerNames.find(bit);
+    if (it == layerNames.end())
+    {
+        std::cerr << "Collision layer bit " << bit << " not registered!\n";
+        return "";
+    }
+
+    return it->second;
+}
+
+bool CollisionLayerManager::ShouldCollide(uint32_t layerA, uint32_t maskA, uint32_t layerB, uint32_t maskB) const {
+    return (maskA & layerB) || (maskB & layerA);
+}
+
+void CollisionLayerManager::Clear() {
+    layerBits.clear();
+    layerNames.clear();
+    nextBit = 0;
+}
+
 void CollisionManager::Clear() {
     events.clear();
     spatialGrid.Clear();
