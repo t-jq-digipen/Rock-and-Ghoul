@@ -45,7 +45,7 @@ Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 static bool isDraggingEntity = false;
 static glm::vec2 dragOffset = { 0.f, 0.f };
 
-bool ImGuiSystem::guiEnabled = true;
+bool ImGuiSystem::guiEnabled = false;
 static FMOD::Channel* previewChannel = nullptr;
 #include "DataDefs.h"
 static std::vector<std::string> droppedFiles;
@@ -357,9 +357,8 @@ void ImGuiSystem::Initialize() {
 
 
     InitializeImGui();
-   // guiEnabled = false;          // editor window closed by default
-    gsm.inEditMode = true;       // game logic knows we're editing
-    gsm.isPaused = true;         // pause gameplay / physics update
+    gsm.inEditMode = false;  // Not in editor mode
+    gsm.isPaused = false;    // Unpause game logic / physics
 }
 
 
@@ -607,7 +606,7 @@ void ImGuiSystem::ShowEngineDebugWindow() {
         //visual bar
         ImGui::ProgressBar((float)(percent / 100.0f), ImVec2(-1, 0), (std::to_string((int)percent) + "%").c_str());
     }
-    static bool isPlaying = false;
+    bool isPlaying = !gsm.isPaused && !gsm.inEditMode;
     // --- Editor Control Section ---
     ImGui::Separator();
     ImGui::Text("Simulation Controls:");
