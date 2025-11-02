@@ -42,6 +42,8 @@
 #include "RenderSystem.h"
 #include "GuiSystem.h"
 
+#include "BehaviourComponent.h"
+#include "GameScripts.h"
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
 
@@ -91,12 +93,12 @@ void CoreEngine::Initialize() {
     std::cout << "REGISTRY | REGISTERED TAG COMPONENT\n";
     /*registry.Register_Component<ElementComponent>("Element");
     std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";*/
-
+    registry.Register_Component<BehaviourComponent>("Behaviour");
 
     for (auto s : systems) s->Initialize();
     gsm.Init(GameState::GS_MAIN_MENU);
     GLApp::gameInitialized = true;
-
+    RegisterAllGameScripts();
 }
 
 void CoreEngine::Run() {
@@ -233,7 +235,7 @@ void CoreEngine::Shutdown() {
     GLApp::gameInitialized = false;
     for (int i = (int)systems.size() - 1; i >= 0; --i) {
         systems[i]->Shutdown(); 
-        if (systems[i] != &GuiSystem::Get())
+        if (systems[i] != &GuiSystem::Get() && systems[i] != &LogicSystem::Get())
             delete systems[i];
     }
     systems.clear();

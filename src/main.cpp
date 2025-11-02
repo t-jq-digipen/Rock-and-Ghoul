@@ -46,6 +46,8 @@
 #include "MonoSystem.h"
 #include <crtdbg.h>
 
+
+#include "LogicSystem.h"
 void EnableMemoryLeakChecking(int breakAlloc = -1)
 {
     int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
@@ -112,6 +114,7 @@ int main() {
             engine.AddSystem(new RenderSystem());
             engine.AddSystem(&GuiSystem::Get());
             engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
+            engine.AddSystem(&LogicSystem::Get());
             std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
                 << " at " << (void*)&GLApp::ptr_window << std::endl;
             // initialize all systems (FMOD, OpenGL, etc.)
