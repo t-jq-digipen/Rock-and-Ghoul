@@ -285,7 +285,7 @@ source_group("BaseEngine\\Managers\\Frame Rate" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
 )
 
-source_group("BaseEngine\\Managers\\Frame Rate" FILES 
+source_group("BaseEngine\\Managers\\Collision" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionManager.h
 )
@@ -318,6 +318,8 @@ source_group("BaseEngine\\Libraries\\Render" FILES
 source_group("BaseEngine\\Libraries\\Collision" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/SpatialGrid.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/SpatialGrid.h
 
 )
 
