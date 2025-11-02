@@ -687,57 +687,23 @@ void GuiSystem::Update(float dt) {
                 int dlgIdx = selectedIndex - ((int)buttons.size() + (int)textboxes.size());
                 auto& d = dialogues[dlgIdx];
 
-                static bool editingText = false;
+                static bool editingLine = false;
+                std::string editingLineState = editingLine ? "ON" : "OFF";
                 static std::string tempText;
+
+                TextSystem::TextComponent* textComp = d.textComp ? d.textComp : d.owned.get();
 
                 if (Input::IsKeyPressed(GLFW_KEY_ENTER))
                 {
-                    if (!editingText)
-                    {
-                        editingText = true;
-                        tempText = d.textBox.text;
-                    }
-                    else
-                    {
-                        // confirm and exit
-                        d.textBox.text = tempText.empty() ? d.textBox.text : tempText;
-                        editingText = false;
-                    }
+                    editingLine = !editingLine;
                 }
-                if (editingText)
-                    // UPDATED: Added font parameter to DrawText
-                    render.DrawText("Editing Text: " + tempText + "_", 50, y, 0.5f, { 1,1,0 }, "Marker");
-                else
-                    // UPDATED: Added font parameter to DrawText
-                    render.DrawText("Text: " + d.textBox.text, 50, y, 0.5f, { 1,1,1 }, "Marker");
+
+                render.DrawText("Editing Line: " + editingLineState, 50, y, 0.5f, { 1,1,1 }, "Marker");
                 y -= 30;
 
-                if (editingText) {
-                    // letters (A–Z)
-                    for (int key = GLFW_KEY_A; key <= GLFW_KEY_Z; ++key) {
-                        if (Input::IsKeyPressed(key)) {
-                            bool shift = Input::IsKeyHeld(GLFW_KEY_LEFT_SHIFT) || Input::IsKeyHeld(GLFW_KEY_RIGHT_SHIFT);
-                            char c = static_cast<char>('a' + (key - GLFW_KEY_A));
-                            if (shift) c = static_cast<char>(toupper(c));
-                            tempText.push_back(c);
-                        }
-                    }
+                render.DrawText("Current Line Index: " + std::to_string(textComp->GetCurrentLineIndex()), 50, y, 0.5f, {1,1,1}, "Marker");
+                y -= 30;
 
-                    // numbers (0–9)
-                    for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key) {
-                        if (Input::IsKeyPressed(key)) {
-                            tempText.push_back(static_cast<char>('0' + (key - GLFW_KEY_0)));
-                        }
-                    }
-
-                    // space
-                    if (Input::IsKeyPressed(GLFW_KEY_SPACE))
-                        tempText.push_back(' ');
-
-                    // backspace
-                    if (Input::IsKeyPressed(GLFW_KEY_BACKSPACE) && !tempText.empty())
-                        tempText.pop_back();
-                }
                 // UPDATED: Added font parameter to DrawText
                 render.DrawText("Pos: (" + std::to_string((int)d.textBox.pos.x) + ", " +
                     std::to_string((int)d.textBox.pos.y) + ")", 50, y, 0.5f, { 1,1,1 }, "Marker");
@@ -788,13 +754,55 @@ void GuiSystem::Update(float dt) {
 
                 y -= 40;
 
-                // Move/scale with keys (quick + simple)
-                if (Input::IsKeyHeld(GLFW_KEY_UP))    d.textBox.basePos.y += 2;
-                if (Input::IsKeyHeld(GLFW_KEY_DOWN))  d.textBox.basePos.y -= 2;
-                if (Input::IsKeyHeld(GLFW_KEY_LEFT))  d.textBox.basePos.x -= 2;
-                if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) d.textBox.basePos.x += 2;
-                if (Input::IsKeyHeld(GLFW_KEY_O))     d.textBox.baseScale = std::max(0.2f, d.textBox.baseScale - 0.02f);
-                if (Input::IsKeyHeld(GLFW_KEY_P))     d.textBox.baseScale = std::min(3.0f, d.textBox.baseScale + 0.02f);
+                if (!editingLine)
+                {
+                    // Move/scale with keys (quick + simple)
+                    if (Input::IsKeyHeld(GLFW_KEY_UP))    d.textBox.basePos.y += 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_DOWN))  d.textBox.basePos.y -= 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_LEFT))  d.textBox.basePos.x -= 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) d.textBox.basePos.x += 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_O))     d.textBox.baseScale = std::max(0.2f, d.textBox.baseScale - 0.02f);
+                    if (Input::IsKeyHeld(GLFW_KEY_P))     d.textBox.baseScale = std::min(3.0f, d.textBox.baseScale + 0.02f);
+                }
+                else if (textComp)
+                {
+                    const auto& lines = textComp->GetLines();
+                    int idx = textComp->GetCurrentLineIndex();
+
+                    // Per-key latches so text only changes line once per press
+                    static bool leftLatch = false;
+                    static bool rightLatch = false;
+
+                    const bool leftHeld = Input::IsKeyPressed(GLFW_KEY_LEFT);
+                    const bool rightHeld = Input::IsKeyPressed(GLFW_KEY_RIGHT);
+
+                    const bool leftEdge = !leftLatch && leftHeld;
+                    const bool rightEdge = !rightLatch && rightHeld;
+
+                    if (leftEdge) {
+                        if (textComp->CheckIfTyping()) {
+                            textComp->StopTyping();
+                        }
+                        else if (idx > 0) {
+                            textComp->SetCurrentLineIndex(idx - 1);
+                            textComp->StartTyping();
+                        }
+                    }
+
+                    if (rightEdge) {
+                        if (textComp->CheckIfTyping()) {
+                            textComp->StopTyping();
+                        }
+                        else if (idx + 1 < static_cast<int>(lines.size())) {
+                            textComp->SetCurrentLineIndex(idx + 1);
+                            textComp->StartTyping();
+                        }
+                    }
+
+                    leftLatch = leftHeld;
+                    rightLatch = rightHeld;
+                }
+
             }
         }
 
