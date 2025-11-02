@@ -350,6 +350,11 @@ source_group("Game\\Main" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )
 
+source_group("Game\\Combat System" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/CombatSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CombatSystem.cpp
+)
+
 source_group("Game\\Game Logic" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PlayerSystem.cpp
