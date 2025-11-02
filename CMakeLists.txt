@@ -314,9 +314,13 @@ source_group("others" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TextSystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/TextSystem.h
+    
 )
 
-
+source_group("others\\EventBus" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/EventBus.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/EventBus.h
+)
 source_group("Game\\Levels" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Level1.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Level1.h
