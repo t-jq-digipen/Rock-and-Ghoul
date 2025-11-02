@@ -239,19 +239,6 @@ source_group("BaseEngine\\ECS\\Component\\Physics" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
 )
 
-source_group("BaseEngine\\Systems" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImguiSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/ImguiSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GuiSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GuiSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderSystem.cpp
-)
-
 source_group("BaseEngine\\Systems\\Audio" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h 
 )
