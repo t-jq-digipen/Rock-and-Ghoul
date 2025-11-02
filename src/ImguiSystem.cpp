@@ -45,7 +45,7 @@ Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 static bool isDraggingEntity = false;
 static glm::vec2 dragOffset = { 0.f, 0.f };
 
-bool ImGuiSystem::guiEnabled = false;
+bool ImGuiSystem::guiEnabled = true;
 static FMOD::Channel* previewChannel = nullptr;
 #include "DataDefs.h"
 static std::vector<std::string> droppedFiles;

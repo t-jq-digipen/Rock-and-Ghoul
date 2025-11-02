@@ -152,7 +152,9 @@ void Level1::Init()
 {
 	
 	Render& renderer = Render::GetInstance();
-	
+	Camera& cam = Camera::GetInstance();
+	cam.ResetToCenter();
+	cam.UpdateMatrices();
 	CrashHandler::Safe("Level1", "Init", [&] {
 		std::cout << "Level 1 Initialized!!!" << std::endl;
 		// 1. Initialize the Renderer
