@@ -58,8 +58,13 @@ Registry& registry = Registry::Get();
 void Level1::Load()
 {
 	Render& renderer = Render::GetInstance();
+	Camera& cam = Camera::GetInstance();
 	
 	renderer.useCamera = true;
+	//is there a way to get the bgsize, kinda iffy erhh
+	Vec2 bgSize = { 2200.0f, 1080.0f };
+	cam.SetBounds({ -250.0f, 0.0f }, bgSize);
+
 	auto FontAssets = renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
 	CrashHandler::Safe("Level1", "Load", [&] {
 		std::cout << "Level 1 Loaded!!!" << std::endl;
@@ -69,6 +74,7 @@ void Level1::Load()
 		});
 		RenderSystem::ClearBackgroundTextures();
 		RenderSystem::AddBackgroundTexture(bgTexture);
+
 
 	// ===== FIX: Ensure prefabs folder exists =====
 	std::cout << "\n=== CHECKING PREFABS FOLDER ===" << std::endl;
@@ -512,10 +518,10 @@ void Level1::Draw()
 
 
 		if (fretboard) {
-			//renderer.useCamera = false;
+			renderer.useCamera = false;
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
-			//renderer.useCamera = true;
+			renderer.useCamera = true;
 		}
 
 		guiSystem.Update(0.0f);

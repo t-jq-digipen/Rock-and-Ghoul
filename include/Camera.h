@@ -84,6 +84,7 @@ public:
     void SetRotation(float r) { rotation = r; }
     void SetAspectRatio(float a) { aspectRatio = a; }
     void SetViewWidth(float w) { viewWidth = w; }
+    void SetBounds(const Vec2& min, const Vec2& max) { worldMin = min; worldMax = max; }
 
     // Accessors for camera data
     const Vec2& GetPosition() const { return position; }
@@ -94,6 +95,9 @@ public:
 
     const glm::mat4& GetViewMatrix() const { return viewMatrix; }
     const glm::mat4& GetProjMatrix() const { return projMatrix; }
+
+    const Vec2& GetWorldMin() const { return worldMin; }
+    const Vec2& GetWorldMax() const { return worldMax; }
 
     // Prevent copy
     Camera(const Camera&) = delete;
@@ -110,6 +114,9 @@ private:
 
     glm::mat4 viewMatrix; //world to cam transform
     glm::mat4 projMatrix; //ortho proj matrix
+
+    Vec2 worldMin;   // lower-left corner of camera movement bounds
+    Vec2 worldMax;   // upper-right corner of camera movement bounds
 };
 
 /**
