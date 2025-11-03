@@ -397,7 +397,7 @@ public:
 	{
 		SavedEntity saved;
 		saved.name = Get_EntityName(eID);
-
+		saved.id = eID;
 		for (std::type_index typeID : componentTypeList)
 		{
 			if (!componentManagers[typeID]->hasComponent(eID)) { continue; }
@@ -415,7 +415,10 @@ public:
 
 	Entity Load_Entity(const SavedEntity& saved)
 	{
-		Entity eID = Create_Entity();
+		Entity eID = saved.id != 0 ? saved.id : entityManager.createEntity();
+		// ensure EntityManager accepts this ID and bumps nextID correctly
+		entityManager.EnsureEntityID(eID);
+		//Entity eID = Create_Entity();
 		Set_EntityName(eID, saved.name);
 
 		std::cout << "Creating entity '" << saved.name << "' (ID: " << eID << ")\n";

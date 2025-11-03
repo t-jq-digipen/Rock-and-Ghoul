@@ -63,8 +63,8 @@ struct BehaviourComponent
     std::string Serialize() const
     {
         nlohmann::json j;
-        j["scriptNames"] = scriptName;
-        j["scriptIDs"] = static_cast<unsigned int>(scriptID);
+        j["scriptName"] = scriptName;
+        j["scriptID"] = static_cast<unsigned int>(scriptID);
         return j.dump();
         //return "{}";
     }
@@ -76,6 +76,8 @@ struct BehaviourComponent
         bc.scriptName = j.value("scriptName", "");
         bc.scriptID = static_cast<ScriptID>(j.value("scriptID", 0u));
         bc.started = false;
+
+        bc.SetScript(bc.scriptName);
         return bc;
     }
 };

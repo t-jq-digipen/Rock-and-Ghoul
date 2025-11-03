@@ -119,3 +119,22 @@ Entity EntityManager::GetEntityFromName(const std::string& name)
 
 	return nameToEntity[name];
 }
+
+void EntityManager::EnsureEntityID(Entity id)
+{
+
+	if (id >= alive.size())
+		alive.resize(id + 1, false);
+
+
+	if (id >= next_entID)
+		next_entID = id + 1;
+
+
+	alive[id] = true;
+
+
+	freeID.erase(std::remove(freeID.begin(), freeID.end(), id), freeID.end());
+
+
+}

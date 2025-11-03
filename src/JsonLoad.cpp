@@ -1060,14 +1060,3 @@ bool JsonLoad::SaveCurrentTempScene(const std::string& filepath, const std::stri
         return false;
     }
 }
-
-bool JsonLoad::SaveEmptyScene(const std::string& path, const SavedScene& scene)
-{
-    nlohmann::json j;
-    j["sceneName"] = scene.sceneName;
-    j["entities"] = nlohmann::json::array(); // empty
-    std::ofstream out(path);
-    if (!out.is_open()) return false;
-    out << std::setw(4) << j;
-    return true;
-}

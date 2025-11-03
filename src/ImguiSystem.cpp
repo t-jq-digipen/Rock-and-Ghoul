@@ -684,32 +684,6 @@ void ImGuiSystem::ShowEngineDebugWindow() {
                     JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
                 }
             }
-            //if (JsonLoad::LoadScene(FilePath::SCENES_LIST))
-            //{
-            //    if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-            //    {
-            //        JsonLoad::LoadCurrentScene(FilePath::SCENES_LIST, "Level1_TempScene");
-            //    }
-            //    else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-            //    {
-            //        JsonLoad::LoadCurrentScene(FilePath::SCENES_LIST, "Level2_TempScene");
-            //    }
-            //    std::cout << "[Editor] Restored scene from temp file.\n";
-            //}
-            //else
-            //{
-            //    if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-            //    {
-            //        std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
-            //        JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
-            //    }
-            //    else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-            //    {
-            //        std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
-            //        JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
-            //    }
-
-            //}
 
             ImGuiSystem::selectedEntity = INVALID_ENTITY;
         }
@@ -790,26 +764,6 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
         }
 
 
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Switch to Level 2"))
-    {
-        GSM_SetNextState(GameState::GS_LEVEL2);
-    }
-
-    static int selectedPrefab = -1; //currently selected index cuz imgui dropdown dont take a string
-    //int index into an array of items
-    static std::vector<std::string> prefabNames;
-
-    //empties the vector each frame
-    prefabNames.clear();
-    //from json file path
-    for (auto& entry : std::filesystem::directory_iterator(FilePath::PREFABS_FOLDER)) {
-        if (entry.path().extension() == ".json") { //.extension() just the file extension (with the dot)
-            //.stem() the filename without the extension
-            //.string() converts the path object into a std::string
-            prefabNames.push_back(entry.path().stem().string()); // no ".json"
-        }
     }
 
     ImGui::Separator();
@@ -1866,11 +1820,37 @@ void ImGuiSystem::ShowSceneBrowser()
     // Buttons
     if (ImGui::Button("Load Scene") && selectedScene >= 0)
     {
-        std::string path = sceneFolder + sceneFiles[selectedScene] + ".json";
+        std::string sceneName = sceneFiles[selectedScene];
+        std::string path = sceneFolder + sceneName + ".json";
+
         JsonLoad::ClearAllEntities();
+
         if (JsonLoad::LoadScene(path))
+        {
             std::cout << "[Editor] Loaded scene: " << path << "\n";
+
+            
+            if (sceneName == "Level1" || sceneName == "level1")
+            {
+                GSM_SetNextState(GameState::GS_LEVEL1);
+                std::cout << "[Editor] Switching to LEVEL 1 state.\n";
+            }
+            else if (sceneName == "Level2" || sceneName == "level2")
+            {
+                GSM_SetNextState(GameState::GS_LEVEL2);
+                std::cout << "[Editor] Switching to LEVEL 2 state.\n";
+            }
+            else
+            {
+                std::cout << "[Editor] Loaded custom scene (no state switch).\n";
+            }
+        }
+        else
+        {
+            std::cerr << "[Editor] Failed to load scene: " << path << "\n";
+        }
     }
+
 
     ImGui::SameLine();
     if (ImGui::Button("Save Current Scene") && selectedScene >= 0)
@@ -1901,7 +1881,7 @@ void ImGuiSystem::ShowSceneBrowser()
             {
                 SavedScene empty;
                 empty.sceneName = sceneName;
-                JsonLoad::SaveEmptyScene(newPath, empty);
+                JsonLoad::SaveCurrentScene(newPath, sceneName);
                 std::cout << "[Editor] Created new empty scene: " << newPath << "\n";
             }
         }
