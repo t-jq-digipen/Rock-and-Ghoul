@@ -327,10 +327,10 @@ void Level1::Update()
 	{ square = registry.Get_EntityID("Rectangle"); }
 	if (registry.Get_EntityName(roundy) != "Circle")	
 	{ roundy = registry.Get_EntityID("Circle"); }
-	if (registry.Get_EntityName(ghoul) != "ghoul")
+	/*if (registry.Get_EntityName(ghoul) != "ghoul")
 	{
 		ghoul = registry.Get_EntityID("ghoul");
-	}
+	}*/
 	//test camera on an entity
 	auto& playerTransform = registry.Get_Component<TransformComponent>(waffle);
 
