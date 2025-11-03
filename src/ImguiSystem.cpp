@@ -726,7 +726,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
         }
     }
 
-    ImGui::Separator();
+   // ImGui::Separator();
     ImGui::Text("Scene Management:");
 
     if (ImGui::Button("Save Scene (F5)")) {
@@ -766,7 +766,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
 
     }
 
-    ImGui::Separator();
+
     ShowSceneBrowser();
     //// ==============================
     //// Image loader (runtime only)
@@ -1781,8 +1781,6 @@ void ImGuiSystem::ShowPrefabControls()
 
 void ImGuiSystem::ShowSceneBrowser()
 {
-    ImGui::Text("Scene Management");
-    ImGui::Separator();
 
     namespace fs = std::filesystem;
     const std::string sceneFolder = "../Assets/saves/";
@@ -1801,21 +1799,82 @@ void ImGuiSystem::ShowSceneBrowser()
 
     static int selectedScene = -1;
 
-    // Dropdown of scenes
-    if (!sceneFiles.empty())
-    {
-        std::vector<const char*> items;
-        for (auto& name : sceneFiles) items.push_back(name.c_str());
+    // --- Scene List ---
+    ImGui::Separator();
+    ImGui::Text("Available Scenes:");
 
-        if (ImGui::Combo("Available Scenes", &selectedScene, items.data(), (int)items.size()))
-        {
-            std::cout << "[Editor] Selected scene: " << sceneFiles[selectedScene] << std::endl;
-        }
-    }
-    else
+    static std::string pendingDeleteScene;
+    static bool triggerDeleteScenePopupNextFrame = false;
+
+    // Display all scenes in scrollable region
+    ImGui::BeginChild("SceneList", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
+    for (int i = 0; i < (int)sceneFiles.size(); ++i)
     {
-        ImGui::TextDisabled("No scenes found in %s", sceneFolder.c_str());
+        const std::string& sceneName = sceneFiles[i];
+        bool selected = (selectedScene == i);
+
+        ImGui::PushID(sceneName.c_str());
+        if (ImGui::Selectable(sceneName.c_str(), selected))
+        {
+            selectedScene = i;
+            std::cout << "[Editor] Selected scene: " << sceneName << std::endl;
+        }
+
+        // Add right-click context menu for each scene
+        if (ImGui::BeginPopupContextItem("SceneContext"))
+        {
+            if (ImGui::MenuItem("Delete Scene"))
+            {
+                pendingDeleteScene = sceneName;
+                triggerDeleteScenePopupNextFrame = true;
+            }
+            ImGui::EndPopup();
+        }
+
+        ImGui::PopID();
     }
+    ImGui::EndChild();
+
+    // --- Open delete popup next frame ---
+    if (triggerDeleteScenePopupNextFrame)
+    {
+        ImGui::OpenPopup("Delete Scene Confirmation");
+        triggerDeleteScenePopupNextFrame = false;
+    }
+
+    // --- Delete Scene Confirmation Popup ---
+    if (ImGui::BeginPopupModal("Delete Scene Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Are you sure you want to delete scene '%s'?\nThis action cannot be undone.",
+            pendingDeleteScene.c_str());
+        ImGui::Separator();
+
+        if (ImGui::Button("Yes, Delete", ImVec2(130, 0)))
+        {
+            try
+            {
+                std::string filePath = sceneFolder + pendingDeleteScene + ".json";
+                std::filesystem::remove(filePath);
+                std::cout << "[Editor] Deleted scene: " << filePath << "\n";
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << "[Editor] Failed to delete scene: " << e.what() << "\n";
+            }
+            pendingDeleteScene.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+        {
+            pendingDeleteScene.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
 
     // Buttons
     if (ImGui::Button("Load Scene") && selectedScene >= 0)
