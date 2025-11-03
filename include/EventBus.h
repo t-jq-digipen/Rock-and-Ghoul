@@ -40,6 +40,8 @@ private:
 	// Store a vector of functions to be executed when x event happens
 	// Keyed by type_index of EVENT TYPE!
 	std::unordered_map<std::type_index, std::vector<BaseHandler>> subscribers;
+
+
 	
 private:
 	EventBus() = default;
@@ -50,6 +52,7 @@ private:
 	~EventBus() = default;
 
 public:
+
 
 	static EventBus& Get() {
 		static EventBus instance;
