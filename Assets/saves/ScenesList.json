@@ -8,10 +8,10 @@
                         "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                         "Input": "{\"scheme\":1}",
                         "Movement": "{\"moveSpeed\":500.0}",
-                        "Physics": "{\"aabb\":{\"centerX\":650.3580322265625,\"centerY\":670.461669921875,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":650.3580322265625,\"posY\":670.461669921875,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                        "Physics": "{\"aabb\":{\"centerX\":170.91900634765625,\"centerY\":735.702392578125,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":170.91900634765625,\"posY\":735.702392578125,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":-2.802596928649634e-45,\"willCollide\":true}",
                         "Sprite": "{\"animated\":true,\"scaleX\":100.0,\"scaleY\":100.0,\"texturePath\":\"../Assets/Waffle_Sprites.png\"}",
                         "Tag": "{\"tagID\":0}",
-                        "Transform": "{\"posX\":650.3580322265625,\"posY\":670.461669921875,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                        "Transform": "{\"posX\":170.91900634765625,\"posY\":735.702392578125,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
                     },
                     "name": "Waffle"
                 },
@@ -20,10 +20,10 @@
                         "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                         "Input": "{\"scheme\":0}",
                         "Movement": "{\"moveSpeed\":300.0}",
-                        "Physics": "{\"aabb\":{\"centerX\":150.0,\"centerY\":930.0,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":150.0,\"posY\":930.0,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                        "Physics": "{\"aabb\":{\"centerX\":1097.1375732421875,\"centerY\":280.23980712890625,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1097.1375732421875,\"posY\":280.23980712890625,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":-2.802596928649634e-45,\"velY\":-2.802596928649634e-45,\"willCollide\":true}",
                         "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Rock_FightingPose_2048px.png\"}",
                         "Tag": "{\"tagID\":0}",
-                        "Transform": "{\"posX\":150.0,\"posY\":930.0,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                        "Transform": "{\"posX\":1097.1375732421875,\"posY\":280.23980712890625,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
                     },
                     "name": "Player"
                 },
@@ -32,10 +32,10 @@
                         "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                         "Input": "{\"scheme\":0}",
                         "Movement": "{\"moveSpeed\":300.0}",
-                        "Physics": "{\"aabb\":{\"centerX\":350.0,\"centerY\":930.0,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":350.0,\"posY\":930.0,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                        "Physics": "{\"aabb\":{\"centerX\":1602.3980712890625,\"centerY\":246.463623046875,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1602.3980712890625,\"posY\":246.46360778808594,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":-2.802596928649634e-45,\"velY\":-1.401298464324817e-45,\"willCollide\":true}",
                         "Shape": "{\"colorX\":1.0,\"colorY\":0.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":0}",
                         "Tag": "{\"tagID\":0}",
-                        "Transform": "{\"posX\":350.0,\"posY\":930.0,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                        "Transform": "{\"posX\":1602.3980712890625,\"posY\":246.46360778808594,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
                     },
                     "name": "Rectangle"
                 },
@@ -44,10 +44,10 @@
                         "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                         "Input": "{\"scheme\":2}",
                         "Movement": "{\"moveSpeed\":100.0}",
-                        "Physics": "{\"aabb\":{\"centerX\":1009.7008056640625,\"centerY\":731.5949096679688,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1009.7008056640625,\"posY\":731.5949096679688,\"rad\":100.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                        "Physics": "{\"aabb\":{\"centerX\":1009.7008056640625,\"centerY\":701.92626953125,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1009.7008056640625,\"posY\":701.92626953125,\"rad\":100.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":-2.802596928649634e-45,\"willCollide\":true}",
                         "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":1}",
                         "Tag": "{\"tagID\":0}",
-                        "Transform": "{\"posX\":1009.7008056640625,\"posY\":731.5949096679688,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                        "Transform": "{\"posX\":1009.7008056640625,\"posY\":701.92626953125,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
                     },
                     "name": "Circle"
                 },
@@ -145,10 +145,10 @@
                         "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                         "Input": "{\"scheme\":0}",
                         "Movement": "{\"moveSpeed\":300.0}",
-                        "Physics": "{\"aabb\":{\"centerX\":803.8694458007813,\"centerY\":439.494384765625,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":803.8694458007813,\"posY\":439.4943542480469,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                        "Physics": "{\"aabb\":{\"centerX\":1770.0,\"centerY\":223.80902099609375,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1770.0,\"posY\":223.8090362548828,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                         "Shape": "{\"colorX\":1.0,\"colorY\":0.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":0}",
                         "Tag": "{\"tagID\":0}",
-                        "Transform": "{\"posX\":803.8694458007813,\"posY\":439.4943542480469,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                        "Transform": "{\"posX\":1770.0,\"posY\":223.8090362548828,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
                     },
                     "name": "Rectangle"
                 },
@@ -157,10 +157,10 @@
                         "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                         "Input": "{\"scheme\":0}",
                         "Movement": "{\"moveSpeed\":300.0}",
-                        "Physics": "{\"aabb\":{\"centerX\":298.6081848144531,\"centerY\":408.0297546386719,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":298.6081848144531,\"posY\":408.0297546386719,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                        "Physics": "{\"aabb\":{\"centerX\":1267.01611328125,\"centerY\":192.34439086914063,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1267.01611328125,\"posY\":192.34439086914063,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                         "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Rock_FightingPose_2048px.png\"}",
                         "Tag": "{\"tagID\":0}",
-                        "Transform": "{\"posX\":298.6081848144531,\"posY\":408.0297546386719,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                        "Transform": "{\"posX\":1267.01611328125,\"posY\":192.34439086914063,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
                     },
                     "name": "Player"
                 },
@@ -170,10 +170,10 @@
                         "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                         "Input": "{\"scheme\":1}",
                         "Movement": "{\"moveSpeed\":500.0}",
-                        "Physics": "{\"aabb\":{\"centerX\":650.3580322265625,\"centerY\":670.461669921875,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":650.3580322265625,\"posY\":670.461669921875,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                        "Physics": "{\"aabb\":{\"centerX\":1650.7808837890625,\"centerY\":645.7996215820313,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1650.7808837890625,\"posY\":645.7996215820313,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                         "Sprite": "{\"animated\":true,\"scaleX\":100.0,\"scaleY\":100.0,\"texturePath\":\"../Assets/Waffle_Sprites.png\"}",
                         "Tag": "{\"tagID\":0}",
-                        "Transform": "{\"posX\":650.3580322265625,\"posY\":670.461669921875,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                        "Transform": "{\"posX\":1650.7808837890625,\"posY\":645.7996215820313,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
                     },
                     "name": "Waffle"
                 }
