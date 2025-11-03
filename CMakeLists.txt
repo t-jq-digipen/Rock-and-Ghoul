@@ -105,7 +105,13 @@ if(WIN32)
         message(STATUS "Will copy fmod.dll from: ${FMOD_LIB_DIR}")
     endif()
 endif()
-
+# ======================= Mono Include Setup =========================
+if (EXISTS "${CMAKE_SOURCE_DIR}/deps/Mono/include/mono-2.0/mono/jit/jit.h")
+    message(STATUS "Mono headers found at deps/Mono/include/mono-2.0")
+    include_directories(${CMAKE_SOURCE_DIR}/deps/Mono/include/mono-2.0)
+else()
+    message(WARNING "Mono headers not found! Check your deps/Mono folder structure.")
+endif()
 # ======================= Copy Mono Runtime DLL =========================
 
 
@@ -123,21 +129,44 @@ if (WIN32)
         message(WARNING "Mono runtime DLL not found at ${MONO_DLL_PATH}. Skipping copy.")
     endif()
 endif()
+# ======================= Mono Library Linking =========================
+set(MONO_ROOT "${CMAKE_SOURCE_DIR}/deps/Mono")
+
+# Include headers
+include_directories(${MONO_ROOT}/include ${MONO_ROOT}/include/mono-2.0)
+
+# Add the Mono library for linking
+if(WIN32)
+    set(MONO_LIB "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
+
+    if(EXISTS "${MONO_LIB}")
+        message(STATUS "Linking with Mono: ${MONO_LIB}")
+        target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE "${MONO_LIB}")
+    else()
+        message(WARNING "Mono library not found at ${MONO_LIB}!")
+    endif()
+endif()
+
+target_sources(team_aviddivas PRIVATE
+    src/MonoBindings.cpp
+)
+
 # ======================= Copy GameScripts DLL =========================
 set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/Debug/GameScripts.dll")
 set(GAMESCRIPTS_TARGET_DIR "${CMAKE_SOURCE_DIR}/Assets/Scripts")
 
-# if (EXISTS "${GAMESCRIPTS_DLL_PATH}")
-#     add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-#         COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll to Assets/Scripts..."
-#         COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
-#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#             "${GAMESCRIPTS_DLL_PATH}"
-#             "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
-#     )
-# else()
-#     message(STATUS "GameScripts.dll not found, skipping copy step.")
-# endif()
+if (EXISTS "${GAMESCRIPTS_DLL_PATH}")
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll to Assets/Scripts..."
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
+       COMMAND ${CMAKE_COMMAND} -E copy
+    "${GAMESCRIPTS_DLL_PATH}"
+    "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
+    )
+else()
+    message(STATUS "GameScripts.dll not found, skipping copy step.")
+endif()
+
 
 
 

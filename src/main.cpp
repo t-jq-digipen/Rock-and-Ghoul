@@ -115,6 +115,7 @@ int main() {
             engine.AddSystem(&GuiSystem::Get());
             engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
             engine.AddSystem(&LogicSystem::Get());
+            engine.AddSystem(new MonoSystem());
             std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
                 << " at " << (void*)&GLApp::ptr_window << std::endl;
             // initialize all systems (FMOD, OpenGL, etc.)
@@ -139,7 +140,7 @@ int main() {
             engine.Shutdown();
             GLApp::cleanup();
             CrashHandler::Log("Engine shutdown complete");
-            //mono.Shutdown();
+           // mono.Shutdown();
             return 0;
         });
 

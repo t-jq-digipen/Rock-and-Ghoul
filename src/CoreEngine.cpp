@@ -44,6 +44,8 @@
 
 #include "BehaviourComponent.h"
 #include "GameScripts.h"
+
+#include "MonoScriptComponent.h"
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
 
@@ -94,7 +96,8 @@ void CoreEngine::Initialize() {
     /*registry.Register_Component<ElementComponent>("Element");
     std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";*/
     registry.Register_Component<BehaviourComponent>("Behaviour");
-
+    //Registry::Get().Register_Component<>("MonoScriptComponent");
+    registry.Register_Component<MonoScriptComponent>("MonoScriptComponent");
     for (auto s : systems) s->Initialize();
     gsm.Init(GameState::GS_MAIN_MENU);
     GLApp::gameInitialized = true;
