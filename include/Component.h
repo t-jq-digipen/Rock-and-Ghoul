@@ -261,6 +261,43 @@ struct TagComponent {
 	}
 };
 
+enum RenderLayer {
+	LAYER_BACKGROUND,
+	LAYER_GAMEOBJECT,
+	LAYER_FOREGROUND,
+	LAYER_UI
+};
+
+struct RenderLayerComponent {
+	RenderLayer layer = LAYER_GAMEOBJECT;
+
+	std::string Serialize() const {
+		json j = { {"layer", static_cast<int>(layer)} }; //use layer in json
+		return j.dump();
+	}
+
+	static RenderLayerComponent DeSerialize(Entity eID, const std::string& data) {
+		(void)eID;
+		if (data.empty()) return RenderLayerComponent();
+		json j = json::parse(data);
+		RenderLayerComponent temp;
+		temp.layer = static_cast<RenderLayer>(j.value("layer", 1)); // default = GAMEOBJECT
+		return temp;
+	}
+
+	Editor::ComponentData EditorData() {
+		Editor::ComponentData ret("RenderLayer");
+		Editor::Widget_Dropdown dropdown;
+		dropdown.ref = reinterpret_cast<unsigned int*>(&layer);
+		dropdown.Add_Option("Background", LAYER_BACKGROUND);
+		dropdown.Add_Option("GameObject", LAYER_GAMEOBJECT);
+		dropdown.Add_Option("Foreground", LAYER_FOREGROUND);
+		dropdown.Add_Option("UI", LAYER_UI);
+		ret.Add_Data("Layer", dropdown);
+		return ret;
+	}
+};
+
 enum ControlScheme {
 	CS_WASD,
 	CS_IJKL,

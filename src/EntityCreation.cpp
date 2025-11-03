@@ -131,6 +131,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Registry::Get().Add_Component<InputComponent>(player, InputComponent{ CS_WASD });
             Registry::Get().Add_Component<TagComponent>(player, TagComponent{ T_PLAYER });
+            
 
             Image img = CreateImage("../Assets/Rock_FightingPose_2048px.png");
             Registry::Get().Add_Component<Sprite::SpriteComponent>(player, Sprite::SpriteComponent{ img, {.1f,.1f} });
@@ -138,6 +139,8 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<HealthComponent>(player, HealthComponent{ 100.f, 100.f });
 
             Registry::Get().Add_Component<Movement::MovementComponent>(player, Movement::MovementComponent{ 5.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
+
+            //Registry::Get().Add_Component<RenderLayerComponent>(player, RenderLayerComponent{ LAYER_BACKGROUND });
 
             if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Player.json", player)) {
                 std::cout << "Player.json saved successfully" << std::endl;
@@ -394,6 +397,8 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
 
     // Tag for batching
     Registry::Get().Add_Component<TagComponent>(instance, TagComponent{ T_BATCH });
+
+    Registry::Get().Add_Component<RenderLayerComponent>(instance, RenderLayerComponent{ LAYER_FOREGROUND });
 
     return instance;
 }

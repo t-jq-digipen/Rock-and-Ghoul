@@ -92,6 +92,9 @@ void CoreEngine::Initialize() {
     /*registry.Register_Component<ElementComponent>("Element");
     std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";*/
 
+    registry.Register_Component<RenderLayerComponent>("RenderLayer");
+    std::cout << "REGISTRY | REGISTERED RENDERLAYER COMPONENT\n";
+
 
     for (auto s : systems) s->Initialize();
     gsm.Init(GameState::GS_MAIN_MENU);
