@@ -201,7 +201,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Image imgtemp = CreateImage("../Assets/Waffle_Sprites.png");
             Registry::Get().Add_Component<Sprite::SpriteComponent>(waffle, Sprite::SpriteComponent{ imgtemp, {100.f,100.f }, true });
-
+            Registry::Get().Add_Component<Movement::MovementComponent>(waffle, Movement::MovementComponent{ 500.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
             // CRITICAL: Ensure imageWidth and imageHeight are set correctly!
             Animator::AnimatorComponent animtemp(3, 6, { 2,0,1 }, 1.f);
             animtemp.AddState(PS_IDLE, { 3, 0, 1, 1.f });
