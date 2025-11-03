@@ -4,6 +4,12 @@
 #include "BehaviourFCT.h"
 #include "System.h"  // Include your ISystem header
 
+enum class ScriptID : unsigned int {
+    NONE = 0,
+    GHOUL,
+    PATROL_ENEMY,
+    PLAYER,
+};
 class LogicSystem : public ISystem
 {
 public:
@@ -23,10 +29,16 @@ public:
     void Shutdown() override;
 
     // LogicSystem specific methods
-    void RegisterScript(const std::string& name, const BehaviourFCT& script);
+    void RegisterScript(const std::string& name, const BehaviourFCT& script, ScriptID id);
     BehaviourFCT* GetBehaviour(const std::string& name);
+    BehaviourFCT* GetBehaviourByID(ScriptID id);
+
+    const std::unordered_map<std::string, ScriptID>& GetNameToIDMap() const { return m_nameToID; }
+    const std::unordered_map<ScriptID, std::string>& GetIDToNameMap() const { return m_idToName; }
 
 private:
     LogicSystem() = default;  // Private constructor for singleton
     std::unordered_map<std::string, BehaviourFCT> m_behaviours;
+    std::unordered_map<std::string, ScriptID>     m_nameToID;
+    std::unordered_map<ScriptID, std::string>     m_idToName;
 };

@@ -58,8 +58,13 @@ Entity LoadEntity(const std::string& entityName, float x, float y) {
 Entity Create_Player(float const& x, float const& y) {
     Entity patrol = LoadEntity("Player", 500.0f, 300.0f);
     BehaviourComponent bc;
-    bc.scriptName = "PatrolEnemy";
+    //bc.scriptName = "PatrolEnemy";
+    //bc.started = false;
+    bc.scriptID = ScriptID::GHOUL;
+    bc.scriptName = "GhoulScript";
     bc.started = false;
+    /*bc.scriptIDs = { ScriptID::PATROL_ENEMY, ScriptID::GHOUL };
+    bc.startedStates = { false, false };*/
     Registry::Get().Add_Component<BehaviourComponent>(patrol, bc);
     
     return patrol;
@@ -73,9 +78,10 @@ Entity Create_Ghoul(float const& x, float const& y) {
 
     // Add behaviour component
     BehaviourComponent bc;
-    bc.scriptName = "GhoulScript";  // Use the string name!
+    bc.scriptName = "PatrolEnemy";
+    //bc.started = false;
+    bc.scriptID = ScriptID::PATROL_ENEMY;
     bc.started = false;
-
     Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
 
     return ghoul;
