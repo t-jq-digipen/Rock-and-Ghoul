@@ -306,7 +306,7 @@ void Level1::Init()
 		cam.SetZoom(1.0f);
 		cam.UpdateMatrices();
 		Render::GetInstance().UpdateProjection();
-		Entity mover = Create_ScriptedEntity("Mover", 400.f, 300.f);
+		Create_ScriptedEntity("Mover", 400.f, 300.f);
 		Create_Arrow(1400.f, 400.f);
 	//Create_RotatingObject(500.f, 400.f);
 	//Create_MovingObject(800.f, 400.f);
@@ -528,7 +528,7 @@ void Level1::Update()
 		else if (Input::IsKeyPressed(GLFW_KEY_R) && !GuiSystem::Get().GetEditMode())
 		{
 			// don't trigger restart while editing or paused
-			if (!ImGuiSystem::guiEnabled && !GSM_IsPaused() && !guiSystem.GetEditMode())
+			if (!ImGuiSystem::guiEnabled && !GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
 			{
 				GSM_SetNextState(GameState::GS_RESTART);
 				std::cout << "Level 1 Restarted!!!" << std::endl;

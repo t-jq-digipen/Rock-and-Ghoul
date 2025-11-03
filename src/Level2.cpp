@@ -43,7 +43,7 @@ GLuint bgTexture2 = 0;
 // Entities for Level 2
 Entity ECSplayer2{};
 Entity rock2;
-Entity ghoul;
+//Entity ghoul;
 
 // Registry ref
 Registry& registry2 = Registry::Get();
@@ -265,7 +265,7 @@ void Level2::Update()
 	}
 
 	static bool spawnedBatch = false;
-	Render& renderer = Render::GetInstance();
+	//Render& renderer = Render::GetInstance();
 
 	static bool spawned = false;
 	std::vector<Entity> toRemove;
