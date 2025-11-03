@@ -37,6 +37,7 @@
 #include <unordered_set> 
 #include "Render.h" 
 #include "Camera.h"
+#include "LogicSystem.h"
 static bool isPlacingPrefab = false;
 static std::string pendingPrefabPath;
 bool ImGuiSystem::showColliders = false;
@@ -651,6 +652,7 @@ void ImGuiSystem::ShowEngineDebugWindow() {
             cam.ResetToCenter();       
 
             JsonLoad::ClearAllEntities();
+            LogicSystem::Get().Shutdown();
             // if (!JsonLoad::LoadScene(FilePath::TEMP_SCENE))
             //     JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
 
@@ -789,6 +791,11 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
 
 
     }
+    ImGui::SameLine();
+    if (ImGui::Button("Switch to Level 2"))
+    {
+        GSM_SetNextState(GameState::GS_LEVEL2);
+    }
 
     static int selectedPrefab = -1; //currently selected index cuz imgui dropdown dont take a string
     //int index into an array of items
@@ -806,25 +813,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     }
 
     ImGui::Separator();
-    ImGui::Text("Spawn Prefab:");
-
-    //show dropdown if we have prefabs
-    if (!prefabNames.empty()) {
-        //array of const char* for ImGui::Combo
-        std::vector<const char*> items;
-        //iterates over each string in that vector.
-        for (auto& name : prefabNames) items.push_back(name.c_str());
-
-        if (ImGui::Combo("##PrefabCombo", &selectedPrefab, items.data(), (int)items.size())) {
-            //spawn
-            std::string filepath = FilePath::PREFABS_FOLDER + prefabNames[selectedPrefab] + ".json";
-            selectedEntity = JsonLoad::LoadEntityFromFile(filepath, 200.f, 200.f);
-            std::cout << "Spawned prefab: " << prefabNames[selectedPrefab] << std::endl;
-        }
-    }
-    else {
-        ImGui::TextDisabled("No prefabs available in %s", FilePath::PREFABS_FOLDER.c_str());
-    }
+    ShowSceneBrowser();
     //// ==============================
     //// Image loader (runtime only)
     //// ==============================
@@ -1836,6 +1825,88 @@ void ImGuiSystem::ShowPrefabControls()
     }
 }
 
+void ImGuiSystem::ShowSceneBrowser()
+{
+    ImGui::Text("Scene Management");
+    ImGui::Separator();
+
+    namespace fs = std::filesystem;
+    const std::string sceneFolder = "../Assets/saves/";
+
+    if (!fs::exists(sceneFolder))
+        fs::create_directories(sceneFolder);
+
+    static std::vector<std::string> sceneFiles;
+    sceneFiles.clear();
+
+    for (auto& entry : fs::directory_iterator(sceneFolder))
+    {
+        if (entry.path().extension() == ".json")
+            sceneFiles.push_back(entry.path().stem().string());
+    }
+
+    static int selectedScene = -1;
+
+    // Dropdown of scenes
+    if (!sceneFiles.empty())
+    {
+        std::vector<const char*> items;
+        for (auto& name : sceneFiles) items.push_back(name.c_str());
+
+        if (ImGui::Combo("Available Scenes", &selectedScene, items.data(), (int)items.size()))
+        {
+            std::cout << "[Editor] Selected scene: " << sceneFiles[selectedScene] << std::endl;
+        }
+    }
+    else
+    {
+        ImGui::TextDisabled("No scenes found in %s", sceneFolder.c_str());
+    }
+
+    // Buttons
+    if (ImGui::Button("Load Scene") && selectedScene >= 0)
+    {
+        std::string path = sceneFolder + sceneFiles[selectedScene] + ".json";
+        JsonLoad::ClearAllEntities();
+        if (JsonLoad::LoadScene(path))
+            std::cout << "[Editor] Loaded scene: " << path << "\n";
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Save Current Scene") && selectedScene >= 0)
+    {
+        std::string path = sceneFolder + sceneFiles[selectedScene] + ".json";
+        JsonLoad::SaveCurrentScene(path, sceneFiles[selectedScene]);
+        std::cout << "[Editor] Saved scene: " << path << "\n";
+    }
+
+    // New Scene creation
+    static char newSceneName[64] = "";
+    ImGui::InputText("New Scene Name", newSceneName, IM_ARRAYSIZE(newSceneName));
+    if (ImGui::Button("Create New Scene"))
+    {
+        std::string sceneName = newSceneName;
+        if (sceneName.empty())
+        {
+            std::cout << "[Editor] Scene name cannot be empty!\n";
+        }
+        else
+        {
+            std::string newPath = sceneFolder + sceneName + ".json";
+            if (fs::exists(newPath))
+            {
+                std::cout << "[Editor] Scene already exists.\n";
+            }
+            else
+            {
+                SavedScene empty;
+                empty.sceneName = sceneName;
+                JsonLoad::SaveEmptyScene(newPath, empty);
+                std::cout << "[Editor] Created new empty scene: " << newPath << "\n";
+            }
+        }
+    }
+}
 
 
 

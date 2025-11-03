@@ -413,31 +413,81 @@ public:
 		return saved;
 	}
 
+	//Entity Load_Entity(const SavedEntity& saved)
+	//{
+	//	Entity eID = Create_Entity();
+	//	Set_EntityName(eID, saved.name);
+
+	//	std::cout << "Creating entity '" << saved.name << "' (ID: " << eID << ")\n";
+
+	//	for (std::type_index typeID : componentTypeList)
+	//	{
+	//		std::string typeName = Get_ComponentTypeName(typeID);
+	//		auto it = saved.componentData.find(typeName);
+	//		if (it != saved.componentData.end())
+	//		{
+	//			componentManagers[typeID]->LoadComponent(eID, it->second);
+	//		}
+	//	}
+
+	//	//for (auto& [typeName, data] : saved.componentData)
+	//	//{
+	//	//	std::type_index typeIndex(Get_ComponentTypeIndex(typeName));
+	//	//	componentManagers[typeIndex]->LoadComponent(eID, data);
+	//	//}
+
+	//	return eID;
+	//}
 	Entity Load_Entity(const SavedEntity& saved)
 	{
 		Entity eID = Create_Entity();
 		Set_EntityName(eID, saved.name);
 
-		std::cout << "Creating entity '" << saved.name << "' (ID: " << eID << ")\n";
+		std::cout << "[Registry] Loading entity '" << saved.name << "' (ID: " << eID << ")\n";
 
-		for (std::type_index typeID : componentTypeList)
-		{
-			std::string typeName = Get_ComponentTypeName(typeID);
-			auto it = saved.componentData.find(typeName);
-			if (it != saved.componentData.end())
+		auto LoadIfExists = [&](const std::string& name)
 			{
-				componentManagers[typeID]->LoadComponent(eID, it->second);
-			}
-		}
+				auto it = saved.componentData.find(name);
+				if (it != saved.componentData.end())
+				{
+					try
+					{
+						std::type_index tID = Get_ComponentTypeIndex(name);
+						componentManagers[tID]->LoadComponent(eID, it->second);
+						std::cout << "  -> Loaded " << name << "\n";
+						return true;
+					}
+					catch (const std::exception& ex)
+					{
+						std::cerr << "  [ERROR] Failed to load " << name << ": " << ex.what() << "\n";
+					}
+				}
+				return false;
+			};
 
-		//for (auto& [typeName, data] : saved.componentData)
-		//{
-		//	std::type_index typeIndex(Get_ComponentTypeIndex(typeName));
-		//	componentManagers[typeIndex]->LoadComponent(eID, data);
-		//}
+
+		LoadIfExists("Transform");  // base position/scale
+		LoadIfExists("Sprite");     // before Animator needs texture
+		LoadIfExists("Animator");   // after Sprite
+
+
+		for (const auto& [compName, compData] : saved.componentData)
+		{
+			if (compName == "Transform" ||
+				compName == "Sprite" ||
+				compName == "Animator" ||
+				compData.empty() ||
+				compData == "{}" ||
+				compData == "null")
+				continue;
+
+			LoadIfExists(compName);
+		}
 
 		return eID;
 	}
+
+
 #pragma endregion
 	// ================================================================================
 

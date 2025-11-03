@@ -107,7 +107,7 @@ public:
     // Save game settings
     static bool SaveSettings(const std::string& filepath, GameSettings& settings);
     static std::optional<GameSettings> LoadSettings(const std::string& filepath);
-
+    static bool SaveEmptyScene(const std::string& path, const SavedScene& scene);
 private:
     /**
      * @brief Converts live entity to SavedEntity structure.
