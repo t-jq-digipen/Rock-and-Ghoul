@@ -366,6 +366,8 @@ source_group("others\\EventBus" FILES
 source_group("Game\\Levels" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Level1.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Level1.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Level2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Level2.h
 
 )
 

@@ -24,7 +24,7 @@ namespace TextSystem
 	void TextComponent::SetSpeakerID(int id) { speakerID = id; }
 	void TextComponent::SetFontPath(const std::string& path) { fontPath = path; }
 	void TextComponent::SetFontSize(float size) { fontSize = size; }
-	void TextComponent::SetIsTyping(bool isTyping) { isTyping = isTyping; }
+	void TextComponent::SetIsTyping(bool isType) { isTyping = isType; }
 	void TextComponent::SetColor(Vec3 const& colorVec) { color = colorVec; }
 
 	// Toggle text behavior (if isTyping = true, text gets rendered from left to right)
@@ -53,5 +53,48 @@ namespace TextSystem
 		const std::string& fullLine = txt.GetCurrentLine(txt.GetCurrentLineIndex());
 		const int n = std::clamp(txt.visibleChars, 0, (int)fullLine.size());
 		return fullLine.substr(0, n);
+	}
+
+	bool LoadDialogueFromJson(const std::string& filepath, TextComponent& textComp)
+	{
+		const std::string content = FileIO::ReadFile(filepath);
+		if (content.empty()) {
+			std::cerr << "Failed to load dialogue from: " << filepath << '\n';
+			return false;
+		}
+
+		try {
+			nlohmann::json j = nlohmann::json::parse(content);
+
+			// Fields with defaults
+			std::vector<std::string> lines = j.value("lines", std::vector<std::string>{""});
+			if (lines.empty()) lines.push_back("");
+
+			const float textSpeed = j.value("textSpeed", 1.f);
+			const int speakerID = j.value("speakerID", 0);
+			const std::string fontPath = j.value("fontPath", std::string{});
+			const float fontSize = j.value("fontSize", 1.f);
+
+			Vec3 color{ 0.f, 0.f, 0.f };
+			color.x = j.contains("colorR") ? j["colorR"].get<float>() : 1.f;
+			color.y = j.contains("colorG") ? j["colorG"].get<float>() : 1.f;
+			color.z = j.contains("colorB") ? j["colorB"].get<float>() : 1.f;
+
+			// Apply to component
+			textComp.SetLines(lines);
+			textComp.SetCurrentLineIndex(0);
+			textComp.SetTextSpeed(textSpeed);
+			textComp.SetSpeakerID(speakerID);
+			textComp.SetFontPath(fontPath);
+			textComp.SetFontSize(fontSize);
+			textComp.SetColor(color);
+			textComp.StartTyping(); // begin typewriter effect
+
+			return true;
+		}
+		catch (const std::exception& e) {
+			std::cerr << "Dialogue json parse error (" << filepath << "): " << e.what() << '\n';
+			return false;
+		}
 	}
 }

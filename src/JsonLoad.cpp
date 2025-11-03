@@ -880,3 +880,183 @@ void JsonLoad::ClearAllEntities() {
 
     std::cout << "Cleared " << toRemove.size() << " entities" << std::endl;
 }
+
+/**
+ * @brief Loads current game scene from JSON file.
+ *
+ * @param filepath The file path to the scene file to load.
+ * @param sceneName The name to assign to this scene for identification.
+ * @return bool True if the scene was successfully saved, false if an error
+ *         occurred during serialization or file writing.
+ */
+
+bool JsonLoad::LoadCurrentScene(const std::string& filepath, const std::string& sceneName)
+{
+    try 
+    {
+        std::string content = FileIO::ReadFile(filepath);
+        if (content.empty())
+        {
+            std::cerr << "File is empty or doesn't exist: " << filepath << std::endl;
+            return false;
+        }
+
+        json j = json::parse(content);
+
+        auto itScenes = j.find("scenes");
+        if (itScenes == j.end() || !itScenes->is_array())
+        {
+            std::cerr << "Scene missing in: " << filepath << std::endl;
+            return false;
+        }
+
+        const json* isMatched = nullptr;
+        for (const auto& s : *itScenes)
+        {
+            if (!s.is_object()) continue;
+            auto itSceneName = s.find("sceneName");
+            if (itSceneName != s.end() && itSceneName->is_string() && itSceneName->get_ref<const std::string&>() == sceneName)
+            {
+                isMatched = &s;
+                break;
+            }
+        }
+
+        if (!isMatched)
+        {
+            std::cerr << "Scene '" << sceneName << "' not found in " << filepath << std::endl;
+            return false;
+        }
+
+        SavedScene scene;
+        scene.sceneName = isMatched->value("sceneName", std::string{});
+
+        auto itEntities = isMatched->find("entities");
+        if (itEntities != isMatched->end() && itEntities->is_array()) {
+            for (const auto& ent : *itEntities) {
+                if (!ent.is_object()) continue;
+
+                SavedEntity save;
+                save.name = ent.value("name", std::string{});
+
+                auto itComps = ent.find("components");
+                if (itComps != ent.end() && itComps->is_object()) {
+                    for (auto it = itComps->begin(); it != itComps->end(); ++it) {
+                        if (!it.value().is_string()) continue;
+                        save.componentData[it.key()] = it.value().get<std::string>();
+                    }
+                }
+
+                if (!save.componentData.empty()) {
+                    scene.entities.push_back(std::move(save));
+                }
+            }
+        }
+
+        std::cout << "Loading scene: " << scene.sceneName << std::endl;
+        std::cout << "Number of entities: " << scene.entities.size() << std::endl;
+
+        // Clear existing entities before loading scene
+        ClearAllEntities();
+
+        // Create all entities
+        for (const auto& savedEntity : scene.entities) {
+            Registry::Get().Load_Entity(savedEntity);
+        }
+
+        return true;
+    }
+    catch (const std::exception& e) 
+    {
+        std::cerr << "Error loading scene '" << sceneName << "' from '" << filepath << "': " << e.what() << std::endl;
+        return false;
+    }
+}
+
+/**
+ * @brief Saves temporary scene to JSON file based on sceneName.
+ *
+ * @param filepath The file path to the scene file to load.
+ * @param sceneName The name to assign to this scene for identification.
+ * @return bool True if the temp scene was successfully saved, false if an error
+ *         occurred during serialization or file writing.
+ */
+
+bool JsonLoad::SaveCurrentTempScene(const std::string& filepath, const std::string& sceneName)
+{
+    try {
+        // 1) Snapshot current world into a SavedScene
+        SavedScene scene;
+        scene.sceneName = sceneName;
+
+        EntityManager& em = EntityManager::get();
+        for (Entity e = 0; e < em.maxEntities(); ++e) 
+        {
+            if (!em.isAlive(e)) continue;
+            SavedEntity saved = Registry::Get().Save_Entity(e);
+            if (!saved.componentData.empty()) 
+            {
+                scene.entities.push_back(std::move(saved));
+            }
+        }
+
+        json jScene;
+        to_json(jScene, scene); // -> {"sceneName": "...", "entities": [...]}
+
+        // 2) Load existing file (or create a fresh root)
+        json root = json::object();
+        if (std::string content = FileIO::ReadFile(filepath); !content.empty()) 
+        {
+            try 
+            {
+                root = json::parse(content);
+            }
+            catch (const std::exception& e) 
+            {
+                // If file is corrupt, start fresh but keep going
+                std::cerr << "Error saving temp scene: " << e.what() << '\n';
+                root = json::object();
+            }
+        }
+        if (!root.is_object()) root = json::object();
+
+        // 3) Ensure scenes array exists
+        if (!root.contains("scenes") || !root["scenes"].is_array())
+            root["scenes"] = json::array();
+
+        json& scenesIn = root["scenes"];
+        json scenesOut = json::array();
+        bool replaced = false;
+
+        // 4) Rebuild scenes array; replace only the matching sceneName
+        for (const auto& s : scenesIn) 
+        {
+            if (!s.is_object()) { scenesOut.push_back(s); continue; }
+
+            // Safe lookup: do NOT use operator[] on const json
+            auto it = s.find("sceneName");
+            if (it != s.end() && it->is_string() && it->get_ref<const std::string&>() == sceneName) 
+            {
+                scenesOut.push_back(jScene);   // replace
+                replaced = true;
+            }
+            else 
+            {
+                scenesOut.push_back(s);        // keep as-is
+            }
+        }
+        if (!replaced) 
+        {
+            scenesOut.push_back(jScene);        // append new scene
+        }
+
+        // 5) Write back (preserves other scenes)
+        root["scenes"] = std::move(scenesOut);
+        return FileIO::WriteFile(filepath, root.dump(4));
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error in SaveCurrentTempScene('" << sceneName << "'): " << e.what() << '\n';
+        return false;
+    }
+}

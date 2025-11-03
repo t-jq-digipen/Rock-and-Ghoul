@@ -186,13 +186,36 @@ void Level1::Init()
 		//bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 
 		// 4. Add Gui Editor
-		guiSystem.Initialize();
-		guiSystem.AddTextBox({
-			.text = "Insert Dialogue HERE",
-			.pos = {1650, 50},
-			.scale = 0.5f,
-			.color = {0.f, 0.f, 0.f},
-			.centered = true });
+		GuiSystem::Get().Initialize();
+		//GuiSystem::Get().AddTextBox({
+		//	.text = "Insert Dialogue HERE",
+		//	.pos = {1650, 50},
+		//	.scale = 0.5f,
+		//	.color = {0.f, 0.f, 0.f},
+		//	.centered = true });
+		
+		// Button to go to Level 2
+		GuiSystem::Get().AddButton({
+			.label = "LEVEL 2",
+			.pos = {1650.0f, 150.0f},
+			.size = {300.0f, 150.0f},
+			.color = {20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f},
+			.onClick = [] { GSM_SetNextState(GameState::GS_LEVEL2); },
+			.soundType = AudioSystem::ButtonType::PLAY,
+			.shape = ButtonShape::Rounded
+		});
+
+		// Initial dialogue box when opening Level 1 state
+		TextBoxConfig initDialogue;
+		initDialogue.text = "";
+		initDialogue.basePos = { 450, 150 };
+		initDialogue.baseScale = 0.9f;
+		initDialogue.pos = initDialogue.basePos;
+		initDialogue.scale = initDialogue.baseScale;
+		initDialogue.color = { 0,0,0 };
+		initDialogue.centered = true;
+
+		GuiSystem::Get().AddDialogueFromJson("../Assets/Dialogue.json", initDialogue);
 
 		// 6. Create entities
 		// If there is no pre-existing/saved scene, it will load from prefabs
@@ -324,9 +347,6 @@ void Level1::Update()
 	{
 		cam.FollowTarget(playerTransform.pos, dt);
 	}
-
-	
-
 
 	//switch animation state
 	if (Input::IsKeyPressed(GLFW_KEY_U))  // U walk animation
@@ -498,13 +518,14 @@ void Level1::Update()
 
 	CrashHandler::Safe("Level1", "Update", [&] {
 		// to test game state changes (do not trigger if GUI Editor is open)
-		if (Input::IsKeyPressed(GLFW_KEY_M) && !guiSystem.GetEditMode())
+		if (Input::IsKeyPressed(GLFW_KEY_M) && !GuiSystem::Get().GetEditMode())
 		{
 			GSM_SetNextState(GameState::GS_MAIN_MENU);
 			//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
 		}
 		// --- Restart level with R key (disabled while ImGui editor is active) ---
-		if (Input::IsKeyPressed(GLFW_KEY_R))
+		//if (Input::IsKeyPressed(GLFW_KEY_R))
+		else if (Input::IsKeyPressed(GLFW_KEY_R) && !GuiSystem::Get().GetEditMode())
 		{
 			// don't trigger restart while editing or paused
 			if (!ImGuiSystem::guiEnabled && !GSM_IsPaused() && !guiSystem.GetEditMode())
@@ -519,11 +540,12 @@ void Level1::Update()
 		}
 
 
-		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !guiSystem.GetEditMode())
+		// if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !guiSystem.GetEditMode())
+		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
 		{
 			GSM_SetIsPaused(true);
 		}
-		else if (Input::IsKeyPressed(GLFW_KEY_P) && GSM_IsPaused() && !guiSystem.GetEditMode())
+		else if (Input::IsKeyPressed(GLFW_KEY_P) && GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
 		{
 			GSM_SetIsPaused(false);
 		}
@@ -531,6 +553,8 @@ void Level1::Update()
 		if (fretboard) {
 			fretboard->PlayerInput();
 		}
+
+		GuiSystem::Get().Update(0.f);
 		});
 }
 
@@ -558,8 +582,6 @@ void Level1::Draw()
 			fretboard->GetSpellManager().Draw(renderer);
 			//renderer.useCamera = true;
 		}
-
-		guiSystem.Update(0.0f);
 	});
 }
 
@@ -581,8 +603,8 @@ void Level1::Free()
 	CrashHandler::Safe("Level1", "Free", [&] {
 		std::cout << "Level 1 Freed!!!" << std::endl;
 		Render::GetInstance().ClearAllTextures();
-		guiSystem.Shutdown();
-		});
+		GuiSystem::Get().Shutdown();
+	});
 }
 
 // Unloads Level 1
