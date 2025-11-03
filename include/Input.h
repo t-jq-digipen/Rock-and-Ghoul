@@ -21,6 +21,7 @@
 #include <GLFW/glfw3.h>
 #include <unordered_map>
 #include "Remath.h"
+#include "EventBus.h"
 /**
  * @enum KeyState
  * @brief Represents the possible states of a key or mouse button.
@@ -36,6 +37,19 @@ enum class KeyState {
     HELD,
     NONE
 };
+
+struct KeyPressedEvent : public IEvent {
+    int key;
+};
+
+struct KeyHeldEvent : public IEvent {
+    int key;
+};
+
+struct KeyReleasedEvent : public IEvent {
+    int key;
+};
+
 
 /**
  * @class Input

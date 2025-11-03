@@ -125,29 +125,7 @@ namespace PatrolEnemyScript
 }
 
 
-namespace PlayerScript
-{
-    inline void Dash(Entity e, float x, float y)
-    {
 
-    }
-
-
-    inline void Start(Entity e)
-    {
-        std::cout << "Player script started" << std::endl;
-    }
-
-    inline void Update(Entity e, float dt)
-    {
-        // Player logic here
-    }
-
-    inline void End(Entity e)
-    {
-        std::cout << "Player script ended" << std::endl;
-    }
-}
 
 
 // ============================================
@@ -171,13 +149,6 @@ inline void RegisterAllGameScripts()
         patrol.End = [](Entity e) { PatrolEnemyScript::End(e); };
         logicSys.RegisterScript("PatrolEnemy", patrol, ScriptID::PATROL_ENEMY);
 
-        {
-            BehaviourFCT player;
-            player.Init = [](Entity e) { PlayerScript::Start(e); };
-            player.Update = [](Entity e, float dt) { PlayerScript::Update(e, dt); };
-            player.End = [](Entity e) { PlayerScript::End(e); };
-            logicSys.RegisterScript("PlayerMovement", player, ScriptID::PLAYER);
-        }
     }
 
     //{

@@ -90,12 +90,21 @@ void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
     (void)scancode;
     (void)mods;
     if (action == GLFW_PRESS) {
+        KeyPressedEvent keypress;
+        keypress.key = key;
+        EventBus::Get().PushEvent(keypress);
         keys[key] = KeyState::PRESSED;
     }
     else if (action == GLFW_RELEASE) {
+        KeyReleasedEvent keyrelease;
+        keyrelease.key = key;
+        EventBus::Get().PushEvent(keyrelease);
         keys[key] = KeyState::RELEASED;
     }
     else if (action == GLFW_REPEAT) {
+        KeyHeldEvent keyheld;
+        keyheld.key = key;
+        EventBus::Get().PushEvent(keyheld);
         keys[key] = KeyState::HELD;
     }
     if (key == GLFW_KEY_ESCAPE) {
