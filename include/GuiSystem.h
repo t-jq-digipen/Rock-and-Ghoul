@@ -85,7 +85,7 @@ private:
     Render& render = Render::GetInstance();
 
 
-    bool editMode = false;
+    bool editMode{ false };
     int selectedIndex = -1;
     enum class SelectedType { None, Button, TextBox, Dialogue } selectedType = SelectedType::None;
 };

@@ -313,7 +313,7 @@ source_group("BaseEngine\\Managers\\Frame Rate" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
 )
 
-source_group("BaseEngine\\Managers\\Frame Rate" FILES 
+source_group("BaseEngine\\Managers\\Collision" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionManager.h
 )
@@ -346,6 +346,8 @@ source_group("BaseEngine\\Libraries\\Render" FILES
 source_group("BaseEngine\\Libraries\\Collision" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/SpatialGrid.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/SpatialGrid.h
 
 )
 
@@ -378,6 +380,11 @@ source_group("Game\\Main Menu" FILES
 
 source_group("Game\\Main" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+)
+
+source_group("Game\\Combat System" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/CombatSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CombatSystem.cpp
 )
 
 source_group("Game\\Game Logic" FILES 

@@ -11,7 +11,7 @@
  *
  * The bulk of the updates happen in PhysicsSystem.cpp
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -20,7 +20,6 @@
 
 namespace Movement {
 	MovementComponent::MovementComponent() : moveSpeed{}, inputDirection{ MOVE_NONE }, moveDirection{}, moveType{ MOVE_POSITION }, isMoving{ false } {}
-
 
 	MovementComponent::MovementComponent(float speed, InputDirection inputDir, Vec2 moveDir, MovementType type, bool checkMoving)
 		: moveSpeed{ speed }, inputDirection{ inputDir }, moveDirection{ moveDir }, moveType{ type }, isMoving{ checkMoving } {}

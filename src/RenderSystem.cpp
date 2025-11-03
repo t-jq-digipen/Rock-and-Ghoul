@@ -305,10 +305,10 @@ void RenderSystem::Update(float dt) {
         //then draw them all at once
         renderInstance.DrawRectInstanced(batch, { 0.2f, 0.8f, 1.0f });
         batch.clear();
-    }
+    }/*
     if (ImGuiSystem::guiEnabled) {
         renderer.EndSceneCapture();
-    }
+    }*/
 }
 
 void RenderSystem::Shutdown() {

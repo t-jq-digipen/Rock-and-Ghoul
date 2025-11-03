@@ -158,7 +158,6 @@ void CoreEngine::Run() {
 
             // Finish capture — ImGui will display this texture inside "Game View"
             renderer.EndSceneCapture();
-            GuiSystem::Get().Update(0.0f);
             // NEED TO FIGURE OUT HOW TO SPLIT THIS PER DRAW/UPDATE
 
             //loop through all systems managed by the engine
@@ -183,7 +182,7 @@ void CoreEngine::Run() {
                         renderSystem->Update(0.0f);
                     else if (auto* audioManager = dynamic_cast<AudioManager*>(s))
                         audioManager->Update(audioDt);  // use real dt for audio
-                    GuiSystem::Get().Update(0.0f);
+                    // GuiSystem::Get().Update(0.0f);
                 }
                 // Record the ending timestamp immediately after update finishes
                 auto end = clock::now();
@@ -198,6 +197,7 @@ void CoreEngine::Run() {
 
                 // call Render() immediately after Update()
                 if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s)) {
+                    renderer.EndSceneCapture();
                     imguiSystem->Render();
                 }
             }

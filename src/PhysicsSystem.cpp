@@ -1,8 +1,9 @@
 /* ========================================================
  * @file	    PhysicsSystem.cpp
- * @author	    Tan Jun Quan | t.junquan@digipen.edu
+ * @author	    Tan Jun Quan       | t.junquan@digipen.edu
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date	    29 SEP 2025
+ * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu
+ * @date	    31 OCT 2025
  *
  * @brief	Physics system for ECS
  *
@@ -25,45 +26,48 @@
 #include "Physics.h"
 
 static CollisionManager collisionManager;
-// EntityManager& em;
-//ComponentManager<TransformComponent>& transformManager;
-//ComponentManager<PhysicsComponent>& physicsManager;
 
 void PhysicsSystem::Initialize() {
-    /*transformManager = CM_Transform();
-    physicsManager = CM_Physics();*/
+    std::cout << "PhysicsSystem Initialized!\n";
 }
 
-
 void PhysicsSystem::Update(float dt) {
-    (void)dt;
-    // Step 1: Move entities
-
-
-    // for new physics component
-    for (auto& [entID, phyComp] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>())
-    {
-        // Get transform component (you gonna need it!)
-        TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
-
-        // Update physics component
-        phyComp.Update();
-
-        // Update transform positions
-        transComp.pos = RG_Add(transComp.pos, phyComp.Get_Vel());
-
-        // updatehitboxes w transform position
-        phyComp.UpdateHitboxes(transComp.pos);
-        
-        // Collili checks!!(or different place?)
-        // Collili reaction!!!
-        collisionManager.Clear();
-        collisionManager.CheckCollisions();
-        collisionManager.ProcessEvents();
+    // Clamp dt to prevent issues
+    const float maxDt = 0.033f;
+    if (dt > maxDt) {
+        dt = maxDt;
     }
 
+    // STEP 1: Update physics (forces -> velocities)
+    for (auto& [entID, phyComp] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
+        if (!m_registry.Has_Component<TransformComponent>(entID)) {
+            continue;
+        }
+
+        // Update physics component
+        phyComp.Update(dt);
+    }
+
+    // STEP 2: Integrate velocities into positions
+    for (auto& [entID, phyComp] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
+        if (!m_registry.Has_Component<TransformComponent>(entID)) {
+            continue;
+        }
+
+        TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+
+        // Move entity
+        phyComp.IntegrateVelocity(transComp.pos, dt);
+
+        // Update hitboxes
+        phyComp.UpdateHitboxes(transComp.pos);
+    }
+
+    // STEP 3: Check and resolve collisions
+    collisionManager.Clear();
+    collisionManager.CheckCollisions();
+    collisionManager.ProcessEvents();
 }
 
 void PhysicsSystem::Shutdown() {
-    std::cout << "PhysicsSystem Shutdown!\n";
 }

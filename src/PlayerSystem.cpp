@@ -1,9 +1,10 @@
 ﻿/* ========================================================
  * @file	    PlayerSystem.cpp
- * @author	    Tan Jun Quan | t.junquan@digipen.edu
+ * @author	    Tan Jun Quan	   | t.junquan@digipen.edu
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
  * @co-author   Manfred Sim | manfred.sim@digipen.edu
- * @date	    29 SEP 2025
+ * @date	    01 NOV 2025
  *
  * @brief	Player System for handling player behaviour.
  *
@@ -21,9 +22,10 @@
 #include "GameStateManager.h"
 #include "CoreEngine.h" // to check pause state for music
 
-constexpr float dash = 10.f;
-constexpr float maxspeed = 10.f;
-constexpr float speed = 500.f;
+ // CONSTANTS for responsive, non-tunneling movement, can adjust
+constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
+constexpr float MAX_SPEED = 200.f;      // Top speed cap
+constexpr float DASH_IMPULSE = 1000.f;   // Dash boost
 
 inline void PlayerSystem::NormalizeDiagonalMovement(float& x, float& y)
 {
@@ -49,6 +51,7 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 
 	if (!m_registry.Has_Component<Movement::MovementComponent>(eID)) return;
 	auto& moveComp = m_registry.Get_Component<Movement::MovementComponent>(eID);
+	auto& physics = m_registry.Get_Component<Physics::PhysicsComponent>(eID);
 
 	// To be reworked when InputComponent no longer needed???
 
@@ -58,6 +61,13 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 		moveComp.SetMovementDirection({ 0.f, 0.f });
 		return;
 	}
+
+	// Ensure max speed is set (prevents tunneling)
+	if (physics.GetMaxSpeed() < MAX_SPEED) {
+		physics.SetMaxSpeed(MAX_SPEED);
+	}
+	// Clear forces every frame so that player instantly switches directions
+	// physics.ClearForces();
 
 	const auto& input = m_registry.Get_Component<InputComponent>(eID);
 
@@ -84,6 +94,8 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 		break;
 	default: break;
 	}
+
+
 
 	float fx = static_cast<float>(hor);
 	float fy = static_cast<float>(ver);
@@ -165,7 +177,20 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	//if (Input::IsKeyHeld(GLFW_KEY_A) && vel.x > -maxspeed) physics.AddForce({ -1.f,0.f }, accel);
 	//if (Input::IsKeyHeld(GLFW_KEY_D) && vel.x < maxspeed) physics.AddForce({ 1.f,0.f }, accel);*/
 
+	// DASH - Working impulse
+	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+		Vec2 dashDir{ (float)hor, (float)ver };
 
+		float fx = static_cast<float>(hor);
+		float fy = static_cast<float>(ver);
+		NormalizeDiagonalMovement(fx, fy);
+
+		if (RG_LengthSquared(dashDir) > 0.01f) {
+			dashDir = RG_Normalize(dashDir);
+			Vec2 dashImpulse = RG_Scale(dashDir, DASH_IMPULSE);
+			physics.AddImpulse(dashImpulse);
+		}
+	}
 }
 
 void PlayerSystem::Initialize()
