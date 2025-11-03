@@ -873,7 +873,49 @@ void ImGuiSystem::ShowInspectorWindow()
     for (auto& componentData : compDataVec)
     {
         const std::string& compName = componentData.GetComponentName();
+        if (compName == "Animator")
+        {
+            Animator::AnimatorComponent& animcomp = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
+            if (ImGui::TreeNode(compName.c_str()))
+            {
+                // --- show component fields ---
+                for (auto& [name, widgetVariant] : componentData.GetDataMap())
+                {
+                    ImGui::PushID(name.c_str());
+                    std::visit([&](auto& widget) {
+                        MakeWidget(widget, name);
+                        }, widgetVariant);
+                    ImGui::PopID();
+                }
 
+                // REGINEHELP i want to split this "if true" scope like, look nicer abit, this group is to edit the frame data!
+                if (true)
+                {
+                    // need to figure out how to call add state or change state...
+                    animcomp.UpdateUV();
+                    Animator::ActiveFrames temp = animcomp.GetFrames();
+
+                    Editor::Widget_Int widgetrow(&temp.row, true, 0, animcomp.GetTotalRows());
+                    Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());
+                    Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, animcomp.GetTotalCols());
+                    Editor::Widget_Float widgetduration(&temp.duration);
+                    ImGui::PushItemWidth(80);
+                    MakeWidget(widgetrow, "state rows");
+                    ImGui::SameLine();
+                    MakeWidget(widgetcolstart, "first col");
+                    ImGui::SameLine();
+                    MakeWidget(widgetcolend, "last col");
+                    ImGui::PopItemWidth();
+                    MakeWidget(widgetduration, "duration");
+
+                    animcomp.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);
+                }
+
+                ImGui::TreePop();
+            }
+
+        }
+        else
         if (ImGui::TreeNode(compName.c_str()))
         {
             for (auto& [name, widgetVariant] : componentData.GetDataMap())

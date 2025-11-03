@@ -283,8 +283,8 @@ void Level1::Init()
 		cam.SetZoom(1.0f);
 		cam.UpdateMatrices();
 		Render::GetInstance().UpdateProjection();
-
-
+		Entity mover = Create_ScriptedEntity("Mover", 400.f, 300.f);
+		Create_Arrow(1400.f, 400.f);
 	//Create_RotatingObject(500.f, 400.f);
 	//Create_MovingObject(800.f, 400.f);
 }

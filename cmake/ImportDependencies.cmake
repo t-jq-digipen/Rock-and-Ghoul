@@ -156,6 +156,11 @@ macro(import_json)
     endif()
 endmacro()
 
+macro(import_mono)
+    set(MONO_ROOT ${CMAKE_SOURCE_DIR}/deps/Mono)
+    include_directories(${MONO_ROOT}/include ${MONO_ROOT}/include/mono-2.0)
+endmacro()
+
 # Macro to import all dependencies
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")
@@ -181,6 +186,7 @@ macro(importDependencies)
     import_stb()
     message(STATUS "stb imported successfully.")
     import_json()
+    import_mono()
     message(STATUS "All dependencies have been imported successfully.")
 
 endmacro()

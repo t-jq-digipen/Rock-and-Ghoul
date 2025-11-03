@@ -73,6 +73,7 @@ Entity Create_Wall(float x, float y, float width, float height);
  */
 Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);
 
+Entity Create_ScriptedEntity(const std::string& scriptName, float x, float y);
 /**
  * @brief Generates initial prefab JSON files in Assets/prefabs/.
  *
@@ -82,7 +83,6 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);
  */
 void GenerateInitialPrefabs(bool forceRegenerate);
 
-
 // Entity Create_RotatingObject(float x, float y);
 // Entity Create_MovingObject(float x, float y);
 
@@ -90,3 +90,5 @@ void GenerateInitialPrefabs(bool forceRegenerate);
 
 
 Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath);
+
+Entity Create_Arrow(float const& x, float const& y);
