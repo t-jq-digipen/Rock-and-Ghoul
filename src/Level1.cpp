@@ -278,7 +278,7 @@ void Level1::Init()
 				std::cout << "Created Circle (Entity " << roundy << ")" << std::endl;
 			}
 			ghoul = Create_Ghoul(1000.f, 500.f);
-			if (roundy == 0) {
+			if (ghoul == 0) {
 				std::cerr << "ERROR: Failed to create Circle! Check if Circle.json exists." << std::endl;
 			}
 			else {
@@ -295,6 +295,8 @@ void Level1::Init()
 
 			// Right wall
 			Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
+			Create_ScriptedEntity("Mover", 400.f, 300.f);
+			Create_Arrow(1400.f, 400.f);
 		}
 		std::cout << "==============================\n" << std::endl;
 		});
@@ -306,8 +308,8 @@ void Level1::Init()
 		cam.SetZoom(1.0f);
 		cam.UpdateMatrices();
 		Render::GetInstance().UpdateProjection();
-		Create_ScriptedEntity("Mover", 400.f, 300.f);
-		Create_Arrow(1400.f, 400.f);
+		//Create_ScriptedEntity("Mover", 400.f, 300.f);
+		//Create_Arrow(1400.f, 400.f);
 	//Create_RotatingObject(500.f, 400.f);
 	//Create_MovingObject(800.f, 400.f);
 }
