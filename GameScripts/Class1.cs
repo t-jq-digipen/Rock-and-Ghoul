@@ -29,10 +29,10 @@ public class Rotator
     public void Update(float dt)
     {
         float currentRotation = ECS.GetRotation(EntityID);
-        currentRotation += 90f * dt;  // rotate 90 degrees per second
+        currentRotation += 90f * dt;  // 90 degrees per second
         ECS.SetRotation(EntityID, currentRotation);
 
-        // Optional: Debug print
+
         Console.WriteLine($"[Rotator] Entity {EntityID} rotation={currentRotation:F1}");
     }
 }
@@ -45,7 +45,7 @@ public class Mover
     {
         ECS.GetPosition(EntityID, out float x, out float y);
 
-        // 2. Move up & down with a sine wave
+        // Move up & down with sine wave
         time += dt;
         float amplitude = 100.0f;   // how far up/down
         float speed = 2.0f;         // how fast it moves
