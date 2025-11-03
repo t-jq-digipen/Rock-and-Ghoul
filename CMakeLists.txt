@@ -152,20 +152,19 @@ target_sources(team_aviddivas PRIVATE
 )
 
 # ======================= Copy GameScripts DLL =========================
-set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/Debug/GameScripts.dll")
+set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/$<CONFIG>/GameScripts.dll")
 set(GAMESCRIPTS_TARGET_DIR "${CMAKE_SOURCE_DIR}/Assets/Scripts")
 
-if (EXISTS "${GAMESCRIPTS_DLL_PATH}")
-    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll to Assets/Scripts..."
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
-       COMMAND ${CMAKE_COMMAND} -E copy
-    "${GAMESCRIPTS_DLL_PATH}"
-    "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
-    )
-else()
-    message(STATUS "GameScripts.dll not found, skipping copy step.")
-endif()
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll from: ${GAMESCRIPTS_DLL_PATH}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${GAMESCRIPTS_DLL_PATH}"
+        "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
+    VERBATIM
+)
+
+
 
 
 
