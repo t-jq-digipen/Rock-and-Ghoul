@@ -60,7 +60,7 @@ Entity Create_Player(float const& x, float const& y) {
     BehaviourComponent bc;
     //bc.scriptName = "PatrolEnemy";
     //bc.started = false;
-    bc.scriptID = ScriptID::GHOUL;
+
     bc.scriptName = "GhoulScript";
     bc.started = false;
     /*bc.scriptIDs = { ScriptID::PATROL_ENEMY, ScriptID::GHOUL };
@@ -80,7 +80,7 @@ Entity Create_Ghoul(float const& x, float const& y) {
     BehaviourComponent bc;
     bc.scriptName = "PatrolEnemy";
     //bc.started = false;
-    bc.scriptID = ScriptID::PATROL_ENEMY;
+
     bc.started = false;
     Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
 

@@ -17,7 +17,11 @@ struct BehaviourComponent
     ScriptID scriptID = ScriptID::NONE;        // Internal enum for fast lookup
     std::string scriptName = "";               // Human-readable name
     bool started = false;                      // Whether Init() ran yet
-
+    BehaviourComponent() = default;
+    BehaviourComponent(const std::string& name)
+    {
+        SetScript(name);
+    }
     //Editor::ComponentData EditorData() {
     //    Editor::ComponentData data("Behaviour");
     //    Editor::Widget_Dropdown dropdown;
@@ -31,6 +35,17 @@ struct BehaviourComponent
     //    data.Add_Data("Scripts", dropdown);
     //    return data;
     //}
+    void SetScript(const std::string& name)
+    {
+        scriptName = name;
+        LogicSystem& logicSys = LogicSystem::Get();
+        auto& map = logicSys.GetNameToIDMap();
+
+        if (auto it = map.find(name); it != map.end())
+            scriptID = it->second;
+        else
+            scriptID = ScriptID::NONE;
+    }
     Editor::ComponentData EditorData()
     {
         Editor::ComponentData data("Behaviour");
