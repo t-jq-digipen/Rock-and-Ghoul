@@ -162,7 +162,15 @@ void MainMenu::Init()
             .pos = {1650.0f * uiScaleX, 150.0f * uiScaleY},
             .size = {300.0f * uiScale, 100.0f * uiScale},
             .color = {20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f},
-            .onClick = [] { GSM_SetNextState(GameState::GS_QUIT); },
+            .onClick = [] {
+                // Wait for sound to finish before quitting
+                double startTime = glfwGetTime();
+                while (glfwGetTime() - startTime < 0.4) {  // 400ms delay
+                    AudioSystem::Update();
+                    glfwPollEvents();
+                }
+                GSM_SetNextState(GameState::GS_QUIT);
+            },
             .soundType = AudioSystem::ButtonType::QUIT,
             .shape = ButtonShape::Rounded
             });
