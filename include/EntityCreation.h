@@ -88,3 +88,12 @@ void GenerateInitialPrefabs(bool forceRegenerate);
 
 
 Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath);
+
+/**
+ * @brief Create an enemy entity with transform,
+ *        physics, shape, input, tag, and health components.
+ * @param spawnx The initial x-position of the shape.
+ * @param spawny The initial y-position of the shape.
+ * @return The newly created Enemy entity.
+ */
+Entity Create_Enemy(float const& spawnx, float const& spawny);

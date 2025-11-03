@@ -280,6 +280,42 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
         skippedCount++;
     }
 
+    // ========== Enemy ==========
+    if (shouldGenerate("Enemy.json")) {
+        std::cout << "Generating Enemy.json..." << std::endl;
+
+        try {
+            Entity enemy_ent = Registry::Get().Create_Entity();
+            Registry::Get().Set_EntityName(enemy_ent, "Enemy");
+            Registry::Get().Add_Component<TransformComponent>(enemy_ent, TransformComponent{ {0, 0}, {100.f, 100.f} });
+
+            AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
+            Circle circle = { {0, 0}, 100.f };
+            Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
+            Registry::Get().Add_Component<Physics::PhysicsComponent>(enemy_ent, phys);
+
+            Registry::Get().Add_Component<InputComponent>(enemy_ent, InputComponent{ CS_IJKL });
+            Registry::Get().Add_Component<TagComponent>(enemy_ent, TagComponent{ T_ENEMY });
+            Registry::Get().Add_Component<HealthComponent>(enemy_ent, HealthComponent{ 100.f, 100.f });
+
+            if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Enemy.json", enemy_ent)) {
+                std::cout << "Enemy.json saved successfully" << std::endl;
+                generatedCount++;
+            }
+            else {
+                std::cerr << "Failed to save Enemy.json" << std::endl;
+            }
+
+            Registry::Get().Remove_Entity(enemy_ent);
+        }
+        catch (const std::exception& e) {
+            std::cerr << "ERROR generating Circle: " << e.what() << std::endl;
+        }
+    }
+    else {
+        skippedCount++;
+    }
+
     std::cout << "\n=== PREFAB GENERATION COMPLETE ===" << std::endl;
     std::cout << "Generated: " << generatedCount << " new prefabs" << std::endl;
     std::cout << "Skipped: " << skippedCount << " existing prefabs" << std::endl;
@@ -466,3 +502,7 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
 //
 //    return e;
 //}
+
+Entity Create_Enemy(float const& x, float const& y) {
+    return LoadEntity("Enemy", x, y);
+}

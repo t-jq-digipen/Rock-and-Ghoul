@@ -350,6 +350,13 @@ source_group("Systems\\Movement" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementSystem.h
 )
 
+source_group("Systems\\Enemy" FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Enemy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/EnemySystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Enemy.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/EnemySystem.h
+)
+
 source_group("Systems\\Text" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TextSystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/TextSystem.h
