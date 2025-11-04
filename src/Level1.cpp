@@ -401,7 +401,6 @@ void Level1::Update()
 		ghoul = registry.Get_EntityID("ghoul");
 	}*/
 	//test camera on an entity
-	auto& playerTransform = registry.Get_Component<TransformComponent>(waffle);
 
 	static double lastTime = glfwGetTime();
 	double currentTime = glfwGetTime();

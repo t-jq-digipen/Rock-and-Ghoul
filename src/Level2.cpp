@@ -237,8 +237,6 @@ void Level2::Init()
 
 void Level2::Update()
 {
-	//test camera on an entity
-	auto& playerTransform = registry2.Get_Component<TransformComponent>(rock2);
 
 	static double lastTime = glfwGetTime();
 	double currentTime = glfwGetTime();

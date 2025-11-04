@@ -3,8 +3,11 @@
 namespace TextSystem
 {
 	TextComponent::TextComponent() : lines{ "" }, currentLineIndex{ 0 }, textSpeed{ 0.f }, speakerID{ 0 }, fontPath{}, fontSize{ 0 }, isTyping{}, color{} {}
-	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float textSpeed, int speakerID, std::string fontPath, float fontSize, bool isTyping, Vec3 color)
-		: lines{ lines }, currentLineIndex{ currentLineIndex }, textSpeed{ textSpeed }, speakerID{ speakerID }, fontPath{ fontPath }, fontSize{ fontSize }, color{ color } {}
+	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float textSpeed, int speakerID, std::string fontPath, float fontSize, bool Typing, Vec3 color)
+		: lines{ lines }, currentLineIndex{ currentLineIndex }, textSpeed{ textSpeed }, speakerID{ speakerID }, fontPath{ fontPath }, fontSize{ fontSize }, isTyping{ Typing }, color {
+		color
+	} {
+	}
 
 	// GETTERS
 	const std::vector<std::string>& TextComponent::GetLines() const noexcept { return lines; }

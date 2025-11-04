@@ -80,7 +80,7 @@ public:
 	
 	template<typename EventType>
 	size_t Subscribe(HandlerFunction<EventType> func) {
-		auto& handlers = subscribers[typeid(EventType)];
+
 		size_t id = AssignID();
 		
 		auto& vec = subscribers[typeid(EventType)];

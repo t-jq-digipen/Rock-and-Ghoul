@@ -182,8 +182,8 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
 		Vec2 dashDir{ (float)hor, (float)ver };
 
-		float fx = static_cast<float>(hor);
-		float fy = static_cast<float>(ver);
+		fx = static_cast<float>(hor);
+		fy = static_cast<float>(ver);
 		NormalizeDiagonalMovement(fx, fy);
 
 		if (RG_LengthSquared(dashDir) > 0.01f) {
@@ -198,8 +198,7 @@ namespace PlayerMove {
 	std::unordered_map<Entity, size_t> subscriberID;
 
 	void Dash(Entity eID) {
-		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
-		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
+		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
 
 		// Vec2 dashDir = moveComp.GetMovementDirection();
@@ -238,6 +237,7 @@ namespace PlayerMove {
 	}
 
 	inline void Update(Entity eID, float dt) {
+		(void)dt;
 		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
 		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
 
