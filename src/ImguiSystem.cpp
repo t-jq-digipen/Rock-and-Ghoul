@@ -39,6 +39,7 @@
 #include "Camera.h"
 #include "LogicSystem.h"
 #include "GuiSystem.h"
+#include "BehaviourComponent.h"
 static bool isPlacingPrefab = false;
 static std::string pendingPrefabPath;
 bool ImGuiSystem::showColliders = false;
@@ -888,6 +889,22 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
 
+        }
+        else if (compName == "Behaviour")
+        {
+            BehaviourComponent& behaviourComp = m_registry.Get_Component<BehaviourComponent>(selectedEntity);
+            if (ImGui::TreeNode(compName.c_str()))
+            {
+                LogicSystem& logicSys = LogicSystem::Get();
+                auto& map = logicSys.GetIDToNameMap();
+
+                for (ScriptID sID : behaviourComp.scriptIDList)
+                {
+                    ImGui::Text(map.find(sID)->second.c_str());
+                }
+
+                ImGui::TreePop();
+            }
         }
         else
         if (ImGui::TreeNode(compName.c_str()))
