@@ -35,7 +35,7 @@ struct BehaviourComponent
                     LogicSystem& logicSys = LogicSystem::Get();
                     BehaviourFCT* script = logicSys.GetBehaviourByID(scriptID);
                     if (script && script->End)
-                        script->End(0);
+                        script->End(entityID);
                 }
             }
         }
