@@ -1,9 +1,9 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
-title .NET Framework 4.7.2 Installer (Auto Detect + Install)
+title .NET Framework 4.8 Installer (Auto Detect + Install)
 
 echo ==========================================================
-echo       .NET Framework 4.7.2 Developer Pack Installer
+echo       .NET Framework 4.8 Developer Pack Installer
 echo ==========================================================
 echo.
 
@@ -15,8 +15,8 @@ if %ERRORLEVEL% NEQ 0 (
   exit /b 1
 )
 
-rem --- Step 1: Detect existing .NET 4.7.2+ ---
-echo [STEP 1] Checking if .NET 4.7.2 or later is installed...
+rem --- Step 1: Detect existing .NET 4.8+ ---
+echo [STEP 1] Checking if .NET 4.8 or later is installed...
 
 set "NETKEY=HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"
 reg query "%NETKEY%" /v Release >nul 2>&1
@@ -32,18 +32,18 @@ if %ERRORLEVEL% NEQ 0 (
 ) else (
   for /f "tokens=3" %%v in ('reg query "%NETKEY%" /v Release ^| find "Release"') do set "version=%%v"
   echo [DEBUG] Found Release key: !version!
-  rem 4.7.2 Release key is 461808 (or 461814 on some OS builds)
-  if !version! GEQ 461808 (
-    echo [OK] .NET Framework 4.7.2 or newer is already installed.
+  rem 4.8 Release key is 528040 (or 528049 on Win10 1809+)
+  if !version! GEQ 528040 (
+    echo [OK] .NET Framework 4.8 or newer is already installed.
     pause
     exit /b 0
   )
 )
 
 echo.
-echo [STEP 2] .NET 4.7.2 not found — downloading installer...
-set "DOTNET_URL=https://download.visualstudio.microsoft.com/download/pr/1a7f7f2e-8b58-4c54-bf3b-316f1b52b4df/ca1242dcd4974bb0c2fbc799f61b5d60/ndp472-devpack-enu.exe"
-set "DOTNET_FILE=%TEMP%\ndp472-devpack-enu.exe"
+echo [STEP 2] .NET 4.8 not found — downloading installer...
+set "DOTNET_URL=https://download.visualstudio.microsoft.com/download/pr/2a6bce6b-0e4e-4a0b-a11b-781e2b1a3b24/ca60d047be74b02b25e9a1b6826a2c63/ndp48-devpack-enu.exe"
+set "DOTNET_FILE=%TEMP%\ndp48-devpack-enu.exe"
 
 rem Try WebClient first, then BITS as fallback
 powershell -NoLogo -NoProfile -Command ^
@@ -55,14 +55,14 @@ if not exist "%DOTNET_FILE%" (
 )
 
 if not exist "%DOTNET_FILE%" (
-  echo [ERROR] Failed to download .NET 4.7.2 Dev Pack.
+  echo [ERROR] Failed to download .NET 4.8 Dev Pack.
   pause
   exit /b 1
 )
 echo [OK] Downloaded: %DOTNET_FILE%
 
 echo.
-echo [STEP 3] Installing .NET Framework 4.7.2 Developer Pack silently...
+echo [STEP 3] Installing .NET Framework 4.8 Developer Pack silently...
 "%DOTNET_FILE%" /quiet /norestart
 set "INSTALL_RC=%ERRORLEVEL%"
 
@@ -78,7 +78,7 @@ for /l %%i in (1,1,10) do (
   reg query "%NETKEY%" /v Release >nul 2>&1
   if !ERRORLEVEL! EQU 0 (
     for /f "tokens=3" %%v in ('reg query "%NETKEY%" /v Release ^| find "Release"') do set "version=%%v"
-    if defined version if !version! GEQ 461808 goto :installed_ok
+    if defined version if !version! GEQ 528040 goto :installed_ok
   )
 )
 
@@ -87,6 +87,6 @@ pause
 exit /b 1
 
 :installed_ok
-echo [OK] .NET Framework 4.7.2 installed successfully! (Release=!version!)
+echo [OK] .NET Framework 4.8 installed successfully! (Release=!version!)
 pause
 exit /b 0

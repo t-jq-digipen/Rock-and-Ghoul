@@ -357,6 +357,14 @@ public:
 		entityManager.destroyEntity(eID);
 	}
 
+	void Remove_AllEntities()
+	{
+		for (Entity eID = 0; eID < entityManager.maxEntities(); eID++)   
+		{
+			Remove_Entity(eID);
+		}
+	}
+
 	std::unordered_map<Entity, std::string>& Get_EntityNameMap()
 	{
 		return entityManager.GetEntityNameMap();
@@ -438,6 +446,57 @@ public:
 
 		return eID;
 	}
+
+	//Entity Load_Entity(const SavedEntity& saved)
+	//{
+	//	Entity eID = Create_Entity();
+	//	Set_EntityName(eID, saved.name);
+
+	//	std::cout << "[Registry] Loading entity '" << saved.name << "' (ID: " << eID << ")\n";
+
+	//	auto LoadIfExists = [&](const std::string& name)
+	//		{
+	//			auto it = saved.componentData.find(name);
+	//			if (it != saved.componentData.end())
+	//			{
+	//				try
+	//				{
+	//					std::type_index tID = Get_ComponentTypeIndex(name);
+	//					componentManagers[tID]->LoadComponent(eID, it->second);
+	//					std::cout << "  -> Loaded " << name << "\n";
+	//					return true;
+	//				}
+	//				catch (const std::exception& ex)
+	//				{
+	//					std::cerr << "  [ERROR] Failed to load " << name << ": " << ex.what() << "\n";
+	//				}
+	//			}
+	//			return false;
+	//		};
+
+
+	//	LoadIfExists("Transform");  // base position/scale
+	//	LoadIfExists("Sprite");     // before Animator needs texture
+	//	LoadIfExists("Animator");   // after Sprite
+
+
+	//	for (const auto& [compName, compData] : saved.componentData)
+	//	{
+	//		if (compName == "Transform" ||
+	//			compName == "Sprite" ||
+	//			compName == "Animator" ||
+	//			compData.empty() ||
+	//			compData == "{}" ||
+	//			compData == "null")
+	//			continue;
+
+	//		LoadIfExists(compName);
+	//	}
+
+	//	return eID;
+	//}
+
+
 #pragma endregion
 	// ================================================================================
 

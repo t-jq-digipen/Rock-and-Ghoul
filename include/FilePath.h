@@ -2,7 +2,7 @@
  * @file        FilePath.h
  * @author      Yasmin Tazi | yasmin.t@digipen.edu
  * @co-author   Tan Ying Clarissa | t.yingclarissa@digipen.edu
- * @date        26 SEP 2025
+ * @date        04 NOV 2025
  * 
  * @brief   Header file declaring the FilePath utility class
  *
@@ -52,8 +52,10 @@ public:
      * This constant holds the full path to the level2.json file.
      */
     static const std::string LEVEL2_SCENE;
-    static const std::string TEMP_SCENE;
+    static const std::string LEVEL1_TEMP_SCENE;
+    static const std::string LEVEL2_TEMP_SCENE;
     static const std::string ASSETS_FOLDER;
     static const std::string PREFABS_FOLDER;
+    static const std::string SCENES_LIST;
 
 };

@@ -75,6 +75,8 @@ public:
     void SetEditMode(bool isEditing);
     bool GetEditMode() const;
 
+
+    void SetGameViewRect(const GameViewRect& rect) { m_gameViewRect = rect; }
 private:
 
     std::vector<ButtonConfig> buttons;
@@ -85,9 +87,11 @@ private:
     Render& render = Render::GetInstance();
 
 
-    bool editMode = false;
+    bool editMode{ false };
     int selectedIndex = -1;
     enum class SelectedType { None, Button, TextBox, Dialogue } selectedType = SelectedType::None;
+
+    GameViewRect m_gameViewRect;
 };
 
 // inline GuiSystem guiSystem;
