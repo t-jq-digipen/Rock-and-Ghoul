@@ -2008,6 +2008,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 
         gsm.isPaused = false;
         gsm.inEditMode = false;
+        dragEditMode = false;
         Camera& cam = Camera::GetInstance();
         cam.SetMode(Camera::Mode::GAME);
         cam.SetZoom(1.0f);
