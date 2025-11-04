@@ -130,7 +130,7 @@ namespace Editor {
 #pragma region WidgetData
     struct Widget_Checkmark {
         bool* ref = nullptr;
-        bool check;
+        bool check = false;
     };
 
     struct Widget_String {

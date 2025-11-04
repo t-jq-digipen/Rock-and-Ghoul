@@ -123,11 +123,11 @@ void GuiSystem::Update(float dt) {
     mouse.x = relX * 1920.f;
     mouse.y = relY * 1080.f;
 
-    Render& render = Render::GetInstance();
+    Render& renderer = Render::GetInstance();
 
     // to force GUI editor to be written on screen
-    const bool prevCam = render.useCamera;
-    render.useCamera = false;
+    const bool prevCam = renderer.useCamera;
+    renderer.useCamera = false;
 
     const float scaleX = GLApp::width / 1920.f;
     const float scaleY = GLApp::height / 1080.f;
@@ -251,7 +251,7 @@ void GuiSystem::Update(float dt) {
         // UPDATED: Added font parameter to DrawText
         render.DrawText("UI ELEMENTS", 50, 900, 1.0f, { 1,1,1 }, "Marker");
 
-        float y = 850;
+        float y = 850.f;
         bool buttondeleted = false;
         // --- List Buttons ---
         for (int i = 0; i < (int)buttons.size(); ++i)
@@ -265,7 +265,7 @@ void GuiSystem::Update(float dt) {
             render.DrawText("Button: " + b.label, 20, y - 10, 0.5f, { 1,1,1 }, "Marker");
             //delete box position
             Vec2 delPos = { 150 + 300 + 20, y }; // right of the entry
-            float delW = 40, delH = 40;
+            float delW = 40.f, delH = 40.f;
 
             // draw delete box
             // UPDATED: Added font parameter to DrawText
@@ -293,7 +293,7 @@ void GuiSystem::Update(float dt) {
                 selectedIndex = i;
             }
 
-            y -= 60;
+            y -= 60.f;
             if (buttondeleted)
                 return;
         }
@@ -311,8 +311,8 @@ void GuiSystem::Update(float dt) {
             // UPDATED: Added font parameter to DrawText
             render.DrawText("Text: " + t.text, 20, y - 10, 0.5f, { 1,1,1 }, "Marker");
             //delete box position
-            Vec2 delPos = { 150 + 300 + 20, y }; // right of the entry
-            float delW = 40, delH = 40;
+            Vec2 delPos = { 150.f + 300.f + 20.f, y }; // right of the entry
+            float delW = 40.f, delH = 40.f;
 
             // draw delete box
             // UPDATED: Added font parameter to DrawText
@@ -340,7 +340,7 @@ void GuiSystem::Update(float dt) {
                 selectedIndex = textIndex;
             }
 
-            y -= 60;
+            y -= 60.f;
             if (textDeleted)
                 return;
         }
@@ -363,8 +363,8 @@ void GuiSystem::Update(float dt) {
             render.DrawText(label, 20, y - 10, 0.5f, { 1,1,1 }, "Marker");
 
             //delete box position
-            Vec2 delPos = { 150 + 300 + 20, y }; // right of the entry
-            float delW = 40, delH = 40;
+            Vec2 delPos = { 150.f + 300.f + 20.f, y }; // right of the entry
+            float delW = 40.f, delH = 40.f;
 
             // draw delete box
             // UPDATED: Added font parameter to DrawText
@@ -398,7 +398,7 @@ void GuiSystem::Update(float dt) {
         {
             // UPDATED: Added font parameter to DrawText
             render.DrawText("PROPERTIES", 50, 400, 1.2f, { 1,1,1 }, "Marker");
-            float y = 360;
+            y = 360;
 
             if (selectedType == SelectedType::Button && selectedIndex < buttons.size())
             {
@@ -574,7 +574,7 @@ void GuiSystem::Update(float dt) {
                     (channel == 1) ? Colour3{ 0,1,0 } :
                     Colour3{ 0,0,1 };
 
-                float circleX = 40 + channel * 140; // 0R, 140G, 280B
+                float circleX = 40.f + channel * 140.f; // 0R, 140G, 280B
                 render.DrawCircle({ circleX, indicatorY }, 6.f, c, 24);
 
                 y -= 40;
@@ -681,7 +681,7 @@ void GuiSystem::Update(float dt) {
                 Colour3 c = (textColorChannel == 0) ? Colour3{ 1,0,0 } :
                     (textColorChannel == 1) ? Colour3{ 0,1,0 } :
                     Colour3{ 0,0,1 };
-                float circleX = 40 + textColorChannel * 140;
+                float circleX = 40.f + textColorChannel * 140.f;
                 render.DrawCircle({ circleX, indicatorY }, 6.f, c, 24);
 
                 y -= 40;
@@ -764,7 +764,7 @@ void GuiSystem::Update(float dt) {
                 Colour3 c = (textColorChannel == 0) ? Colour3{ 1,0,0 } :
                     (textColorChannel == 1) ? Colour3{ 0,1,0 } :
                     Colour3{ 0,0,1 };
-                float circleX = 40 + textColorChannel * 140;
+                float circleX = 40.f + textColorChannel * 140.f;
                 render.DrawCircle({ circleX, indicatorY }, 6.f, c, 24);
 
                 y -= 40;
