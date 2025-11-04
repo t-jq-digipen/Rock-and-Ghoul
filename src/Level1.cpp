@@ -61,8 +61,13 @@ Registry& registry = Registry::Get();
 void Level1::Load()
 {
 	Render& renderer = Render::GetInstance();
+	Camera& cam = Camera::GetInstance();
 	
 	renderer.useCamera = true;
+	//is there a way to get the bgsize, kinda iffy erhh
+	Vec2 bgSize = { 2200.0f, 1080.0f };
+	cam.SetBounds({ -250.0f, 0.0f }, bgSize);
+
 	auto FontAssets = renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
 	CrashHandler::Safe("Level1", "Load", [&] {
 		std::cout << "Level 1 Loaded!!!" << std::endl;
@@ -72,6 +77,7 @@ void Level1::Load()
 		});
 		RenderSystem::ClearBackgroundTextures();
 		RenderSystem::AddBackgroundTexture(bgTexture);
+
 
 	// ===== FIX: Ensure prefabs folder exists =====
 	std::cout << "\n=== CHECKING PREFABS FOLDER ===" << std::endl;
@@ -350,12 +356,18 @@ void Level1::Update()
 		cam.FollowTarget(playerTransform.pos, dt);
 	}
 
+
+
+	
+
+	//========== stress test demo start =========================================
+	
 	//switch animation state
 	if (Input::IsKeyPressed(GLFW_KEY_U))  // U walk animation
 	{
 		for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>())
 		{
-			if (tag.tag == T_PLAYER &&
+			if ((tag.tag == T_BATCH ) &&
 				registry.Has_Component<Animator::AnimatorComponent>(entID))
 			{
 				auto& anim = registry.Get_Component<Animator::AnimatorComponent>(entID);
@@ -365,11 +377,8 @@ void Level1::Update()
 
 		std::cout << "Switched animation from IDLE to WALK" << std::endl;
 	}
-
+	
 	static bool spawnedBatch = false;
-	Render& renderer = Render::GetInstance();
-
-	static bool spawned = false;
 	std::vector<Entity> toRemove;
 
 	// === Toggle Batched Sprites with N key (for rubrics demo) ===
@@ -418,6 +427,7 @@ void Level1::Update()
 			spawnedBatch = false;
 		}
 	}
+	//======================= stress test demon end ===============================
 
 	static bool spawnedInst = false;
 	std::vector<Entity> toRemoveInst;
@@ -579,10 +589,10 @@ void Level1::Draw()
 
 
 		if (fretboard) {
-			//renderer.useCamera = false;
+			renderer.useCamera = false;
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
-			//renderer.useCamera = true;
+			renderer.useCamera = true;
 		}
 	});
 }

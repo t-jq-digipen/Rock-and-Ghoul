@@ -21,7 +21,7 @@
  * retrieval and modification of current, previous, and next states
  * outside of the engine code.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -98,6 +98,11 @@ void CoreEngine::Initialize() {
     registry.Register_Component<BehaviourComponent>("Behaviour");
     //Registry::Get().Register_Component<>("MonoScriptComponent");
     registry.Register_Component<MonoScriptComponent>("MonoScriptComponent");
+
+    registry.Register_Component<RenderLayerComponent>("RenderLayer");
+    std::cout << "REGISTRY | REGISTERED RENDERLAYER COMPONENT\n";
+
+
     for (auto s : systems) s->Initialize();
     gsm.Init(GameState::GS_MAIN_MENU);
     GLApp::gameInitialized = true;
@@ -156,7 +161,7 @@ void CoreEngine::Run() {
 
 
 
-            // Finish capture — ImGui will display this texture inside "Game View"
+            // Finish capture ï¿½ ImGui will display this texture inside "Game View"
             renderer.EndSceneCapture();
             // NEED TO FIGURE OUT HOW TO SPLIT THIS PER DRAW/UPDATE
 
