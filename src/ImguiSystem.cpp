@@ -973,9 +973,20 @@ void ImGuiSystem::ShowInspectorWindow()
             ImGui::SameLine();
             if (ImGui::Button(("Remove##" + compName).c_str()))
             {
+                // If removing an Animator, clear sprite.isAnimated first
+                if (compName == "Animator")
+                {
+                    if (m_registry.Has_Component<Sprite::SpriteComponent>(eID))
+                    {
+                        auto& sprite = m_registry.Get_Component<Sprite::SpriteComponent>(eID);
+                        sprite.Set_Animated(false);
+                    }
+                }
+
                 m_registry.Remove_Component(eID, typeID);
                 std::cout << "[Editor] Removed " << compName << " from entity " << eID << "\n";
             }
+
         }
         else
         {
