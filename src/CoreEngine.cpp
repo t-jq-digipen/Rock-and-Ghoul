@@ -38,6 +38,7 @@
 #include <algorithm>
 #include "DataDefs.h"
 #include "MovementSystem.h"
+#include "ForcesManager.h"
 #include <nlohmann/json.hpp>
 #include "RenderSystem.h"
 #include "GuiSystem.h"
@@ -69,7 +70,7 @@ void CoreEngine::Initialize() {
 
     registry.Register_Component<Animator::AnimatorComponent>("Animator", {"Transform", "Sprite"});
     std::cout << "REGISTRY | REGISTERED ANIMATOR COMPONENT\n";
-
+    
     registry.Register_Component<Physics::PhysicsComponent>("Physics", { "Transform" });
     std::cout << "REGISTRY | REGISTERED PHYSICS COMPONENT\n";
 
