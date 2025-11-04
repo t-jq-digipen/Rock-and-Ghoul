@@ -357,6 +357,14 @@ public:
 		entityManager.destroyEntity(eID);
 	}
 
+	void Remove_AllEntities()
+	{
+		for (Entity eID = 0; eID < entityManager.maxEntities(); eID++)   
+		{
+			Remove_Entity(eID);
+		}
+	}
+
 	std::unordered_map<Entity, std::string>& Get_EntityNameMap()
 	{
 		return entityManager.GetEntityNameMap();

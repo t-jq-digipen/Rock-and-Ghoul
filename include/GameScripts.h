@@ -123,25 +123,10 @@ namespace PatrolEnemyScript
         std::cout << "[PatrolEnemy] Patrol ended for entity " << e << std::endl;
     }
 }
-/*
-namespace PlayerScript
-{
-    inline void Start(Entity e)
-    {
-        std::cout << "Player script started" << std::endl;
-    }
 
-    inline void Update(Entity e, float dt)
-    {
-        // Player logic here
-    }
 
-    inline void End(Entity e)
-    {
-        std::cout << "Player script ended" << std::endl;
-    }
-}
-*/
+
+
 
 // ============================================
 // REGISTER ALL SCRIPTS
@@ -163,6 +148,7 @@ inline void RegisterAllGameScripts()
         patrol.Update = [](Entity e, float dt) { PatrolEnemyScript::Update(e, dt); };
         patrol.End = [](Entity e) { PatrolEnemyScript::End(e); };
         logicSys.RegisterScript("PatrolEnemy", patrol, ScriptID::PATROL_ENEMY);
+
     }
 
     //{
