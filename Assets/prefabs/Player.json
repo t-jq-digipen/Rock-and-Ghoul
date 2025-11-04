@@ -2,6 +2,7 @@
     "entities": [
         {
             "components": {
+                "Audio": "{\"autoPlay\":false,\"autoPlayLooping\":false,\"loopingSoundID\":-1,\"maxDistance\":100.0,\"minDistance\":10.0,\"soundID\":1,\"spatial\":true,\"volume\":0.800000011920929}",
                 "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                 "Input": "{\"scheme\":0}",
                 "Movement": "{\"moveSpeed\":500.0}",

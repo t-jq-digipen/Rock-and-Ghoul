@@ -32,6 +32,7 @@
 #include "CrashHandler.h"
 #include <PlayerSystem.h>
 #include <Camera.h>
+#include "AudioComponent.h"
 
 
 #include "LogicSystem.h"

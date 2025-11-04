@@ -21,6 +21,7 @@
 #include "FileIO.h"
 #include "Registry.h"
 #include "Render.h"
+#include "AudioComponent.h"
 #include <iostream>
 
 #pragma region ComponentSavers
@@ -672,6 +673,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
                 if (Registry::Get().Has_Component<TagComponent>(e)) std::cout << "  - Has Tag" << std::endl;
                 if (Registry::Get().Has_Component<InputComponent>(e)) std::cout << "  - Has Input" << std::endl;
                 if (Registry::Get().Has_Component<Movement::MovementComponent>(e)) std::cout << "  - Has Movement" << std::endl;
+                if (Registry::Get().Has_Component<AudioComponent>(e)) std::cout << "  - Has Audio" << std::endl;
 
                 SavedEntity saved = Registry::Get().Save_Entity(e);
 

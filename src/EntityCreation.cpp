@@ -28,6 +28,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include "MonoScriptComponent.h"
+#include "AudioComponent.h"
 
 #include "CoreEngine.h"
 #include "BehaviourComponent.h"
@@ -163,6 +164,17 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<HealthComponent>(player, HealthComponent{ 100.f, 100.f });
 
             Registry::Get().Add_Component<Movement::MovementComponent>(player, Movement::MovementComponent{ 500.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
+
+            AudioComponent playerAudio;
+            playerAudio.soundID = 1;
+            playerAudio.loopingSoundID = -1;
+            playerAudio.autoPlay = false;
+            playerAudio.autoPlayLooping = false;
+            playerAudio.spatial = true;
+            playerAudio.volume = 0.8f;
+            playerAudio.minDistance = 10.0f;
+            playerAudio.maxDistance = 100.0f;
+            Registry::Get().Add_Component<AudioComponent>(player, playerAudio);
 
             if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Player.json", player)) {
                 std::cout << "Player.json saved successfully" << std::endl;
