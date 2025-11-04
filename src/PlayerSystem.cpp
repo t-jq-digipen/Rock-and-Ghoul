@@ -67,7 +67,7 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 		physics.SetMaxSpeed(MAX_SPEED);
 	}
 	// Clear forces every frame so that player instantly switches directions
-	// physics.ClearForces();
+	physics.ClearForces();
 
 	const auto& input = m_registry.Get_Component<InputComponent>(eID);
 

@@ -359,7 +359,7 @@ void ImGuiSystem::Initialize() {
     InitializeImGui();
    // guiEnabled = false;          // editor window closed by default
     gsm.inEditMode = true;       // game logic knows we're editing
-    gsm.isPaused = true;         // pause gameplay / physics update
+    gsm.isPaused = false;         // pause gameplay / physics update
 }
 
 
