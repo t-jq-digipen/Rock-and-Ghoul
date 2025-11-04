@@ -429,7 +429,7 @@ void Level1::Update()
 
 	if (cam.GetMode() == Camera::Mode::GAME)
 	{
-		cam.FollowTarget(playerTransform.pos, dt);
+		//cam.FollowTarget(playerTransform.pos, dt);
 	}
 
 
