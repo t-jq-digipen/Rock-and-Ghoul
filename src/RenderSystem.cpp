@@ -124,6 +124,12 @@ void RenderSystem::Update(float dt) {
         {
             // draw animated logic
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+            if (!m_registry.Has_Component<Animator::AnimatorComponent>(entID))
+            {
+                std::cout << "RENDERSYSTEM: Sprite comp is animated but you tried to get AnimatorComponent! Setting sprite comp anim to false\n";
+                spriteComp.Set_Animated(false);
+                continue;
+            }
             Animator::AnimatorComponent& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
 
             animComp.UpdateFrame(dt);
