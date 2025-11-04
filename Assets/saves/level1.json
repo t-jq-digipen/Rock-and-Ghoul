@@ -14,6 +14,7 @@
         },
         {
             "components": {
+                "Audio": "{\"autoPlay\":false,\"autoPlayLooping\":false,\"loopingSoundID\":-1,\"maxDistance\":100.0,\"minDistance\":1.0,\"soundID\":-1,\"spatial\":true,\"volume\":1.0}",
                 "Behaviour": "{\"scriptID\":1,\"scriptName\":\"GhoulScript\"}",
                 "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                 "Input": "{\"scheme\":0}",
@@ -21,7 +22,7 @@
                 "Physics": "{\"aabb\":{\"centerX\":610.1942138671875,\"centerY\":171.5982666015625,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":610.1942138671875,\"posY\":171.5982666015625,\"rad\":200.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                 "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Rock_FightingPose_2048px.png\"}",
                 "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":610.1942138671875,\"posY\":171.5982666015625,\"rot\":197.89552307128906,\"scaleX\":100.0,\"scaleY\":100.0}"
+                "Transform": "{\"posX\":610.1942138671875,\"posY\":171.5982666015625,\"rot\":138.64553833007813,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
             "name": "Player"
         },
@@ -52,10 +53,10 @@
                 "Behaviour": "{\"scriptID\":2,\"scriptName\":\"PatrolEnemy\"}",
                 "Input": "{\"scheme\":0}",
                 "Movement": "{\"moveSpeed\":500.0}",
-                "Physics": "{\"aabb\":{\"centerX\":1257.4630126953125,\"centerY\":500.0,\"dimX\":0.0,\"dimY\":0.0},\"circle\":{\"posX\":1257.4630126953125,\"posY\":500.0,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":false}",
+                "Physics": "{\"aabb\":{\"centerX\":1510.7901611328125,\"centerY\":500.0,\"dimX\":0.0,\"dimY\":0.0},\"circle\":{\"posX\":1510.7901611328125,\"posY\":500.0,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":false}",
                 "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Ghoul_2048px.PNG\"}",
                 "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":1257.4630126953125,\"posY\":500.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":1509.12353515625,\"posY\":500.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "ghoul"
         },
@@ -96,7 +97,7 @@
                 "Input": "{\"scheme\":2}",
                 "MonoScriptComponent": "Mover",
                 "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":1}",
-                "Transform": "{\"posX\":400.0,\"posY\":594.3262939453125,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                "Transform": "{\"posX\":400.0,\"posY\":599.6190185546875,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
             "name": "ScriptedCircle"
         },
@@ -104,7 +105,7 @@
             "components": {
                 "MonoScriptComponent": "Rotator",
                 "Sprite": "{\"animated\":false,\"scaleX\":1.0,\"scaleY\":1.0,\"texturePath\":\"../Assets/left.png\"}",
-                "Transform": "{\"posX\":1400.0,\"posY\":400.0,\"rot\":6825.38818359375,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":1400.0,\"posY\":400.0,\"rot\":13885.888671875,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "arrow"
         }

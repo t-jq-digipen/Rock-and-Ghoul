@@ -33,7 +33,7 @@ public class Rotator
         ECS.SetRotation(EntityID, currentRotation);
 
 
-        Console.WriteLine($"[Rotator] Entity {EntityID} rotation={currentRotation:F1}");
+       // Console.WriteLine($"[Rotator] Entity {EntityID} rotation={currentRotation:F1}");
     }
 }
 

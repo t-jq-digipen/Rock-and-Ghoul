@@ -60,7 +60,44 @@ static std::string pendingImportPath;
 static std::string pendingDestPath;
 static bool showReplacePopup = false;
 extern GSM gsm;
+namespace {
+    // small helper to name an entity for the Hierarchy list
+    std::string EntityDisplayName(Entity e) {
+        Registry& reg = Registry::Get();
+        std::string name = "Entity " + std::to_string(e);
 
+        if (reg.Has_Component<TagComponent>(e)) {
+            auto& tag = reg.Get_Component<TagComponent>(e);
+            const char* tagName = (tag.tag == T_PLAYER) ? "Player"
+                : (tag.tag == T_ENEMY) ? "Enemy"
+                : (tag.tag == T_PROJECTILE) ? "Projectile"
+                : "Unknown";
+            name = std::string(tagName) + " " + std::to_string(e);
+        }
+        if (reg.Has_Component<ShapeComponent>(e)) {
+            auto& s = reg.Get_Component<ShapeComponent>(e);
+            if (s.shape == SHAPE_RECTANGLE) {
+                name += "  [Square]";
+            }
+            else if (s.shape == SHAPE_CIRCLE) {
+                name += "  [Circle]";
+            }
+        }
+        else if (reg.Has_Component<Sprite::SpriteComponent>(e)) {
+            std::string entName = reg.Get_EntityName(e);
+            name += "  [Textured]";
+
+        }
+        return name;
+    }
+
+    //selectedEntity stays valid
+    void EnsureSelectionValid() {
+        if (ImGuiSystem::selectedEntity != INVALID_ENTITY && !EntityManager::get().isAlive(ImGuiSystem::selectedEntity)) {
+            ImGuiSystem::selectedEntity = 0;
+        }
+    }
+}
 // Checkbox
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
     if (!w.ref) return;
@@ -131,6 +168,22 @@ static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
     // the return will give u an error message or success message which you can use to make a popup
     // but i having trouble updating options list, i think it would work for adding but idk how to do remove yet
 
+}
+// ========================================================
+// Audio Import UI State
+// ========================================================
+using json = nlohmann::json;
+
+namespace {
+    static nlohmann::json audioManifest;
+    static bool audioManifestLoaded = false;
+    static bool showAudioImportPopup = false;
+    static std::vector<std::string> pendingAudioImports;
+    static float globalVolume = 0.8f;
+    static std::unordered_map<std::string, FMOD::Channel*> activeAudioChannels;
+
+    static bool LoadAudioManifest(const std::string& path);
+    static void SaveAudioManifest(const std::string& path);
 }
 
 void ImGuiSystem::OnFileDropped(const std::string& path)
@@ -232,99 +285,23 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
     // --- Audio preview ---
     if (ext == ".wav" || ext == ".mp3" || ext == ".ogg")
     {
-        FMOD::Sound* sound = AudioSystem::LoadSound(path, false);
-        if (sound)
-        {
-            if (previewChannel) previewChannel->stop();
-            previewChannel = AudioSystem::PlaySoundGetChannel(sound, false);
-            previewChannel->setVolume(0.8f);
-            std::cout << "[ImGui Drop] Playing audio preview.\n";
-        }
-        else
-        {
-            std::cerr << "[ImGui Drop] Failed to load audio.\n";
-        }
+        // === AUDIO POPUP BEGIN ===
+        pendingAudioImports.push_back(path);
+        showAudioImportPopup = true;
+        std::cout << "[ImGui Drop] Queued audio import: " << path << std::endl;
+        // === AUDIO POPUP END ===
         return;
     }
 
+
     std::cout << "[ImGui Drop] Unsupported file type: " << ext << std::endl;
+
+   
 }
 
 using json = nlohmann::json;
 
 
-namespace {
-    // small helper to name an entity for the Hierarchy list
-    std::string EntityDisplayName(Entity e) {
-        Registry& reg = Registry::Get();
-        std::string name = "Entity " + std::to_string(e);
-
-        if (reg.Has_Component<TagComponent>(e)) {
-            auto& tag = reg.Get_Component<TagComponent>(e);
-            const char* tagName = (tag.tag == T_PLAYER) ? "Player"
-                : (tag.tag == T_ENEMY) ? "Enemy"
-                : (tag.tag == T_PROJECTILE) ? "Projectile"
-                : "Unknown";
-            name = std::string(tagName) + " " + std::to_string(e);
-        }
-        if (reg.Has_Component<ShapeComponent>(e)) {
-            auto& s = reg.Get_Component<ShapeComponent>(e);
-            if (s.shape == SHAPE_RECTANGLE) {
-                name += "  [Square]";
-            }
-            else if (s.shape == SHAPE_CIRCLE) {
-                name += "  [Circle]";
-            }
-        }
-        else if (reg.Has_Component<Sprite::SpriteComponent>(e)) {
-            std::string entName = reg.Get_EntityName(e);
-            name += "  [Textured]";
-        
-        }
-        return name;
-    }
-
-    //selectedEntity stays valid
-    void EnsureSelectionValid() {
-        if (ImGuiSystem::selectedEntity != INVALID_ENTITY && !EntityManager::get().isAlive(ImGuiSystem::selectedEntity)) {
-            ImGuiSystem::selectedEntity = 0;
-        }
-    }
-
-    //another helpers
-    static nlohmann::json audioManifest;
-    static bool audioManifestLoaded = false;
-
-    static bool LoadAudioManifest(const std::string& path)
-    {
-        std::ifstream file(path);
-        if (!file.is_open()) {
-            std::cout << "[ImGui AudioManifest] File not found, creating new.\n";
-            audioManifest = json::object();
-            audioManifest["music"] = json::object();
-            audioManifest["ui"] = json::object();
-            return false;
-        }
-        try {
-            file >> audioManifest;
-            file.close();
-            audioManifestLoaded = true;
-            return true;
-        }
-        catch (...) {
-            std::cout << "[ImGui AudioManifest] Failed to parse JSON.\n";
-            return false;
-        }
-    }
-
-    static void SaveAudioManifest(const std::string& path)
-    {
-        std::ofstream out(path);
-        out << std::setw(4) << audioManifest;
-        out.close();
-        std::cout << "[ImGui AudioManifest] Saved.\n";
-    }
-}
 
 void ImGuiSystem::InitializeImGui() {
     IMGUI_CHECKVERSION(); //checks version compatibility
@@ -1137,118 +1114,84 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 manifestLoaded = true;
             }
 
-            // --- Defensive check before using it ---
+            // --- Defensive check ---
             if (!audioManifest.is_object() || audioManifest.empty())
             {
                 ImGui::TextDisabled("No audio manifest data available.");
                 ImGui::EndTabItem();
                 return;
             }
-
-            ImGui::Text("Audio Manifest Editor");
             ImGui::Separator();
 
-            // --- ADD NEW AUDIO ENTRY ---
-            static char categoryBuf[32] = "music";
-            static char nameBuf[64] = "";
-            static char pathBuf[128] = "";
-            static int idBuf = 0;
-            static bool loopBuf = false;
-            static char groupBuf[32] = "Music";
 
-            ImGui::InputText("Category (music/ui)", categoryBuf, IM_ARRAYSIZE(categoryBuf));
-            ImGui::InputText("Asset Name", nameBuf, IM_ARRAYSIZE(nameBuf));
-            ImGui::InputText("Path", pathBuf, IM_ARRAYSIZE(pathBuf));
-            ImGui::InputInt("ID", &idBuf);
-            ImGui::Checkbox("Loop", &loopBuf);
-            ImGui::InputText("Group", groupBuf, IM_ARRAYSIZE(groupBuf));
-
-            if (ImGui::Button("Add Audio Asset"))
-            {
-                std::string category = categoryBuf;
-                std::string name = nameBuf;
-                std::string path = pathBuf;
-
-                if (name.empty() || path.empty())
-                {
-                    std::cout << "[ImGui AudioManifest] Missing name or path!\n";
-                }
-                else
-                {
-                    // Ensure category exists
-                    if (!audioManifest.contains(category))
-                        audioManifest[category] = json::object();
-
-                    // Add entry safely
-                    audioManifest[category][name] = {
-                        { "id", idBuf },
-                        { "path", path },
-                        { "loop", loopBuf },
-                        { "group", groupBuf }
-                    };
-
-                    SaveAudioManifest(manifestPath);
-                    std::cout << "[ImGui AudioManifest] Added " << name << " to " << category << "\n";
-                }
-            }
-
-            ImGui::Separator();
-
-            // --- DISPLAY EXISTING ENTRIES SAFELY ---
+            // --- Display Existing Entries ---
             try
             {
                 for (auto& [category, assets] : audioManifest.items())
                 {
-                    if (!assets.is_object())
-                        continue; // skip malformed entries
+                    if (!assets.is_object()) continue;
 
                     if (ImGui::CollapsingHeader(category.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
                     {
                         for (auto& [name, data] : assets.items())
                         {
-                            if (!data.is_object())
-                                continue;
+                            if (!data.is_object()) continue;
 
                             ImGui::PushID(name.c_str());
 
-                            // Safely retrieve values
-                            std::string path = data.contains("path") ? data["path"].get<std::string>() : "(none)";
-                            int id = data.contains("id") ? data["id"].get<int>() : -1;
-                            bool loop = data.contains("loop") ? data["loop"].get<bool>() : false;
-                            std::string group = data.contains("group") ? data["group"].get<std::string>() : "(none)";
+                            // Get values safely
+                            std::string path = data.value("path", "(none)");
+                            int id = data.value("id", -1);
+                            std::string group = data.value("group", "(none)");
+                           
 
-                            ImGui::Text("Name: %s", name.c_str());
+                            // Header
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.6f, 1.0f));
+                            ImGui::Text("%s", name.c_str());
+                            ImGui::PopStyleColor();
+
+                            ImGui::Indent();
+
+                            // Info line 1
                             ImGui::Text("Path: %s", path.c_str());
+                            ImGui::SameLine(ImGui::GetWindowWidth() - 120);
                             ImGui::Text("ID: %d", id);
-                            ImGui::Text("Loop: %s", loop ? "true" : "false");
-                            ImGui::Text("Group: %s", group.c_str());
 
-                            // --- Preview controls ---
+                            // Info line 2
+                            ImGui::Text("Group: %s", group.c_str());
+                            ImGui::SameLine();
+                            // Controls
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
                             if (ImGui::Button("Play"))
                             {
+                                FMOD::Sound* snd = AudioSystem::LoadSound(path, false);
+                                if (snd)
+                                {
+                                    if (previewChannel) previewChannel->stop();
+                                    previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
 
-                                    FMOD::Sound* snd = AudioSystem::LoadSound(path, loop);
-                                    if (snd)
-                                    {
-                                        if (previewChannel) previewChannel->stop();
-                                        previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
-                                        if (previewChannel) previewChannel->setVolume(0.8f);
-                                    }
-   
+                                }
                             }
+                            ImGui::PopStyleColor();
 
                             ImGui::SameLine();
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.2f, 0.2f, 1.0f));
                             if (ImGui::Button("Stop"))
                             {
                                 if (previewChannel) previewChannel->stop();
                                 previewChannel = nullptr;
                             }
+                            ImGui::PopStyleColor();
+
 
                             ImGui::SameLine();
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.1f, 1.0f));
                             bool removeThis = false;
                             if (ImGui::Button("Remove"))
                                 removeThis = true;
+                            ImGui::PopStyleColor();
 
+                            ImGui::Unindent();
                             ImGui::Separator();
                             ImGui::PopID();
 
@@ -1259,25 +1202,111 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                                 break;
                             }
                         }
-
-
-
-
-
-
-
-
                     }
                 }
             }
             catch (const std::exception& e)
             {
-                std::cerr << "[ImGui AudioManifest] Exception while reading: " << e.what() << std::endl;
+                std::cerr << "[ImGui AudioManifest] Exception: " << e.what() << std::endl;
             }
 
             ImGui::EndTabItem();
         }
 
+        // ========================================================
+        // Audio Import Popup
+        // ========================================================
+        if (showAudioImportPopup)
+            ImGui::OpenPopup("Import Audio Files");
+
+        if (ImGui::BeginPopupModal("Import Audio Files", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Select category and confirm import:");
+
+            static int selectedCategory = 0;
+            const char* categories[] = { "music", "ui", "sfx" };
+            ImGui::Combo("Category", &selectedCategory, categories, IM_ARRAYSIZE(categories));
+
+           
+            ImGui::Separator();
+
+            if (pendingAudioImports.empty())
+                ImGui::TextDisabled("(No audio files pending)");
+            else
+                for (auto& file : pendingAudioImports)
+                    ImGui::BulletText("%s", file.c_str());
+
+            if (ImGui::Button("Import", ImVec2(120, 0)))
+            {
+                namespace fs = std::filesystem;
+                const std::string manifestPath = "../Assets/audio_manifest.json";
+                if (!audioManifestLoaded) LoadAudioManifest(manifestPath);
+
+                for (auto& path : pendingAudioImports)
+                {
+                    std::string destDir = "../Assets/Audio/";
+                    if (!fs::exists(destDir)) fs::create_directories(destDir);
+                    std::string destPath = destDir + fs::path(path).filename().string();
+
+                    try { fs::copy_file(path, destPath, fs::copy_options::overwrite_existing); }
+                    catch (...) {}
+
+                    std::string baseName = fs::path(destPath).stem().string();
+                    audioManifest[categories[selectedCategory]][baseName] = {
+                        { "id", (int)audioManifest.size() },
+                        { "path", destPath },
+                        { "group", categories[selectedCategory] },
+                      
+                    };
+
+                    FMOD::Sound* snd = AudioSystem::LoadSound(destPath, false);
+                    if (snd)
+                    {
+                        FMOD::Channel* ch = AudioSystem::PlaySoundGetChannel(snd, false);
+                        if (ch) {
+                            ch->setVolume(globalVolume);
+                            activeAudioChannels[baseName] = ch;
+                        }
+                    }
+
+                    std::cout << "[ImGui AudioImport] Imported and playing: " << baseName << "\n";
+                }
+
+                SaveAudioManifest(manifestPath);
+                pendingAudioImports.clear();
+                showAudioImportPopup = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0)))
+            {
+                pendingAudioImports.clear();
+                showAudioImportPopup = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+        ImGui::SeparatorText("Currently Playing");
+
+        if (activeAudioChannels.empty())
+            ImGui::TextDisabled("(none)");
+        else {
+            for (auto& [name, ch] : activeAudioChannels)
+            {
+                bool playing = false;
+                if (ch) ch->isPlaying(&playing);
+                ImGui::Text("%s %s", name.c_str(), playing ? "(Playing)" : "(Stopped)");
+                ImGui::SameLine();
+                if (ImGui::Button(("Stop##" + name).c_str()))
+                {
+                    if (ch) ch->stop();
+                    activeAudioChannels.erase(name);
+                    break;
+                }
+            }
+        }
 
         ImGui::EndTabBar();
     }
@@ -2000,4 +2029,61 @@ void ImGuiSystem::ShutdownImGui() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+}
+
+// ========================================================
+// Audio Manifest Load / Save Helpers
+// ========================================================
+namespace {
+    static bool LoadAudioManifest(const std::string& path)
+    {
+        namespace fs = std::filesystem;
+        if (!fs::exists(path))
+        {
+            std::cout << "[AudioManifest] File not found: " << path << "\n";
+            audioManifest = json::object();
+            audioManifest["music"] = json::object();
+            audioManifest["ui"] = json::object();
+            audioManifest["sfx"] = json::object();
+            audioManifestLoaded = true;
+            return false;
+        }
+
+        try
+        {
+            std::ifstream in(path);
+            if (!in.is_open())
+            {
+                std::cerr << "[AudioManifest] Could not open file: " << path << "\n";
+                return false;
+            }
+
+            in >> audioManifest;
+            in.close();
+            audioManifestLoaded = true;
+            std::cout << "[AudioManifest] Loaded successfully.\n";
+            return true;
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "[AudioManifest] Failed to parse manifest: " << e.what() << "\n";
+            audioManifest = json::object();
+            return false;
+        }
+    }
+
+    static void SaveAudioManifest(const std::string& path)
+    {
+        try
+        {
+            std::ofstream out(path);
+            out << std::setw(4) << audioManifest;
+            out.close();
+            std::cout << "[AudioManifest] Saved to " << path << "\n";
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "[AudioManifest] Save failed: " << e.what() << "\n";
+        }
+    }
 }
