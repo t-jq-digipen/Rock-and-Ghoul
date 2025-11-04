@@ -21,6 +21,7 @@
 #include "Audio.h"
 #include "AudioSystem.h"
 #include "AudioCache.h"
+#include "AudioComponent.h"
 #include "CoreEngine.h"
 #include "PlayerSystem.h"
 #include "GameStateManager.h"
@@ -625,6 +626,9 @@ void AudioManager::Update(float dt) {
 
     // Update FMOD system
     AudioSystem::Update();
+
+    // update all audio components
+    Update_AudioComponents(dt);
 
     // Get current game state
     GameState currentState = GSM_CurrentState();

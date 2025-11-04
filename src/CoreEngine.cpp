@@ -44,6 +44,7 @@
 
 #include "BehaviourComponent.h"
 #include "GameScripts.h"
+#include "AudioComponent.h"
 
 #include "MonoScriptComponent.h"
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
@@ -73,8 +74,8 @@ void CoreEngine::Initialize() {
     registry.Register_Component<Physics::PhysicsComponent>("Physics", { "Transform" });
     std::cout << "REGISTRY | REGISTERED PHYSICS COMPONENT\n";
 
-    //registry.Register_Component<AudioComponent>("Audio");
-    //std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";
+    registry.Register_Component<AudioComponent>("Audio");
+    std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";
 
     registry.Register_Component<HealthComponent>("Health");
     std::cout << "REGISTRY | REGISTERED HEALTH COMPONENT\n";
