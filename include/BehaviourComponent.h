@@ -87,7 +87,9 @@ struct BehaviourComponent
         bc.scriptID = static_cast<ScriptID>(j.value("scriptID", 0u));
         bc.started = false;
 
-        bc.SetScript(bc.scriptName);
+        //if ID missing
+        if (bc.scriptID == ScriptID::NONE && !bc.scriptName.empty())
+            bc.SetScript(bc.scriptName);
         return bc;
     }
 };

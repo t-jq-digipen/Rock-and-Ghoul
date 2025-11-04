@@ -443,22 +443,39 @@ add_custom_target(copy_docs ALL
         ${CMAKE_BINARY_DIR}/projectGuide.pdf
 )
 
-add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
-)
+#add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} -E make_directory
+#    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
+#)
 
 # Copy save files from source to build directory
-file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
+#file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
 
-foreach(save_file ${SAVE_FILES})
-    if(EXISTS "${save_file}")
-        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${save_file}"
-                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves"
-        )
-    else()
-        message(WARNING "Skipping missing save file: ${save_file}")
-    endif()
-endforeach()
+#foreach(save_file ${SAVE_FILES})
+#    if(EXISTS "${save_file}")
+#        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#                "${save_file}"
+#                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves"
+#        )
+#    else()
+#        message(WARNING "Skipping missing save file: ${save_file}")
+#    endif()
+#endforeach()
+
+# ======================= Copy save files safely =========================
+# Copies all JSON files from Assets/saves to build output, without failing if any missing
+
+set(SAVES_SRC_DIR "${CMAKE_SOURCE_DIR}/Assets/saves")
+set(SAVES_DST_DIR "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves")
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "Syncing Assets/saves -> ${SAVES_DST_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${SAVES_DST_DIR}"
+    # Copy the entire directory (safe, non-fatal)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${SAVES_SRC_DIR}"
+        "${SAVES_DST_DIR}"
+    VERBATIM
+)
+
