@@ -17,7 +17,7 @@
  * For each component, developer MUST provide an interface function to
  * acquire this data in order to use the editor.
  * 
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once

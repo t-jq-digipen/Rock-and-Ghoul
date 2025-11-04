@@ -52,6 +52,8 @@ Entity Create_Waffle(float const& spawnx, float const& spawny);
  * @return The newly created Shape entity.
  */
 Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme controls);
+
+Entity Create_Ghoul(float const& x, float const& y);
 /**
  * @brief Create a wall entity with transform, physics, shape, and tag components.
  * @param x The x-position of the wall.
@@ -71,6 +73,7 @@ Entity Create_Wall(float x, float y, float width, float height);
  */
 Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);
 
+Entity Create_ScriptedEntity(const std::string& scriptName, float x, float y);
 /**
  * @brief Generates initial prefab JSON files in Assets/prefabs/.
  *
@@ -80,7 +83,6 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color);
  */
 void GenerateInitialPrefabs(bool forceRegenerate);
 
-
 // Entity Create_RotatingObject(float x, float y);
 // Entity Create_MovingObject(float x, float y);
 
@@ -89,11 +91,4 @@ void GenerateInitialPrefabs(bool forceRegenerate);
 
 Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath);
 
-/**
- * @brief Create an enemy entity with transform,
- *        physics, shape, input, tag, and health components.
- * @param spawnx The initial x-position of the shape.
- * @param spawny The initial y-position of the shape.
- * @return The newly created Enemy entity.
- */
-Entity Create_Enemy(float const& spawnx, float const& spawny);
+Entity Create_Arrow(float const& x, float const& y);

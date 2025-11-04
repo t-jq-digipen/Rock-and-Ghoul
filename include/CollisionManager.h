@@ -16,6 +16,7 @@
 #include "Component.h"
 #include "Collision.h"
 #include "Registry.h"
+#include "EventBus.h"
 #include <vector>
 #include <iostream>
 
@@ -23,6 +24,7 @@ struct CollisionEvent {
     Entity a;
     Entity b;
 };
+
 // convert a tag enum to a readable string
 constexpr const char* TagToString(C_TagID tag) {
     switch (tag) {
@@ -33,11 +35,36 @@ constexpr const char* TagToString(C_TagID tag) {
     }
 }
 
+class CollisionLayerManager {
+private:
+    std::unordered_map<std::string, uint32_t> layerBits;
+    std::unordered_map<uint32_t, std::string> layerNames;
+    uint32_t nextBit = 0;
+
+    CollisionLayerManager() {}
+    CollisionLayerManager(const CollisionLayerManager&) = delete;
+public:
+    static CollisionLayerManager& Get() {
+        static CollisionLayerManager instance;
+        return instance;
+    }
+
+    uint32_t RegisterLayer(const std::string& name);
+
+    uint32_t GetLayerBit(const std::string& name) const;
+
+    std::string GetLayerName(uint32_t bit) const;
+
+    bool ShouldCollide(uint32_t layerA, uint32_t maskA, uint32_t layerB, uint32_t maskB) const;
+
+    void Clear();
+};
+
+
 /**
  * @class CollisionManager
  * @brief Manages detection and resolution of collisions between entities.
  */
-
 class CollisionManager {
 private:
     //stores a list of all collision events found during one frame

@@ -28,6 +28,12 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include "MonoScriptComponent.h"
+#include "AudioComponent.h"
+
+#include "CoreEngine.h"
+#include "BehaviourComponent.h"
+#include "LogicSystem.h" 
+#include "GameScripts.h"
 using json = nlohmann::json;
 
 // Helper function to load from JSON
@@ -47,14 +53,40 @@ Entity LoadEntity(const std::string& entityName, float x, float y) {
     return e;
 }
 
+//Entity Create_Player(float const& x, float const& y) {
+//    return LoadEntity("Player", x, y);
+//}
 Entity Create_Player(float const& x, float const& y) {
-    return LoadEntity("Player", x, y);
-}
+    Entity patrol = LoadEntity("Player", 500.0f, 300.0f);
+    BehaviourComponent bc;
+    //bc.scriptName = "PatrolEnemy";
+    //bc.started = false;
 
+    bc.scriptName = "GhoulScript";
+    bc.started = false;
+    /*bc.scriptIDs = { ScriptID::PATROL_ENEMY, ScriptID::GHOUL };
+    bc.startedStates = { false, false };*/
+    Registry::Get().Add_Component<BehaviourComponent>(patrol, bc);
+    
+    return patrol;
+}
 Entity Create_Waffle(float const& x, float const& y) {
     return LoadEntity("Waffle", x, y);
 }
+Entity Create_Ghoul(float const& x, float const& y) {
+   
+    Entity ghoul = LoadEntity("ghoul", x, y);
 
+    // Add behaviour component
+    BehaviourComponent bc;
+    bc.scriptName = "PatrolEnemy";
+    //bc.started = false;
+
+    bc.started = false;
+    Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
+
+    return ghoul;
+}
 Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme scheme) {
     Entity shape = 0;
     if (shapeType == SHAPE_RECTANGLE) {
@@ -131,13 +163,26 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Registry::Get().Add_Component<InputComponent>(player, InputComponent{ CS_WASD });
             Registry::Get().Add_Component<TagComponent>(player, TagComponent{ T_PLAYER });
+            
 
             Image img = CreateImage("../Assets/Rock_FightingPose_2048px.png");
             Registry::Get().Add_Component<Sprite::SpriteComponent>(player, Sprite::SpriteComponent{ img, {.1f,.1f} });
 
             Registry::Get().Add_Component<HealthComponent>(player, HealthComponent{ 100.f, 100.f });
 
-            Registry::Get().Add_Component<Movement::MovementComponent>(player, Movement::MovementComponent{ 5.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
+            Registry::Get().Add_Component<Movement::MovementComponent>(player, Movement::MovementComponent{ 500.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
+
+            //Registry::Get().Add_Component<RenderLayerComponent>(player, RenderLayerComponent{ LAYER_BACKGROUND });
+            AudioComponent playerAudio;
+            playerAudio.soundID = 1;
+            playerAudio.loopingSoundID = -1;
+            playerAudio.autoPlay = false;
+            playerAudio.autoPlayLooping = false;
+            playerAudio.spatial = true;
+            playerAudio.volume = 0.8f;
+            playerAudio.minDistance = 10.0f;
+            playerAudio.maxDistance = 100.0f;
+            Registry::Get().Add_Component<AudioComponent>(player, playerAudio);
 
             if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Player.json", player)) {
                 std::cout << "Player.json saved successfully" << std::endl;
@@ -176,7 +221,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Image imgtemp = CreateImage("../Assets/Waffle_Sprites.png");
             Registry::Get().Add_Component<Sprite::SpriteComponent>(waffle, Sprite::SpriteComponent{ imgtemp, {100.f,100.f }, true });
-
+            Registry::Get().Add_Component<Movement::MovementComponent>(waffle, Movement::MovementComponent{ 500.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
             // CRITICAL: Ensure imageWidth and imageHeight are set correctly!
             Animator::AnimatorComponent animtemp(3, 6, { 2,0,1 }, 1.f);
             animtemp.AddState(PS_IDLE, { 3, 0, 1, 1.f });
@@ -280,42 +325,6 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
         skippedCount++;
     }
 
-    // ========== Enemy ==========
-    if (shouldGenerate("Enemy.json")) {
-        std::cout << "Generating Enemy.json..." << std::endl;
-
-        try {
-            Entity enemy_ent = Registry::Get().Create_Entity();
-            Registry::Get().Set_EntityName(enemy_ent, "Enemy");
-            Registry::Get().Add_Component<TransformComponent>(enemy_ent, TransformComponent{ {0, 0}, {100.f, 100.f} });
-
-            AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
-            Circle circle = { {0, 0}, 100.f };
-            Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
-            Registry::Get().Add_Component<Physics::PhysicsComponent>(enemy_ent, phys);
-
-            Registry::Get().Add_Component<InputComponent>(enemy_ent, InputComponent{ CS_IJKL });
-            Registry::Get().Add_Component<TagComponent>(enemy_ent, TagComponent{ T_ENEMY });
-            Registry::Get().Add_Component<HealthComponent>(enemy_ent, HealthComponent{ 100.f, 100.f });
-
-            if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Enemy.json", enemy_ent)) {
-                std::cout << "Enemy.json saved successfully" << std::endl;
-                generatedCount++;
-            }
-            else {
-                std::cerr << "Failed to save Enemy.json" << std::endl;
-            }
-
-            Registry::Get().Remove_Entity(enemy_ent);
-        }
-        catch (const std::exception& e) {
-            std::cerr << "ERROR generating Circle: " << e.what() << std::endl;
-        }
-    }
-    else {
-        skippedCount++;
-    }
-
     std::cout << "\n=== PREFAB GENERATION COMPLETE ===" << std::endl;
     std::cout << "Generated: " << generatedCount << " new prefabs" << std::endl;
     std::cout << "Skipped: " << skippedCount << " existing prefabs" << std::endl;
@@ -350,7 +359,7 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color)
     return instance;
 }
 
-Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath)
+/*Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath)
 {
     Entity instance = Registry::Get().Create_Entity();
 
@@ -387,122 +396,92 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
     /*float randomOffset = static_cast<float>(rand() % 100) / 100.0f;
     anim.UpdateFrame(randomOffset);*/
 
-    Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
+    /*Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
 
     //Tag for filtering
     Registry::Get().Add_Component<TagComponent>(
         instance, TagComponent{ T_BATCH }); //T_BATCH added in C_TagID enum
 
     return instance;
+}*/
+
+Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath)
+{
+    Entity instance = Registry::Get().Create_Entity();
+
+    // Transform
+    Registry::Get().Add_Component<TransformComponent>(
+        instance, TransformComponent{ {x, y}, {size, size} });
+
+    // Sprite (animated true)
+    Sprite::SpriteComponent sprite(texturePath, { size, size }, true);
+    Registry::Get().Add_Component<Sprite::SpriteComponent>(instance, sprite);
+
+    // Load texture safely through Render texture cache (ensures reuse)
+    Image img = sprite.Get_Image();
+
+    // Correct constructor: include width and height explicitly
+    Animator::AnimatorComponent anim(
+        3, 6,                      // rows, columns
+        //img.widthPixels, img.heightPixels, // actual texture size
+        { 2, 0, 1 },               // starting frame (row=2, col=0..1)
+        1.0f                       // duration
+    );
+
+    // Add proper states like the prefab does
+    anim.AddState(PS_IDLE, { 3, 0, 1, 1.0f });
+    anim.AddState(PS_WALK, { 3, 2, 3, 0.5f });
+
+    // Update initial UVs
+    anim.UpdateUV(img.widthPixels, img.heightPixels);
+
+    Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
+
+    // Tag for batching
+    Registry::Get().Add_Component<TagComponent>(instance, TagComponent{ T_BATCH });
+
+    Registry::Get().Add_Component<RenderLayerComponent>(instance, RenderLayerComponent{ LAYER_FOREGROUND });
+
+    return instance;
 }
-//Entity Create_Square(float x, float y) {
-//    Entity square = Create_Entity();
-//    Add_Component(square, TransformComponent{ {x, y}, {100.f, 100.f} });
-//
-//    {
-//        AABB aabb = Create_AABB({ x,y }, { 200.f,200.f });
-//        Circle circle = { {x,y},200.f };
-//        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-//        Add_Component(square, temp);
-//    }
-//
-//    //Add_Component(player, AABBComponent{ true, {}, 200.0f, 200.0f });
-//    Add_Component(square, InputComponent{ CS_IJKL });
-//    Add_Component(square, TagComponent{ T_PLAYER });
-//    Add_Component(square, SpriteComponent{ 0, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
-//    Add_Component(square, HealthComponent{ 100.f, 100.f });
-//    return square;
-//}
 
-//Entity Create_Circle(float x, float y) {
-//    Entity round = Create_Entity();
-//    Add_Component(round, TransformComponent{ {x, y}, {100.f, 100.f} });
-//    {
-//        AABB aabb = Create_AABB({ x,y }, { 200.f,200.f });
-//        Circle circle = { {x,y},100.f };
-//        Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-//        Add_Component(round, temp);  // round refers to the entity
-//    }
-//
-//    Add_Component(round, InputComponent{ CS_ARROWS });
-//    Add_Component(round, TagComponent{ T_PLAYER });
-//    Add_Component(round, SpriteComponent{ 1, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} }); // textureID=1 for circle, green color
-//    Add_Component(round, HealthComponent{ 100.f, 100.f });
-//    return round;
-//}
-// 
-//Entity Create_Ghoul(float x, float y) {oe
-//    Entity ghoul = Create_Entity();
-//
-//    Add_Component(ghoul, TransformComponent{ {x, y}, {100.f, 100.f} });
-//    Add_Component(ghoul, BossGhoulComponent{
-//        100.f,   // max hp
-//        100.f,   // current hp
-//        0.f,     // ??? maybe speed or timer
-//        100.f,   // damage or cooldown
-//        0,       // phase index?
-//        GHOUL_ATTACKING // starting state
-//        });
-//    Add_Component(ghoul, TagComponent{ T_ENEMY });
-//    Add_Component(ghoul, AABBComponent{ true, {}, 200.0f, 200.0f });
-//    GLuint tex = Render::GetInstance().LoadTexture("../Assets/Ghoul_2048px.png");
-//    Add_Component(ghoul, SpriteComponent{ tex, {400.f, 400.f} });
-//    Add_Component(ghoul, PhysicsComponent{ {0.f, 0.f} });
-//    Add_Component(ghoul, HealthComponent{ 100.f, 100.f });
-//    bossGhoulSystem->AddEntity(ghoul);
-//
-//    return ghoul;
-//}
 
-// EntityCreation.cpp
-//Entity Create_RotatingObject(float x, float y)
-//{
-//    Registry& reg = Registry::Get();
-//    Entity e = reg.Create_Entity();
-//
-//    TransformComponent t;
-//    t.pos = { x, y };
-//    reg.Add_Component(e, t);
-//
-//    // Add a visible shape
-//    ShapeComponent shape;
-//    shape.shape = SHAPE_RECTANGLE;
-//    shape.dimensions = { 50.f, 50.f };
-//    shape.color = { 1.0f, 0.3f, 0.3f }; // red
-//    reg.Add_Component(e, shape);
-//
-//    // Add script
-//    MonoScriptComponent script;
-//    script.className = "Rotator";
-//    reg.Add_Component(e, script);
-//
-//    return e;
-//}
-//
-//Entity Create_MovingObject(float x, float y)
-//{
-//    Registry& reg = Registry::Get();
-//    Entity e = reg.Create_Entity();
-//
-//    TransformComponent t;
-//    t.pos = { x, y };
-//    reg.Add_Component(e, t);
-//
-//    // Add a visible shape
-//    ShapeComponent shape;
-//    shape.shape = SHAPE_CIRCLE;
-//    shape.dimensions = { 50.f, 50.f };
-//    shape.color = { 0.3f, 0.8f, 1.0f }; // blue
-//    reg.Add_Component(e, shape);
-//
-//    // Add script
-//    MonoScriptComponent script;
-//    script.className = "Mover";
-//    reg.Add_Component(e, script);
-//
-//    return e;
-//}
+/**
+ * @brief Creates a generic entity driven by a C# Mono script.
+ * @param scriptName Name of the C# class inside GameScripts.dll (e.g. "PlayerScript").
+ * @param x,y        World position to spawn at.
+ */
+Entity Create_ScriptedEntity(const std::string& scriptName, float x, float y)
+{
+    Registry& reg = Registry::Get();
 
-Entity Create_Enemy(float const& x, float const& y) {
-    return LoadEntity("Enemy", x, y);
+    // Create entity and basic info
+    Entity cir = reg.Create_Entity();
+    reg.Set_EntityName(cir, "ScriptedCircle");
+
+    // Add Transform
+    reg.Add_Component<TransformComponent>(cir, TransformComponent{ {x, y}, {100.f, 100.f} });
+
+    // Add Shape + Input (optional)
+    reg.Add_Component<ShapeComponent>(cir, ShapeComponent{ SHAPE_CIRCLE, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} });
+    reg.Add_Component<InputComponent>(cir, InputComponent{ CS_ARROWS });
+
+    // --- Add the Mono script binding ---
+    MonoScriptComponent msc;
+    msc.className = scriptName; // must match C# class name in GameScripts.dll
+    reg.Add_Component<MonoScriptComponent>(cir, msc);
+
+    std::cout << "[EntityCreation] Created scripted entity with Mono class: "
+        << scriptName << " (Entity " << cir << ")\n";
+
+    return cir;
+}
+
+Entity Create_Arrow(float const& x, float const& y) {
+
+    Entity arr = LoadEntity("arrow", x, y);
+    MonoScriptComponent script;
+    script.className = "Rotator"; // must match your C# class
+    Registry::Get().Add_Component<MonoScriptComponent>(arr, script);
+    return arr;
 }

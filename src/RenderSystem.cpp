@@ -27,6 +27,16 @@
 #include "Animator.h"
 #include <Camera.h>
 
+ // ---------------------------------------------
+ // @brief Temporary struct for per-frame draw queue
+ // ---------------------------------------------
+/*struct RenderEntry {
+    Entity id;
+    const Sprite::SpriteComponent* sprite;
+    const TransformComponent* transform;
+    float sortY;
+};*/
+
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
 static std::vector<GLuint> s_backgroundTextures;
@@ -103,11 +113,154 @@ void RenderSystem::Update(float dt) {
 
 
 
-    //try batching version
+// ======================================================
+// trying batch-based rendering with layer and y-axis sorting
+// my thought process is: 
+// added a RenderLayerComponent for each entity (defaulted to gameobject layer unless specified inside entitycreation or json)
+// group entities by layers, push them into each of their respective specified containers
+// sort the game object layer entities based on their y coords from 
+// reusable function drawlayer will be used to draw each layer
+// ======================================================
+    renderInstance.BeginBatch();
+
+    //containers that contain entities for each layer
+    std::vector<Entity> backgroundEntities;
+    std::vector<Entity> gameEntities;
+    std::vector<Entity> foregroundEntities; //for sepcial effects? particles?
+    std::vector<Entity> uiEntities;
+
+    //Categorize entities by layer
+    for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
+    {
+        RenderLayer layer = LAYER_GAMEOBJECT; // default, if not specified 
+
+        if (m_registry.Has_Component<RenderLayerComponent>(entID)) {
+            layer = m_registry.Get_Component<RenderLayerComponent>(entID).layer;
+        }
+
+        switch (layer)
+        {
+        case LAYER_BACKGROUND:
+            backgroundEntities.push_back(entID);
+            break;
+        case LAYER_GAMEOBJECT:
+            gameEntities.push_back(entID);
+            break;
+        case LAYER_FOREGROUND:
+            foregroundEntities.push_back(entID);
+            break;
+        case LAYER_UI:
+            uiEntities.push_back(entID);
+            break;
+        }
+    }
+
+    //Sort the entities with GAMEOBJECT layer by Y-position
+    std::sort(gameEntities.begin(), gameEntities.end(),
+        [&](Entity a, Entity b) {
+            const auto& ta = m_registry.Get_Component<TransformComponent>(a);
+            const auto& tb = m_registry.Get_Component<TransformComponent>(b);
+            return ta.pos.y > tb.pos.y; // Higher Y = further back (drawn first)
+        });
+
+    //Draw a list of entities
+    auto DrawLayer = [&](const std::vector<Entity>& entities)
+        {
+            for (Entity entID : entities)
+            {
+                auto& spriteComp = m_registry.Get_Component<Sprite::SpriteComponent>(entID);
+                auto& transComp = m_registry.Get_Component<TransformComponent>(entID);
+
+                bool isBatched = false;
+                if (m_registry.Has_Component<TagComponent>(entID))
+                {
+                    const auto& tag = m_registry.Get_Component<TagComponent>(entID);
+                    if (tag.tag == T_BATCH) {
+                        isBatched = true;
+                    }
+                }
+
+                if (spriteComp.IsAnimated())
+                {
+                    auto& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
+                    animComp.UpdateFrame(dt);
+
+                    Image img = spriteComp.Get_Image();
+                    glm::vec4 uv(animComp.u0 / img.widthPixels,
+                        animComp.v1 / img.heightPixels,
+                        animComp.u1 / img.widthPixels,
+                        animComp.v0 / img.heightPixels);
+
+                    if (isBatched) {
+                        renderInstance.SubmitSpriteBatchUV(img, transComp.pos, spriteComp.Get_Scale(), uv, transComp.rot + spriteComp.Get_Rotation());
+                    }
+                    else {
+                        renderInstance.DrawImageSub(img,
+                            transComp.pos.x, transComp.pos.y,
+                            spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
+                            animComp.u0, animComp.v0, animComp.u1, animComp.v1,
+                            glm::radians(transComp.rot + spriteComp.Get_Rotation()));
+                    }
+                }
+                else
+                {
+                    Image img = spriteComp.Get_Image();
+                    Vec2 scaledSize = { img.widthPixels * spriteComp.Get_Scale().x, img.heightPixels * spriteComp.Get_Scale().y };
+
+                    if (isBatched) {
+                        renderInstance.SubmitSpriteBatch(img, transComp.pos, scaledSize, transComp.rot + spriteComp.Get_Rotation());
+                    }
+                    else {
+                        renderInstance.DrawImageScaled(img,
+                            transComp.pos.x, transComp.pos.y,
+                            spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
+                            glm::radians(transComp.rot + spriteComp.Get_Rotation()));
+                    }
+                }
+            }
+        };
+
+    // Background (rendered behind game objects)
+    renderInstance.BeginBatch();
+    DrawLayer(backgroundEntities);
+    renderInstance.EndBatch();
+    renderInstance.FlushBatch();
+
+    // Game objects
+    renderInstance.BeginBatch();
+    DrawLayer(gameEntities);
+    renderInstance.EndBatch();
+    renderInstance.FlushBatch();
+
+    // Foreground (rendered above game objects)
+    renderInstance.BeginBatch();
+    DrawLayer(foregroundEntities);
+    renderInstance.EndBatch();
+    renderInstance.FlushBatch();
+
+    // UI (rendered last, most in front)
+    renderInstance.BeginBatch();
+    DrawLayer(uiEntities);
+    renderInstance.EndBatch();
+    renderInstance.FlushBatch();
+
+    //Draw in the correct order
+    /*DrawLayer(backgroundEntities);
+      DrawLayer(gameEntities);
+      DrawLayer(foregroundEntities);
+      DrawLayer(uiEntities);
+
+      renderInstance.EndBatch();
+      renderInstance.FlushBatch();*/
+
+
+    /*//try batching version (old version keep in case need ref)
     renderInstance.BeginBatch(); //added for batch
 
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
+        // Update image size (need to link to event manager probably)
+        spriteComp.Update_ImageSize();
 
         // Check if entity has the batching tag
         bool isBatched = false;
@@ -120,8 +273,21 @@ void RenderSystem::Update(float dt) {
 
         if (spriteComp.IsAnimated())
         {
+
+            if (!m_registry.Has_Component<Animator::AnimatorComponent>(entID))
+            {
+                std::cout << "Sprite comp is animated but you tried to get AnimatorComponent! Setting sprite comp anim to false\n";
+                spriteComp.Set_Animated(false);
+                continue;
+            }
             // draw animated logic
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+            if (!m_registry.Has_Component<Animator::AnimatorComponent>(entID))
+            {
+                std::cout << "RENDERSYSTEM: Sprite comp is animated but you tried to get AnimatorComponent! Setting sprite comp anim to false\n";
+                spriteComp.Set_Animated(false);
+                continue;
+            }
             Animator::AnimatorComponent& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
 
             animComp.UpdateFrame(dt);
@@ -172,7 +338,7 @@ void RenderSystem::Update(float dt) {
                 scaledSize,
                 transComp.rot + spriteComp.Get_Rotation());*/
 
-            else {
+            /*else {
                 renderInstance.DrawImageScaled(
                     img,
                     transComp.pos.x, transComp.pos.y,
@@ -186,7 +352,7 @@ void RenderSystem::Update(float dt) {
 
 
     renderInstance.EndBatch();
-    renderInstance.FlushBatch();
+    renderInstance.FlushBatch();*/
 
 
 /*  //Original version in case need ref
@@ -303,10 +469,10 @@ void RenderSystem::Update(float dt) {
         //then draw them all at once
         renderInstance.DrawRectInstanced(batch, { 0.2f, 0.8f, 1.0f });
         batch.clear();
-    }
+    }/*
     if (ImGuiSystem::guiEnabled) {
         renderer.EndSceneCapture();
-    }
+    }*/
 }
 
 void RenderSystem::Shutdown() {
