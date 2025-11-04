@@ -21,7 +21,6 @@
 
 class ForcesManager : public ISystem {
 public:
-    // Force profile function type
     using ForceProfile = std::function<void(Entity, float)>;
 
     ForcesManager() = default;

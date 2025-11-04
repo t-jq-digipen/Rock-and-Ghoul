@@ -2,7 +2,7 @@
  * @file        FilePath.cpp
  * @author      Yasmin Tazi | yasmin.t@digipen.edu
  * @co-author   Tan Ying Clarissa | t.yingclarissa@digipen.edu
- * @date        26 SEP 2025
+ * @date        04 NOV 2025
  *
  * @brief   Implementation file for FilePath class
  *
@@ -37,7 +37,8 @@ const std::string FilePath::SAVES_FOLDER = getExeDir() + "/../../Assets/saves/";
 const std::string FilePath::SETTINGS_FILE = FilePath::SAVES_FOLDER + "settings.json";
 const std::string FilePath::LEVEL1_SCENE = FilePath::SAVES_FOLDER + "level1.json";
 const std::string FilePath::LEVEL2_SCENE = FilePath::SAVES_FOLDER + "level2.json";
-const std::string FilePath::TEMP_SCENE = FilePath::SAVES_FOLDER + "TempScene.json";
+const std::string FilePath::LEVEL1_TEMP_SCENE = FilePath::SAVES_FOLDER + "level1_temp.json";
+const std::string FilePath::LEVEL2_TEMP_SCENE = FilePath::SAVES_FOLDER + "level2_temp.json";
 const std::string FilePath::SCENES_LIST = FilePath::SAVES_FOLDER + "ScenesList.json";
 
 // save prefabs into assets folder

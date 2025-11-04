@@ -2,7 +2,7 @@
  * @file        CollisionManager.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu
- * @date        01 NOV 2025
+ * @date        04 NOV 2025
  *
  * @brief
  *
@@ -232,11 +232,11 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         penetrationDepth = overlapY;
     }
 
-    // Minimal position correction to prevent sinking
+    // minimal position correction to prevent sinking
     bool aStatic = physA.IsStatic();
     bool bStatic = physB.IsStatic();
 
-    const float separationBuffer = 3.0f;  // 3 pixel gap
+    const float separationBuffer = 0.1f;  // minimal buffer to prevent sinking
 
     float correctionAmount = penetrationDepth + separationBuffer;
 
@@ -268,6 +268,23 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         // Don't resolve if separating
         if (velAlongNormal > -0.1f) return;
 
+        // Special handling for high-speed impacts (like dashing into walls)
+        const float highSpeedThreshold = 500.0f;
+        if ((aStatic || bStatic) && fabs(velAlongNormal) > highSpeedThreshold) {
+            // For high-speed wall impacts, just stop velocity along normal
+            if (!aStatic) {
+                Vec2 normalComponent = RG_Scale(normal, velAlongNormal);
+                velA = RG_Subtract(velA, normalComponent);
+                physA.Set_Vel(velA);
+            }
+            if (!bStatic) {
+                Vec2 normalComponent = RG_Scale(normal, -velAlongNormal);
+                velB = RG_Add(velB, normalComponent);
+                physB.Set_Vel(velB);
+            }
+            return;  // Skip impulse calculation for high-speed wall impacts
+        }
+
         float e = std::min(physA.GetRestitution(), physB.GetRestitution());
 
         float invMassA = aStatic ? 0.0f : 1.0f / physA.GetMass();
@@ -283,30 +300,9 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         // Apply impulses, changes velocity, not position
         if (!aStatic) {
             physA.ApplyLinearImpulse(impulse);
-            // Get velocity after impulse
-            Vec2 newVel = physA.Get_Vel();
-            float newNormalVel = RG_DotProduct(newVel, normal);
-
-            // If still moving into wall, zero out ONLY the normal component
-            if (newNormalVel < 0.0f) {
-                // Decompose velocity: v = normal_component + tangent_component
-                Vec2 normalComponent = RG_Scale(normal, newNormalVel);
-                // Remove normal component: v_new = v - normal_component
-                newVel = RG_Subtract(newVel, normalComponent);
-                physA.Set_Vel(newVel);
-            }
         }
         if (!bStatic) {
             physB.ApplyLinearImpulse(RG_Scale(impulse, -1.0f));
-
-            Vec2 newVel = physB.Get_Vel();
-            float newNormalVel = RG_DotProduct(newVel, normal);
-
-            if (newNormalVel > 0.0f) {
-                Vec2 normalComponent = RG_Scale(normal, newNormalVel);
-                newVel = RG_Subtract(newVel, normalComponent);
-                physB.Set_Vel(newVel);
-            }
         }
 }
 
@@ -350,6 +346,10 @@ void CollisionManager::CheckCollisions() {
         auto& compB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
 
         if (!compA.CollisionActive() || !compB.CollisionActive()) {
+            continue;
+        }
+
+        if (compA.ShouldSkipCollision() || compB.ShouldSkipCollision()) {
             continue;
         }
 

@@ -16,25 +16,25 @@
 void ForcesManager::Initialize() {
     // Register default force profiles for each entity type
 
-    // Player: Gravity + light drag
+    // Player: Light drag
     RegisterProfile(T_PLAYER, [](Entity eID, float dt) {
         (void)dt;
-        ApplyGravity(eID, 980.f);     // Standard gravity
-        ApplyDrag(eID, 0.05f);         // Light air resistance
+        ApplyGravity(eID, 0.f);     // no gravity
+        ApplyDrag(eID, 0.05f);         // light air resistance
         });
 
-    // Enemy: Similar to player
+    // Enemy: Similar to player, more drag
     RegisterProfile(T_ENEMY, [](Entity eID, float dt) {
         (void)dt;
-        ApplyGravity(eID, 980.f);
+        ApplyGravity(eID, 0.f);
         ApplyDrag(eID, 0.08f);
         });
 
-    // Projectile: Gravity with less drag (like a thrown object)
+    // Projectile: Least drag
     RegisterProfile(T_PROJECTILE, [](Entity eID, float dt) {
         (void)dt;
-        ApplyGravity(eID, 980.f);
-        ApplyDrag(eID, 0.02f);         // Less drag for projectiles
+        ApplyGravity(eID, 0.f);
+        ApplyDrag(eID, 0.02f);         // less drag for projectiles
         });
 
     std::cout << "ForcesManager Initialized!\n";

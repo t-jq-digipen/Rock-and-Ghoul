@@ -616,23 +616,27 @@ void ImGuiSystem::ShowEngineDebugWindow() {
     {
         if (ImGui::Button("Play"))
         {
-            // Save the current edited scene before starting simulation
+            // Save the current edited scene to temp, then load the original level scene
             if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
             {
-                JsonLoad::LoadCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
+                JsonLoad::SaveCurrentScene(FilePath::LEVEL1_TEMP_SCENE, "level1_temp.json");
+                JsonLoad::ClearAllEntities();
+                JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
             }
             else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
             {
-                JsonLoad::LoadCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
+                JsonLoad::SaveCurrentScene(FilePath::LEVEL2_TEMP_SCENE, "level2_temp.json");
+                JsonLoad::ClearAllEntities();
+                JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
             }
 
-            std::cout << "[Editor] Temp scene saved before Play.\n";
+            std::cout << "[Editor] Temp scene saved, original level loaded for Play.\n";
 
             gsm.isPaused = false;
             gsm.inEditMode = false;
             Camera& cam = Camera::GetInstance();
             cam.SetMode(Camera::Mode::GAME);
-            cam.SetZoom(1.0f);          
+            cam.SetZoom(1.0f);
             cam.ResetToCenter();
             std::cout << "[Camera] Switched to GAME mode\n";
             isPlaying = true;
@@ -649,39 +653,42 @@ void ImGuiSystem::ShowEngineDebugWindow() {
 
             Camera& cam = Camera::GetInstance();
             cam.SetMode(Camera::Mode::EDITOR);
-            cam.ResetToCenter();       
+            cam.ResetToCenter();
 
-            //JsonLoad::ClearAllEntities();
             LogicSystem::Get().Shutdown();
-            // if (!JsonLoad::LoadScene(FilePath::TEMP_SCENE))
-            //     JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
 
             std::cout << "[Camera] Switched to EDITOR mode\n";
             isPlaying = false;
 
-            // reload the scene you were editing before pressing Play
+            // Save the played scene to level file, then reload the temp (edited) scene
             if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
             {
-                if (JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json"))
+                JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
+                JsonLoad::ClearAllEntities();
+
+                if (JsonLoad::LoadScene(FilePath::LEVEL1_TEMP_SCENE))
                 {
-                    std::cout << "[Editor] Restored Level1_TempScene from temp file.\n";                  
+                    std::cout << "[Editor] Saved level scene, restored temp edits.\n";
                 }
                 else
                 {
                     std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
-                    JsonLoad::LoadCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
+                    JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
                 }
             }
             else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
             {
-                if (JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json"))
+                JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
+                JsonLoad::ClearAllEntities();
+
+                if (JsonLoad::LoadScene(FilePath::LEVEL2_TEMP_SCENE))
                 {
-                    std::cout << "[Editor] Restored Level2_TempScene from temp file.\n";
+                    std::cout << "[Editor] Saved level scene, restored temp edits.\n";
                 }
                 else
                 {
                     std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
-                    JsonLoad::LoadCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
+                    JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
                 }
             }
 
