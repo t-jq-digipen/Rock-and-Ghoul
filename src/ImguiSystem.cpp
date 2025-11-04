@@ -169,6 +169,38 @@ static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
     // but i having trouble updating options list, i think it would work for adding but idk how to do remove yet
 
 }
+static void RefreshImageAssets()
+{
+    g_loadedThumbnails.clear();
+    g_imageNames.clear();
+
+    const std::string assetFolder = "../Assets/";
+    for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
+    {
+        if (!entry.is_regular_file()) continue;
+        std::string path = entry.path().string();
+        std::string ext = entry.path().extension().string();
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+        {
+            try
+            {
+                Image img = CreateImage(path);
+                if (img.IsValid()) {
+                    g_loadedThumbnails.push_back(img);
+                    g_imageNames.push_back(entry.path().filename().string());
+                }
+            }
+            catch (...) {
+                std::cout << "Failed to load " << path << std::endl;
+            }
+        }
+    }
+    std::cout << "[AssetBrowser] Refreshed image list.\n";
+}
+
+
 // ========================================================
 // Audio Import UI State
 // ========================================================
@@ -924,6 +956,12 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 {
     ImGui::Text( "Asset Preview Browser");
     ImGui::Separator();
+    if (ImGui::Button("Refresh"))
+    {
+        RefreshImageAssets();
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("Reloads asset folder");
 
     if (ImGui::BeginTabBar("AssetsTabs"))
     {
