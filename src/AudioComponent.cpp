@@ -1,7 +1,7 @@
 /* ========================================================
  * @file    AudioComponent.cpp
- * @author  [Your Name]
- * @date    04 NOV 2025
+ * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @date    4 NOV 2025
  *
  * @brief   Implementation of AudioComponent
  *
@@ -23,25 +23,23 @@ using json = nlohmann::json;
 // ============================================================================
 
 void AudioComponent::PlaySound(Entity eID) {
-    if (soundID < 0) return;  // No sound assigned
+    if (soundID < 0) return;  // if NO sound assigned
 
-    // Stop any currently playing sound
+    // stop all sound
     StopSound();
 
     AudioAsset* asset = AudioCache::GetAssetByID(soundID);
-    if (!asset) {
-        // Silent fail - asset not found
+    if (!asset) { //asset not found
         return;
     }
 
-    // Ensure sound is loaded
+    // load sound
     FMOD::Sound* sound = AudioCache::GetSound(asset->name);
-    if (!sound) {
-        // Silent fail - couldn't load
+    if (!sound) { // cannot load
         return;
     }
 
-    // Play spatially or normally
+    // check if spatial audio or normal sound
     if (spatial && Registry::Get().Has_Component<TransformComponent>(eID)) {
         auto& transform = Registry::Get().Get_Component<TransformComponent>(eID);
         channel = AudioSystem::PlaySoundAt(asset->name, transform.pos.x, transform.pos.y, volume);
@@ -57,9 +55,9 @@ void AudioComponent::PlaySound(Entity eID) {
 }
 
 void AudioComponent::PlayLoopingSound(Entity eID) {
-    if (loopingSoundID < 0) return;  // No looping sound assigned
+    if (loopingSoundID < 0) return;  // if NO looping sound assigned
 
-    // Stop any currently playing looping sound
+    // STOP current looping sounds
     StopLoopingSound();
 
     AudioAsset* asset = AudioCache::GetAssetByID(loopingSoundID);
@@ -67,13 +65,13 @@ void AudioComponent::PlayLoopingSound(Entity eID) {
         return;
     }
 
-    // Ensure sound is loaded
+    // load sound
     FMOD::Sound* sound = AudioCache::GetSound(asset->name);
     if (!sound) {
         return;
     }
 
-    // Play spatially or normally
+    // check if playing w spatial audio or normal
     if (spatial && Registry::Get().Has_Component<TransformComponent>(eID)) {
         auto& transform = Registry::Get().Get_Component<TransformComponent>(eID);
         loopingChannel = AudioSystem::PlaySoundAt(asset->name, transform.pos.x, transform.pos.y, volume);
@@ -132,7 +130,7 @@ void AudioComponent::UpdatePlaybackState() {
         isPlaying = playing;
 
         if (!playing) {
-            channel = nullptr;  // Clean up finished channel
+            channel = nullptr;  // clean up finished channel
         }
     }
 
@@ -143,7 +141,7 @@ void AudioComponent::UpdatePlaybackState() {
         isLoopingPlaying = playing;
 
         if (!playing) {
-            loopingChannel = nullptr;  // Clean up finished channel
+            loopingChannel = nullptr;  // clean up finished channel
         }
     }
 }
@@ -215,7 +213,7 @@ Editor::ComponentData AudioComponent::EditorData() {
     volumeWidget.max = 1.0f;
     data.Add_Data("Volume", volumeWidget);
 
-    // ========== Spatial Distance Settings (only if spatial enabled) ==========
+    // ========== Spatial Distance Settings ==========
     if (spatial) {
         Editor::Widget_Float minDistWidget;
         minDistWidget.ref = &minDistance;
@@ -240,16 +238,16 @@ Editor::ComponentData AudioComponent::EditorData() {
 // ============================================================================
 
 void Update_AudioComponents(float dt) {
-    (void)dt;  // Unused parameter
+    (void)dt;  // unused param, CHECK HOW TO OPTIMIZE
 
     Registry& registry = Registry::Get();
 
     // Update all AudioComponents
     for (auto& [entity, audio] : registry.Get_ComponentMap<AudioComponent>()) {
-        // Update playback state (check if sounds finished)
+        // check if sounds finished playing, update where they are in playback
         audio.UpdatePlaybackState();
 
-        // Update spatial positioning if enabled
+        // updating spatial positioning
         if (audio.spatial) {
             audio.UpdateSpatialPosition(entity);
         }

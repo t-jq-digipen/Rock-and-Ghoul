@@ -1,7 +1,7 @@
 /* ========================================================
  * @file    AudioComponent.h
- * @author  [Your Name]
- * @date    04 NOV 2025
+ * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @date    4 NOV 2025
  *
  * @brief   Audio component for entity-based audio playback
  *
