@@ -33,14 +33,20 @@ void MonoManager::Initialize(const std::string& assemblyPath)
     mono_set_dirs("/usr/lib", "/etc");
 #endif
 
-    domain = mono_jit_init_version("GameDomain", "v4.0.30319");
+    domain = mono_jit_init_version("RockAndGhoulDomain", "v4.0.30319");
     if (!domain)
         throw std::runtime_error("Failed to initialize Mono domain");
+
+    std::cout << "[MonoManager] Mono domain initialized successfully.\n";
+
     std::cout << "[MonoManager] Looking for assembly at: "
         << std::filesystem::absolute(assemblyPath) << "\n";
     assembly = mono_domain_assembly_open(domain, assemblyPath.c_str());
-    if (!assembly)
-        throw std::runtime_error("Failed to load assembly: " + assemblyPath);
+    if (!assembly) {
+        std::cerr << "[MonoManager] Failed to load assembly: " << assemblyPath << "\n";
+        return;
+    }
+    std::cout << "[MonoManager] Assembly loaded OK: " << assemblyPath << "\n";
 
     image = mono_assembly_get_image(assembly);
     if (!image)

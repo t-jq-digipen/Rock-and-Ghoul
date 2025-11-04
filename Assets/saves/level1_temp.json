@@ -75,7 +75,7 @@
                 "Tag": "{\"tagID\":3}",
                 "Transform": "{\"posX\":960.0,\"posY\":1055.0,\"rot\":0.0,\"scaleX\":1920.0,\"scaleY\":50.0}"
             },
-            "name": "Entity_6"
+            "name": "ghoul"
         },
         {
             "components": {

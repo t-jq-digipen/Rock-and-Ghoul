@@ -449,7 +449,7 @@ void Level2::Update()
 
 void Level2::Draw()
 {
-	Render& renderer = Render::GetInstance();
+	
 	CrashHandler::Safe("Level2", "Draw", [&] {
 		});
 }
@@ -475,14 +475,14 @@ void Level2::Free()
 void Level2::Unload()
 {
 	// Clean up background texture
-	Render& renderer = Render::GetInstance();
+	Render& r = Render::GetInstance();
 	//renderer.ClearAllTextures();
 
 	std::cout << "Level 2 Unloaded!!!" << std::endl;
 
 	CrashHandler::Safe("Level2", "Unload", [&] {
-		renderer.UnloadAllFonts();
-		renderer.UnloadTexture(bgTexture2);
+		r.UnloadAllFonts();
+		r.UnloadTexture(bgTexture2);
 		std::cout << "Level 2 Unloaded!!!" << std::endl;
 	});
 }

@@ -728,7 +728,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         // Create all entities
         for (const auto& savedEntity : scene.entities) {
-            Entity e = Registry::Get().Load_Entity(savedEntity);
+            Registry::Get().Load_Entity(savedEntity);
             //Entity e = SavedToEntity(savedEntity);
             // std::cout << "Created entity ID: " << e << " (was: " << savedEntity.id << ")" << std::endl;
         }
