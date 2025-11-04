@@ -1994,14 +1994,14 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
             if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
             {
                 JsonLoad::SaveCurrentScene(FilePath::LEVEL1_TEMP_SCENE, "level1_temp.json");
-                JsonLoad::ClearAllEntities();
-                JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+                // JsonLoad::ClearAllEntities();
+                // JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
             }
             else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
             {
                 JsonLoad::SaveCurrentScene(FilePath::LEVEL2_TEMP_SCENE, "level2_temp.json");
-                JsonLoad::ClearAllEntities();
-                JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
+                // JsonLoad::ClearAllEntities();
+                // JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
             }
 
         std::cout << "[Editor] Temp scene saved before Play.\n";
@@ -2039,7 +2039,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 
             if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
             {
-                JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
+                // JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
                 JsonLoad::ClearAllEntities();
 
                 if (JsonLoad::LoadScene(FilePath::LEVEL1_TEMP_SCENE))
@@ -2054,7 +2054,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
             }
             else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
             {
-                JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
+                // JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
                 JsonLoad::ClearAllEntities();
 
                 if (JsonLoad::LoadScene(FilePath::LEVEL2_TEMP_SCENE))
