@@ -195,6 +195,8 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 }
 
 namespace PlayerMove {
+	std::unordered_map<Entity, size_t> subscriberID;
+
 	void Dash(Entity eID) {
 		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
 		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
@@ -226,7 +228,7 @@ namespace PlayerMove {
 	{
 		std::cout << "Player script started" << std::endl;
 
-		EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
+		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
 
 			if (e.key == GLFW_KEY_LEFT_SHIFT)
 			{
@@ -260,6 +262,13 @@ namespace PlayerMove {
 
 		PlayerState animstate = (moving) ? PS_WALK : PS_IDLE;
 		animComp.SetState(animstate);
+	}
+
+	inline void End(Entity e)
+	{
+		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID[e]);
+		subscriberID.erase(e);
+		std::cout << "Player script ended" << std::endl;
 	}
 }
 

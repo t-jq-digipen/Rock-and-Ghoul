@@ -40,6 +40,8 @@
 #include "LogicSystem.h"
 #include "GuiSystem.h"
 #include "BehaviourComponent.h"
+#include <string>
+#include <iostream>
 static bool isPlacingPrefab = false;
 static std::string pendingPrefabPath;
 bool ImGuiSystem::showColliders = false;
@@ -826,9 +828,50 @@ void ImGuiSystem::ShowInspectorWindow()
                 LogicSystem& logicSys = LogicSystem::Get();
                 auto& map = logicSys.GetIDToNameMap();
 
+                if (logicSys.GetIDToNameMap().empty()) return;
+
+                std::vector<const char*> items;
+                size_t optSize = logicSys.GetIDToNameMap().size();
+                items.reserve(optSize);
+                for (auto& [scriptname, scriptID] : logicSys.GetNameToIDMap()) items.push_back(scriptname.c_str());
+                // find index of current value
+
+                static int currentIndex = 0;
+
+                std::string selectedScript(items[currentIndex]);
+
+                if (ImGui::Combo("Select Script", &currentIndex, items.data(), (int)items.size())) {
+                    //*w.ref = w.enumMap[w.options[currentIndex]];
+                    selectedScript = (items[currentIndex]);
+                }
+
+                bool disable = behaviourComp.HasScript(selectedScript);
+
+                std::string AddLabel = "Add Script";
+                if (disable) 
+                {
+                    AddLabel += " (Script already registered!)";
+                    ImGui::BeginDisabled();
+                }
+                if (ImGui::Button(AddLabel.c_str()))
+                {
+                    behaviourComp.AddScript(selectedScript);
+                }
+                if (disable) ImGui::EndDisabled();
+
+                ImGui::SeparatorText("Registered Scripts:");
+                int id = 0;
                 for (ScriptID sID : behaviourComp.scriptIDList)
                 {
+                    ImGui::PushID(id++);
                     ImGui::Text(map.find(sID)->second.c_str());
+
+                    ImGui::SameLine();
+                    if (ImGui::SmallButton("Remove"))
+                    {
+                        behaviourComp.RemoveScript(sID);
+                    }
+                    ImGui::PopID();
                 }
 
                 ImGui::TreePop();
@@ -891,7 +934,7 @@ void ImGuiSystem::ShowAddRemoveComponents()
         else
         {
             if (!depsOK) ImGui::BeginDisabled();
-            if (ImGui::SmallButton(("Add##" + compName).c_str()))
+            if (ImGui::SmallButton(("Add " + compName).c_str()))
             {
                 m_registry.Add_Component(eID, typeID);
                 std::cout << "[Editor] Added " << compName << " to entity " << eID << "\n";

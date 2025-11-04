@@ -24,11 +24,15 @@ void LogicSystem::Update(float dt)
             f->Update(e, dt);
         }
     }*/
+    for (auto& [entity, bc] : m_registry.Get_ComponentMap<BehaviourComponent>())
+    {
+        bc.FixID(entity);
+    }
+
     if (gsm.isPaused || gsm.inEditMode)
         return;
-    Registry& reg = Registry::Get();
 
-    for (auto& [entity, bc] : reg.Get_ComponentMap<BehaviourComponent>())
+    for (auto& [entity, bc] : m_registry.Get_ComponentMap<BehaviourComponent>())
     {
         for (ScriptID scriptID : bc.scriptIDList)
         {

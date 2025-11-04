@@ -15,6 +15,8 @@ struct BehaviourComponent
     //std::vector<std::string> scriptNames; // multiple scripts
     //std::vector<bool> startedStates;
 
+    Entity entityID{};
+
     std::unordered_map<ScriptID, bool> startedScripts;
     std::vector<ScriptID> scriptIDList;
 
@@ -28,10 +30,13 @@ struct BehaviourComponent
         {
             if (scriptID != ScriptID::NONE)
             {
-                LogicSystem& logicSys = LogicSystem::Get();
-                BehaviourFCT* script = logicSys.GetBehaviourByID(scriptID);
-                if (script && script->End)
-                    script->End(0);
+                if (startedScripts[scriptID])
+                {
+                    LogicSystem& logicSys = LogicSystem::Get();
+                    BehaviourFCT* script = logicSys.GetBehaviourByID(scriptID);
+                    if (script && script->End)
+                        script->End(0);
+                }
             }
         }
 
@@ -44,19 +49,12 @@ struct BehaviourComponent
     {
         AddScript(name);
     }
-    //Editor::ComponentData EditorData() {
-    //    Editor::ComponentData data("Behaviour");
-    //    Editor::Widget_Dropdown dropdown;
-    //    static LogicSystem& logicSys = LogicSystem::Get();
-    //    for (auto& [name, id] : logicSys.GetNameToIDMap())
-    //        dropdown.Add_Option(name, static_cast<unsigned int>(id));
 
-    //    if (!scriptIDs.empty())
-    //        dropdown.ref = reinterpret_cast<unsigned int*>(&scriptIDs[0]);
+    void FixID(Entity eID)
+    {
+        entityID = eID;
+    }
 
-    //    data.Add_Data("Scripts", dropdown);
-    //    return data;
-    //}
     void AddScript(const std::string& name)
     {
         LogicSystem& logicSys = LogicSystem::Get();
@@ -82,7 +80,7 @@ struct BehaviourComponent
             if (startedScripts.find(sID) == startedScripts.end()) { return; } // Script not added
 
 
-            if (sID != ScriptID::NONE)
+            if (startedScripts[sID] &&  sID != ScriptID::NONE)
             {
                 BehaviourFCT* script = logicSys.GetBehaviourByID(sID);
                 if (script && script->End)
@@ -96,6 +94,49 @@ struct BehaviourComponent
             // scriptIDList.push_back(it->second);
             // startedScripts[it->second] = false;
         }
+    }
+
+    void RemoveScript(const ScriptID& sID)
+    {
+        if (startedScripts.find(sID) == startedScripts.end()) { return; } // Script not added
+
+
+        if (sID != ScriptID::NONE)
+        {
+            if (startedScripts.find(sID) == startedScripts.end()) { return; } // Script not added
+            if (startedScripts[sID]) 
+            {
+                BehaviourFCT* script = LogicSystem::Get().GetBehaviourByID(sID);
+                if (script && script->End)
+                    script->End(entityID);
+            }
+        }
+
+
+        startedScripts.erase(sID);
+
+        std::erase(scriptIDList, sID);
+    }
+
+    bool HasScript(const std::string& name)
+    {
+        LogicSystem& logicSys = LogicSystem::Get();
+        auto& map = logicSys.GetNameToIDMap();
+
+        auto it = map.find(name);
+        auto end = map.end();
+        if (it != map.end())
+        {
+            if (startedScripts.find(it->second) == startedScripts.end())
+            {
+                return false;
+            }
+            return true;
+        }
+        throw std::runtime_error("has a script that dun exist?\n");
+        return false;
+        
+
     }
 
     Editor::ComponentData EditorData()
