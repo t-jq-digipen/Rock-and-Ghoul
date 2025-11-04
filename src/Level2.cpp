@@ -443,7 +443,6 @@ void Level2::Update()
 		//	fretboard->PlayerInput();
 		//}
 
-		GuiSystem::Get().Update(0.f);
 		});
 }
 

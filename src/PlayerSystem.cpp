@@ -255,6 +255,11 @@ namespace PlayerMove {
 		moveComp.SetMovementDirection({ fx, fy });
 
 
+		if (!Registry::Get().Has_Component<Animator::AnimatorComponent>(eID)) return;
+		auto& animComp = Registry::Get().Get_Component<Animator::AnimatorComponent>(eID);
+
+		PlayerState animstate = (moving) ? PS_WALK : PS_IDLE;
+		animComp.SetState(animstate);
 	}
 }
 
