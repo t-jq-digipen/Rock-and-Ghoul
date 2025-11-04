@@ -37,13 +37,6 @@ void PhysicsSystem::Update(float dt) {
     if (dt > maxDt) {
         dt = maxDt;
     }
-    for (auto& [entID, phyComp] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
-        if (!m_registry.Has_Component<TransformComponent>(entID))
-            continue;
-
-        TransformComponent& trans = m_registry.Get_Component<TransformComponent>(entID);
-        phyComp.UpdateHitboxes(trans.pos);
-    }
 
     // STEP 1: Update physics (forces -> velocities)
     for (auto& [entID, phyComp] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {

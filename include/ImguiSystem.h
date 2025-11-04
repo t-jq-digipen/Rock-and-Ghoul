@@ -94,5 +94,7 @@ private:
 
     void ShowPrefabControls();
     void ShowSceneBrowser();
+
+    void ShowSimulationControls(bool& isPlaying);
 };
 

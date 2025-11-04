@@ -428,9 +428,10 @@ void ImGuiSystem::Update(float dt)
         ImGui::DockBuilderDockWindow("Game View", dockspaceID);
         ImGui::DockBuilderFinish(dockspaceID);
     }
-
+    
 
     if (ImGui::Begin("Editor Camera")) {
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
         ImVec2 cursor = ImGui::GetCursorScreenPos();
         ImVec2 size = ImGui::GetContentRegionAvail();
 
@@ -442,20 +443,27 @@ void ImGuiSystem::Update(float dt)
         else {
             ImGui::TextDisabled("Panel too small to display");
         }
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
     }
 
     ImGui::End();
     if (ImGui::Begin("Engine Info")) {
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
         ShowEngineDebugWindow();
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
     if (ImGui::Begin("Collision + Prefabs")) {
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
         ShowCollisionDebugWindow();
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
+    
     if (ImGui::Begin("Entity Editor")) {
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
         ImGui::Columns(2);
         ShowHierarchyWindow();
         ImGui::NextColumn();
@@ -463,16 +471,25 @@ void ImGuiSystem::Update(float dt)
         ImGui::Columns(1);
         ImGui::Separator();
         ShowPrefabControls();
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
+        
     }
     ImGui::End();
 
     if (ImGui::Begin("Assets")) {
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
         ShowAssetPreviewWindow();
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
+       
     }
+   
     ImGui::End();
-
+    
     // game view panel
     if (ImGui::Begin("Game View")) {
+        bool isPlaying = !gsm.isPaused && !gsm.inEditMode;
+        ShowSimulationControls(isPlaying);
+        isPlaying = !gsm.isPaused && !gsm.inEditMode;
         ImVec2 avail = ImGui::GetContentRegionAvail();
 
         // maintain 16:9 aspect
@@ -617,93 +634,7 @@ void ImGuiSystem::ShowEngineDebugWindow() {
         //visual bar
         ImGui::ProgressBar((float)(percent / 100.0f), ImVec2(-1, 0), (std::to_string((int)percent) + "%").c_str());
     }
-    bool isPlaying = !gsm.isPaused && !gsm.inEditMode;
-    // --- Editor Control Section ---
-    ImGui::Separator();
-    ImGui::Text("Simulation Controls:");
 
-    if (!isPlaying)
-    {
-        if (ImGui::Button("Play"))
-        {
-            // Save the current edited scene before starting simulation
-            if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-            {
-                JsonLoad::LoadCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
-            }
-            else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-            {
-                JsonLoad::LoadCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
-            }
-
-            std::cout << "[Editor] Temp scene saved before Play.\n";
-
-            gsm.isPaused = false;
-            gsm.inEditMode = false;
-            Camera& cam = Camera::GetInstance();
-            cam.SetMode(Camera::Mode::GAME);
-            cam.SetZoom(1.0f);          
-            cam.ResetToCenter();
-            std::cout << "[Camera] Switched to GAME mode\n";
-            isPlaying = true;
-
-            std::cout << "[Editor] Gameplay started.\n";
-        }
-    }
-    else
-    {
-        if (ImGui::Button("Stop"))
-        {
-            gsm.isPaused = true;
-            gsm.inEditMode = true;
-
-            Camera& cam = Camera::GetInstance();
-            cam.SetMode(Camera::Mode::EDITOR);
-            cam.ResetToCenter();       
-
-            //JsonLoad::ClearAllEntities();
-            LogicSystem::Get().Shutdown();
-            // if (!JsonLoad::LoadScene(FilePath::TEMP_SCENE))
-            //     JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
-
-            std::cout << "[Camera] Switched to EDITOR mode\n";
-            isPlaying = false;
-
-            // reload the scene you were editing before pressing Play
-            if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-            {
-                if (JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json"))
-                {
-                    std::cout << "[Editor] Restored Level1_TempScene from temp file.\n";                  
-                }
-                else
-                {
-                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
-                    JsonLoad::LoadCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
-                }
-            }
-            else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-            {
-                if (JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json"))
-                {
-                    std::cout << "[Editor] Restored Level2_TempScene from temp file.\n";
-                }
-                else
-                {
-                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
-                    JsonLoad::LoadCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
-                }
-            }
-
-            ImGuiSystem::selectedEntity = INVALID_ENTITY;
-        }
-    }
-
-    ImGui::SameLine();
-    ImGui::TextColored(
-        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
-        isPlaying ? "PLAYING" : "EDITING"
-    );
     ImGui::Separator();
     ImGui::Checkbox("Enable Drag Handles", &dragEditMode);
 
@@ -1354,7 +1285,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
-
+    bool isPlaying = !gsm.isPaused && !gsm.inEditMode;
     ::Render& renderer = Render::GetInstance();
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
@@ -1443,37 +1374,33 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
         dl->AddRect(min, max, color, 0.f, 0, 2.f);
     }
 
-    // === Selection & dragging ===
-    if (mouseClicked && camHover)
+    if (!isPlaying)
     {
-        isDragging = true;
+        if (mouseClicked && camHover)
+        {
+            isDragging = true;
+            Vec2 mouseWorld{
+                (mouse.x - offset.x) / scale,
+                worldHeight - (mouse.y - offset.y) / scale
+            };
+            dragOffset = camOffset - mouseWorld;
+        }
 
-        Vec2 mouseWorld{
-            (mouse.x - offset.x) / scale,
-            worldHeight - (mouse.y - offset.y) / scale
-        };
-        dragOffset = camOffset - mouseWorld;
-    }
+        if (isDragging && mouseDown)
+        {
+            Vec2 mouseWorld{
+                (mouse.x - offset.x) / scale,
+                worldHeight - (mouse.y - offset.y) / scale
+            };
+            cam.SetPosition(mouseWorld + dragOffset);
 
-    if (isDragging && mouseDown)
-    {
-        Vec2 mouseWorld{
-            (mouse.x - offset.x) / scale,
-            worldHeight - (mouse.y - offset.y) / scale
-        };
-        
-        cam.SetPosition(mouseWorld + dragOffset);
+            float zoom = cam.GetZoom();
+            zoom += ImGui::GetIO().MouseWheel * 0.2f;
+            cam.SetZoom(zoom);
+        }
 
-        float zoom = cam.GetZoom();
-        
-        zoom += ImGui::GetIO().MouseWheel * 0.2;
-
-        cam.SetZoom(zoom);
-    }
-
-    if (mouseReleased)
-    {
-        isDragging = false;
+        if (mouseReleased)
+            isDragging = false;
     }
 
     // REGINEHELP
@@ -1481,7 +1408,6 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     // cam.SetZoom(1.0);
 }
 
-#include "Camera.h"
 
 void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
 {
@@ -1574,6 +1500,11 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
     {
         auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
         t.pos = PanelToWorld(mouseScreen) + dragOffset;
+
+        if (reg.Has_Component<Physics::PhysicsComponent>(draggedEntity)) {
+            auto& p = reg.Get_Component<Physics::PhysicsComponent>(draggedEntity);
+            p.UpdateHitboxes(t.pos);
+        }
     }
 
     // === End ===
@@ -1969,6 +1900,86 @@ void ImGuiSystem::ShowSceneBrowser()
 }
 
 
+void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
+{
+    ImGui::SeparatorText("Simulation Controls");
+
+    // Center horizontally in the Game View window
+    float panelWidth = ImGui::GetContentRegionAvail().x;
+    float buttonWidth = 80.f;
+    float spacing = 16.f;
+    float totalWidth = buttonWidth * 2 + spacing;
+    float startX = (panelWidth - totalWidth) * 0.5f;
+    ImGui::SetCursorPosX(startX);
+
+    // --- PLAY ---
+    if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
+    {
+        // Save the current edited scene before starting simulation
+        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
+        {
+            JsonLoad::LoadCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
+        }
+        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
+        {
+            JsonLoad::LoadCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
+        }
+
+        std::cout << "[Editor] Temp scene saved before Play.\n";
+
+        gsm.isPaused = false;
+        gsm.inEditMode = false;
+        Camera& cam = Camera::GetInstance();
+        cam.SetMode(Camera::Mode::GAME);
+        cam.SetZoom(1.0f);
+        cam.ResetToCenter();
+        std::cout << "[Camera] Switched to GAME mode\n";
+        isPlaying = true;
+        std::cout << "[Editor] Gameplay started.\n";
+    }
+
+    ImGui::SameLine(0, spacing);
+
+    // --- STOP ---
+    if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
+    {
+        gsm.isPaused = true;
+        gsm.inEditMode = true;
+
+        Camera& cam = Camera::GetInstance();
+        cam.SetMode(Camera::Mode::EDITOR);
+        cam.ResetToCenter();
+
+        LogicSystem::Get().Shutdown();
+
+        std::cout << "[Camera] Switched to EDITOR mode\n";
+        isPlaying = false;
+
+        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
+        {
+            if (JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json"))
+                std::cout << "[Editor] Restored Level1_TempScene.\n";
+            else
+                JsonLoad::LoadCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
+        }
+        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
+        {
+            if (JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json"))
+                std::cout << "[Editor] Restored Level2_TempScene.\n";
+            else
+                JsonLoad::LoadCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
+        }
+
+        ImGuiSystem::selectedEntity = INVALID_ENTITY;
+    }
+
+    ImGui::SameLine(spacing * 2);
+    ImGui::TextColored(
+        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f)
+        : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
+        isPlaying ? "PLAYING" : "EDITING"
+    );
+}
 
 void ImGuiSystem::Shutdown() {
     ShutdownImGui();

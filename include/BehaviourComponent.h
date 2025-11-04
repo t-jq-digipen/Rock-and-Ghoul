@@ -73,7 +73,7 @@ struct BehaviourComponent
     {
         BehaviourComponent bc;
         auto j = nlohmann::json::parse(data);
-        bc.scriptName = j.value("scriptNames", "");
+        bc.scriptName = j.value("scriptName", "");
         bc.scriptID = static_cast<ScriptID>(j.value("scriptID", 0u));
         bc.started = false;
 
