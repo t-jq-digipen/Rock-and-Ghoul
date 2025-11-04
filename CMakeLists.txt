@@ -141,6 +141,39 @@ if (WIN32)
         message(WARNING "Mono runtime DLL not found at ${MONO_DLL} — skipping copy.")
     endif()
 endif()
+# ======================= Copy Mono runtime libraries =========================
+set(MONO_LIB_DIR "${MONO_ROOT}/lib/mono/4.5")
+set(MONO_DST_DIR "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/mono/lib/mono/4.5")
+
+if (EXISTS "${MONO_LIB_DIR}/mscorlib.dll")
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying Mono runtime libraries..."
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${MONO_DST_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${MONO_LIB_DIR}"
+            "${MONO_DST_DIR}"
+        VERBATIM
+    )
+    message(STATUS "Will copy Mono runtime libraries from: ${MONO_LIB_DIR}")
+else()
+    message(WARNING "Mono runtime libraries not found in ${MONO_LIB_DIR}")
+endif()
+# ======================= Auto-build C# GameScripts project =========================
+set(GAMESCRIPTS_CSPROJ "${CMAKE_SOURCE_DIR}/GameScripts/GameScripts.csproj")
+
+if (EXISTS "${GAMESCRIPTS_CSPROJ}")
+    add_custom_command(
+        TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Building C# GameScripts project..."
+        # Use MSBuild to compile GameScripts.csproj to a DLL
+        COMMAND "${CMAKE_MAKE_PROGRAM}" "${GAMESCRIPTS_CSPROJ}" /t:Build /p:Configuration=$<CONFIG>
+        COMMENT "Auto-building GameScripts.dll via MSBuild"
+        VERBATIM
+    )
+else()
+    message(WARNING "GameScripts.csproj not found at ${GAMESCRIPTS_CSPROJ}")
+endif()
+
 
 # ======================= Copy GameScripts DLL =========================
 set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/$<CONFIG>/GameScripts.dll")
