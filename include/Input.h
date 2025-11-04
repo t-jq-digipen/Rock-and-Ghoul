@@ -1,8 +1,7 @@
 /* ========================================================
  * @file        Input.h
- * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
- * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
- * @date        04 NOV 2025
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        01 OCT 2025
  *
  * @brief
  *
@@ -11,9 +10,6 @@
  * The system tracks transitions (Pressed, Held, Released, None), cursor position, and scroll offsets. 
  * Query functions provide easy access to the current input state, while Update() ensures
  * states last only one frame.
- * 
- * EDIT: 04 NOV
- * Key inputs now push events to EventBus.
  *
  *
  * Copyright © 2025 DigiPen, All rights reserved.
@@ -25,7 +21,6 @@
 #include <GLFW/glfw3.h>
 #include <unordered_map>
 #include "Remath.h"
-#include "EventBus.h"
 /**
  * @enum KeyState
  * @brief Represents the possible states of a key or mouse button.
@@ -41,19 +36,6 @@ enum class KeyState {
     HELD,
     NONE
 };
-
-struct KeyPressedEvent : public IEvent {
-    int key;
-};
-
-struct KeyHeldEvent : public IEvent {
-    int key;
-};
-
-struct KeyReleasedEvent : public IEvent {
-    int key;
-};
-
 
 /**
  * @class Input

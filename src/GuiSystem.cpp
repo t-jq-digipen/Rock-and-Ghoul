@@ -109,20 +109,6 @@ void GuiSystem::Update(float dt) {
     spaceLatch = spaceHeld;
 
     Vec2 mouse = Input::GetMousePosition();
-   // mouse.y = static_cast<float>(GLApp::height) - mouse.y; // flip top→bottom
-
-    // convert to Game View space
-    float relX = (mouse.x - m_gameViewRect.x) / m_gameViewRect.width;
-    float relY = (mouse.y - m_gameViewRect.y) / m_gameViewRect.height;
-
-    // clamp [0,1]
-    relX = std::clamp(relX, 0.0f, 1.0f);
-    relY = std::clamp(relY, 0.0f, 1.0f);
-
-    // convert to internal 1920×1080 GUI space
-    mouse.x = relX * 1920.f;
-    mouse.y = relY * 1080.f;
-
     Render& render = Render::GetInstance();
 
     // to force GUI editor to be written on screen
@@ -132,7 +118,6 @@ void GuiSystem::Update(float dt) {
     const float scaleX = GLApp::width / 1920.f;
     const float scaleY = GLApp::height / 1080.f;
     const float uiScale = std::min(scaleX, scaleY);
-   
 
     for (auto& cfg : buttons) {
         cfg.size = cfg.baseSize * uiScale;
@@ -147,9 +132,9 @@ void GuiSystem::Update(float dt) {
             float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
 
             // convert mouse into render-space (bottom-left origin)
-          //  Vec2 mouseRender = { mouse.x, static_cast<float>(GLApp::height) - mouse.y };
+            Vec2 mouseRender = { mouse.x, static_cast<float>(GLApp::height) - mouse.y };
 
-            float dist = RG_Distance(mouse, cfg.pos);
+            float dist = RG_Distance(mouseRender, cfg.pos);
             hover = dist <= radius;
         }
         else {
@@ -895,7 +880,6 @@ void GuiSystem::Update(float dt) {
 
 void GuiSystem::Shutdown() {
     buttons.clear();
-    //audio = nullptr;
     textboxes.clear();
     dialogues.clear();
     audio = nullptr;

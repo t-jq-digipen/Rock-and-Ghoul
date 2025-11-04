@@ -105,57 +105,39 @@ if(WIN32)
         message(STATUS "Will copy fmod.dll from: ${FMOD_LIB_DIR}")
     endif()
 endif()
-# ======================= Mono Embedding Setup =========================
-set(MONO_ROOT "${CMAKE_SOURCE_DIR}/deps/Mono")
 
-# --- Headers ---
-set(MONO_INCLUDE_DIR "${MONO_ROOT}/include/mono-2.0")
-if (EXISTS "${MONO_INCLUDE_DIR}/mono/jit/jit.h")
-    message(STATUS "Mono headers found at: ${MONO_INCLUDE_DIR}")
-    include_directories(${MONO_INCLUDE_DIR})
-else()
-    message(WARNING "Mono headers not found! Expected at ${MONO_INCLUDE_DIR}")
-endif()
+# ======================= Copy Mono Runtime DLL =========================
 
-# --- Library ---
-set(MONO_LIB "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
-if (EXISTS "${MONO_LIB}")
-    message(STATUS "Linking Mono: ${MONO_LIB}")
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE "${MONO_LIB}")
-else()
-    message(WARNING "Mono library not found! Expected at ${MONO_LIB}")
-endif()
 
-# --- Runtime DLL ---
 if (WIN32)
-    set(MONO_DLL "${MONO_ROOT}/bin/mono-2.0-sgen.dll")
-    if (EXISTS "${MONO_DLL}")
+    set(MONO_DLL_PATH "${MONO_ROOT}/bin/mono-2.0-sgen.dll")
+    if (EXISTS "${MONO_DLL_PATH}")
         add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E echo "Copying Mono runtime DLL..."
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${MONO_DLL}"
-                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/mono-2.0-sgen.dll"
+            COMMAND "${CMAKE_COMMAND}" -E echo "Copying Mono runtime DLL..."
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "${MONO_DLL_PATH}"
+                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>"
         )
         message(STATUS "Will copy mono-2.0-sgen.dll to build output.")
     else()
-        message(WARNING "Mono runtime DLL not found at ${MONO_DLL} — skipping copy.")
+        message(WARNING "Mono runtime DLL not found at ${MONO_DLL_PATH}. Skipping copy.")
     endif()
 endif()
-
 # ======================= Copy GameScripts DLL =========================
-set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/$<CONFIG>/GameScripts.dll")
+set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/Debug/GameScripts.dll")
 set(GAMESCRIPTS_TARGET_DIR "${CMAKE_SOURCE_DIR}/Assets/Scripts")
 
-add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll from: ${GAMESCRIPTS_DLL_PATH}"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${GAMESCRIPTS_DLL_PATH}"
-        "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
-    VERBATIM
-)
-
-
+if (EXISTS "${GAMESCRIPTS_DLL_PATH}")
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll to Assets/Scripts..."
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${GAMESCRIPTS_TARGET_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${GAMESCRIPTS_DLL_PATH}"
+            "${GAMESCRIPTS_TARGET_DIR}/GameScripts.dll"
+    )
+else()
+    message(WARNING "GameScripts.dll not found at ${GAMESCRIPTS_DLL_PATH}. Skipping copy.")
+endif()
 
 
 
@@ -177,61 +159,108 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-# ============== Organize files ============
+# ======================= Optional: Organize files in IDE ============
 # This creates nice folder structure in Visual Studio/Xcode
-
-# BASE ENG COMPONENTS
-
-source_group("BaseEngine\\Components" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
+source_group("Main" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+)
+source_group("BaseEngine\\Engine" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/glapp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/glapp.h
 )
-
 
 source_group("BaseEngine\\CoreEngine" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/CoreEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CoreEngine.h
 )
+source_group("BaseEngine\\Editor" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImguiSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ImguiSystem.h
 
-source_group("BaseEngine\\Serialization" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FileIO.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/FileIO.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/DataDefs.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/JsonLoad.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonLoad.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GuiSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GuiSystem.h
+
 )
 
-
-source_group("BaseEngine\\Mono Scripting" FILES 
+source_group("BaseEngine\\Scripting" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoManager.h
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoSystem.cpp
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoBindings.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoScriptComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoBindings.cpp
 )
 
-source_group("BaseEngine\\CScripting" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/BehaviourFCT.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/BehaviourComponent.h
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/LogicSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/LogicSystem.cpp
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameScripts.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameScripts.cpp
 
+# BASE ENG SYSTEMS | FRAMERATE
+# =================================================
+source_group("BaseEngine\\BaseSystems\\FrameRateController" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
 )
-source_group("BaseEngine\\Debug" FILES 
+# ================================================= FRAMERATE
+
+
+
+# BASE ENG SYSTEMS | AUDIO
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Audio" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
+)
+# ================================================= AUDIO
+
+# BASE ENG SYSTEMS
+
+source_group("BaseEngine\\BaseSystems\\Graphics\\Components" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
+)
+
+source_group("BaseEngine\\BaseSystems\\Graphics\\Render" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.cpp
+)
+# ================================================= GRAPHICS
+
+# BASE ENG SYSTEMS | INPUT
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Input" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
+)
+# ================================================= INPUT
+
+# BASE ENG SYSTEMS | DEBUG
+# =================================================
+source_group("BaseEngine\\BaseSystems\\Debug" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Debug.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Debug.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/CrashHandler.h
 )
+# ================================================= DEBUG
+
+# BASE ENG | MATH LIBRARY
+# =================================================
+source_group("BaseEngine\\Math" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
+)
+# ================================================= MATH
+
+# GSM
+# =================================================
+source_group("BaseEngine\\GSM" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
+)
+# ================================================= GSM
 
 # ECS
 # =================================================
@@ -244,158 +273,143 @@ source_group("BaseEngine\\ECS\\Entity" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityManager.cpp
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityCreation.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityCreation.h
 )
 source_group("BaseEngine\\ECS\\Component" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Component.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ComponentManager.h
 )
-source_group("BaseEngine\\ECS\\Component\\Scripting" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoScriptComponent.h
+
+source_group("BaseEngine\\ECS\\System" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
 
-source_group("BaseEngine\\ECS\\Component\\Graphics" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Animator.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Animator.h
-
-)
-source_group("BaseEngine\\ECS\\Component\\Physics" FILES 
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ForcesManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/ForcesManager.h
-
+source_group("BaseEngine\\ECS\\Registry" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
 )
 
-source_group("BaseEngine\\Systems" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h 
+source_group("BaseEngine\\FilePath" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FileIO.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FileIO.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/DataDefs.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/JsonLoad.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonLoad.h
+)
+source_group("BaseEngine\\Serialization" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Serialization.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Serialization.h
 )
 
-
-source_group("BaseEngine\\Systems\\Audio" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h 
-)
-
-
-source_group("BaseEngine\\Systems\\Render" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderSystem.cpp
-)
-
-source_group("BaseEngine\\Systems\\Editor" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImguiSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/ImguiSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GuiSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GuiSystem.h
-)
-source_group("BaseEngine\\Systems\\Physics" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
-)
-
-source_group("BaseEngine\\Managers" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStates.h
-)
-
-source_group("BaseEngine\\Managers\\Frame Rate" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
-)
-
-source_group("BaseEngine\\Managers\\Collision" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionManager.h
-)
-
-
-
-source_group("BaseEngine\\Libraries\\Audio" FILES 
+source_group("Systems\\Audio" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AudioCache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioCache.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/AudioComponent.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioComponent.h
 )
-
-
-source_group("BaseEngine\\Libraries\\Input" FILES 
+source_group("Systems\\Input" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
-
 )
-source_group("BaseEngine\\Libraries\\Math" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
 
+source_group("Systems\\Graphics\\Components" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Animator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Animator.h
 )
-source_group("BaseEngine\\Libraries\\Render" FILES 
+
+
+source_group("Systems\\FrameRateController" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
+)
+source_group("Systems\\Graphics\\Render" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderSystem.cpp
 )
-source_group("BaseEngine\\Libraries\\Collision" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/SpatialGrid.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/SpatialGrid.h
-
+source_group("Systems\\Graphics" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Graphics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Graphics.h
 )
 
-source_group("others" FILES
+source_group("Systems\\Movement" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Movement.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementSystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Movement.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementSystem.h
+)
+
+source_group("Systems\\Enemy" FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Enemy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/EnemySystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Enemy.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/EnemySystem.h
+)
+
+source_group("Systems\\Text" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TextSystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/TextSystem.h
-    
 )
 
-source_group("others\\EventBus" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/EventBus.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/EventBus.h
+
+source_group("Physics\\System" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
 )
-source_group("Game\\Levels" FILES 
+
+source_group("Physics\\System\\Collision" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionManager.h
+)
+
+source_group("Game\\State\\GameStates" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStates.h
+)
+source_group("Game\\State\\Levels" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Level1.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Level1.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Level2.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Level2.h
-
 )
 
-source_group("Game\\Main Menu" FILES 
+source_group("Game\\State\\Levels" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Level2.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Level2.h
+)
+
+source_group("Game\\State\\MainMenu" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MainMenu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MainMenu.h
 )
-
-source_group("Game\\Main" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-)
-
-source_group("Game\\Combat System" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CombatSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/CombatSystem.cpp
-)
-
-source_group("Game\\Game Logic" FILES 
+source_group("Game\\GameLogic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PlayerSystem.cpp
-
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Spells.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Spells.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Fretboard.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityCreation.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityCreation.h
 )
 
+
+source_group("Math" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
+)
 
 # ======================= Runtime Data (saves folder) =========================
 #add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
@@ -443,39 +457,22 @@ add_custom_target(copy_docs ALL
         ${CMAKE_BINARY_DIR}/projectGuide.pdf
 )
 
-#add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-#    COMMAND ${CMAKE_COMMAND} -E make_directory
-#    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
-#)
-
-# Copy save files from source to build directory
-#file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
-
-#foreach(save_file ${SAVE_FILES})
-#    if(EXISTS "${save_file}")
-#        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-#            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#                "${save_file}"
-#                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves"
-#        )
-#    else()
-#        message(WARNING "Skipping missing save file: ${save_file}")
-#    endif()
-#endforeach()
-
-# ======================= Copy save files safely =========================
-# Copies all JSON files from Assets/saves to build output, without failing if any missing
-
-set(SAVES_SRC_DIR "${CMAKE_SOURCE_DIR}/Assets/saves")
-set(SAVES_DST_DIR "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves")
-
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "Syncing Assets/saves -> ${SAVES_DST_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${SAVES_DST_DIR}"
-    # Copy the entire directory (safe, non-fatal)
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${SAVES_SRC_DIR}"
-        "${SAVES_DST_DIR}"
-    VERBATIM
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
 )
 
+# Copy save files from source to build directory
+file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
+
+foreach(save_file ${SAVE_FILES})
+    if(EXISTS "${save_file}")
+        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${save_file}"
+                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves"
+        )
+    else()
+        message(WARNING "Skipping missing save file: ${save_file}")
+    endif()
+endforeach()

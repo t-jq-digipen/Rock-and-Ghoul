@@ -21,7 +21,6 @@
 #include "Audio.h"
 #include "AudioSystem.h"
 #include "AudioCache.h"
-#include "AudioComponent.h"
 #include "CoreEngine.h"
 #include "PlayerSystem.h"
 #include "GameStateManager.h"
@@ -369,9 +368,9 @@ void AudioManager::UpdateCrossfade(float dt) {
     if (t > 1.0f) t = 1.0f;
 
     if (currentChannel)
-        currentChannel->setVolume(musicVol * (1.0f - t));
+        currentChannel->setVolume(musicVol * (1.0f - t));  // Fade from musicVol to 0
     if (nextChannel)
-        nextChannel->setVolume(musicVol * t);
+        nextChannel->setVolume(musicVol * t);              // Fade from 0 to musicVol
 
     if (t >= 1.0f) {
         if (currentChannel) currentChannel->stop();
@@ -394,25 +393,12 @@ void AudioManager::UpdateCrossfade(float dt) {
 void AudioManager::HandleMusicForState(GameState currentState, GameState previousState) {
     // DETECT TRANSITION TO LEVEL 1!
     if (currentState == GameState::GS_LEVEL1 && previousState != GameState::GS_LEVEL1) {
+        std::cout << "[AudioManager] Level 1 started - crossfading music...\n";
         if (level1Music) {
             CrossfadeTo(level1Music, 4.0f);
         }
         else {
-            std::cerr << "[AudioManager] ERROR: level1Music is NULL!" << std::endl;
-        }
-    }
-
-    // DETECT TRANSITION BACK TO MAIN MENU FROM LEVEL 1!
-    if (currentState == GameState::GS_MAIN_MENU && previousState == GameState::GS_LEVEL1) {
-        // Play button sound
-        AudioSystem::PlayButtonSound(AudioSystem::ButtonType::PLAY);
-
-        // Crossfade back to main menu music
-        if (mainMenuMusic) {
-            CrossfadeTo(mainMenuMusic, 4.0f);
-        }
-        else {
-            std::cerr << "[AudioManager] ERROR: mainMenuMusic is NULL!" << std::endl;
+            std::cerr << "[AudioManager] Error: Level 1 music not loaded!\n";
         }
     }
 }
@@ -626,9 +612,6 @@ void AudioManager::Update(float dt) {
 
     // Update FMOD system
     AudioSystem::Update();
-
-    // update all audio components
-    Update_AudioComponents(dt);
 
     // Get current game state
     GameState currentState = GSM_CurrentState();

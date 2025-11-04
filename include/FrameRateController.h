@@ -25,6 +25,7 @@
 
 class FrameRateController {
 public:
+
     FrameRateController(int targetFPS = 60);
 
     /**
@@ -48,12 +49,10 @@ public:
      * @param fps Desired frame cap. Values <= 0 disable capping.
      */
     void SetTargetFPS(int fps);
-
     /**
      * @brief Get the elapsed time of the last frame in seconds.
      */
     double GetDeltaTime() const { return m_deltaTime; }   // seconds
-
     /**
      * @brief Get the most recent frames per second measurement.
      */
@@ -63,24 +62,6 @@ public:
      * @brief Get the total number of frames since the controller started.
      */
     int    GetFrameCount() const { return m_frameCount; }
-
-    // FIXED DT FUNCS
-    /**
-     * @brief Get the fixed delta time for simulation (e.g., 1/60 for 60fps simulation).
-     */
-    double GetFixedDeltaTime() const { return m_fixedDeltaTime; }
-
-    /**
-     * @brief Get the number of fixed timesteps to execute this frame.
-     */
-    int GetCurrentNumberOfSteps() const { return m_currentNumberOfSteps; }
-
-    /**
-     * @brief Set the fixed delta time for simulation.
-     * @param dt Fixed timestep in seconds (e.g., 1/60.0 for 60fps simulation).
-     */
-    void SetFixedDeltaTime(double dt) { m_fixedDeltaTime = dt; }
-
 private:
     using Clock = std::chrono::high_resolution_clock;
     using TimePoint = Clock::time_point;
@@ -92,9 +73,4 @@ private:
     double m_deltaTime; // in seconds
     double m_fps;
     int m_frameCount;
-
-    // fixed dt
-    double m_fixedDeltaTime;      // target simulation timestep (e.g., 1/60 for 60fps)
-    double m_accumulatedTime;     // accumulated time between frames
-    int m_currentNumberOfSteps;   // how many fixed steps to take this frame
 };

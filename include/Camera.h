@@ -25,7 +25,7 @@ Key functionalities include:
 - Computing combined view-projection transforms
 - Providing global access through a singleton instance
 
-Copyright ï¿½ 2025 DigiPen, All rights reserved.
+Copyright © 2025 DigiPen, All rights reserved.
 */
 /**************************************************************************/
 
@@ -75,7 +75,7 @@ public:
     /**************************************************************************/
     glm::mat4 GetViewProjection() const { return projMatrix * viewMatrix; }
 
-    enum class Mode { EDITOR, GAME };
+
 
 
     // Modifiers for camera data
@@ -84,12 +84,7 @@ public:
     void SetRotation(float r) { rotation = r; }
     void SetAspectRatio(float a) { aspectRatio = a; }
     void SetViewWidth(float w) { viewWidth = w; }
-    void SetBounds(const Vec2& min, const Vec2& max) { worldMin = min; worldMax = max; }
 
-    void SetMode(Mode m) { mode = m; }
-    Mode GetMode() const { return mode; }
-    void ResetToCenter();
-    void FollowTarget(const Vec2& targetPos, float dt);
     // Accessors for camera data
     const Vec2& GetPosition() const { return position; }
     float GetZoom() const { return zoom; }
@@ -99,9 +94,6 @@ public:
 
     const glm::mat4& GetViewMatrix() const { return viewMatrix; }
     const glm::mat4& GetProjMatrix() const { return projMatrix; }
-
-    const Vec2& GetWorldMin() const { return worldMin; }
-    const Vec2& GetWorldMax() const { return worldMax; }
 
     // Prevent copy
     Camera(const Camera&) = delete;
@@ -118,10 +110,6 @@ private:
 
     glm::mat4 viewMatrix; //world to cam transform
     glm::mat4 projMatrix; //ortho proj matrix
-
-    Mode mode = Mode::EDITOR;
-    Vec2 worldMin;   // lower-left corner of camera movement bounds
-    Vec2 worldMax;   // upper-right corner of camera movement bounds
 };
 
 /**

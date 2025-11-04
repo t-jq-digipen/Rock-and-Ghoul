@@ -2,7 +2,7 @@
  * @file        CollisionManager.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu
- * @date        04 NOV 2025
+ * @date        24 OCT 2025
  *
  * @brief
  *
@@ -18,68 +18,14 @@
  *     the static object.
  *
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright � 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
 #include "CollisionManager.h"
-#include "SpatialGrid.h"
-#include <algorithm>
-
-// Spatial grid for broad-phase optimization
-static SpatialGrid spatialGrid(150.0f); // Cell size tuned for typical entity size
-
-uint32_t CollisionLayerManager::RegisterLayer(const std::string& name) {
-    if (layerBits.find(name) != layerBits.end()) { return layerBits[name]; }
-
-    if (nextBit >= 32) 
-    {
-        std::cout << "Cannot exceed 32 collision layers! Failed to register " << name << '\n';
-        return 0;
-    }
-
-    uint32_t bit = 1 << nextBit++;
-    layerBits[name] = bit;
-    layerNames[bit] = name;
-
-    return bit;
-}
-
-uint32_t CollisionLayerManager::GetLayerBit(const std::string& name) const {
-    auto it = layerBits.find(name);
-    if (it == layerBits.end()) 
-    { 
-        std::cerr << "Collision layer " << name << " not registered!\n";
-        return 0; 
-    }
-
-    return it->second;
-}
-
-std::string CollisionLayerManager::GetLayerName(uint32_t bit) const {
-    auto it = layerNames.find(bit);
-    if (it == layerNames.end())
-    {
-        std::cerr << "Collision layer bit " << bit << " not registered!\n";
-        return "";
-    }
-
-    return it->second;
-}
-
-bool CollisionLayerManager::ShouldCollide(uint32_t layerA, uint32_t maskA, uint32_t layerB, uint32_t maskB) const {
-    return (maskA & layerB) || (maskB & layerA);
-}
-
-void CollisionLayerManager::Clear() {
-    layerBits.clear();
-    layerNames.clear();
-    nextBit = 0;
-}
 
 void CollisionManager::Clear() {
     events.clear();
-    spatialGrid.Clear();
 }
 
 void CollisionManager::AddEvent(Entity a, Entity b) {
@@ -191,7 +137,7 @@ void CollisionManager::ProcessEvents() {
 //
 //    physDyn.UpdateHitboxes(transDyn.pos);
 //
-//    //Lecture 16 - Animated Point to Line
+//    //Lecture 16 � Animated Point to Line
 //    Vec2 velDyn = physDyn.Get_Vel();
 //    float velocitynorm = RG_DotProduct(velDyn, normal);
 //    // If moving into the wall (negative dot product)
@@ -204,60 +150,56 @@ void CollisionManager::ProcessEvents() {
 
 // IMPULSE-BASED COLLISION (LINEAR PHYSICS SYSTEM)
 void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
-    auto& transA = m_registry.Get_Component<TransformComponent>(a);
-    auto& physA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
-    auto& transB = m_registry.Get_Component<TransformComponent>(b);
-    auto& physB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
+        auto& transA = m_registry.Get_Component<TransformComponent>(a);
+        auto& physA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
+        auto& transB = m_registry.Get_Component<TransformComponent>(b);
+        auto& physB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
 
-    const AABB& aabbA = physA.Get_AABB();
-    const AABB& aabbB = physB.Get_AABB();
+        const AABB& aabbA = physA.Get_AABB();
+        const AABB& aabbB = physB.Get_AABB();
 
-    // Calculate collision normal
-    Vec2 diff = RG_Subtract(transB.pos, transA.pos);
-    float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - fabs(diff.x);
-    float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - fabs(diff.y);
+        // Calculate collision normal
+        Vec2 diff = RG_Subtract(transB.pos, transA.pos);
+        float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - fabs(diff.x);
+        float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - fabs(diff.y);
 
-    if (overlapX <= 0 || overlapY <= 0) return;
+        if (overlapX <= 0 || overlapY <= 0) return;
 
-    // Find collision normal
-    Vec2 normal;
-    float penetrationDepth;
+        // Find collision normal
+        Vec2 normal;
+        float penetrationDepth;
 
-    if (overlapX < overlapY) {
-        normal = (diff.x > 0) ? Vec2{ 1.0f, 0.0f } : Vec2{ -1.0f, 0.0f };
-        penetrationDepth = overlapX;
-    }
-    else {
-        normal = (diff.y > 0) ? Vec2{ 0.0f, 1.0f } : Vec2{ 0.0f, -1.0f };
-        penetrationDepth = overlapY;
-    }
+        if (overlapX < overlapY) {
+            normal = (diff.x > 0) ? Vec2{ 1.0f, 0.0f } : Vec2{ -1.0f, 0.0f };
+            penetrationDepth = overlapX;
+        }
+        else {
+            normal = (diff.y > 0) ? Vec2{ 0.0f, 1.0f } : Vec2{ 0.0f, -1.0f };
+            penetrationDepth = overlapY;
+        }
 
-    // minimal position correction to prevent sinking
-    bool aStatic = physA.IsStatic();
-    bool bStatic = physB.IsStatic();
+        // Minimal position correction to prevent sinking
+        bool aStatic = physA.IsStatic();
+        bool bStatic = physB.IsStatic();
 
-    const float separationBuffer = 0.1f;  // minimal buffer to prevent sinking
-
-    float correctionAmount = penetrationDepth + separationBuffer;
-
-    if (!aStatic && !bStatic) {
-        float half = correctionAmount / 2.0f;
-        Vec2 correction = RG_Scale(normal, half);
-        transA.pos = RG_Subtract(transA.pos, correction);
-        transB.pos = RG_Add(transB.pos, correction);
-        physA.UpdateHitboxes(transA.pos);
-        physB.UpdateHitboxes(transB.pos);
-    }
-    else if (!aStatic) {
-        Vec2 correction = RG_Scale(normal, -correctionAmount);
-        transA.pos = RG_Add(transA.pos, correction);
-        physA.UpdateHitboxes(transA.pos);
-    }
-    else if (!bStatic) {
-        Vec2 correction = RG_Scale(normal, correctionAmount);
-        transB.pos = RG_Add(transB.pos, correction);
-        physB.UpdateHitboxes(transB.pos);
-    }
+        if (!aStatic && !bStatic) {
+            float halfPen = penetrationDepth / 2.0f;
+            Vec2 correction = RG_Scale(normal, halfPen);
+            transA.pos = RG_Subtract(transA.pos, correction);
+            transB.pos = RG_Add(transB.pos, correction);
+            physA.UpdateHitboxes(transA.pos);
+            physB.UpdateHitboxes(transB.pos);
+        }
+        else if (!aStatic) {
+            Vec2 correction = RG_Scale(normal, -penetrationDepth);
+            transA.pos = RG_Add(transA.pos, correction);
+            physA.UpdateHitboxes(transA.pos);
+        }
+        else if (!bStatic) {
+            Vec2 correction = RG_Scale(normal, penetrationDepth);
+            transB.pos = RG_Add(transB.pos, correction);
+            physB.UpdateHitboxes(transB.pos);
+        }
 
         // Calculate relative velocity
         Vec2 velA = physA.Get_Vel();
@@ -266,44 +208,25 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         float velAlongNormal = RG_DotProduct(relativeVel, normal);
 
         // Don't resolve if separating
-        if (velAlongNormal > -0.1f) return;
+        if (velAlongNormal > 0) return;
 
-        // Special handling for high-speed impacts (like dashing into walls)
-        const float highSpeedThreshold = 500.0f;
-        if ((aStatic || bStatic) && fabs(velAlongNormal) > highSpeedThreshold) {
-            // For high-speed wall impacts, just stop velocity along normal
-            if (!aStatic) {
-                Vec2 normalComponent = RG_Scale(normal, velAlongNormal);
-                velA = RG_Subtract(velA, normalComponent);
-                physA.Set_Vel(velA);
-            }
-            if (!bStatic) {
-                Vec2 normalComponent = RG_Scale(normal, -velAlongNormal);
-                velB = RG_Add(velB, normalComponent);
-                physB.Set_Vel(velB);
-            }
-            return;  // Skip impulse calculation for high-speed wall impacts
-        }
-
+        // Calculate impulse magnitude using physics formula
+        // j = -(1 + e) * v_rel / (1/m_a + 1/m_b)
         float e = std::min(physA.GetRestitution(), physB.GetRestitution());
-
         float invMassA = aStatic ? 0.0f : 1.0f / physA.GetMass();
         float invMassB = bStatic ? 0.0f : 1.0f / physB.GetMass();
 
-        // Preventing division by zero
-        if (invMassA + invMassB < 0.0001f) return;
-
-        // Calculate impulse magnitude j = -(1+e)*v_rel / (1/m_a + 1/m_b)
         float j = -(1.0f + e) * velAlongNormal / (invMassA + invMassB);
         Vec2 impulse = RG_Scale(normal, j);
 
-        // Apply impulses, changes velocity, not position
+        // Apply impulses time-based
         if (!aStatic) {
             physA.ApplyLinearImpulse(impulse);
         }
         if (!bStatic) {
             physB.ApplyLinearImpulse(RG_Scale(impulse, -1.0f));
         }
+    
 }
 
 // Replaced ActionStop with Impulse method
@@ -319,81 +242,64 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected)
 void CollisionManager::CheckCollisions() {
     auto& physicsComps = m_registry.Get_ComponentMap<Physics::PhysicsComponent>();
 
-    // BROAD PHASE: Build spatial grid
-    for (auto& [entity, phyComp] : physicsComps) {
-        if (!phyComp.CollisionActive() || !m_registry.Has_Component<TransformComponent>(entity)) {
-            continue;
-        }
+    for (auto itA = physicsComps.begin(); itA != physicsComps.end(); ++itA) {
+        Entity a = itA->first;
+        Physics::PhysicsComponent& compA = itA->second;
 
-        auto& trans = m_registry.Get_Component<TransformComponent>(entity);
-        phyComp.UpdateHitboxes(trans.pos);
+        if (!compA.CollisionActive() || !m_registry.Has_Component<TransformComponent>(a)) continue;
 
-        // Insert into spatial grid
-        spatialGrid.Insert(entity, phyComp.Get_AABB());
-    }
+        auto& transA = m_registry.Get_Component<TransformComponent>(a);
+        compA.UpdateHitboxes(transA.pos);
 
-    // NARROW PHASE: Get potential pairs from spatial grid and check them
-    auto potentialPairs = spatialGrid.GetAllPotentialPairs();
+        for (auto itB = std::next(itA); itB != physicsComps.end(); ++itB) {
+            Entity b = itB->first;
+            Physics::PhysicsComponent& compB = itB->second;
 
-    for (const auto& [a, b] : potentialPairs) {
-        // Validate both entities still exist and have required components
-        if (!m_registry.Has_Component<Physics::PhysicsComponent>(a) ||
-            !m_registry.Has_Component<Physics::PhysicsComponent>(b)) {
-            continue;
-        }
+            if (!compB.CollisionActive() || !m_registry.Has_Component<TransformComponent>(b)) continue;
 
-        auto& compA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
-        auto& compB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
+            auto& transB = m_registry.Get_Component<TransformComponent>(b);
+            compB.UpdateHitboxes(transB.pos);
 
-        if (!compA.CollisionActive() || !compB.CollisionActive()) {
-            continue;
-        }
+            // collision shapes
+            bool aIsCircle = false, bIsCircle = false;
 
-        if (compA.ShouldSkipCollision() || compB.ShouldSkipCollision()) {
-            continue;
-        }
-
-        // Skip wall-wall collisions obviously
-        if (m_registry.Has_Component<TagComponent>(a) && m_registry.Has_Component<TagComponent>(b)) {
-            auto& tagA = m_registry.Get_Component<TagComponent>(a);
-            auto& tagB = m_registry.Get_Component<TagComponent>(b);
-            if (tagA.tag == T_WALL && tagB.tag == T_WALL) {
-                continue;
+            if (m_registry.Has_Component<ShapeComponent>(a)) {
+                auto& shapeA = m_registry.Get_Component<ShapeComponent>(a);
+                aIsCircle = (shapeA.shape == SHAPE_CIRCLE);
             }
-        }
+            if (m_registry.Has_Component<ShapeComponent>(b)) {
+                auto& shapeB = m_registry.Get_Component<ShapeComponent>(b);
+                bIsCircle = (shapeB.shape == SHAPE_CIRCLE);
+            }
 
-        // Determine collision shapes
-        bool aIsCircle = false, bIsCircle = false;
+            if (m_registry.Has_Component<TagComponent>(a) && m_registry.Has_Component<TagComponent>(b)) {
+                auto& tagA = m_registry.Get_Component<TagComponent>(a);
+                auto& tagB = m_registry.Get_Component<TagComponent>(b);
+                if (tagA.tag == T_WALL && tagB.tag == T_WALL) {
+                    continue; // don�t process wall�wall collisions
+                }
+            }
 
-        if (m_registry.Has_Component<ShapeComponent>(a)) {
-            auto& shapeA = m_registry.Get_Component<ShapeComponent>(a);
-            aIsCircle = (shapeA.shape == SHAPE_CIRCLE);
-        }
-        if (m_registry.Has_Component<ShapeComponent>(b)) {
-            auto& shapeB = m_registry.Get_Component<ShapeComponent>(b);
-            bIsCircle = (shapeB.shape == SHAPE_CIRCLE);
-        }
+            if (!aIsCircle && !bIsCircle) {
+                // Both are rectangles
+                bool hit = CollisionIntersection_RectRect_Static(compA.Get_AABB(), compB.Get_AABB());
+                CollisionActions(a, b, hit);
+            }
 
-        // NARROW PHASE: Precise collision detection
-        bool hit = false;
+            // === CIRCLE - CIRCLE ===
+            else if (aIsCircle && bIsCircle) {
+                // Both are circles
+                bool hit = CollisionIntersection_CC_Static(compA.Get_Circle(), compB.Get_Circle());
+                CollisionActions(a, b, hit);
+            }
 
-        if (!aIsCircle && !bIsCircle) {
-            // Rect-Rect
-            hit = CollisionIntersection_RectRect_Static(compA.Get_AABB(), compB.Get_AABB());
-        }
-        else if (aIsCircle && bIsCircle) {
-            // Circle-Circle
-            hit = CollisionIntersection_CC_Static(compA.Get_Circle(), compB.Get_Circle());
-        }
-        else {
-            // Circle-Rect
-            hit = aIsCircle ?
-                CollisionIntersection_CA_Static(compA.Get_Circle(), compB.Get_AABB()) :
-                CollisionIntersection_CA_Static(compB.Get_Circle(), compA.Get_AABB());
-        }
+            // === CIRCLE - RECT ===
+            else {
+                // One is circle, other is rectangle
+                bool hit = aIsCircle? CollisionIntersection_CA_Static(compA.Get_Circle(), compB.Get_AABB()) : CollisionIntersection_CA_Static(compB.Get_Circle(), compA.Get_AABB());
 
-        if (hit) {
-            CollisionActions(a, b, true);
+                CollisionActions(a, b, hit);
+            }
         }
     }
 }

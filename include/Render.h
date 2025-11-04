@@ -77,14 +77,6 @@ struct Image {
 Image CreateImage(const std::string& path);
 
 
-struct GameViewRect {
-    float x = 0.f;
-    float y = 0.f;
-    float width = 1920.f;
-    float height = 1080.f;
-};
-
-
 
 
 /**

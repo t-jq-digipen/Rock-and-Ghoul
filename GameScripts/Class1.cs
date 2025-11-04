@@ -8,15 +8,7 @@ public static class ECS
 
     [DllImport("team_aviddivas.exe", EntryPoint = "CS_SetPosition")]
     public static extern void SetPosition(uint entity, float x, float y);
-
-    [DllImport("team_aviddivas.exe", EntryPoint = "CS_GetRotation")]
-    public static extern float GetRotation(uint entity);
-
-    [DllImport("team_aviddivas.exe", EntryPoint = "CS_SetRotation")]
-    public static extern void SetRotation(uint entity, float rot);
 }
-
-
 public static class InputBridge
 {
     [DllImport("team_aviddivas.exe", EntryPoint = "CS_IsKeyPressed")]
@@ -28,30 +20,22 @@ public class Rotator
 
     public void Update(float dt)
     {
-        float currentRotation = ECS.GetRotation(EntityID);
-        currentRotation += 90f * dt;  // 90 degrees per second
-        ECS.SetRotation(EntityID, currentRotation);
-
-
-       // Console.WriteLine($"[Rotator] Entity {EntityID} rotation={currentRotation:F1}");
+        ECS.GetPosition(EntityID, out float x, out float y);
+        x += 100f * dt; // move right
+        ECS.SetPosition(EntityID, x, y);
+        Console.WriteLine($"[Rotator] Entity {EntityID} pos=({x:F1},{y:F1})");
     }
 }
 
 public class Mover
 {
     public uint EntityID;
-    private float time;
+
     public void Update(float dt)
     {
         ECS.GetPosition(EntityID, out float x, out float y);
-
-        // Move up & down with sine wave
-        time += dt;
-        float amplitude = 100.0f;   // how far up/down
-        float speed = 2.0f;         // how fast it moves
-        float newY = 500.0f + (float)Math.Sin(time * speed) * amplitude;
-
-        // 3. Write new position
-        ECS.SetPosition(EntityID, x, newY);
+        y += 50f * dt; // move upward
+        ECS.SetPosition(EntityID, x, y);
+        Console.WriteLine($"[Mover] Entity {EntityID} pos=({x:F1},{y:F1})");
     }
 }

@@ -18,7 +18,6 @@
 #include "Input.h"
 #include "Movement.h"
 #include "GameStateManager.h"
-#include "BehaviourFCT.h"   // BehaviourFCT
 #include <iostream>
 #include <unordered_map>
 
@@ -27,20 +26,6 @@ enum PlayerState : unsigned int {
     PS_WALK,
     PS_SLIDE
 };
-
-namespace PlayerMove {
-
-
-
-    inline void Start(Entity e);
-
-    inline void Update(Entity e, float dt);
-
-    inline void End(Entity e)
-    {
-        std::cout << "Player script ended" << std::endl;
-    }
-}
 
 class PlayerSystem : public ISystem {
 private:
@@ -52,9 +37,9 @@ private:
 
     void UpdateFootsteps(Entity eID, float dt);
     void PlayFootstep(Entity eID);
-    // static inline Movement::InputDirection VelToDir(float x, float y);
+    static inline Movement::InputDirection VelToDir(float x, float y);
 
-    // static inline void NormalizeDiagonalMovement(float& x, float& y);
+    static inline void NormalizeDiagonalMovement(float& x, float& y);
 
 public:
     void Initialize() override;

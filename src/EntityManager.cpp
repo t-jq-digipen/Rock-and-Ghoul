@@ -46,13 +46,6 @@ Entity EntityManager::createEntity()
 	if (alive.size() < next_entID)
 	{	alive.resize(next_entID, false);	}
 
-	// Remove a name if already assigned?
-	if (entityNames.find(e) != entityNames.end())
-	{
-		nameToEntity.erase(entityNames[e]);
-		entityNames.erase(e);
-	}
-
 
 	alive[e] = true;	// set new entity to alive ^^
 	return e;
@@ -119,5 +112,3 @@ Entity EntityManager::GetEntityFromName(const std::string& name)
 
 	return nameToEntity[name];
 }
-
-

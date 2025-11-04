@@ -1,8 +1,7 @@
 ﻿/* ========================================================
  * @file        Input.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
- * @date        04 NOV 2025
+ * @date        01 OCT 2025
  *
  * @brief
  * 
@@ -10,11 +9,6 @@
  * This module maintains the current state of keys and mouse buttons (Pressed,
  * Held, Released), tracks mouse position, and processes scroll offsets.
  * Transient states are updated each frame to ensure consistent input.
- * 
- * EDIT: 04 NOV
- * Key inputs now generate events which are pushed to the EventBus.
- * These event pushes are sent in Input::KeyCallback.
- * 
  * 
  *
  * Copyright © 2025 DigiPen, All rights reserved.
@@ -96,21 +90,12 @@ void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
     (void)scancode;
     (void)mods;
     if (action == GLFW_PRESS) {
-        KeyPressedEvent keypress;
-        keypress.key = key;
-        EventBus::Get().PushEvent(keypress);
         keys[key] = KeyState::PRESSED;
     }
     else if (action == GLFW_RELEASE) {
-        KeyReleasedEvent keyrelease;
-        keyrelease.key = key;
-        EventBus::Get().PushEvent(keyrelease);
         keys[key] = KeyState::RELEASED;
     }
     else if (action == GLFW_REPEAT) {
-        KeyHeldEvent keyheld;
-        keyheld.key = key;
-        EventBus::Get().PushEvent(keyheld);
         keys[key] = KeyState::HELD;
     }
     if (key == GLFW_KEY_ESCAPE) {

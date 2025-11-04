@@ -4,20 +4,20 @@
  * @date		26 OCT 2025
  *
  * @brief	Component Manager template for ECS
- *
+ * 
  * The Component Manager is responsible for storing, retrieving
  * and removing components of a given type. Each component type
  * has it's own manager.
  * e.g ComponentManager<TransformComponent>
  * These component managers exist in Registry.
- *
+ * 
  * Entities must still be managed through the EntityManager!
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
- // DO NOT AMEND
+// DO NOT AMEND
 #pragma once
 
 #include "Component.h"
@@ -71,7 +71,7 @@ public:
 	 * @param comp The component instance to add.
 	 * @throws std::runtime_error if the entity already has this component.
 	 */
-	void		addComponent(Entity eID, Component const& comp = {})
+	void		addComponent(Entity eID, Component const& comp = {}) 
 	{
 		// check if entity already has component
 		if (hasComponent(eID))
@@ -109,7 +109,7 @@ public:
 	 * @return Reference to the component associated with the entity.
 	 * @throws std::runtime_error if the entity does not have this component.
 	 */
-	Component& getComponent(Entity eID)
+	Component&	getComponent(Entity eID)
 	{
 		auto it = components.find(eID);
 		if (it != components.end())

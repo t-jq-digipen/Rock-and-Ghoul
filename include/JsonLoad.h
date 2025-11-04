@@ -2,7 +2,7 @@
  * @file        JsonLoad.h
  * @author      Yasmin Tazi | yasmin.t@digipen.edu
  * @co-author   Tan Ying Clarissa | t.yingclarissa@digipen.edu
- * @date        04 NOV SEP 2025
+ * @date        26 SEP 2025
  *
  * @brief   Header file declaring the JSON serialization system
  *
@@ -11,7 +11,7 @@
  * deserialization system for the game's Entity Component System (ECS).
  * It uses the nlohmann JSON library for parsing and serialization.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright � 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -83,26 +83,6 @@ public:
      *         during deserialization.
      */
     static bool LoadScene(const std::string& filepath);
-
-    /**
-     * @brief Loads current game scene from JSON file.
-     *
-     * @param filepath The file path to the scene file to load.
-     * @param sceneName The name to assign to this scene for identification.
-     * @return bool True if the scene was successfully saved, false if an error
-     *         occurred during serialization or file writing.
-     */
-    //static bool LoadCurrentScene(const std::string& filepath, const std::string& sceneName);
-
-    /**
-     * @brief Saves temporary scene to JSON file based on sceneName.
-     *
-     * @param filepath The file path to the scene file to load.
-     * @param sceneName The name to assign to this scene for identification.
-     * @return bool True if the temp scene was successfully saved, false if an error
-     *         occurred during serialization or file writing.
-     */
-    //static bool SaveCurrentTempScene(const std::string& filepath, const std::string& sceneName);
 
     // Save game settings
     static bool SaveSettings(const std::string& filepath, GameSettings& settings);

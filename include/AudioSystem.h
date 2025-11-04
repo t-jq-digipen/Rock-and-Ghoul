@@ -192,10 +192,6 @@ public:
         AudioSystem::PlayButtonSound(type);
     }
 
-    // AudioManager.h
-    FMOD::Channel* GetCurrentMusicChannel() const { return currentChannel; }
-    FMOD::Channel* GetNextMusicChannel() const { return nextChannel; }
-
 private:
     // Volume control
     float musicVol = 0.1f;

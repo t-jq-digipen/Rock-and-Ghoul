@@ -2,74 +2,16 @@
     "entities": [
         {
             "components": {
-                "Animator": "{\"animDuration\":1.0,\"currentState\":0,\"frameColEnd\":1,\"frameColStart\":0,\"frameRow\":3,\"states\":{\"0\":{\"col_end\":1,\"col_start\":0,\"duration\":1.0,\"row\":3},\"1\":{\"col_end\":3,\"col_start\":2,\"duration\":0.5,\"row\":3}},\"totalCols\":6,\"totalRows\":3}",
-                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
-                "Input": "{\"scheme\":1}",
-                "Movement": "{\"moveSpeed\":500.0}",
-                "Physics": "{\"aabb\":{\"centerX\":653.489013671875,\"centerY\":670.461669921875,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":653.489013671875,\"posY\":670.461669921875,\"rad\":200.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
-                "Sprite": "{\"animated\":true,\"scaleX\":100.0,\"scaleY\":100.0,\"texturePath\":\"../Assets/Waffle_Sprites.png\"}",
-                "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":653.489013671875,\"posY\":670.461669921875,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
-            },
-            "name": "Waffle"
-        },
-        {
-            "components": {
-                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
-                "Input": "{\"scheme\":0}",
-                "Movement": "{\"moveSpeed\":300.0}",
-                "Physics": "{\"aabb\":{\"centerX\":451.5543212890625,\"centerY\":478.57745361328125,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":451.5542907714844,\"posY\":478.57745361328125,\"rad\":200.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
-                "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Rock_FightingPose_2048px.png\"}",
-                "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":451.5542907714844,\"posY\":478.57745361328125,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
-            },
-            "name": "Player"
-        },
-        {
-            "components": {
-                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
-                "Input": "{\"scheme\":0}",
-                "Movement": "{\"moveSpeed\":300.0}",
-                "Physics": "{\"aabb\":{\"centerX\":959.9464111328125,\"centerY\":505.32098388671875,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":959.9464111328125,\"posY\":505.32098388671875,\"rad\":200.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
-                "Shape": "{\"colorX\":1.0,\"colorY\":0.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":0}",
-                "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":959.9464111328125,\"posY\":505.32098388671875,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
-            },
-            "name": "Rectangle"
-        },
-        {
-            "components": {
-                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
-                "Input": "{\"scheme\":2}",
-                "Movement": "{\"moveSpeed\":100.0}",
-                "Physics": "{\"aabb\":{\"centerX\":1009.7008056640625,\"centerY\":706.6473388671875,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1009.7008056640625,\"posY\":706.6473388671875,\"rad\":100.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
-                "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":1}",
-                "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":1009.7008056640625,\"posY\":706.6473388671875,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
-            },
-            "name": "Circle"
-        },
-        {
-            "components": {
-                "Physics": "{\"aabb\":{\"centerX\":960.0,\"centerY\":1055.0,\"dimX\":1920.0,\"dimY\":50.0},\"circle\":{\"posX\":960.0,\"posY\":1055.0,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Physics": "{\"aabb\":{\"centerX\":1895.0,\"centerY\":540.0,\"dimX\":50.0,\"dimY\":1080.0},\"circle\":{\"posX\":1895.0,\"posY\":540.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                 "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":960.0,\"posY\":1055.0,\"rot\":0.0,\"scaleX\":1920.0,\"scaleY\":50.0}"
+                "Transform": "{\"posX\":1895.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":50.0,\"scaleY\":1080.0}"
             },
-            "name": "Entity_4"
+            "name": "Entity_7"
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":960.0,\"centerY\":25.0,\"dimX\":1920.0,\"dimY\":50.0},\"circle\":{\"posX\":960.0,\"posY\":25.0,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
-                "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":960.0,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1920.0,\"scaleY\":50.0}"
-            },
-            "name": "Entity_5"
-        },
-        {
-            "components": {
-                "Physics": "{\"aabb\":{\"centerX\":25.0,\"centerY\":540.0,\"dimX\":50.0,\"dimY\":1080.0},\"circle\":{\"posX\":25.0,\"posY\":540.0,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Physics": "{\"aabb\":{\"centerX\":25.0,\"centerY\":540.0,\"dimX\":50.0,\"dimY\":1080.0},\"circle\":{\"posX\":25.0,\"posY\":540.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                 "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
                 "Tag": "{\"tagID\":3}",
                 "Transform": "{\"posX\":25.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":50.0,\"scaleY\":1080.0}"
@@ -78,13 +20,71 @@
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":1895.0,\"centerY\":540.0,\"dimX\":50.0,\"dimY\":1080.0},\"circle\":{\"posX\":1895.0,\"posY\":540.0,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Physics": "{\"aabb\":{\"centerX\":960.0,\"centerY\":25.0,\"dimX\":1920.0,\"dimY\":50.0},\"circle\":{\"posX\":960.0,\"posY\":25.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                 "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":1895.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":50.0,\"scaleY\":1080.0}"
+                "Transform": "{\"posX\":960.0,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1920.0,\"scaleY\":50.0}"
             },
-            "name": "Entity_7"
+            "name": "Entity_5"
+        },
+        {
+            "components": {
+                "Physics": "{\"aabb\":{\"centerX\":960.0,\"centerY\":1055.0,\"dimX\":1920.0,\"dimY\":50.0},\"circle\":{\"posX\":960.0,\"posY\":1055.0,\"rad\":0.0},\"decay\":0.0,\"isStatic\":true,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":1.0,\"colorZ\":1.0,\"dimX\":1.0,\"dimY\":1.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":960.0,\"posY\":1055.0,\"rot\":0.0,\"scaleX\":1920.0,\"scaleY\":50.0}"
+            },
+            "name": "Entity_4"
+        },
+        {
+            "components": {
+                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+                "Input": "{\"scheme\":2}",
+                "Movement": "{\"moveSpeed\":100.0}",
+                "Physics": "{\"aabb\":{\"centerX\":1009.7008056640625,\"centerY\":701.92626953125,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1009.7008056640625,\"posY\":701.92626953125,\"rad\":100.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":1}",
+                "Tag": "{\"tagID\":0}",
+                "Transform": "{\"posX\":1009.7008056640625,\"posY\":701.92626953125,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+            },
+            "name": "Circle"
+        },
+        {
+            "components": {
+                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+                "Input": "{\"scheme\":0}",
+                "Movement": "{\"moveSpeed\":300.0}",
+                "Physics": "{\"aabb\":{\"centerX\":803.8694458007813,\"centerY\":439.494384765625,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":803.8694458007813,\"posY\":439.4943542480469,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":0.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":0}",
+                "Tag": "{\"tagID\":0}",
+                "Transform": "{\"posX\":803.8694458007813,\"posY\":439.4943542480469,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+            },
+            "name": "Rectangle"
+        },
+        {
+            "components": {
+                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+                "Input": "{\"scheme\":0}",
+                "Movement": "{\"moveSpeed\":300.0}",
+                "Physics": "{\"aabb\":{\"centerX\":298.6081848144531,\"centerY\":408.0297546386719,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":298.6081848144531,\"posY\":408.0297546386719,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Rock_FightingPose_2048px.png\"}",
+                "Tag": "{\"tagID\":0}",
+                "Transform": "{\"posX\":298.6081848144531,\"posY\":408.0297546386719,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+            },
+            "name": "Player"
+        },
+        {
+            "components": {
+                "Animator": "{\"animDuration\":1.0,\"currentState\":0,\"frameColEnd\":1,\"frameColStart\":0,\"frameRow\":3,\"states\":{\"0\":{\"col_end\":1,\"col_start\":0,\"duration\":1.0,\"row\":3},\"1\":{\"col_end\":3,\"col_start\":2,\"duration\":0.5,\"row\":3}},\"totalCols\":6,\"totalRows\":3}",
+                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+                "Input": "{\"scheme\":1}",
+                "Movement": "{\"moveSpeed\":500.0}",
+                "Physics": "{\"aabb\":{\"centerX\":650.3580322265625,\"centerY\":670.461669921875,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":650.3580322265625,\"posY\":670.461669921875,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Sprite": "{\"animated\":true,\"scaleX\":100.0,\"scaleY\":100.0,\"texturePath\":\"../Assets/Waffle_Sprites.png\"}",
+                "Tag": "{\"tagID\":0}",
+                "Transform": "{\"posX\":650.3580322265625,\"posY\":670.461669921875,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+            },
+            "name": "Waffle"
         }
     ],
-    "sceneName": "level2.json"
+    "sceneName": "Level2"
 }
