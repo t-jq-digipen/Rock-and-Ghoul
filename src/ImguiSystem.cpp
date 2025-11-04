@@ -629,11 +629,11 @@ void ImGuiSystem::ShowEngineDebugWindow() {
             // Save the current edited scene before starting simulation
             if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
             {
-                JsonLoad::SaveCurrentTempScene(FilePath::SCENES_LIST, "Level1_TempScene");
+                JsonLoad::LoadCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
             }
             else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
             {
-                JsonLoad::SaveCurrentTempScene(FilePath::SCENES_LIST, "Level2_TempScene");
+                JsonLoad::LoadCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
             }
 
             std::cout << "[Editor] Temp scene saved before Play.\n";
@@ -661,7 +661,7 @@ void ImGuiSystem::ShowEngineDebugWindow() {
             cam.SetMode(Camera::Mode::EDITOR);
             cam.ResetToCenter();       
 
-            JsonLoad::ClearAllEntities();
+            //JsonLoad::ClearAllEntities();
             LogicSystem::Get().Shutdown();
             // if (!JsonLoad::LoadScene(FilePath::TEMP_SCENE))
             //     JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
@@ -672,26 +672,26 @@ void ImGuiSystem::ShowEngineDebugWindow() {
             // reload the scene you were editing before pressing Play
             if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
             {
-                if (JsonLoad::LoadCurrentScene(FilePath::SCENES_LIST, "Level1_TempScene"))
+                if (JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json"))
                 {
                     std::cout << "[Editor] Restored Level1_TempScene from temp file.\n";                  
                 }
                 else
                 {
                     std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
-                    JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+                    JsonLoad::LoadCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
                 }
             }
             else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
             {
-                if (JsonLoad::LoadCurrentScene(FilePath::SCENES_LIST, "Level2_TempScene"))
+                if (JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json"))
                 {
                     std::cout << "[Editor] Restored Level2_TempScene from temp file.\n";
                 }
                 else
                 {
-                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
-                    JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
+                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
+                    JsonLoad::LoadCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
                 }
             }
 
