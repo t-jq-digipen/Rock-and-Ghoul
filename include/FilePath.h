@@ -55,5 +55,6 @@ public:
     static const std::string TEMP_SCENE;
     static const std::string ASSETS_FOLDER;
     static const std::string PREFABS_FOLDER;
+    static const std::string SCENES_LIST;
 
 };

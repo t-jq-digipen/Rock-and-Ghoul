@@ -31,6 +31,24 @@ void GuiSystem::AddTextBox(const TextBoxConfig& cfg)
     textboxes.push_back(copy);
 }
 
+void GuiSystem::AddDialogue(const DialogueConfig& cfg)
+{
+    dialogues.push_back(cfg);
+}
+
+int GuiSystem::AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox)
+{
+    auto owned = std::make_shared<TextSystem::TextComponent>();
+    if (!TextSystem::LoadDialogueFromJson(jsonPath, *owned)) return -1;
+    DialogueConfig d;
+    d.owned = std::move(owned);
+    d.textComp = nullptr;
+    d.textBox = textBox;
+    d.jsonPath = jsonPath;
+    dialogues.push_back(std::move(d));
+    return static_cast<int>(dialogues.size()) - 1;
+}
+
 void GuiSystem::SetEditMode(bool isEditing)
 {
     editMode = isEditing;
@@ -44,18 +62,70 @@ bool GuiSystem::GetEditMode() const
 void GuiSystem::Update(float dt) {
     if (Input::IsKeyPressed(GLFW_KEY_F8))
         editMode = !editMode;
+
+    // --- Press SPACE to advance dialogues (while not editing the GUI) ---
+    static bool spaceLatch = false;
+    const bool spaceHeld = Input::IsKeyHeld(GLFW_KEY_SPACE);
+    const bool spaceEdge = !spaceLatch && spaceHeld; // rising edge (manual)
+
+    if (!editMode && spaceEdge) {
+        bool revealedAny = false;
+        std::vector<TextSystem::TextComponent*> processed;
+
+        for (auto& d : dialogues) {
+            auto* comp = d.textComp ? d.textComp : d.owned.get();
+            if (!comp) continue;
+            if (std::find(processed.begin(), processed.end(), comp) != processed.end()) continue;
+            processed.push_back(comp);
+
+            if (comp->CheckIfTyping()) {
+                comp->StopTyping();   // reveal full current line
+                revealedAny = true;
+            }
+        }
+
+        if (!revealedAny) {
+            processed.clear();
+            for (auto& d : dialogues) {
+                auto* comp = d.textComp ? d.textComp : d.owned.get();
+                if (!comp) continue;
+                if (std::find(processed.begin(), processed.end(), comp) != processed.end()) continue;
+                processed.push_back(comp);
+
+                const auto& lines = comp->GetLines();
+                const int idx = comp->GetCurrentLineIndex();
+                if (idx + 1 < static_cast<int>(lines.size())) {
+                    comp->SetCurrentLineIndex(idx + 1);
+                    comp->StartTyping();   // reset typewriter for the new line
+                }
+                else {
+                    comp->SetIsTyping(false); // stay fully shown at last line
+                }
+            }
+        }
+    }
+
+    // update latch
+    spaceLatch = spaceHeld;
+
     Vec2 mouse = Input::GetMousePosition();
     Render& render = Render::GetInstance();
 
-    const float uiScale = std::min(GLApp::width / 1920.0f, GLApp::height / 1080.0f);
+    // to force GUI editor to be written on screen
+    const bool prevCam = render.useCamera;
+    render.useCamera = false;
+
+    const float scaleX = GLApp::width / 1920.f;
+    const float scaleY = GLApp::height / 1080.f;
+    const float uiScale = std::min(scaleX, scaleY);
 
     for (auto& cfg : buttons) {
         cfg.size = cfg.baseSize * uiScale;
         cfg.textScale = cfg.baseTextScale * uiScale;
 
         // Scale position relative to baseline resolution
-        cfg.pos.x = cfg.basePos.x * (GLApp::width / 1920.0f);
-        cfg.pos.y = cfg.basePos.y * (GLApp::height / 1080.0f);
+        cfg.pos.x = cfg.basePos.x * scaleX;
+        cfg.pos.y = cfg.basePos.y * scaleY;
         bool hover = false;
         if (cfg.shape == ButtonShape::Circle) {
 
@@ -110,8 +180,6 @@ void GuiSystem::Update(float dt) {
         }
     }
 
-    const float scaleX = GLApp::width / 1920.0f;
-    const float scaleY = GLApp::height / 1080.0f;
     for (auto& tb : textboxes)
     {
         tb.pos.x = tb.basePos.x * scaleX;
@@ -131,6 +199,35 @@ void GuiSystem::Update(float dt) {
 
         // UPDATED: Added font parameter to DrawText
         render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, "Marker");
+    }
+
+    for (auto& d : dialogues)
+    {
+        TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+        if (!comp) continue;
+
+        // scale skin
+        d.textBox.pos.x = d.textBox.basePos.x * scaleX;
+        d.textBox.pos.y = d.textBox.basePos.y * scaleY;
+        d.textBox.scale = d.textBox.baseScale * uiScale;
+
+        // advance typewriter
+        TextSystem::UpdateTyping(*comp, dt, 1.f);
+
+        // line & visible substring
+        const std::string vis = TextSystem::GetVisibleText(*comp);
+
+        // text color
+        Colour3 drawColor = d.textBox.color;
+
+        Vec2 textSize = render.CalculateTextSize(vis, d.textBox.scale);
+        float drawX = d.textBox.pos.x, drawY = d.textBox.pos.y;
+        if (d.textBox.centered) { drawX -= textSize.x * 0.5f; drawY -= textSize.y * 0.5f; }
+
+        // Optional background panel (simple) – maybe next time
+        // r.DrawRoundedRect({d.textBox.pos.x, d.textBox.pos.y}, textSize.x + 24, textSize.y + 16, 8.f, {0.f,0.f,0.f});
+
+        render.DrawText(vis, drawX, drawY, d.textBox.scale, drawColor, "Marker");
     }
 
     if (editMode) {
@@ -230,6 +327,54 @@ void GuiSystem::Update(float dt) {
 
             y -= 60;
             if (textDeleted)
+                return;
+        }
+
+
+        // List Dialogues
+        bool dialogueDeleted = false;
+        for (int i = 0; i < (int)dialogues.size(); ++i) {
+            int idx = (int)buttons.size() + (int)textboxes.size() + i;
+            bool sel = (selectedType == SelectedType::Dialogue && selectedIndex == idx);
+            render.DrawRect({ 150, y }, 600, 50, sel ? Colour3{ 0.9f,0.6f,0.2f } : Colour3{ 0.25f,0.25f,0.25f });
+
+            // label from current line head (preview)
+            TextSystem::TextComponent* comp = dialogues[i].textComp ? dialogues[i].textComp : dialogues[i].owned.get();
+            std::string label = "Dialogue";
+            if (comp && !comp->GetLines().empty()) {
+                const std::string& ln = comp->GetLines()[comp->GetCurrentLineIndex()];
+                label += ": " + (ln.size() > 24 ? (ln.substr(0, 24) + "...") : ln);
+            }
+            render.DrawText(label, 20, y - 10, 0.5f, { 1,1,1 }, "Marker");
+
+            //delete box position
+            Vec2 delPos = { 150 + 300 + 20, y }; // right of the entry
+            float delW = 40, delH = 40;
+
+            // draw delete box
+            // UPDATED: Added font parameter to DrawText
+            render.DrawText("X", delPos.x - 10, y - 10, 1.0f, { 1,0,0 }, "Marker");
+
+            // if clicked, delete button
+            if (render.IsAreaTouched(mouse, delPos, delW, delH) &&
+                Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+            {
+                if (dialogues.size() > 1) {
+                    dialogues.erase(dialogues.begin() + i);
+
+                    // fix selection index after delete
+                    selectedIndex = -1;
+                    selectedType = SelectedType::None;
+                    dialogueDeleted = true;
+                    return; // break to avoid invalid iterator
+                }
+            }
+
+            if (render.IsAreaTouched(mouse, { 150, y }, 300, 50) && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+                selectedType = SelectedType::Dialogue; selectedIndex = idx;
+            }
+            y -= 60;
+            if (dialogueDeleted)
                 return;
         }
 
@@ -536,13 +681,138 @@ void GuiSystem::Update(float dt) {
                 if (Input::IsKeyHeld(GLFW_KEY_P))     // bigger text
                     t.baseScale = std::min(3.0f, t.baseScale + 0.02f);
             }
+
+            else if (selectedType == SelectedType::Dialogue && selectedIndex - buttons.size() < dialogues.size())
+            {
+                int dlgIdx = selectedIndex - ((int)buttons.size() + (int)textboxes.size());
+                auto& d = dialogues[dlgIdx];
+
+                static bool editingLine = false;
+                std::string editingLineState = editingLine ? "ON" : "OFF";
+                static std::string tempText;
+
+                TextSystem::TextComponent* textComp = d.textComp ? d.textComp : d.owned.get();
+
+                if (Input::IsKeyPressed(GLFW_KEY_ENTER))
+                {
+                    editingLine = !editingLine;
+                }
+
+                render.DrawText("Editing Line: " + editingLineState, 50, y, 0.5f, { 1,1,1 }, "Marker");
+                y -= 30;
+
+                render.DrawText("Current Line Index: " + std::to_string(textComp->GetCurrentLineIndex()), 50, y, 0.5f, {1,1,1}, "Marker");
+                y -= 30;
+
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("Pos: (" + std::to_string((int)d.textBox.pos.x) + ", " +
+                    std::to_string((int)d.textBox.pos.y) + ")", 50, y, 0.5f, { 1,1,1 }, "Marker");
+                y -= 30;
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("Size: (" + std::to_string(d.textBox.scale) + ")", 50, y, 0.5f, { 1,1,1 }, "Marker");
+                y -= 30;
+
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("Text Color (0-255):", 50, y, 0.5f, { 1,1,1 }, "Marker");
+                y -= 30;
+
+                int rVal = static_cast<int>(d.textBox.color.r * 255.0f);
+                int gVal = static_cast<int>(d.textBox.color.g * 255.0f);
+                int bVal = static_cast<int>(d.textBox.color.b * 255.0f);
+
+                // UPDATED: Added font parameter to DrawText
+                render.DrawText("R:", 60, y, 0.5f, { 1,0,0 }, "Marker");
+                render.DrawText(std::to_string(rVal), 100, y, 0.5f, { 1,1,1 }, "Marker");
+                render.DrawText("G:", 200, y, 0.5f, { 0,1,0 }, "Marker");
+                render.DrawText(std::to_string(gVal), 240, y, 0.5f, { 1,1,1 }, "Marker");
+                render.DrawText("B:", 340, y, 0.5f, { 0,0,1 }, "Marker");
+                render.DrawText(std::to_string(bVal), 380, y, 0.5f, { 1,1,1 }, "Marker");
+
+                // cycle active color channel using TAB
+                static int textColorChannel = 0; // 0=R,1=G,2=B
+                if (Input::IsKeyPressed(GLFW_KEY_TAB)) {
+                    textColorChannel = (textColorChannel + 1) % 3;
+                }
+
+                // modify current channel with = / -
+                int* target = (textColorChannel == 0) ? &rVal : (textColorChannel == 1) ? &gVal : &bVal;
+                if (Input::IsKeyHeld(GLFW_KEY_EQUAL))    *target = std::min(255, *target + 1);
+                if (Input::IsKeyHeld(GLFW_KEY_MINUS))    *target = std::max(0, *target - 1);
+
+                // apply changes
+                d.textBox.color.r = rVal / 255.0f;
+                d.textBox.color.g = gVal / 255.0f;
+                d.textBox.color.b = bVal / 255.0f;
+
+                // draw small indicator for active channel
+                float indicatorY = y + 5;
+                Colour3 c = (textColorChannel == 0) ? Colour3{ 1,0,0 } :
+                    (textColorChannel == 1) ? Colour3{ 0,1,0 } :
+                    Colour3{ 0,0,1 };
+                float circleX = 40 + textColorChannel * 140;
+                render.DrawCircle({ circleX, indicatorY }, 6.f, c, 24);
+
+                y -= 40;
+
+                if (!editingLine)
+                {
+                    // Move/scale with keys (quick + simple)
+                    if (Input::IsKeyHeld(GLFW_KEY_UP))    d.textBox.basePos.y += 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_DOWN))  d.textBox.basePos.y -= 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_LEFT))  d.textBox.basePos.x -= 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) d.textBox.basePos.x += 2;
+                    if (Input::IsKeyHeld(GLFW_KEY_O))     d.textBox.baseScale = std::max(0.2f, d.textBox.baseScale - 0.02f);
+                    if (Input::IsKeyHeld(GLFW_KEY_P))     d.textBox.baseScale = std::min(3.0f, d.textBox.baseScale + 0.02f);
+                }
+                else if (textComp)
+                {
+                    const auto& lines = textComp->GetLines();
+                    int idx = textComp->GetCurrentLineIndex();
+
+                    // Per-key latches so text only changes line once per press
+                    static bool leftLatch = false;
+                    static bool rightLatch = false;
+
+                    const bool leftHeld = Input::IsKeyPressed(GLFW_KEY_LEFT);
+                    const bool rightHeld = Input::IsKeyPressed(GLFW_KEY_RIGHT);
+
+                    const bool leftEdge = !leftLatch && leftHeld;
+                    const bool rightEdge = !rightLatch && rightHeld;
+
+                    if (leftEdge) {
+                        if (textComp->CheckIfTyping()) {
+                            textComp->StopTyping();
+                        }
+                        else if (idx > 0) {
+                            textComp->SetCurrentLineIndex(idx - 1);
+                            textComp->StartTyping();
+                        }
+                    }
+
+                    if (rightEdge) {
+                        if (textComp->CheckIfTyping()) {
+                            textComp->StopTyping();
+                        }
+                        else if (idx + 1 < static_cast<int>(lines.size())) {
+                            textComp->SetCurrentLineIndex(idx + 1);
+                            textComp->StartTyping();
+                        }
+                    }
+
+                    leftLatch = leftHeld;
+                    rightLatch = rightHeld;
+                }
+
+            }
         }
 
         render.DrawRect({ 150, 990 }, 140, 50, { 0.3f, 0.6f, 0.3f });
         render.DrawRect({ 330, 990 }, 140, 50, { 0.3f, 0.6f, 0.3f });
+        render.DrawRect({ 510, 990 }, 180, 50, { 0.3f,0.6f,0.3f });
         // UPDATED: Added font parameter to DrawText
         render.DrawText("+Button", 100, 980, 0.5f, { 1,1,1 }, "Marker");
         render.DrawText("+Text", 300, 980, 0.5f, { 1,1,1 }, "Marker");
+        render.DrawText("+Dialogue", 470, 980, 0.5f, { 1,1,1 }, "Marker");
 
         if (render.IsAreaTouched(mouse, { 150, 990 }, 140, 50) &&
             Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
@@ -572,7 +842,7 @@ void GuiSystem::Update(float dt) {
             newText.text = "New Text " + std::to_string((int)textboxes.size() + 1);
             newText.pos = { 960, 600 };
             newText.scale = 1.2f;
-            newText.color = { 1, 1, 1 };
+            newText.color = { 0,0,0 };
 
             newText.basePos = newText.pos;
             newText.baseScale = newText.scale;
@@ -582,10 +852,36 @@ void GuiSystem::Update(float dt) {
             selectedType = SelectedType::TextBox;
             selectedIndex = (int)buttons.size() + (int)textboxes.size() - 1; // auto-select new
         }
+
+        // +Dialogue
+        if (render.IsAreaTouched(mouse, { 510, 990 }, 180, 50) && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+            TextBoxConfig newDialogue;
+            newDialogue.text = "";
+            newDialogue.basePos = { 960, 120 };
+            newDialogue.baseScale = 0.9f;
+            newDialogue.pos = newDialogue.basePos;
+            newDialogue.scale = newDialogue.baseScale;
+            newDialogue.color = { 0,0,0 };
+            newDialogue.centered = true;
+
+            // default path; user can later edit in UI to reload a different JSON
+            const std::string path = "../Assets/Dialogue.json";
+            int idx = AddDialogueFromJson(path, newDialogue);
+            if (idx >= 0) {
+                selectedType = SelectedType::Dialogue;
+                selectedIndex = (int)buttons.size() + (int)textboxes.size() + idx;
+            }
+        }
     }
+
+    // restore camera back to world
+    render.useCamera = prevCam;
 }
 
 void GuiSystem::Shutdown() {
     buttons.clear();
+    //audio = nullptr;
+    textboxes.clear();
+    dialogues.clear();
     audio = nullptr;
 }

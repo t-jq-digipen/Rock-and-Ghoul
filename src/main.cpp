@@ -46,6 +46,8 @@
 #include "MonoSystem.h"
 #include <crtdbg.h>
 
+
+#include "LogicSystem.h"
 void EnableMemoryLeakChecking(int breakAlloc = -1)
 {
     int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
@@ -106,12 +108,14 @@ int main() {
             engine.AddSystem(audio);
             MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
 
+            engine.AddSystem(&LogicSystem::Get());
             engine.AddSystem(new MovementSystem());
             engine.AddSystem(new PlayerSystem());
             engine.AddSystem(new PhysicsSystem());
             engine.AddSystem(new RenderSystem());
             engine.AddSystem(&GuiSystem::Get());
             engine.AddSystem(new ImGuiSystem()); // ImGuiSystem* gets added to systems vector
+            engine.AddSystem(new MonoSystem());
             std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
                 << " at " << (void*)&GLApp::ptr_window << std::endl;
             // initialize all systems (FMOD, OpenGL, etc.)
@@ -136,7 +140,7 @@ int main() {
             engine.Shutdown();
             GLApp::cleanup();
             CrashHandler::Log("Engine shutdown complete");
-            //mono.Shutdown();
+           // mono.Shutdown();
             return 0;
         });
 

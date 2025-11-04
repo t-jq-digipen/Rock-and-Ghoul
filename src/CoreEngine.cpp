@@ -42,6 +42,10 @@
 #include "RenderSystem.h"
 #include "GuiSystem.h"
 
+#include "BehaviourComponent.h"
+#include "GameScripts.h"
+
+#include "MonoScriptComponent.h"
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
 
@@ -91,12 +95,13 @@ void CoreEngine::Initialize() {
     std::cout << "REGISTRY | REGISTERED TAG COMPONENT\n";
     /*registry.Register_Component<ElementComponent>("Element");
     std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";*/
-
-
+    registry.Register_Component<BehaviourComponent>("Behaviour");
+    //Registry::Get().Register_Component<>("MonoScriptComponent");
+    registry.Register_Component<MonoScriptComponent>("MonoScriptComponent");
     for (auto s : systems) s->Initialize();
     gsm.Init(GameState::GS_MAIN_MENU);
     GLApp::gameInitialized = true;
-
+    RegisterAllGameScripts();
 }
 
 void CoreEngine::Run() {
@@ -123,10 +128,13 @@ void CoreEngine::Run() {
         // --- 3. Frame loop for this state
         while (gsm.GetNextState() == gsm.GetCurrentState()) {
             frameRate.StartFrame();
-            
+
             glfwPollEvents();
             float dt = static_cast<float>(frameRate.GetDeltaTime());
             g_dt = std::clamp(dt, 0.0f, 0.05f);
+
+            // Save real dt for audio (music should always play even in edit mode)
+            float audioDt = g_dt;
 
             // Handle play/stop flags
             if (gsm.isPaused && gsm.inEditMode)
@@ -145,12 +153,11 @@ void CoreEngine::Run() {
             // Draw the current game scene or main menu
             gsm.CallDraw();
 
-            
-           
+
+
 
             // Finish capture — ImGui will display this texture inside "Game View"
             renderer.EndSceneCapture();
-            GuiSystem::Get().Update(0.0f);
             // NEED TO FIGURE OUT HOW TO SPLIT THIS PER DRAW/UPDATE
 
             //loop through all systems managed by the engine
@@ -173,7 +180,9 @@ void CoreEngine::Run() {
                         imguiSystem->Update(0.0f);
                     else if (auto* renderSystem = dynamic_cast<RenderSystem*>(s))
                         renderSystem->Update(0.0f);
-                    GuiSystem::Get().Update(0.0f);
+                    else if (auto* audioManager = dynamic_cast<AudioManager*>(s))
+                        audioManager->Update(audioDt);  // use real dt for audio
+                    // GuiSystem::Get().Update(0.0f);
                 }
                 // Record the ending timestamp immediately after update finishes
                 auto end = clock::now();
@@ -181,13 +190,14 @@ void CoreEngine::Run() {
                 double elapsedMs = std::chrono::duration<double, std::milli>(end - start).count();
                 // ISystem* s = new PhysicsSystem();
                 //*s dereferences the pointer, so typeid(*s) looks at the dynamic type of the object (PhysicsSystem),
-                // returns a const char* that represents the type’s name.
+                // returns a const char* that represents the type's name.
                 // Get the system's type name (like "class PhysicsSystem") as a string
                 std::string sysName = typeid(*s).name();
                 timings[sysName].ms = elapsedMs;
 
                 // call Render() immediately after Update()
                 if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s)) {
+                    renderer.EndSceneCapture();
                     imguiSystem->Render();
                 }
             }
@@ -224,12 +234,11 @@ void CoreEngine::Run() {
     }
 }
 
-
 void CoreEngine::Shutdown() {
     GLApp::gameInitialized = false;
     for (int i = (int)systems.size() - 1; i >= 0; --i) {
         systems[i]->Shutdown(); 
-        if (systems[i] != &GuiSystem::Get())
+        if (systems[i] != &GuiSystem::Get() && systems[i] != &LogicSystem::Get())
             delete systems[i];
     }
     systems.clear();

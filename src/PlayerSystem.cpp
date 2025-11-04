@@ -21,13 +21,14 @@
 #include "Audio.h"
 #include "GameStateManager.h"
 #include "CoreEngine.h" // to check pause state for music
+#include "LogicSystem.h"
 
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
 constexpr float DASH_IMPULSE = 1000.f;   // Dash boost
 
-inline void PlayerSystem::NormalizeDiagonalMovement(float& x, float& y)
+void NormalizeDiagonalMovement(float& x, float& y)
 {
 	const float l2 = x*x + y*y;
 	if (l2 <= 0.f)
@@ -39,7 +40,7 @@ inline void PlayerSystem::NormalizeDiagonalMovement(float& x, float& y)
 	x *= inv; y *= inv;
 }
 
-inline Movement::InputDirection PlayerSystem::VelToDir(float x, float y)
+Movement::InputDirection VelToDir(float x, float y)
 {
 	if (std::abs(y) >= std::abs(x)) return (y > 0.f) ? Movement::MOVE_UP : (y < 0.f ? Movement::MOVE_DOWN : Movement::MOVE_NONE);
 	return (x > 0.f) ? Movement::MOVE_RIGHT : (x < 0.f ? Movement::MOVE_LEFT : Movement::MOVE_NONE);
@@ -193,9 +194,79 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	}
 }
 
+namespace PlayerMove {
+	void Dash(Entity eID) {
+		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
+		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
+		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
+
+		// Vec2 dashDir = moveComp.GetMovementDirection();
+		int hor = 0;
+		int ver = 0;
+		if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
+		if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+		float fx = static_cast<float>(hor);
+		float fy = static_cast<float>(ver);
+
+		Vec2 dashDir{ fx, fy };
+
+		NormalizeDiagonalMovement(dashDir.x, dashDir.y);
+
+		if (RG_LengthSquared(dashDir) > 0.01f) {
+			dashDir = RG_Normalize(dashDir);
+			Vec2 dashImpulse = RG_Scale(dashDir, DASH_IMPULSE);
+			physics.AddImpulse(dashImpulse);
+		}
+
+	}
+
+	inline void Start(Entity eID)
+	{
+		std::cout << "Player script started" << std::endl;
+
+		EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
+
+			if (e.key == GLFW_KEY_LEFT_SHIFT)
+			{
+				Dash(eID);
+			}
+			});
+	}
+
+	inline void Update(Entity eID, float dt) {
+		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
+		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
+
+		int hor = 0;
+		int ver = 0;
+		if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
+		if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+		float fx = static_cast<float>(hor);
+		float fy = static_cast<float>(ver);
+		NormalizeDiagonalMovement(fx, fy);
+
+		const bool moving = (fx != 0.f || fy != 0.f);
+		moveComp.SetIsMoving(moving);
+		moveComp.SetInputDirection(VelToDir(fx, fy));
+		moveComp.SetMovementDirection({ fx, fy });
+
+
+	}
+}
+
 void PlayerSystem::Initialize()
 {
-
+	{
+		BehaviourFCT player;
+		player.Init = [](Entity e) { PlayerMove::Start(e); };
+		player.Update = [](Entity e, float dt) { PlayerMove::Update(e, dt); };
+		player.End = [](Entity e) { PlayerMove::End(e); };
+		LogicSystem::Get().RegisterScript("PlayerMovement", player, ScriptID::PLAYER);
+	}
 }
 
 void PlayerSystem::Update(float dt)

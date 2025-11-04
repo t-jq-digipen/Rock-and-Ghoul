@@ -133,8 +133,7 @@ void MainMenu::Init()
     CrashHandler::Safe("MainMenu", "Init", [&] {
         std::cout << "Main Menu Initialized!!!" << std::endl;
         renderer.Init();
-        GuiSystem& gui = GuiSystem::Get();
-        gui.Initialize();
+        GuiSystem::Get().Initialize();
 
         //guiSystem.AddButton("PLAY",
         //    { 1600, 600 },
@@ -147,7 +146,7 @@ void MainMenu::Init()
         float uiScaleY = GLApp::height / 1080.0f;
         float uiScale = std::min(uiScaleX, uiScaleY);
 
-        gui.AddButton({
+        GuiSystem::Get().AddButton({
             .label = "PLAY",
             .pos = {1650.0f * uiScaleX, 550.0f * uiScaleY},
             .size = {300.0f * uiScale, 100.0f * uiScale},
@@ -157,7 +156,7 @@ void MainMenu::Init()
             .shape = ButtonShape::Rounded
             });
 
-        gui.AddButton({
+        GuiSystem::Get().AddButton({
             .label = "QUIT",
             .pos = {1650.0f * uiScaleX, 150.0f * uiScaleY},
             .size = {300.0f * uiScale, 100.0f * uiScale},
@@ -167,7 +166,7 @@ void MainMenu::Init()
             .shape = ButtonShape::Rounded
             });
 
-        gui.AddTextBox({
+        GuiSystem::Get().AddTextBox({
             .text = "Press 8 or Click Play",
             .pos = {1650.0f * uiScaleX, 50.0f * uiScaleY},
             .scale = 0.5f * uiScale,
@@ -384,7 +383,7 @@ void MainMenu::Update()
             CrashHandler::Log("MainMenuTexture texture missing; skipping draw!");
         }*/
 
-       
+        GuiSystem::Get().Update(0.f);
 
         if (Input::IsKeyPressed(GLFW_KEY_8))
         {

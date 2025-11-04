@@ -26,6 +26,7 @@ enum class GameState
 {
     GS_MAIN_MENU = 0,
     GS_LEVEL1,
+    GS_LEVEL2,
     GS_RESTART,
     GS_QUIT
 };

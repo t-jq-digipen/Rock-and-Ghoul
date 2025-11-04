@@ -93,6 +93,6 @@ private:
     void DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize);
 
     void ShowPrefabControls();
-
+    void ShowSceneBrowser();
 };
 

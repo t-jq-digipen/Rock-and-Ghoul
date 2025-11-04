@@ -38,6 +38,7 @@ const std::string FilePath::SETTINGS_FILE = FilePath::SAVES_FOLDER + "settings.j
 const std::string FilePath::LEVEL1_SCENE = FilePath::SAVES_FOLDER + "level1.json";
 const std::string FilePath::LEVEL2_SCENE = FilePath::SAVES_FOLDER + "level2.json";
 const std::string FilePath::TEMP_SCENE = FilePath::SAVES_FOLDER + "TempScene.json";
+const std::string FilePath::SCENES_LIST = FilePath::SAVES_FOLDER + "ScenesList.json";
 
 // save prefabs into assets folder
 const std::string FilePath::ASSETS_FOLDER = getExeDir() + "/../../Assets/";

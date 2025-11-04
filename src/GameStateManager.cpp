@@ -17,6 +17,7 @@
 #include "GameStateManager.h"
 #include "MainMenu.h"
 #include "Level1.h"
+#include "Level2.h"
 #include "CoreEngine.h"
 
 // Function Pointer
@@ -70,6 +71,17 @@ void GSM::Update()
 			fpUnload		= Level1::Unload;
 			break;
 			// end case GS_LEVEL1
+
+	case GameState::GS_LEVEL2:
+		std::cout << "Level 2\n";
+			fpLoad			= Level2::Load;
+			fpInitialize	= Level2::Init;
+			fpUpdate		= Level2::Update;
+			fpDraw			= Level2::Draw;
+			fpFree			= Level2::Free;
+			fpUnload		= Level2::Unload;
+			break;
+			// end case GS_LEVEL2
 
 		default:
 			break;

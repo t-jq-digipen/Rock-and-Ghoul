@@ -122,8 +122,21 @@ void RenderSystem::Update(float dt) {
 
         if (spriteComp.IsAnimated())
         {
+
+            if (!m_registry.Has_Component<Animator::AnimatorComponent>(entID))
+            {
+                std::cout << "Sprite comp is animated but you tried to get AnimatorComponent! Setting sprite comp anim to false\n";
+                spriteComp.Set_Animated(false);
+                continue;
+            }
             // draw animated logic
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+            if (!m_registry.Has_Component<Animator::AnimatorComponent>(entID))
+            {
+                std::cout << "RENDERSYSTEM: Sprite comp is animated but you tried to get AnimatorComponent! Setting sprite comp anim to false\n";
+                spriteComp.Set_Animated(false);
+                continue;
+            }
             Animator::AnimatorComponent& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
 
             animComp.UpdateFrame(dt);
@@ -305,10 +318,10 @@ void RenderSystem::Update(float dt) {
         //then draw them all at once
         renderInstance.DrawRectInstanced(batch, { 0.2f, 0.8f, 1.0f });
         batch.clear();
-    }
+    }/*
     if (ImGuiSystem::guiEnabled) {
         renderer.EndSceneCapture();
-    }
+    }*/
 }
 
 void RenderSystem::Shutdown() {

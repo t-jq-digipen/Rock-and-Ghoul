@@ -84,6 +84,26 @@ public:
      */
     static bool LoadScene(const std::string& filepath);
 
+    /**
+     * @brief Loads current game scene from JSON file.
+     *
+     * @param filepath The file path to the scene file to load.
+     * @param sceneName The name to assign to this scene for identification.
+     * @return bool True if the scene was successfully saved, false if an error
+     *         occurred during serialization or file writing.
+     */
+    static bool LoadCurrentScene(const std::string& filepath, const std::string& sceneName);
+
+    /**
+     * @brief Saves temporary scene to JSON file based on sceneName.
+     *
+     * @param filepath The file path to the scene file to load.
+     * @param sceneName The name to assign to this scene for identification.
+     * @return bool True if the temp scene was successfully saved, false if an error
+     *         occurred during serialization or file writing.
+     */
+    static bool SaveCurrentTempScene(const std::string& filepath, const std::string& sceneName);
+
     // Save game settings
     static bool SaveSettings(const std::string& filepath, GameSettings& settings);
     static std::optional<GameSettings> LoadSettings(const std::string& filepath);

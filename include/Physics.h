@@ -25,7 +25,6 @@
 #include <nlohmann/json.hpp>
 
 namespace Physics {
-
 	/**
 	 * @brief Represents a single force applied to an entity.
 	 *
@@ -91,6 +90,11 @@ namespace Physics {
 		bool onGround;
 		int collisionFrameCount; // prevents jitter effect
 
+		// Filters
+		uint32_t layerBit;	// Which layer entity belongs to
+		uint32_t maskBit;	// Which layers it can collide with
+		bool isTrigger;		// If true, ONLY generate event but skip physics response
+
 		void UpdateForces(float dt);
 		void ApplyDamping(float dt);
 		void ClampVelocity();
@@ -120,6 +124,16 @@ namespace Physics {
 		void Set_Circle(Circle const& newCircle);
 		const AABB& Get_AABB() const;
 		const Circle& Get_Circle() const;
+
+		// Filter setters/getters
+		void SetLayer(uint32_t bit);
+		void SetLayer(const std::string& name);
+		void SetMask(uint32_t bitmask);
+		void SetMask(const std::vector<std::string>& names);
+		void SetTrigger(bool trigger);
+		uint32_t GetLayer();
+		uint32_t GetMask();
+		bool IsTrigger();
 
 		// Velocity control
 		const Vec2& Get_Vel() const;

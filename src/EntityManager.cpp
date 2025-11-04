@@ -119,3 +119,5 @@ Entity EntityManager::GetEntityFromName(const std::string& name)
 
 	return nameToEntity[name];
 }
+
+
