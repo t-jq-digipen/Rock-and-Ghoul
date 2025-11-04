@@ -1406,6 +1406,14 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     // REGINEHELP
     // maybe add a reset zoom button idk
     // cam.SetZoom(1.0);
+    ImGui::Dummy(ImVec2(10.0f, 250.0f));
+    if (ImGui::Button("Reset", ImVec2(80, 0)))
+    {
+        cam.SetZoom(1.0f);
+        cam.ResetToCenter();
+        std::cout << "[Editor] Camera reset.\n";
+    }
+
 }
 
 
