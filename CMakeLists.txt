@@ -105,51 +105,42 @@ if(WIN32)
         message(STATUS "Will copy fmod.dll from: ${FMOD_LIB_DIR}")
     endif()
 endif()
-# ======================= Mono Include Setup =========================
-if (EXISTS "${CMAKE_SOURCE_DIR}/deps/Mono/include/mono-2.0/mono/jit/jit.h")
-    message(STATUS "Mono headers found at deps/Mono/include/mono-2.0")
-    include_directories(${CMAKE_SOURCE_DIR}/deps/Mono/include/mono-2.0)
+# ======================= Mono Embedding Setup =========================
+set(MONO_ROOT "${CMAKE_SOURCE_DIR}/deps/Mono")
+
+# --- Headers ---
+set(MONO_INCLUDE_DIR "${MONO_ROOT}/include/mono-2.0")
+if (EXISTS "${MONO_INCLUDE_DIR}/mono/jit/jit.h")
+    message(STATUS "Mono headers found at: ${MONO_INCLUDE_DIR}")
+    include_directories(${MONO_INCLUDE_DIR})
 else()
-    message(WARNING "Mono headers not found! Check your deps/Mono folder structure.")
+    message(WARNING "Mono headers not found! Expected at ${MONO_INCLUDE_DIR}")
 endif()
-# ======================= Copy Mono Runtime DLL =========================
 
+# --- Library ---
+set(MONO_LIB "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
+if (EXISTS "${MONO_LIB}")
+    message(STATUS "Linking Mono: ${MONO_LIB}")
+    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE "${MONO_LIB}")
+else()
+    message(WARNING "Mono library not found! Expected at ${MONO_LIB}")
+endif()
 
+# --- Runtime DLL ---
 if (WIN32)
-    set(MONO_DLL_PATH "${MONO_ROOT}/bin/mono-2.0-sgen.dll")
-    if (EXISTS "${MONO_DLL_PATH}")
+    set(MONO_DLL "${MONO_ROOT}/bin/mono-2.0-sgen.dll")
+    if (EXISTS "${MONO_DLL}")
         add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E echo "Copying Mono runtime DLL..."
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                "${MONO_DLL_PATH}"
-                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>"
+            COMMAND ${CMAKE_COMMAND} -E echo "Copying Mono runtime DLL..."
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${MONO_DLL}"
+                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/mono-2.0-sgen.dll"
         )
         message(STATUS "Will copy mono-2.0-sgen.dll to build output.")
     else()
-        message(WARNING "Mono runtime DLL not found at ${MONO_DLL_PATH}. Skipping copy.")
+        message(WARNING "Mono runtime DLL not found at ${MONO_DLL} — skipping copy.")
     endif()
 endif()
-# ======================= Mono Library Linking =========================
-set(MONO_ROOT "${CMAKE_SOURCE_DIR}/deps/Mono")
-
-# Include headers
-include_directories(${MONO_ROOT}/include ${MONO_ROOT}/include/mono-2.0)
-
-# Add the Mono library for linking
-if(WIN32)
-    set(MONO_LIB "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
-
-    if(EXISTS "${MONO_LIB}")
-        message(STATUS "Linking with Mono: ${MONO_LIB}")
-        target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE "${MONO_LIB}")
-    else()
-        message(WARNING "Mono library not found at ${MONO_LIB}!")
-    endif()
-endif()
-
-target_sources(team_aviddivas PRIVATE
-    src/MonoBindings.cpp
-)
 
 # ======================= Copy GameScripts DLL =========================
 set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/$<CONFIG>/GameScripts.dll")
