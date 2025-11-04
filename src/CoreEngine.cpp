@@ -185,6 +185,8 @@ void CoreEngine::Run() {
                         imguiSystem->Update(0.0f);
                     else if (auto* renderSystem = dynamic_cast<RenderSystem*>(s))
                         renderSystem->Update(0.0f);
+                    else if (auto* physicsSystem = dynamic_cast<Physics::PhysicsComponent*>(s))
+                        physicsSystem->Update(0.0f);
                     else if (auto* audioManager = dynamic_cast<AudioManager*>(s))
                         audioManager->Update(audioDt);  // use real dt for audio
                     // GuiSystem::Get().Update(0.0f);
