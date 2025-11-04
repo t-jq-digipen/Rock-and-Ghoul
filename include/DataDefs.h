@@ -45,8 +45,6 @@ struct SavedEntity {
      * @brief Default constructor with zero ID and empty name.
      */
     SavedEntity() : name("") {}
-
-    unsigned int id = 0;
 };
 
 /**
