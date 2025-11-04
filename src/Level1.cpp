@@ -32,6 +32,7 @@
 #include "CrashHandler.h"
 #include <PlayerSystem.h>
 #include <Camera.h>
+#include "AudioComponent.h"
 
 
 #include "LogicSystem.h"
@@ -52,6 +53,7 @@ Entity square;
 Entity roundy;
 Entity waffle;
 Entity ghoul;
+Entity testEntity; // for fixed dt, pink square
 // Registry ref
 Registry& registry = Registry::Get();
 //Camera mainCamera;
@@ -75,8 +77,8 @@ void Level1::Load()
 		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
 		});
-		RenderSystem::ClearBackgroundTextures();
-		RenderSystem::AddBackgroundTexture(bgTexture);
+	RenderSystem::ClearBackgroundTextures();
+	RenderSystem::AddBackgroundTexture(bgTexture);
 
 
 	// ===== FIX: Ensure prefabs folder exists =====
@@ -167,7 +169,7 @@ void Level1::Load()
 // Initializes Level 1
 void Level1::Init()
 {
-	
+
 	Render& renderer = Render::GetInstance();
 
 	CrashHandler::Safe("Level1", "Init", [&] {
@@ -290,7 +292,46 @@ void Level1::Init()
 			else {
 				std::cout << "Created Circle (Entity " << roundy << ")" << std::endl;
 			}
-			std::cout << "Finished creating entities from prefabs." << std::endl;	
+			std::cout << "Finished creating entities from prefabs." << std::endl;
+
+			// fixed dt test entity
+			std::cout << "\n[FIXED DT TEST] Creating test entity with constant velocity\n";
+
+			// create test entity
+			testEntity = registry.Create_Entity();
+			registry.Set_EntityName(testEntity, "FixedDT_Test");
+
+			// add Transform component in the centre
+			TransformComponent testTransform;
+			testTransform.pos = { 400.0f, 400.0f };  // same as waffle position
+			testTransform.scale = { 50.0f, 50.0f };
+			testTransform.rot = 0.0f;
+			registry.Add_Component(testEntity, testTransform);
+
+			// add Shape component (magenta square so you can see it)
+			ShapeComponent testShape;
+			testShape.shape = SHAPE_RECTANGLE;
+			testShape.dimensions = { 50.0f, 50.0f };  // shape dimensions
+			testShape.color = { 1.0f, 0.0f, 1.0f };  // bright pink
+			registry.Add_Component(testEntity, testShape);
+
+			// physics component with CONSTANT velocity
+			Physics::PhysicsComponent testPhysics;
+			testPhysics.Set_Vel({ 50.0f, 0.0f });  // 50 pixels/second to the right
+			registry.Add_Component(testEntity, testPhysics);
+
+			// Tag to identify
+			TagComponent testTag;
+			testTag.tag = T_TEST;
+			registry.Add_Component(testEntity, testTag);
+
+			std::cout << "[FIXED DT TEST] Test entity created at (400, 400) moving at 50px/s\n";
+			std::cout << "[FIXED DT TEST] Screen width: " << LEVEL_WIDTH << "px\n";
+			std::cout << "[FIXED DT TEST] Expected time to cross screen: ~9.6 seconds\n";
+			std::cout << "[FIXED DT TEST] Press L to simulate lag - square should NOT slow down! Press L again to stop lag.\n";
+			std::cout << "[FIXED DT TEST] Look for PINK SQUARE moving left to right\n";
+			std::cout << "========================================\n\n";
+
 			Create_Wall(LEVEL_WIDTH / 2, LEVEL_HEIGHT - WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
 
 			// Bottom wall
@@ -307,17 +348,20 @@ void Level1::Init()
 		std::cout << "==============================\n" << std::endl;
 		});
 	// Top wall
-		Camera& cam = Camera::GetInstance();
-		cam.SetMode(Camera::Mode::GAME);
+	Camera& cam = Camera::GetInstance();
+	cam.SetMode(Camera::Mode::GAME);
 
-		cam.SetPosition({ GLApp::width / 2.f, GLApp::height / 2.f });
-		cam.SetZoom(1.0f);
-		cam.UpdateMatrices();
-		Render::GetInstance().UpdateProjection();
-		//Create_ScriptedEntity("Mover", 400.f, 300.f);
-		//Create_Arrow(1400.f, 400.f);
-	//Create_RotatingObject(500.f, 400.f);
-	//Create_MovingObject(800.f, 400.f);
+	cam.SetPosition({ GLApp::width / 2.f, GLApp::height / 2.f });
+	cam.SetZoom(1.0f);
+	cam.UpdateMatrices();
+	Render::GetInstance().UpdateProjection();
+
+	// ========== COMMENTED OUT: Prevents console spam during testing ==========
+	// Entity mover = Create_ScriptedEntity("Mover", 400.f, 300.f);
+	// Create_Arrow(1400.f, 400.f);
+	// ========== END COMMENT ==========
+//Create_RotatingObject(500.f, 400.f);
+//Create_MovingObject(800.f, 400.f);
 }
 
 // Updates Level 1
@@ -336,6 +380,23 @@ void Level1::Update()
 	if (registry.Get_EntityName(roundy) != "Circle")	
 	{ roundy = registry.Get_EntityID("Circle"); }
 	/*if (registry.Get_EntityName(ghoul) != "ghoul")
+	if (registry.Get_EntityName(waffle) != "Waffle")
+	{
+		waffle = registry.Get_EntityID("Waffle");
+	}
+	if (registry.Get_EntityName(rock) != "Player")
+	{
+		rock = registry.Get_EntityID("Player");
+	}
+	if (registry.Get_EntityName(square) != "Rectangle")
+	{
+		square = registry.Get_EntityID("Rectangle");
+	}
+	if (registry.Get_EntityName(roundy) != "Circle")
+	{
+		roundy = registry.Get_EntityID("Circle");
+	}
+	if (registry.Get_EntityName(ghoul) != "ghoul")
 	{
 		ghoul = registry.Get_EntityID("ghoul");
 	}*/
@@ -351,6 +412,21 @@ void Level1::Update()
 	//UpdateCamera(Camera::GetInstance(), playerTransform.pos, g_dt);
 	//std::cout << "Camera Pos: " << mainCamera.position.x << ", " << mainCamera.position.y << std::endl;
 	Camera& cam = Camera::GetInstance();
+
+	static bool testEntityStarted = false;
+	for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>()) {
+		if (tag.tag == T_TEST && registry.Has_Component<TransformComponent>(entID)) {
+			auto& transform = registry.Get_Component<TransformComponent>(entID);
+
+			// reset when it comes back to start position
+			if (transform.pos.x > LEVEL_WIDTH) {
+				transform.pos = { 400.0f, 400.0f };
+				std::cout << "[FIXED DT] Test entity reset to start position\n";
+			}
+			break;
+		}
+	}
+
 	if (cam.GetMode() == Camera::Mode::GAME)
 	{
 		cam.FollowTarget(playerTransform.pos, dt);
@@ -359,6 +435,17 @@ void Level1::Update()
 
 
 	
+	// make test square for fixed dt come back to original waffle position when it leaves screen
+	for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>()) {
+		if (tag.tag == T_TEST && registry.Has_Component<TransformComponent>(entID)) {
+			auto& transform = registry.Get_Component<TransformComponent>(entID);
+
+			// If square goes past right edge of screen relative to camera, reset to start
+			if (transform.pos.x > LEVEL_WIDTH) {
+				transform.pos = { 400.0f, 400.0f };  // Reset to starting position
+			}
+		}
+	}
 
 	//========== stress test demo start =========================================
 	

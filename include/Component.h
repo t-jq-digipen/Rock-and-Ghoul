@@ -223,7 +223,8 @@ enum C_TagID {
 	T_PROJECTILE,
 	T_WALL,
 	T_INSTANCING,
-	T_BATCH
+	T_BATCH,
+	T_TEST
 };
 
 struct TagComponent {
@@ -254,6 +255,7 @@ struct TagComponent {
 		dropdown.Add_Option("Projectile", static_cast<unsigned int>(T_PROJECTILE));
 		dropdown.Add_Option("Wall", static_cast<unsigned int>(T_WALL));
 		dropdown.Add_Option("Instancing", static_cast<unsigned int>(T_INSTANCING));
+		dropdown.Add_Option("Test", static_cast<unsigned int>(T_TEST));
 
 		ret.Add_Data("Tag",  dropdown );
 
