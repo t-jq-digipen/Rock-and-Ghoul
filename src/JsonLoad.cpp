@@ -2,7 +2,7 @@
  * @file        JsonLoad.cpp
  * @author      Yasmin Tazi | yasmin.t@digipen.edu
  * @co-author   Tan Ying Clarissa | t.yingclarissa@digipen.edu
- * @date        27 OCT 2025
+ * @date        04 NOV 2025
  *
  * @brief   Implementation file for JSON serialization system
  *
@@ -14,7 +14,7 @@
  * JSON library for parsing and serialization, and provides type-safe
  * conversion between game objects and their JSON representations.
  *
- * Copyright ï¿½ 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "JsonLoad.h"
@@ -892,7 +892,7 @@ void JsonLoad::ClearAllEntities() {
  *         occurred during serialization or file writing.
  */
 
-bool JsonLoad::LoadCurrentScene(const std::string& filepath, const std::string& sceneName)
+/*bool JsonLoad::LoadCurrentScene(const std::string& filepath, const std::string& sceneName)
 {
     try 
     {
@@ -973,7 +973,7 @@ bool JsonLoad::LoadCurrentScene(const std::string& filepath, const std::string& 
         std::cerr << "Error loading scene '" << sceneName << "' from '" << filepath << "': " << e.what() << std::endl;
         return false;
     }
-}
+}*/
 
 /**
  * @brief Saves temporary scene to JSON file based on sceneName.
@@ -984,7 +984,7 @@ bool JsonLoad::LoadCurrentScene(const std::string& filepath, const std::string& 
  *         occurred during serialization or file writing.
  */
 
-bool JsonLoad::SaveCurrentTempScene(const std::string& filepath, const std::string& sceneName)
+/*bool JsonLoad::SaveCurrentTempScene(const std::string& filepath, const std::string& sceneName)
 {
     try {
         // 1) Snapshot current world into a SavedScene
@@ -1061,4 +1061,4 @@ bool JsonLoad::SaveCurrentTempScene(const std::string& filepath, const std::stri
         std::cerr << "Error in SaveCurrentTempScene('" << sceneName << "'): " << e.what() << '\n';
         return false;
     }
-}
+}*/

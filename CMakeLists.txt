@@ -265,6 +265,10 @@ source_group("BaseEngine\\ECS\\Component\\Physics" FILES
 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ForcesManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ForcesManager.h
+
 )
 
 source_group("BaseEngine\\Systems" FILES 
