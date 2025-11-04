@@ -38,6 +38,7 @@
 #include "Render.h" 
 #include "Camera.h"
 #include "LogicSystem.h"
+#include "GuiSystem.h"
 static bool isPlacingPrefab = false;
 static std::string pendingPrefabPath;
 bool ImGuiSystem::showColliders = false;
@@ -495,6 +496,15 @@ void ImGuiSystem::Update(float dt)
             ImVec2(newWidth, newHeight),
             ImVec2(0, 1), ImVec2(1, 0)
         );
+
+        GameViewRect rect;
+        rect.x = cursor.x;
+        rect.y = cursor.y;
+        rect.width = newWidth;
+        rect.height = newHeight;
+
+        GuiSystem::Get().SetGameViewRect(rect);
+
         if (dragEditMode) {
             DrawEntityDragHandles(cursor, ImVec2(newWidth, newHeight));
         }
