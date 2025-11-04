@@ -14,7 +14,7 @@
  * JSON library for parsing and serialization, and provides type-safe
  * conversion between game objects and their JSON representations.
  *
- * Copyright ï¿½ 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "JsonLoad.h"
