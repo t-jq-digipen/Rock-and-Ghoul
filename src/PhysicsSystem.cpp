@@ -50,7 +50,7 @@ void PhysicsSystem::Update(float dt) {
             // Get transform component to multiply by fixed dt
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
             // Update physics component using fixed dt
-            phyComp.Update();
+            phyComp.Update(dt);
             // Update transform positions
             Vec2 deltaPos = RG_Scale(phyComp.Get_Vel(), dt);
             transComp.pos = RG_Add(transComp.pos, deltaPos);
