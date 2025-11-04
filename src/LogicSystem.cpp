@@ -2,7 +2,8 @@
 #include "BehaviourComponent.h"
 #include "Registry.h"
 #include <iostream>
-
+#include "CoreEngine.h"
+extern GSM gsm;
 void LogicSystem::Initialize()
 {
     std::cout << "[LogicSystem] Initialized" << std::endl;
@@ -23,6 +24,8 @@ void LogicSystem::Update(float dt)
             f->Update(e, dt);
         }
     }*/
+    if (gsm.isPaused || gsm.inEditMode)
+        return;
     Registry& reg = Registry::Get();
 
     for (auto& [entity, bc] : reg.Get_ComponentMap<BehaviourComponent>())

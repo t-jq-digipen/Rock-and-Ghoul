@@ -2032,7 +2032,6 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         cam.SetMode(Camera::Mode::EDITOR);
         cam.ResetToCenter();
 
-        LogicSystem::Get().Shutdown();
 
         std::cout << "[Camera] Switched to EDITOR mode\n";
         isPlaying = false;
