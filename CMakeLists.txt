@@ -326,6 +326,8 @@ source_group("BaseEngine\\Libraries\\Audio" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AudioCache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioCache.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AudioComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioComponent.h
 )
 
 
