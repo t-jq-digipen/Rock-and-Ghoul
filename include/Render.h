@@ -2,7 +2,7 @@
  * @file        Render.h
  * @author      Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
  * @co-author   Tan Jun Quan          | t.junquan@digipen.edu
- * @date        26 OCT 2025
+ * @date        05 NOV 2025
  *
  * @brief   Rendering system class, consisting function declarations for drawing 2D
  *          primitives, images, and text using OpenGL.
@@ -522,8 +522,8 @@ public:
     */
     GLuint GetSpriteShader() const { return shaderProgram; } //for now this, can added instancedShader in the future
 
-    void SetTint(const Colour3& tint);
-    void ClearTint();
+    /*void SetTint(const Colour3& tint);
+    void ClearTint();*/
 
     void DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color);
 
