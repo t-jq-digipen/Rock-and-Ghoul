@@ -23,6 +23,7 @@
 #include "AudioCache.h"
 #include "AudioComponent.h"
 #include "CoreEngine.h"
+#include "Camera.h"
 #include "PlayerSystem.h"
 #include "GameStateManager.h"
 #include <iostream>
@@ -394,6 +395,64 @@ void AudioManager::UpdateCrossfade(float dt) {
 void AudioManager::HandleMusicForState(GameState currentState, GameState previousState) {
     // DETECT TRANSITION TO LEVEL 1!
     if (currentState == GameState::GS_LEVEL1 && previousState != GameState::GS_LEVEL1) {
+        std::cout << "\n======================================" << std::endl;
+        std::cout << "[AudioManager] ENTERING LEVEL 1" << std::endl;
+        std::cout << "======================================" << std::endl;
+
+        // Load level1 bank with verification
+        std::cout << "[AudioManager] Loading level1 bank..." << std::endl;
+        bool bankLoaded = AudioCache::LoadBank("level1");
+
+        if (!bankLoaded) {
+            std::cerr << "[AudioManager] ERROR: Failed to load level1 bank!" << std::endl;
+        }
+        else {
+            std::cout << "[AudioManager] ✓ level1 bank loaded successfully" << std::endl;
+
+            // Verify footstep is loaded
+            AudioAsset* footstepAsset = AudioCache::GetAsset("player_footstep_wood");
+            if (!footstepAsset) {
+                std::cerr << "[AudioManager] ERROR: player_footstep_wood not found in cache!" << std::endl;
+            }
+            else {
+                std::cout << "[AudioManager] ✓ Footstep asset found in cache" << std::endl;
+                std::cout << "  Path: " << footstepAsset->path << std::endl;
+                std::cout << "  Spatial: " << (footstepAsset->spatial ? "YES" : "NO") << std::endl;
+                std::cout << "  Loaded: " << (footstepAsset->sound ? "YES" : "NO") << std::endl;
+
+                if (!footstepAsset->sound) {
+                    std::cerr << "[AudioManager] ERROR: Footstep sound pointer is NULL!" << std::endl;
+                }
+                else {
+                    std::cout << "[AudioManager] ✓ Footstep sound loaded successfully" << std::endl;
+
+                    // Test play footstep at camera center
+                    std::cout << "[AudioManager] Testing footstep playback..." << std::endl;
+                    Camera& cam = Camera::GetInstance();
+                    Vec2 camPos = cam.GetPosition();
+
+                    std::cout << "  Camera position: (" << camPos.x << ", " << camPos.y << ")" << std::endl;
+
+                    FMOD::Channel* testChannel = AudioSystem::PlaySoundAt(
+                        "player_footstep_wood",
+                        camPos.x,
+                        camPos.y,
+                        1.0f
+                    );
+
+                    if (testChannel) {
+                        std::cout << "[AudioManager] ✓✓✓ FOOTSTEP TEST SUCCESSFUL! ✓✓✓" << std::endl;
+                    }
+                    else {
+                        std::cerr << "[AudioManager] ✗✗✗ FOOTSTEP TEST FAILED! ✗✗✗" << std::endl;
+                    }
+                }
+            }
+        }
+
+        std::cout << "======================================\n" << std::endl;
+
+        // Start level music
         if (level1Music) {
             CrossfadeTo(level1Music, 4.0f);
         }
@@ -404,6 +463,12 @@ void AudioManager::HandleMusicForState(GameState currentState, GameState previou
 
     // DETECT TRANSITION BACK TO MAIN MENU FROM LEVEL 1!
     if (currentState == GameState::GS_MAIN_MENU && previousState == GameState::GS_LEVEL1) {
+        std::cout << "\n[AudioManager] Returning to Main Menu" << std::endl;
+
+        // Unload level1 bank to free memory
+        std::cout << "[AudioManager] Unloading level1 bank..." << std::endl;
+        AudioCache::UnloadBank("level1");
+
         // Play button sound
         AudioSystem::PlayButtonSound(AudioSystem::ButtonType::PLAY);
 
@@ -591,27 +656,6 @@ void AudioManager::CrossfadeTo(FMOD::Sound* newTrack, float duration) {
     std::cout << "[AudioManager] Starting crossfade (" << duration << "s)\n";
 }
 
-// Add this function to AudioManager
-void AudioManager::UpdateListenerToPlayer() {
-    Registry& registry = Registry::Get();
-
-    // Find player and update listener to follow them
-    for (auto& [entity, tag] : registry.Get_ComponentMap<TagComponent>()) {
-        if (tag.tag == T_PLAYER) {
-            if (registry.Has_Component<TransformComponent>(entity)) {
-                auto& transform = registry.Get_Component<TransformComponent>(entity);
-
-                // Update listener position to player position
-                AudioSystem::SetListenerPosition(transform.pos.x, transform.pos.y);
-                return;
-            }
-        }
-    }
-
-    // No player found, keep listener at origin
-    AudioSystem::SetListenerPosition(0.0f, 0.0f);
-}
-
 /**
  * @brief Updates the AudioManager each frame.
  *
@@ -621,8 +665,6 @@ void AudioManager::UpdateListenerToPlayer() {
  * @param dt Delta time in seconds.
  */
 void AudioManager::Update(float dt) {
-    // Update listener to follow player EVERY FRAME
-    UpdateListenerToPlayer();
 
     // Update FMOD system
     AudioSystem::Update();

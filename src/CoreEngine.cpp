@@ -45,6 +45,7 @@
 #include "BehaviourComponent.h"
 #include "GameScripts.h"
 #include "AudioComponent.h"
+#include "Camera.h"
 
 #include "MonoScriptComponent.h"
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
@@ -188,14 +189,16 @@ void CoreEngine::Run() {
             // --- 1. Update logic ---
             gsm.CallUpdate();
 
+            // updating audio listener position relative to camera
+            Camera& camera = Camera::GetInstance();
+            camera.UpdateCamera();
+
             // --- 2. Capture game view for ImGui ---
             Render& renderer = Render::GetInstance();
             renderer.BeginSceneCapture();
 
             // Draw the current game scene or main menu
             gsm.CallDraw();
-
-
 
 
             // Finish capture � ImGui will display this texture inside "Game View"
