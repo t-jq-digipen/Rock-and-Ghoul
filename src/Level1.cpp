@@ -467,7 +467,7 @@ void Level1::Update()
 		if (!spawnedBatch)
 		{
 			int totalSprites = 1000;
-			float aspectRatio = (float)GLApp::width / (float)GLApp::height;
+			/*float aspectRatio = (float)GLApp::width / (float)GLApp::height;
 			int cols = static_cast<int>(std::sqrt(totalSprites * aspectRatio));
 			int rows = static_cast<int>(std::ceil((float)totalSprites / cols));
 
@@ -476,17 +476,24 @@ void Level1::Update()
 			float spacingY = (GLApp::height - 2 * paddingY) / rows;
 			float spacing = std::min(spacingX, spacingY);
 			//float size = spacing * 0.8f;
-			//float normalizedScale = size / 100.0f;
-
+			//float normalizedScale = size / 100.0f;*/
+			float spriteSize = 50.f;
+			float spriteHalfSize = spriteSize * 0.5f;
+			//random seed
+			srand(static_cast<unsigned>(time(nullptr)));
 			for (int i = 0; i < totalSprites; ++i)
 			{
-				int col = i % cols;
+				/*int col = i % cols;
 				int row = i / cols;
 
 				float px = paddingX + col * spacing + spacing * 0.5f;
-				float py = paddingY + row * spacing + spacing * 0.5f;
+				float py = paddingY + row * spacing + spacing * 0.5f;*/
 
-				Create_BatchedSprite(px, py, 50.f, "../Assets/Waffle_Sprites.png"); //siz e figure that out later
+				//spawn within screen
+				float px = spriteHalfSize + static_cast<float>(rand() % GLApp::width - static_cast<int>(spriteHalfSize));
+				float py = spriteHalfSize + static_cast<float>(rand() % GLApp::height - static_cast<int>(spriteHalfSize));
+
+				Create_BatchedSprite(px, py, spriteSize, "../Assets/Waffle_Sprites.png"); //siz e figure that out later
 			}
 
 			std::cout << "Spawned " << totalSprites << " batched sprites with N key!\n";
@@ -497,11 +504,13 @@ void Level1::Update()
 			// Clear all T_BATCH entities
 			for (auto& [e, tag] : registry.Get_ComponentMap<TagComponent>())
 			{
-				if (tag.tag == T_BATCH && EntityManager::get().isAlive(e))
+				if (tag.tag == T_BATCH && EntityManager::get().isAlive(e)) {
 					toRemove.push_back(e);
+				}
 			}
-			for (Entity e : toRemove)
+			for (Entity e : toRemove) {
 				registry.Remove_Entity(e);
+			}
 
 			std::cout << "Cleared all batched sprites!\n";
 			spawnedBatch = false;

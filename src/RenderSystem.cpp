@@ -2,7 +2,8 @@
  * @file        RenderSystem.cpp
  * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
  * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
- * @date        01 OCT 2025
+ * @co-author   Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+ * @date        05 NOV 2025
  *
  * @brief
  *
