@@ -9,6 +9,8 @@
  * that can be serialized, edited, and automatically updated.
  * Supports both 2D and spatial 3D audio positioning.
  *
+ * REFACTORED: Removed redundant IDs - uses names only!
+ *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
@@ -16,6 +18,7 @@
 #include <fmod.hpp>
 #include <string>
 #include "Entity.h"
+#include "AudioCache.h"
 #include "DataDefs.h"
 #include <nlohmann/json.hpp>
 
@@ -26,9 +29,9 @@ using json = nlohmann::json;
  * @brief Component for attaching audio to entities with serialization support.
  */
 struct AudioComponent {
-    // Audio asset references (by ID from AudioCache)
-    int soundID = -1;           // Single sound effect ID (-1 = none)
-    int loopingSoundID = -1;    // Looping sound ID for ambient audio (-1 = none)
+    // Audio asset references (by name from AudioCache)
+    std::string soundName = "";        // Single sound effect name (empty = none)
+    std::string loopingSoundName = ""; // Looping sound name for ambient audio (empty = none)
 
     // Playback state
     FMOD::Channel* channel = nullptr;
@@ -37,16 +40,16 @@ struct AudioComponent {
     bool isLoopingPlaying = false;
 
     // Playback settings
-    bool autoPlay = false;      // Play sound on entity spawn
+    bool autoPlay = false;        // Play sound on entity spawn
     bool autoPlayLooping = false; // Play looping sound on spawn
-    bool spatial = false;       // Use 3D spatial positioning
+    bool spatial = false;         // Use 3D spatial positioning
 
     // Volume control
-    float volume = 1.0f;        // Master volume (0.0 - 1.0)
+    float volume = 1.0f;          // Master volume (0.0 - 1.0)
 
     // Spatial audio settings (only used if spatial = true)
-    float minDistance = 1.0f;   // Distance at which sound is at full volume
-    float maxDistance = 100.0f; // Distance at which sound is silent
+    float minDistance = 1.0f;     // Distance at which sound is at full volume
+    float maxDistance = 100.0f;   // Distance at which sound is silent
 
     /**
      * @brief Default constructor
@@ -54,13 +57,13 @@ struct AudioComponent {
     AudioComponent() = default;
 
     /**
-     * @brief Constructor with sound ID
-     * @param id Audio asset ID from AudioCache
+     * @brief Constructor with sound name
+     * @param name Audio asset name from AudioCache
      * @param autoplay Whether to play immediately on spawn
      * @param vol Volume level (0.0 - 1.0)
      */
-    AudioComponent(int id, bool autoplay = false, float vol = 1.0f)
-        : soundID(id), autoPlay(autoplay), volume(vol) {}
+    AudioComponent(const std::string& name, bool autoplay = false, float vol = 1.0f)
+        : soundName(name), autoPlay(autoplay), volume(vol) {}
 
     /**
      * @brief Play the main sound effect
@@ -111,8 +114,8 @@ struct AudioComponent {
      */
     std::string Serialize() const {
         json j = {
-            {"soundID", soundID},
-            {"loopingSoundID", loopingSoundID},
+            {"soundName", soundName},
+            {"loopingSoundName", loopingSoundName},
             {"autoPlay", autoPlay},
             {"autoPlayLooping", autoPlayLooping},
             {"spatial", spatial},
@@ -139,8 +142,11 @@ struct AudioComponent {
         json j = json::parse(data);
 
         AudioComponent audio;
-        audio.soundID = j.value("soundID", -1);
-        audio.loopingSoundID = j.value("loopingSoundID", -1);
+
+        // Simply load the names - AudioCache::GetAsset() will validate at runtime
+        audio.soundName = j.value("soundName", "");
+        audio.loopingSoundName = j.value("loopingSoundName", "");
+
         audio.autoPlay = j.value("autoPlay", false);
         audio.autoPlayLooping = j.value("autoPlayLooping", false);
         audio.spatial = j.value("spatial", false);

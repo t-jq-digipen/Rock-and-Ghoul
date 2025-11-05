@@ -29,6 +29,7 @@
 #include <iostream>
 #include "MonoScriptComponent.h"
 #include "AudioComponent.h"
+#include "AudioCache.h"
 
 #include "CoreEngine.h"
 #include "BehaviourComponent.h"
@@ -176,8 +177,19 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             //Registry::Get().Add_Component<RenderLayerComponent>(player, RenderLayerComponent{ LAYER_BACKGROUND });
             AudioComponent playerAudio;
-            playerAudio.soundID = 1;
+
+            // Look up asset by name via audiocache
+            AudioAsset* dieSound = AudioCache::GetAsset("player_die");
+            if (dieSound) {
+                playerAudio.soundName = dieSound->name;
+            }
+            else {
+                std::cerr << "WARNING: player_die audio asset not found!" << std::endl;
+                playerAudio.soundName = "";  // No sound
+            }
+
             playerAudio.loopingSoundID = -1;
+            playerAudio.loopingSoundName = "";
             playerAudio.autoPlay = false;
             playerAudio.autoPlayLooping = false;
             playerAudio.spatial = true;
