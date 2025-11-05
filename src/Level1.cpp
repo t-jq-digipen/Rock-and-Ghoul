@@ -450,7 +450,8 @@ void Level1::Update()
 				registry.Has_Component<Animator::AnimatorComponent>(entID))
 			{
 				auto& anim = registry.Get_Component<Animator::AnimatorComponent>(entID);
-				anim.SetState(PS_WALK);
+				if (anim.GetCurrentState() == PS_WALK) anim.SetState(PS_IDLE);
+				else anim.SetState(PS_WALK);
 			}
 		}
 

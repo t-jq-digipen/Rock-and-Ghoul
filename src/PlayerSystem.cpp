@@ -270,7 +270,7 @@ namespace PlayerMove {
 		subscriberID.erase(e);
 		std::cout << "Player script ended" << std::endl;
 	}
-}
+} // end namespace PlayerMove
 
 void PlayerSystem::Initialize()
 {
