@@ -15,6 +15,7 @@ using json = nlohmann::json;
 std::unordered_map<std::string, AudioAsset> AudioCache::assetsByName;
 std::unordered_map<int, std::string> AudioCache::idToName;
 std::unordered_map<std::string, std::vector<std::string>> AudioCache::banks;
+int AudioCache::nextID = 0;
 
 bool AudioCache::Initialize(const std::string& manifestPath) {
     if (!ParseManifest(manifestPath)) {
@@ -35,6 +36,8 @@ bool AudioCache::ParseManifest(const std::string& manifestPath) {
 
         json manifest = json::parse(content);
 
+        nextID = 0;
+        
         // Helper to parse a category
         auto parseCategory = [&](const std::string& categoryName) {
             if (!manifest.contains(categoryName)) return;
@@ -46,7 +49,7 @@ bool AudioCache::ParseManifest(const std::string& manifestPath) {
 
                 AudioAsset asset;
                 asset.name = assetName;
-                asset.id = assetData["id"];
+                asset.id = nextID++;
                 asset.path = assetData["path"];
                 asset.loop = assetData["loop"];
                 asset.group = assetData["group"];
@@ -230,4 +233,8 @@ std::vector<std::string> AudioCache::GetBankAssets(const std::string& bankName) 
         return it->second;
     }
     return {};
+}
+
+const std::unordered_map<std::string, AudioAsset>& AudioCache::GetAllAssets() {
+    return assetsByName;
 }
