@@ -9,6 +9,7 @@ enum class ScriptID : unsigned int {
     GHOUL,
     PATROL_ENEMY,
     PLAYER,
+    CAMERA_TRACK
 };
 class LogicSystem : public ISystem
 {

@@ -393,7 +393,6 @@ void MainMenu::Update()
             CrashHandler::Log("MainMenuTexture texture missing; skipping draw!");
         }*/
 
-        GuiSystem::Get().Update(0.f);
 
         if (Input::IsKeyPressed(GLFW_KEY_8))
         {

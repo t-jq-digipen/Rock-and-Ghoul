@@ -237,8 +237,6 @@ void Level2::Init()
 
 void Level2::Update()
 {
-	//test camera on an entity
-	auto& playerTransform = registry2.Get_Component<TransformComponent>(rock2);
 
 	static double lastTime = glfwGetTime();
 	double currentTime = glfwGetTime();
@@ -246,7 +244,8 @@ void Level2::Update()
 	lastTime = currentTime;
 
 	// Update camera position
-	UpdateCamera(Camera::GetInstance(), playerTransform.pos, dt);
+	// Camera::GetInstance().SetZoom(1.5);
+	// UpdateCamera(Camera::GetInstance(), playerTransform.pos, dt);
 
 	//switch animation state
 	if (Input::IsKeyPressed(GLFW_KEY_U))  // U walk animation
@@ -443,7 +442,6 @@ void Level2::Update()
 		//	fretboard->PlayerInput();
 		//}
 
-		GuiSystem::Get().Update(0.f);
 		});
 }
 

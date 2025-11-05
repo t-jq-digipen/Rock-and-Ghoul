@@ -80,6 +80,7 @@ public:
 
     // Modifiers for camera data
     void SetPosition(const Vec2& pos) { position = pos; }
+    void SetTarget(const Vec2& target) { position = target; }
     void SetZoom(float z) { zoom = z; }
     void SetRotation(float r) { rotation = r; }
     void SetAspectRatio(float a) { aspectRatio = a; }
@@ -92,6 +93,7 @@ public:
     void FollowTarget(Camera& cam, const Vec2& targetPos, float dt);
     // Accessors for camera data
     const Vec2& GetPosition() const { return position; }
+    const Vec2& GetTargetPosition() const { return targetPosition; }
     float GetZoom() const { return zoom; }
     float GetRotation() const { return rotation; }
     float GetAspectRatio() const { return aspectRatio; }
@@ -103,6 +105,9 @@ public:
     const Vec2& GetWorldMin() const { return worldMin; }
     const Vec2& GetWorldMax() const { return worldMax; }
 
+    // Update camera
+    void UpdateCamera();
+
     // Prevent copy
     Camera(const Camera&) = delete;
     Camera& operator=(const Camera&) = delete;
@@ -111,6 +116,7 @@ private:
     Camera(); // defined in Camera.cpp
 
     Vec2 position; //Camera world position
+    Vec2 targetPosition; //Camera target position
     float zoom; // zoom factor
     float rotation; // rotation in rads
     float aspectRatio; // screen ar (width/height)

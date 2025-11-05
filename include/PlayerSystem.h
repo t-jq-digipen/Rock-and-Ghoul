@@ -36,10 +36,7 @@ namespace PlayerMove {
 
     inline void Update(Entity e, float dt);
 
-    inline void End(Entity e)
-    {
-        std::cout << "Player script ended" << std::endl;
-    }
+    inline void End(Entity e);
 }
 
 class PlayerSystem : public ISystem {

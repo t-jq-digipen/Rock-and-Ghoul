@@ -282,7 +282,7 @@ void GuiSystem::Update(float dt) {
             if (render.IsAreaTouched(mouse, delPos, delW, delH) &&
                 Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
             {
-                if (buttons.size() > 1) {
+                if (buttons.size() > 0) {
                     buttons.erase(buttons.begin() + i);
 
                     // fix selection index after delete
@@ -329,7 +329,7 @@ void GuiSystem::Update(float dt) {
             if (render.IsAreaTouched(mouse, delPos, delW, delH) &&
                 Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
             {
-                if (textboxes.size() > 1) {
+                if (textboxes.size() > 0) {
                     textboxes.erase(textboxes.begin() + i);
 
                     // fix selection index after delete

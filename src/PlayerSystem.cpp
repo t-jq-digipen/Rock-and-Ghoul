@@ -182,8 +182,8 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
 		Vec2 dashDir{ (float)hor, (float)ver };
 
-		float fx = static_cast<float>(hor);
-		float fy = static_cast<float>(ver);
+		fx = static_cast<float>(hor);
+		fy = static_cast<float>(ver);
 		NormalizeDiagonalMovement(fx, fy);
 
 		if (RG_LengthSquared(dashDir) > 0.01f) {
@@ -195,9 +195,10 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 }
 
 namespace PlayerMove {
+	std::unordered_map<Entity, size_t> subscriberID;
+
 	void Dash(Entity eID) {
-		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
-		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
+		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
 
 		// Vec2 dashDir = moveComp.GetMovementDirection();
@@ -226,7 +227,7 @@ namespace PlayerMove {
 	{
 		std::cout << "Player script started" << std::endl;
 
-		EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
+		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
 
 			if (e.key == GLFW_KEY_LEFT_SHIFT)
 			{
@@ -236,6 +237,7 @@ namespace PlayerMove {
 	}
 
 	inline void Update(Entity eID, float dt) {
+		(void)dt;
 		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
 		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
 
@@ -255,6 +257,18 @@ namespace PlayerMove {
 		moveComp.SetMovementDirection({ fx, fy });
 
 
+		if (!Registry::Get().Has_Component<Animator::AnimatorComponent>(eID)) return;
+		auto& animComp = Registry::Get().Get_Component<Animator::AnimatorComponent>(eID);
+
+		PlayerState animstate = (moving) ? PS_WALK : PS_IDLE;
+		animComp.SetState(animstate);
+	}
+
+	inline void End(Entity e)
+	{
+		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID[e]);
+		subscriberID.erase(e);
+		std::cout << "Player script ended" << std::endl;
 	}
 }
 

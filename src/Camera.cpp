@@ -33,6 +33,34 @@ void Camera::UpdateMatrices()
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-position.x, -position.y, 0.0f));
 }
 
+void Camera::UpdateCamera()
+{
+
+    // FollowTarget(targetPosition, dt);
+    //const float followSpeed = 2.0f; // adjust for smoothness
+    //Vec2 newPos = RG_Lerp(position, targetPosition, followSpeed * dt);
+
+    Vec2 newPos = GetPosition();
+
+    float halfW = (static_cast<float>(GLApp::width) * 0.5f) / GetZoom();
+    float halfH = (static_cast<float>(GLApp::height) * 0.5f) / GetZoom();
+
+    Vec2 min = GetWorldMin();
+    Vec2 max = GetWorldMax();
+
+    /*std::cout << "Camera pos: " << newPos.x
+        << "  halfW: " << halfW
+        << "  Bounds: [" << min.x << ", " << max.x << "]"
+        << "  Clamped range: [" << min.x + halfW << ", " << max.x - halfW << "]"
+        << std::endl;*/
+
+    newPos.x = std::max(min.x + halfW, std::min(newPos.x, max.x - halfW));
+    newPos.y = std::max(min.y + halfH, std::min(newPos.y, max.y - halfH));
+
+    SetPosition(newPos);
+    UpdateMatrices();
+}
+
 /**
  * @brief "player" follow camera update using Vec2 math.
  */

@@ -654,7 +654,6 @@ void Level1::Update()
 			fretboard->PlayerInput();
 		}
 
-		GuiSystem::Get().Update(0.f);
 		});
 }
 

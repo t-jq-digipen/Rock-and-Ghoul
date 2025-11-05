@@ -26,6 +26,7 @@
 #include "Render.h"
 #include "Animator.h"
 #include <Camera.h>
+#include "LogicSystem.h"
 
  // ---------------------------------------------
  // @brief Temporary struct for per-frame draw queue
@@ -63,9 +64,19 @@ void RenderSystem::Initialize() {
 
     std::cout << "[RenderSystem] Scene framebuffer created ("
         << GLApp::width << "x" << GLApp::height << ")\n";
+
+    BehaviourFCT camFollow;
+    camFollow.Init = [](Entity e) { CamFollowScript::Start(e); };
+    camFollow.Update = [](Entity e, float dt) { CamFollowScript::Update(e, dt); };
+    camFollow.End = [](Entity e) {CamFollowScript::End(e); };
+    LogicSystem::Get().RegisterScript("CamTarget", camFollow, ScriptID::CAMERA_TRACK);
+
 }
 
 void RenderSystem::Update(float dt) {
+
+
+    Camera::GetInstance().UpdateCamera();
     Render& renderer = Render::GetInstance();
 
     if (ImGuiSystem::guiEnabled) {
@@ -94,7 +105,8 @@ void RenderSystem::Update(float dt) {
 
     // Use the camera for all subsequent draw calls (ok why this not workinGGGGGGGG AJBFEEUFBUJFBFDJSBJF)
     //mainCamera.UpdateMatrices();
-    Camera::GetInstance().UpdateMatrices();
+    // Camera::GetInstance().UpdateMatrices();
+
 
     //glm::mat4 viewProj = mainCamera.GetViewProjection();
     glm::mat4 viewProj = Camera::GetInstance().GetViewProjection();
@@ -564,4 +576,20 @@ void RenderSystem::Update(float dt) {
 void RenderSystem::Shutdown() {
     // clear all image cache here? seems like a good place, if we only store not a lot of images
     Render::GetInstance().ClearAllTextures();
+}
+
+namespace CamFollowScript {
+    inline void Start(Entity eID) {
+        (void)eID;
+    }
+
+    inline void Update(Entity eID, float dt) {
+        if (!Registry::Get().Has_Component<TransformComponent>(eID)) { return; }
+        auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
+        Camera::GetInstance().FollowTarget(transComp.pos, dt);
+    }
+
+    inline void End(Entity eID) {
+        (void)eID;
+    }
 }
