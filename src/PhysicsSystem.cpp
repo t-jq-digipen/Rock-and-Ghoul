@@ -11,7 +11,7 @@
  * parts in the physics component, with reference to other
  * components such as Transform.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright � 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "PhysicsSystem.h"

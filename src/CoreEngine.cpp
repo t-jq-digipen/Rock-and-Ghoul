@@ -21,7 +21,7 @@
  * retrieval and modification of current, previous, and next states
  * outside of the engine code.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright � 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -88,9 +88,6 @@ void CoreEngine::Initialize() {
 
     registry.Register_Component<Movement::MovementComponent>("Movement", { "Transform", "Physics" });
     std::cout << "REGISTRY | REGISTERED MOVEMENT COMPONENT\n";
-
-    registry.Register_Component<DashComponent>("Dash", { "Physics" });
-    std::cout << "REGISTRY | REGISTERED DASH COMPONENT\n";
 
     // marker for non-standard components which should be shifted out to game files
     std::cout << "NON DEFAULT COMPONENTS: \n==============================\n";
@@ -201,7 +198,7 @@ void CoreEngine::Run() {
 
 
 
-            // Finish capture ImGui will display this texture inside "Game View"
+            // Finish capture � ImGui will display this texture inside "Game View"
             renderer.EndSceneCapture();
             // NEED TO FIGURE OUT HOW TO SPLIT THIS PER DRAW/UPDATE
 

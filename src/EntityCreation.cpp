@@ -68,12 +68,7 @@ Entity Create_Player(float const& x, float const& y) {
     /*bc.scriptIDs = { ScriptID::PATROL_ENEMY, ScriptID::GHOUL };
     bc.startedStates = { false, false };*/
     Registry::Get().Add_Component<BehaviourComponent>(patrol, bc);
-
-    // Add dash component if it doesn't already exist
-    if (!Registry::Get().Has_Component<DashComponent>(patrol)) {
-        Registry::Get().Add_Component<DashComponent>(patrol);
-    }
-
+    
     return patrol;
 }
 Entity Create_Waffle(float const& x, float const& y) {

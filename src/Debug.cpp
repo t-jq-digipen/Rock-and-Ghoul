@@ -15,11 +15,7 @@
  */
 #include "Debug.h"
 #include <unordered_map>
-#include <algorithm>
-#include <cmath>
-#include <iostream>
 #include "glapp.h"
-#include "SpatialGrid.h"
 void DebugDraw::DrawAABB(const AABB& box, Render& renderer) {
     Vec2 topLeft{ box.min.x, box.max.y };
     Vec2 topRight{ box.max.x, box.max.y };
@@ -89,78 +85,6 @@ void DebugDraw::DrawCircleCollider(const Circle& circle, Render& renderer) {
     float lineWidth = windowScale * 2.0f;
     glLineWidth(std::max(1.0f, lineWidth));
     renderer.DrawCircle({ circle.pos.x, circle.pos.y }, circle.rad, color, 32);
-    glLineWidth(1.0f);
-}
-
-void DebugDraw::DrawSpatialGrid(SpatialGrid* grid, Render& renderer) {
-    if (!grid) return;
-
-    auto debugInfo = grid->GetDebugInfo();
-    float cellSize = grid->GetCellSize();
-
-    // Define world bounds for the entire grid (can adjust)
-    const float worldMinX = -2000.0f;
-    const float worldMaxX = 2000.0f;
-    const float worldMinY = -2000.0f;
-    const float worldMaxY = 2000.0f;
-
-    // Calculate grid cell range
-    int minCellX = static_cast<int>(std::floor(worldMinX / cellSize));
-    int maxCellX = static_cast<int>(std::floor(worldMaxX / cellSize));
-    int minCellY = static_cast<int>(std::floor(worldMinY / cellSize));
-    int maxCellY = static_cast<int>(std::floor(worldMaxY / cellSize));
-
-    Colour3 greenColor = { 0.0f, 0.5f, 0.0f };  // Dark green for all cells
-
-    // FIRST PASS: Draw ENTIRE grid in green
-    glLineWidth(1.0f);
-    for (int cellX = minCellX; cellX <= maxCellX; ++cellX) {
-        for (int cellY = minCellY; cellY <= maxCellY; ++cellY) {
-            float minX = cellX * cellSize;
-            float minY = cellY * cellSize;
-            float maxX = (cellX + 1) * cellSize;
-            float maxY = (cellY + 1) * cellSize;
-
-            Vec2 topLeft{ minX, maxY };
-            Vec2 topRight{ maxX, maxY };
-            Vec2 bottomLeft{ minX, minY };
-            Vec2 bottomRight{ maxX, minY };
-
-            renderer.DrawLine(topLeft, topRight, greenColor);
-            renderer.DrawLine(topRight, bottomRight, greenColor);
-            renderer.DrawLine(bottomRight, bottomLeft, greenColor);
-            renderer.DrawLine(bottomLeft, topLeft, greenColor);
-        }
-    }
-
-    // SECOND PASS: Overlay RED on cells with collisions
-    glLineWidth(3.0f);  // Thicker lines for collision cells
-    Colour3 redColor = { 1.0f, 0.0f, 0.0f };  // Bright red
-
-    // Loop through the entire grid and check for collisions
-    for (int cellX = minCellX; cellX <= maxCellX; ++cellX) {
-        for (int cellY = minCellY; cellY <= maxCellY; ++cellY) {
-            // Only draw if this cell has a collision
-            if (grid->CellHasCollision(cellX, cellY)) {
-                float minX = cellX * cellSize;
-                float minY = cellY * cellSize;
-                float maxX = (cellX + 1) * cellSize;
-                float maxY = (cellY + 1) * cellSize;
-
-                Vec2 topLeft{ minX, maxY };
-                Vec2 topRight{ maxX, maxY };
-                Vec2 bottomLeft{ minX, minY };
-                Vec2 bottomRight{ maxX, minY };
-
-                renderer.DrawLine(topLeft, topRight, redColor);
-                renderer.DrawLine(topRight, bottomRight, redColor);
-                renderer.DrawLine(bottomRight, bottomLeft, redColor);
-                renderer.DrawLine(bottomLeft, topLeft, redColor);
-            }
-        }
-    }
-
-    // Reset line width
     glLineWidth(1.0f);
 }
 

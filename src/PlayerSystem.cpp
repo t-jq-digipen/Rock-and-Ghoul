@@ -23,9 +23,10 @@
 #include "CoreEngine.h" // to check pause state for music
 #include "LogicSystem.h"
 
- // CONSTANTS for responsive, non-tunneling movement
+ // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
+constexpr float DASH_IMPULSE = 1000.f;   // Dash boost
 
 void NormalizeDiagonalMovement(float& x, float& y)
 {
@@ -47,9 +48,13 @@ Movement::InputDirection VelToDir(float x, float y)
 
 void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 {
+	(void)dt;
+
 	if (!m_registry.Has_Component<Movement::MovementComponent>(eID)) return;
 	auto& moveComp = m_registry.Get_Component<Movement::MovementComponent>(eID);
 	auto& physics = m_registry.Get_Component<Physics::PhysicsComponent>(eID);
+
+	// To be reworked when InputComponent no longer needed???
 
 	if (!m_registry.Has_Component<InputComponent>(eID)) {
 		moveComp.SetIsMoving(false);
@@ -58,9 +63,15 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 		return;
 	}
 
+	// Ensure max speed is set (prevents tunneling)
+	if (physics.GetMaxSpeed() < MAX_SPEED) {
+		physics.SetMaxSpeed(MAX_SPEED);
+	}
+	// Clear forces every frame so that player instantly switches directions
+	physics.ClearForces();
+
 	const auto& input = m_registry.Get_Component<InputComponent>(eID);
 
-	// Get input direction
 	int hor = 0, ver = 0;
 	switch (input.scheme)
 	{
@@ -85,14 +96,7 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	default: break;
 	}
 
-	// Check if entity has dash component
-	bool hasDash = m_registry.Has_Component<DashComponent>(eID);
-	DashComponent* dashComp = hasDash ? &m_registry.Get_Component<DashComponent>(eID) : nullptr;
 
-	// Update dash timer
-	if (dashComp) {
-		dashComp->Update(dt);
-	}
 
 	float fx = static_cast<float>(hor);
 	float fy = static_cast<float>(ver);
@@ -102,29 +106,7 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	moveComp.SetIsMoving(moving);
 	moveComp.SetInputDirection(VelToDir(fx, fy));
 	moveComp.SetMovementDirection({ fx, fy });
-
-	// Handle dash input
-	bool isDashing = dashComp && dashComp->IsDashing();
-
-	if (dashComp && Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT) && !isDashing && moving) {
-		dashComp->StartDash();
-	}
-
-	// Update max speed
-	physics.SetMaxSpeed(isDashing ? dashComp->dashMaxSpeed : MAX_SPEED);
-
-	// Clear forces every frame
-	physics.ClearForces();
-
-	// Apply forces based on state
-	if (moving) {
-		if (isDashing) {
-			physics.AddForce({ fx, fy }, dashComp->dashForce, 0.f);
-		} else {
-			// Normal movement
-			physics.AddForce({ fx, fy }, MOVE_FORCE, 0.f);
-		}
-	}
+	//auto& physics = m_registry.Get_Component<Physics::PhysicsComponent>(eID);
 
 	//if (!m_registry.Has_Component<InputComponent>(eID)) {
 	//	return; // No input component, skip movement
@@ -191,12 +173,66 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 
 	//if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) physics.AddForce(dir, dash);
 
+	///*if (Input::IsKeyHeld(GLFW_KEY_W) && vel.y < maxspeed) physics.AddForce({ 0.f,1.f }, accel);
+	//if (Input::IsKeyHeld(GLFW_KEY_S) && vel.y > -maxspeed) physics.AddForce({ 0.f,-1.f }, accel);
+	//if (Input::IsKeyHeld(GLFW_KEY_A) && vel.x > -maxspeed) physics.AddForce({ -1.f,0.f }, accel);
+	//if (Input::IsKeyHeld(GLFW_KEY_D) && vel.x < maxspeed) physics.AddForce({ 1.f,0.f }, accel);*/
+
+	// DASH - Working impulse
+	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+		Vec2 dashDir{ (float)hor, (float)ver };
+
+		float fx = static_cast<float>(hor);
+		float fy = static_cast<float>(ver);
+		NormalizeDiagonalMovement(fx, fy);
+
+		if (RG_LengthSquared(dashDir) > 0.01f) {
+			dashDir = RG_Normalize(dashDir);
+			Vec2 dashImpulse = RG_Scale(dashDir, DASH_IMPULSE);
+			physics.AddImpulse(dashImpulse);
+		}
+	}
 }
 
 namespace PlayerMove {
+	void Dash(Entity eID) {
+		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
+		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
+		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
+
+		// Vec2 dashDir = moveComp.GetMovementDirection();
+		int hor = 0;
+		int ver = 0;
+		if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
+		if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+		float fx = static_cast<float>(hor);
+		float fy = static_cast<float>(ver);
+
+		Vec2 dashDir{ fx, fy };
+
+		NormalizeDiagonalMovement(dashDir.x, dashDir.y);
+
+		if (RG_LengthSquared(dashDir) > 0.01f) {
+			dashDir = RG_Normalize(dashDir);
+			Vec2 dashImpulse = RG_Scale(dashDir, DASH_IMPULSE);
+			physics.AddImpulse(dashImpulse);
+		}
+
+	}
+
 	inline void Start(Entity eID)
 	{
 		std::cout << "Player script started" << std::endl;
+
+		EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
+
+			if (e.key == GLFW_KEY_LEFT_SHIFT)
+			{
+				Dash(eID);
+			}
+			});
 	}
 
 	inline void Update(Entity eID, float dt) {
