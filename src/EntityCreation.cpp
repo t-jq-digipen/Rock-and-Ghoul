@@ -178,7 +178,6 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
                 playerAudio.soundName = "";  // No sound
             }
 
-            playerAudio.loopingSoundID = -1;
             playerAudio.loopingSoundName = "";
             playerAudio.autoPlay = false;
             playerAudio.autoPlayLooping = false;
