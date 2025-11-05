@@ -1,13 +1,11 @@
 {
   "music": {
     "main_menu": {
-      "id": 0,
       "path": "../Assets/audio/music/mainmenu.wav",
       "loop": true,
       "group": "Music"
     },
     "level_1": {
-      "id": 1,
       "path": "../Assets/audio/music/level1.wav",
       "loop": true,
       "group": "Music"
@@ -15,77 +13,66 @@
   },
   "sfx": {
     "guitar_element_fire": {
-      "id": 100,
       "path": "../Assets/audio/sfx/guitar/Fire.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_burning_item": {
-      "id": 101,
       "path": "../Assets/audio/sfx/guitar/Burning.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_exploding_item": {
-      "id": 102,
       "path": "../Assets/audio/sfx/guitar/Fire Explosion.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_electric": {
-      "id": 103,
       "path": "../Assets/audio/sfx/guitar/Electricity.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_ice": {
-      "id": 104,
       "path": "../Assets/audio/sfx/guitar/Ice.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_frozen_item": {
-      "id": 105,
       "path": "../Assets/audio/sfx/guitar/Frozen.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_wind": {
-      "id": 106,
       "path": "../Assets/audio/sfx/guitar/Wind.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_strum_heavy": {
-      "id": 107,
       "path": "../Assets/audio/sfx/guitar/Heavy Electric Guitar.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "player_dodge": {
-      "id": 107,
       "path": "../Assets/audio/sfx/player/Dodge.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "player_die": {
-      "id": 108,
       "path": "../Assets/audio/sfx/player/Rock Dies.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "player_footstep_wood": {
-      "id": 109,
       "path": "../Assets/audio/sfx/player/Walking on Wood.wav",
       "loop": false,
       "group": "SFX",
@@ -96,19 +83,16 @@
   },
   "ui": {
     "button_play": {
-      "id": 200,
       "path": "../Assets/audio/ui/playclick.mp3",
       "loop": false,
       "group": "UI"
     },
     "button_quit": {
-      "id": 201,
       "path": "../Assets/audio/ui/quitclick.mp3",
       "loop": false,
       "group": "UI"
     },
     "ui_click": {
-      "id": 202,
       "path": "../Assets/audio/ui/UI Click.wav",
       "loop": false,
       "group": "UI"

@@ -69,7 +69,7 @@ public:
 
     // Change to Next Game State
     void ChangeNextState();
-
+    void HandleInput();
     // new control helpers
     void SetPaused(bool paused) { isPaused = paused; }
     void TogglePaused() { isPaused = !isPaused; }

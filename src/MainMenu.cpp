@@ -161,7 +161,15 @@ void MainMenu::Init()
             .pos = {1650.0f * uiScaleX, 150.0f * uiScaleY},
             .size = {300.0f * uiScale, 100.0f * uiScale},
             .color = {20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f},
-            .onClick = [] { GSM_SetNextState(GameState::GS_QUIT); },
+            .onClick = [] {
+                // Wait for sound to finish before quitting
+                double startTime = glfwGetTime();
+                while (glfwGetTime() - startTime < 0.4) {  // 400ms delay
+                    AudioSystem::Update();
+                    glfwPollEvents();
+                }
+                GSM_SetNextState(GameState::GS_QUIT);
+            },
             .soundType = AudioSystem::ButtonType::QUIT,
             .shape = ButtonShape::Rounded
             });
@@ -171,8 +179,10 @@ void MainMenu::Init()
             .pos = {1650.0f * uiScaleX, 50.0f * uiScaleY},
             .scale = 0.5f * uiScale,
             .color = {0.f, 0.f, 0.f},
+            .fontKey = "Bold", //added this, so can change font type (use this to display rubric)
             .centered = true
             });
+
 
     });
 }
@@ -383,7 +393,6 @@ void MainMenu::Update()
             CrashHandler::Log("MainMenuTexture texture missing; skipping draw!");
         }*/
 
-        GuiSystem::Get().Update(0.f);
 
         if (Input::IsKeyPressed(GLFW_KEY_8))
         {

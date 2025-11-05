@@ -2,7 +2,7 @@
  * @file        Remath.cpp
  * @author      Yasmin Tazi         | yasmin.t@digipen.edu
  * @co-author   Tan Ying Clarissa   | t.yingclarissa@digipen.edu
- * @date        05 NOV 2025
+ * @date        06 NOV 2025
  *
  * @brief
  * Implementation file for Remath library. This library includes
@@ -326,7 +326,7 @@ Vec3 RG_CrossProduct(const Vec3& a, const Vec3& b) {
 }
 
 float RG_Length(const Vec3& v) {
-    return RG_Sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
 float RG_LengthSquared(const Vec3& v) {
@@ -341,7 +341,7 @@ float RG_DistanceSquared(const Vec3& p1, const Vec3& p2) {
 }
 
 float RG_Distance(const Vec3& p1, const Vec3& p2) {
-    return RG_Sqrt(RG_DistanceSquared(p1, p2));
+    return std::sqrt(RG_DistanceSquared(p1, p2));
 }
 
 Vec3 RG_Normalize(const Vec3& v) {

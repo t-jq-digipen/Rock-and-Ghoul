@@ -35,6 +35,7 @@ struct TextBoxConfig {
     Vec2 pos;
     float scale = 1.0f;
     Colour3 color{ 0, 0, 0 };   //black text
+    std::string fontKey = "Marker";
     bool centered = false;      //centering
 
     // baseline (screen-space anchors)
@@ -75,6 +76,8 @@ public:
     void SetEditMode(bool isEditing);
     bool GetEditMode() const;
 
+
+    void SetGameViewRect(const GameViewRect& rect) { m_gameViewRect = rect; }
 private:
 
     std::vector<ButtonConfig> buttons;
@@ -88,6 +91,8 @@ private:
     bool editMode{ false };
     int selectedIndex = -1;
     enum class SelectedType { None, Button, TextBox, Dialogue } selectedType = SelectedType::None;
+
+    GameViewRect m_gameViewRect;
 };
 
 // inline GuiSystem guiSystem;

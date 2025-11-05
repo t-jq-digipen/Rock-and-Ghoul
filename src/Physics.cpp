@@ -18,7 +18,7 @@
 
 #include "Physics.h"
 #include "CoreEngine.h"
-#include "Remath.h"
+#include <cmath>
 
 namespace Physics {
 
@@ -207,7 +207,7 @@ namespace Physics {
 	void PhysicsComponent::ApplyDamping(float dt) {
 		// Exponential decay for smooth deceleration
 		if (decay < 1.f && decay > 0.f) {
-			float factor = RG_Pow(decay, dt);
+			float factor = std::pow(decay, dt);
 			vel = RG_Scale(vel, factor);
 		}
 
@@ -223,7 +223,7 @@ namespace Physics {
 			float speed = RG_Length(vel);
 
 			if (speed > 0.f) {
-				float reduction = RG_Min(frictionForce, speed);
+				float reduction = std::min(frictionForce, speed);
 				vel = RG_Scale(vel, (speed - reduction) / speed);
 			}
 		}
@@ -403,15 +403,15 @@ namespace Physics {
 	}
 
 	void PhysicsComponent::SetRestitution(float e) {
-		restitution = RG_Max(0.f, RG_Min(1.f, e));
+		restitution = std::max(0.f, std::min(1.f, e));
 	}
 
 	void PhysicsComponent::SetFriction(float f) {
-		friction = RG_Max(0.f, f);
+		friction = std::max(0.f, f);
 	}
 
 	void PhysicsComponent::SetMaxSpeed(float maxSpd) {
-		maxSpeed = RG_Max(1.f, maxSpd);
+		maxSpeed = std::max(1.f, maxSpd);
 	}
 
 	// ================================================================================

@@ -32,6 +32,7 @@
 #include "CrashHandler.h"
 #include <PlayerSystem.h>
 #include <Camera.h>
+#include "AudioComponent.h"
 
 
 #include "LogicSystem.h"
@@ -52,6 +53,7 @@ Entity square;
 Entity roundy;
 Entity waffle;
 Entity ghoul;
+Entity testEntity; // for fixed dt, pink square
 // Registry ref
 Registry& registry = Registry::Get();
 //Camera mainCamera;
@@ -61,8 +63,13 @@ Registry& registry = Registry::Get();
 void Level1::Load()
 {
 	Render& renderer = Render::GetInstance();
+	Camera& cam = Camera::GetInstance();
 	
 	renderer.useCamera = true;
+	//is there a way to get the bgsize, kinda iffy erhh
+	Vec2 bgSize = { 2200.0f, 1080.0f };
+	cam.SetBounds({ -250.0f, 0.0f }, bgSize);
+
 	auto FontAssets = renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
 	CrashHandler::Safe("Level1", "Load", [&] {
 		std::cout << "Level 1 Loaded!!!" << std::endl;
@@ -70,8 +77,9 @@ void Level1::Load()
 		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
 		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
 		});
-		RenderSystem::ClearBackgroundTextures();
-		RenderSystem::AddBackgroundTexture(bgTexture);
+	RenderSystem::ClearBackgroundTextures();
+	RenderSystem::AddBackgroundTexture(bgTexture);
+
 
 	// ===== FIX: Ensure prefabs folder exists =====
 	std::cout << "\n=== CHECKING PREFABS FOLDER ===" << std::endl;
@@ -161,7 +169,7 @@ void Level1::Load()
 // Initializes Level 1
 void Level1::Init()
 {
-	
+
 	Render& renderer = Render::GetInstance();
 
 	CrashHandler::Safe("Level1", "Init", [&] {
@@ -208,14 +216,15 @@ void Level1::Init()
 		// Initial dialogue box when opening Level 1 state
 		TextBoxConfig initDialogue;
 		initDialogue.text = "";
-		initDialogue.basePos = { 450, 150 };
+		//initDialogue.basePos = { 450, 150 };
+		initDialogue.basePos = { 960, 150 }; //adjusted the x cus calculateTextSize change
 		initDialogue.baseScale = 0.9f;
 		initDialogue.pos = initDialogue.basePos;
 		initDialogue.scale = initDialogue.baseScale;
 		initDialogue.color = { 0,0,0 };
 		initDialogue.centered = true;
 
-		GuiSystem::Get().AddDialogueFromJson("../Assets/Dialogue.json", initDialogue);
+		GuiSystem::Get().AddDialogueFromJson("../Assets/prefabs/Dialogue.json", initDialogue);
 
 		// 6. Create entities
 		// If there is no pre-existing/saved scene, it will load from prefabs
@@ -279,12 +288,51 @@ void Level1::Init()
 			}
 			ghoul = Create_Ghoul(1000.f, 500.f);
 			if (ghoul == 0) {
-				std::cerr << "ERROR: Failed to create Circle! Check if Circle.json exists." << std::endl;
+				std::cerr << "ERROR: Failed to create Ghoul! Check if ghoul.json exists." << std::endl;
 			}
 			else {
-				std::cout << "Created Circle (Entity " << roundy << ")" << std::endl;
+				std::cout << "Created Ghoul (Entity " << ghoul << ")" << std::endl;
 			}
-			std::cout << "Finished creating entities from prefabs." << std::endl;	
+			std::cout << "Finished creating entities from prefabs." << std::endl;
+
+			// fixed dt test entity
+			std::cout << "\n[FIXED DT TEST] Creating test entity with constant velocity\n";
+
+			// create test entity
+			testEntity = registry.Create_Entity();
+			registry.Set_EntityName(testEntity, "FixedDT_Test");
+
+			// add Transform component in the centre
+			TransformComponent testTransform;
+			testTransform.pos = { 400.0f, 400.0f };  // same as waffle position
+			testTransform.scale = { 50.0f, 50.0f };
+			testTransform.rot = 0.0f;
+			registry.Add_Component(testEntity, testTransform);
+
+			// add Shape component (magenta square so you can see it)
+			ShapeComponent testShape;
+			testShape.shape = SHAPE_RECTANGLE;
+			testShape.dimensions = { 50.0f, 50.0f };  // shape dimensions
+			testShape.color = { 1.0f, 0.0f, 1.0f };  // bright pink
+			registry.Add_Component(testEntity, testShape);
+
+			// physics component with CONSTANT velocity
+			Physics::PhysicsComponent testPhysics;
+			testPhysics.Set_Vel({ 50.0f, 0.0f });  // 50 pixels/second to the right
+			registry.Add_Component(testEntity, testPhysics);
+
+			// Tag to identify
+			TagComponent testTag;
+			testTag.tag = T_TEST;
+			registry.Add_Component(testEntity, testTag);
+
+			std::cout << "[FIXED DT TEST] Test entity created at (400, 400) moving at 50px/s\n";
+			std::cout << "[FIXED DT TEST] Screen width: " << LEVEL_WIDTH << "px\n";
+			std::cout << "[FIXED DT TEST] Expected time to cross screen: ~9.6 seconds\n";
+			std::cout << "[FIXED DT TEST] Press L to simulate lag - square should NOT slow down! Press L again to stop lag.\n";
+			std::cout << "[FIXED DT TEST] Look for PINK SQUARE moving left to right\n";
+			std::cout << "========================================\n\n";
+
 			Create_Wall(LEVEL_WIDTH / 2, LEVEL_HEIGHT - WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
 
 			// Bottom wall
@@ -301,17 +349,20 @@ void Level1::Init()
 		std::cout << "==============================\n" << std::endl;
 		});
 	// Top wall
-		Camera& cam = Camera::GetInstance();
-		cam.SetMode(Camera::Mode::GAME);
+	Camera& cam = Camera::GetInstance();
+	cam.SetMode(Camera::Mode::GAME);
 
-		cam.SetPosition({ GLApp::width / 2.f, GLApp::height / 2.f });
-		cam.SetZoom(1.0f);
-		cam.UpdateMatrices();
-		Render::GetInstance().UpdateProjection();
-		//Create_ScriptedEntity("Mover", 400.f, 300.f);
-		//Create_Arrow(1400.f, 400.f);
-	//Create_RotatingObject(500.f, 400.f);
-	//Create_MovingObject(800.f, 400.f);
+	cam.SetPosition({ GLApp::width / 2.f, GLApp::height / 2.f });
+	cam.SetZoom(1.15f);
+	cam.UpdateMatrices();
+	Render::GetInstance().UpdateProjection();
+
+	// ========== COMMENTED OUT: Prevents console spam during testing ==========
+	// Entity mover = Create_ScriptedEntity("Mover", 400.f, 300.f);
+	// Create_Arrow(1400.f, 400.f);
+	// ========== END COMMENT ==========
+//Create_RotatingObject(500.f, 400.f);
+//Create_MovingObject(800.f, 400.f);
 }
 
 // Updates Level 1
@@ -330,46 +381,84 @@ void Level1::Update()
 	if (registry.Get_EntityName(roundy) != "Circle")	
 	{ roundy = registry.Get_EntityID("Circle"); }
 	/*if (registry.Get_EntityName(ghoul) != "ghoul")
+	if (registry.Get_EntityName(waffle) != "Waffle")
+	{
+		waffle = registry.Get_EntityID("Waffle");
+	}
+	if (registry.Get_EntityName(rock) != "Player")
+	{
+		rock = registry.Get_EntityID("Player");
+	}
+	if (registry.Get_EntityName(square) != "Rectangle")
+	{
+		square = registry.Get_EntityID("Rectangle");
+	}
+	if (registry.Get_EntityName(roundy) != "Circle")
+	{
+		roundy = registry.Get_EntityID("Circle");
+	}
+	if (registry.Get_EntityName(ghoul) != "ghoul")
 	{
 		ghoul = registry.Get_EntityID("ghoul");
 	}*/
 	//test camera on an entity
-	auto& playerTransform = registry.Get_Component<TransformComponent>(waffle);
 
 	static double lastTime = glfwGetTime();
 	double currentTime = glfwGetTime();
 	float dt = static_cast<float>(currentTime - lastTime);
 	lastTime = currentTime;
 
-	// Update camera position
-	//UpdateCamera(Camera::GetInstance(), playerTransform.pos, g_dt);
-	//std::cout << "Camera Pos: " << mainCamera.position.x << ", " << mainCamera.position.y << std::endl;
-	Camera& cam = Camera::GetInstance();
-	if (cam.GetMode() == Camera::Mode::GAME)
-	{
-		cam.FollowTarget(playerTransform.pos, dt);
+
+	static bool testEntityStarted = false;
+	for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>()) {
+		if (tag.tag == T_TEST && registry.Has_Component<TransformComponent>(entID)) {
+			auto& transform = registry.Get_Component<TransformComponent>(entID);
+
+			// reset when it comes back to start position
+			if (transform.pos.x > LEVEL_WIDTH) {
+				transform.pos = { 400.0f, 400.0f };
+				std::cout << "[FIXED DT] Test entity reset to start position\n";
+			}
+			break;
+		}
 	}
 
+
+
+
+	
+	// make test square for fixed dt come back to original waffle position when it leaves screen
+	for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>()) {
+		if (tag.tag == T_TEST && registry.Has_Component<TransformComponent>(entID)) {
+			auto& transform = registry.Get_Component<TransformComponent>(entID);
+
+			// If square goes past right edge of screen relative to camera, reset to start
+			if (transform.pos.x > LEVEL_WIDTH) {
+				transform.pos = { 400.0f, 400.0f };  // Reset to starting position
+			}
+		}
+	}
+
+	//========== stress test demo start =========================================
+	
 	//switch animation state
 	if (Input::IsKeyPressed(GLFW_KEY_U))  // U walk animation
 	{
 		for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>())
 		{
-			if (tag.tag == T_PLAYER &&
+			if ((tag.tag == T_BATCH ) &&
 				registry.Has_Component<Animator::AnimatorComponent>(entID))
 			{
 				auto& anim = registry.Get_Component<Animator::AnimatorComponent>(entID);
-				anim.SetState(PS_WALK);
+				if (anim.GetCurrentState() == PS_WALK) anim.SetState(PS_IDLE);
+				else anim.SetState(PS_WALK);
 			}
 		}
 
 		std::cout << "Switched animation from IDLE to WALK" << std::endl;
 	}
-
+	
 	static bool spawnedBatch = false;
-	Render& renderer = Render::GetInstance();
-
-	static bool spawned = false;
 	std::vector<Entity> toRemove;
 
 	// === Toggle Batched Sprites with N key (for rubrics demo) ===
@@ -378,7 +467,7 @@ void Level1::Update()
 		if (!spawnedBatch)
 		{
 			int totalSprites = 1000;
-			float aspectRatio = (float)GLApp::width / (float)GLApp::height;
+			/*float aspectRatio = (float)GLApp::width / (float)GLApp::height;
 			int cols = static_cast<int>(std::sqrt(totalSprites * aspectRatio));
 			int rows = static_cast<int>(std::ceil((float)totalSprites / cols));
 
@@ -387,17 +476,24 @@ void Level1::Update()
 			float spacingY = (GLApp::height - 2 * paddingY) / rows;
 			float spacing = std::min(spacingX, spacingY);
 			//float size = spacing * 0.8f;
-			//float normalizedScale = size / 100.0f;
-
+			//float normalizedScale = size / 100.0f;*/
+			float spriteSize = 50.f;
+			float spriteHalfSize = spriteSize * 0.5f;
+			//random seed
+			srand(static_cast<unsigned>(time(nullptr)));
 			for (int i = 0; i < totalSprites; ++i)
 			{
-				int col = i % cols;
+				/*int col = i % cols;
 				int row = i / cols;
 
 				float px = paddingX + col * spacing + spacing * 0.5f;
-				float py = paddingY + row * spacing + spacing * 0.5f;
+				float py = paddingY + row * spacing + spacing * 0.5f;*/
 
-				Create_BatchedSprite(px, py, 50.f, "../Assets/Waffle_Sprites.png"); //siz e figure that out later
+				//spawn within screen
+				float px = spriteHalfSize + static_cast<float>(rand() % GLApp::width - static_cast<int>(spriteHalfSize));
+				float py = spriteHalfSize + static_cast<float>(rand() % GLApp::height - static_cast<int>(spriteHalfSize));
+
+				Create_BatchedSprite(px, py, spriteSize, "../Assets/Waffle_Sprites.png"); //siz e figure that out later
 			}
 
 			std::cout << "Spawned " << totalSprites << " batched sprites with N key!\n";
@@ -408,16 +504,19 @@ void Level1::Update()
 			// Clear all T_BATCH entities
 			for (auto& [e, tag] : registry.Get_ComponentMap<TagComponent>())
 			{
-				if (tag.tag == T_BATCH && EntityManager::get().isAlive(e))
+				if (tag.tag == T_BATCH && EntityManager::get().isAlive(e)) {
 					toRemove.push_back(e);
+				}
 			}
-			for (Entity e : toRemove)
+			for (Entity e : toRemove) {
 				registry.Remove_Entity(e);
+			}
 
 			std::cout << "Cleared all batched sprites!\n";
 			spawnedBatch = false;
 		}
 	}
+	//======================= stress test demon end ===============================
 
 	static bool spawnedInst = false;
 	std::vector<Entity> toRemoveInst;
@@ -556,7 +655,6 @@ void Level1::Update()
 			fretboard->PlayerInput();
 		}
 
-		GuiSystem::Get().Update(0.f);
 		});
 }
 
@@ -579,10 +677,10 @@ void Level1::Draw()
 
 
 		if (fretboard) {
-			//renderer.useCamera = false;
+			renderer.useCamera = false;
 			fretboard->Draw(renderer);
 			fretboard->GetSpellManager().Draw(renderer);
-			//renderer.useCamera = true;
+			renderer.useCamera = true;
 		}
 	});
 }

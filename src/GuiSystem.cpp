@@ -2,7 +2,7 @@
 #include "GameStateManager.h"
 #include "CoreEngine.h"
 #include "glapp.h"
-
+#include "ImGuiSystem.h"
 AudioManager* GuiSystem::audio = nullptr;
 
 void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
@@ -62,6 +62,13 @@ bool GuiSystem::GetEditMode() const
 void GuiSystem::Update(float dt) {
     if (Input::IsKeyPressed(GLFW_KEY_F8))
         editMode = !editMode;
+    if (!ImGuiSystem::guiEnabled) {
+        // When ImGui is off, use full window dimensions
+        m_gameViewRect.x = 0.0f;
+        m_gameViewRect.y = 0.0f;
+        m_gameViewRect.width = static_cast<float>(GLApp::width);
+        m_gameViewRect.height = static_cast<float>(GLApp::height);
+    }
 
     // --- Press SPACE to advance dialogues (while not editing the GUI) ---
     static bool spaceLatch = false;
@@ -109,15 +116,30 @@ void GuiSystem::Update(float dt) {
     spaceLatch = spaceHeld;
 
     Vec2 mouse = Input::GetMousePosition();
-    Render& render = Render::GetInstance();
+   // mouse.y = static_cast<float>(GLApp::height) - mouse.y; // flip top→bottom
+
+    // convert to Game View space
+    float relX = (mouse.x - m_gameViewRect.x) / m_gameViewRect.width;
+    float relY = (mouse.y - m_gameViewRect.y) / m_gameViewRect.height;
+
+    // clamp [0,1]
+    relX = std::clamp(relX, 0.0f, 1.0f);
+    relY = std::clamp(relY, 0.0f, 1.0f);
+
+    // convert to internal 1920×1080 GUI space
+    mouse.x = relX * 1920.f;
+    mouse.y = relY * 1080.f;
+
+    Render& renderer = Render::GetInstance();
 
     // to force GUI editor to be written on screen
-    const bool prevCam = render.useCamera;
-    render.useCamera = false;
+    const bool prevCam = renderer.useCamera;
+    renderer.useCamera = false;
 
     const float scaleX = GLApp::width / 1920.f;
     const float scaleY = GLApp::height / 1080.f;
     const float uiScale = std::min(scaleX, scaleY);
+   
 
     for (auto& cfg : buttons) {
         cfg.size = cfg.baseSize * uiScale;
@@ -132,9 +154,9 @@ void GuiSystem::Update(float dt) {
             float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
 
             // convert mouse into render-space (bottom-left origin)
-            Vec2 mouseRender = { mouse.x, static_cast<float>(GLApp::height) - mouse.y };
+          //  Vec2 mouseRender = { mouse.x, static_cast<float>(GLApp::height) - mouse.y };
 
-            float dist = RG_Distance(mouseRender, cfg.pos);
+            float dist = RG_Distance(mouse, cfg.pos);
             hover = dist <= radius;
         }
         else {
@@ -162,7 +184,7 @@ void GuiSystem::Update(float dt) {
         }
 
         float textScale = cfg.textScale;
-        Vec2 textSize = render.CalculateTextSize(cfg.label, textScale);
+        Vec2 textSize = render.CalculateTextSize(cfg.label, textScale, "Marker");
 
         // text horizontally and vertically on the button
         float textX = cfg.pos.x - textSize.x * 0.5f;
@@ -185,7 +207,7 @@ void GuiSystem::Update(float dt) {
         tb.pos.x = tb.basePos.x * scaleX;
         tb.pos.y = tb.basePos.y * scaleY;
         tb.scale = tb.baseScale * uiScale;
-        Vec2 textSize = render.CalculateTextSize(tb.text, tb.scale);
+        Vec2 textSize = render.CalculateTextSize(tb.text, tb.scale, tb.fontKey);
 
         float drawX = tb.pos.x;
         float drawY = tb.pos.y;
@@ -198,7 +220,7 @@ void GuiSystem::Update(float dt) {
         }
 
         // UPDATED: Added font parameter to DrawText
-        render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, "Marker");
+        render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, tb.fontKey);
     }
 
     for (auto& d : dialogues)
@@ -220,7 +242,7 @@ void GuiSystem::Update(float dt) {
         // text color
         Colour3 drawColor = d.textBox.color;
 
-        Vec2 textSize = render.CalculateTextSize(vis, d.textBox.scale);
+        Vec2 textSize = render.CalculateTextSize(vis, d.textBox.scale, "Marker");
         float drawX = d.textBox.pos.x, drawY = d.textBox.pos.y;
         if (d.textBox.centered) { drawX -= textSize.x * 0.5f; drawY -= textSize.y * 0.5f; }
 
@@ -236,7 +258,7 @@ void GuiSystem::Update(float dt) {
         // UPDATED: Added font parameter to DrawText
         render.DrawText("UI ELEMENTS", 50, 900, 1.0f, { 1,1,1 }, "Marker");
 
-        float y = 850;
+        float y = 850.f;
         bool buttondeleted = false;
         // --- List Buttons ---
         for (int i = 0; i < (int)buttons.size(); ++i)
@@ -250,7 +272,7 @@ void GuiSystem::Update(float dt) {
             render.DrawText("Button: " + b.label, 20, y - 10, 0.5f, { 1,1,1 }, "Marker");
             //delete box position
             Vec2 delPos = { 150 + 300 + 20, y }; // right of the entry
-            float delW = 40, delH = 40;
+            float delW = 40.f, delH = 40.f;
 
             // draw delete box
             // UPDATED: Added font parameter to DrawText
@@ -260,7 +282,7 @@ void GuiSystem::Update(float dt) {
             if (render.IsAreaTouched(mouse, delPos, delW, delH) &&
                 Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
             {
-                if (buttons.size() > 1) {
+                if (buttons.size() > 0) {
                     buttons.erase(buttons.begin() + i);
 
                     // fix selection index after delete
@@ -278,7 +300,7 @@ void GuiSystem::Update(float dt) {
                 selectedIndex = i;
             }
 
-            y -= 60;
+            y -= 60.f;
             if (buttondeleted)
                 return;
         }
@@ -296,8 +318,8 @@ void GuiSystem::Update(float dt) {
             // UPDATED: Added font parameter to DrawText
             render.DrawText("Text: " + t.text, 20, y - 10, 0.5f, { 1,1,1 }, "Marker");
             //delete box position
-            Vec2 delPos = { 150 + 300 + 20, y }; // right of the entry
-            float delW = 40, delH = 40;
+            Vec2 delPos = { 150.f + 300.f + 20.f, y }; // right of the entry
+            float delW = 40.f, delH = 40.f;
 
             // draw delete box
             // UPDATED: Added font parameter to DrawText
@@ -307,7 +329,7 @@ void GuiSystem::Update(float dt) {
             if (render.IsAreaTouched(mouse, delPos, delW, delH) &&
                 Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
             {
-                if (textboxes.size() > 1) {
+                if (textboxes.size() > 0) {
                     textboxes.erase(textboxes.begin() + i);
 
                     // fix selection index after delete
@@ -325,7 +347,7 @@ void GuiSystem::Update(float dt) {
                 selectedIndex = textIndex;
             }
 
-            y -= 60;
+            y -= 60.f;
             if (textDeleted)
                 return;
         }
@@ -348,8 +370,8 @@ void GuiSystem::Update(float dt) {
             render.DrawText(label, 20, y - 10, 0.5f, { 1,1,1 }, "Marker");
 
             //delete box position
-            Vec2 delPos = { 150 + 300 + 20, y }; // right of the entry
-            float delW = 40, delH = 40;
+            Vec2 delPos = { 150.f + 300.f + 20.f, y }; // right of the entry
+            float delW = 40.f, delH = 40.f;
 
             // draw delete box
             // UPDATED: Added font parameter to DrawText
@@ -383,7 +405,7 @@ void GuiSystem::Update(float dt) {
         {
             // UPDATED: Added font parameter to DrawText
             render.DrawText("PROPERTIES", 50, 400, 1.2f, { 1,1,1 }, "Marker");
-            float y = 360;
+            y = 360;
 
             if (selectedType == SelectedType::Button && selectedIndex < buttons.size())
             {
@@ -559,7 +581,7 @@ void GuiSystem::Update(float dt) {
                     (channel == 1) ? Colour3{ 0,1,0 } :
                     Colour3{ 0,0,1 };
 
-                float circleX = 40 + channel * 140; // 0R, 140G, 280B
+                float circleX = 40.f + channel * 140.f; // 0R, 140G, 280B
                 render.DrawCircle({ circleX, indicatorY }, 6.f, c, 24);
 
                 y -= 40;
@@ -666,7 +688,7 @@ void GuiSystem::Update(float dt) {
                 Colour3 c = (textColorChannel == 0) ? Colour3{ 1,0,0 } :
                     (textColorChannel == 1) ? Colour3{ 0,1,0 } :
                     Colour3{ 0,0,1 };
-                float circleX = 40 + textColorChannel * 140;
+                float circleX = 40.f + textColorChannel * 140.f;
                 render.DrawCircle({ circleX, indicatorY }, 6.f, c, 24);
 
                 y -= 40;
@@ -749,7 +771,7 @@ void GuiSystem::Update(float dt) {
                 Colour3 c = (textColorChannel == 0) ? Colour3{ 1,0,0 } :
                     (textColorChannel == 1) ? Colour3{ 0,1,0 } :
                     Colour3{ 0,0,1 };
-                float circleX = 40 + textColorChannel * 140;
+                float circleX = 40.f + textColorChannel * 140.f;
                 render.DrawCircle({ circleX, indicatorY }, 6.f, c, 24);
 
                 y -= 40;
@@ -865,7 +887,7 @@ void GuiSystem::Update(float dt) {
             newDialogue.centered = true;
 
             // default path; user can later edit in UI to reload a different JSON
-            const std::string path = "../Assets/Dialogue.json";
+            const std::string path = "../Assets/prefabs/Dialogue.json";
             int idx = AddDialogueFromJson(path, newDialogue);
             if (idx >= 0) {
                 selectedType = SelectedType::Dialogue;

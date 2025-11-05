@@ -37,6 +37,7 @@
 #include "CrashHandler.h"
 #include "GuiSystem.h"
 #include "MovementSystem.h"
+#include "EnemySystem.h"
 
 #include "JsonLoad.h"
 #include "FilePath.h"
@@ -112,6 +113,7 @@ int main() {
             engine.AddSystem(new MovementSystem());
             engine.AddSystem(new PlayerSystem());
             //engine.AddSystem(new ForcesManager());
+            engine.AddSystem(new EnemySystem());
             engine.AddSystem(new PhysicsSystem());
             engine.AddSystem(new RenderSystem());
             engine.AddSystem(&GuiSystem::Get());

@@ -23,11 +23,12 @@
  * Helper functions provide AABB construction and position updating
  * with automatic min/max recalculation based on center position and dimensions.
  *
- * Copyright ï¿½ 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
 #include "Collision.h"
+#include <math.h>
 #include "Remath.h"
 
 // AABB setter helper

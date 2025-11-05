@@ -105,51 +105,93 @@ if(WIN32)
         message(STATUS "Will copy fmod.dll from: ${FMOD_LIB_DIR}")
     endif()
 endif()
-# ======================= Mono Include Setup =========================
-if (EXISTS "${CMAKE_SOURCE_DIR}/deps/Mono/include/mono-2.0/mono/jit/jit.h")
-    message(STATUS "Mono headers found at deps/Mono/include/mono-2.0")
-    include_directories(${CMAKE_SOURCE_DIR}/deps/Mono/include/mono-2.0)
+# ======================= Mono Embedding Setup =========================
+set(MONO_ROOT "${CMAKE_SOURCE_DIR}/deps/Mono")
+
+# --- Headers ---
+set(MONO_INCLUDE_DIR "${MONO_ROOT}/include/mono-2.0")
+if (EXISTS "${MONO_INCLUDE_DIR}/mono/jit/jit.h")
+    message(STATUS "Mono headers found at: ${MONO_INCLUDE_DIR}")
+    include_directories(${MONO_INCLUDE_DIR})
 else()
-    message(WARNING "Mono headers not found! Check your deps/Mono folder structure.")
+    message(WARNING "Mono headers not found! Expected at ${MONO_INCLUDE_DIR}")
 endif()
-# ======================= Copy Mono Runtime DLL =========================
 
+# --- Library ---
+set(MONO_LIB "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
+if (EXISTS "${MONO_LIB}")
+    message(STATUS "Linking Mono: ${MONO_LIB}")
+    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE "${MONO_LIB}")
+else()
+    message(WARNING "Mono library not found! Expected at ${MONO_LIB}")
+endif()
 
+# --- Runtime DLL ---
 if (WIN32)
-    set(MONO_DLL_PATH "${MONO_ROOT}/bin/mono-2.0-sgen.dll")
-    if (EXISTS "${MONO_DLL_PATH}")
+    set(MONO_DLL "${MONO_ROOT}/bin/mono-2.0-sgen.dll")
+    if (EXISTS "${MONO_DLL}")
         add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E echo "Copying Mono runtime DLL..."
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-                "${MONO_DLL_PATH}"
-                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>"
+            COMMAND ${CMAKE_COMMAND} -E echo "Copying Mono runtime DLL..."
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${MONO_DLL}"
+                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/mono-2.0-sgen.dll"
         )
         message(STATUS "Will copy mono-2.0-sgen.dll to build output.")
     else()
-        message(WARNING "Mono runtime DLL not found at ${MONO_DLL_PATH}. Skipping copy.")
+        message(WARNING "Mono runtime DLL not found at ${MONO_DLL} — skipping copy.")
     endif()
 endif()
-# ======================= Mono Library Linking =========================
-set(MONO_ROOT "${CMAKE_SOURCE_DIR}/deps/Mono")
+# ======================= Copy Mono runtime libraries =========================
+set(MONO_LIB_DIR "${MONO_ROOT}/lib/mono/4.5")
+set(MONO_DST_DIR "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/mono/lib/mono/4.5")
 
-# Include headers
-include_directories(${MONO_ROOT}/include ${MONO_ROOT}/include/mono-2.0)
-
-# Add the Mono library for linking
-if(WIN32)
-    set(MONO_LIB "${MONO_ROOT}/lib/mono-2.0-sgen.lib")
-
-    if(EXISTS "${MONO_LIB}")
-        message(STATUS "Linking with Mono: ${MONO_LIB}")
-        target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE "${MONO_LIB}")
-    else()
-        message(WARNING "Mono library not found at ${MONO_LIB}!")
-    endif()
+if (EXISTS "${MONO_LIB_DIR}/mscorlib.dll")
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying Mono runtime libraries..."
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${MONO_DST_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${MONO_LIB_DIR}"
+            "${MONO_DST_DIR}"
+        VERBATIM
+    )
+    message(STATUS "Will copy Mono runtime libraries from: ${MONO_LIB_DIR}")
+else()
+    message(WARNING "Mono runtime libraries not found in ${MONO_LIB_DIR}")
 endif()
+# ======================= Auto-build GameScripts.sln before engine =========================
+set(GAMESCRIPTS_SLN "${CMAKE_SOURCE_DIR}/GameScripts/GameScripts.sln")
 
-target_sources(team_aviddivas PRIVATE
-    src/MonoBindings.cpp
+if (EXISTS "${GAMESCRIPTS_SLN}")
+    message(STATUS "Found GameScripts solution at: ${GAMESCRIPTS_SLN}")
+
+    # Optional: auto-detect MSBuild path
+find_program(MSBUILD_EXE MSBuild.exe
+    HINTS
+        "$ENV{ProgramFiles}/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
+        "$ENV{ProgramFiles}/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin"
+        "$ENV{ProgramW6432}/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
+        "$ENV{ProgramW6432}/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin"
+        "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
+        "C:/Program Files (x86)/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
 )
+    if (NOT MSBUILD_EXE)
+        message(WARNING "MSBuild.exe not found — skipping GameScripts build.")
+    else()
+        add_custom_target(BuildGameScripts ALL
+            COMMAND ${CMAKE_COMMAND} -E echo "=== Building GameScripts.sln ==="
+            COMMAND "${MSBUILD_EXE}" "${GAMESCRIPTS_SLN}" /t:Build /p:Configuration=$<CONFIG>
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/GameScripts"
+            COMMENT "Building GameScripts to produce GameScripts.dll"
+            VERBATIM
+        )
+
+        # Make sure engine waits for GameScripts.dll
+        add_dependencies(${CMAKE_PROJECT_NAME} BuildGameScripts)
+    endif()
+else()
+    message(WARNING "GameScripts.sln not found at ${GAMESCRIPTS_SLN}")
+endif()
+
 
 # ======================= Copy GameScripts DLL =========================
 set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/$<CONFIG>/GameScripts.dll")
@@ -329,6 +371,8 @@ source_group("BaseEngine\\Libraries\\Audio" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AudioCache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioCache.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AudioComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioComponent.h
 )
 
 
@@ -401,6 +445,10 @@ source_group("Game\\Game Logic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityCreation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityCreation.h
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/EnemySystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/EnemySystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/Enemy.h
 )
 
 
@@ -450,22 +498,39 @@ add_custom_target(copy_docs ALL
         ${CMAKE_BINARY_DIR}/projectGuide.pdf
 )
 
-add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
-)
+#add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} -E make_directory
+#    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
+#)
 
 # Copy save files from source to build directory
-file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
+#file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
 
-foreach(save_file ${SAVE_FILES})
-    if(EXISTS "${save_file}")
-        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${save_file}"
-                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves"
-        )
-    else()
-        message(WARNING "Skipping missing save file: ${save_file}")
-    endif()
-endforeach()
+#foreach(save_file ${SAVE_FILES})
+#    if(EXISTS "${save_file}")
+#        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#                "${save_file}"
+#                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves"
+#        )
+#    else()
+#        message(WARNING "Skipping missing save file: ${save_file}")
+#    endif()
+#endforeach()
+
+# ======================= Copy save files safely =========================
+# Copies all JSON files from Assets/saves to build output, without failing if any missing
+
+set(SAVES_SRC_DIR "${CMAKE_SOURCE_DIR}/Assets/saves")
+set(SAVES_DST_DIR "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves")
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "Syncing Assets/saves -> ${SAVES_DST_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${SAVES_DST_DIR}"
+    # Copy the entire directory (safe, non-fatal)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${SAVES_SRC_DIR}"
+        "${SAVES_DST_DIR}"
+    VERBATIM
+)
+

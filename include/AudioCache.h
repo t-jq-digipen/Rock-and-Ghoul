@@ -32,6 +32,8 @@ enum class AudioGroup {
 
 class AudioCache {
 public:
+    static const std::unordered_map<std::string, AudioAsset>& GetAllAssets(); // for editor
+
     static bool Initialize(const std::string& manifestPath);
     static void Shutdown();
 
@@ -50,6 +52,8 @@ public:
     static std::vector<std::string> GetBankAssets(const std::string& bankName);
 
 private:
+    static int nextID; // to auto assign ids for audio
+
     static std::unordered_map<std::string, AudioAsset> assetsByName;
     static std::unordered_map<int, std::string> idToName;
 

@@ -28,6 +28,8 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include "MonoScriptComponent.h"
+#include "AudioComponent.h"
+#include "AudioCache.h"
 
 #include "CoreEngine.h"
 #include "BehaviourComponent.h"
@@ -56,32 +58,32 @@ Entity LoadEntity(const std::string& entityName, float x, float y) {
 //    return LoadEntity("Player", x, y);
 //}
 Entity Create_Player(float const& x, float const& y) {
-    Entity patrol = LoadEntity("Player", 500.0f, 300.0f);
+    Entity patrol = LoadEntity("Player",x, y);
     BehaviourComponent bc;
     //bc.scriptName = "PatrolEnemy";
     //bc.started = false;
 
-    bc.scriptName = "GhoulScript";
-    bc.started = false;
+    //bc.scriptName = "GhoulScript";
+    //bc.started = false;
+
+    bc.AddScript("GhoulScript");
     /*bc.scriptIDs = { ScriptID::PATROL_ENEMY, ScriptID::GHOUL };
     bc.startedStates = { false, false };*/
     Registry::Get().Add_Component<BehaviourComponent>(patrol, bc);
-
+    
     return patrol;
 }
 Entity Create_Waffle(float const& x, float const& y) {
     return LoadEntity("Waffle", x, y);
 }
 Entity Create_Ghoul(float const& x, float const& y) {
-   
     Entity ghoul = LoadEntity("ghoul", x, y);
 
     // Add behaviour component
     BehaviourComponent bc;
     bc.scriptName = "PatrolEnemy";
-    //bc.started = false;
-
     bc.started = false;
+
     Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
 
     return ghoul;
@@ -162,6 +164,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Registry::Get().Add_Component<InputComponent>(player, InputComponent{ CS_WASD });
             Registry::Get().Add_Component<TagComponent>(player, TagComponent{ T_PLAYER });
+            
 
             Image img = CreateImage("../Assets/Rock_FightingPose_2048px.png");
             Registry::Get().Add_Component<Sprite::SpriteComponent>(player, Sprite::SpriteComponent{ img, {.1f,.1f} });
@@ -169,6 +172,28 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<HealthComponent>(player, HealthComponent{ 100.f, 100.f });
 
             Registry::Get().Add_Component<Movement::MovementComponent>(player, Movement::MovementComponent{ 500.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
+
+            //Registry::Get().Add_Component<RenderLayerComponent>(player, RenderLayerComponent{ LAYER_BACKGROUND });
+            AudioComponent playerAudio;
+
+            // Look up asset by name via audiocache
+            AudioAsset* dieSound = AudioCache::GetAsset("player_die");
+            if (dieSound) {
+                playerAudio.soundName = dieSound->name;
+            }
+            else {
+                std::cerr << "WARNING: player_die audio asset not found!" << std::endl;
+                playerAudio.soundName = "";  // No sound
+            }
+
+            playerAudio.loopingSoundName = "";
+            playerAudio.autoPlay = false;
+            playerAudio.autoPlayLooping = false;
+            playerAudio.spatial = true;
+            playerAudio.volume = 0.8f;
+            playerAudio.minDistance = 10.0f;
+            playerAudio.maxDistance = 100.0f;
+            Registry::Get().Add_Component<AudioComponent>(player, playerAudio);
 
             if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Player.json", player)) {
                 std::cout << "Player.json saved successfully" << std::endl;
@@ -345,7 +370,7 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color)
     return instance;
 }
 
-Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath)
+/*Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath)
 {
     Entity instance = Registry::Get().Create_Entity();
 
@@ -382,11 +407,51 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
     /*float randomOffset = static_cast<float>(rand() % 100) / 100.0f;
     anim.UpdateFrame(randomOffset);*/
 
-    Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
+    /*Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
 
     //Tag for filtering
     Registry::Get().Add_Component<TagComponent>(
         instance, TagComponent{ T_BATCH }); //T_BATCH added in C_TagID enum
+
+    return instance;
+}*/
+
+Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath)
+{
+    Entity instance = Registry::Get().Create_Entity();
+
+    // Transform
+    Registry::Get().Add_Component<TransformComponent>(
+        instance, TransformComponent{ {x, y}, {size, size} });
+
+    // Sprite (animated true)
+    Sprite::SpriteComponent sprite(texturePath, { size, size }, true);
+    Registry::Get().Add_Component<Sprite::SpriteComponent>(instance, sprite);
+
+    // Load texture safely through Render texture cache (ensures reuse)
+    Image img = sprite.Get_Image();
+
+    // Correct constructor: include width and height explicitly
+    Animator::AnimatorComponent anim(
+        3, 6,                      // rows, columns
+        //img.widthPixels, img.heightPixels, // actual texture size
+        { 2, 0, 1 },               // starting frame (row=2, col=0..1)
+        1.0f                       // duration
+    );
+
+    // Add proper states like the prefab does
+    anim.AddState(PS_IDLE, { 3, 0, 1, 1.0f });
+    anim.AddState(PS_WALK, { 3, 2, 3, 0.5f });
+
+    // Update initial UVs
+    anim.UpdateUV(img.widthPixels, img.heightPixels);
+
+    Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
+
+    // Tag for batching
+    Registry::Get().Add_Component<TagComponent>(instance, TagComponent{ T_BATCH });
+
+    Registry::Get().Add_Component<RenderLayerComponent>(instance, RenderLayerComponent{ LAYER_FOREGROUND });
 
     return instance;
 }

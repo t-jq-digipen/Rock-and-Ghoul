@@ -2,7 +2,8 @@
  * @file        RenderSystem.cpp
  * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
  * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
- * @date        01 OCT 2025
+ * @co-author   Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+ * @date        05 NOV 2025
  *
  * @brief
  *
@@ -26,7 +27,17 @@
 #include "Render.h"
 #include "Animator.h"
 #include <Camera.h>
-#include "CollisionManager.h"
+#include "LogicSystem.h"
+
+ // ---------------------------------------------
+ // @brief Temporary struct for per-frame draw queue
+ // ---------------------------------------------
+/*struct RenderEntry {
+    Entity id;
+    const Sprite::SpriteComponent* sprite;
+    const TransformComponent* transform;
+    float sortY;
+};*/
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
@@ -54,9 +65,19 @@ void RenderSystem::Initialize() {
 
     std::cout << "[RenderSystem] Scene framebuffer created ("
         << GLApp::width << "x" << GLApp::height << ")\n";
+
+    BehaviourFCT camFollow;
+    camFollow.Init = [](Entity e) { CamFollowScript::Start(e); };
+    camFollow.Update = [](Entity e, float dt) { CamFollowScript::Update(e, dt); };
+    camFollow.End = [](Entity e) {CamFollowScript::End(e); };
+    LogicSystem::Get().RegisterScript("CamTarget", camFollow, ScriptID::CAMERA_TRACK);
+
 }
 
 void RenderSystem::Update(float dt) {
+
+
+    Camera::GetInstance().UpdateCamera();
     Render& renderer = Render::GetInstance();
 
     if (ImGuiSystem::guiEnabled) {
@@ -85,7 +106,8 @@ void RenderSystem::Update(float dt) {
 
     // Use the camera for all subsequent draw calls (ok why this not workinGGGGGGGG AJBFEEUFBUJFBFDJSBJF)
     //mainCamera.UpdateMatrices();
-    Camera::GetInstance().UpdateMatrices();
+    // Camera::GetInstance().UpdateMatrices();
+
 
     //glm::mat4 viewProj = mainCamera.GetViewProjection();
     glm::mat4 viewProj = Camera::GetInstance().GetViewProjection();
@@ -104,7 +126,234 @@ void RenderSystem::Update(float dt) {
 
 
 
-    //try batching version
+// ======================================================
+// trying batch-based rendering with layer and y-axis sorting
+// my thought process is: 
+// added a RenderLayerComponent for each entity (defaulted to gameobject layer unless specified inside entitycreation or json)
+// group entities by layers, push them into each of their respective specified containers
+// sort the game object layer entities based on their y coords from 
+// reusable function drawlayer will be used to draw each layer
+// ======================================================
+    renderInstance.BeginBatch();
+
+    struct RenderItem { //iidentify sprite or shape
+        Entity id;
+        bool isSprite;
+    };
+
+    //containers that contain entities for each layer
+    std::vector<RenderItem> backgroundEntities;
+    std::vector<RenderItem> gameEntities;
+    std::vector<RenderItem> foregroundEntities; //for sepcial effects? particles?
+    std::vector<RenderItem> uiEntities;
+
+    //Categorize entities by layer
+    for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
+    {
+        RenderLayer layer = LAYER_GAMEOBJECT; // default, if not specified 
+
+        if (m_registry.Has_Component<RenderLayerComponent>(entID)) {
+            layer = m_registry.Get_Component<RenderLayerComponent>(entID).layer;
+        }
+
+        RenderItem item{ entID, true };
+
+        switch (layer)
+        {
+        case LAYER_BACKGROUND:
+            backgroundEntities.push_back(item);
+            break;
+        case LAYER_GAMEOBJECT:
+            gameEntities.push_back(item);
+            break;
+        case LAYER_FOREGROUND:
+            foregroundEntities.push_back(item);
+            break;
+        case LAYER_UI:
+            uiEntities.push_back(item);
+            break;
+        }
+    }
+
+    //Handle the shape components
+    for (auto& [entID, shapeComp] : m_registry.Get_ComponentMap<ShapeComponent>()) {
+
+        RenderLayer layer = LAYER_GAMEOBJECT; //default give them layer_gameobject, if want change need explicitly add layer comp to entitycreation.cpp
+
+        if (m_registry.Has_Component<RenderLayerComponent>(entID)) {
+            layer = m_registry.Get_Component<RenderLayerComponent>(entID).layer;
+        }
+
+        RenderItem item{ entID, false };
+
+        switch (layer)
+        {
+        case LAYER_BACKGROUND:
+            backgroundEntities.push_back(item);
+            break;
+        case LAYER_GAMEOBJECT:
+            gameEntities.push_back(item);
+            break;
+        case LAYER_FOREGROUND:
+            foregroundEntities.push_back(item);
+            break;
+        case LAYER_UI:
+            uiEntities.push_back(item);
+            break;
+        }
+    }
+
+    //Sort the entities with GAMEOBJECT layer by Y-position
+    std::sort(gameEntities.begin(), gameEntities.end(),
+        [&](const RenderItem& a, const RenderItem& b) {
+            const auto& ta = m_registry.Get_Component<TransformComponent>(a.id);
+            const auto& tb = m_registry.Get_Component<TransformComponent>(b.id);
+            return ta.pos.y > tb.pos.y; // Higher Y = further back (drawn first)
+        });
+
+    //Draw a list of entities
+    auto DrawLayer = [&](const std::vector<RenderItem>& entities)
+        {
+            for (const RenderItem& item : entities)
+            {
+                Entity entID = item.id;
+
+                if (item.isSprite) { //if is sprite..
+
+                    auto& spriteComp = m_registry.Get_Component<Sprite::SpriteComponent>(entID);
+                    auto& transComp = m_registry.Get_Component<TransformComponent>(entID);
+
+                    bool isBatched = false;
+                    if (m_registry.Has_Component<TagComponent>(entID))
+                    {
+                        const auto& tag = m_registry.Get_Component<TagComponent>(entID);
+                        if (tag.tag == T_BATCH) {
+                            isBatched = true;
+                        }
+                    }
+
+                    if (spriteComp.IsAnimated())
+                    {
+                        auto& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
+                        animComp.UpdateFrame(dt);
+
+                        Image img = spriteComp.Get_Image();
+                        glm::vec4 uv(animComp.u0 / img.widthPixels,
+                            animComp.v1 / img.heightPixels,
+                            animComp.u1 / img.widthPixels,
+                            animComp.v0 / img.heightPixels);
+
+                        if (isBatched) {
+                            renderInstance.SubmitSpriteBatchUV(img, transComp.pos, spriteComp.Get_Scale(), uv, transComp.rot + spriteComp.Get_Rotation());
+                        }
+                        else {
+                            renderInstance.DrawImageSub(img,
+                                transComp.pos.x, transComp.pos.y,
+                                spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
+                                animComp.u0, animComp.v0, animComp.u1, animComp.v1,
+                                glm::radians(transComp.rot + spriteComp.Get_Rotation()));
+                        }
+                    }
+                    else
+                    {
+                        Image img = spriteComp.Get_Image();
+                        Vec2 scaledSize = { img.widthPixels * spriteComp.Get_Scale().x, img.heightPixels * spriteComp.Get_Scale().y };
+
+                        if (isBatched) {
+                            renderInstance.SubmitSpriteBatch(img, transComp.pos, scaledSize, transComp.rot + spriteComp.Get_Rotation());
+                        }
+                        else {
+                            renderInstance.DrawImageScaled(img,
+                                transComp.pos.x, transComp.pos.y,
+                                spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
+                                glm::radians(transComp.rot + spriteComp.Get_Rotation()));
+                        }
+                    }
+                }
+
+                //shape stuff here (if is shape...)
+                else {
+
+                    // Skip entities without a transform (need position/rotation to draw)
+                    if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
+                    TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+                    ShapeComponent& shapeComp = m_registry.Get_Component<ShapeComponent>(entID);
+                    Colour3 color = { shapeComp.color.x, shapeComp.color.y, shapeComp.color.z };
+
+                    if (m_registry.Has_Component<TagComponent>(entID)) {
+                        TagComponent& tag = m_registry.Get_Component<TagComponent>(entID);
+
+                        if (shapeComp.shape == SHAPE_RECTANGLE && tag.tag == T_INSTANCING) { //check entity is using instancing
+                            //Store matching entities inside InstanceData vector
+                            InstanceData inst;
+                            inst.position = transComp.pos;
+                            inst.scale = transComp.scale;
+                            inst.rotation = glm::radians(transComp.rot);
+                            inst.uvRect = { 0,0,1,1 };
+                            batch.push_back(inst);
+                            continue;
+                        }
+
+
+                    }
+
+                    if (shapeComp.shape == SHAPE_RECTANGLE) {
+                        renderInstance.DrawRect(
+                            transComp.pos,
+                            shapeComp.dimensions.x,
+                            shapeComp.dimensions.y,
+                            color,
+                            transComp.rot
+                        );
+                    }
+                    else if (shapeComp.shape == SHAPE_CIRCLE) {
+                        float radius = (shapeComp.dimensions.x + shapeComp.dimensions.y) / 4.0f;
+                        renderInstance.DrawCircle(
+                            transComp.pos,
+                            radius,
+                            color,
+                            32
+                        );
+                    }
+                }
+            }
+        };
+
+    // Background (rendered behind game objects)
+    renderInstance.BeginBatch();
+    DrawLayer(backgroundEntities);
+    renderInstance.EndBatch();
+    renderInstance.FlushBatch();
+
+    // Game objects
+    renderInstance.BeginBatch();
+    DrawLayer(gameEntities);
+    renderInstance.EndBatch();
+    renderInstance.FlushBatch();
+
+    // Foreground (rendered above game objects)
+    renderInstance.BeginBatch();
+    DrawLayer(foregroundEntities);
+    renderInstance.EndBatch();
+    renderInstance.FlushBatch();
+
+    // UI (rendered last, most in front)
+    renderInstance.BeginBatch();
+    DrawLayer(uiEntities);
+    renderInstance.EndBatch();
+    renderInstance.FlushBatch();
+
+    //Draw in the correct order
+    /*DrawLayer(backgroundEntities);
+      DrawLayer(gameEntities);
+      DrawLayer(foregroundEntities);
+      DrawLayer(uiEntities);
+
+      renderInstance.EndBatch();
+      renderInstance.FlushBatch();*/
+
+
+    /*//try batching version (old version keep in case need ref)
     renderInstance.BeginBatch(); //added for batch
 
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
@@ -188,7 +437,7 @@ void RenderSystem::Update(float dt) {
                 scaledSize,
                 transComp.rot + spriteComp.Get_Rotation());*/
 
-            else {
+            /*else {
                 renderInstance.DrawImageScaled(
                     img,
                     transComp.pos.x, transComp.pos.y,
@@ -202,7 +451,7 @@ void RenderSystem::Update(float dt) {
 
 
     renderInstance.EndBatch();
-    renderInstance.FlushBatch();
+    renderInstance.FlushBatch();*/
 
 
 /*  //Original version in case need ref
@@ -245,7 +494,7 @@ void RenderSystem::Update(float dt) {
     */
 
     // Loop through all ShapeComponents in the ECS
-    for (auto& [entID, shapeComp] : m_registry.Get_ComponentMap<ShapeComponent>())
+    /*for (auto& [entID, shapeComp] : m_registry.Get_ComponentMap<ShapeComponent>())
     {   
         // Skip entities without a transform (need position/rotation to draw)
         if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
@@ -287,15 +536,7 @@ void RenderSystem::Update(float dt) {
             );
         }
 
-    }
-
-    // Debug drawing for spatial grid
-    if (ImGuiSystem::showSpatialGrid) {
-        SpatialGrid* grid = CollisionManager::GetSpatialGrid();
-        if (grid) {
-            DebugDraw::DrawSpatialGrid(grid, renderInstance);
-        }
-    }
+    }*/
 
     // Debug drawing for physics colliders / velocities
     if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {
@@ -319,8 +560,6 @@ void RenderSystem::Update(float dt) {
                 }
 
                 DebugDraw::DrawHotspot(t.pos, renderInstance);
-
-                //DebugDraw::DrawSpatialGrid(grid, renderInstance);
             }
         }
     }
@@ -338,4 +577,20 @@ void RenderSystem::Update(float dt) {
 void RenderSystem::Shutdown() {
     // clear all image cache here? seems like a good place, if we only store not a lot of images
     Render::GetInstance().ClearAllTextures();
+}
+
+namespace CamFollowScript {
+    inline void Start(Entity eID) {
+        (void)eID;
+    }
+
+    inline void Update(Entity eID, float dt) {
+        if (!Registry::Get().Has_Component<TransformComponent>(eID)) { return; }
+        auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
+        Camera::GetInstance().FollowTarget(transComp.pos, dt);
+    }
+
+    inline void End(Entity eID) {
+        (void)eID;
+    }
 }

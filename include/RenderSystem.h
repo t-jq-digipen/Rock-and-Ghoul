@@ -38,3 +38,11 @@ private:
     Registry& m_registry = Registry::Get();
     static GLuint s_backgroundTexture; // Static background texture
 };
+
+namespace CamFollowScript {
+    inline void Start(Entity eID);
+
+    inline void Update(Entity eID, float dt);
+
+    inline void End(Entity eID);
+}

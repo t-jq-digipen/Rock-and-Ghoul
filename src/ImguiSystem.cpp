@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        ImguiSystem.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        01 OCT 2025
+ * @date        06 NOV 2025
  *
  * @brief
  * 
@@ -32,49 +32,163 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include "Audio.h"
+#include "Render.h" 
+#include "Camera.h"
+#include "LogicSystem.h"
+#include "GuiSystem.h"
+#include "BehaviourComponent.h"
+#include "DataDefs.h"
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <unordered_set> 
-#include "Render.h"
-#include "Camera.h"
-#include "LogicSystem.h"
-#include "CollisionManager.h"
-#include "SpatialGrid.h"
-static bool isPlacingPrefab = false;
-static std::string pendingPrefabPath;
-bool ImGuiSystem::showColliders = false;
-bool ImGuiSystem::showVelocity = false;
-bool ImGuiSystem::showSpatialGrid = false;
-Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
-static bool isDraggingEntity = false;
-static glm::vec2 dragOffset = { 0.f, 0.f };
+#include <string>
+#include <iostream>
 
-bool ImGuiSystem::guiEnabled = false;
-static FMOD::Channel* previewChannel = nullptr;
-#include "DataDefs.h"
-static std::vector<std::string> droppedFiles;
-// global (file-scope) thumbnail cache for runtime updates
+
+// ========================================================
+// File-Local Static Variables (Editor State)
+// ========================================================
+
+static bool isPlacingPrefab = false; //the mouse prefab spawner
+static bool isDraggingEntity = false; //drag handles
+static bool showReplacePopup = false; //replace same image
+
+static std::string pendingPrefabPath; //prefab mouse thing
+static std::string pendingImportPath; //holds new image replace
+static std::string pendingDestPath; //store dest path of existing img
+
+// runtime thumbnail cache
 static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
-bool ImGuiSystem::dragEditMode = false;
 
-static std::string pendingImportPath;
-static std::string pendingDestPath;
-static bool showReplacePopup = false;
-extern GSM gsm;
+//g_loadedThumbnails[0] = Image(texture for "player.png")
+//g_imageNames[0] = "player.png"
 
+static FMOD::Channel* previewChannel = nullptr; //audio preview channel and tracking
+
+// ========================================================
+// Static Member Definitions
+// ========================================================
+
+bool   ImGuiSystem::showColliders = false; //rendering system aabb boxes
+bool   ImGuiSystem::showVelocity = false; 
+bool   ImGuiSystem::dragEditMode = false; //drag handle
+bool   ImGuiSystem::guiEnabled = false; //f1 
+Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
+extern GSM gsm; //play/stop game state
+
+// ========================================================
+// Anonymous Namespace
+// ========================================================
+namespace
+{
+    //just a safety check
+    void EnsureSelectionValid()
+    {
+        if (ImGuiSystem::selectedEntity != INVALID_ENTITY &&
+            !EntityManager::get().isAlive(ImGuiSystem::selectedEntity))
+        {
+            ImGuiSystem::selectedEntity = INVALID_ENTITY;
+        }
+    }
+
+    // refrash button
+    void RefreshImageAssets()
+    {
+        g_loadedThumbnails.clear();
+        g_imageNames.clear();
+
+        const std::string assetFolder = "../Assets/";
+        //loops through all files and folders in the asset directory subdirectories
+        for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
+        {
+            if (!entry.is_regular_file()) 
+                continue; //skips folder 
+            //extension string
+            std::string ext = entry.path().extension().string();
+            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+            {
+                try {
+                    Image img = CreateImage(entry.path().string());
+                    if (img.IsValid()) {
+                        //hooray add to list
+                        g_loadedThumbnails.push_back(img);
+                        g_imageNames.push_back(entry.path().filename().string());
+                    }
+                }
+                catch (const std::exception& e) {
+                    std::cerr << "Failed to load " << entry.path() << "\n";
+                }
+            }
+        }
+
+        std::cout << "[AssetBrowser] Refreshed image list.\n";
+    }
+
+    // ---- Audio manifest helpers ----
+    nlohmann::json audioManifest; //settings per audio file
+    bool audioManifestLoaded = false; //load once
+
+    bool showAudioImportPopup = false; //can choose da files
+    std::vector<std::string> pendingAudioImports; //Q of audio file paths 
+    float globalVolume = 0.8f;
+    std::unordered_map<std::string, FMOD::Channel*> activeAudioChannels;
+
+
+    bool LoadAudioManifest(const std::string& path)
+    {
+        namespace fs = std::filesystem;
+        if (!fs::exists(path)) {
+            audioManifest = { {"music", {}}, {"ui", {}}, {"sfx", {}} };
+            audioManifestLoaded = true;
+            return false;
+        }
+
+        try {
+            std::ifstream ifs(path);
+            if (ifs.is_open()) {
+                ifs >> audioManifest;
+                ifs.close();
+                audioManifestLoaded = true;
+                return true;
+            }
+        }
+        catch (const std::exception& e) {
+            std::cerr << "[AudioManifest] Load failed: " << e.what() << "\n";
+        }
+        return false;
+    }
+
+    void SaveAudioManifest(const std::string& path)
+    {
+        try {
+            std::ofstream out(path);
+            out << std::setw(4) << audioManifest; //formatting
+            std::cout << "[AudioManifest] Saved to " << path << "\n";
+        }
+        catch (const std::exception& e) {
+            std::cerr << "[AudioManifest] Save failed: " << e.what() << "\n";
+        }
+    }
+}
+
+//FILLTHISSHITJQ
 // Checkbox
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
     if (!w.ref) return;
     ImGui::Checkbox(label.c_str(), w.ref);
 }
 
-// String
+// Text
 static void MakeWidget(Editor::Widget_String& w, const std::string& label) {
     if (!w.ref) return;
     char buf[128];
+    //copy string to buffer
     strncpy(buf, w.ref->c_str(), sizeof(buf));
     if (ImGui::InputText(label.c_str(), buf, IM_ARRAYSIZE(buf))) {
+        //copy text back 2 string
         *w.ref = buf;
     }
 }
@@ -83,10 +197,13 @@ static void MakeWidget(Editor::Widget_String& w, const std::string& label) {
 static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label)
 {
     if (!w.ref || w.options.empty()) return;
+    //imgui need char* array
     std::vector<const char*> items;
     items.reserve(w.options.size());
-    for (auto& opt : w.options) items.push_back(opt.c_str());
-    // find index of current value
+    for (auto& opt : w.options) {
+        items.push_back(opt.c_str());
+    }
+    // find index of current selected
     int currentIndex = 0;
     for (int i = 0; i < (int)w.options.size(); ++i) {
         if (w.enumMap.at(w.options[i]) == *w.ref) {
@@ -121,6 +238,7 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
 
 // AnimatorFrames
 static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
+    (void)label;
     if (!w.ref) return;
 
     MakeWidget(w.total_rows, "Total Rows");
@@ -128,12 +246,8 @@ static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
 
     MakeWidget(w.current_state, "Animation state");
 
-    // make button to call "w.Add_New_AnimState(std::string name)"
-    // this function will make a new state and insert an empty state into the animator component...
-    // the return will give u an error message or success message which you can use to make a popup
-    // but i having trouble updating options list, i think it would work for adding but idk how to do remove yet
-
 }
+
 
 void ImGuiSystem::OnFileDropped(const std::string& path)
 {
@@ -146,17 +260,16 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
 
     std::string ext = fs::path(path).extension().string();
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
+    //filename = "blabla.PNG"
     std::string filename = fs::path(path).filename().string();
-    droppedFiles.push_back(filename);
 
     std::cout << "[ImGui Drop] File dropped: " << filename << " (" << path << ")\n";
 
     // --- Image loading --- 
     //Image img = CreateImage(path);
-    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
     {
-        std::string src = path;
+        std::string src = path; //where file at
         std::string destDir = "../Assets/";
         std::string destPath = destDir + fs::path(src).filename().string();
         // make sure the folder exists
@@ -164,32 +277,33 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
             fs::create_directories(destDir);
 
 
-        // --- check for same base name even if different extension ---
-        std::string baseName = fs::path(src).stem().string(); // e.g., "MyTexture"
-        bool foundExistingVariant = false;
-        std::string existingVariantPath;
+        //same name even if diff ext
+        //filename without extension
+        std::string Name = fs::path(src).stem().string();
+        bool SameName = false;
+        std::string existingNamePath;
 
         // loop through asset directory to find same basename
         for (auto& entry : fs::directory_iterator(destDir))
         {
-            if (!entry.is_regular_file()) continue;
+            if (!entry.is_regular_file()) 
+                continue;
 
-            std::string existingBase = entry.path().stem().string();
-            if (existingBase == baseName)
+            std::string existingName = entry.path().stem().string();
+            if (existingName == Name)
             {
-                foundExistingVariant = true;
-                existingVariantPath = entry.path().string();
+                SameName = true;
+                existingNamePath = entry.path().string();
                 break;
             }
         }
 
-        if (foundExistingVariant)
+        if (SameName)
         {
+            //pending coz popup in update
             pendingImportPath = src;
-            pendingDestPath = existingVariantPath;
+            pendingDestPath = existingNamePath;
             showReplacePopup = true;
-            std::cout << "[ImGui Drop] Found variant of same asset ("
-                << existingVariantPath << "), prompting replace...\n";
             return;
         }
         // copy the file
@@ -201,6 +315,8 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
             std::cerr << "[ImGui Drop] Copy failed: " << e.what() << std::endl;
             return;
         }
+
+        //thumbnaillll
         Image img = CreateImage(destPath);
 
         if (img.IsValid()) {
@@ -211,11 +327,9 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         else
             std::cerr << "[ImGui Drop] Failed to load image.\n";
         return;
-
-
     }
 
-    // --- Prefab loading ---
+    //prefabs
     if (ext == ".json")
     {
         Entity ent = JsonLoad::LoadEntityFromFile(path, 300.f, 300.f);
@@ -231,119 +345,45 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         return;
     }
 
-    // --- Audio preview ---
-    if (ext == ".wav" || ext == ".mp3" || ext == ".ogg")
+    // audio
+    if (ext == ".wav" || ext == ".mp3")
     {
-        FMOD::Sound* sound = AudioSystem::LoadSound(path, false);
-        if (sound)
-        {
-            if (previewChannel) previewChannel->stop();
-            previewChannel = AudioSystem::PlaySoundGetChannel(sound, false);
-            previewChannel->setVolume(0.8f);
-            std::cout << "[ImGui Drop] Playing audio preview.\n";
-        }
-        else
-        {
-            std::cerr << "[ImGui Drop] Failed to load audio.\n";
-        }
+        //popup for storing files
+        pendingAudioImports.push_back(path);
+        showAudioImportPopup = true;
+        std::cout << "[ImGui Drop] Queued audio import: " << path << std::endl;
         return;
     }
 
     std::cout << "[ImGui Drop] Unsupported file type: " << ext << std::endl;
+
+   
 }
 
-using json = nlohmann::json;
 
 
-namespace {
-    // small helper to name an entity for the Hierarchy list
-    std::string EntityDisplayName(Entity e) {
-        Registry& reg = Registry::Get();
-        std::string name = "Entity " + std::to_string(e);
-
-        if (reg.Has_Component<TagComponent>(e)) {
-            auto& tag = reg.Get_Component<TagComponent>(e);
-            const char* tagName = (tag.tag == T_PLAYER) ? "Player"
-                : (tag.tag == T_ENEMY) ? "Enemy"
-                : (tag.tag == T_PROJECTILE) ? "Projectile"
-                : "Unknown";
-            name = std::string(tagName) + " " + std::to_string(e);
-        }
-        if (reg.Has_Component<ShapeComponent>(e)) {
-            auto& s = reg.Get_Component<ShapeComponent>(e);
-            if (s.shape == SHAPE_RECTANGLE) {
-                name += "  [Square]";
-            }
-            else if (s.shape == SHAPE_CIRCLE) {
-                name += "  [Circle]";
-            }
-        }
-        else if (reg.Has_Component<Sprite::SpriteComponent>(e)) {
-            std::string entName = reg.Get_EntityName(e);
-            name += "  [Textured]";
-        
-        }
-        return name;
-    }
-
-    //selectedEntity stays valid
-    void EnsureSelectionValid() {
-        if (ImGuiSystem::selectedEntity != INVALID_ENTITY && !EntityManager::get().isAlive(ImGuiSystem::selectedEntity)) {
-            ImGuiSystem::selectedEntity = 0;
-        }
-    }
-
-    //another helpers
-    static nlohmann::json audioManifest;
-    static bool audioManifestLoaded = false;
-
-    static bool LoadAudioManifest(const std::string& path)
-    {
-        std::ifstream file(path);
-        if (!file.is_open()) {
-            std::cout << "[ImGui AudioManifest] File not found, creating new.\n";
-            audioManifest = json::object();
-            audioManifest["music"] = json::object();
-            audioManifest["ui"] = json::object();
-            return false;
-        }
-        try {
-            file >> audioManifest;
-            file.close();
-            audioManifestLoaded = true;
-            return true;
-        }
-        catch (...) {
-            std::cout << "[ImGui AudioManifest] Failed to parse JSON.\n";
-            return false;
-        }
-    }
-
-    static void SaveAudioManifest(const std::string& path)
-    {
-        std::ofstream out(path);
-        out << std::setw(4) << audioManifest;
-        out.close();
-        std::cout << "[ImGui AudioManifest] Saved.\n";
-    }
-}
 
 void ImGuiSystem::InitializeImGui() {
-    IMGUI_CHECKVERSION(); //checks version compatibility
+
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); //imgui i/o settings
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; //enable keyboard nav in imgui
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable Docking
-   // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    //enable Docking
 
     ImGui::StyleColorsDark(); //dark themed lol
     ImGui_ImplGlfw_InitForOpenGL(GLApp::ptr_window, true);
     ImGui_ImplOpenGL3_Init("#version 330"); //init opengl3 backend
 
 
-    static bool dropCallbackSet = false;
+    static bool dropCallbackSet = false; //prevent double reg
     if (!dropCallbackSet && GLApp::ptr_window)
     {
+        //handle file drop
+        // User drags 3 files onto window
+        //count = 2
+        //    paths[0] = "C:ionno"
+        //    paths[1] = "C:bleh"
+
         glfwSetDropCallback(GLApp::ptr_window, [](GLFWwindow*, int count, const char** paths) {
             for (int i = 0; i < count; ++i)
             {
@@ -352,7 +392,6 @@ void ImGuiSystem::InitializeImGui() {
             }
             });
         dropCallbackSet = true;
-        std::cout << "[ImGuiSystem] File drop callback registered.\n";
     }
 }
 
@@ -361,8 +400,8 @@ void ImGuiSystem::Initialize() {
 
 
     InitializeImGui();
-    gsm.inEditMode = false;  // Not in editor mode
-    gsm.isPaused = false;    // Unpause game logic / physics
+    gsm.inEditMode = false;  // not in editor mode
+    gsm.isPaused = false;    // unpause game logic / physics
 }
 
 
@@ -378,18 +417,16 @@ void ImGuiSystem::Update(float dt)
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    //HandleEntityDragging();
 
-    // --- create full-screen root window + dockspace ---
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
-
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
+    //DOCKINGGGG
     ImGuiWindowFlags dockspaceFlags =
         ImGuiWindowFlags_NoDocking |
         ImGuiWindowFlags_NoTitleBar |
@@ -399,10 +436,12 @@ void ImGuiSystem::Update(float dt)
         ImGuiWindowFlags_NoBringToFrontOnFocus |
         ImGuiWindowFlags_NoNavFocus;
 
-    ImGui::Begin("EditorRoot", nullptr, dockspaceFlags);
+    ImGui::Begin("Editor", nullptr, dockspaceFlags);
+    //prev style
     ImGui::PopStyleVar(3);
 
     ImGuiID dockspaceID = ImGui::GetID("MainDockspace");
+    //dock node
     ImGui::DockSpace(dockspaceID, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
 
     // setup layout ONCE
@@ -411,28 +450,32 @@ void ImGuiSystem::Update(float dt)
     {
         firstDock = false;
         ImGui::DockBuilderRemoveNode(dockspaceID);
+        //new dock node
         ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
         ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->WorkSize);
 
+        //SPLIT NODES
+        //percentages
         ImGuiID dock_left = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left, 0.20f, nullptr, &dockspaceID);
         ImGuiID dock_right = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, nullptr, &dockspaceID);
         ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.25f, nullptr, &dockspaceID);
-
-
-        ImGuiID dock_left_top = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.6f, nullptr, &dock_left);
+        ImGuiID dock_left_top = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.4f, nullptr, &dock_left);
+        //wtv left
         ImGuiID dock_left_bottom = dock_left;
+
 
         ImGui::DockBuilderDockWindow("Editor Camera", dock_left_top);
         ImGui::DockBuilderDockWindow("Engine Info", dock_left_bottom);
-        ImGui::DockBuilderDockWindow("Entity Editor", dock_right);
-        ImGui::DockBuilderDockWindow("Collision + Prefabs", dock_bottom);
+        ImGui::DockBuilderDockWindow("Entity Editor + Prefabs", dock_right);
+        ImGui::DockBuilderDockWindow("Collision + Scene", dock_bottom);
         ImGui::DockBuilderDockWindow("Assets", dock_bottom);
         ImGui::DockBuilderDockWindow("Game View", dockspaceID);
         ImGui::DockBuilderFinish(dockspaceID);
     }
-
+    
 
     if (ImGui::Begin("Editor Camera")) {
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
         ImVec2 cursor = ImGui::GetCursorScreenPos();
         ImVec2 size = ImGui::GetContentRegionAvail();
 
@@ -444,40 +487,66 @@ void ImGuiSystem::Update(float dt)
         else {
             ImGui::TextDisabled("Panel too small to display");
         }
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
     }
-
     ImGui::End();
+
+
+
     if (ImGui::Begin("Engine Info")) {
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
         ShowEngineDebugWindow();
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
-    if (ImGui::Begin("Collision + Prefabs")) {
+
+
+    if (ImGui::Begin("Collision + Scene")) {
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
         ShowCollisionDebugWindow();
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
-    if (ImGui::Begin("Entity Editor")) {
-        ImGui::Columns(2);
-        ShowHierarchyWindow();
+    
+    if (ImGui::Begin("Entity Editor + Prefabs")) {
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
+        ImGui::Columns(2, "EntityColumns", true);
+        ShowHierarchyWindow();     // left: list
         ImGui::NextColumn();
-        ShowInspectorWindow();
+        ShowAddRemoveComponents(); // right: add/remove comp
         ImGui::Columns(1);
+
         ImGui::Separator();
-        ShowPrefabControls();
+        ShowInspectorWindow();     //edit
+
+        ImGui::Separator();
+        ShowPrefabControls();      //prefabs
+
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
+        
     }
     ImGui::End();
+
 
     if (ImGui::Begin("Assets")) {
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
         ShowAssetPreviewWindow();
+        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
+       
     }
     ImGui::End();
+    
 
     // game view panel
     if (ImGui::Begin("Game View")) {
+        bool isPlaying = !gsm.isPaused && !gsm.inEditMode;
+        ShowSimulationControls(isPlaying);
+        isPlaying = !gsm.isPaused && !gsm.inEditMode;
         ImVec2 avail = ImGui::GetContentRegionAvail();
 
-        // maintain 16:9 aspect
+        //16:9 ratio
         float aspect = 16.0f / 9.0f;
         float newWidth = avail.x;
         float newHeight = newWidth / aspect;
@@ -488,23 +557,29 @@ void ImGuiSystem::Update(float dt)
 
         ImVec2 cursor = ImGui::GetCursorScreenPos();
 
-        // Get texture from renderer
+        //texture from renderer
         ::Render& renderer = Render::GetInstance();
         GLuint texID = renderer.GetSceneTexture();
 
         // show it
-        ImGui::Image(
-            (ImTextureID)(intptr_t)texID,
-            ImVec2(newWidth, newHeight),
-            ImVec2(0, 1), ImVec2(1, 0)
-        );
+        ImGui::Image( (ImTextureID)(intptr_t)texID, ImVec2(newWidth, newHeight), ImVec2(0, 1), ImVec2(1, 0) );
+
+        //GUISYSTEM STUFF SCALE FOR MOUSE
+        GameViewRect rect;
+        rect.x = cursor.x;
+        rect.y = cursor.y;
+        rect.width = newWidth;
+        rect.height = newHeight;
+
+        GuiSystem::Get().SetGameViewRect(rect);
+
         if (dragEditMode) {
             DrawEntityDragHandles(cursor, ImVec2(newWidth, newHeight));
         }
 
-        // ---------------------------------------------------------
-        // Prefab placement handler (multi-placement version)
-        // ---------------------------------------------------------
+        // ----------------------
+        // Prefab Mouse Spawner
+        // ----------------------
 
         if (isPlacingPrefab && ImGui::IsItemHovered())
         {
@@ -516,28 +591,21 @@ void ImGuiSystem::Update(float dt)
                 ImVec2 mouse = ImGui::GetMousePos();
 
                 // the image rect in screen space
-                ImVec2 imgMin = cursor;                         // top-left of the ImGui::Image
-                ImVec2 imgMax = ImVec2(cursor.x + newWidth,
-                    cursor.y + newHeight);   // bottom-right
-
-                // early out if somehow not inside (should be hovered anyway)
-                if (mouse.x < imgMin.x || mouse.x > imgMax.x ||
-                    mouse.y < imgMin.y || mouse.y > imgMax.y)
-                    goto end_prefab;
+                ImVec2 imgMin = cursor; // top-left of the ImGui::Image
+                ImVec2 imgMax = ImVec2(cursor.x + newWidth, cursor.y + newHeight);   // bottom-right
 
                 // panel-local uv in [0,1]
                 float u = (mouse.x - imgMin.x) / (imgMax.x - imgMin.x);
                 float v = (mouse.y - imgMin.y) / (imgMax.y - imgMin.y);
 
-                // because we drew the texture with flipped UVs (0,1) -> (1,0),
-                // v grows downward in screen space, but NDC expects up to be +Y.
-                // so flip v here.
-                float ndcX = u * 2.0f - 1.0f;     // [0,1] -> [-1,1]
+                //texture with flipped UVs (0,1) ->(1,0),
+                //v grows downward in screen space but NDC up to be y flip v here.
+                float ndcX = u * 2.0f - 1.0f; // 0,1 to -1,1
                 float ndcY = (1.0f - v) * 2.0f - 1.0f;
 
+                //ndc to world
                 Camera& cam = Camera::GetInstance();
                 glm::mat4 invVP = glm::inverse(cam.GetViewProjection());
-
                 // for 2D ortho this hits z=0 plane fine
                 glm::vec4 world = invVP * glm::vec4(ndcX, ndcY, 0.0f, 1.0f);
                 if (world.w != 0.0f) world /= world.w;
@@ -545,10 +613,8 @@ void ImGuiSystem::Update(float dt)
                 float worldX = world.x;
                 float worldY = world.y;
 
-                // OPTIONAL: if your prefab’s pivot is top-left and you want cursor-centre placement,
-                // subtract half extents here (if you can query them). Example for a 50x50 box:
-                // worldX -= 25.0f; worldY -= 25.0f;
 
+                //loads prefab and spawn.
                 Entity newEnt = JsonLoad::LoadEntityFromFile(pendingPrefabPath, worldX, worldY);
                 if (newEnt != INVALID_ENTITY)
                 {
@@ -569,14 +635,10 @@ void ImGuiSystem::Update(float dt)
             }
         }
 
-    end_prefab:;
-
-
 
     }
     ImGui::End();
 
-    // --- END EditorRoot LAST ---
     ImGui::End();
 }
 
@@ -610,100 +672,7 @@ void ImGuiSystem::ShowEngineDebugWindow() {
         //visual bar
         ImGui::ProgressBar((float)(percent / 100.0f), ImVec2(-1, 0), (std::to_string((int)percent) + "%").c_str());
     }
-    bool isPlaying = !gsm.isPaused && !gsm.inEditMode;
-    // --- Editor Control Section ---
-    ImGui::Separator();
-    ImGui::Text("Simulation Controls:");
 
-    if (!isPlaying)
-    {
-        if (ImGui::Button("Play"))
-        {
-            // Save the current edited scene to temp, then load the original level scene
-            if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-            {
-                JsonLoad::SaveCurrentScene(FilePath::LEVEL1_TEMP_SCENE, "level1_temp.json");
-                JsonLoad::ClearAllEntities();
-                JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
-            }
-            else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-            {
-                JsonLoad::SaveCurrentScene(FilePath::LEVEL2_TEMP_SCENE, "level2_temp.json");
-                JsonLoad::ClearAllEntities();
-                JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
-            }
-
-            std::cout << "[Editor] Temp scene saved, original level loaded for Play.\n";
-
-            gsm.isPaused = false;
-            gsm.inEditMode = false;
-            Camera& cam = Camera::GetInstance();
-            cam.SetMode(Camera::Mode::GAME);
-            cam.SetZoom(1.0f);
-            cam.ResetToCenter();
-            std::cout << "[Camera] Switched to GAME mode\n";
-            isPlaying = true;
-
-            std::cout << "[Editor] Gameplay started.\n";
-        }
-    }
-    else
-    {
-        if (ImGui::Button("Stop"))
-        {
-            gsm.isPaused = true;
-            gsm.inEditMode = true;
-
-            Camera& cam = Camera::GetInstance();
-            cam.SetMode(Camera::Mode::EDITOR);
-            cam.ResetToCenter();
-
-            LogicSystem::Get().Shutdown();
-
-            std::cout << "[Camera] Switched to EDITOR mode\n";
-            isPlaying = false;
-
-            // Save the played scene to level file, then reload the temp (edited) scene
-            if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-            {
-                JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
-                JsonLoad::ClearAllEntities();
-
-                if (JsonLoad::LoadScene(FilePath::LEVEL1_TEMP_SCENE))
-                {
-                    std::cout << "[Editor] Saved level scene, restored temp edits.\n";
-                }
-                else
-                {
-                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
-                    JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
-                }
-            }
-            else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-            {
-                JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
-                JsonLoad::ClearAllEntities();
-
-                if (JsonLoad::LoadScene(FilePath::LEVEL2_TEMP_SCENE))
-                {
-                    std::cout << "[Editor] Saved level scene, restored temp edits.\n";
-                }
-                else
-                {
-                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
-                    JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
-                }
-            }
-
-            ImGuiSystem::selectedEntity = INVALID_ENTITY;
-        }
-    }
-
-    ImGui::SameLine();
-    ImGui::TextColored(
-        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
-        isPlaying ? "PLAYING" : "EDITING"
-    );
     ImGui::Separator();
     ImGui::Checkbox("Enable Drag Handles", &dragEditMode);
 
@@ -717,7 +686,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
 
     for (auto& [entity, physics] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
         totalColliders++;
-        if (physics.CollisionActive()) { // Use the physics component's collision active check
+        if (physics.CollisionActive()) { // Use the physics comp collision active check
             activeColliders++;
         }
     }
@@ -725,126 +694,197 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::Text("AABB Colliders: %d / %d active", activeColliders, totalColliders);
     ImGui::Checkbox("Show Colliders", &showColliders);
     ImGui::Checkbox("Show Velocity", &showVelocity);
-    ImGui::Checkbox("Show Spatial Grid", &showSpatialGrid);
-
-    // Spatial Grid Statistics
-    ImGui::Separator();
-    ImGui::Text("Spatial Grid (Broad Phase):");
-    SpatialGrid* grid = CollisionManager::GetSpatialGrid();
-    if (grid) {
-        auto stats = grid->GetStats();
-        size_t collisionCellCount = grid->GetCollisionCellCount();
-
-        ImGui::Text("  Cell Size: 150.0 units");
-        ImGui::Text("  Occupied Cells: %llu", (unsigned long long)stats.occupiedCells);
-        ImGui::Text("  Total Entities: %llu", (unsigned long long)stats.totalEntities);
-        ImGui::Text("  Avg per Cell: %.2f", stats.avgEntitiesPerCell);
-        ImGui::Text("  Max in Cell: %llu", (unsigned long long)stats.maxEntitiesInCell);
-
-        // Collision cells (shown in red when visualized)
-        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f),
-            "  Cells with Collisions: %llu", (unsigned long long)collisionCellCount);
-
-        // Performance estimation
-        int naiveChecks = (totalColliders * (totalColliders - 1)) / 2;
-        ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f),
-            "  Optimization: %d -> ~%d checks",
-            naiveChecks,
-            (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
-    }
     //enityt
-    if (ImGui::CollapsingHeader("Entity Positions")) {
-        for (auto& [entity, tag] : m_registry.Get_ComponentMap<TagComponent>()) {
-            if (m_registry.Has_Component<TransformComponent>(entity)) {
-                TransformComponent& transform = m_registry.Get_Component<TransformComponent>(entity);
-                const char* tagName = (tag.tag == T_PLAYER) ? "Player" :(tag.tag == T_ENEMY) ? "Enemy" :(tag.tag == T_PROJECTILE) ? "Projectile" : "Unknown";
-                ImGui::Text("%s %d: (%.1f, %.1f)", tagName, entity, transform.pos.x, transform.pos.y);
-            }
-        }
-    }
+    //if (ImGui::CollapsingHeader("Entity Positions")) {
+    //    for (auto& [entity, tag] : m_registry.Get_ComponentMap<TagComponent>()) {
+    //        if (m_registry.Has_Component<TransformComponent>(entity)) {
+    //            TransformComponent& transform = m_registry.Get_Component<TransformComponent>(entity);
+    //            const char* tagName = (tag.tag == T_PLAYER) ? "Player" :(tag.tag == T_ENEMY) ? "Enemy" :(tag.tag == T_PROJECTILE) ? "Projectile" : "Unknown";
+    //            ImGui::Text("%s %d: (%.1f, %.1f)", tagName, entity, transform.pos.x, transform.pos.y);
+    //        }
+    //    }
+    //}
 
-   // ImGui::Separator();
     ImGui::Text("Scene Management:");
-
-    if (ImGui::Button("Save Scene (F5)")) {
-        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-        {
-            JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "Level1");
-        }
-        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-        {
-            JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "Level2");
-        }
-        std::cout << "Scene saved from ImGui!" << std::endl;
-    }
-    ImGui::SameLine();
-
-    if (ImGui::Button("Load Scene (F9)")) {
-        JsonLoad::ClearAllEntities();
-        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-        {
-            if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
-                std::cout << "Level1 Scene loaded from ImGui!" << std::endl;
-            }
-            else {
-                std::cout << "Failed to load scene!" << std::endl;
-            }
-        }
-        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-        {
-            if (JsonLoad::LoadScene(FilePath::LEVEL2_SCENE)) {
-                std::cout << "Level2 Scene loaded from ImGui!" << std::endl;
-            }
-            else {
-                std::cout << "Failed to load scene!" << std::endl;
-            }
-        }
-
-
-    }
-
-
     ShowSceneBrowser();
-    //// ==============================
-    //// Image loader (runtime only)
-    //// ==============================
-    //ImGui::Separator();
-    //ImGui::Text("Image Loader:");
-
-    //static char imgNameBuf[128] = "";
-    //static std::vector<std::string> loadedImages;
-
-
-    //ImGui::InputText("Image Filename", imgNameBuf, IM_ARRAYSIZE(imgNameBuf));
-    //ImGui::SameLine();
-
-    //if (ImGui::Button("Add Image")) {
-    //    std::string filename = imgNameBuf;
-
-
-    //    std::string fullPath = "../Assets/" + filename;
-    //    Image img = CreateImage(fullPath); // uses your Render.cpp helper
-    //    if (img.IsValid()) {
-    //        loadedImages.push_back(filename);
-
-    //    }
-
-    //}
-
-    //ImGui::Separator();
-    //ImGui::Text("Loaded Images:");
-    //if (loadedImages.empty()) {
-    //    ImGui::TextDisabled("(none yet)");
-    //}
-    //else {
-    //    for (auto const& name : loadedImages) {
-    //        ImGui::BulletText("%s", name.c_str());
-    //    }
-    //}
-
 
 }
 
+void ImGuiSystem::ShowSceneBrowser()
+{
+    //same as earlier thing
+    namespace fs = std::filesystem;
+    const std::string sceneFolder = "../Assets/saves/";
+
+    if (!fs::exists(sceneFolder))
+        fs::create_directories(sceneFolder);
+
+    static std::vector<std::string> sceneFiles;
+    static bool needRefresh = true;
+
+    //refresh button
+    if (ImGui::Button("Refresh Scenes"))
+    {
+        needRefresh = true;
+    }
+
+    ImGui::Separator();
+
+    if (needRefresh)
+    {
+        sceneFiles.clear();
+        for (auto& entry : fs::directory_iterator(sceneFolder))
+        {
+            if (entry.path().extension() == ".json")
+                sceneFiles.push_back(entry.path().stem().string());
+        }
+        needRefresh = false;
+        std::cout << "[Editor] Scene list rebuilt (" << sceneFiles.size() << " found)\n";
+    }
+    static int selectedScene = -1;
+
+    // scene list
+    ImGui::Text("Loaded Scenes:");
+
+    static std::string pendingDeleteScene;
+    static bool DeleteScenePopup = false;
+
+    //all scenes in scroll
+    ImGui::BeginChild("SceneList", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
+    for (int i = 0; i < static_cast<int>(sceneFiles.size()); ++i)
+    {
+        const std::string& sceneName = sceneFiles[i];
+        bool selected = (selectedScene == i);
+
+        ImGui::PushID(sceneName.c_str());
+        if (ImGui::Selectable(sceneName.c_str(), selected))
+        {
+            selectedScene = i;
+            std::cout << "[Editor] Selected scene: " << sceneName << std::endl;
+        }
+
+        // right click context menu
+        if (ImGui::BeginPopupContextItem("SceneContext"))
+        {
+            if (ImGui::MenuItem("Delete Scene"))
+            {
+                pendingDeleteScene = sceneName;
+                DeleteScenePopup = true;
+            }
+            ImGui::EndPopup();
+        }
+
+        ImGui::PopID();
+    }
+    ImGui::EndChild();
+
+    // deletepop up
+    if (DeleteScenePopup)
+    {
+        ImGui::OpenPopup("Delete Scene Confirmation");
+        DeleteScenePopup = false;
+    }
+    if (ImGui::BeginPopupModal("Delete Scene Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Are you sure you want to delete scene '%s'?",pendingDeleteScene.c_str());
+        ImGui::Separator();
+
+        if (ImGui::Button("Yes, Delete", ImVec2(130, 0)))
+        {
+            try
+            {
+                std::string filePath = sceneFolder + pendingDeleteScene + ".json";
+                std::filesystem::remove(filePath);
+                std::cout << "[Editor] Deleted scene: " << filePath << "\n";
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << "[Editor] Failed to delete scene: " << e.what() << "\n";
+            }
+            pendingDeleteScene.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0)))
+        {
+            pendingDeleteScene.clear();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    // Buttons
+    if (ImGui::Button("Load Scene") && selectedScene >= 0)
+    {
+        std::string sceneName = sceneFiles[selectedScene];
+        std::string path = sceneFolder + sceneName + ".json";
+
+        JsonLoad::ClearAllEntities();
+
+        if (JsonLoad::LoadScene(path))
+        {
+            std::cout << "[Editor] Loaded scene: " << path << "\n";
+
+
+            if (sceneName == "Level1" || sceneName == "level1")
+            {
+                GSM_SetNextState(GameState::GS_LEVEL1);
+                std::cout << "[Editor] Switching to LEVEL 1 state.\n";
+            }
+            else if (sceneName == "Level2" || sceneName == "level2")
+            {
+                GSM_SetNextState(GameState::GS_LEVEL2);
+                std::cout << "[Editor] Switching to LEVEL 2 state.\n";
+            }
+            else
+            {
+                std::cout << "[Editor] Loaded custom scene (no state switch).\n";
+            }
+        }
+        else
+        {
+            std::cerr << "[Editor] Failed to load scene: " << path << "\n";
+        }
+    }
+
+
+    ImGui::SameLine();
+    if (ImGui::Button("Save Current Scene") && selectedScene >= 0)
+    {
+        std::string path = sceneFolder + sceneFiles[selectedScene] + ".json";
+        JsonLoad::SaveCurrentScene(path, sceneFiles[selectedScene]);
+        std::cout << "[Editor] Saved scene: " << path << "\n";
+    }
+
+    //new scene
+    static char newSceneName[64] = "";
+    ImGui::InputText("New Scene Name", newSceneName, IM_ARRAYSIZE(newSceneName));
+    if (ImGui::Button("Create New Scene"))
+    {
+        std::string sceneName = newSceneName;
+        if (sceneName.empty())
+        {
+            std::cout << "[Editor] Scene name cannot be empty!\n";
+        }
+        else
+        {
+            std::string newPath = sceneFolder + sceneName + ".json";
+            if (fs::exists(newPath))
+            {
+                std::cout << "[Editor] Scene already exists.\n";
+            }
+            else
+            {
+                SavedScene empty;
+                empty.sceneName = sceneName;
+                JsonLoad::SaveCurrentScene(newPath, sceneName);
+                std::cout << "[Editor] Created new empty scene: " << newPath << "\n";
+            }
+        }
+    }
+}
 
 void ImGuiSystem::ShowHierarchyWindow() {
 
@@ -855,7 +895,7 @@ void ImGuiSystem::ShowHierarchyWindow() {
         Entity newEntity = m_registry.Create_Entity();
         selectedEntity = newEntity;
 
-        // Store editor-only name (not actual TagComponent)
+        // Store editor name
         m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
 
     }
@@ -871,17 +911,15 @@ void ImGuiSystem::ShowHierarchyWindow() {
         {
             if (it->second.empty() || it->second == "{}" || it->second == "null")
             {
-                std::cout << "[Clone Warning] Skipping empty component: " << it->first << "\n";
+                std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
                 it = src.componentData.erase(it);
             }
             else
-                ++it;
+            ++it;
         }
 
-        Entity clone = reg.Load_Entity(src);
+       reg.Load_Entity(src);
     }
-
-
 
     ImGui::SameLine();
     if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
@@ -892,7 +930,7 @@ void ImGuiSystem::ShowHierarchyWindow() {
     ImGui::Separator();
 
 
-    // show all known entities (even blank)
+    // show all known entities
     auto& nameMap = m_registry.Get_EntityNameMap();
 
     for (auto& [entity, name] : nameMap)
@@ -901,7 +939,7 @@ void ImGuiSystem::ShowHierarchyWindow() {
             continue;
 
         bool selected = (entity == selectedEntity);
-        //Cant select old entity after clone
+        //prev problem cant select old entity after clone
         //Use ImGui::PushID(entity) so diff imguiID
         ImGui::PushID((int)entity);
         if (ImGui::Selectable(name.c_str(), selected))
@@ -949,7 +987,7 @@ void ImGuiSystem::ShowInspectorWindow()
                     ImGui::PopID();
                 }
 
-                // REGINEHELP i want to split this "if true" scope like, look nicer abit, this group is to edit the frame data!
+                //FILLTHISSHITJQ
                 if (true)
                 {
                     // need to figure out how to call add state or change state...
@@ -960,7 +998,7 @@ void ImGuiSystem::ShowInspectorWindow()
                     Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());
                     Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, animcomp.GetTotalCols());
                     Editor::Widget_Float widgetduration(&temp.duration);
-                    ImGui::PushItemWidth(80);
+                    ImGui::PushItemWidth(50);
                     MakeWidget(widgetrow, "state rows");
                     ImGui::SameLine();
                     MakeWidget(widgetcolstart, "first col");
@@ -976,6 +1014,64 @@ void ImGuiSystem::ShowInspectorWindow()
             }
 
         }
+        //FILLTHISSHITJQ
+        else if (compName == "Behaviour")
+        {
+            BehaviourComponent& behaviourComp = m_registry.Get_Component<BehaviourComponent>(selectedEntity);
+            if (ImGui::TreeNode(compName.c_str()))
+            {
+                LogicSystem& logicSys = LogicSystem::Get();
+                auto& map = logicSys.GetIDToNameMap();
+
+                if (logicSys.GetIDToNameMap().empty()) return;
+
+                std::vector<const char*> items;
+                size_t optSize = logicSys.GetIDToNameMap().size();
+                items.reserve(optSize);
+                for (auto& [scriptname, scriptID] : logicSys.GetNameToIDMap()) items.push_back(scriptname.c_str());
+                // find index of current value
+
+                static int currentIndex = 0;
+
+                std::string selectedScript(items[currentIndex]);
+
+                if (ImGui::Combo("Select Script", &currentIndex, items.data(), (int)items.size())) {
+                    //*w.ref = w.enumMap[w.options[currentIndex]];
+                    selectedScript = (items[currentIndex]);
+                }
+
+                bool disable = behaviourComp.HasScript(selectedScript);
+
+                std::string AddLabel = "Add Script";
+                if (disable) 
+                {
+                    AddLabel += " (Script already registered!)";
+                    ImGui::BeginDisabled();
+                }
+                if (ImGui::Button(AddLabel.c_str()))
+                {
+                    behaviourComp.AddScript(selectedScript);
+                }
+                if (disable) ImGui::EndDisabled();
+
+                ImGui::SeparatorText("Registered Scripts:");
+                int id = 0;
+                for (ScriptID sID : behaviourComp.scriptIDList)
+                {
+                    ImGui::PushID(id++);
+                    ImGui::Text(map.find(sID)->second.c_str());
+
+                    ImGui::SameLine();
+                    if (ImGui::SmallButton("Remove"))
+                    {
+                        behaviourComp.RemoveScript(sID);
+                    }
+                    ImGui::PopID();
+                }
+
+                ImGui::TreePop();
+            }
+        }
         else
         if (ImGui::TreeNode(compName.c_str()))
         {
@@ -988,11 +1084,29 @@ void ImGuiSystem::ShowInspectorWindow()
             }
             ImGui::TreePop();
         }
+
+        if (selectedEntity != INVALID_ENTITY &&
+            m_registry.Has_Component<Physics::PhysicsComponent>(selectedEntity) &&
+            m_registry.Has_Component<TransformComponent>(selectedEntity))
+        {
+            auto& p = m_registry.Get_Component<Physics::PhysicsComponent>(selectedEntity);
+            auto& t = m_registry.Get_Component<TransformComponent>(selectedEntity);
+            p.UpdateHitboxes(t.pos);
+        }
     }
 
-    // --- Add/Remove Components ---
-    ImGui::Separator();
+}
+
+void ImGuiSystem::ShowAddRemoveComponents()
+{
     ImGui::Text("Add / Remove Components");
+    ImGui::Separator();
+
+    if (selectedEntity == INVALID_ENTITY)
+    {
+        ImGui::TextDisabled("No entity selected");
+        return;
+    }
 
     Entity eID = selectedEntity;
     for (std::type_index typeID : m_registry.Get_ComponentOrder())
@@ -1008,27 +1122,23 @@ void ImGuiSystem::ShowInspectorWindow()
             ImGui::EndDisabled();
 
             ImGui::SameLine();
-            if (ImGui::Button(("Remove##" + compName).c_str()))
+            if (ImGui::SmallButton(("Remove" + compName).c_str()))
             {
-                // If removing an Animator, clear sprite.isAnimated first
-                if (compName == "Animator")
+                if (compName == "Animator" &&
+                    m_registry.Has_Component<Sprite::SpriteComponent>(eID))
                 {
-                    if (m_registry.Has_Component<Sprite::SpriteComponent>(eID))
-                    {
-                        auto& sprite = m_registry.Get_Component<Sprite::SpriteComponent>(eID);
-                        sprite.Set_Animated(false);
-                    }
+                    auto& sprite = m_registry.Get_Component<Sprite::SpriteComponent>(eID);
+                    sprite.Set_Animated(false);
                 }
 
                 m_registry.Remove_Component(eID, typeID);
                 std::cout << "[Editor] Removed " << compName << " from entity " << eID << "\n";
             }
-
         }
         else
         {
             if (!depsOK) ImGui::BeginDisabled();
-            if (ImGui::Button(("Add " + compName).c_str()))
+            if (ImGui::SmallButton(("Add " + compName).c_str()))
             {
                 m_registry.Add_Component(eID, typeID);
                 std::cout << "[Editor] Added " << compName << " to entity " << eID << "\n";
@@ -1043,6 +1153,25 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 {
     ImGui::Text( "Asset Preview Browser");
     ImGui::Separator();
+    if (ImGui::Button("Refresh"))
+    {
+        RefreshImageAssets();
+
+        const std::string manifestPath = "../Assets/audio_manifest.json";
+        audioManifest.clear();
+        audioManifestLoaded = false;
+        if (!LoadAudioManifest(manifestPath))
+        {
+            std::cout << "[ImGui Audio] Manifest missing or invalid. Creating new.\n";
+            audioManifest = json::object();
+            audioManifest["music"] = json::object();
+            audioManifest["ui"] = json::object();
+            audioManifest["sfx"] = json::object();
+        }
+
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("Reloads asset folder");
 
     if (ImGui::BeginTabBar("AssetsTabs"))
     {
@@ -1059,14 +1188,16 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 g_imageNames.clear();
 
                 const std::string assetFolder = "../Assets/";
+                //same as earlier loop thru all
                 for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
                 {
-                    if (!entry.is_regular_file()) continue;
+                    if (!entry.is_regular_file()) 
+                        continue;
                     std::string path = entry.path().string();
                     std::string ext = entry.path().extension().string();
                     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-                    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+                    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
                     {
 
                         try {
@@ -1076,8 +1207,8 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                                 g_imageNames.push_back(entry.path().filename().string());
                             }
                         }
-                        catch (...) {
-                            std::cout << "Failed to load " << path << std::endl;
+                        catch (const std::exception& e) {
+                            std::cerr << "Failed to load " << entry.path() << "\n";
                         }
                     }
                 }
@@ -1093,8 +1224,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 const float padding = 16.0f;
                 float windowWidth = ImGui::GetContentRegionAvail().x;
                 int columns = static_cast<int>(windowWidth / (thumbSize + padding));
-                if (columns < 1) columns = 1;
-
+                if (columns < 1) columns = 1;  // zero or negative
                 ImGui::BeginChild("ImageScroll", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
 
                 int count = 0;
@@ -1103,22 +1233,20 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                     ImGui::BeginGroup();
                     GLuint texID = g_loadedThumbnails[i].textureID;
 
-                    // show image (flipped UVs)
-                    ImGui::Image((ImTextureID)(intptr_t)texID,
-                        ImVec2(thumbSize, thumbSize),
-                        ImVec2(0, 1), ImVec2(1, 0));
+                    //same from earlier stuff
+                    ImGui::Image((ImTextureID)(intptr_t)texID, ImVec2(thumbSize, thumbSize), ImVec2(0, 1), ImVec2(1, 0));
 
                     // filename
                     ImGui::TextWrapped("%s", g_imageNames[i].c_str());
                     ImGui::EndGroup();
-
+                    //grid
                     if (++count % columns != 0)
                         ImGui::SameLine();
+                    //horizontal line until a full row wraps when count % columns == 0.
                 }
 
                 ImGui::EndChild();
             }
-            // --- replacement confirmation popup ---
             if (showReplacePopup)
             {
                 ImGui::OpenPopup("Replace Existing Asset?");
@@ -1136,42 +1264,43 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         namespace fs = std::filesystem;
 
                         const std::string assetFolder = "../Assets/";
-                        const std::string newName = fs::path(pendingImportPath).filename().string(); // e.g., Luke2023.jpg
+                        const std::string newName = fs::path(pendingImportPath).filename().string(); // Luke2023.jpg
                         const std::string newStem = fs::path(pendingImportPath).stem().string();     // Luke2023
                         const std::string destNewPath = assetFolder + newName;
 
-                        // 1) Remove all existing variants (by stem) from disk
+                        //remove all existing variants (by stem)
                         for (auto& entry : fs::directory_iterator(assetFolder))
                         {
-                            if (!entry.is_regular_file()) continue;
+                            if (!entry.is_regular_file()) 
+                                continue;
                             if (entry.path().stem().string() == newStem)
                             {
                                 fs::remove(entry.path());
-                                std::cout << "[ImGui Replace] Deleted old variant: "
-                                    << entry.path().filename().string() << "\n";
+                                std::cout << "[ImGui Replace] Deleted old: " << entry.path().filename().string() << "\n";
                             }
                         }
 
-                        // 2) Copy the new file using its own filename (so extension is preserved)
+                        //copy new file using own filename (so extension preserved)
                         fs::copy_file(pendingImportPath, destNewPath, fs::copy_options::overwrite_existing);
                         std::cout << "[ImGui Replace] Installed: " << destNewPath << "\n";
 
-                        // 3) Load thumbnail for the new file
+                        //thumbnail for new file
                         if (Image newImg = CreateImage(destNewPath); newImg.IsValid())
                         {
                             g_loadedThumbnails.push_back(newImg);
                             g_imageNames.push_back(fs::path(destNewPath).filename().string());
                         }
 
-                        // 4) Optionally, full refresh (keeps grid consistent if there are many files)
+                        //refresh
                         g_loadedThumbnails.clear();
                         g_imageNames.clear();
                         for (auto& entry : fs::recursive_directory_iterator(assetFolder))
                         {
-                            if (!entry.is_regular_file()) continue;
+                            if (!entry.is_regular_file()) 
+                                continue;
                             auto ext = entry.path().extension().string();
                             std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
                             {
                                 if (Image img = CreateImage(entry.path().string()); img.IsValid())
                                 {
@@ -1181,11 +1310,11 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                             }
                         }
 
-                        std::cout << "[ImGui Replace] Asset preview refreshed.\n";
+                        std::cout << "[Replace] Asset preview refreshed.\n";
                     }
                     catch (const std::filesystem::filesystem_error& e)
                     {
-                        std::cerr << "[ImGui Replace] Failed: " << e.what() << std::endl;
+                        std::cerr << "[Replace] Failed: " << e.what() << std::endl;
                     }
 
                     showReplacePopup = false;
@@ -1220,7 +1349,6 @@ void ImGuiSystem::ShowAssetPreviewWindow()
             static bool manifestLoaded = false;
             const std::string manifestPath = "../Assets/audio_manifest.json";
 
-            // --- Load or recreate audio manifest safely ---
             if (!manifestLoaded)
             {
                 if (!LoadAudioManifest(manifestPath))
@@ -1233,118 +1361,75 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 manifestLoaded = true;
             }
 
-            // --- Defensive check before using it ---
+            //safety check
             if (!audioManifest.is_object() || audioManifest.empty())
             {
                 ImGui::TextDisabled("No audio manifest data available.");
                 ImGui::EndTabItem();
                 return;
             }
-
-            ImGui::Text("Audio Manifest Editor");
             ImGui::Separator();
 
-            // --- ADD NEW AUDIO ENTRY ---
-            static char categoryBuf[32] = "music";
-            static char nameBuf[64] = "";
-            static char pathBuf[128] = "";
-            static int idBuf = 0;
-            static bool loopBuf = false;
-            static char groupBuf[32] = "Music";
 
-            ImGui::InputText("Category (music/ui)", categoryBuf, IM_ARRAYSIZE(categoryBuf));
-            ImGui::InputText("Asset Name", nameBuf, IM_ARRAYSIZE(nameBuf));
-            ImGui::InputText("Path", pathBuf, IM_ARRAYSIZE(pathBuf));
-            ImGui::InputInt("ID", &idBuf);
-            ImGui::Checkbox("Loop", &loopBuf);
-            ImGui::InputText("Group", groupBuf, IM_ARRAYSIZE(groupBuf));
-
-            if (ImGui::Button("Add Audio Asset"))
-            {
-                std::string category = categoryBuf;
-                std::string name = nameBuf;
-                std::string path = pathBuf;
-
-                if (name.empty() || path.empty())
-                {
-                    std::cout << "[ImGui AudioManifest] Missing name or path!\n";
-                }
-                else
-                {
-                    // Ensure category exists
-                    if (!audioManifest.contains(category))
-                        audioManifest[category] = json::object();
-
-                    // Add entry safely
-                    audioManifest[category][name] = {
-                        { "id", idBuf },
-                        { "path", path },
-                        { "loop", loopBuf },
-                        { "group", groupBuf }
-                    };
-
-                    SaveAudioManifest(manifestPath);
-                    std::cout << "[ImGui AudioManifest] Added " << name << " to " << category << "\n";
-                }
-            }
-
-            ImGui::Separator();
-
-            // --- DISPLAY EXISTING ENTRIES SAFELY ---
+            //existing
             try
             {
                 for (auto& [category, assets] : audioManifest.items())
                 {
-                    if (!assets.is_object())
-                        continue; // skip malformed entries
+                    if (!assets.is_object()) continue;
 
                     if (ImGui::CollapsingHeader(category.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
                     {
                         for (auto& [name, data] : assets.items())
                         {
-                            if (!data.is_object())
-                                continue;
+                            if (!data.is_object()) continue;
 
                             ImGui::PushID(name.c_str());
 
-                            // Safely retrieve values
-                            std::string path = data.contains("path") ? data["path"].get<std::string>() : "(none)";
-                            int id = data.contains("id") ? data["id"].get<int>() : -1;
-                            bool loop = data.contains("loop") ? data["loop"].get<bool>() : false;
-                            std::string group = data.contains("group") ? data["group"].get<std::string>() : "(none)";
+                            //get val
+                            std::string path = data.value("path", "(none)");                           
+                            std::string group = data.value("group", "(none)");                        
 
-                            ImGui::Text("Name: %s", name.c_str());
-                            ImGui::Text("Path: %s", path.c_str());
-                            ImGui::Text("ID: %d", id);
-                            ImGui::Text("Loop: %s", loop ? "true" : "false");
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.6f, 1.0f));
+                            ImGui::Text("%s", name.c_str());
+                            ImGui::PopStyleColor();
+
+                            ImGui::Indent();
+                            ImGui::Text("Path: %s", path.c_str());                           
                             ImGui::Text("Group: %s", group.c_str());
 
-                            // --- Preview controls ---
+                            //buttons
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
                             if (ImGui::Button("Play"))
                             {
+                                FMOD::Sound* snd = AudioSystem::LoadSound(path, false);
+                                if (snd)
+                                {
+                                    if (previewChannel) previewChannel->stop();
+                                    previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
 
-                                    FMOD::Sound* snd = AudioSystem::LoadSound(path, loop);
-                                    if (snd)
-                                    {
-                                        if (previewChannel) previewChannel->stop();
-                                        previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
-                                        if (previewChannel) previewChannel->setVolume(0.8f);
-                                    }
-   
+                                }
                             }
+                            ImGui::PopStyleColor();
 
                             ImGui::SameLine();
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.2f, 0.2f, 1.0f));
                             if (ImGui::Button("Stop"))
                             {
                                 if (previewChannel) previewChannel->stop();
                                 previewChannel = nullptr;
                             }
+                            ImGui::PopStyleColor();
+
 
                             ImGui::SameLine();
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.1f, 1.0f));
                             bool removeThis = false;
                             if (ImGui::Button("Remove"))
                                 removeThis = true;
+                            ImGui::PopStyleColor();
 
+                            ImGui::Unindent();
                             ImGui::Separator();
                             ImGui::PopID();
 
@@ -1355,34 +1440,123 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                                 break;
                             }
                         }
-
-
-
-
-
-
-
-
                     }
                 }
             }
             catch (const std::exception& e)
             {
-                std::cerr << "[ImGui AudioManifest] Exception while reading: " << e.what() << std::endl;
+                std::cerr << "[ImGui AudioManifest] Exception: " << e.what() << std::endl;
             }
 
             ImGui::EndTabItem();
         }
 
+        // ========================================================
+        // Audio Import Popup
+        // ========================================================
+        if (showAudioImportPopup)
+            ImGui::OpenPopup("Import Audio Files");
+
+        if (ImGui::BeginPopupModal("Import Audio Files", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Select category and confirm import:");
+
+            static int selectedCategory = 0;
+            const char* categories[] = { "music", "ui", "sfx" };
+            ImGui::Combo("Category", &selectedCategory, categories, IM_ARRAYSIZE(categories));
+
+           
+            ImGui::Separator();
+
+            if (pendingAudioImports.empty())
+                ImGui::TextDisabled("(No audio files pending)");
+            else
+                for (auto& file : pendingAudioImports)
+                    ImGui::BulletText("%s", file.c_str());
+
+            if (ImGui::Button("Import", ImVec2(120, 0)))
+            {
+                namespace fs = std::filesystem;
+                const std::string manifestPath = "../Assets/audio_manifest.json";
+                if (!audioManifestLoaded) LoadAudioManifest(manifestPath);
+
+                for (auto& path : pendingAudioImports)
+                {
+                    std::string destDir = "../Assets/Audio/";
+                    if (!fs::exists(destDir)) fs::create_directories(destDir);
+                    std::string destPath = destDir + fs::path(path).filename().string();
+
+                    try { fs::copy_file(path, destPath, fs::copy_options::overwrite_existing); }
+                    catch (...) {}
+
+                    std::string baseName = fs::path(destPath).stem().string();
+                    audioManifest[categories[selectedCategory]][baseName] = {
+                         { "path", destPath },
+                         { "group", categories[selectedCategory] },
+                         { "loop", false },
+                         { "spatial", false },
+                         { "minDistance", 1.0f },
+                         { "maxDistance", 100.0f }
+                    };
+
+                    FMOD::Sound* snd = AudioSystem::LoadSound(destPath, false);
+                    if (snd)
+                    {
+                        FMOD::Channel* ch = AudioSystem::PlaySoundGetChannel(snd, false);
+                        if (ch) {
+                            ch->setVolume(globalVolume);
+                            activeAudioChannels[baseName] = ch;
+                        }
+                    }
+
+                    std::cout << "[ImGui AudioImport] Imported and playing: " << baseName << "\n";
+                }
+
+                SaveAudioManifest(manifestPath);
+                pendingAudioImports.clear();
+                showAudioImportPopup = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0)))
+            {
+                pendingAudioImports.clear();
+                showAudioImportPopup = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+        ImGui::SeparatorText("Currently Playing");
+
+        if (activeAudioChannels.empty())
+            ImGui::TextDisabled("(none)");
+        else {
+            for (auto& [name, ch] : activeAudioChannels)
+            {
+                bool playing = false;
+                if (ch) ch->isPlaying(&playing);
+                ImGui::Text("%s %s", name.c_str(), playing ? "(Playing)" : "(Stopped)");
+                ImGui::SameLine();
+                if (ImGui::Button(("Stop##" + name).c_str()))
+                {
+                    if (ch) ch->stop();
+                    activeAudioChannels.erase(name);
+                    break;
+                }
+            }
+        }
 
         ImGui::EndTabBar();
     }
 }
 
+//FILLTHISSHITJQ
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
-
-    ::Render& renderer = Render::GetInstance();
+    (void)viewportSize;
+    bool isPlaying = !gsm.isPaused && !gsm.inEditMode;
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
@@ -1470,45 +1644,46 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
         dl->AddRect(min, max, color, 0.f, 0, 2.f);
     }
 
-    // === Selection & dragging ===
-    if (mouseClicked && camHover)
+    if (!isPlaying)
     {
-        isDragging = true;
+        if (mouseClicked && camHover)
+        {
+            isDragging = true;
+            Vec2 mouseWorld{
+                (mouse.x - offset.x) / scale,
+                worldHeight - (mouse.y - offset.y) / scale
+            };
+            dragOffset = camOffset - mouseWorld;
+        }
 
-        Vec2 mouseWorld{
-            (mouse.x - offset.x) / scale,
-            worldHeight - (mouse.y - offset.y) / scale
-        };
-        dragOffset = camOffset - mouseWorld;
+        if (isDragging && mouseDown)
+        {
+            Vec2 mouseWorld{
+                (mouse.x - offset.x) / scale,
+                worldHeight - (mouse.y - offset.y) / scale
+            };
+            cam.SetPosition(mouseWorld + dragOffset);
+
+            float zoom = cam.GetZoom();
+            zoom += ImGui::GetIO().MouseWheel * 0.2f;
+            cam.SetZoom(zoom);
+        }
+
+        if (mouseReleased)
+            isDragging = false;
     }
 
-    if (isDragging && mouseDown)
+
+    ImGui::Dummy(ImVec2(10.0f, 220.0f));
+    if (ImGui::Button("Reset", ImVec2(80, 0)))
     {
-        Vec2 mouseWorld{
-            (mouse.x - offset.x) / scale,
-            worldHeight - (mouse.y - offset.y) / scale
-        };
-        
-        cam.SetPosition(mouseWorld + dragOffset);
-
-        float zoom = cam.GetZoom();
-        
-        zoom += ImGui::GetIO().MouseWheel * 0.2;
-
-        cam.SetZoom(zoom);
+        cam.SetZoom(1.0f);
+        cam.ResetToCenter();
+        std::cout << "[Editor] Camera reset.\n";
     }
 
-    if (mouseReleased)
-    {
-        isDragging = false;
-    }
-
-    // REGINEHELP
-    // maybe add a reset zoom button idk
-    // cam.SetZoom(1.0);
 }
 
-#include "Camera.h"
 
 void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
 {
@@ -1601,6 +1776,11 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
     {
         auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
         t.pos = PanelToWorld(mouseScreen) + dragOffset;
+
+        if (reg.Has_Component<Physics::PhysicsComponent>(draggedEntity)) {
+            auto& p = reg.Get_Component<Physics::PhysicsComponent>(draggedEntity);
+            p.UpdateHitboxes(t.pos);
+        }
     }
 
     // === End ===
@@ -1827,175 +2007,111 @@ void ImGuiSystem::ShowPrefabControls()
     }
 }
 
-void ImGuiSystem::ShowSceneBrowser()
+
+
+void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 {
+    ImGui::SeparatorText("Simulation Controls");
 
-    namespace fs = std::filesystem;
-    const std::string sceneFolder = "../Assets/saves/";
+    // Center horizontally in the Game View window
+    float panelWidth = ImGui::GetContentRegionAvail().x;
+    float buttonWidth = 80.f;
+    float spacing = 16.f;
+    float totalWidth = buttonWidth * 2 + spacing;
+    float startX = (panelWidth - totalWidth) * 0.5f;
+    ImGui::SetCursorPosX(startX);
 
-    if (!fs::exists(sceneFolder))
-        fs::create_directories(sceneFolder);
-
-    static std::vector<std::string> sceneFiles;
-    sceneFiles.clear();
-
-    for (auto& entry : fs::directory_iterator(sceneFolder))
+    // --- PLAY ---
+    if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
-        if (entry.path().extension() == ".json")
-            sceneFiles.push_back(entry.path().stem().string());
+        // Save the current edited scene before starting simulation
+            if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
+            {
+                JsonLoad::SaveCurrentScene(FilePath::LEVEL1_TEMP_SCENE, "level1_temp.json");
+                // JsonLoad::ClearAllEntities();
+                // JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+            }
+            else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
+            {
+                JsonLoad::SaveCurrentScene(FilePath::LEVEL2_TEMP_SCENE, "level2_temp.json");
+                // JsonLoad::ClearAllEntities();
+                // JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
+            }
+
+        std::cout << "[Editor] Temp scene saved before Play.\n";
+
+        gsm.isPaused = false;
+        gsm.inEditMode = false;
+        dragEditMode = false;
+        Camera& cam = Camera::GetInstance();
+        cam.SetMode(Camera::Mode::GAME);
+        cam.SetZoom(1.0f);
+        cam.ResetToCenter();
+
+        LogicSystem::Get().Initialize();
+
+        std::cout << "[Camera] Switched to GAME mode\n";
+        isPlaying = true;
+        std::cout << "[Editor] Gameplay started.\n";
     }
 
-    static int selectedScene = -1;
+    ImGui::SameLine(0, spacing);
 
-    // --- Scene List ---
-    ImGui::Separator();
-    ImGui::Text("Available Scenes:");
-
-    static std::string pendingDeleteScene;
-    static bool triggerDeleteScenePopupNextFrame = false;
-
-    // Display all scenes in scrollable region
-    ImGui::BeginChild("SceneList", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (int i = 0; i < (int)sceneFiles.size(); ++i)
+    // --- STOP ---
+    if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
     {
-        const std::string& sceneName = sceneFiles[i];
-        bool selected = (selectedScene == i);
+        gsm.isPaused = true;
+        gsm.inEditMode = true;
 
-        ImGui::PushID(sceneName.c_str());
-        if (ImGui::Selectable(sceneName.c_str(), selected))
-        {
-            selectedScene = i;
-            std::cout << "[Editor] Selected scene: " << sceneName << std::endl;
-        }
+        Camera& cam = Camera::GetInstance();
+        cam.SetMode(Camera::Mode::EDITOR);
+        cam.ResetToCenter();
 
-        // Add right-click context menu for each scene
-        if (ImGui::BeginPopupContextItem("SceneContext"))
-        {
-            if (ImGui::MenuItem("Delete Scene"))
+
+        std::cout << "[Camera] Switched to EDITOR mode\n";
+        isPlaying = false;
+
+            if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
             {
-                pendingDeleteScene = sceneName;
-                triggerDeleteScenePopupNextFrame = true;
+                // JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
+                JsonLoad::ClearAllEntities();
+
+                if (JsonLoad::LoadScene(FilePath::LEVEL1_TEMP_SCENE))
+                {
+                    std::cout << "[Editor] Saved level scene, restored temp edits.\n";
+                }
+                else
+                {
+                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
+                    JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+                }
             }
-            ImGui::EndPopup();
-        }
-
-        ImGui::PopID();
-    }
-    ImGui::EndChild();
-
-    // --- Open delete popup next frame ---
-    if (triggerDeleteScenePopupNextFrame)
-    {
-        ImGui::OpenPopup("Delete Scene Confirmation");
-        triggerDeleteScenePopupNextFrame = false;
-    }
-
-    // --- Delete Scene Confirmation Popup ---
-    if (ImGui::BeginPopupModal("Delete Scene Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        ImGui::Text("Are you sure you want to delete scene '%s'?\nThis action cannot be undone.",
-            pendingDeleteScene.c_str());
-        ImGui::Separator();
-
-        if (ImGui::Button("Yes, Delete", ImVec2(130, 0)))
-        {
-            try
+            else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
             {
-                std::string filePath = sceneFolder + pendingDeleteScene + ".json";
-                std::filesystem::remove(filePath);
-                std::cout << "[Editor] Deleted scene: " << filePath << "\n";
-            }
-            catch (const std::exception& e)
-            {
-                std::cerr << "[Editor] Failed to delete scene: " << e.what() << "\n";
-            }
-            pendingDeleteScene.clear();
-            ImGui::CloseCurrentPopup();
-        }
+                // JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
+                JsonLoad::ClearAllEntities();
 
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0)))
-        {
-            pendingDeleteScene.clear();
-            ImGui::CloseCurrentPopup();
-        }
+                if (JsonLoad::LoadScene(FilePath::LEVEL2_TEMP_SCENE))
+                {
+                    std::cout << "[Editor] Saved level scene, restored temp edits.\n";
+                }
+                else
+                {
+                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
+                    JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
+                }
+            }
 
-        ImGui::EndPopup();
+        ImGuiSystem::selectedEntity = INVALID_ENTITY;
     }
 
-
-    // Buttons
-    if (ImGui::Button("Load Scene") && selectedScene >= 0)
-    {
-        std::string sceneName = sceneFiles[selectedScene];
-        std::string path = sceneFolder + sceneName + ".json";
-
-        JsonLoad::ClearAllEntities();
-
-        if (JsonLoad::LoadScene(path))
-        {
-            std::cout << "[Editor] Loaded scene: " << path << "\n";
-
-            
-            if (sceneName == "Level1" || sceneName == "level1")
-            {
-                GSM_SetNextState(GameState::GS_LEVEL1);
-                std::cout << "[Editor] Switching to LEVEL 1 state.\n";
-            }
-            else if (sceneName == "Level2" || sceneName == "level2")
-            {
-                GSM_SetNextState(GameState::GS_LEVEL2);
-                std::cout << "[Editor] Switching to LEVEL 2 state.\n";
-            }
-            else
-            {
-                std::cout << "[Editor] Loaded custom scene (no state switch).\n";
-            }
-        }
-        else
-        {
-            std::cerr << "[Editor] Failed to load scene: " << path << "\n";
-        }
-    }
-
-
-    ImGui::SameLine();
-    if (ImGui::Button("Save Current Scene") && selectedScene >= 0)
-    {
-        std::string path = sceneFolder + sceneFiles[selectedScene] + ".json";
-        JsonLoad::SaveCurrentScene(path, sceneFiles[selectedScene]);
-        std::cout << "[Editor] Saved scene: " << path << "\n";
-    }
-
-    // New Scene creation
-    static char newSceneName[64] = "";
-    ImGui::InputText("New Scene Name", newSceneName, IM_ARRAYSIZE(newSceneName));
-    if (ImGui::Button("Create New Scene"))
-    {
-        std::string sceneName = newSceneName;
-        if (sceneName.empty())
-        {
-            std::cout << "[Editor] Scene name cannot be empty!\n";
-        }
-        else
-        {
-            std::string newPath = sceneFolder + sceneName + ".json";
-            if (fs::exists(newPath))
-            {
-                std::cout << "[Editor] Scene already exists.\n";
-            }
-            else
-            {
-                SavedScene empty;
-                empty.sceneName = sceneName;
-                JsonLoad::SaveCurrentScene(newPath, sceneName);
-                std::cout << "[Editor] Created new empty scene: " << newPath << "\n";
-            }
-        }
-    }
+    ImGui::SameLine(spacing * 2);
+    ImGui::TextColored(
+        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f)
+        : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
+        isPlaying ? "PLAYING" : "EDITING"
+    );
 }
-
-
 
 void ImGuiSystem::Shutdown() {
     ShutdownImGui();
@@ -2006,3 +2122,5 @@ void ImGuiSystem::ShutdownImGui() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
+
+
