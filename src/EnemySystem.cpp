@@ -47,7 +47,7 @@ namespace EnemyAI
 {
 	inline void Start(Entity eID)
 	{
-		std::cout << "Enemy script started" << std::endl;
+		std::cout << "ManfredEnemy script started" << std::endl;
 	}
 
 	inline void Update(Entity eID, float dt)
@@ -63,7 +63,7 @@ void EnemySystem::Initialize()
 		enemy.Init = [](Entity e) { EnemyAI::Start(e); };
 		enemy.Update = [](Entity e, float dt) { EnemyAI::Update(e, dt); };
 		enemy.End = [](Entity e) { EnemyAI::End(e); };
-		LogicSystem::Get().RegisterScript("PatrolEnemy", enemy, ScriptID::GHOUL);
+		LogicSystem::Get().RegisterScript("ManfredEnemy", enemy, ScriptID::GHOUL);
 	}
 }
 
@@ -80,7 +80,7 @@ void EnemySystem::Update(float dt)
 	{
 		if (!m_registry.Has_Component<TransformComponent>(entity))
 			continue;
-		if (comp.tag == T_PLAYER && entity == 1)
+		if (comp.tag == T_PLAYER)
 		{
 			player = entity;
 		}

@@ -5,7 +5,7 @@
                 "Input": "{\"scheme\":2}",
                 "MonoScriptComponent": "Mover",
                 "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":1}",
-                "Transform": "{\"posX\":400.0,\"posY\":482.5658874511719,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                "Transform": "{\"posX\":400.0,\"posY\":532.719482421875,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
             "name": "ScriptedCircle"
         },
@@ -43,22 +43,22 @@
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":1080.7127685546875,\"centerY\":400.0,\"dimX\":0.0,\"dimY\":0.0},\"circle\":{\"posX\":1080.7127685546875,\"posY\":400.0,\"rad\":0.0},\"decay\":0.949999988079071,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":15.06804370880127,\"velY\":0.0,\"willCollide\":false}",
+                "Physics": "{\"aabb\":{\"centerX\":1372.3887939453125,\"centerY\":400.0,\"dimX\":0.0,\"dimY\":0.0},\"circle\":{\"posX\":1372.3887939453125,\"posY\":400.0,\"rad\":0.0},\"decay\":0.949999988079071,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":false}",
                 "Shape": "{\"colorX\":1.0,\"colorY\":0.0,\"colorZ\":1.0,\"dimX\":50.0,\"dimY\":50.0,\"shapeType\":0}",
                 "Tag": "{\"tagID\":6}",
-                "Transform": "{\"posX\":1080.7127685546875,\"posY\":400.0,\"rot\":0.0,\"scaleX\":50.0,\"scaleY\":50.0}"
+                "Transform": "{\"posX\":1372.3887939453125,\"posY\":400.0,\"rot\":0.0,\"scaleX\":50.0,\"scaleY\":50.0}"
             },
             "name": "FixedDT_Test"
         },
         {
             "components": {
-                "Behaviour": "{\"scripts\":[\"PatrolEnemy\"]}",
+                "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
                 "Input": "{\"scheme\":0}",
                 "Movement": "{\"moveSpeed\":500.0}",
-                "Physics": "{\"aabb\":{\"centerX\":1158.330322265625,\"centerY\":500.0,\"dimX\":0.0,\"dimY\":0.0},\"circle\":{\"posX\":1158.330322265625,\"posY\":500.0,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":false}",
+                "Physics": "{\"aabb\":{\"centerX\":1127.668701171875,\"centerY\":513.0743408203125,\"dimX\":0.0,\"dimY\":0.0},\"circle\":{\"posX\":1127.668701171875,\"posY\":513.0743408203125,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":false}",
                 "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Ghoul_2048px.PNG\"}",
                 "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":1158.330322265625,\"posY\":500.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":1124.6025390625,\"posY\":514.3817749023438,\"rot\":156.90643310546875,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "ghoul"
         },
@@ -68,7 +68,6 @@
                 "Input": "{\"scheme\":2}",
                 "Physics": "{\"aabb\":{\"centerX\":820.87744140625,\"centerY\":494.411376953125,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":820.87744140625,\"posY\":494.411376953125,\"rad\":100.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                 "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":1}",
-                "Tag": "{\"tagID\":0}",
                 "Transform": "{\"posX\":820.87744140625,\"posY\":494.411376953125,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
             "name": "Circle"
@@ -79,7 +78,6 @@
                 "Input": "{\"scheme\":0}",
                 "Physics": "{\"aabb\":{\"centerX\":620.8278198242188,\"centerY\":497.16461181640625,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":620.8278198242188,\"posY\":497.16461181640625,\"rad\":200.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                 "Shape": "{\"colorX\":1.0,\"colorY\":0.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":0}",
-                "Tag": "{\"tagID\":0}",
                 "Transform": "{\"posX\":620.8278198242188,\"posY\":497.16461181640625,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
             "name": "Rectangle"
@@ -107,7 +105,6 @@
                 "Movement": "{\"moveSpeed\":500.0}",
                 "Physics": "{\"aabb\":{\"centerX\":1020.88916015625,\"centerY\":401.28497314453125,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":1020.8890991210938,\"posY\":401.28497314453125,\"rad\":200.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                 "Sprite": "{\"animated\":true,\"scaleX\":100.0,\"scaleY\":100.0,\"texturePath\":\"../Assets/Waffle_Sprites.png\"}",
-                "Tag": "{\"tagID\":0}",
                 "Transform": "{\"posX\":1020.8890991210938,\"posY\":401.28497314453125,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
             "name": "Waffle"
@@ -116,7 +113,7 @@
             "components": {
                 "MonoScriptComponent": "Rotator",
                 "Sprite": "{\"animated\":false,\"scaleX\":1.0,\"scaleY\":1.0,\"texturePath\":\"../Assets/left.png\"}",
-                "Transform": "{\"posX\":1400.0,\"posY\":400.0,\"rot\":960.0000610351563,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":1400.0,\"posY\":400.0,\"rot\":975.0000610351563,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "arrow"
         }
