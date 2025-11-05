@@ -1,7 +1,8 @@
 /* ========================================================
  * @file        CollisionManager.h
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        01 OCT 2025
+ * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu
+ * @date        05 NOV 2025
  *
  * @brief
  *
@@ -9,7 +10,7 @@
  * for detecting overlaps between entities based on their Physics and
  * Shape components, storing collision events, and resolving them.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright Â© 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -19,6 +20,12 @@
 #include "EventBus.h"
 #include <vector>
 #include <iostream>
+
+// Forward declaration
+class SpatialGrid;
+
+// Global spatial grid instance (defined in CollisionManager.cpp)
+extern SpatialGrid spatialGrid;
 
 struct CollisionEvent {
     Entity a;
@@ -111,4 +118,10 @@ public:
      * @param b The second colliding entity.
      */
     void ActionResolve_ImpulseBased(Entity a, Entity b);
+
+    /**
+     * @brief Get spatial grid statistics for debugging/profiling
+     * @return Pointer to the spatial grid, or nullptr if not available
+     */
+    static class SpatialGrid* GetSpatialGrid();
 };

@@ -26,6 +26,7 @@
 #include "Render.h"
 #include "Animator.h"
 #include <Camera.h>
+#include "CollisionManager.h"
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
@@ -288,6 +289,14 @@ void RenderSystem::Update(float dt) {
 
     }
 
+    // Debug drawing for spatial grid
+    if (ImGuiSystem::showSpatialGrid) {
+        SpatialGrid* grid = CollisionManager::GetSpatialGrid();
+        if (grid) {
+            DebugDraw::DrawSpatialGrid(grid, renderInstance);
+        }
+    }
+
     // Debug drawing for physics colliders / velocities
     if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {
         for (auto& [entID, physics] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
@@ -310,6 +319,8 @@ void RenderSystem::Update(float dt) {
                 }
 
                 DebugDraw::DrawHotspot(t.pos, renderInstance);
+
+                //DebugDraw::DrawSpatialGrid(grid, renderInstance);
             }
         }
     }

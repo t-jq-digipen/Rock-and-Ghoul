@@ -521,26 +521,25 @@ void JsonLoad::to_json(json& j, const SavedEntity& e) {
 
     // add component data in a nice format
     for (const auto& [componentName, data] : e.componentData) {
-        /*std::string componentName;
-        switch (componentType) {
-        case CT_Transform: componentName = "Transform"; break;
-        case CT_Sprite: componentName = "Sprite"; break;
-        case CT_Physics: componentName = "Physics"; break;
-        case CT_Health: componentName = "Health"; break;
-        case CT_Tag: componentName = "Tag"; break;
-        case CT_Input: componentName = "Input"; break;
-        case CT_Shape: componentName = "Shape"; break;
-        case CT_Animator: componentName = "Animator"; break;
-        default: componentName = "Unknown"; break;
-        }*/
-
         // Skip empty component data to avoid parse errors
         if (data.empty()) {
             continue;
         }
 
-        // Store component data as string (no parsing needed during save)
-        j["components"][componentName] = data;
+        // MonoScriptComponent serializes to plain string, not JSON
+        if (componentName == "MonoScriptComponent") {
+            j["components"][componentName] = data;
+            continue;
+        }
+
+        // Parse other component JSON strings and store as actual JSON objects for readability
+        try {
+            j["components"][componentName] = json::parse(data);
+        }
+        catch (...) {
+            // If parsing fails, store as string
+            j["components"][componentName] = data;
+        }
     }
 }
 
@@ -559,21 +558,19 @@ void JsonLoad::from_json(const json& j, SavedEntity& e) {
 
     for (auto it = components.begin(); it != components.end(); ++it) {
         const std::string& componentName = it.key();
-        //ComponentTypeID componentType = CT_None;
 
-        /*if (componentName == "Transform") componentType = CT_Transform;
-        else if (componentName == "Sprite") componentType = CT_Sprite;
-        else if (componentName == "Physics") componentType = CT_Physics;
-        else if (componentName == "Health") componentType = CT_Health;
-        else if (componentName == "Tag") componentType = CT_Tag;
-        else if (componentName == "Shape") componentType = CT_Shape;
-        else if (componentName == "Input") componentType = CT_Input;
-        else if (componentName == "Animator") componentType = CT_Animator;*/
-
-        /*if (componentType != CT_None) {
-            e.componentData[componentType] = it.value().dump();
-        }*/
-        e.componentData[componentName] = it.value().get<std::string>();
+        // MonoScriptComponent is stored as plain string
+        if (componentName == "MonoScriptComponent" && it.value().is_string()) {
+            e.componentData[componentName] = it.value().get<std::string>();
+        }
+        // Convert JSON object back to string for deserialization
+        else if (it.value().is_object()) {
+            e.componentData[componentName] = it.value().dump();
+        }
+        else {
+            // Already a string (backward compatibility)
+            e.componentData[componentName] = it.value().get<std::string>();
+        }
     }
 }
 

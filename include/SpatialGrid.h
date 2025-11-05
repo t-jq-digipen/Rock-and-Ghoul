@@ -12,13 +12,14 @@
  * RUBRIC: Physics/Collisions - Option 1
  * Broad phase collision spatial partitioning (Implicit grid)
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
 #pragma once
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include "Entity.h"
 #include "Collision.h"
 #include "Remath.h"
@@ -107,13 +108,40 @@ public:
     struct DebugInfo {
         std::vector<AABB> cellBounds;
         std::vector<int> cellEntityCounts;
+        std::vector<std::pair<int, int>> cellCoords;  // Actual cell coordinates
     };
     DebugInfo GetDebugInfo() const;
 
-private:
-    float cellSize;
+    /**
+     * @brief Mark cells where two AABBs intersect as having a collision
+     * @param aabbA First entity's AABB
+     * @param aabbB Second entity's AABB
+     */
+    void MarkCollisionBetween(const AABB& aabbA, const AABB& aabbB);
 
-    // Hash function for grid coordinates
+    /**
+     * @brief Check if a cell has a collision this frame
+     * @param cellX Cell X coordinate
+     * @param cellY Cell Y coordinate
+     */
+    bool CellHasCollision(int cellX, int cellY) const;
+
+    /**
+     * @brief Get count of cells with collisions
+     */
+    size_t GetCollisionCellCount() const;
+
+    /**
+     * @brief Clear collision markers (call at start of frame)
+     */
+    void ClearCollisionMarkers();
+
+    /**
+     * @brief Get cell size for debug rendering
+     */
+    float GetCellSize() const { return cellSize; }
+
+    // Hash function for grid coordinates (must be public for collision set)
     struct CellHash {
         std::size_t operator()(const std::pair<int, int>& cell) const {
             // Cantor pairing function for unique hash
@@ -121,8 +149,14 @@ private:
         }
     };
 
+private:
+    float cellSize;
+
     // Grid structure: map of (x,y) cell coordinates to list of entities
     std::unordered_map<std::pair<int, int>, std::vector<Entity>, CellHash> grid;
+
+    // Set of cells where collisions occurred this frame
+    std::unordered_set<std::pair<int, int>, CellHash> collisionCells;
 
     /**
      * @brief Convert world position to grid cell coordinates

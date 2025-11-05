@@ -8,7 +8,7 @@
  * RUBRIC: Physics/Collisions - Option 1
  * Broad phase collision spatial partitioning (Implicit grid)
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -197,8 +197,41 @@ SpatialGrid::DebugInfo SpatialGrid::GetDebugInfo() const {
 
             info.cellBounds.push_back(cellBounds);
             info.cellEntityCounts.push_back(static_cast<int>(entities.size()));
+            info.cellCoords.push_back({cellX, cellY});  // Store actual cell coordinates
         }
     }
 
     return info;
+}
+
+void SpatialGrid::MarkCollisionBetween(const AABB& aabbA, const AABB& aabbB) {
+    // Calculate the intersection region of the two AABBs
+    AABB intersection;
+    intersection.min.x = std::max(aabbA.min.x, aabbB.min.x);
+    intersection.min.y = std::max(aabbA.min.y, aabbB.min.y);
+    intersection.max.x = std::min(aabbA.max.x, aabbB.max.x);
+    intersection.max.y = std::min(aabbA.max.y, aabbB.max.y);
+
+    // If there's no valid intersection, don't mark anything
+    if (intersection.min.x >= intersection.max.x || intersection.min.y >= intersection.max.y) {
+        return;
+    }
+
+    // Mark only the cells that overlap with the intersection region
+    auto cells = GetOverlappingCells(intersection);
+    for (const auto& cell : cells) {
+        collisionCells.insert(cell);
+    }
+}
+
+bool SpatialGrid::CellHasCollision(int cellX, int cellY) const {
+    return collisionCells.count({cellX, cellY}) > 0;
+}
+
+size_t SpatialGrid::GetCollisionCellCount() const {
+    return collisionCells.size();
+}
+
+void SpatialGrid::ClearCollisionMarkers() {
+    collisionCells.clear();
 }

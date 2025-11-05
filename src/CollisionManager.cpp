@@ -2,7 +2,7 @@
  * @file        CollisionManager.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu
- * @date        04 NOV 2025
+ * @date        05 NOV 2025
  *
  * @brief
  *
@@ -79,7 +79,6 @@ void CollisionLayerManager::Clear() {
 
 void CollisionManager::Clear() {
     events.clear();
-    spatialGrid.Clear();
 }
 
 void CollisionManager::AddEvent(Entity a, Entity b) {
@@ -317,7 +316,13 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected)
 }
 
 void CollisionManager::CheckCollisions() {
+    // Clear collision markers from previous frame FIRST (before clearing grid)
+    spatialGrid.ClearCollisionMarkers();
+
     auto& physicsComps = m_registry.Get_ComponentMap<Physics::PhysicsComponent>();
+
+    // Clear and rebuild spatial grid AFTER we've used the old data for rendering
+    spatialGrid.Clear();
 
     // BROAD PHASE: Build spatial grid
     for (auto& [entity, phyComp] : physicsComps) {
@@ -336,6 +341,11 @@ void CollisionManager::CheckCollisions() {
     auto potentialPairs = spatialGrid.GetAllPotentialPairs();
 
     for (const auto& [a, b] : potentialPairs) {
+        // Skip self-collision
+        if (a == b) {
+            continue;
+        }
+
         // Validate both entities still exist and have required components
         if (!m_registry.Has_Component<Physics::PhysicsComponent>(a) ||
             !m_registry.Has_Component<Physics::PhysicsComponent>(b)) {
@@ -346,10 +356,6 @@ void CollisionManager::CheckCollisions() {
         auto& compB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
 
         if (!compA.CollisionActive() || !compB.CollisionActive()) {
-            continue;
-        }
-
-        if (compA.ShouldSkipCollision() || compB.ShouldSkipCollision()) {
             continue;
         }
 
@@ -393,7 +399,14 @@ void CollisionManager::CheckCollisions() {
         }
 
         if (hit) {
+            // Mark cells where collision occurred (intersection region only)
+            spatialGrid.MarkCollisionBetween(compA.Get_AABB(), compB.Get_AABB());
+
             CollisionActions(a, b, true);
         }
     }
+}
+
+SpatialGrid* CollisionManager::GetSpatialGrid() {
+    return &spatialGrid;
 }

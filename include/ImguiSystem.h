@@ -18,7 +18,7 @@
  * provides hooks for initialization, update, render, and shutdown.
  * 
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -53,6 +53,7 @@ public:
     static void ShutdownImGui();
     static bool showColliders;
     static bool showVelocity;
+    static bool showSpatialGrid;
     static bool guiEnabled;
     static void OnFileDropped(const std::string& path);
     static bool dragEditMode;
