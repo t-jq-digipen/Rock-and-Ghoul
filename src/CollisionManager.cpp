@@ -2,7 +2,7 @@
  * @file        CollisionManager.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu
- * @date        04 NOV 2025
+ * @date        05 NOV 2025
  *
  * @brief
  *
@@ -24,6 +24,7 @@
 
 #include "CollisionManager.h"
 #include "SpatialGrid.h"
+#include "Remath.h"
 #include <algorithm>
 
 // Spatial grid for broad-phase optimization
@@ -79,7 +80,6 @@ void CollisionLayerManager::Clear() {
 
 void CollisionManager::Clear() {
     events.clear();
-    spatialGrid.Clear();
 }
 
 void CollisionManager::AddEvent(Entity a, Entity b) {
@@ -214,8 +214,8 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
 
     // Calculate collision normal
     Vec2 diff = RG_Subtract(transB.pos, transA.pos);
-    float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - fabs(diff.x);
-    float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - fabs(diff.y);
+    float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - RG_Abs(diff.x);
+    float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - RG_Abs(diff.y);
 
     if (overlapX <= 0 || overlapY <= 0) return;
 
@@ -270,7 +270,7 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
 
         // Special handling for high-speed impacts (like dashing into walls)
         const float highSpeedThreshold = 500.0f;
-        if ((aStatic || bStatic) && fabs(velAlongNormal) > highSpeedThreshold) {
+        if ((aStatic || bStatic) && RG_Abs(velAlongNormal) > highSpeedThreshold) {
             // For high-speed wall impacts, just stop velocity along normal
             if (!aStatic) {
                 Vec2 normalComponent = RG_Scale(normal, velAlongNormal);
@@ -285,7 +285,7 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
             return;  // Skip impulse calculation for high-speed wall impacts
         }
 
-        float e = std::min(physA.GetRestitution(), physB.GetRestitution());
+        float e = RG_Min(physA.GetRestitution(), physB.GetRestitution());
 
         float invMassA = aStatic ? 0.0f : 1.0f / physA.GetMass();
         float invMassB = bStatic ? 0.0f : 1.0f / physB.GetMass();
@@ -317,7 +317,13 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected)
 }
 
 void CollisionManager::CheckCollisions() {
+    // Clear collision markers from previous frame FIRST (before clearing grid)
+    spatialGrid.ClearCollisionMarkers();
+
     auto& physicsComps = m_registry.Get_ComponentMap<Physics::PhysicsComponent>();
+
+    // Clear and rebuild spatial grid AFTER we've used the old data for rendering
+    spatialGrid.Clear();
 
     // BROAD PHASE: Build spatial grid
     for (auto& [entity, phyComp] : physicsComps) {
@@ -336,6 +342,11 @@ void CollisionManager::CheckCollisions() {
     auto potentialPairs = spatialGrid.GetAllPotentialPairs();
 
     for (const auto& [a, b] : potentialPairs) {
+        // Skip self-collision
+        if (a == b) {
+            continue;
+        }
+
         // Validate both entities still exist and have required components
         if (!m_registry.Has_Component<Physics::PhysicsComponent>(a) ||
             !m_registry.Has_Component<Physics::PhysicsComponent>(b)) {
@@ -346,10 +357,6 @@ void CollisionManager::CheckCollisions() {
         auto& compB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
 
         if (!compA.CollisionActive() || !compB.CollisionActive()) {
-            continue;
-        }
-
-        if (compA.ShouldSkipCollision() || compB.ShouldSkipCollision()) {
             continue;
         }
 
@@ -393,7 +400,14 @@ void CollisionManager::CheckCollisions() {
         }
 
         if (hit) {
+            // Mark cells where collision occurred (intersection region only)
+            spatialGrid.MarkCollisionBetween(compA.Get_AABB(), compB.Get_AABB());
+
             CollisionActions(a, b, true);
         }
     }
+}
+
+SpatialGrid* CollisionManager::GetSpatialGrid() {
+    return &spatialGrid;
 }

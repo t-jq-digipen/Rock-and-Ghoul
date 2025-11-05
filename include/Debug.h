@@ -17,7 +17,7 @@
  * - DrawVelocity:       Renders a velocity vector for an entity.
  * - DrawCircleCollider: Renders a circle collider outline.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -27,6 +27,10 @@
 #include "Collision.h"
 #include "Component.h"
 #include "Registry.h"
+
+// Forward declaration (global scope)
+class SpatialGrid;
+
 namespace DebugDraw {
     /**
     * @brief Draw an axis-aligned bounding box (AABB).
@@ -57,5 +61,12 @@ namespace DebugDraw {
      * @param renderer The renderer used to draw the circle.
      */
     void DrawCircleCollider(const Circle& circle, Render& renderer);
+
+    /**
+     * @brief Draw the spatial grid cells for debugging.
+     * @param grid The spatial grid to visualize.
+     * @param renderer The renderer used to draw the grid.
+     */
+    void DrawSpatialGrid(SpatialGrid* grid, Render& renderer);
 }
 

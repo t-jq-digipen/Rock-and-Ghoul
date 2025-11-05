@@ -35,14 +35,17 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <unordered_set> 
-#include "Render.h" 
+#include "Render.h"
 #include "Camera.h"
 #include "LogicSystem.h"
 #include "GuiSystem.h"
+#include "CollisionManager.h"
+#include "SpatialGrid.h"
 static bool isPlacingPrefab = false;
 static std::string pendingPrefabPath;
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
+bool ImGuiSystem::showSpatialGrid = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 static bool isDraggingEntity = false;
 
@@ -667,6 +670,33 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::Text("AABB Colliders: %d / %d active", activeColliders, totalColliders);
     ImGui::Checkbox("Show Colliders", &showColliders);
     ImGui::Checkbox("Show Velocity", &showVelocity);
+    ImGui::Checkbox("Show Spatial Grid", &showSpatialGrid);
+
+    // Spatial Grid Statistics
+    ImGui::Separator();
+    ImGui::Text("Spatial Grid (Broad Phase):");
+    SpatialGrid* grid = CollisionManager::GetSpatialGrid();
+    if (grid) {
+        auto stats = grid->GetStats();
+        size_t collisionCellCount = grid->GetCollisionCellCount();
+
+        ImGui::Text("  Cell Size: 150.0 units");
+        ImGui::Text("  Occupied Cells: %llu", (unsigned long long)stats.occupiedCells);
+        ImGui::Text("  Total Entities: %llu", (unsigned long long)stats.totalEntities);
+        ImGui::Text("  Avg per Cell: %.2f", stats.avgEntitiesPerCell);
+        ImGui::Text("  Max in Cell: %llu", (unsigned long long)stats.maxEntitiesInCell);
+
+        // Collision cells (shown in red when visualized)
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f),
+            "  Cells with Collisions: %llu", (unsigned long long)collisionCellCount);
+
+        // Performance estimation
+        int naiveChecks = (totalColliders * (totalColliders - 1)) / 2;
+        ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f),
+            "  Optimization: %d -> ~%d checks",
+            naiveChecks,
+            (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
+    }
     //enityt
     if (ImGui::CollapsingHeader("Entity Positions")) {
         for (auto& [entity, tag] : m_registry.Get_ComponentMap<TagComponent>()) {

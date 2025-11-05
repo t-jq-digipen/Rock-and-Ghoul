@@ -27,7 +27,7 @@
  * - Utility Functions: Custom square root implementation using Newton's
  *   method and clamping function for value range restriction.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -174,6 +174,50 @@ struct Vec3 {
  * @return float The square root of x, or 0 if x is negative.
  */
 float RG_Sqrt(float x);
+
+/**
+ * @brief Returns the absolute value of a number.
+ *
+ * @param x The number to get the absolute value of.
+ * @return float The absolute value of x.
+ */
+float RG_Abs(float x);
+
+/**
+ * @brief Returns the minimum of two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ * @return float The smaller of the two values.
+ */
+float RG_Min(float a, float b);
+
+/**
+ * @brief Returns the maximum of two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ * @return float The larger of the two values.
+ */
+float RG_Max(float a, float b);
+
+/**
+ * @brief Returns the floor of a value (largest integer <= x).
+ *
+ * @param x The value to floor.
+ * @return float The floor of x.
+ */
+float RG_Floor(float x);
+
+/**
+ * @brief Computes base raised to the power of exponent.
+ *
+ * @param base The base value.
+ * @param exponent The exponent value.
+ * @return float base^exponent.
+ */
+float RG_Pow(float base, float exponent);
+
 // Clamp a value between two values
 void RG_Clamp(float& val, float const& min, float const& max);
 
@@ -363,7 +407,7 @@ float RG_LengthSquared(const Vec3& v);
  *
  * @param a The first vector.
  * @param b The second vector.
- * @return Vec3 The cross product vector (a × b).
+ * @return Vec3 The cross product vector (a ï¿½ b).
  */
 Vec3 RG_CrossProduct(const Vec3& a, const Vec3& b);
 
