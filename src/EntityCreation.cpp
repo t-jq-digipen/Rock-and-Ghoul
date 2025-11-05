@@ -74,15 +74,13 @@ Entity Create_Waffle(float const& x, float const& y) {
     return LoadEntity("Waffle", x, y);
 }
 Entity Create_Ghoul(float const& x, float const& y) {
-   
     Entity ghoul = LoadEntity("ghoul", x, y);
 
     // Add behaviour component
     BehaviourComponent bc;
     bc.scriptName = "PatrolEnemy";
-    //bc.started = false;
-
     bc.started = false;
+
     Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
 
     return ghoul;

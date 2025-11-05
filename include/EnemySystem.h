@@ -1,6 +1,17 @@
 #pragma once
 #include "System.h"
-#include "Enemy.h"
+
+// Set enemy AI behavior
+enum EnemyState : unsigned int
+{
+	E_IDLE,
+	E_ROAMING,
+	E_DETECTING,
+	E_CHASING,
+	E_ATTACKING,
+	E_COOLDOWN,
+	E_STAGGERED
+};
 
 namespace EnemyAI {
 
@@ -21,15 +32,4 @@ public:
 	void Initialize() override;
 	void Update(float dt) override;
 	void Shutdown() override;
-
-	void SetEnemyTransformQuery(const Enemy::TransformQuery* t) { tfq = t; }
-
-	// helpers
-	void ChangeState(Enemy::EnemyAIComponent& ai, Enemy::EnemyState next);
-	void PickNewRoamTarget(Enemy::EnemyAIComponent& ai);
-	Entity FindNearestPlayer(const Vec2& enemyPos, float& outDist) const;
-	bool DetectTarget(const Enemy::EnemyAIComponent& ai, const Vec2& enemyPos, const Vec2& targetPos) const;
-
-private:
-	const Enemy::TransformQuery* tfq{ nullptr };
 };

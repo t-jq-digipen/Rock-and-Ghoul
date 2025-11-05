@@ -223,7 +223,7 @@ void Level1::Init()
 		initDialogue.color = { 0,0,0 };
 		initDialogue.centered = true;
 
-		GuiSystem::Get().AddDialogueFromJson("../Assets/Dialogue.json", initDialogue);
+		GuiSystem::Get().AddDialogueFromJson("../Assets/prefabs/Dialogue.json", initDialogue);
 
 		// 6. Create entities
 		// If there is no pre-existing/saved scene, it will load from prefabs
@@ -287,10 +287,10 @@ void Level1::Init()
 			}
 			ghoul = Create_Ghoul(1000.f, 500.f);
 			if (ghoul == 0) {
-				std::cerr << "ERROR: Failed to create Circle! Check if Circle.json exists." << std::endl;
+				std::cerr << "ERROR: Failed to create Ghoul! Check if ghoul.json exists." << std::endl;
 			}
 			else {
-				std::cout << "Created Circle (Entity " << roundy << ")" << std::endl;
+				std::cout << "Created Ghoul (Entity " << ghoul << ")" << std::endl;
 			}
 			std::cout << "Finished creating entities from prefabs." << std::endl;
 
