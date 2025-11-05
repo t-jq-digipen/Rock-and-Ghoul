@@ -184,7 +184,7 @@ void GuiSystem::Update(float dt) {
         }
 
         float textScale = cfg.textScale;
-        Vec2 textSize = render.CalculateTextSize(cfg.label, textScale);
+        Vec2 textSize = render.CalculateTextSize(cfg.label, textScale, "Marker");
 
         // text horizontally and vertically on the button
         float textX = cfg.pos.x - textSize.x * 0.5f;
@@ -207,7 +207,7 @@ void GuiSystem::Update(float dt) {
         tb.pos.x = tb.basePos.x * scaleX;
         tb.pos.y = tb.basePos.y * scaleY;
         tb.scale = tb.baseScale * uiScale;
-        Vec2 textSize = render.CalculateTextSize(tb.text, tb.scale);
+        Vec2 textSize = render.CalculateTextSize(tb.text, tb.scale, tb.fontKey);
 
         float drawX = tb.pos.x;
         float drawY = tb.pos.y;
@@ -220,7 +220,7 @@ void GuiSystem::Update(float dt) {
         }
 
         // UPDATED: Added font parameter to DrawText
-        render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, "Marker");
+        render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, tb.fontKey);
     }
 
     for (auto& d : dialogues)
@@ -242,7 +242,7 @@ void GuiSystem::Update(float dt) {
         // text color
         Colour3 drawColor = d.textBox.color;
 
-        Vec2 textSize = render.CalculateTextSize(vis, d.textBox.scale);
+        Vec2 textSize = render.CalculateTextSize(vis, d.textBox.scale, "Marker");
         float drawX = d.textBox.pos.x, drawY = d.textBox.pos.y;
         if (d.textBox.centered) { drawX -= textSize.x * 0.5f; drawY -= textSize.y * 0.5f; }
 

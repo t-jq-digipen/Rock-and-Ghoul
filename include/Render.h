@@ -527,7 +527,7 @@ public:
 
     void DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color);
 
-    Vec2 CalculateTextSize(const std::string& text, float scale);
+    Vec2 CalculateTextSize(const std::string& text, float scale, const std::string& fontKey);
     void UpdateProjection();
     void DrawFullscreenTexture(GLuint texture, bool cover = true);
 

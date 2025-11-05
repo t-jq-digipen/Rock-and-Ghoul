@@ -216,7 +216,8 @@ void Level1::Init()
 		// Initial dialogue box when opening Level 1 state
 		TextBoxConfig initDialogue;
 		initDialogue.text = "";
-		initDialogue.basePos = { 450, 150 };
+		//initDialogue.basePos = { 450, 150 };
+		initDialogue.basePos = { 960, 150 }; //adjusted the x cus calculateTextSize change
 		initDialogue.baseScale = 0.9f;
 		initDialogue.pos = initDialogue.basePos;
 		initDialogue.scale = initDialogue.baseScale;
@@ -352,7 +353,7 @@ void Level1::Init()
 	cam.SetMode(Camera::Mode::GAME);
 
 	cam.SetPosition({ GLApp::width / 2.f, GLApp::height / 2.f });
-	cam.SetZoom(1.0f);
+	cam.SetZoom(1.15f);
 	cam.UpdateMatrices();
 	Render::GetInstance().UpdateProjection();
 
@@ -401,7 +402,7 @@ void Level1::Update()
 		ghoul = registry.Get_EntityID("ghoul");
 	}*/
 	//test camera on an entity
-	auto& playerTransform = registry.Get_Component<TransformComponent>(waffle);
+	auto& playerTransform = registry.Get_Component<TransformComponent>(rock);
 
 	static double lastTime = glfwGetTime();
 	double currentTime = glfwGetTime();
@@ -429,7 +430,7 @@ void Level1::Update()
 
 	if (cam.GetMode() == Camera::Mode::GAME)
 	{
-		cam.FollowTarget(playerTransform.pos, dt);
+		cam.FollowTarget(cam, playerTransform.pos, dt);
 	}
 
 
