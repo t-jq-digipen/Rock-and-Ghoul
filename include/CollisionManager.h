@@ -9,7 +9,7 @@
  * for detecting overlaps between entities based on their Physics and
  * Shape components, storing collision events, and resolving them.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -111,4 +111,10 @@ public:
      * @param b The second colliding entity.
      */
     void ActionResolve_ImpulseBased(Entity a, Entity b);
+
+    /**
+     * @brief Get spatial grid statistics for debugging/profiling
+     * @return Pointer to the spatial grid, or nullptr if not available
+     */
+    static class SpatialGrid* GetSpatialGrid();
 };
