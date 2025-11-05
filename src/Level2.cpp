@@ -40,9 +40,9 @@ constexpr float WALL_THICKNESS = 50.f;
 // Background Texture
 GLuint bgTexture2 = 0;
 
-// Entities for Level 2
-Entity ECSplayer2{};
-Entity rock2;
+//// Entities for Level 2
+//Entity ECSplayer2{};
+//Entity rock2;
 // Entity ghoul;
 
 // Registry ref
@@ -211,7 +211,7 @@ void Level2::Init()
 			std::cout << "Found level2.json, attempting to load..." << std::endl;
 			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
 			if (sceneLoaded) {
-				rock2 = registry2.Get_EntityID("Player");
+				Entity rock2 = registry2.Get_EntityID("Player");
 				//ghoul = registry2.Get_EntityID("Enemy");
 
 				std::cout << "Scene loaded successfully from level2.json!" << std::endl;
@@ -228,7 +228,7 @@ void Level2::Init()
 			// ===== FIX: Better error handling when creating from prefabs =====
 			std::cout << "Creating fresh entities from prefabs..." << std::endl;
 
-			rock2 = Create_Player(200.f, 500.f);
+			Entity rock2 = Create_Player(200.f, 500.f);
 			if (rock2 == 0) {
 				std::cerr << "ERROR: Failed to create Player! Check if Player.json exists." << std::endl;
 			}
