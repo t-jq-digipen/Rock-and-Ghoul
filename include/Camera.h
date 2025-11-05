@@ -29,8 +29,6 @@ Copyright � 2025 DigiPen, All rights reserved.
 */
 /**************************************************************************/
 
-class AudioSystem; // to grant spatial audio relative to camera
-
 class Camera
 {
 public:

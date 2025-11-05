@@ -8,7 +8,7 @@
  * This file declares a player system for the ECS, managing
  * control inputs and reactions.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright � 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -29,14 +29,29 @@ enum PlayerState : unsigned int {
 };
 
 namespace PlayerMove {
+
+
+
     inline void Start(Entity e);
+
     inline void Update(Entity e, float dt);
+
     inline void End(Entity e);
 }
 
 class PlayerSystem : public ISystem {
 private:
     void WASD_Movement(Entity eID, float& dt);
+
+    // spatial footstep sfx
+    std::unordered_map<Entity, float> footstepTimers;  // Timer per player
+    float footstepInterval = 0.35f;  // Time between footsteps (in seconds)
+
+    void UpdateFootsteps(Entity eID, float dt);
+    void PlayFootstep(Entity eID);
+    // static inline Movement::InputDirection VelToDir(float x, float y);
+
+    // static inline void NormalizeDiagonalMovement(float& x, float& y);
 
 public:
     void Initialize() override;
