@@ -158,20 +158,38 @@ if (EXISTS "${MONO_LIB_DIR}/mscorlib.dll")
 else()
     message(WARNING "Mono runtime libraries not found in ${MONO_LIB_DIR}")
 endif()
-# ======================= Auto-build C# GameScripts project =========================
-set(GAMESCRIPTS_CSPROJ "${CMAKE_SOURCE_DIR}/GameScripts/GameScripts.csproj")
+# ======================= Auto-build GameScripts.sln before engine =========================
+set(GAMESCRIPTS_SLN "${CMAKE_SOURCE_DIR}/GameScripts/GameScripts.sln")
 
-if (EXISTS "${GAMESCRIPTS_CSPROJ}")
-    add_custom_command(
-        TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "Building C# GameScripts project..."
-        # Use MSBuild to compile GameScripts.csproj to a DLL
-        COMMAND "${CMAKE_MAKE_PROGRAM}" "${GAMESCRIPTS_CSPROJ}" /t:Build /p:Configuration=$<CONFIG>
-        COMMENT "Auto-building GameScripts.dll via MSBuild"
-        VERBATIM
-    )
+if (EXISTS "${GAMESCRIPTS_SLN}")
+    message(STATUS "Found GameScripts solution at: ${GAMESCRIPTS_SLN}")
+
+    # Optional: auto-detect MSBuild path
+find_program(MSBUILD_EXE MSBuild.exe
+    HINTS
+        "$ENV{ProgramFiles}/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
+        "$ENV{ProgramFiles}/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin"
+        "$ENV{ProgramW6432}/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
+        "$ENV{ProgramW6432}/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin"
+        "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
+        "C:/Program Files (x86)/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
+)
+    if (NOT MSBUILD_EXE)
+        message(WARNING "MSBuild.exe not found — skipping GameScripts build.")
+    else()
+        add_custom_target(BuildGameScripts ALL
+            COMMAND ${CMAKE_COMMAND} -E echo "=== Building GameScripts.sln ==="
+            COMMAND "${MSBUILD_EXE}" "${GAMESCRIPTS_SLN}" /t:Build /p:Configuration=$<CONFIG>
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/GameScripts"
+            COMMENT "Building GameScripts to produce GameScripts.dll"
+            VERBATIM
+        )
+
+        # Make sure engine waits for GameScripts.dll
+        add_dependencies(${CMAKE_PROJECT_NAME} BuildGameScripts)
+    endif()
 else()
-    message(WARNING "GameScripts.csproj not found at ${GAMESCRIPTS_CSPROJ}")
+    message(WARNING "GameScripts.sln not found at ${GAMESCRIPTS_SLN}")
 endif()
 
 
