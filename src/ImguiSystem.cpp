@@ -1136,14 +1136,11 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                             ImGui::Indent();
 
-                            // Info line 1
+
                             ImGui::Text("Path: %s", path.c_str());
-                            ImGui::SameLine(ImGui::GetWindowWidth() - 120);
-
-
-                            // Info line 2
+                           
                             ImGui::Text("Group: %s", group.c_str());
-                            ImGui::SameLine();
+
                             // Controls
                             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
                             if (ImGui::Button("Play"))
