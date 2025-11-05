@@ -43,7 +43,7 @@ GLuint bgTexture2 = 0;
 // Entities for Level 2
 Entity ECSplayer2{};
 Entity rock2;
-//Entity ghoul;
+// Entity ghoul;
 
 // Registry ref
 Registry& registry2 = Registry::Get();
@@ -212,7 +212,7 @@ void Level2::Init()
 			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
 			if (sceneLoaded) {
 				rock2 = registry2.Get_EntityID("Player");
-				ghoul = registry2.Get_EntityID("Enemy");
+				//ghoul = registry2.Get_EntityID("Enemy");
 
 				std::cout << "Scene loaded successfully from level2.json!" << std::endl;
 			}
@@ -236,13 +236,13 @@ void Level2::Init()
 				std::cout << "Created Player (Entity " << rock2 << ")" << std::endl;
 			}
 
-			ghoul = Create_Enemy(1000.f, 500.f);
-			if (ghoul == 0) {
-				std::cerr << "ERROR: Failed to create Enemy! Check if Enemy.json exists." << std::endl;
-			}
-			else {
-				std::cout << "Created Enemy (Entity " << ghoul << ")" << std::endl;
-			}
+			//ghoul = Create_Enemy(1000.f, 500.f);
+			//if (ghoul == 0) {
+			//	std::cerr << "ERROR: Failed to create Enemy! Check if Enemy.json exists." << std::endl;
+			//}
+			//else {
+			//	std::cout << "Created Enemy (Entity " << ghoul << ")" << std::endl;
+			//}
 
 			std::cout << "Finished creating entities from prefabs." << std::endl;
 			Create_Wall(LEVEL_WIDTH / 2, LEVEL_HEIGHT - WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);

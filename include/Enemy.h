@@ -29,6 +29,7 @@ namespace Enemy {
 
 	class EnemyAIComponent
 	{
+	public:
 		// General Settings
 		EnemyAttackMode attackMode;
 		EnemyState state;
@@ -47,6 +48,7 @@ namespace Enemy {
 
 		// Melee
 		float meleeCooldown;
+		float meleeRange;
 		bool canHit;
 
 		// Projectile
@@ -84,6 +86,11 @@ namespace Enemy {
 		bool wantsMelee{ false };
 		bool wantsShoot{ false };
 		Vec2 shootDir{ 0.f, 0.f };
+
+		// JSON
+		std::string Serialize() const;
+		static EnemyAIComponent DeSerialize(Entity eID, const std::string& data);
+		Editor::ComponentData EditorData();
 	};
 }
 
