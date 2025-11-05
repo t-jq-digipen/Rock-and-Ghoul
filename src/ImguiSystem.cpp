@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        ImguiSystem.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        01 OCT 2025
+ * @date        06 NOV 2025
  *
  * @brief
  * 
@@ -43,78 +43,152 @@
 #include <unordered_set> 
 #include <string>
 #include <iostream>
-static bool isPlacingPrefab = false;
-static std::string pendingPrefabPath;
-
-bool ImGuiSystem::showColliders = false;
-bool ImGuiSystem::showVelocity = false;
-Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
-static bool isDraggingEntity = false;
 
 
-bool ImGuiSystem::guiEnabled = false;
-static FMOD::Channel* previewChannel = nullptr;
+// ========================================================
+// File-Local Static Variables (Editor State)
+// ========================================================
 
-static std::vector<std::string> droppedFiles;
-// global (file-scope) thumbnail cache for runtime updates
+static bool isPlacingPrefab = false; //the mouse prefab spawner
+static bool isDraggingEntity = false; //drag handles
+static bool showReplacePopup = false; //replace same image
+
+static std::string pendingPrefabPath; //prefab mouse thing
+static std::string pendingImportPath; //holds new image replace
+static std::string pendingDestPath; //store dest path of existing img
+
+// runtime thumbnail cache
 static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
-bool ImGuiSystem::dragEditMode = false;
 
-static std::string pendingImportPath;
-static std::string pendingDestPath;
-static bool showReplacePopup = false;
-extern GSM gsm;
-namespace {
-    // small helper to name an entity for the Hierarchy list
-    std::string EntityDisplayName(Entity e) {
-        Registry& reg = Registry::Get();
-        std::string name = "Entity " + std::to_string(e);
+//g_loadedThumbnails[0] = Image(texture for "player.png")
+//g_imageNames[0] = "player.png"
 
-        if (reg.Has_Component<TagComponent>(e)) {
-            auto& tag = reg.Get_Component<TagComponent>(e);
-            const char* tagName = (tag.tag == T_PLAYER) ? "Player"
-                : (tag.tag == T_ENEMY) ? "Enemy"
-                : (tag.tag == T_PROJECTILE) ? "Projectile"
-                : "Unknown";
-            name = std::string(tagName) + " " + std::to_string(e);
-        }
-        if (reg.Has_Component<ShapeComponent>(e)) {
-            auto& s = reg.Get_Component<ShapeComponent>(e);
-            if (s.shape == SHAPE_RECTANGLE) {
-                name += "  [Square]";
-            }
-            else if (s.shape == SHAPE_CIRCLE) {
-                name += "  [Circle]";
-            }
-        }
-        else if (reg.Has_Component<Sprite::SpriteComponent>(e)) {
-            std::string entName = reg.Get_EntityName(e);
-            name += "  [Textured]";
+static FMOD::Channel* previewChannel = nullptr; //audio preview channel and tracking
 
+// ========================================================
+// Static Member Definitions
+// ========================================================
+
+bool   ImGuiSystem::showColliders = false; //rendering system aabb boxes
+bool   ImGuiSystem::showVelocity = false; 
+bool   ImGuiSystem::dragEditMode = false; //drag handle
+bool   ImGuiSystem::guiEnabled = false; //f1 
+Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
+extern GSM gsm; //play/stop game state
+
+// ========================================================
+// Anonymous Namespace
+// ========================================================
+namespace
+{
+    //just a safety check
+    void EnsureSelectionValid()
+    {
+        if (ImGuiSystem::selectedEntity != INVALID_ENTITY &&
+            !EntityManager::get().isAlive(ImGuiSystem::selectedEntity))
+        {
+            ImGuiSystem::selectedEntity = INVALID_ENTITY;
         }
-        return name;
     }
 
-    //selectedEntity stays valid
-    void EnsureSelectionValid() {
-        if (ImGuiSystem::selectedEntity != INVALID_ENTITY && !EntityManager::get().isAlive(ImGuiSystem::selectedEntity)) {
-            ImGuiSystem::selectedEntity = 0;
+    // refrash button
+    void RefreshImageAssets()
+    {
+        g_loadedThumbnails.clear();
+        g_imageNames.clear();
+
+        const std::string assetFolder = "../Assets/";
+        //loops through all files and folders in the asset directory subdirectories
+        for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
+        {
+            if (!entry.is_regular_file()) 
+                continue; //skips folder 
+            //extension string
+            std::string ext = entry.path().extension().string();
+            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+            {
+                try {
+                    Image img = CreateImage(entry.path().string());
+                    if (img.IsValid()) {
+                        //hooray add to list
+                        g_loadedThumbnails.push_back(img);
+                        g_imageNames.push_back(entry.path().filename().string());
+                    }
+                }
+                catch (const std::exception& e) {
+                    std::cerr << "Failed to load " << entry.path() << "\n";
+                }
+            }
+        }
+
+        std::cout << "[AssetBrowser] Refreshed image list.\n";
+    }
+
+    // ---- Audio manifest helpers ----
+    nlohmann::json audioManifest; //settings per audio file
+    bool audioManifestLoaded = false; //load once
+
+    bool showAudioImportPopup = false; //can choose da files
+    std::vector<std::string> pendingAudioImports; //Q of audio file paths 
+    float globalVolume = 0.8f;
+    std::unordered_map<std::string, FMOD::Channel*> activeAudioChannels;
+
+
+    bool LoadAudioManifest(const std::string& path)
+    {
+        namespace fs = std::filesystem;
+        if (!fs::exists(path)) {
+            audioManifest = { {"music", {}}, {"ui", {}}, {"sfx", {}} };
+            audioManifestLoaded = true;
+            return false;
+        }
+
+        try {
+            std::ifstream ifs(path);
+            if (ifs.is_open()) {
+                ifs >> audioManifest;
+                ifs.close();
+                audioManifestLoaded = true;
+                return true;
+            }
+        }
+        catch (const std::exception& e) {
+            std::cerr << "[AudioManifest] Load failed: " << e.what() << "\n";
+        }
+        return false;
+    }
+
+    void SaveAudioManifest(const std::string& path)
+    {
+        try {
+            std::ofstream out(path);
+            out << std::setw(4) << audioManifest; //formatting
+            std::cout << "[AudioManifest] Saved to " << path << "\n";
+        }
+        catch (const std::exception& e) {
+            std::cerr << "[AudioManifest] Save failed: " << e.what() << "\n";
         }
     }
 }
+
+
 // Checkbox
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
     if (!w.ref) return;
     ImGui::Checkbox(label.c_str(), w.ref);
 }
 
-// String
+// Text
 static void MakeWidget(Editor::Widget_String& w, const std::string& label) {
     if (!w.ref) return;
     char buf[128];
+    //copy string to buffer
     strncpy(buf, w.ref->c_str(), sizeof(buf));
     if (ImGui::InputText(label.c_str(), buf, IM_ARRAYSIZE(buf))) {
+        //copy text back 2 string
         *w.ref = buf;
     }
 }
@@ -123,10 +197,13 @@ static void MakeWidget(Editor::Widget_String& w, const std::string& label) {
 static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label)
 {
     if (!w.ref || w.options.empty()) return;
+    //imgui need char* array
     std::vector<const char*> items;
     items.reserve(w.options.size());
-    for (auto& opt : w.options) items.push_back(opt.c_str());
-    // find index of current value
+    for (auto& opt : w.options) {
+        items.push_back(opt.c_str());
+    }
+    // find index of current selected
     int currentIndex = 0;
     for (int i = 0; i < (int)w.options.size(); ++i) {
         if (w.enumMap.at(w.options[i]) == *w.ref) {
@@ -170,54 +247,7 @@ static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
     MakeWidget(w.current_state, "Animation state");
 
 }
-static void RefreshImageAssets()
-{
-    g_loadedThumbnails.clear();
-    g_imageNames.clear();
 
-    const std::string assetFolder = "../Assets/";
-    for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
-    {
-        if (!entry.is_regular_file()) continue;
-        std::string path = entry.path().string();
-        std::string ext = entry.path().extension().string();
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
-        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
-        {
-            try
-            {
-                Image img = CreateImage(path);
-                if (img.IsValid()) {
-                    g_loadedThumbnails.push_back(img);
-                    g_imageNames.push_back(entry.path().filename().string());
-                }
-            }
-            catch (...) {
-                std::cout << "Failed to load " << path << std::endl;
-            }
-        }
-    }
-    std::cout << "[AssetBrowser] Refreshed image list.\n";
-}
-
-
-// ========================================================
-// Audio Import UI State
-// ========================================================
-using json = nlohmann::json;
-
-namespace {
-    static nlohmann::json audioManifest;
-    static bool audioManifestLoaded = false;
-    static bool showAudioImportPopup = false;
-    static std::vector<std::string> pendingAudioImports;
-    static float globalVolume = 0.8f;
-    static std::unordered_map<std::string, FMOD::Channel*> activeAudioChannels;
-
-    static bool LoadAudioManifest(const std::string& path);
-    static void SaveAudioManifest(const std::string& path);
-}
 
 void ImGuiSystem::OnFileDropped(const std::string& path)
 {
@@ -230,17 +260,16 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
 
     std::string ext = fs::path(path).extension().string();
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
+    //filename = "blabla.PNG"
     std::string filename = fs::path(path).filename().string();
-    droppedFiles.push_back(filename);
 
     std::cout << "[ImGui Drop] File dropped: " << filename << " (" << path << ")\n";
 
     // --- Image loading --- 
     //Image img = CreateImage(path);
-    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp")
+    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
     {
-        std::string src = path;
+        std::string src = path; //where file at
         std::string destDir = "../Assets/";
         std::string destPath = destDir + fs::path(src).filename().string();
         // make sure the folder exists
@@ -248,32 +277,33 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
             fs::create_directories(destDir);
 
 
-        // --- check for same base name even if different extension ---
-        std::string baseName = fs::path(src).stem().string(); // e.g., "MyTexture"
-        bool foundExistingVariant = false;
-        std::string existingVariantPath;
+        //same name even if diff ext
+        //filename without extension
+        std::string Name = fs::path(src).stem().string();
+        bool SameName = false;
+        std::string existingNamePath;
 
         // loop through asset directory to find same basename
         for (auto& entry : fs::directory_iterator(destDir))
         {
-            if (!entry.is_regular_file()) continue;
+            if (!entry.is_regular_file()) 
+                continue;
 
-            std::string existingBase = entry.path().stem().string();
-            if (existingBase == baseName)
+            std::string existingName = entry.path().stem().string();
+            if (existingName == Name)
             {
-                foundExistingVariant = true;
-                existingVariantPath = entry.path().string();
+                SameName = true;
+                existingNamePath = entry.path().string();
                 break;
             }
         }
 
-        if (foundExistingVariant)
+        if (SameName)
         {
+            //pending coz popup in update
             pendingImportPath = src;
-            pendingDestPath = existingVariantPath;
+            pendingDestPath = existingNamePath;
             showReplacePopup = true;
-            std::cout << "[ImGui Drop] Found variant of same asset ("
-                << existingVariantPath << "), prompting replace...\n";
             return;
         }
         // copy the file
@@ -285,6 +315,8 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
             std::cerr << "[ImGui Drop] Copy failed: " << e.what() << std::endl;
             return;
         }
+
+        //thumbnaillll
         Image img = CreateImage(destPath);
 
         if (img.IsValid()) {
@@ -295,11 +327,9 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         else
             std::cerr << "[ImGui Drop] Failed to load image.\n";
         return;
-
-
     }
 
-    // --- Prefab loading ---
+    //prefabs
     if (ext == ".json")
     {
         Entity ent = JsonLoad::LoadEntityFromFile(path, 300.f, 300.f);
@@ -315,24 +345,21 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         return;
     }
 
-    // --- Audio preview ---
-    if (ext == ".wav" || ext == ".mp3" || ext == ".ogg")
+    // audio
+    if (ext == ".wav" || ext == ".mp3")
     {
-        // === AUDIO POPUP BEGIN ===
+        //popup for storing files
         pendingAudioImports.push_back(path);
         showAudioImportPopup = true;
         std::cout << "[ImGui Drop] Queued audio import: " << path << std::endl;
-        // === AUDIO POPUP END ===
         return;
     }
-
 
     std::cout << "[ImGui Drop] Unsupported file type: " << ext << std::endl;
 
    
 }
 
-using json = nlohmann::json;
 
 
 
@@ -2121,59 +2148,4 @@ void ImGuiSystem::ShutdownImGui() {
     ImGui::DestroyContext();
 }
 
-// ========================================================
-// Audio Manifest Load / Save Helpers
-// ========================================================
-namespace {
-    static bool LoadAudioManifest(const std::string& path)
-    {
-        namespace fs = std::filesystem;
-        if (!fs::exists(path))
-        {
-            std::cout << "[AudioManifest] File not found: " << path << "\n";
-            audioManifest = json::object();
-            audioManifest["music"] = json::object();
-            audioManifest["ui"] = json::object();
-            audioManifest["sfx"] = json::object();
-            audioManifestLoaded = true;
-            return false;
-        }
 
-        try
-        {
-            std::ifstream in(path);
-            if (!in.is_open())
-            {
-                std::cerr << "[AudioManifest] Could not open file: " << path << "\n";
-                return false;
-            }
-
-            in >> audioManifest;
-            in.close();
-            audioManifestLoaded = true;
-            std::cout << "[AudioManifest] Loaded successfully.\n";
-            return true;
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "[AudioManifest] Failed to parse manifest: " << e.what() << "\n";
-            audioManifest = json::object();
-            return false;
-        }
-    }
-
-    static void SaveAudioManifest(const std::string& path)
-    {
-        try
-        {
-            std::ofstream out(path);
-            out << std::setw(4) << audioManifest;
-            out.close();
-            std::cout << "[AudioManifest] Saved to " << path << "\n";
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "[AudioManifest] Save failed: " << e.what() << "\n";
-        }
-    }
-}
