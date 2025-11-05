@@ -360,6 +360,10 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     glDeleteBuffers(1, &vboCircle);
     glDeleteVertexArrays(1, &vaoCircle);
 
+    // Reset color so next sprite draw isn't tinted
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
+
+
     glUseProgram(0);
 }  // <-- Make sure this closing brace is here!
 
@@ -384,10 +388,14 @@ void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3&
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
 
+
     //draw
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
+
+    // Reset color so next sprite draw isn't tinted
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
 
     glUseProgram(0);
 }
