@@ -83,12 +83,13 @@ void ForcesManager::ApplyDrag(Entity eID, float coefficient) {
     if (!reg.Has_Component<Physics::PhysicsComponent>(eID)) return;
 
     auto& physics = reg.Get_Component<Physics::PhysicsComponent>(eID);
+
     Vec2 vel = physics.Get_Vel();
     float speed = RG_Length(vel);
 
     if (speed > 0.01f) {
-        Vec2 dragDir = RG_Scale(vel, -1.f / speed); // Opposite direction
-        float dragMag = coefficient * speed * speed; // Quadratic drag
+        Vec2 dragDir = RG_Scale(vel, -1.f / speed); // opp dir
+        float dragMag = coefficient * speed * speed; // quadratic drag
         physics.AddForce(dragDir, dragMag, 0.f);
     }
 }

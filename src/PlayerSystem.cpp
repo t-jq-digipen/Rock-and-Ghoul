@@ -4,7 +4,7 @@
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
  * @co-author   Manfred Sim | manfred.sim@digipen.edu
- * @date	    01 NOV 2025
+ * @date	    06 NOV 2025
  *
  * @brief	Player System for handling player behaviour.
  *
@@ -94,38 +94,28 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	moveComp.SetInputDirection(VelToDir(fx, fy));
 	moveComp.SetMovementDirection({ fx, fy });
 
-	// Track timer
-	static float dashTimer = 0.f;
-	static Entity dashingEntity = 0;
-
-	// Update dash timer
-	if (dashTimer > 0.f) {
-		dashTimer -= dt;
-		if (dashTimer < 0.f) dashTimer = 0.f;
-	}
-
-	bool isDashing = (dashTimer > 0.f && dashingEntity == eID);
-
-	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT) && moving && !isDashing) {
-		dashTimer = 0.2f;  // Dash lasts 0.2 seconds
-		dashingEntity = eID;
-		isDashing = true;
-	}
-
-	// Update max speed based on dash state so that it's noticeable
-	physics.SetMaxSpeed(isDashing ? 1000.f : 500.f);
-
 	// Clear forces every frame
 	physics.ClearForces();
 
+	// Dash
+	constexpr float DASH_IMPULSE = 700.f;
+
+	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT) && moving) {
+		Vec2 dashImpulse = { fx * DASH_IMPULSE, fy * DASH_IMPULSE };
+		physics.AddImpulse(dashImpulse);
+	}
+
+	// Adjust max speed based on current speed
+	float currentSpeed = RG_Length(physics.Get_Vel());
+	if (currentSpeed > 500.f) {
+		physics.SetMaxSpeed(1000.f);  // For da dash
+	}
+	else {
+		physics.SetMaxSpeed(500.f);   // Normal speed
+	}
+
 	if (moving) {
-		if (isDashing) {
-			// Big force during dash
-			physics.AddForce({ fx, fy }, 20000.f, 0.f);
-		} else {
-			// Normal movement
-			physics.AddForce({ fx, fy }, MOVE_FORCE, 0.f);
-		}
+		physics.AddForce({ fx, fy }, MOVE_FORCE, 0.f);
 	}
 
 	//if (!m_registry.Has_Component<InputComponent>(eID)) {

@@ -141,7 +141,7 @@ namespace Physics {
 
 	void PhysicsComponent::AddImpulse(Vec2 const& impulse) {
 		vel = RG_Add(vel, impulse);
-		ClampVelocity();
+		//ClampVelocity();
 	}
 
 	void PhysicsComponent::ClearForces() {

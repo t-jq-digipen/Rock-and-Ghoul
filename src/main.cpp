@@ -45,7 +45,7 @@
 #include "MonoScriptComponent.h"
 #include "MonoSystem.h"
 #include <crtdbg.h>
-#include "ForcesManager.h"
+//#include "ForcesManager.h"
 
 #include "LogicSystem.h"
 void EnableMemoryLeakChecking(int breakAlloc = -1)
@@ -111,7 +111,7 @@ int main() {
             engine.AddSystem(&LogicSystem::Get());
             engine.AddSystem(new MovementSystem());
             engine.AddSystem(new PlayerSystem());
-            engine.AddSystem(new ForcesManager());
+            //engine.AddSystem(new ForcesManager());
             engine.AddSystem(new PhysicsSystem());
             engine.AddSystem(new RenderSystem());
             engine.AddSystem(&GuiSystem::Get());
