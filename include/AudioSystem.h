@@ -59,12 +59,12 @@ public:
     void Shutdown() override;
 
     /**
-     * @brief Updates the audio listener position to follow the player.
+     * @brief Updates the audio listener position to follow the camera.
      *
      * This function should be called every frame to ensure spatial audio
-     * correctly positions sounds relative to the player's location.
+     * correctly positions sounds relative to the camera.
      */
-    void UpdateListenerToPlayer();
+    void UpdateListenerToCamera();
 
     /**
      * @brief Pauses the currently playing music.

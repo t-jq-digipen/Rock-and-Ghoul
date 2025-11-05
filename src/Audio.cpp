@@ -24,6 +24,7 @@
 #include "AudioComponent.h"
 #include "CoreEngine.h"
 #include "PlayerSystem.h"
+#include "Camera.h"
 #include "GameStateManager.h"
 #include <iostream>
 
@@ -591,25 +592,12 @@ void AudioManager::CrossfadeTo(FMOD::Sound* newTrack, float duration) {
     std::cout << "[AudioManager] Starting crossfade (" << duration << "s)\n";
 }
 
-// Add this function to AudioManager
-void AudioManager::UpdateListenerToPlayer() {
-    Registry& registry = Registry::Get();
+void AudioManager::UpdateListenerToCamera() {
+    // Get camera position
+    Vec2 cameraPos = Camera::GetInstance().GetPosition();
 
-    // Find player and update listener to follow them
-    for (auto& [entity, tag] : registry.Get_ComponentMap<TagComponent>()) {
-        if (tag.tag == T_PLAYER) {
-            if (registry.Has_Component<TransformComponent>(entity)) {
-                auto& transform = registry.Get_Component<TransformComponent>(entity);
-
-                // Update listener position to player position
-                AudioSystem::SetListenerPosition(transform.pos.x, transform.pos.y);
-                return;
-            }
-        }
-    }
-
-    // No player found, keep listener at origin
-    AudioSystem::SetListenerPosition(0.0f, 0.0f);
+    // Update listener position to camera position
+    AudioSystem::SetListenerPosition(cameraPos.x, cameraPos.y);
 }
 
 /**
@@ -621,8 +609,8 @@ void AudioManager::UpdateListenerToPlayer() {
  * @param dt Delta time in seconds.
  */
 void AudioManager::Update(float dt) {
-    // Update listener to follow player EVERY FRAME
-    UpdateListenerToPlayer();
+    // Update listener to follow camera every frame
+    UpdateListenerToCamera();
 
     // Update FMOD system
     AudioSystem::Update();
