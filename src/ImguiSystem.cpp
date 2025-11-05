@@ -1194,7 +1194,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                             // Get values safely
                             std::string path = data.value("path", "(none)");
-                            int id = data.value("id", -1);
+                           
                             std::string group = data.value("group", "(none)");
                            
 
