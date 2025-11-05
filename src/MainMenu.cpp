@@ -179,8 +179,10 @@ void MainMenu::Init()
             .pos = {1650.0f * uiScaleX, 50.0f * uiScaleY},
             .scale = 0.5f * uiScale,
             .color = {0.f, 0.f, 0.f},
+            .fontKey = "Bold", //added this, so can change font type (use this to display rubric)
             .centered = true
             });
+
 
     });
 }

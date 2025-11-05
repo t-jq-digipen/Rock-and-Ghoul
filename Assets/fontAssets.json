@@ -1,6 +1,6 @@
 {
     "fonts": [
      { "name": "Marker", "path": "../Assets/PermanentMarker-Regular.ttf", "size": 48 },
-     { "name": "Bold", "path": "../Assets/Antonio-Bold.ttf", "size": 36 }
+     { "name": "Bold", "path": "../Assets/Antonio-Bold.ttf", "size": 48 }
     ]
 }

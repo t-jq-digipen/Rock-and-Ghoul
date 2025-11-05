@@ -200,7 +200,7 @@ void GuiSystem::Update(float dt) {
         tb.pos.x = tb.basePos.x * scaleX;
         tb.pos.y = tb.basePos.y * scaleY;
         tb.scale = tb.baseScale * uiScale;
-        Vec2 textSize = render.CalculateTextSize(tb.text, tb.scale, "Marker");
+        Vec2 textSize = render.CalculateTextSize(tb.text, tb.scale, tb.fontKey);
 
         float drawX = tb.pos.x;
         float drawY = tb.pos.y;
@@ -213,7 +213,7 @@ void GuiSystem::Update(float dt) {
         }
 
         // UPDATED: Added font parameter to DrawText
-        render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, "Marker");
+        render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, tb.fontKey);
     }
 
     for (auto& d : dialogues)
