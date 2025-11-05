@@ -79,7 +79,6 @@ bool AudioSystem::Init() {
 void AudioSystem::LoadDefaultButtonSounds() {
     RegisterButtonSound(ButtonType::PLAY, AudioCache::GetSound("button_play"));
     RegisterButtonSound(ButtonType::QUIT, AudioCache::GetSound("button_quit"));
-    std::cout << "Default button sounds loaded!" << std::endl;
 }
 
 /**
@@ -97,12 +96,11 @@ void AudioSystem::PlayButtonSound(ButtonType type) {
     // If found and valid, play it
     if (it != buttonSounds.end() && it->second) {
         PlaySound(it->second);
-        std::cout << "Playing button sound for type: " << static_cast<int>(type) << std::endl;
     }
     else {
         std::cerr << "Warning: Button sound not found for type " << static_cast<int>(type) << std::endl;
 
-        // Fallback: try to play PLAY sound if the requested type isn't found
+        // hail mary: play PLAY sound if the requested type isn't found
         if (type != ButtonType::PLAY) {
             auto playIt = buttonSounds.find(ButtonType::PLAY);
             if (playIt != buttonSounds.end() && playIt->second) {
@@ -127,8 +125,6 @@ void AudioSystem::RegisterButtonSound(ButtonType type, const std::string& soundP
     FMOD::Sound* sound = LoadSound(soundPath, false);
     if (sound) {
         buttonSounds[type] = sound;
-        std::cout << "Registered button sound for type " << static_cast<int>(type)
-            << " from: " << soundPath << std::endl;
     }
     else {
         std::cerr << "Failed to load button sound: " << soundPath << std::endl;
