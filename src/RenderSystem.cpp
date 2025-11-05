@@ -540,13 +540,15 @@ void RenderSystem::Update(float dt) {
     }*/
 
     // Debug drawing for spatial grid
+    {
+    SpatialGrid* grid = CollisionManager::GetSpatialGrid();
     if (ImGuiSystem::showSpatialGrid) {
-        SpatialGrid* grid = CollisionManager::GetSpatialGrid();
         if (grid) {
             DebugDraw::DrawSpatialGrid(grid, renderInstance);
         }
     }
-
+    grid->ClearCollisionMarkers();
+    }
 
     // Debug drawing for physics colliders / velocities
     if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {

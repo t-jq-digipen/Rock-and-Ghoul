@@ -155,7 +155,6 @@ void DebugDraw::DrawSpatialGrid(SpatialGrid* grid, Render& renderer) {
             }
         }
     }
-
     // Reset line width
     glLineWidth(1.0f);
 }
