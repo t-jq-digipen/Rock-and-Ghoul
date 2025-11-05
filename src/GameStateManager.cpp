@@ -19,7 +19,7 @@
 #include "Level1.h"
 #include "Level2.h"
 #include "CoreEngine.h"
-
+#include "ImguiSystem.h"
 // Function Pointer
 typedef void(*FP)(void);
 
@@ -100,6 +100,11 @@ void GSM::ChangeNextState()
 {
 	previousState = currentState;
 	currentState = nextState;
+}
+void GSM::HandleInput()
+{
+	if (ImGui::GetIO().WantCaptureKeyboard)
+		return; // skip gameplay input entirely
 }
 
 // STATE CALLERS
