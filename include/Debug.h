@@ -27,6 +27,7 @@
 #include "Collision.h"
 #include "Component.h"
 #include "Registry.h"
+#include "SpatialGrid.h"
 namespace DebugDraw {
     /**
     * @brief Draw an axis-aligned bounding box (AABB).
@@ -57,5 +58,7 @@ namespace DebugDraw {
      * @param renderer The renderer used to draw the circle.
      */
     void DrawCircleCollider(const Circle& circle, Render& renderer);
+
+    void DrawSpatialGrid(SpatialGrid* grid, Render& renderer);
 }
 
