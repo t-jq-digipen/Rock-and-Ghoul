@@ -57,7 +57,7 @@ Entity LoadEntity(const std::string& entityName, float x, float y) {
 //    return LoadEntity("Player", x, y);
 //}
 Entity Create_Player(float const& x, float const& y) {
-    Entity patrol = LoadEntity("Player", 500.0f, 300.0f);
+    Entity patrol = LoadEntity("Player",x, y);
     BehaviourComponent bc;
     //bc.scriptName = "PatrolEnemy";
     //bc.started = false;

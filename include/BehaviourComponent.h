@@ -18,6 +18,16 @@ struct BehaviourComponent
     std::string scriptName = "";               // Human-readable name
     bool started = false;                      // Whether Init() ran yet
     BehaviourComponent() = default;
+    ~BehaviourComponent()
+    {
+        if (scriptID != ScriptID::NONE)
+        {
+            LogicSystem& logicSys = LogicSystem::Get();
+            BehaviourFCT* script = logicSys.GetBehaviourByID(scriptID);
+            if (script && script->End)
+                script->End(0);
+        }
+    }
     BehaviourComponent(const std::string& name)
     {
         SetScript(name);
@@ -77,7 +87,9 @@ struct BehaviourComponent
         bc.scriptID = static_cast<ScriptID>(j.value("scriptID", 0u));
         bc.started = false;
 
-        bc.SetScript(bc.scriptName);
+        //if ID missing
+        if (bc.scriptID == ScriptID::NONE && !bc.scriptName.empty())
+            bc.SetScript(bc.scriptName);
         return bc;
     }
 };

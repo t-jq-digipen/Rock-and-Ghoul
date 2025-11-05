@@ -96,5 +96,6 @@ private:
     void ShowSceneBrowser();
 
     void ShowSimulationControls(bool& isPlaying);
+    void ShowAddRemoveComponents();
 };
 

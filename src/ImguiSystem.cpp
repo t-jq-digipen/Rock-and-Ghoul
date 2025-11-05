@@ -45,7 +45,7 @@ bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 static bool isDraggingEntity = false;
-static glm::vec2 dragOffset = { 0.f, 0.f };
+
 
 bool ImGuiSystem::guiEnabled = false;
 static FMOD::Channel* previewChannel = nullptr;
@@ -156,17 +156,13 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
 
 // AnimatorFrames
 static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
+    (void)label;
     if (!w.ref) return;
 
     MakeWidget(w.total_rows, "Total Rows");
     MakeWidget(w.total_cols, "Total Cols");
 
     MakeWidget(w.current_state, "Animation state");
-
-    // make button to call "w.Add_New_AnimState(std::string name)"
-    // this function will make a new state and insert an empty state into the animator component...
-    // the return will give u an error message or success message which you can use to make a popup
-    // but i having trouble updating options list, i think it would work for adding but idk how to do remove yet
 
 }
 static void RefreshImageAssets()
@@ -473,13 +469,19 @@ void ImGuiSystem::Update(float dt)
     
     if (ImGui::Begin("Entity Editor")) {
         if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
-        ImGui::Columns(2);
-        ShowHierarchyWindow();
+        // Split horizontally first: Hierarchy (left) + Add/Remove (right)
+        ImGui::Columns(2, "EntityColumns", true);
+        ShowHierarchyWindow();     // Left side: entity list
         ImGui::NextColumn();
-        ShowInspectorWindow();
+        ShowAddRemoveComponents(); // Right side: add/remove buttons
         ImGui::Columns(1);
+
         ImGui::Separator();
-        ShowPrefabControls();
+        ShowInspectorWindow();     // Below: component fields + properties
+
+        ImGui::Separator();
+        ShowPrefabControls();      // Same as before
+
         if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
         
     }
@@ -679,82 +681,8 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
    // ImGui::Separator();
     ImGui::Text("Scene Management:");
 
-    if (ImGui::Button("Save Scene (F5)")) {
-        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-        {
-            JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "Level1");
-        }
-        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-        {
-            JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "Level2");
-        }
-        std::cout << "Scene saved from ImGui!" << std::endl;
-    }
-    ImGui::SameLine();
-
-    if (ImGui::Button("Load Scene (F9)")) {
-        JsonLoad::ClearAllEntities();
-        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-        {
-            if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
-                std::cout << "Level1 Scene loaded from ImGui!" << std::endl;
-            }
-            else {
-                std::cout << "Failed to load scene!" << std::endl;
-            }
-        }
-        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-        {
-            if (JsonLoad::LoadScene(FilePath::LEVEL2_SCENE)) {
-                std::cout << "Level2 Scene loaded from ImGui!" << std::endl;
-            }
-            else {
-                std::cout << "Failed to load scene!" << std::endl;
-            }
-        }
-
-
-    }
-
 
     ShowSceneBrowser();
-    //// ==============================
-    //// Image loader (runtime only)
-    //// ==============================
-    //ImGui::Separator();
-    //ImGui::Text("Image Loader:");
-
-    //static char imgNameBuf[128] = "";
-    //static std::vector<std::string> loadedImages;
-
-
-    //ImGui::InputText("Image Filename", imgNameBuf, IM_ARRAYSIZE(imgNameBuf));
-    //ImGui::SameLine();
-
-    //if (ImGui::Button("Add Image")) {
-    //    std::string filename = imgNameBuf;
-
-
-    //    std::string fullPath = "../Assets/" + filename;
-    //    Image img = CreateImage(fullPath); // uses your Render.cpp helper
-    //    if (img.IsValid()) {
-    //        loadedImages.push_back(filename);
-
-    //    }
-
-    //}
-
-    //ImGui::Separator();
-    //ImGui::Text("Loaded Images:");
-    //if (loadedImages.empty()) {
-    //    ImGui::TextDisabled("(none yet)");
-    //}
-    //else {
-    //    for (auto const& name : loadedImages) {
-    //        ImGui::BulletText("%s", name.c_str());
-    //    }
-    //}
-
 
 }
 
@@ -791,7 +719,7 @@ void ImGuiSystem::ShowHierarchyWindow() {
                 ++it;
         }
 
-        Entity clone = reg.Load_Entity(src);
+       reg.Load_Entity(src);
     }
 
 
@@ -873,7 +801,7 @@ void ImGuiSystem::ShowInspectorWindow()
                     Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());
                     Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, animcomp.GetTotalCols());
                     Editor::Widget_Float widgetduration(&temp.duration);
-                    ImGui::PushItemWidth(80);
+                    ImGui::PushItemWidth(50);
                     MakeWidget(widgetrow, "state rows");
                     ImGui::SameLine();
                     MakeWidget(widgetcolstart, "first col");
@@ -903,9 +831,18 @@ void ImGuiSystem::ShowInspectorWindow()
         }
     }
 
-    // --- Add/Remove Components ---
-    ImGui::Separator();
+}
+
+void ImGuiSystem::ShowAddRemoveComponents()
+{
     ImGui::Text("Add / Remove Components");
+    ImGui::Separator();
+
+    if (selectedEntity == INVALID_ENTITY)
+    {
+        ImGui::TextDisabled("No entity selected");
+        return;
+    }
 
     Entity eID = selectedEntity;
     for (std::type_index typeID : m_registry.Get_ComponentOrder())
@@ -921,27 +858,23 @@ void ImGuiSystem::ShowInspectorWindow()
             ImGui::EndDisabled();
 
             ImGui::SameLine();
-            if (ImGui::Button(("Remove##" + compName).c_str()))
+            if (ImGui::SmallButton(("Remove##" + compName).c_str()))
             {
-                // If removing an Animator, clear sprite.isAnimated first
-                if (compName == "Animator")
+                if (compName == "Animator" &&
+                    m_registry.Has_Component<Sprite::SpriteComponent>(eID))
                 {
-                    if (m_registry.Has_Component<Sprite::SpriteComponent>(eID))
-                    {
-                        auto& sprite = m_registry.Get_Component<Sprite::SpriteComponent>(eID);
-                        sprite.Set_Animated(false);
-                    }
+                    auto& sprite = m_registry.Get_Component<Sprite::SpriteComponent>(eID);
+                    sprite.Set_Animated(false);
                 }
 
                 m_registry.Remove_Component(eID, typeID);
                 std::cout << "[Editor] Removed " << compName << " from entity " << eID << "\n";
             }
-
         }
         else
         {
             if (!depsOK) ImGui::BeginDisabled();
-            if (ImGui::Button(("Add " + compName).c_str()))
+            if (ImGui::SmallButton(("Add##" + compName).c_str()))
             {
                 m_registry.Add_Component(eID, typeID);
                 std::cout << "[Editor] Added " << compName << " to entity " << eID << "\n";
@@ -959,6 +892,19 @@ void ImGuiSystem::ShowAssetPreviewWindow()
     if (ImGui::Button("Refresh"))
     {
         RefreshImageAssets();
+
+        const std::string manifestPath = "../Assets/audio_manifest.json";
+        audioManifest.clear();
+        audioManifestLoaded = false;
+        if (!LoadAudioManifest(manifestPath))
+        {
+            std::cout << "[ImGui Audio] Manifest missing or invalid. Creating new.\n";
+            audioManifest = json::object();
+            audioManifest["music"] = json::object();
+            audioManifest["ui"] = json::object();
+            audioManifest["sfx"] = json::object();
+        }
+
     }
     ImGui::SameLine();
     ImGui::TextDisabled("Reloads asset folder");
@@ -1352,8 +1298,8 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
+    (void)viewportSize;
     bool isPlaying = !gsm.isPaused && !gsm.inEditMode;
-    ::Render& renderer = Render::GetInstance();
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
@@ -1816,18 +1762,34 @@ void ImGuiSystem::ShowSceneBrowser()
         fs::create_directories(sceneFolder);
 
     static std::vector<std::string> sceneFiles;
-    sceneFiles.clear();
+    static bool needRefresh = true;
 
-    for (auto& entry : fs::directory_iterator(sceneFolder))
+    // ---------------------------
+    // Refresh Button
+    // ---------------------------
+    if (ImGui::Button("Refresh Scenes"))
     {
-        if (entry.path().extension() == ".json")
-            sceneFiles.push_back(entry.path().stem().string());
+        needRefresh = true;
+        std::cout << "[Editor] Manual scene list refresh triggered.\n";
     }
+    ImGui::SameLine();
+    ImGui::TextDisabled("Reloads saved scenes folder");
+    ImGui::Separator();
 
+    if (needRefresh)
+    {
+        sceneFiles.clear();
+        for (auto& entry : fs::directory_iterator(sceneFolder))
+        {
+            if (entry.path().extension() == ".json")
+                sceneFiles.push_back(entry.path().stem().string());
+        }
+        needRefresh = false;
+        std::cout << "[Editor] Scene list rebuilt (" << sceneFiles.size() << " found)\n";
+    }
     static int selectedScene = -1;
 
     // --- Scene List ---
-    ImGui::Separator();
     ImGui::Text("Available Scenes:");
 
     static std::string pendingDeleteScene;
@@ -1991,19 +1953,24 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
         // Save the current edited scene before starting simulation
-        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-        {
-            JsonLoad::LoadCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
-        }
-        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-        {
-            JsonLoad::LoadCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
-        }
+            if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
+            {
+                JsonLoad::SaveCurrentScene(FilePath::LEVEL1_TEMP_SCENE, "level1_temp.json");
+                // JsonLoad::ClearAllEntities();
+                // JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+            }
+            else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
+            {
+                JsonLoad::SaveCurrentScene(FilePath::LEVEL2_TEMP_SCENE, "level2_temp.json");
+                // JsonLoad::ClearAllEntities();
+                // JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
+            }
 
         std::cout << "[Editor] Temp scene saved before Play.\n";
 
         gsm.isPaused = false;
         gsm.inEditMode = false;
+        dragEditMode = false;
         Camera& cam = Camera::GetInstance();
         cam.SetMode(Camera::Mode::GAME);
         cam.SetZoom(1.0f);
@@ -2028,25 +1995,40 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         cam.SetMode(Camera::Mode::EDITOR);
         cam.ResetToCenter();
 
-        LogicSystem::Get().Shutdown();
 
         std::cout << "[Camera] Switched to EDITOR mode\n";
         isPlaying = false;
 
-        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-        {
-            if (JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json"))
-                std::cout << "[Editor] Restored Level1_TempScene.\n";
-            else
-                JsonLoad::LoadCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
-        }
-        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-        {
-            if (JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json"))
-                std::cout << "[Editor] Restored Level2_TempScene.\n";
-            else
-                JsonLoad::LoadCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
-        }
+            if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
+            {
+                // JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
+                JsonLoad::ClearAllEntities();
+
+                if (JsonLoad::LoadScene(FilePath::LEVEL1_TEMP_SCENE))
+                {
+                    std::cout << "[Editor] Saved level scene, restored temp edits.\n";
+                }
+                else
+                {
+                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
+                    JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+                }
+            }
+            else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
+            {
+                // JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
+                JsonLoad::ClearAllEntities();
+
+                if (JsonLoad::LoadScene(FilePath::LEVEL2_TEMP_SCENE))
+                {
+                    std::cout << "[Editor] Saved level scene, restored temp edits.\n";
+                }
+                else
+                {
+                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
+                    JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
+                }
+            }
 
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
     }

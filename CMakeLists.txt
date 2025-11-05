@@ -141,6 +141,39 @@ if (WIN32)
         message(WARNING "Mono runtime DLL not found at ${MONO_DLL} — skipping copy.")
     endif()
 endif()
+# ======================= Copy Mono runtime libraries =========================
+set(MONO_LIB_DIR "${MONO_ROOT}/lib/mono/4.5")
+set(MONO_DST_DIR "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/mono/lib/mono/4.5")
+
+if (EXISTS "${MONO_LIB_DIR}/mscorlib.dll")
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying Mono runtime libraries..."
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${MONO_DST_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${MONO_LIB_DIR}"
+            "${MONO_DST_DIR}"
+        VERBATIM
+    )
+    message(STATUS "Will copy Mono runtime libraries from: ${MONO_LIB_DIR}")
+else()
+    message(WARNING "Mono runtime libraries not found in ${MONO_LIB_DIR}")
+endif()
+# ======================= Auto-build C# GameScripts project =========================
+set(GAMESCRIPTS_CSPROJ "${CMAKE_SOURCE_DIR}/GameScripts/GameScripts.csproj")
+
+if (EXISTS "${GAMESCRIPTS_CSPROJ}")
+    add_custom_command(
+        TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Building C# GameScripts project..."
+        # Use MSBuild to compile GameScripts.csproj to a DLL
+        COMMAND "${CMAKE_MAKE_PROGRAM}" "${GAMESCRIPTS_CSPROJ}" /t:Build /p:Configuration=$<CONFIG>
+        COMMENT "Auto-building GameScripts.dll via MSBuild"
+        VERBATIM
+    )
+else()
+    message(WARNING "GameScripts.csproj not found at ${GAMESCRIPTS_CSPROJ}")
+endif()
+
 
 # ======================= Copy GameScripts DLL =========================
 set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/$<CONFIG>/GameScripts.dll")
@@ -265,6 +298,10 @@ source_group("BaseEngine\\ECS\\Component\\Physics" FILES
 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ForcesManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ForcesManager.h
+
 )
 
 source_group("BaseEngine\\Systems" FILES 
@@ -439,22 +476,39 @@ add_custom_target(copy_docs ALL
         ${CMAKE_BINARY_DIR}/projectGuide.pdf
 )
 
-add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
-)
+#add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} -E make_directory
+#    $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves
+#)
 
 # Copy save files from source to build directory
-file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
+#file(GLOB SAVE_FILES "${CMAKE_SOURCE_DIR}/Assets/saves/*.json")
 
-foreach(save_file ${SAVE_FILES})
-    if(EXISTS "${save_file}")
-        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${save_file}"
-                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves"
-        )
-    else()
-        message(WARNING "Skipping missing save file: ${save_file}")
-    endif()
-endforeach()
+#foreach(save_file ${SAVE_FILES})
+#    if(EXISTS "${save_file}")
+#        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+#            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#                "${save_file}"
+#                "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves"
+#        )
+#    else()
+#        message(WARNING "Skipping missing save file: ${save_file}")
+#    endif()
+#endforeach()
+
+# ======================= Copy save files safely =========================
+# Copies all JSON files from Assets/saves to build output, without failing if any missing
+
+set(SAVES_SRC_DIR "${CMAKE_SOURCE_DIR}/Assets/saves")
+set(SAVES_DST_DIR "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/../../Assets/saves")
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "Syncing Assets/saves -> ${SAVES_DST_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${SAVES_DST_DIR}"
+    # Copy the entire directory (safe, non-fatal)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${SAVES_SRC_DIR}"
+        "${SAVES_DST_DIR}"
+    VERBATIM
+)
+
