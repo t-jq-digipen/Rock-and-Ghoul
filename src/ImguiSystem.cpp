@@ -1139,7 +1139,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                             // Info line 1
                             ImGui::Text("Path: %s", path.c_str());
                             ImGui::SameLine(ImGui::GetWindowWidth() - 120);
-                            ImGui::Text("ID: %d", id);
+
 
                             // Info line 2
                             ImGui::Text("Group: %s", group.c_str());
@@ -1237,10 +1237,12 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                     std::string baseName = fs::path(destPath).stem().string();
                     audioManifest[categories[selectedCategory]][baseName] = {
-                        { "id", (int)audioManifest.size() },
-                        { "path", destPath },
-                        { "group", categories[selectedCategory] },
-                      
+                         { "path", destPath },
+                         { "group", categories[selectedCategory] },
+                         { "loop", false },
+                         { "spatial", false },
+                         { "minDistance", 1.0f },
+                         { "maxDistance", 100.0f }
                     };
 
                     FMOD::Sound* snd = AudioSystem::LoadSound(destPath, false);

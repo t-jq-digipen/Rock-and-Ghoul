@@ -2,7 +2,7 @@
 #include "GameStateManager.h"
 #include "CoreEngine.h"
 #include "glapp.h"
-
+#include "ImGuiSystem.h"
 AudioManager* GuiSystem::audio = nullptr;
 
 void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
@@ -62,6 +62,13 @@ bool GuiSystem::GetEditMode() const
 void GuiSystem::Update(float dt) {
     if (Input::IsKeyPressed(GLFW_KEY_F8))
         editMode = !editMode;
+    if (!ImGuiSystem::guiEnabled) {
+        // When ImGui is off, use full window dimensions
+        m_gameViewRect.x = 0.0f;
+        m_gameViewRect.y = 0.0f;
+        m_gameViewRect.width = static_cast<float>(GLApp::width);
+        m_gameViewRect.height = static_cast<float>(GLApp::height);
+    }
 
     // --- Press SPACE to advance dialogues (while not editing the GUI) ---
     static bool spaceLatch = false;
