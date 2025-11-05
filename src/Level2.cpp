@@ -243,9 +243,6 @@ void Level2::Update()
 	float dt = static_cast<float>(currentTime - lastTime);
 	lastTime = currentTime;
 
-	// Update camera position
-	// Camera::GetInstance().SetZoom(1.5);
-	// UpdateCamera(Camera::GetInstance(), playerTransform.pos, dt);
 
 	//switch animation state
 	if (Input::IsKeyPressed(GLFW_KEY_U))  // U walk animation
@@ -264,7 +261,6 @@ void Level2::Update()
 	}
 
 	static bool spawnedBatch = false;
-	//Render& renderer = Render::GetInstance();
 
 	static bool spawned = false;
 	std::vector<Entity> toRemove;

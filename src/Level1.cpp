@@ -402,17 +402,12 @@ void Level1::Update()
 		ghoul = registry.Get_EntityID("ghoul");
 	}*/
 	//test camera on an entity
-	auto& playerTransform = registry.Get_Component<TransformComponent>(rock);
 
 	static double lastTime = glfwGetTime();
 	double currentTime = glfwGetTime();
 	float dt = static_cast<float>(currentTime - lastTime);
 	lastTime = currentTime;
 
-	// Update camera position
-	//UpdateCamera(Camera::GetInstance(), playerTransform.pos, g_dt);
-	//std::cout << "Camera Pos: " << mainCamera.position.x << ", " << mainCamera.position.y << std::endl;
-	Camera& cam = Camera::GetInstance();
 
 	static bool testEntityStarted = false;
 	for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>()) {
@@ -428,10 +423,6 @@ void Level1::Update()
 		}
 	}
 
-	//if (cam.GetMode() == Camera::Mode::GAME)
-	//{
-	//	cam.FollowTarget(cam, playerTransform.pos, dt);
-	//}
 
 
 
