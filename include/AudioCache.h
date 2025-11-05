@@ -43,11 +43,6 @@ public:
     static FMOD::Sound* GetSound(const std::string& name);
     static FMOD::Sound* GetSoundByID(int id);
 
-    // audio mgmt
-    static const std::unordered_map<std::string, AudioAsset>& GetAllAssets() {
-        return assetsByName;
-    }
-
     static bool IsLoaded(const std::string& name);
     static bool LoadAsset(const std::string& name);
     static void UnloadAsset(const std::string& name);
