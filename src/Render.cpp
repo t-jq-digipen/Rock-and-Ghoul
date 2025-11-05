@@ -1790,9 +1790,9 @@ void Render::FlushBatch()
 //    currentTint = { 1.f, 1.f, 1.f };
 //}
 
-Vec2 Render::CalculateTextSize(const std::string& text, float scale)
+Vec2 Render::CalculateTextSize(const std::string& text, float scale, const std::string& fontKey)
 {
-    float width = 0.0f;
+    /*float width = 0.0f;
     float height = 0.0f;
 
     for (char c : text)
@@ -1805,7 +1805,33 @@ Vec2 Render::CalculateTextSize(const std::string& text, float scale)
         height = std::max(height, (float)ch.Size.y * scale);
     }
 
-    return { width, height };
+    return { width, height };*/
+
+    Vec2 TextDimensions{ 0.0f, 0.0f };
+
+    //check if font exists
+    auto it = fontCache.find(fontKey);
+    if (it == fontCache.end()) {
+        std::cerr << "CalculateTextSize: font not found: " << fontKey << "\n";
+        return TextDimensions;
+    }
+    const Font& font = it->second;
+
+    for (char c : text)
+    {
+        // ASCII only (0..127); skip if out of range
+        unsigned char uc = static_cast<unsigned char>(c);
+        const Character& ch = font.glyphs[uc];
+
+        // WIDTH. accumulate width by glyph advance (already in pixels), no need bit shift again, alrdy done in loadfont
+        TextDimensions.x += static_cast<float>(ch.Advance) * scale;
+
+        // HEIGHT. tallest glyph height seen so far
+        float h = static_cast<float>(ch.Size.y) * scale;
+        TextDimensions.y = (h > TextDimensions.y) ? h : TextDimensions.y; // 
+    }
+
+    return TextDimensions;
 }
 
 
