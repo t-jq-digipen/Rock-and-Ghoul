@@ -24,6 +24,7 @@
 
 #include "CollisionManager.h"
 #include "SpatialGrid.h"
+#include "Remath.h"
 #include <algorithm>
 
 // Spatial grid for broad-phase optimization
@@ -213,8 +214,8 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
 
     // Calculate collision normal
     Vec2 diff = RG_Subtract(transB.pos, transA.pos);
-    float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - fabs(diff.x);
-    float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - fabs(diff.y);
+    float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - RG_Abs(diff.x);
+    float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - RG_Abs(diff.y);
 
     if (overlapX <= 0 || overlapY <= 0) return;
 
@@ -269,7 +270,7 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
 
         // Special handling for high-speed impacts (like dashing into walls)
         const float highSpeedThreshold = 500.0f;
-        if ((aStatic || bStatic) && fabs(velAlongNormal) > highSpeedThreshold) {
+        if ((aStatic || bStatic) && RG_Abs(velAlongNormal) > highSpeedThreshold) {
             // For high-speed wall impacts, just stop velocity along normal
             if (!aStatic) {
                 Vec2 normalComponent = RG_Scale(normal, velAlongNormal);
@@ -284,7 +285,7 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
             return;  // Skip impulse calculation for high-speed wall impacts
         }
 
-        float e = std::min(physA.GetRestitution(), physB.GetRestitution());
+        float e = RG_Min(physA.GetRestitution(), physB.GetRestitution());
 
         float invMassA = aStatic ? 0.0f : 1.0f / physA.GetMass();
         float invMassB = bStatic ? 0.0f : 1.0f / physB.GetMass();

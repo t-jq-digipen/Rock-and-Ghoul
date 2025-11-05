@@ -13,9 +13,9 @@
  */
 
 #include "SpatialGrid.h"
+#include "Remath.h"
 #include <algorithm>
 #include <unordered_set>
-#include <cmath>
 
 SpatialGrid::SpatialGrid(float cellSize)
     : cellSize(cellSize)
@@ -35,8 +35,8 @@ std::pair<int, int> SpatialGrid::WorldToCell(float x, float y) const {
     // Convert world coordinates to grid cell coordinates
     // Using floor division to handle negative coordinates correctly
     return {
-        static_cast<int>(std::floor(x / cellSize)),
-        static_cast<int>(std::floor(y / cellSize))
+        static_cast<int>(RG_Floor(x / cellSize)),
+        static_cast<int>(RG_Floor(y / cellSize))
     };
 }
 
@@ -166,7 +166,7 @@ SpatialGrid::Stats SpatialGrid::GetStats() const {
     for (const auto& [cell, entities] : grid) {
         if (!entities.empty()) {
             stats.occupiedCells++;
-            stats.maxEntitiesInCell = std::max(stats.maxEntitiesInCell, entities.size());
+            stats.maxEntitiesInCell = static_cast<size_t>(RG_Max(static_cast<float>(stats.maxEntitiesInCell), static_cast<float>(entities.size())));
 
             for (Entity e : entities) {
                 uniqueEntities.insert(e);
@@ -207,10 +207,10 @@ SpatialGrid::DebugInfo SpatialGrid::GetDebugInfo() const {
 void SpatialGrid::MarkCollisionBetween(const AABB& aabbA, const AABB& aabbB) {
     // Calculate the intersection region of the two AABBs
     AABB intersection;
-    intersection.min.x = std::max(aabbA.min.x, aabbB.min.x);
-    intersection.min.y = std::max(aabbA.min.y, aabbB.min.y);
-    intersection.max.x = std::min(aabbA.max.x, aabbB.max.x);
-    intersection.max.y = std::min(aabbA.max.y, aabbB.max.y);
+    intersection.min.x = RG_Max(aabbA.min.x, aabbB.min.x);
+    intersection.min.y = RG_Max(aabbA.min.y, aabbB.min.y);
+    intersection.max.x = RG_Min(aabbA.max.x, aabbB.max.x);
+    intersection.max.y = RG_Min(aabbA.max.y, aabbB.max.y);
 
     // If there's no valid intersection, don't mark anything
     if (intersection.min.x >= intersection.max.x || intersection.min.y >= intersection.max.y) {

@@ -2,7 +2,7 @@
  * @file        Remath.cpp
  * @author      Yasmin Tazi         | yasmin.t@digipen.edu
  * @co-author   Tan Ying Clarissa   | t.yingclarissa@digipen.edu
- * @date        01 OCT 2025
+ * @date        05 NOV 2025
  *
  * @brief
  * Implementation file for Remath library. This library includes
@@ -25,7 +25,7 @@
  * - Utility Functions: Custom square root implementation using Newton's
  *   method and clamping function for value range restriction.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright Â© 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -326,7 +326,7 @@ Vec3 RG_CrossProduct(const Vec3& a, const Vec3& b) {
 }
 
 float RG_Length(const Vec3& v) {
-    return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    return RG_Sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
 float RG_LengthSquared(const Vec3& v) {
@@ -341,7 +341,7 @@ float RG_DistanceSquared(const Vec3& p1, const Vec3& p2) {
 }
 
 float RG_Distance(const Vec3& p1, const Vec3& p2) {
-    return std::sqrt(RG_DistanceSquared(p1, p2));
+    return RG_Sqrt(RG_DistanceSquared(p1, p2));
 }
 
 Vec3 RG_Normalize(const Vec3& v) {
@@ -398,4 +398,76 @@ void RG_Clamp(float& val, float const& min, float const& max) {
     if (val < min) {
         val = min;
     }
+}
+
+/**
+ * @brief Returns the absolute value of a number.
+ *
+ * @param x The number to get the absolute value of.
+ * @return float The absolute value of x.
+ */
+float RG_Abs(float x) {
+    return (x < 0.0f) ? -x : x;
+}
+
+/**
+ * @brief Returns the minimum of two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ * @return float The smaller of the two values.
+ */
+float RG_Min(float a, float b) {
+    return (a < b) ? a : b;
+}
+
+/**
+ * @brief Returns the maximum of two values.
+ *
+ * @param a The first value.
+ * @param b The second value.
+ * @return float The larger of the two values.
+ */
+float RG_Max(float a, float b) {
+    return (a > b) ? a : b;
+}
+
+/**
+ * @brief Returns the floor of a value (largest integer <= x).
+ *
+ * @param x The value to floor.
+ * @return float The floor of x.
+ */
+float RG_Floor(float x) {
+    int intPart = static_cast<int>(x);
+    // Handle negative numbers correctly
+    if (x < 0.0f && x != static_cast<float>(intPart)) {
+        return static_cast<float>(intPart - 1);
+    }
+    return static_cast<float>(intPart);
+}
+
+/**
+ * @brief Computes base raised to the power of exponent.
+ *
+ * Uses natural logarithm and exponential for accurate results.
+ *
+ * @param base The base value.
+ * @param exponent The exponent value.
+ * @return float base^exponent.
+ */
+float RG_Pow(float base, float exponent) {
+    // Handle special cases
+    if (exponent == 0.0f) return 1.0f;
+    if (exponent == 1.0f) return base;
+    if (base == 0.0f) return 0.0f;
+    if (base == 1.0f) return 1.0f;
+    if (base < 0.0f && exponent != static_cast<int>(exponent)) {
+        // Negative base with non-integer exponent is undefined in real numbers
+        return 0.0f;
+    }
+
+    // For calculations like physics damping, we need to use built-in power
+    // i'm sorry i rlly can't calculate it ;-;
+    return std::pow(base, exponent);
 }
