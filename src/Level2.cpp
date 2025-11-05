@@ -418,7 +418,7 @@ void Level2::Update()
 
 	CrashHandler::Safe("Level2", "Update", [&] {
 		// to test game state changes (do not trigger if GUI Editor is open)
-		if (Input::IsKeyPressed(GLFW_KEY_M) && !GuiSystem::Get().GetEditMode())
+		if (Input::IsKeyPressed(GLFW_KEY_8) && !GuiSystem::Get().GetEditMode())
 		{
 			GSM_SetNextState(GameState::GS_MAIN_MENU);
 			//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
