@@ -829,6 +829,15 @@ void ImGuiSystem::ShowInspectorWindow()
             }
             ImGui::TreePop();
         }
+
+        if (selectedEntity != INVALID_ENTITY &&
+            m_registry.Has_Component<Physics::PhysicsComponent>(selectedEntity) &&
+            m_registry.Has_Component<TransformComponent>(selectedEntity))
+        {
+            auto& p = m_registry.Get_Component<Physics::PhysicsComponent>(selectedEntity);
+            auto& t = m_registry.Get_Component<TransformComponent>(selectedEntity);
+            p.UpdateHitboxes(t.pos);
+        }
     }
 
 }
