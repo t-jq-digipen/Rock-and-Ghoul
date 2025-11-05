@@ -43,7 +43,7 @@ GLuint bgTexture2 = 0;
 // Entities for Level 2
 Entity ECSplayer2{};
 Entity rock2;
-//Entity ghoul;
+// Entity ghoul;
 
 // Registry ref
 Registry& registry2 = Registry::Get();
@@ -126,6 +126,10 @@ void Level2::Load()
 			std::cerr << "ERROR: Circle.json was NOT generated!" << std::endl;
 			allGenerated = false;
 		}
+		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Enemy.json")) {
+			std::cerr << "ERROR: Enemy.json was NOT generated!" << std::endl;
+			allGenerated = false;
+		}
 
 		if (allGenerated) {
 			std::cout << "SUCCESS: All prefabs generated correctly!" << std::endl;
@@ -143,6 +147,10 @@ void Level2::Load()
 void Level2::Init()
 {
 	Render& renderer = Render::GetInstance();
+
+	float uiScaleX = GLApp::width / 1920.0f;
+	float uiScaleY = GLApp::height / 1080.0f;
+	float uiScale = std::min(uiScaleX, uiScaleY);
 
 	CrashHandler::Safe("Level2", "Init", [&] {
 		std::cout << "Level 2 Initialized!!!" << std::endl;
@@ -179,6 +187,14 @@ void Level2::Init()
 			.shape = ButtonShape::Rounded
 			});
 
+		GuiSystem::Get().AddTextBox({
+			.text = "ENEMY AI is being tested here",
+			.pos = {960.0f * uiScaleX, 150.0f * uiScaleY},
+			.scale = 0.5f * uiScale,
+			.color = {0.f, 0.f, 0.f},
+			.centered = true
+		});
+
 		// 5. Create FretBoard after OpenGL is ready (duplicate - can remove)
 		//if (!fretboard) {
 		//	fretboard = new FretBoard(0, 0, 800, 200);
@@ -196,6 +212,7 @@ void Level2::Init()
 			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
 			if (sceneLoaded) {
 				rock2 = registry2.Get_EntityID("Player");
+				//ghoul = registry2.Get_EntityID("Enemy");
 
 				std::cout << "Scene loaded successfully from level2.json!" << std::endl;
 			}
@@ -218,6 +235,14 @@ void Level2::Init()
 			else {
 				std::cout << "Created Player (Entity " << rock2 << ")" << std::endl;
 			}
+
+			//ghoul = Create_Enemy(1000.f, 500.f);
+			//if (ghoul == 0) {
+			//	std::cerr << "ERROR: Failed to create Enemy! Check if Enemy.json exists." << std::endl;
+			//}
+			//else {
+			//	std::cout << "Created Enemy (Entity " << ghoul << ")" << std::endl;
+			//}
 
 			std::cout << "Finished creating entities from prefabs." << std::endl;
 			Create_Wall(LEVEL_WIDTH / 2, LEVEL_HEIGHT - WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);

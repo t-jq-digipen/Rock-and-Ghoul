@@ -107,7 +107,7 @@ void CoreEngine::Initialize() {
     for (auto s : systems) s->Initialize();
     gsm.Init(GameState::GS_MAIN_MENU);
     GLApp::gameInitialized = true;
-    RegisterAllGameScripts();
+    //RegisterAllGameScripts();
 }
 
 void CoreEngine::Run() {
