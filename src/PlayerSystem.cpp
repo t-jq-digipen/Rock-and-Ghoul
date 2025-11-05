@@ -85,15 +85,6 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	default: break;
 	}
 
-	// Check if entity has dash component
-	bool hasDash = m_registry.Has_Component<DashComponent>(eID);
-	DashComponent* dashComp = hasDash ? &m_registry.Get_Component<DashComponent>(eID) : nullptr;
-
-	// Update dash timer
-	if (dashComp) {
-		dashComp->Update(dt);
-	}
-
 	float fx = static_cast<float>(hor);
 	float fy = static_cast<float>(ver);
 	NormalizeDiagonalMovement(fx, fy);
@@ -103,23 +94,34 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	moveComp.SetInputDirection(VelToDir(fx, fy));
 	moveComp.SetMovementDirection({ fx, fy });
 
-	// Handle dash input
-	bool isDashing = dashComp && dashComp->IsDashing();
+	// Track timer
+	static float dashTimer = 0.f;
+	static Entity dashingEntity = 0;
 
-	if (dashComp && Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT) && !isDashing && moving) {
-		dashComp->StartDash();
+	// Update dash timer
+	if (dashTimer > 0.f) {
+		dashTimer -= dt;
+		if (dashTimer < 0.f) dashTimer = 0.f;
 	}
 
-	// Update max speed
-	physics.SetMaxSpeed(isDashing ? dashComp->dashMaxSpeed : MAX_SPEED);
+	bool isDashing = (dashTimer > 0.f && dashingEntity == eID);
+
+	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT) && moving && !isDashing) {
+		dashTimer = 0.2f;  // Dash lasts 0.2 seconds
+		dashingEntity = eID;
+		isDashing = true;
+	}
+
+	// Update max speed based on dash state so that it's noticeable
+	physics.SetMaxSpeed(isDashing ? 1000.f : 500.f);
 
 	// Clear forces every frame
 	physics.ClearForces();
 
-	// Apply forces based on state
 	if (moving) {
 		if (isDashing) {
-			physics.AddForce({ fx, fy }, dashComp->dashForce, 0.f);
+			// Big force during dash
+			physics.AddForce({ fx, fy }, 20000.f, 0.f);
 		} else {
 			// Normal movement
 			physics.AddForce({ fx, fy }, MOVE_FORCE, 0.f);

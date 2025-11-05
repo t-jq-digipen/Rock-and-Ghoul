@@ -363,58 +363,6 @@ struct ShapeComponent {
 	}
 };
 
-// Dash component
-struct DashComponent {
-	float dashForce = 15000.f;        // Force magnitude for dash
-	float dashDuration = 0.15f;       // How long dash lasts
-	float dashMaxSpeed = 800.f;       // Max speed during dash
-	float dashTimer = 0.f;            // Current dash timer (0 = not dashing)
-
-	// Check if entity is currently dashing
-	bool IsDashing() const { return dashTimer > 0.f; }
-
-	// Start dash
-	void StartDash() { dashTimer = dashDuration; }
-
-	// Update dash timer
-	void Update(float dt) {
-		if (dashTimer > 0.f) {
-			dashTimer -= dt;
-			if (dashTimer < 0.f) dashTimer = 0.f;
-		}
-	}
-
-	std::string Serialize() const {
-		json j = {
-			{"dashForce", dashForce},
-			{"dashDuration", dashDuration},
-			{"dashMaxSpeed", dashMaxSpeed}
-		};
-		return j.dump();
-	}
-
-	static DashComponent DeSerialize(Entity eID, const std::string& data) {
-		(void)eID;
-		if (data.empty()) {
-			return DashComponent();
-		}
-		json j = json::parse(data);
-		DashComponent dash;
-		dash.dashForce = j.value("dashForce", 15000.0f);
-		dash.dashDuration = j.value("dashDuration", 0.15f);
-		dash.dashMaxSpeed = j.value("dashMaxSpeed", 800.0f);
-		return dash;
-	}
-
-	Editor::ComponentData EditorData() {
-		Editor::ComponentData ret("Dash");
-		ret.Add_Data("Force", Editor::Widget_Float{&dashForce, true, 1000.f, 50000.f});
-		ret.Add_Data("Duration", Editor::Widget_Float{&dashDuration, true, 0.05f, 1.f});
-		ret.Add_Data("MaxSpeed", Editor::Widget_Float{&dashMaxSpeed, true, 200.f, 2000.f});
-		return ret;
-	}
-};
-
 //enum Element {
 //	ELEMENT_NONE,
 //	ELEMENT_FIRE,

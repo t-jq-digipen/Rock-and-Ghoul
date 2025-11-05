@@ -468,6 +468,6 @@ float RG_Pow(float base, float exponent) {
     }
 
     // For calculations like physics damping, we need to use built-in power
-    // i'm sorry i rlly can't calculate it ;-;
+    // I'm sorry I really can't calculate it ;-;
     return std::pow(base, exponent);
 }
