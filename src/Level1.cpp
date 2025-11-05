@@ -46,14 +46,14 @@ constexpr float WALL_THICKNESS = 50.f;
 // Background Texture
 GLuint bgTexture = 0;
 
-// Entities for Level 1
-Entity ECSplayer{};
-Entity rock;
-Entity square;
-Entity roundy;
-Entity waffle;
-Entity ghoul;
-Entity testEntity; // for fixed dt, pink square
+//// Entities for Level 1
+//Entity ECSplayer{};
+//Entity rock;
+//Entity square;
+//Entity roundy;
+//Entity waffle;
+//Entity ghoul;
+//Entity testEntity; // for fixed dt, pink square
 // Registry ref
 Registry& registry = Registry::Get();
 //Camera mainCamera;
@@ -235,11 +235,11 @@ void Level1::Init()
 			std::cout << "Found level1.json, attempting to load..." << std::endl;
 			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
 			if (sceneLoaded) {
-				waffle = registry.Get_EntityID("Waffle");
-				rock = registry.Get_EntityID("Player");
-				square = registry.Get_EntityID("Rectangle");
-				roundy = registry.Get_EntityID("Circle");
-				ghoul = registry.Get_EntityID("ghoul");
+				registry.Get_EntityID("Waffle");
+				registry.Get_EntityID("Player");
+				registry.Get_EntityID("Rectangle");
+				registry.Get_EntityID("Circle");
+				registry.Get_EntityID("ghoul");
 
 				std::cout << "Scene loaded successfully from level1.json!" << std::endl;
 			}
@@ -255,7 +255,7 @@ void Level1::Init()
 			// ===== Better error handling when creating from prefabs =====
 			std::cout << "Creating fresh entities from prefabs..." << std::endl;
 
-			waffle = Create_Waffle(400.f, 400.f);
+			Entity waffle = Create_Waffle(400.f, 400.f);
 			if (waffle == 0) {
 				std::cerr << "ERROR: Failed to create Waffle! Check if Waffle.json exists." << std::endl;
 			}
@@ -263,7 +263,7 @@ void Level1::Init()
 				std::cout << "Created Waffle (Entity " << waffle << ")" << std::endl;
 			}
 
-			rock = Create_Player(200.f, 500.f);
+			Entity rock = Create_Player(200.f, 500.f);
 			if (rock == 0) {
 				std::cerr << "ERROR: Failed to create Player! Check if Player.json exists." << std::endl;
 			}
@@ -271,7 +271,7 @@ void Level1::Init()
 				std::cout << "Created Player (Entity " << rock << ")" << std::endl;
 			}
 
-			square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
+			Entity square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
 			if (square == 0) {
 				std::cerr << "ERROR: Failed to create Rectangle! Check if Rectangle.json exists." << std::endl;
 			}
@@ -279,14 +279,15 @@ void Level1::Init()
 				std::cout << "Created Rectangle (Entity " << square << ")" << std::endl;
 			}
 
-			roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
+			Entity roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
 			if (roundy == 0) {
 				std::cerr << "ERROR: Failed to create Circle! Check if Circle.json exists." << std::endl;
 			}
 			else {
 				std::cout << "Created Circle (Entity " << roundy << ")" << std::endl;
 			}
-			ghoul = Create_Ghoul(1000.f, 500.f);
+
+			Entity ghoul = Create_Ghoul(1000.f, 500.f);
 			if (ghoul == 0) {
 				std::cerr << "ERROR: Failed to create Ghoul! Check if ghoul.json exists." << std::endl;
 			}
@@ -299,7 +300,7 @@ void Level1::Init()
 			std::cout << "\n[FIXED DT TEST] Creating test entity with constant velocity\n";
 
 			// create test entity
-			testEntity = registry.Create_Entity();
+			Entity testEntity = registry.Create_Entity();
 			registry.Set_EntityName(testEntity, "FixedDT_Test");
 
 			// add Transform component in the centre
@@ -609,7 +610,7 @@ void Level1::Update()
 					auto& s = registry.Get_Component<Sprite::SpriteComponent>(e);
 					if (s.Get_TexturePath().find("Waffle") != std::string::npos) {
 						std::cout << "Found waffle at Entity " << e << std::endl;
-						waffle = e;  // Update the waffle variable
+						// waffle = e;  // Update the waffle variable
 						break;
 					}
 				}
