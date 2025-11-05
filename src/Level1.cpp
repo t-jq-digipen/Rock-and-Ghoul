@@ -428,10 +428,10 @@ void Level1::Update()
 		}
 	}
 
-	if (cam.GetMode() == Camera::Mode::GAME)
-	{
-		cam.FollowTarget(cam, playerTransform.pos, dt);
-	}
+	//if (cam.GetMode() == Camera::Mode::GAME)
+	//{
+	//	cam.FollowTarget(cam, playerTransform.pos, dt);
+	//}
 
 
 

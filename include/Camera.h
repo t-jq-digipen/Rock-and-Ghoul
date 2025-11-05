@@ -90,7 +90,7 @@ public:
     void SetMode(Mode m) { mode = m; }
     Mode GetMode() const { return mode; }
     void ResetToCenter();
-    void FollowTarget(Camera& cam, const Vec2& targetPos, float dt);
+    void FollowTarget(const Vec2& targetPos, float dt);
     // Accessors for camera data
     const Vec2& GetPosition() const { return position; }
     const Vec2& GetTargetPosition() const { return targetPosition; }

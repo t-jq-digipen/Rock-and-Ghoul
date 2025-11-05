@@ -104,7 +104,7 @@ void Camera::ResetToCenter()
     UpdateMatrices();
 }
 
-void Camera::FollowTarget( Camera& cam, const Vec2& targetPos, float dt)
+void Camera::FollowTarget(const Vec2& targetPos, float dt)
 {
     if (mode != Mode::GAME)
         return; // do nothing if in editor mode
@@ -113,13 +113,13 @@ void Camera::FollowTarget( Camera& cam, const Vec2& targetPos, float dt)
     position = RG_Lerp(position, targetPos, followSpeed * dt);
     UpdateMatrices();*/
     const float followSpeed = 2.0f; // adjust for smoothness
-    Vec2 newPos = RG_Lerp(cam.GetPosition(), targetPos, followSpeed * dt);
+    Vec2 newPos = RG_Lerp(GetPosition(), targetPos, followSpeed * dt);
 
-    float halfW = (static_cast<float>(GLApp::width) * 0.5f) / cam.GetZoom();
-    float halfH = (static_cast<float>(GLApp::height) * 0.5f) / cam.GetZoom();
+    float halfW = (static_cast<float>(GLApp::width) * 0.5f) / GetZoom();
+    float halfH = (static_cast<float>(GLApp::height) * 0.5f) / GetZoom();
 
-    Vec2 min = cam.GetWorldMin();
-    Vec2 max = cam.GetWorldMax();
+    Vec2 min = GetWorldMin();
+    Vec2 max = GetWorldMax();
 
     /*std::cout << "Camera pos: " << newPos.x
         << "  halfW: " << halfW
@@ -130,6 +130,6 @@ void Camera::FollowTarget( Camera& cam, const Vec2& targetPos, float dt)
     newPos.x = std::max(min.x + halfW, std::min(newPos.x, max.x - halfW));
     newPos.y = std::max(min.y + halfH, std::min(newPos.y, max.y - halfH));
 
-    cam.SetPosition(newPos);
-    cam.UpdateMatrices();
+    SetPosition(newPos);
+    UpdateMatrices();
 }
