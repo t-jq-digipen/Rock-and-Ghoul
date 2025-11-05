@@ -372,14 +372,14 @@ void Level1::Update()
 
 	// Check names correct
 	// NEEDTOREPLACE with messaging system
-	if (registry.Get_EntityName(waffle) != "Waffle")	
-	{ waffle = registry.Get_EntityID("Waffle"); }
-	if (registry.Get_EntityName(rock) != "Player")		
-	{ rock = registry.Get_EntityID("Player"); }
-	if (registry.Get_EntityName(square) != "Rectangle")	
-	{ square = registry.Get_EntityID("Rectangle"); }
-	if (registry.Get_EntityName(roundy) != "Circle")	
-	{ roundy = registry.Get_EntityID("Circle"); }
+	//if (registry.Get_EntityName(waffle) != "Waffle")	
+	//{ waffle = registry.Get_EntityID("Waffle"); }
+	//if (registry.Get_EntityName(rock) != "Player")		
+	//{ rock = registry.Get_EntityID("Player"); }
+	//if (registry.Get_EntityName(square) != "Rectangle")	
+	//{ square = registry.Get_EntityID("Rectangle"); }
+	//if (registry.Get_EntityName(roundy) != "Circle")	
+	//{ roundy = registry.Get_EntityID("Circle"); }
 	/*if (registry.Get_EntityName(ghoul) != "ghoul")
 	if (registry.Get_EntityName(waffle) != "Waffle")
 	{
