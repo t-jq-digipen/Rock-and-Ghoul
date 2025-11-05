@@ -21,8 +21,8 @@ struct BehaviourComponent
     std::vector<ScriptID> scriptIDList;
 
     // ScriptID scriptID = ScriptID::NONE;        // Internal enum for fast lookup
-    // std::string scriptName = "";               // Human-readable name
-    // bool started = false;                      // Whether Init() ran yet
+    std::string scriptName = "";               // Human-readable name
+    bool started = false;                      // Whether Init() ran yet
     BehaviourComponent() = default;
     ~BehaviourComponent()
     {

@@ -32,18 +32,20 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include "Audio.h"
-#include <fstream>
-#include <nlohmann/json.hpp>
-#include <unordered_set> 
 #include "Render.h" 
 #include "Camera.h"
 #include "LogicSystem.h"
 #include "GuiSystem.h"
 #include "BehaviourComponent.h"
+#include "DataDefs.h"
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <unordered_set> 
 #include <string>
 #include <iostream>
 static bool isPlacingPrefab = false;
 static std::string pendingPrefabPath;
+
 bool ImGuiSystem::showColliders = false;
 bool ImGuiSystem::showVelocity = false;
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
@@ -52,7 +54,7 @@ static bool isDraggingEntity = false;
 
 bool ImGuiSystem::guiEnabled = false;
 static FMOD::Channel* previewChannel = nullptr;
-#include "DataDefs.h"
+
 static std::vector<std::string> droppedFiles;
 // global (file-scope) thumbnail cache for runtime updates
 static std::vector<Image> g_loadedThumbnails;
