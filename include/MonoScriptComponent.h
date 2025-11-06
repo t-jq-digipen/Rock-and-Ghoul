@@ -9,9 +9,9 @@ struct MonoScriptComponent
 {
     std::string className;
     MonoObject* instance = nullptr;
-    Entity entityID = INVALID_ENTITY; // link back to ECS entity
+    Entity entityID = INVALID_ENTITY;
 
-    // === Editor support ===
+    //FILLTHISHSITJQ
     Editor::ComponentData EditorData() const
     {
         Editor::ComponentData data("Mono Script");
@@ -19,17 +19,16 @@ struct MonoScriptComponent
         return data;
     }
 
-    // === Serialization ===
     std::string Serialize() const
     {
-        return className; // simplest possible serialization
+        return className;
     }
 
     static MonoScriptComponent DeSerialize(Entity eID, const std::string& data)
     {
         (void)eID;
         MonoScriptComponent comp;
-        comp.className = data; // reconstruct from saved string
+        comp.className = data;
         return comp;
     }
 

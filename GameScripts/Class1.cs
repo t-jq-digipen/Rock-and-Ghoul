@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 
 public static class ECS
 {
+    //https://www.mono-project.com/docs/advanced/pinvoke/
     [DllImport("team_aviddivas.exe", EntryPoint = "CS_GetPosition")]
     public static extern void GetPosition(uint entity, out float x, out float y);
 
@@ -16,7 +17,7 @@ public static class ECS
     public static extern void SetRotation(uint entity, float rot);
 }
 
-
+//https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/extern
 public static class InputBridge
 {
     [DllImport("team_aviddivas.exe", EntryPoint = "CS_IsKeyPressed")]
@@ -31,9 +32,7 @@ public class Rotator
         float currentRotation = ECS.GetRotation(EntityID);
         currentRotation += 90f * dt;  // 90 degrees per second
         ECS.SetRotation(EntityID, currentRotation);
-
-
-       // Console.WriteLine($"[Rotator] Entity {EntityID} rotation={currentRotation:F1}");
+     
     }
 }
 
@@ -45,13 +44,14 @@ public class Mover
     {
         ECS.GetPosition(EntityID, out float x, out float y);
 
-        // Move up & down with sine wave
+        // up & down with sine wave
         time += dt;
         float amplitude = 100.0f;   // how far up/down
         float speed = 2.0f;         // how fast it moves
+        //https://learn.microsoft.com/en-us/dotnet/api/system.math.sin?view=net-9.0
         float newY = 500.0f + (float)Math.Sin(time * speed) * amplitude;
 
-        // 3. Write new position
+        // new position
         ECS.SetPosition(EntityID, x, newY);
     }
 }

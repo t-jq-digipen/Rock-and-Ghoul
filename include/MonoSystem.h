@@ -18,66 +18,56 @@ public:
         std::cout << "[MonoSystem] Initializing Mono runtime...\n";
 
         MonoManager::Get().Initialize(dllPath);
-
-        if (std::filesystem::exists(dllPath))
-            lastWriteTime = std::filesystem::last_write_time(dllPath);
-        else
-            std::cerr << "[MonoSystem] WARNING: GameScripts.dll not found at " << dllPath << "\n";
     }
 
     void Update(float dt) override
     {
-        // --- Hot Reload Check ---
-        if (std::filesystem::exists(dllPath))
-        {
-            auto currentWriteTime = std::filesystem::last_write_time(dllPath);
+        //SHOULD IMPLEMENT HOT RELOADING HERE
 
-            if (currentWriteTime != lastWriteTime)
-            {
-                std::cout << "[MonoSystem] Detected GameScripts.dll change — reloading...\n";
-
-                // Shutdown old Mono domain
-                MonoManager::Get().Shutdown();
-
-                // Restart Mono runtime + reload assembly
-                MonoManager::Get().Initialize(dllPath);
-
-                lastWriteTime = currentWriteTime;
-
-                // Reset script instances to rebind to new assembly
-                auto& scripts = Registry::Get().Get_ComponentMap<MonoScriptComponent>();
-                for (auto& [entity, script] : scripts)
-                {
-                    script.instance = nullptr;
-                }
-            }
-        }
-
-        // --- Normal script update ---
         Registry& reg = Registry::Get();
         auto& scripts = reg.Get_ComponentMap<MonoScriptComponent>();
 
         for (auto& [entity, script] : scripts)
         {
-            // Give C# entities readable names
+            //C# entities readable names
             std::string currentName = reg.Get_EntityName(entity);
+            //reverse find
             if (currentName.rfind("Entity_", 0) == 0)
                 reg.Set_EntityName(entity, "C# " + script.className);
 
             if (!script.instance)
             {
-                MonoClass* klass = mono_class_from_name(MonoManager::Get().GetImage(), "", script.className.c_str());
-                if (!klass)
+
+                //void CallPrint()
+                //{
+                //    // Get class info
+                //    MonoImage* image = mono_assembly_get_image(assembly);
+                //    MonoClass* _class = mono_class_from_name(image, _namespace, _name);
+                //    if (!_class) return;
+
+                //    // Get method info
+                //    // Last parameter is # of parameters in method definition
+                //    MonoMethod* method = mono_class_get_method_from_name(_class, "Print", 0);
+                //    if (!method) return;
+
+                //    // Call method
+                //    MonoObject* exception = nullptr; // Exception gets stored in this object
+                //    mono_runtime_invoke(method, nullptr, nullptr, &exception);
+                //    if (exception)
+                //        mono_print_unhandled_exception(exception);
+                //}
+                MonoClass* constructorMethod = mono_class_from_name(MonoManager::Get().GetImage(), "", script.className.c_str());
+                if (!constructorMethod)
                 {
                     std::cerr << "[MonoSystem] Class not found: " << script.className << "\n";
                     continue;
                 }
 
-                script.instance = mono_object_new(MonoManager::Get().GetDomain(), klass);
+                script.instance = mono_object_new(MonoManager::Get().GetDomain(), constructorMethod);
                 mono_runtime_object_init(script.instance);
 
                 // Assign EntityID field in C#
-                MonoClassField* field = mono_class_get_field_from_name(klass, "EntityID");
+                MonoClassField* field = mono_class_get_field_from_name(constructorMethod, "EntityID");
                 if (field)
                 {
                     unsigned int eid = entity;
@@ -87,15 +77,36 @@ public:
                 script.entityID = entity;
             }
 
-            // Call C# Update(float dt)
+            // call C# Update(float dt)
+            //https://www.giorgosdimtsas.net/blog/embedding-mono-in-a-c-application/
             if (script.instance)
             {
-                MonoClass* klass = mono_object_get_class(script.instance);
-                MonoMethod* update = mono_class_get_method_from_name(klass, "Update", 1);
-                if (update)
+                MonoClass* MonoClass = mono_object_get_class(script.instance);
+                if (!MonoClass)
                 {
-                    void* args[1] = { &dt };
-                    mono_runtime_invoke(update, script.instance, args, nullptr);
+                    std::cerr << "[MonoSystem] Failed to get MonoClass for instance of " << script.className << "\n";
+                    continue;
+                }
+
+                // find the GetName method
+                MonoMethod* getNameMethod = mono_class_get_method_from_name(MonoClass, "Update", 1);
+                if (!getNameMethod)
+                {
+                    std::cerr << "[MonoSystem] C# class '" << script.className << "' does not have an Update(float) method.\n";
+                    continue;
+                }
+
+                //argument array
+                void* args[1];
+                args[0] = &dt;
+
+                // finally, invoke the constructor
+                MonoObject* exception = nullptr;
+                mono_runtime_invoke(getNameMethod, script.instance, args, &exception);
+                if (exception)
+                {
+                    std::cerr << "[MonoSystem] Exception in " << script.className << ".Update():\n";
+                    mono_print_unhandled_exception(exception);
                 }
             }
         }
