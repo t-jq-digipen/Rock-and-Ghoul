@@ -4,21 +4,24 @@
  * @date        06 NOV 2025
  *
  * @brief
- * 
- * Implements the ImGuiSystem, which provides a in-game editor UI. The system toggles with F1 and
- * displays a single "Game Editor" window containing multiple panels:
- * 
- * - Engine Info:           Framerate and system timings
- * - Collision:             Displays collider stats and scene management
- * - Hierarchy + Editor:    Entity list and property editor
+ * Implements the ImGuiSystem, which provides the in-game editor
+ * and debugging interface for the engine.
  *
- * Panels are switched using buttons inside the editor window.
- * This design avoids multiple pop-up windows by embedding
- * panel content inline within one parent window.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * - Engine Info: Displays Framerate and system timings
+ * - Collision + Scene: Shows collider stats, spatial grid stats and scene management
+ * - Entity Editor + Prefabs: Allows editing, adding, and saving entities.
+ * - Assets: Browser for textures and audio files via drag-and-drop import.
+ * - Game View: Renders the current scene with play/stop simulation controls.
+ * - Editor Camera: Provides overview of the level camera.
+ *
+ * It also supports prefab placement, entity dragging, file drag-and-drop
+ * imports, and scene.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
+
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
@@ -1138,6 +1141,7 @@ void ImGuiSystem::ShowAddRemoveComponents()
             ImGui::SameLine();
             if (ImGui::SmallButton("Remove"))
             {
+                std::string compName = m_registry.Get_ComponentTypeName(typeID);
                 if (compName == "Animator" &&
                     m_registry.Has_Component<Sprite::SpriteComponent>(eID))
                 {
@@ -1146,7 +1150,7 @@ void ImGuiSystem::ShowAddRemoveComponents()
                 }
 
                 m_registry.Remove_Component(eID, typeID);
-                std::cout << "[Editor] Removed " << compName << " from entity " << eID << "\n";
+                std::cout << "[Editor] Removed component from entity "<< eID << "\n";
             }
         }
         else
@@ -1221,7 +1225,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                                 g_imageNames.push_back(entry.path().filename().string());
                             }
                         }
-                        catch (const std::exception& e) {
+                        catch (...) {
                             std::cerr << "Failed to load " << entry.path() << "\n";
                         }
                     }
@@ -1703,7 +1707,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
 {
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
-    Camera& cam = Camera::GetInstance();
+   // Camera& cam = Camera::GetInstance();
     /* w (x'/w, y' / w) omg comp graph*/
     //moved into cam
     //glm::mat4 VP = cam.GetViewProjection();
