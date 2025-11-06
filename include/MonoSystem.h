@@ -1,3 +1,29 @@
+/* ========================================================
+ * @file        MonoSystem.h
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        07 NOV 2025
+ *
+ * @brief
+ * Declares and implements the MonoSystem, which integrates
+ * the C# scripting layer into the ECS update loop using
+ * the embedded Mono runtime.
+ *
+ * The MonoSystem iterates through all entities that have a
+ * MonoScriptComponent
+ *
+ * - Initializes the Mono runtime and loads the C# assembly through Mono Manager
+ * - Manage C# objects that correspond to each entity script class.
+ * - Passes the entity ID to enable script-to-engine.
+ * - Invokes Update(float dt) method for every active managed script each frame.
+ *
+ * - Initialize() : Bootstraps Mono via MonoManager
+ * - Update(dt)   : Executes all C# scripts every frame
+ * - Shutdown()   : Cleans up Mono runtime and domain
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ======================================================== 
+ */
+
 #pragma once
 #include "System.h"
 #include "MonoManager.h"
@@ -6,6 +32,16 @@
 #include <iostream>
 #include <filesystem>
 
+
+ /**
+  * @class MonoSystem
+  * @brief ECS system responsible for executing managed C# scripts.
+  *
+  * Iterates over all entities that contain a MonoScriptComponent
+  * and ensures each has a valid C# object instance. Invokes the
+  * managed Update(float dt) method per frame.
+  *
+  */
 class MonoSystem : public ISystem
 {
 private:

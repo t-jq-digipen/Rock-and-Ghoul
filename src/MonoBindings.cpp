@@ -1,3 +1,30 @@
+/* ========================================================
+ * @file        MonoBindings.cpp
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        07 NOV 2025
+ *
+ * @brief
+ * Provides C-compatible exported ECS access functions for use
+ * by managed C# scripts through Mono or .NET interoperability.
+ *
+ * These functions bridge between the native C++ ECS Registry and
+ * external C# scripts by exposing basic component operations
+ * through extern "C" and __declspec(dllexport).
+ *
+ * EXPORTED FUNCTIONS
+ * - CS_GetPosition(entity, &x, &y)   | Gets Transform position
+ * - CS_SetPosition(entity, x, y)     | Updates Transform position
+ * - CS_GetRotation(entity)           | Gets Transform rotation
+ * - CS_SetRotation(entity, rot)      | Updates Transform rotation
+ *
+ * Each function automatically checks if the entity has a
+ * TransformComponent before performing the operation.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ======================================================== 
+ */
+
+
 #include "Registry.h"
 #include "Component.h"
 #include <iostream>

@@ -1,3 +1,21 @@
+/* ========================================================
+ * @file        MonoManager.cpp
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        07 NOV 2025
+ *
+ * @brief
+ * Implements the MonoManager class, which embeds the Mono
+ * runtime within the engine to enable execution of managed
+ * C# scripts (.dll assembly).
+ *
+ * The MonoManager initialize and configure the Mono environment, load C# assembly,
+ * invoke script methods, and shutdown the runtime.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ======================================================== 
+ */
+
+
 #include "MonoManager.h"
 #include <iostream>
 #include <filesystem>
