@@ -58,7 +58,7 @@ void PhysicsSystem::Update(float dt) {
             phyComp.UpdateHitboxes(transComp.pos);
             // Collili checks!!(or different place?)
             // Collili reaction!!!
-            collisionManager.Clear();
+            // collisionManager.Clear();
             collisionManager.CheckCollisions();
             collisionManager.ProcessEvents();
         }
