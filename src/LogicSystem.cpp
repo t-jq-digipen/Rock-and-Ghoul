@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        LogicSystem.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu FILLTHISSHITJQ
+ * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
  * @date        07 NOV 2025
  *
  * @brief

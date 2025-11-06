@@ -93,7 +93,7 @@ namespace Physics {
 	PhysicsComponent::PhysicsComponent()
 		: vel{ 0.f, 0.f }
 		, acceleration{ 0.f, 0.f }
-		, decay{ 0.95f }       // Slight damping
+		, decay{ 0.015f }       // Slight damping
 		, maxSpeed{ 500.f }    // Prevent tunneling
 		, isStatic{ false }
 		, willCollide{ false }

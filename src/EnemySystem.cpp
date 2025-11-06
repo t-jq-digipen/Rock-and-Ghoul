@@ -298,7 +298,6 @@ void EnemySystem::Initialize()
 
 void EnemySystem::Update(float dt)
 {
-	Entity player = INVALID_ENTITY;
 
 	// check if game paused
 	if (GSM_IsGamePaused())
