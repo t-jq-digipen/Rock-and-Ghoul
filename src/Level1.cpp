@@ -627,19 +627,19 @@ void Level1::Update()
 		}
 		// --- Restart level with R key (disabled while ImGui editor is active) ---
 		//if (Input::IsKeyPressed(GLFW_KEY_R))
-		else if (Input::IsKeyPressed(GLFW_KEY_R) && !GuiSystem::Get().GetEditMode())
-		{
-			// don't trigger restart while editing or paused
-			if (!ImGuiSystem::guiEnabled && !GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
-			{
-				GSM_SetNextState(GameState::GS_RESTART);
-				std::cout << "Level 1 Restarted!!!" << std::endl;
-			}
-			else
-			{
-				std::cout << "[DEBUG] Ignored R press (editor or paused mode active)\n";
-			}
-		}
+		//else if (Input::IsKeyPressed(GLFW_KEY_R) && !GuiSystem::Get().GetEditMode())
+		//{
+		//	// don't trigger restart while editing or paused
+		//	if (!ImGuiSystem::guiEnabled && !GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
+		//	{
+		//		GSM_SetNextState(GameState::GS_RESTART);
+		//		std::cout << "Level 1 Restarted!!!" << std::endl;
+		//	}
+		//	else
+		//	{
+		//		std::cout << "[DEBUG] Ignored R press (editor or paused mode active)\n";
+		//	}
+		//}
 
 
 		// if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !guiSystem.GetEditMode())

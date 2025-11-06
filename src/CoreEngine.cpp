@@ -42,6 +42,11 @@
 #include "RenderSystem.h"
 #include "GuiSystem.h"
 
+#include "PlayerSystem.h"
+#include "EnemySystem.h"
+#include "PhysicsSystem.h"
+#include "MonoSystem.h"
+
 #include "BehaviourComponent.h"
 #include "GameScripts.h"
 #include "AudioComponent.h"
@@ -59,6 +64,24 @@ void CoreEngine::AddSystem(ISystem* sys) {
 }
 
 void CoreEngine::Initialize() {
+    // --- SYSTEMS ---
+
+    AddSystem(&LogicSystem::Get());
+    AddSystem(new MovementSystem());
+    AddSystem(new PlayerSystem());
+    //AddSystem(new ForcesManager());
+    AddSystem(new EnemySystem());
+    AddSystem(new PhysicsSystem());
+    AddSystem(new RenderSystem());
+    AddSystem(&GuiSystem::Get());
+    AddSystem(new ImGuiSystem());
+    AddSystem(new MonoSystem());
+    // --- SYSTEMS END ---
+
+    std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
+        << " at " << (void*)&GLApp::ptr_window << std::endl;
+
+    // --- COMPONENTS ---
     Registry& registry = Registry::Get();
     std::cout << "\n\nINITIALIZING REGISTRY\n==============================\n";
     std::cout << "INITIALIZING DEFAULT COMPONENTS: \n==============================\n";
@@ -102,7 +125,7 @@ void CoreEngine::Initialize() {
 
     registry.Register_Component<RenderLayerComponent>("RenderLayer");
     std::cout << "REGISTRY | REGISTERED RENDERLAYER COMPONENT\n";
-
+    // --- COMPONENTS END ---
 
     for (auto s : systems) s->Initialize();
     gsm.Init(GameState::GS_MAIN_MENU);
