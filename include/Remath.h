@@ -2,7 +2,7 @@
  * @file        Remath.h
  * @author      Yasmin Tazi			| yasmin.t@digipen.edu
  * @co-author   Tan Ying Clarissa	| t.yingclarissa@digipen.edu
- * @date        01 OCT 2025
+ * @date        06 NOV 2025
  *
  * @brief
  *
@@ -24,10 +24,18 @@
  * - Vec3 Operations: 3D vector mathematics including all functions
  *   from Vec2, and cross product.
  *
- * - Utility Functions: Custom square root implementation using Newton's
- *   method and clamping function for value range restriction.
+ * - Mat2 Operations: 2x2 matrix mathematics including construction,
+ *   arithmetic operators, matrix multiplication, transformations
+ *   (scale, rotation), transpose, determinant, and inverse.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * - Mat3 Operations: 3x3 matrix mathematics including all functions
+ *   from Mat2, and 3D rotations.
+ * 
+ * - Utility Functions: Custom square root implementation using Newton's
+ *   method, clamping function for value range restriction, absolute value,
+ *   min/max, floor, and power functions.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -164,8 +172,67 @@ struct Vec3 {
 
 #pragma endregion 3DVectors
 
+// 2D MATRICES
+// ==================================================
+#pragma region 2DMatrix
+struct Mat2 {
+	// m[column][row]
+	float m[2][2];
+
+	// Constructors
+	Mat2();
+	Mat2(float m00, float m01,
+		float m10, float m11);
+
+	static Mat2 Identity();
+	static Mat2 Zero();
+	static Mat2 Scale(float sx, float sy);
+	static Mat2 Rotation(float angleRad);
+
+	// Operator overloads
+	Mat2 operator+(const Mat2& rhs) const;
+	Mat2 operator-(const Mat2& rhs) const;
+	Mat2 operator*(float scalar) const;
+	Mat2 operator*(const Mat2& rhs) const;  // Matrix multiplication
+	Vec2 operator*(const Vec2& v) const;    // Matrix-vector multiplication
+};
+
+#pragma endregion 2DMatrix
+
+// 3D MATRICES
+// ==================================================
+#pragma region 3DMatrix
+struct Mat3 {
+	// m[column][row]
+	float m[3][3];
+
+	// Constructors
+	Mat3();
+	Mat3(float m00, float m01, float m02,
+		float m10, float m11, float m12,
+		float m20, float m21, float m22);
+
+	static Mat3 Identity();
+	static Mat3 Zero();
+	static Mat3 Scale(float sx, float sy, float sz);
+	static Mat3 RotationX(float angleRad);
+	static Mat3 RotationY(float angleRad);
+	static Mat3 RotationZ(float angleRad);
+
+	// Operator overloads
+	Mat3 operator+(const Mat3& rhs) const;
+	Mat3 operator-(const Mat3& rhs) const;
+	Mat3 operator*(float scalar) const;
+	Mat3 operator*(const Mat3& rhs) const;  // Matrix multiplication
+	Vec3 operator*(const Vec3& v) const;    // Matrix-vector multiplication
+
+};
+#pragma endregion 3DMatrix
+
 // UTILITY FUNCTIONS
 // ==================================================
+#pragma region UtilityOperations
+
 // Find the square root of a value
 /**
  * @brief Computes the square root using Newton's method.
@@ -220,6 +287,8 @@ float RG_Pow(float base, float exponent);
 
 // Clamp a value between two values
 void RG_Clamp(float& val, float const& min, float const& max);
+
+#pragma endregion UtilityOperations
 
 // VECTOR OPERATIONS (OVERLOADED FOR BOTH VEC2 AND VEC3)
 // ==================================================
@@ -413,5 +482,57 @@ Vec3 RG_CrossProduct(const Vec3& a, const Vec3& b);
 
 #pragma endregion VectorOperations
 
+// MATRIX OPERATIONS
+// ==================================================
+#pragma region MatrixOperations
+/**
+ * @brief Computes the transpose of a 2x2 matrix.
+ *
+ * @param mat The matrix to transpose.
+ * @return Mat2 The transposed matrix.
+ */
+Mat2 RG_Transpose(const Mat2& mat);
+
+/**
+ * @brief Computes the transpose of a 3x3 matrix.
+ *
+ * @param mat The matrix to transpose.
+ * @return Mat3 The transposed matrix.
+ */
+Mat3 RG_Transpose(const Mat3& mat);
+
+/**
+ * @brief Computes the determinant of a 2x2 matrix.
+ *
+ * @param mat The matrix.
+ * @return float The determinant value.
+ */
+float RG_Determinant(const Mat2& mat);
+
+/**
+ * @brief Computes the determinant of a 3x3 matrix.
+ *
+ * @param mat The matrix.
+ * @return float The determinant value.
+ */
+float RG_Determinant(const Mat3& mat);
+
+/**
+ * @brief Computes the inverse of a 2x2 matrix.
+ *
+ * @param mat The matrix to invert.
+ * @return Mat2 The inverse matrix. Returns identity if matrix is singular.
+ */
+Mat2 RG_Inverse(const Mat2& mat);
+
+/**
+ * @brief Computes the inverse of a 3x3 matrix.
+ *
+ * @param mat The matrix to invert.
+ * @return Mat3 The inverse matrix. Returns identity if matrix is singular.
+ */
+Mat3 RG_Inverse(const Mat3& mat);
+
+#pragma endregion MatrixOperations
 
 #endif // RG_MATH_H

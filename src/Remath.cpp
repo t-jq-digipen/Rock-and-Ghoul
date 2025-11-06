@@ -22,8 +22,16 @@
  * - Vec3 Operations: 3D vector mathematics including all functions
  *   from Vec2, and cross product.
  *
+ * - Mat2 Operations: 2x2 matrix mathematics including construction,
+ *   arithmetic operators, matrix multiplication, transformations
+ *   (scale, rotation), transpose, determinant, and inverse.
+ *
+ * - Mat3 Operations: 3x3 matrix mathematics including all functions
+ *   from Mat2, and 3D rotations.
+ * 
  * - Utility Functions: Custom square root implementation using Newton's
- *   method and clamping function for value range restriction.
+ *   method, clamping function for value range restriction, absolute value,
+ *   min/max, floor, and power functions.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -363,9 +371,325 @@ Vec3 RG_Lerp(const Vec3& a, const Vec3& b, float t) {
 #pragma endregion Vec3
 
 // ==============================================
+// 2D MATRIX CONSTRUCTORS AND OPERATORS
+// ==============================================
+#pragma region 2DMatrix
+
+Mat2::Mat2() {
+    for (int col{ 0 }; col < 2; col++) {
+        for (int row{ 0 }; row < 2; row++) {
+            m[col][row] = 0.0f;
+        }
+    }
+}
+
+Mat2::Mat2(float m00, float m01,
+    float m10, float m11) {
+    m[0][0] = m00; m[0][1] = m01;
+    m[1][0] = m10; m[1][1] = m11;
+}
+
+Mat2 Mat2::Identity() {
+    return Mat2(
+        1.0f, 0.0f,
+        0.0f, 1.0f
+    );
+}
+
+Mat2 Mat2::Zero() {
+    return Mat2(
+        0.0f, 0.0f,
+        0.0f, 0.0f
+    );
+}
+
+Mat2 Mat2::Scale(float sx, float sy) {
+    return Mat2(
+        sx, 0.0f,
+        0.0f, sy
+    );
+}
+
+Mat2 Mat2::Rotation(float angleRad) {
+    float c = RG_Cos(angleRad);
+    float s = RG_Sin(angleRad);
+    return Mat2(
+        c, s,
+        -s, c
+    );
+}
+
+Mat2 Mat2::operator+(const Mat2& rhs) const {
+    Mat2 result;
+    for (int col{ 0 }; col < 2; col++) {
+        for (int row{ 0 }; row < 2; row++) {
+            result.m[col][row] = m[col][row] + rhs.m[col][row];
+        }
+    }
+    return result;
+}
+
+Mat2 Mat2::operator-(const Mat2& rhs) const {
+    Mat2 result;
+    for (int col{ 0 }; col < 2; col++) {
+        for (int row{ 0 }; row < 2; row++) {
+            result.m[col][row] = m[col][row] - rhs.m[col][row];
+        }
+    }
+    return result;
+}
+
+Mat2 Mat2::operator*(float scalar) const {
+    Mat2 result;
+    for (int col{ 0 }; col < 2; col++) {
+        for (int row{ 0 }; row < 2; row++) {
+            result.m[col][row] = m[col][row] * scalar;
+        }
+    }
+    return result;
+}
+
+Mat2 Mat2::operator*(const Mat2& rhs) const {
+    Mat2 result;
+    for (int col{ 0 }; col < 2; col++) {
+        for (int row{ 0 }; row < 2; row++) {
+            result.m[col][row] =
+                m[0][row] * rhs.m[col][0] +
+                m[1][row] * rhs.m[col][1];
+        }
+    }
+    return result;
+}
+
+Vec2 Mat2::operator*(const Vec2& v) const {
+    return Vec2(
+        m[0][0] * v.x + m[1][0] * v.y,
+        m[0][1] * v.x + m[1][1] * v.y
+    );
+}
+
+#pragma endregion 2DMatrix
+
+// ==============================================
+// 3D MATRIX CONSTRUCTORS AND OPERATORS
+// ==============================================
+#pragma region 3DMatrix
+
+Mat3::Mat3() {
+    for (int col{ 0 }; col < 3; col++) {
+        for (int row{ 0 }; row < 3; row++) {
+            m[col][row] = 0.0f;
+        }
+    }
+}
+
+Mat3::Mat3(float m00, float m01, float m02,
+    float m10, float m11, float m12,
+    float m20, float m21, float m22) {
+    m[0][0] = m00; m[0][1] = m01; m[0][2] = m02;
+    m[1][0] = m10; m[1][1] = m11; m[1][2] = m12;
+    m[2][0] = m20; m[2][1] = m21; m[2][2] = m22;
+}
+
+Mat3 Mat3::Identity() {
+    return Mat3(
+        1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f
+    );
+}
+
+Mat3 Mat3::Zero() {
+    return Mat3(
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f
+    );
+}
+
+Mat3 Mat3::Scale(float sx, float sy, float sz) {
+    return Mat3(
+        sx, 0.0f, 0.0f,
+        0.0f, sy, 0.0f,
+        0.0f, 0.0f, sz
+    );
+}
+
+Mat3 Mat3::RotationX(float angleRad) {
+    float c = RG_Cos(angleRad);
+    float s = RG_Sin(angleRad);
+    return Mat3(
+        1.0f, 0.0f, 0.0f,
+        0.0f, c, s,
+        0.0f, -s, c
+    );
+}
+
+Mat3 Mat3::RotationY(float angleRad) {
+    float c = RG_Cos(angleRad);
+    float s = RG_Sin(angleRad);
+    return Mat3(
+        c, 0.0f, -s,
+        0.0f, 1.0f, 0.0f,
+        s, 0.0f, c
+    );
+}
+
+Mat3 Mat3::RotationZ(float angleRad) {
+    float c = RG_Cos(angleRad);
+    float s = RG_Sin(angleRad);
+    return Mat3(
+        c, s, 0.0f,
+        -s, c, 0.0f,
+        0.0f, 0.0f, 1.0f
+    );
+}
+
+Mat3 Mat3::operator+(const Mat3& rhs) const {
+    Mat3 result;
+    for (int col{ 0 }; col < 3; col++) {
+        for (int row{ 0 }; row < 3; row++) {
+            result.m[col][row] = m[col][row] + rhs.m[col][row];
+        }
+    }
+    return result;
+}
+
+Mat3 Mat3::operator-(const Mat3& rhs) const {
+    Mat3 result;
+    for (int col{ 0 }; col < 3; col++) {
+        for (int row{ 0 }; row < 3; row++) {
+            result.m[col][row] = m[col][row] - rhs.m[col][row];
+        }
+    }
+    return result;
+}
+
+Mat3 Mat3::operator*(float scalar) const {
+    Mat3 result;
+    for (int col{ 0 }; col < 3; col++) {
+        for (int row{ 0 }; row < 3; row++) {
+            result.m[col][row] = m[col][row] * scalar;
+        }
+    }
+    return result;
+}
+
+Mat3 Mat3::operator*(const Mat3& rhs) const {
+    Mat3 result;
+    for (int col{ 0 }; col < 3; col++) {
+        for (int row{ 0 }; row < 3; row++) {
+            result.m[col][row] =
+                m[0][row] * rhs.m[col][0] +
+                m[1][row] * rhs.m[col][1] +
+                m[2][row] * rhs.m[col][2];
+        }
+    }
+    return result;
+}
+
+Vec3 Mat3::operator*(const Vec3& v) const {
+    return Vec3(
+        m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z,
+        m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z,
+        m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z
+    );
+}
+
+#pragma endregion 3DMatrix
+
+// ==============================================
+// MATRIX OPERATIONS
+// ==============================================
+#pragma region MatrixOperations
+
+Mat2 RG_Transpose(const Mat2& mat) {
+    return Mat2(
+        mat.m[0][0], mat.m[1][0],
+        mat.m[0][1], mat.m[1][1]
+    );
+}
+
+Mat3 RG_Transpose(const Mat3& mat) {
+    return Mat3(
+        mat.m[0][0], mat.m[1][0], mat.m[2][0],
+        mat.m[0][1], mat.m[1][1], mat.m[2][1],
+        mat.m[0][2], mat.m[1][2], mat.m[2][2]
+    );
+}
+
+float RG_Determinant(const Mat2& mat) {
+    return mat.m[0][0] * mat.m[1][1] - mat.m[1][0] * mat.m[0][1];
+}
+
+float RG_Determinant(const Mat3& mat) {
+    float a = mat.m[0][0];
+    float b = mat.m[1][0];
+    float c = mat.m[2][0];
+
+    float minor0 = mat.m[1][1] * mat.m[2][2] - mat.m[2][1] * mat.m[1][2];
+    float minor1 = mat.m[0][1] * mat.m[2][2] - mat.m[2][1] * mat.m[0][2];
+    float minor2 = mat.m[0][1] * mat.m[1][2] - mat.m[1][1] * mat.m[0][2];
+
+    return a * minor0 - b * minor1 + c * minor2;
+}
+
+Mat2 RG_Inverse(const Mat2& mat) {
+    float det = RG_Determinant(mat);
+
+    if (RG_Abs(det) < 0.00001f) {
+        return Mat2::Identity();
+    }
+
+    float invDet = 1.0f / det;
+
+    return Mat2(
+        mat.m[1][1] * invDet, -mat.m[0][1] * invDet,
+        -mat.m[1][0] * invDet, mat.m[0][0] * invDet
+    );
+}
+
+Mat3 RG_Inverse(const Mat3& mat) {
+    float det = RG_Determinant(mat);
+
+    if (RG_Abs(det) < 0.00001f) {
+        return Mat3::Identity();
+    }
+
+    float invDet = 1.0f / det;
+
+    Mat3 cofactor;
+
+    // Row 0
+    cofactor.m[0][0] = (mat.m[1][1] * mat.m[2][2] - mat.m[2][1] * mat.m[1][2]);
+    cofactor.m[1][0] = -(mat.m[0][1] * mat.m[2][2] - mat.m[2][1] * mat.m[0][2]);
+    cofactor.m[2][0] = (mat.m[0][1] * mat.m[1][2] - mat.m[1][1] * mat.m[0][2]);
+
+    // Row 1
+    cofactor.m[0][1] = -(mat.m[1][0] * mat.m[2][2] - mat.m[2][0] * mat.m[1][2]);
+    cofactor.m[1][1] = (mat.m[0][0] * mat.m[2][2] - mat.m[2][0] * mat.m[0][2]);
+    cofactor.m[2][1] = -(mat.m[0][0] * mat.m[1][2] - mat.m[1][0] * mat.m[0][2]);
+
+    // Row 2
+    cofactor.m[0][2] = (mat.m[1][0] * mat.m[2][1] - mat.m[2][0] * mat.m[1][1]);
+    cofactor.m[1][2] = -(mat.m[0][0] * mat.m[2][1] - mat.m[2][0] * mat.m[0][1]);
+    cofactor.m[2][2] = (mat.m[0][0] * mat.m[1][1] - mat.m[1][0] * mat.m[0][1]);
+
+    Mat3 result;
+    for (int col{ 0 }; col < 3; col++) {
+        for (int row{ 0 }; row < 3; row++) {
+            result.m[col][row] = cofactor.m[row][col] * invDet;
+        }
+    }
+
+    return result;
+}
+#pragma endregion MatrixOperations
+
+// ==============================================
 // UTILITY FUNCTIONS
 // ==============================================
-
+#pragma region UtilityFunctions
 /**
  * @brief Computes the square root using Newton's method.
  *
@@ -471,3 +795,6 @@ float RG_Pow(float base, float exponent) {
     // I'm sorry I really can't calculate it ;-;
     return std::pow(base, exponent);
 }
+
+#pragma endregion UtilityFunctions
+
