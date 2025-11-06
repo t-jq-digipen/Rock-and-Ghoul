@@ -423,7 +423,7 @@ namespace Physics {
 			// J = m * v  =>  v = J / m
 			Vec2 deltaV = RG_Scale(impulse, 1.0f / mass);
 			vel = RG_Add(vel, deltaV);
-			ClampVelocity();
+			// ClampVelocity();
 
 			// Mark that we just had a collision (to prevent jitter)
 			collisionFrameCount = 2;

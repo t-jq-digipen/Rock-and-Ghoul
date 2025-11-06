@@ -210,7 +210,7 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 		if (RG_LengthSquared(dashDir) > 0.01f) {
 			dashDir = RG_Normalize(dashDir);
 			Vec2 dashImpulse = RG_Scale(dashDir, DASH_IMPULSE);
-			physics.AddImpulse(dashImpulse);
+			physics.ApplyLinearImpulse(dashImpulse);
 		}
 	}
 }
@@ -239,7 +239,7 @@ namespace PlayerMove {
 		if (RG_LengthSquared(dashDir) > 0.01f) {
 			dashDir = RG_Normalize(dashDir);
 			Vec2 dashImpulse = RG_Scale(dashDir, DASH_IMPULSE);
-			physics.AddImpulse(dashImpulse);
+			physics.ApplyLinearImpulse(dashImpulse);
 		}
 
 	}
