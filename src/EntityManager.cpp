@@ -1,7 +1,7 @@
 /* ========================================================
  * @file		EntityManager.cpp
  * @author		Tan Jun Quan | t.junquan@digipen.edu
- * @date		01 OCT 2025
+ * @date		15 OCT 2025
  *
  * @brief	Entity Manager for ECS
  *
