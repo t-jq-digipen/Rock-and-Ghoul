@@ -461,7 +461,7 @@ void ImGuiSystem::Update(float dt)
         //percentages
         ImGuiID dock_left = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left, 0.20f, nullptr, &dockspaceID);
         ImGuiID dock_right = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, nullptr, &dockspaceID);
-        ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.25f, nullptr, &dockspaceID);
+        ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.4f, nullptr, &dockspaceID);
         ImGuiID dock_left_top = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.4f, nullptr, &dock_left);
         //wtv left
         ImGuiID dock_left_bottom = dock_left;
@@ -700,6 +700,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::Checkbox("Show Spatial Grid", &showSpatialGrid);
 
     // Spatial Grid Statistics
+    //FILLTHISSHITYASM
     ImGui::Separator();
     ImGui::Text("Spatial Grid (Broad Phase):");
     SpatialGrid* grid = CollisionManager::GetSpatialGrid();
@@ -724,17 +725,6 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
             naiveChecks,
             (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
     }
-
-    //enityt
-    //if (ImGui::CollapsingHeader("Entity Positions")) {
-    //    for (auto& [entity, tag] : m_registry.Get_ComponentMap<TagComponent>()) {
-    //        if (m_registry.Has_Component<TransformComponent>(entity)) {
-    //            TransformComponent& transform = m_registry.Get_Component<TransformComponent>(entity);
-    //            const char* tagName = (tag.tag == T_PLAYER) ? "Player" :(tag.tag == T_ENEMY) ? "Enemy" :(tag.tag == T_PROJECTILE) ? "Projectile" : "Unknown";
-    //            ImGui::Text("%s %d: (%.1f, %.1f)", tagName, entity, transform.pos.x, transform.pos.y);
-    //        }
-    //    }
-    //}
 
     ImGui::Text("Scene Management:");
     ShowSceneBrowser();
@@ -984,17 +974,12 @@ void ImGuiSystem::ShowHierarchyWindow() {
 void ImGuiSystem::ShowInspectorWindow()
 {
     EnsureSelectionValid();
-
-    ImGui::Text("Entity Editor");
-    ImGui::Separator();
-
     if (selectedEntity == INVALID_ENTITY)
     {
         ImGui::Text("No entity selected");
-        ImGui::Columns(1); // reset
+        ImGui::Columns(1); //reset
         return;
     }
-
     ImGui::Text("Entity %d", selectedEntity);
     ImGui::Separator();
 
@@ -1132,13 +1117,11 @@ void ImGuiSystem::ShowAddRemoveComponents()
 {
     ImGui::Text("Add / Remove Components");
     ImGui::Separator();
-
     if (selectedEntity == INVALID_ENTITY)
     {
         ImGui::TextDisabled("No entity selected");
         return;
     }
-
     Entity eID = selectedEntity;
     for (std::type_index typeID : m_registry.Get_ComponentOrder())
     {
@@ -1153,7 +1136,7 @@ void ImGuiSystem::ShowAddRemoveComponents()
             ImGui::EndDisabled();
 
             ImGui::SameLine();
-            if (ImGui::SmallButton(("Remove" + compName).c_str()))
+            if (ImGui::SmallButton("Remove"))
             {
                 if (compName == "Animator" &&
                     m_registry.Has_Component<Sprite::SpriteComponent>(eID))
@@ -1747,12 +1730,13 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         return { world.x, world.y };
         };
 
-    // mouse + panel state
+    // mouse n panel state
     ImVec2 mouseScreen = ImGui::GetMousePos();
     bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
     bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
     bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
 
+    //drag only works if mouse in viewable area
     bool mouseInPanel =
         (mouseScreen.x >= panelPos.x && mouseScreen.x <= panelPos.x + panelSize.x) &&
         (mouseScreen.y >= panelPos.y && mouseScreen.y <= panelPos.y + panelSize.y);
@@ -1762,34 +1746,32 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
     static bool isDragging = false;
     Entity hovered = INVALID_ENTITY;
 
-    const float handleRadius = 10.f;
+    const float handleRadius = 10.f; //circle rad
 
-    // === handles linked to entities ===
+    //draw the circles
     for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
     {
         if (!EntityManager::get().isAlive(entity))
             continue;
 
-        ImVec2 handleCenter = WorldToPanel(transform.pos);
+        ImVec2 handleCenter = WorldToPanel(transform.pos); //world pos to pixel coords
 
         float dx = mouseScreen.x - handleCenter.x;
         float dy = mouseScreen.y - handleCenter.y;
         bool inside = mouseInPanel && (dx * dx + dy * dy <= handleRadius * handleRadius);
 
-        ImU32 color =
-            (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
-            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
-            inside ? IM_COL32(255, 255, 0, 255) :
-            IM_COL32(255, 255, 255, 180);
+        ImU32 color = (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) : //drag cyan
+                      (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) : //select green
+                       inside ? IM_COL32(255, 255, 0, 255) : IM_COL32(255, 255, 255, 180); //hover yellow else white
 
         dl->AddCircleFilled(handleCenter, handleRadius, color, 24);
-        dl->AddCircle(handleCenter, handleRadius, IM_COL32(0, 0, 0, 200), 24, 1.5f);
+        dl->AddCircle(handleCenter, handleRadius, IM_COL32(0, 0, 0, 200), 24, 1.5f); //black outline
 
         if (inside)
             hovered = entity;
     }
 
-    // === Begin ===
+    //mouse clicked
     if (mouseClicked && mouseInPanel && hovered != INVALID_ENTITY)
     {
         selectedEntity = hovered;
@@ -1802,19 +1784,20 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         std::cout << "[Editor] Started dragging entity " << hovered << "\n";
     }
 
-    // === While ===
+    //mouse held
     if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown && mouseInPanel)
     {
         auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
         t.pos = PanelToWorld(mouseScreen) + dragOffset;
 
+        //need update aabb cause editor physic dt = 0
         if (reg.Has_Component<Physics::PhysicsComponent>(draggedEntity)) {
             auto& p = reg.Get_Component<Physics::PhysicsComponent>(draggedEntity);
             p.UpdateHitboxes(t.pos);
         }
     }
 
-    // === End ===
+    //mouse release
     if (mouseReleased)
     {
         if (isDragging && draggedEntity != INVALID_ENTITY)
@@ -1829,16 +1812,15 @@ void ImGuiSystem::ShowPrefabControls()
 {
     ImGui::Text("Prefab Management:");
 
-    static std::string pendingPrefabName;
-    static bool triggerPopupNextFrame = false;
+    static std::string pendingPrefabName; //waiting coz popup
+    static bool triggerPopup = false;
     static std::string pendingDeletePrefab;
-    static bool triggerDeletePopupNextFrame = false;
-
-    // --- Save selected entity as prefab ---
+    static bool DeletePopup = false;
+    
     if (selectedEntity != INVALID_ENTITY)
     {
         static char prefabNameBuf[64] = "";
-        // --- live rename updates hierarchy ---
+        //update entity name in hierarchy
         if (ImGui::InputText("Prefab Name", prefabNameBuf, IM_ARRAYSIZE(prefabNameBuf)))
         {
             std::string newName = prefabNameBuf;
@@ -1859,9 +1841,9 @@ void ImGuiSystem::ShowPrefabControls()
             {
                 std::string outPath = FilePath::PREFABS_FOLDER + prefabName + ".json";
 
-                // === CASE-INSENSITIVE CHECK ===
+                //upper lower check
                 bool prefabExists = false;
-                std::string existingMatch;
+                std::string existingName;
                 std::string lowerInput = prefabName;
                 std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), ::tolower);
 
@@ -1869,6 +1851,7 @@ void ImGuiSystem::ShowPrefabControls()
                 {
                     if (entry.path().extension() == ".json")
                     {
+                        //same as scene
                         std::string existing = entry.path().stem().string();
                         std::string lowerExisting = existing;
                         std::transform(lowerExisting.begin(), lowerExisting.end(), lowerExisting.begin(), ::tolower);
@@ -1876,7 +1859,7 @@ void ImGuiSystem::ShowPrefabControls()
                         if (lowerExisting == lowerInput)
                         {
                             prefabExists = true;
-                            existingMatch = existing;
+                            existingName = existing;
                             break;
                         }
                     }
@@ -1885,12 +1868,12 @@ void ImGuiSystem::ShowPrefabControls()
                 if (prefabExists)
                 {
                     pendingPrefabName = prefabName;
-                    triggerPopupNextFrame = true;
-                    std::cout << "[Editor] Prefab '" << existingMatch
-                        << "' already exists (case-insensitive match).\n";
+                    triggerPopup = true;
+                    std::cout << "[Editor] Prefab '" << existingName << "' already exists (case-insensitive match).\n";
                 }
                 else
                 {
+                    //else save 
                     if (JsonLoad::SaveEntity(outPath, selectedEntity))
                     {
                         Registry::Get().Get_EntityNameMap()[selectedEntity] = prefabName;
@@ -1900,25 +1883,25 @@ void ImGuiSystem::ShowPrefabControls()
             }
         }
 
-        // --- open replace popup next frame (prevents flicker) ---
-        if (triggerPopupNextFrame)
+        //popup for replacing
+        if (triggerPopup)
         {
             ImGui::OpenPopup("Prefab Replace Confirmation");
-            triggerPopupNextFrame = false;
+            triggerPopup = false;
         }
 
         if (ImGui::BeginPopupModal("Prefab Replace Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            ImGui::Text("Prefab '%s' already exists.\nReplace it?", pendingPrefabName.c_str());
+            ImGui::Text("Prefab '%s' already exists.\nReplace?", pendingPrefabName.c_str());
             ImGui::Separator();
 
             if (ImGui::Button("Yes", ImVec2(120, 0)))
             {
-                std::string outPath = FilePath::PREFABS_FOLDER + pendingPrefabName + ".json";
-                if (JsonLoad::SaveEntity(outPath, selectedEntity))
+                std::string outpath = FilePath::PREFABS_FOLDER + pendingPrefabName + ".json";
+                if (JsonLoad::SaveEntity(outpath, selectedEntity))
                 {
                     Registry::Get().Get_EntityNameMap()[selectedEntity] = pendingPrefabName;
-                    std::cout << "[Editor] Replaced prefab: " << outPath << "\n";
+                    std::cout << "[Editor] Replaced prefab: " << outpath << "\n";
                 }
                 pendingPrefabName.clear();
                 ImGui::CloseCurrentPopup();
@@ -1940,7 +1923,7 @@ void ImGuiSystem::ShowPrefabControls()
         ImGui::TextDisabled("Select an entity to save as prefab");
     }
 
-    // --- Prefab list ---
+    //list of prefabs
     ImGui::Separator();
     ImGui::Text("Spawn / Manage Prefabs:");
 
@@ -1980,7 +1963,7 @@ void ImGuiSystem::ShowPrefabControls()
             if (ImGui::MenuItem("Delete Prefab"))
             {
                 pendingDeletePrefab = prefabName;
-                triggerDeletePopupNextFrame = true;
+                DeletePopup = true;
             }
             ImGui::EndPopup();
         }
@@ -1990,18 +1973,16 @@ void ImGuiSystem::ShowPrefabControls()
 
     ImGui::EndChild();
 
-    // --- open delete popup next frame ---
-    if (triggerDeletePopupNextFrame)
+    //same delete thing 
+    if (DeletePopup)
     {
         ImGui::OpenPopup("Delete Prefab Confirmation");
-        triggerDeletePopupNextFrame = false;
+        DeletePopup = false;
     }
 
-    // --- Deletion Confirmation Popup ---
     if (ImGui::BeginPopupModal("Delete Prefab Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::Text("Are you sure you want to delete prefab '%s'?\nThis action cannot be undone.",
-            pendingDeletePrefab.c_str());
+        ImGui::Text("Are you sure you want to delete prefab '%s'?\nThis action cannot be undone.",pendingDeletePrefab.c_str());
         ImGui::Separator();
 
         if (ImGui::Button("Yes, Delete", ImVec2(130, 0)))
@@ -2033,18 +2014,17 @@ void ImGuiSystem::ShowPrefabControls()
 
     if (isPlacingPrefab)
     {
-        ImGui::TextColored(ImVec4(0.2f, 1.f, 0.2f, 1.f),
-            "Placement Mode Active: Click in Game View to spawn. (ESC to cancel)");
+        ImGui::TextColored(ImVec4(0.2f, 1.f, 0.2f, 1.f), "Placement Mode Active: Click in Game View to spawn. (0 to cancel)");
     }
 }
 
 
-
+//play stop button
 void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 {
     ImGui::SeparatorText("Simulation Controls");
 
-    // Center horizontally in the Game View window
+    // center horizontally in game view
     float panelWidth = ImGui::GetContentRegionAvail().x;
     float buttonWidth = 80.f;
     float spacing = 16.f;
@@ -2052,22 +2032,20 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     float startX = (panelWidth - totalWidth) * 0.5f;
     ImGui::SetCursorPosX(startX);
 
-    // --- PLAY ---
+    //play
     if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
+        //FILLTHISSHITYASM
         // Save the current edited scene before starting simulation
-            if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-            {
-                JsonLoad::SaveCurrentScene(FilePath::LEVEL1_TEMP_SCENE, "level1_temp.json");
-                // JsonLoad::ClearAllEntities();
-                // JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
-            }
-            else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-            {
-                JsonLoad::SaveCurrentScene(FilePath::LEVEL2_TEMP_SCENE, "level2_temp.json");
-                // JsonLoad::ClearAllEntities();
-                // JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
-            }
+        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
+        {
+            JsonLoad::SaveCurrentScene(FilePath::LEVEL1_TEMP_SCENE, "level1_temp.json");
+              
+        }
+        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
+        {
+            JsonLoad::SaveCurrentScene(FilePath::LEVEL2_TEMP_SCENE, "level2_temp.json");
+        }
 
         std::cout << "[Editor] Temp scene saved before Play.\n";
 
@@ -2088,7 +2066,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 
     ImGui::SameLine(0, spacing);
 
-    // --- STOP ---
+    //STOP
     if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
     {
         gsm.isPaused = true;
@@ -2101,47 +2079,44 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 
         std::cout << "[Camera] Switched to EDITOR mode\n";
         isPlaying = false;
+        //FILLTHISSHITYASM
+        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
+        {
+               
+            JsonLoad::ClearAllEntities();
 
-            if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
+            if (JsonLoad::LoadScene(FilePath::LEVEL1_TEMP_SCENE))
             {
-                // JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
-                JsonLoad::ClearAllEntities();
-
-                if (JsonLoad::LoadScene(FilePath::LEVEL1_TEMP_SCENE))
-                {
-                    std::cout << "[Editor] Saved level scene, restored temp edits.\n";
-                }
-                else
-                {
-                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
-                    JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
-                }
+                std::cout << "[Editor] Saved level scene, restored temp edits.\n";
             }
-            else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
+            else
             {
-                // JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "level2.json");
-                JsonLoad::ClearAllEntities();
-
-                if (JsonLoad::LoadScene(FilePath::LEVEL2_TEMP_SCENE))
-                {
-                    std::cout << "[Editor] Saved level scene, restored temp edits.\n";
-                }
-                else
-                {
-                    std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
-                    JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
-                }
+                std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
+                JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
             }
+        }
+        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
+        {
+
+            JsonLoad::ClearAllEntities();
+
+            if (JsonLoad::LoadScene(FilePath::LEVEL2_TEMP_SCENE))
+            {
+                std::cout << "[Editor] Saved level scene, restored temp edits.\n";
+            }
+            else
+            {
+                std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
+                JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
+            }
+        }
 
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
     }
 
     ImGui::SameLine(spacing * 2);
-    ImGui::TextColored(
-        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f)
-        : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
-        isPlaying ? "PLAYING" : "EDITING"
-    );
+    //COLORS
+    ImGui::TextColored( isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f), isPlaying ? "PLAYING" : "EDITING");
 }
 
 void ImGuiSystem::Shutdown() {
