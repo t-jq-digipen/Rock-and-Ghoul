@@ -62,13 +62,7 @@ bool GuiSystem::GetEditMode() const
 void GuiSystem::Update(float dt) {
     if (Input::IsKeyPressed(GLFW_KEY_F8))
         editMode = !editMode;
-    if (!ImGuiSystem::guiEnabled) {
-        // When ImGui is off, use full window dimensions
-        m_gameViewRect.x = 0.0f;
-        m_gameViewRect.y = 0.0f;
-        m_gameViewRect.width = static_cast<float>(GLApp::width);
-        m_gameViewRect.height = static_cast<float>(GLApp::height);
-    }
+
 
     // --- Press SPACE to advance dialogues (while not editing the GUI) ---
     static bool spaceLatch = false;
@@ -116,19 +110,33 @@ void GuiSystem::Update(float dt) {
     spaceLatch = spaceHeld;
 
     Vec2 mouse = Input::GetMousePosition();
-   // mouse.y = static_cast<float>(GLApp::height) - mouse.y; // flip top→bottom
+   
 
     // convert to Game View space
-    float relX = (mouse.x - m_gameViewRect.x) / m_gameViewRect.width;
-    float relY = (mouse.y - m_gameViewRect.y) / m_gameViewRect.height;
+    if (!ImGuiSystem::guiEnabled) {
+        // Fullscreen mouse coords are already correct, just use them directly
+        // No conversion needed!
+    }
+    else {
+        // ImGui is ON convert mouse from screen space to game view space
+        if (mouse.x < m_gameViewRect.x || mouse.x > m_gameViewRect.x + m_gameViewRect.width || mouse.y < m_gameViewRect.y ||  mouse.y > m_gameViewRect.y + m_gameViewRect.height) 
+        {
+            // Mouse is outside game view - invalidate mouse position
+            mouse.x = -9999.f;
+            mouse.y = -9999.f;
+        }
+        else {
+            // Mouse IS inside game view convert to local coordinates
+            mouse.x -= m_gameViewRect.x;
+            mouse.y -= m_gameViewRect.y;
+            //scale relative to the game view size to match window size
+            float mouseScaleX = GLApp::width / m_gameViewRect.width;
+            float mouseScaleY = GLApp::height / m_gameViewRect.height;
 
-    // clamp [0,1]
-    relX = std::clamp(relX, 0.0f, 1.0f);
-    relY = std::clamp(relY, 0.0f, 1.0f);
-
-    // convert to internal 1920×1080 GUI space
-    mouse.x = relX * 1920.f;
-    mouse.y = relY * 1080.f;
+            mouse.x *= mouseScaleX;
+            mouse.y *= mouseScaleY;
+        }
+    }
 
     Render& renderer = Render::GetInstance();
 
@@ -148,6 +156,8 @@ void GuiSystem::Update(float dt) {
         // Scale position relative to baseline resolution
         cfg.pos.x = cfg.basePos.x * scaleX;
         cfg.pos.y = cfg.basePos.y * scaleY;
+
+
         bool hover = false;
         if (cfg.shape == ButtonShape::Circle) {
 

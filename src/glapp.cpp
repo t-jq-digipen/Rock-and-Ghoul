@@ -22,6 +22,7 @@ to OpenGL implementations.
 #include "Render.h"
 #include "Registry.h"
 #include "CoreEngine.h"
+#include "GuiSystem.h"
 // Before asking GLFW to create an OpenGL context, we specify the minimum constraints
 // in that context:
 #define GL_MINOR 5
@@ -378,11 +379,11 @@ of the window in pixels.
 void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
   // use the entire framebuffer as drawing region
     (void)ptr_win;
-    // Calculate scale factors BEFORE updating GLApp::width/height
+    //scale factors BEFORE updating GLApp::width/height
     float scaleX = (float)newwidth / (float)GLApp::width;
     float scaleY = (float)newheight / (float)GLApp::height;
 
-    // Now update the global width/height
+    //update the global width/height
     GLApp::width = newwidth;
     GLApp::height = newheight;
 
@@ -400,11 +401,11 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
             transform.scale.y *= scaleY;
         }
 
-        // Update physics AABBs
+        // update AABBs
         for (auto& [entID, physics] : reg.Get_ComponentMap<Physics::PhysicsComponent>()) {
             if (reg.Has_Component<TransformComponent>(entID)) {
                 auto& transform = reg.Get_Component<TransformComponent>(entID);
-                // Scale AABB (axis-aligned bounding box)
+                // aabb
                 AABB& aabb = physics.Get_AABB();
                 aabb.min.x *= scaleX;
                 aabb.max.x *= scaleX;
@@ -412,17 +413,17 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
                 aabb.max.y *= scaleY;
                 aabb.dim.x *= scaleX;
                 aabb.dim.y *= scaleY;
-                // Scale circle collider (if used)
+                //circle
                 Circle& circle = physics.Get_Circle();
                 circle.pos.x = transform.pos.x;
                 circle.pos.y = transform.pos.y;
                 circle.rad *= (scaleX + scaleY) * 0.5f;
 
-                // Update cached hitboxes if your PhysicsComponent stores computed data
+                
                 physics.UpdateHitboxes(transform.pos);
             }
         }
-        // 2. Scale all sprite components
+        // scale all sprite components
         for (auto& [entID, sprite] : reg.Get_ComponentMap<Sprite::SpriteComponent>()) {
             Vec2 currentScale = sprite.Get_Scale();
             sprite.Set_Size({
