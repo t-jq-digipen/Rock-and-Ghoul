@@ -1,7 +1,8 @@
 /* ========================================================
  * @file        CollisionManager.h
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        01 OCT 2025
+ * @author      Yasmin Tazi        | yasmin.t@digipen.edu
+ * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        06 NOV 2025
  *
  * @brief
  *
@@ -9,7 +10,7 @@
  * for detecting overlaps between entities based on their Physics and
  * Shape components, storing collision events, and resolving them.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -99,9 +100,9 @@ public:
      * @param a The first colliding entity.
      * @param b The second colliding entity.
      */
-    void ActionStop(Entity a, Entity b);
+    //void ActionStop(Entity a, Entity b);
 
-    void ActionStop_Static(Entity dynamic, Entity staticObj);
+    //void ActionStop_Static(Entity dynamic, Entity staticObj);
 
     void CollisionActions(Entity a, Entity b, bool intersected);
 
