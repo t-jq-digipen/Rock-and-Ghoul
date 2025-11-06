@@ -10,7 +10,8 @@ enum EnemyState : unsigned int
 	E_CHASING,
 	E_ATTACKING,
 	E_COOLDOWN,
-	E_STAGGERED
+	E_STAGGERED,
+	E_RETURNING
 };
 
 namespace EnemyAI {
@@ -19,10 +20,7 @@ namespace EnemyAI {
 
 	inline void Update(Entity eID, float dt);
 
-	inline void End(Entity eID)
-	{
-		std::cout << "Enemy script ended" << std::endl;
-	}
+	inline void End(Entity eID);
 }
 
 class EnemySystem : public ISystem

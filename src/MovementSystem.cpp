@@ -58,7 +58,7 @@ void MovementSystem::Update(float dt)
 			{
 				if (!m_registry.Has_Component<Physics::PhysicsComponent>(entID)) break;
 				auto& phys = m_registry.Get_Component<Physics::PhysicsComponent>(entID);
-				Vec2 vel{ dir.x * speed * dt, dir.y * speed * dt };
+				Vec2 vel{ dir.x * speed, dir.y * speed };
 				phys.Set_Vel(vel);
 				if (!moveComp.GetIsMoving())
 				{
