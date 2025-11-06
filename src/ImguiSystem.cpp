@@ -984,6 +984,7 @@ void ImGuiSystem::ShowInspectorWindow()
     ImGui::Separator();
 
     // show all editable components for the selected entity
+     //FILLTHISSHITJQ
     std::vector<Editor::ComponentData> compDataVec = m_registry.Get_EntityData(selectedEntity);
     for (auto& componentData : compDataVec)
     {
