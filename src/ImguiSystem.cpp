@@ -417,7 +417,16 @@ void ImGuiSystem::Update(float dt)
     if (Input::IsKeyPressed(GLFW_KEY_F1))
         guiEnabled = !guiEnabled;
 
-    if (!guiEnabled) return;
+    if (!guiEnabled) {
+        // Fullscreen mode when ImGui is off
+        GameViewRect rect;
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.width = static_cast<float>(GLApp::width);
+        rect.height = static_cast<float>(GLApp::height);
+        GuiSystem::Get().SetGameViewRect(rect);
+        return; // Don't render ImGui
+    }
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
