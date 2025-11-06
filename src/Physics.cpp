@@ -1,7 +1,7 @@
 /* ========================================================
  * @file		Physics.cpp
- * @author		Tan Jun Quan | t.junquan@digipen.edu
- * @co-author	Yasmin Tazi	 | yasmin.t@digipen.edu
+ * @author		Yasmin Tazi  | yasmin.t@digipen.edu
+ * @co-author	Tan Jun Quan | t.junquan@digipen.edu
  * @date		31 OCT 2025
  *
  * @brief	Physics component for ECS
@@ -423,7 +423,7 @@ namespace Physics {
 			// J = m * v  =>  v = J / m
 			Vec2 deltaV = RG_Scale(impulse, 1.0f / mass);
 			vel = RG_Add(vel, deltaV);
-			ClampVelocity();
+			// ClampVelocity();
 
 			// Mark that we just had a collision (to prevent jitter)
 			collisionFrameCount = 2;
