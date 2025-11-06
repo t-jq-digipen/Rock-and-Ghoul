@@ -1116,12 +1116,15 @@ void ImGuiSystem::ShowInspectorWindow()
 void ImGuiSystem::ShowAddRemoveComponents()
 {
     ImGui::Text("Add / Remove Components");
+
     ImGui::Separator();
+
     if (selectedEntity == INVALID_ENTITY)
     {
         ImGui::TextDisabled("No entity selected");
         return;
     }
+
     Entity eID = selectedEntity;
     for (std::type_index typeID : m_registry.Get_ComponentOrder())
     {
