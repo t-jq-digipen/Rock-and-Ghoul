@@ -124,7 +124,7 @@ namespace
                         g_imageNames.push_back(entry.path().filename().string());
                     }
                 }
-                catch (const std::exception& e) {
+                catch (...) {
                     std::cerr << "Failed to load " << entry.path() << "\n";
                 }
             }
@@ -1140,9 +1140,9 @@ void ImGuiSystem::ShowAddRemoveComponents()
             ImGui::EndDisabled();
 
             ImGui::SameLine();
-            if (ImGui::SmallButton("Remove"))
+            if (ImGui::SmallButton(("Remove##" + compName).c_str()))
             {
-                std::string compName = m_registry.Get_ComponentTypeName(typeID);
+                //std::string compName = m_registry.Get_ComponentTypeName(typeID);
                 if (compName == "Animator" &&
                     m_registry.Has_Component<Sprite::SpriteComponent>(eID))
                 {
