@@ -224,7 +224,7 @@ void Level1::Init()
 		initDialogue.color = { 0,0,0 };
 		initDialogue.centered = true;
 
-		GuiSystem::Get().AddDialogueFromJson("../Assets/prefabs/Dialogue.json", initDialogue);
+		GuiSystem::Get().AddDialogueFromJson("../Assets/Dialogue.json", initDialogue);
 
 		// 6. Create entities
 		// If there is no pre-existing/saved scene, it will load from prefabs
