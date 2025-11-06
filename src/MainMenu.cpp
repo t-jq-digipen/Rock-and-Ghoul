@@ -148,8 +148,8 @@ void MainMenu::Init()
 
         GuiSystem::Get().AddButton({
             .label = "PLAY",
-            .pos = {1650.0f * uiScaleX, 550.0f * uiScaleY},
-            .size = {300.0f * uiScale, 100.0f * uiScale},
+            .pos = {1650.0f, 550.0f},
+            .size = {300.0f, 100.0f},
             .color = {20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f},
             .onClick = [] { GSM_SetNextState(GameState::GS_LEVEL1); },
             .soundType = AudioSystem::ButtonType::PLAY,
@@ -158,8 +158,8 @@ void MainMenu::Init()
 
         GuiSystem::Get().AddButton({
             .label = "QUIT",
-            .pos = {1650.0f * uiScaleX, 150.0f * uiScaleY},
-            .size = {300.0f * uiScale, 100.0f * uiScale},
+            .pos = {1650.0f, 150.0f},
+            .size = {300.0f, 100.0f},
             .color = {20.0f / 255.0f, 182.0f / 255.0f, 191.0f / 255.0f},
             .onClick = [] {
                 // Wait for sound to finish before quitting
@@ -176,8 +176,8 @@ void MainMenu::Init()
 
         GuiSystem::Get().AddTextBox({
             .text = "Press 8 or Click Play",
-            .pos = {1650.0f * uiScaleX, 50.0f * uiScaleY},
-            .scale = 0.5f * uiScale,
+            .pos = {1650.0f, 50.0f},
+            .scale = 0.5f,
             .color = {0.f, 0.f, 0.f},
             .fontKey = "Bold", //added this, so can change font type (use this to display rubric)
             .centered = true
