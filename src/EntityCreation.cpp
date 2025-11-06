@@ -81,7 +81,7 @@ Entity Create_Ghoul(float const& x, float const& y) {
 
     // Add behaviour component
     BehaviourComponent bc;
-    bc.scriptName = "PatrolEnemy";
+    bc.scriptName = "ManfredEnemy";
     bc.started = false;
 
     Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
@@ -228,7 +228,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<Physics::PhysicsComponent>(waffle, temp);
 
             Registry::Get().Add_Component<InputComponent>(waffle, InputComponent{ CS_IJKL });
-            Registry::Get().Add_Component<TagComponent>(waffle, TagComponent{ T_PLAYER });
+            Registry::Get().Add_Component<TagComponent>(waffle, TagComponent{ T_OBJECT });
 
             Image imgtemp = CreateImage("../Assets/Waffle_Sprites.png");
             Registry::Get().Add_Component<Sprite::SpriteComponent>(waffle, Sprite::SpriteComponent{ imgtemp, {100.f,100.f }, true });
@@ -278,7 +278,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Registry::Get().Add_Component<ShapeComponent>(rect, ShapeComponent{ SHAPE_RECTANGLE, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
             Registry::Get().Add_Component<InputComponent>(rect, InputComponent{ CS_WASD });
-            Registry::Get().Add_Component<TagComponent>(rect, TagComponent{ T_PLAYER });
+            Registry::Get().Add_Component<TagComponent>(rect, TagComponent{ T_OBJECT });
             Registry::Get().Add_Component<HealthComponent>(rect, HealthComponent{ 100.f, 100.f });
 
             if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Rectangle.json", rect)) {
@@ -315,7 +315,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Registry::Get().Add_Component<ShapeComponent>(circle_ent, ShapeComponent{ SHAPE_CIRCLE, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} });
             Registry::Get().Add_Component<InputComponent>(circle_ent, InputComponent{ CS_ARROWS });
-            Registry::Get().Add_Component<TagComponent>(circle_ent, TagComponent{ T_PLAYER });
+            Registry::Get().Add_Component<TagComponent>(circle_ent, TagComponent{ T_OBJECT });
             Registry::Get().Add_Component<HealthComponent>(circle_ent, HealthComponent{ 100.f, 100.f });
 
             if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Circle.json", circle_ent)) {

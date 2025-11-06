@@ -147,7 +147,7 @@ inline void RegisterAllGameScripts()
         patrol.Init = [](Entity e) { PatrolEnemyScript::Start(e); };
         patrol.Update = [](Entity e, float dt) { PatrolEnemyScript::Update(e, dt); };
         patrol.End = [](Entity e) { PatrolEnemyScript::End(e); };
-        logicSys.RegisterScript("PatrolEnemy", patrol, ScriptID::PATROL_ENEMY);
+        logicSys.RegisterScript("ManfredEnemy", patrol, ScriptID::PATROL_ENEMY);
 
     }
 
