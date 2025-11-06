@@ -110,7 +110,7 @@ void GuiSystem::Update(float dt) {
     spaceLatch = spaceHeld;
 
     Vec2 mouse = Input::GetMousePosition();
-   // mouse.y = static_cast<float>(GLApp::height) - mouse.y; // flip top→bottom
+   
 
     // convert to Game View space
     if (!ImGuiSystem::guiEnabled) {
@@ -126,7 +126,7 @@ void GuiSystem::Update(float dt) {
             mouse.y = -9999.f;
         }
         else {
-            // Mouse IS inside game view - convert to local coordinates
+            // Mouse IS inside game view convert to local coordinates
             mouse.x -= m_gameViewRect.x;
             mouse.y -= m_gameViewRect.y;
             //scale relative to the game view size to match window size
