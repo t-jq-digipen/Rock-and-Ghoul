@@ -1,9 +1,29 @@
+/* ========================================================
+ * @file        LogicSystem.cpp
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu FILLTHISSHITJQ
+ * @date        07 NOV 2025
+ *
+ * @brief
+ * Manages and updates all C++ behaviour scripts registered in the ECS.
+ *
+ * The LogicSystem serves as the gameplaY logic. It retrieves all entities
+ * that contain a BehaviourComponent and executes their behaviour functions each frame.
+
+ * Each BehaviourComponent maintains a list of script IDs
+ * that correspond to registered logic routines stored in system’s behaviour map.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ======================================================== 
+ */
+
 #include "LogicSystem.h"
 #include "BehaviourComponent.h"
 #include "Registry.h"
 #include <iostream>
 #include "CoreEngine.h"
 extern GSM gsm;
+
 void LogicSystem::Initialize()
 {
     std::cout << "[LogicSystem] Initialized" << std::endl;

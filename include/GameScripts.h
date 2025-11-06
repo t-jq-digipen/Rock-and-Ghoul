@@ -1,3 +1,20 @@
+/* ========================================================
+ * @function    GameScripts.h
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        07 NOV 2025
+ *
+ * @brief
+ * Registers all native C++ gameplay scripts into the LogicSystem.
+ *
+ * This function binds each game behaviour to a BehaviourFCT structure containing
+ * Init, Update, and End callbacks. Each script is then assigned a
+ * unique ScriptID and registered into the LogicSystem behaviour map.
+
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ======================================================== */
+
+
 #pragma once
 #include "LogicSystem.h"
 #include "Component.h"
@@ -9,12 +26,25 @@
 // ============================================
 namespace GhoulScript
 {
-    inline void Start(Entity gob)  // ADD inline
+    /**
+     * @brief Called when the GhoulScript is first initialized.
+     *
+     * Prints a message confirming the script has started for the given entity.
+     */
+    //random entity name lol
+    inline void Start(Entity gob)
     {
         std::cout << "Ghoul script started for entity " << gob << std::endl;
     }
 
-    inline void Update(Entity gob, float dt)  // ADD inline
+    /**
+     * @brief Rotates the entity at 45 degrees per second.
+     *
+     * Retrieves the TransformComponent and updates its rotation value
+     * each frame. Keeps the rotation angle clamped between 0–360 degrees.
+     *
+     */
+    inline void Update(Entity gob, float dt)
     {
         Registry& registry = Registry::Get();
 
@@ -22,17 +52,21 @@ namespace GhoulScript
         {
             auto& transform = registry.Get_Component<TransformComponent>(gob);
 
-            // Rotate 45 degrees per second
+            // rot 45 degrees per second
             transform.rot += 45.0f * dt;
 
-            // Keep in 0-360 range
+
             if (transform.rot >= 360.0f) {
                 transform.rot -= 360.0f;
             }
         }
     }
-
-    inline void End(Entity gob)  // ADD inline
+    /**
+     * @brief Called when the GhoulScript is stopped or removed.
+     *
+     * Logs a message to indicate that the script has ended for this entity.
+     */
+    inline void End(Entity gob)
     {
         std::cout << "Ghoul script ended for entity " << gob << std::endl;
     }
@@ -42,47 +76,30 @@ namespace GhoulScript
 // ============================================
 namespace PatrolEnemyScript
 {
+    /**
+     * @brief Initializes the PatrolEnemyScript.
+     *
+     * Logs the starting position and sets up patrol data used in Update().
+     *
+     */
     inline void Start(Entity e)
     {
         std::cout << "[PatrolEnemy] Starting patrol for entity " << e << std::endl;
 
-        // Store initial position as patrol start point
+        //initial position as patrol start point
         Registry& reg = Registry::Get();
         if (reg.Has_Component<TransformComponent>(e)) {
             auto& transform = reg.Get_Component<TransformComponent>(e);
-            // You could add a custom data component to store patrol points
             std::cout << "[PatrolEnemy] Starting position: (" << transform.pos.x << ", " << transform.pos.y << ")" << std::endl;
         }
     }
-
-    //inline void Update(Entity e, float dt)
-    //{
-    //    Registry& reg = Registry::Get();
-
-    //    if (!reg.Has_Component<TransformComponent>(e)) return;
-
-    //    auto& transform = reg.Get_Component<TransformComponent>(e);
-
-    //    // Simple back-and-forth patrol
-    //    static float patrolDistance = 200.0f;
-    //    static float speed = 100.0f;
-    //    static float startX = transform.pos.x;
-    //    static bool movingRight = true;
-
-    //    // Move back and forth
-    //    if (movingRight) {
-    //        transform.pos.x += speed * dt;
-    //        if (transform.pos.x >= startX + patrolDistance) {
-    //            movingRight = false;
-    //        }
-    //    }
-    //    else {
-    //        transform.pos.x -= speed * dt;
-    //        if (transform.pos.x <= startX - patrolDistance) {
-    //            movingRight = true;
-    //        }
-    //    }
-    //}
+    /**
+     * @brief Moves the entity back and forth horizontally.
+     *
+     * Uses static maps to track each entity initial position and movement direction.
+     * Reverses direction when reaching the patrol distance boundary.
+     *
+     */
     inline void Update(Entity e, float dt)
     {
         Registry& reg = Registry::Get();
@@ -90,34 +107,41 @@ namespace PatrolEnemyScript
 
         auto& transform = reg.Get_Component<TransformComponent>(e);
 
-        // --- Store per-entity patrol data ---
+        //multiple enemies can each have their own patrol data
         static std::unordered_map<Entity, float> startX;
         static std::unordered_map<Entity, bool> movingRight;
 
         const float patrolDistance = 200.0f;
         const float speed = 100.0f;
-
+        //initializes patrol data the first time it runs
         if (startX.find(e) == startX.end())
         {
             startX[e] = transform.pos.x;
             movingRight[e] = true;
         }
 
-        // --- Move back and forth ---
+
         if (movingRight[e]) {
             transform.pos.x += speed * dt;
-            if (transform.pos.x >= startX[e] + patrolDistance)
+            if (transform.pos.x >= startX[e] + patrolDistance) {
                 movingRight[e] = false;
+            }
         }
         else {
             transform.pos.x -= speed * dt;
-            if (transform.pos.x <= startX[e] - patrolDistance)
+            if (transform.pos.x <= startX[e] - patrolDistance) {
                 movingRight[e] = true;
+            }
         }
     }
 
 
-
+    /**
+     * @brief Cleans up the PatrolEnemyScript when it ends.
+     *
+     * Logs a message indicating that the patrol behaviour has finished.
+     *
+     */
     inline void End(Entity e)
     {
         std::cout << "[PatrolEnemy] Patrol ended for entity " << e << std::endl;
@@ -135,14 +159,16 @@ inline void RegisterAllGameScripts()
 {
     LogicSystem& logicSys = LogicSystem::Get();
 
-    // Register Ghoul Behaviour
+    // Register Behaviour
     {
         BehaviourFCT ghoul;
+        //function that takes an Entity e calls GhoulScript::Start(e)
         ghoul.Init = [](Entity e) { GhoulScript::Start(e); };
         ghoul.Update = [](Entity e, float dt) { GhoulScript::Update(e, dt); };
         ghoul.End = [](Entity e) { GhoulScript::End(e); };
         logicSys.RegisterScript("GhoulScript", ghoul, ScriptID::GHOUL);
 
+        //same as ghoul
         BehaviourFCT patrol;
         patrol.Init = [](Entity e) { PatrolEnemyScript::Start(e); };
         patrol.Update = [](Entity e, float dt) { PatrolEnemyScript::Update(e, dt); };
@@ -151,24 +177,4 @@ inline void RegisterAllGameScripts()
 
     }
 
-    //{
-    //    BehaviourFCT patrolBehaviour;
-    //    patrolBehaviour.Init = [](Entity e) { PatrolEnemyScript::Start(e); };
-    //    patrolBehaviour.Update = [](Entity e, float dt) { PatrolEnemyScript::Update(e, dt); };
-    //    patrolBehaviour.End = [](Entity e) { PatrolEnemyScript::End(e); };
-    //    logicSys.RegisterScript("PatrolEnemy", patrolBehaviour);
-    //    std::cout << "Registered PatrolEnemy" << std::endl;
-    //}
-
-    // Register more scripts here in the future
-    /*
-    {
-        BehaviourFCT playerBehaviour;
-        playerBehaviour.Init = [](Entity e) { PlayerScript::Start(e); };
-        playerBehaviour.Update = [](Entity e, float dt) { PlayerScript::Update(e, dt); };
-        playerBehaviour.End = [](Entity e) { PlayerScript::End(e); };
-        logicSys.RegisterScript("PlayerScript", playerBehaviour);
-        std::cout << "Registered PlayerScript" << std::endl;
-    }
-    */
 }
