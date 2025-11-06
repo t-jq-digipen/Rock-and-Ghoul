@@ -187,13 +187,13 @@ void Level2::Init()
 			.shape = ButtonShape::Rounded
 			});
 
-		GuiSystem::Get().AddTextBox({
-			.text = "ENEMY AI is being tested here",
-			.pos = {960.0f * uiScaleX, 150.0f * uiScaleY},
-			.scale = 0.5f * uiScale,
-			.color = {0.f, 0.f, 0.f},
-			.centered = true
-		});
+		//GuiSystem::Get().AddTextBox({
+		//	.text = "ENEMY AI is being tested here",
+		//	.pos = {960.0f * uiScaleX, 150.0f * uiScaleY},
+		//	.scale = 0.5f * uiScale,
+		//	.color = {0.f, 0.f, 0.f},
+		//	.centered = true
+		//});
 
 		// 5. Create FretBoard after OpenGL is ready (duplicate - can remove)
 		//if (!fretboard) {
