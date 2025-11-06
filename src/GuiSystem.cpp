@@ -114,7 +114,7 @@ void GuiSystem::Update(float dt) {
 
     // convert to Game View space
     if (!ImGuiSystem::guiEnabled) {
-        // Fullscreen - mouse coords are already correct, just use them directly
+        // Fullscreen mouse coords are already correct, just use them directly
         // No conversion needed!
     }
     else {
