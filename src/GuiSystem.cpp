@@ -118,7 +118,7 @@ void GuiSystem::Update(float dt) {
         // No conversion needed!
     }
     else {
-        // ImGui is ON - convert mouse from screen space to game view space
+        // ImGui is ON convert mouse from screen space to game view space
         if (mouse.x < m_gameViewRect.x || mouse.x > m_gameViewRect.x + m_gameViewRect.width || mouse.y < m_gameViewRect.y ||  mouse.y > m_gameViewRect.y + m_gameViewRect.height) 
         {
             // Mouse is outside game view - invalidate mouse position
