@@ -105,6 +105,10 @@ public:
     const Vec2& GetWorldMin() const { return worldMin; }
     const Vec2& GetWorldMax() const { return worldMax; }
 
+    Vec2 NDCToWorld(const Vec2& ndc) const;
+
+    Vec2 WorldToNDC(const Vec2& world) const;
+    glm::mat4 GetInverseViewProjection() const;
     // Update camera
     void UpdateCamera();
 

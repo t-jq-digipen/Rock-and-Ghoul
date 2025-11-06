@@ -35,7 +35,7 @@
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include "DataDefs.h"
-
+#include "imgui.h"
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 
@@ -632,6 +632,10 @@ public:
     //camera to see which uses camera and which doesnt etc in main menu dont need
     bool useCamera = true;
 
+    static Vec2 PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImVec2& panelSize);
+
+    static ImVec2 WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImVec2& panelSize);
+
 private:
     glm::vec2 uiScale = { 1.0f, 1.0f };
     /**
@@ -776,7 +780,8 @@ private:
     glm::vec3 currentTint = { 1.f, 1.f, 1.f };
 
 
-
+    // converts normalized device coordinates (-1,1) to world-space
+   
 
 public:
 
@@ -789,4 +794,6 @@ public:
     void BeginSceneCapture();
     void EndSceneCapture();
     GLuint GetSceneTexture() const { return sceneColor; }
+
+    Vec2 ScreenToWorld(float ndcX, float ndcY) const;
 };

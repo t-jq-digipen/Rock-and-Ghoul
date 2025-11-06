@@ -608,11 +608,8 @@ void ImGuiSystem::Update(float dt)
 
                 //ndc to world
                 Camera& cam = Camera::GetInstance();
-                glm::mat4 invVP = glm::inverse(cam.GetViewProjection());
-                // for 2D ortho this hits z=0 plane fine
-                glm::vec4 world = invVP * glm::vec4(ndcX, ndcY, 0.0f, 1.0f);
-                if (world.w != 0.0f) world /= world.w;
-
+                
+                Vec2 world = cam.NDCToWorld({ ndcX, ndcY });
                 float worldX = world.x;
                 float worldY = world.y;
 
@@ -1710,31 +1707,10 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
     Camera& cam = Camera::GetInstance();
-
-    glm::mat4 VP = cam.GetViewProjection();
-    glm::mat4 invVP = glm::inverse(VP);
-
-    auto WorldToPanel = [&](const Vec2& world) -> ImVec2 {
-        glm::vec4 clip = VP * glm::vec4(world.x, world.y, 0.f, 1.f);
-        if (clip.w != 0.f) clip /= clip.w;
-
-        float u = clip.x * 0.5f + 0.5f;
-        float v = 1.f - (clip.y * 0.5f + 0.5f); // flip vertically
-        return ImVec2(
-            panelPos.x + u * panelSize.x,
-            panelPos.y + v * panelSize.y
-        );
-        };
-
-    auto PanelToWorld = [&](const ImVec2& screen) -> Vec2 {
-        float u = (screen.x - panelPos.x) / panelSize.x;
-        float v = (screen.y - panelPos.y) / panelSize.y;
-        v = 1.f - v;
-        glm::vec4 ndc(u * 2.f - 1.f, v * 2.f - 1.f, 0.f, 1.f);
-        glm::vec4 world = invVP * ndc;
-        if (world.w != 0.f) world /= world.w;
-        return { world.x, world.y };
-        };
+    /* w (x'/w, y' / w) omg comp graph*/
+    //moved into cam
+    //glm::mat4 VP = cam.GetViewProjection();
+    //glm::mat4 invVP = glm::inverse(VP);
 
     // mouse n panel state
     ImVec2 mouseScreen = ImGui::GetMousePos();
@@ -1760,7 +1736,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         if (!EntityManager::get().isAlive(entity))
             continue;
 
-        ImVec2 handleCenter = WorldToPanel(transform.pos); //world pos to pixel coords
+        ImVec2 handleCenter = Render::WorldToPanel(transform.pos, panelPos, panelSize);//world pos to pixel coords
 
         float dx = mouseScreen.x - handleCenter.x;
         float dy = mouseScreen.y - handleCenter.y;
@@ -1785,7 +1761,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         isDragging = true;
 
         auto& t = reg.Get_Component<TransformComponent>(hovered);
-        dragOffset = t.pos - PanelToWorld(mouseScreen);
+        dragOffset = t.pos - Render::PanelToWorld(mouseScreen, panelPos, panelSize);
 
         std::cout << "[Editor] Started dragging entity " << hovered << "\n";
     }
@@ -1794,7 +1770,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
     if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown && mouseInPanel)
     {
         auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
-        t.pos = PanelToWorld(mouseScreen) + dragOffset;
+        t.pos = Render::PanelToWorld(mouseScreen, panelPos, panelSize) + dragOffset;
 
         //need update aabb cause editor physic dt = 0
         if (reg.Has_Component<Physics::PhysicsComponent>(draggedEntity)) {

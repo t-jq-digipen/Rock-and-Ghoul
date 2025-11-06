@@ -133,3 +133,28 @@ void Camera::FollowTarget(const Vec2& targetPos, float dt)
     SetPosition(newPos);
     UpdateMatrices();
 }
+
+glm::mat4 Camera::GetInverseViewProjection() const
+{
+    return glm::inverse(projMatrix * viewMatrix);
+}
+Vec2 Camera::WorldToNDC(const Vec2& world) const
+{
+    glm::vec4 worldPos(world.x, world.y, 0.f, 1.f);
+    glm::vec4 clip = GetViewProjection() * worldPos;
+
+    if (clip.w != 0.0f)
+        return { clip.x / clip.w, clip.y / clip.w };
+    return { clip.x, clip.y }; // fallback
+}
+
+Vec2 Camera::NDCToWorld(const Vec2& ndc) const
+{
+    glm::vec4 ndcPos(ndc.x, ndc.y, 0.f, 1.f);
+    glm::vec4 world = GetInverseViewProjection() * ndcPos;
+
+    if (world.w != 0.0f)
+        return { world.x / world.w, world.y / world.w };
+    return { world.x, world.y }; // fallback
+}
+
