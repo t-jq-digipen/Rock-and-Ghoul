@@ -897,7 +897,7 @@ void GuiSystem::Update(float dt) {
             newDialogue.centered = true;
 
             // default path; user can later edit in UI to reload a different JSON
-            const std::string path = "../Assets/prefabs/Dialogue.json";
+            const std::string path = "../Assets/Dialogue.json";
             int idx = AddDialogueFromJson(path, newDialogue);
             if (idx >= 0) {
                 selectedType = SelectedType::Dialogue;

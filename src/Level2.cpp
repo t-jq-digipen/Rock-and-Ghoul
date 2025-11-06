@@ -148,9 +148,7 @@ void Level2::Init()
 {
 	Render& renderer = Render::GetInstance();
 
-	//float uiScaleX = GLApp::width / 1920.0f;
-	//float uiScaleY = GLApp::height / 1080.0f;
-	//float uiScale = std::min(uiScaleX, uiScaleY);
+
 
 	CrashHandler::Safe("Level2", "Init", [&] {
 		std::cout << "Level 2 Initialized!!!" << std::endl;

@@ -101,4 +101,3 @@ GameScripts/bin/*
 !GameScripts/bin/Debug/
 !GameScripts/bin/Debug/GameScripts.dll
 
-/deps/Mono

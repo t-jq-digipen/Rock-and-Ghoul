@@ -142,9 +142,6 @@ void MainMenu::Init()
         //    [] { GSM_SetNextState(GameState::GS_LEVEL1); },
         //    AudioSystem::ButtonType::PLAY);
 
-        //float uiScaleX = GLApp::width / 1920.0f;
-        //float uiScaleY = GLApp::height / 1080.0f;
-       // float uiScale = std::min(uiScaleX, uiScaleY);
 
         GuiSystem::Get().AddButton({
             .label = "PLAY",
