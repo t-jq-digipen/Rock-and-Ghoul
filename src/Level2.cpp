@@ -148,9 +148,7 @@ void Level2::Init()
 {
 	Render& renderer = Render::GetInstance();
 
-	float uiScaleX = GLApp::width / 1920.0f;
-	float uiScaleY = GLApp::height / 1080.0f;
-	//float uiScale = std::min(uiScaleX, uiScaleY);
+
 
 	CrashHandler::Safe("Level2", "Init", [&] {
 		std::cout << "Level 2 Initialized!!!" << std::endl;
@@ -211,7 +209,7 @@ void Level2::Init()
 			std::cout << "Found level2.json, attempting to load..." << std::endl;
 			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
 			if (sceneLoaded) {
-				Entity rock2 = registry2.Get_EntityID("Player");
+				registry2.Get_EntityID("Player");
 				//ghoul = registry2.Get_EntityID("Enemy");
 
 				std::cout << "Scene loaded successfully from level2.json!" << std::endl;

@@ -26,11 +26,23 @@ void MonoManager::Initialize(const std::string& assemblyPath)
 
     // Get the executable directory
     //C:\blabla\RockAndGhoul\build\Debug\RockAndGhoul.exe C:\blabla\RockAndGhoul\build\Debug
-    std::filesystem::path exePath = std::filesystem::path(__argv[0]).parent_path();
+
+    std::filesystem::path exePath = std::filesystem::absolute(__argv[0]).parent_path();
+    std::filesystem::path projectRoot = exePath;
+    // Navigate from build/Debug up to project root, then into deps/Mono
+    // exePath is build/Debug, go up twice to reach project root
+    while (!std::filesystem::exists(projectRoot / "deps") && projectRoot.has_parent_path())
+        projectRoot = projectRoot.parent_path();
+
+    if (!std::filesystem::exists(projectRoot / "deps" / "Mono" / "lib")) {
+        std::cerr << "[MonoManager] Could not locate Mono deps folder relative to " << projectRoot << "\n";
+        throw std::runtime_error("Mono libraries not found");
+    }
+   // std::filesystem::path exePath = std::filesystem::path(__argv[0]).parent_path();
 
     // Navigate from build/Debug up to project root, then into deps/Mono
     // exePath is build/Debug, go up twice to reach project root
-    std::filesystem::path projectRoot = exePath.parent_path().parent_path();
+    //std::filesystem::path projectRoot = exePath.parent_path().parent_path();
     std::filesystem::path monoLib = projectRoot / "deps" / "Mono" / "lib";
     std::filesystem::path monoEtc = projectRoot / "deps" / "Mono" / "etc";
 

@@ -262,7 +262,6 @@ source_group("BaseEngine\\Mono Scripting" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoManager.h
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoSystem.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoBindings.cpp
 )
@@ -275,8 +274,7 @@ source_group("BaseEngine\\CScripting" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LogicSystem.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameScripts.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameScripts.cpp
-
+    
 )
 source_group("BaseEngine\\Debug" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Debug.cpp

@@ -1,6 +1,6 @@
 @echo off
 set BUILD_DIR=build
-set CONFIG=Debug
+set CONFIG=Release
 set PROJECT_NAME=team_aviddivas
 
 REM 1. Create build folder if it doesn't exist
