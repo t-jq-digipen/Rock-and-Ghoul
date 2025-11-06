@@ -24,6 +24,7 @@
 #include "AudioComponent.h"
 #include "CoreEngine.h"
 #include "PlayerSystem.h"
+#include "Camera.h"
 #include "GameStateManager.h"
 #include <iostream>
 
@@ -78,7 +79,6 @@ bool AudioSystem::Init() {
 void AudioSystem::LoadDefaultButtonSounds() {
     RegisterButtonSound(ButtonType::PLAY, AudioCache::GetSound("button_play"));
     RegisterButtonSound(ButtonType::QUIT, AudioCache::GetSound("button_quit"));
-    std::cout << "Default button sounds loaded!" << std::endl;
 }
 
 /**
@@ -96,12 +96,11 @@ void AudioSystem::PlayButtonSound(ButtonType type) {
     // If found and valid, play it
     if (it != buttonSounds.end() && it->second) {
         PlaySound(it->second);
-        std::cout << "Playing button sound for type: " << static_cast<int>(type) << std::endl;
     }
     else {
         std::cerr << "Warning: Button sound not found for type " << static_cast<int>(type) << std::endl;
 
-        // Fallback: try to play PLAY sound if the requested type isn't found
+        // hail mary: play PLAY sound if the requested type isn't found
         if (type != ButtonType::PLAY) {
             auto playIt = buttonSounds.find(ButtonType::PLAY);
             if (playIt != buttonSounds.end() && playIt->second) {
@@ -126,8 +125,6 @@ void AudioSystem::RegisterButtonSound(ButtonType type, const std::string& soundP
     FMOD::Sound* sound = LoadSound(soundPath, false);
     if (sound) {
         buttonSounds[type] = sound;
-        std::cout << "Registered button sound for type " << static_cast<int>(type)
-            << " from: " << soundPath << std::endl;
     }
     else {
         std::cerr << "Failed to load button sound: " << soundPath << std::endl;
@@ -591,25 +588,12 @@ void AudioManager::CrossfadeTo(FMOD::Sound* newTrack, float duration) {
     std::cout << "[AudioManager] Starting crossfade (" << duration << "s)\n";
 }
 
-// Add this function to AudioManager
-void AudioManager::UpdateListenerToPlayer() {
-    Registry& registry = Registry::Get();
+void AudioManager::UpdateListenerToCamera() {
+    // Get camera position
+    Vec2 cameraPos = Camera::GetInstance().GetPosition();
 
-    // Find player and update listener to follow them
-    for (auto& [entity, tag] : registry.Get_ComponentMap<TagComponent>()) {
-        if (tag.tag == T_PLAYER) {
-            if (registry.Has_Component<TransformComponent>(entity)) {
-                auto& transform = registry.Get_Component<TransformComponent>(entity);
-
-                // Update listener position to player position
-                AudioSystem::SetListenerPosition(transform.pos.x, transform.pos.y);
-                return;
-            }
-        }
-    }
-
-    // No player found, keep listener at origin
-    AudioSystem::SetListenerPosition(0.0f, 0.0f);
+    // Update listener position to camera position
+    AudioSystem::SetListenerPosition(cameraPos.x, cameraPos.y);
 }
 
 /**
@@ -621,8 +605,8 @@ void AudioManager::UpdateListenerToPlayer() {
  * @param dt Delta time in seconds.
  */
 void AudioManager::Update(float dt) {
-    // Update listener to follow player EVERY FRAME
-    UpdateListenerToPlayer();
+    // Update listener to follow camera every frame
+    UpdateListenerToCamera();
 
     // Update FMOD system
     AudioSystem::Update();
