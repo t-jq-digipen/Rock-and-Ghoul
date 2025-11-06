@@ -443,12 +443,12 @@ void Level2::Update()
 			GSM_SetNextState(GameState::GS_MAIN_MENU);
 			//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
 		}
-		else if (Input::IsKeyPressed(GLFW_KEY_R) && !GuiSystem::Get().GetEditMode())
-		{
-			GSM_SetNextState(GameState::GS_RESTART);
-			//nextState = GameState::GS_RESTART;       // restart state
-			std::cout << "Level 2 Restarted!!!" << std::endl;
-		}
+		//else if (Input::IsKeyPressed(GLFW_KEY_R) && !GuiSystem::Get().GetEditMode())
+		//{
+		//	GSM_SetNextState(GameState::GS_RESTART);
+		//	//nextState = GameState::GS_RESTART;       // restart state
+		//	std::cout << "Level 2 Restarted!!!" << std::endl;
+		//}
 
 		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
 		{
