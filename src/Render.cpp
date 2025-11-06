@@ -1966,3 +1966,54 @@ void Render::Shutdown() {
 
     std::cout << "[Render] Shutdown complete — all GPU resources freed.\n";
 }
+
+Vec2 Render::ScreenToWorld(float ndcX, float ndcY) const {
+    Camera& cam = Camera::GetInstance();
+    glm::mat4 invVP = glm::inverse(cam.GetViewProjection());
+    glm::vec4 world = invVP * glm::vec4(ndcX, ndcY, 0.0f, 1.0f);
+    if (world.w != 0.0f) world /= world.w;
+    return { world.x, world.y };
+}
+
+
+Vec2 Render::PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImVec2& panelSize)
+{
+    Camera& cam = Camera::GetInstance();
+    Vec2 camPos = cam.GetPosition();
+    float zoom = cam.GetZoom();
+
+    float u = (mouse.x - panelPos.x) / panelSize.x;
+    float v = 1.f - ((mouse.y - panelPos.y) / panelSize.y);
+
+    float ndcX = u * 2.f - 1.f;
+    float ndcY = v * 2.f - 1.f;
+
+    float halfWidth = (GLApp::width * 0.5f) / zoom;
+    float halfHeight = (GLApp::height * 0.5f) / zoom;
+
+    return {
+        camPos.x + ndcX * halfWidth,
+        camPos.y + ndcY * halfHeight
+    };
+}
+
+ImVec2 Render::WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImVec2& panelSize)
+{
+    Camera& cam = Camera::GetInstance();
+    Vec2 camPos = cam.GetPosition();
+    float zoom = cam.GetZoom();
+
+    float halfWidth = (GLApp::width * 0.5f) / zoom;
+    float halfHeight = (GLApp::height * 0.5f) / zoom;
+
+    float ndcX = (world.x - camPos.x) / halfWidth;
+    float ndcY = (world.y - camPos.y) / halfHeight;
+
+    float u = ndcX * 0.5f + 0.5f;
+    float v = 1.f - (ndcY * 0.5f + 0.5f);
+
+    return ImVec2(
+        panelPos.x + u * panelSize.x,
+        panelPos.y + v * panelSize.y
+    );
+}
