@@ -527,6 +527,46 @@ void ImGuiSystem::Update(float dt)
     
     if (ImGui::Begin("Entity Editor + Prefabs")) {
         if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
+        // MakeNeaterNextTime
+        if (ImGui::Button("Add Entity"))
+        {
+            Entity newEntity = m_registry.Create_Entity();
+            selectedEntity = newEntity;
+
+            // Store editor name
+            m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
+
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
+        {
+            Registry& reg = Registry::Get();
+            SavedEntity src = reg.Save_Entity(selectedEntity);
+
+            //filter out empty json data
+            for (auto it = src.componentData.begin(); it != src.componentData.end();)
+            {
+                if (it->second.empty() || it->second == "{}" || it->second == "null")
+                {
+                    std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
+                    it = src.componentData.erase(it);
+                }
+                else
+                    ++it;
+            }
+
+            reg.Load_Entity(src);
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
+        {
+            m_registry.Remove_Entity(selectedEntity);
+            selectedEntity = INVALID_ENTITY;
+        }
+
+        ImGui::Separator();
         ImGui::Columns(2, "EntityColumns", true);
         ShowHierarchyWindow();     // left: list
         ImGui::NextColumn();
@@ -923,44 +963,45 @@ void ImGuiSystem::ShowHierarchyWindow() {
 
     EnsureSelectionValid();
 
-    if (ImGui::Button("Add Entity"))
-    {
-        Entity newEntity = m_registry.Create_Entity();
-        selectedEntity = newEntity;
+    //if (ImGui::Button("Add Entity"))
+    //{
+    //    Entity newEntity = m_registry.Create_Entity();
+    //    selectedEntity = newEntity;
 
-        // Store editor name
-        m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
+    //    // Store editor name
+    //    m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
 
-    }
+    //}
 
-    ImGui::SameLine();
-    if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
-    {
-        Registry& reg = Registry::Get();
-        SavedEntity src = reg.Save_Entity(selectedEntity);
+    //ImGui::SameLine();
+    //if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
+    //{
+    //    Registry& reg = Registry::Get();
+    //    SavedEntity src = reg.Save_Entity(selectedEntity);
 
-        //filter out empty json data
-        for (auto it = src.componentData.begin(); it != src.componentData.end();)
-        {
-            if (it->second.empty() || it->second == "{}" || it->second == "null")
-            {
-                std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
-                it = src.componentData.erase(it);
-            }
-            else
-            ++it;
-        }
+    //    //filter out empty json data
+    //    for (auto it = src.componentData.begin(); it != src.componentData.end();)
+    //    {
+    //        if (it->second.empty() || it->second == "{}" || it->second == "null")
+    //        {
+    //            std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
+    //            it = src.componentData.erase(it);
+    //        }
+    //        else
+    //        ++it;
+    //    }
 
-       reg.Load_Entity(src);
-    }
+    //   reg.Load_Entity(src);
+    //}
 
-    ImGui::SameLine();
-    if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
-    {
-        m_registry.Remove_Entity(selectedEntity);
-        selectedEntity = INVALID_ENTITY;
-    }
-    ImGui::Separator();
+    //ImGui::SameLine();
+    //if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
+    //{
+    //    m_registry.Remove_Entity(selectedEntity);
+    //    selectedEntity = INVALID_ENTITY;
+    //}
+    //
+    //ImGui::Separator();
 
 
     // show all known entities
@@ -2028,7 +2069,9 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     float startX = (panelWidth - totalWidth) * 0.5f;
     ImGui::SetCursorPosX(startX);
 
+    bool inEdit = gsm.InEditMode();
     //play
+    if (!inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
         //FILLTHISSHITYASM
@@ -2059,10 +2102,12 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         isPlaying = true;
         std::cout << "[Editor] Gameplay started.\n";
     }
+    if (!inEdit) { ImGui::EndDisabled(); }
 
     ImGui::SameLine(0, spacing);
 
     //STOP
+    if (inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
     {
         gsm.isPaused = true;
@@ -2109,6 +2154,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
     }
+    if (inEdit) { ImGui::EndDisabled(); }
 
     ImGui::SameLine(spacing * 2);
     //COLORS
