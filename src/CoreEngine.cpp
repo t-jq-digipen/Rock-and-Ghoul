@@ -2,7 +2,8 @@
  * @file        CoreEngine.cpp
  * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
  * @co-author   Manfred Sim         | manfred.sim@digipen.edu
- * @date        01 OCT 2025
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @date        01 NOV 2025
  *
  * @brief   Core Engine implementation and update loop
  *

@@ -1,3 +1,17 @@
+/* ========================================================
+ * @file	    BehaviourComponent.h
+ * @author	    Tan Jun Quan | t.junquan@digipen.edu
+ * @date	    07 NOV 2025
+ *
+ * @brief	Behaviour Component
+ *
+ * This file declares and defines the Behaviour Component,
+ * which is used to hold C++ scripting logic! It holds a
+ * list of behaviour scripts which can be attached to entities.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 #pragma once
 #include <string>
 #include <vector>
@@ -9,18 +23,34 @@
 #include "LogicSystem.h"
 
 
-//FILLTHISHITJQ
+ /*!
+  * @struct BehaviourComponent
+  * @brief Component used to attach and manage behaviour scripts on an entity.
+  *
+  * Stores a list of script IDs, initialization state for each script, and
+  * provides operations to add, remove, serialize, and deserialize scripts.
+  *
+  * The component ensures script `End()` callbacks run when removed or when
+  * the component itself is destroyed.
+  */
 struct BehaviourComponent
 {
-    Entity entityID{};
+    Entity entityID{};                                  // ID of entity it is attached to, must store to update the components through registry
 
-    std::unordered_map<ScriptID, bool> startedScripts;
-    std::vector<ScriptID> scriptIDList;
+    std::unordered_map<ScriptID, bool> startedScripts;  // Map of script ID to bool to check if a script has started
+    std::vector<ScriptID> scriptIDList;                 // List of script IDs attached to the entity
 
-    // ScriptID scriptID = ScriptID::NONE;        // Internal enum for fast lookup
-    std::string scriptName = "";               // Human-readable name
-    bool started = false;                      // Whether Init() ran yet
+    std::string scriptName = "";                        // Human-readable name
+    bool started = false;                               // Whether Init() ran yet
+
+    /**
+     * @brief Default constructor.
+     */
     BehaviourComponent() = default;
+
+    /**
+     * @brief Destructor. Calls End() on all started scripts.
+     */
     ~BehaviourComponent()
     {
         for (ScriptID scriptID : scriptIDList)
@@ -42,16 +72,32 @@ struct BehaviourComponent
         
     }
 
+    /**
+     * @brief Construct a BehaviourComponent with one script by name.
+     * @param name Name of the script to attach.
+     */
     BehaviourComponent(const std::string& name)
     {
         AddScript(name);
     }
 
+    /**
+     * @brief Updates the stored entity ID.
+     * @param eID New entity ID.
+     */
     void FixID(Entity eID)
     {
         entityID = eID;
     }
 
+    /**
+     * @brief Adds a behaviour script by name.
+     *
+     * Looks up the ScriptID using LogicSystem. If already added,
+     * the function does nothing.
+     *
+     * @param name Name of the script to attach.
+     */
     void AddScript(const std::string& name)
     {
         LogicSystem& logicSys = LogicSystem::Get();
@@ -66,6 +112,13 @@ struct BehaviourComponent
         }
     }
 
+    /**
+     * @brief Removes a script by name.
+     *
+     * If the script was started, its End() function is called before removal.
+     *
+     * @param name Name of the script to remove.
+     */
     void RemoveScript(const std::string& name)
     {
         LogicSystem& logicSys = LogicSystem::Get();
@@ -81,7 +134,7 @@ struct BehaviourComponent
             {
                 BehaviourFCT* script = logicSys.GetBehaviourByID(sID);
                 if (script && script->End)
-                    script->End(0);
+                    script->End(entityID);
             }
 
 
@@ -93,6 +146,13 @@ struct BehaviourComponent
         }
     }
 
+    /**
+     * @brief Removes a script by ScriptID.
+     * 
+     * If the script was started, its End() function is called before removal.
+     * 
+     * @param sID Script ID to remove.
+     */
     void RemoveScript(const ScriptID& sID)
     {
         if (startedScripts.find(sID) == startedScripts.end()) { return; } // Script not added
@@ -115,6 +175,13 @@ struct BehaviourComponent
         std::erase(scriptIDList, sID);
     }
 
+    /**
+     * @brief Checks whether the component has a script by name.
+     * @param name Script name.
+     * @return True if the script is attached, false otherwise.
+     *
+     * @throws std::runtime_error If the script name does not exist in LogicSystem.
+     */
     bool HasScript(const std::string& name)
     {
         LogicSystem& logicSys = LogicSystem::Get();
@@ -136,6 +203,13 @@ struct BehaviourComponent
 
     }
 
+    /**
+     * @brief Editor integration for BehaviourComponent.
+     * 
+     * This data field is empty as it is defined in ImGuiSystem.cpp.
+     * 
+     * @return Empty ComponentData only holding Component Name.
+     */
     Editor::ComponentData EditorData()
     {
         Editor::ComponentData data("Behaviour");
@@ -152,6 +226,10 @@ struct BehaviourComponent
 
     using json = nlohmann::json;
 
+    /**
+     * @brief Serializes attached scripts into JSON.
+     * @return A JSON-formatted string containing script names.
+     */
     std::string Serialize() const
     {
         json j;
@@ -168,6 +246,12 @@ struct BehaviourComponent
         //return "{}";
     }
 
+    /**
+     * @brief Creates a BehaviourComponent from serialized JSON.
+     * @param eID Entity ID.
+     * @param data JSON string containing script names.
+     * @return A reconstructed BehaviourComponent.
+     */
     static BehaviourComponent DeSerialize(Entity, const std::string& data)
     {
         BehaviourComponent bc;

@@ -82,9 +82,6 @@ void LogicSystem::Shutdown()
 }
 
 
-
-
-//FILLTHISSHITJQ
 void LogicSystem::RegisterScript(const std::string& name, const BehaviourFCT& script, ScriptID id)
 {
     //Adds a new script to the system

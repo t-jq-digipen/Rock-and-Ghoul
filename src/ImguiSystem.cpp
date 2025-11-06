@@ -1635,7 +1635,6 @@ void ImGuiSystem::ShowAssetPreviewWindow()
     }
 }
 
-//FILLTHISSHITJQ
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
     (void)viewportSize;

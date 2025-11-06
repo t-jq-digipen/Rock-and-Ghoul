@@ -1,13 +1,13 @@
 /* ========================================================
  * @file        LogicSystem.h
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu FILLTHISSHITJQ
+ * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
  * @date        07 NOV 2025
  *
  * @brief
  * Manages and updates all C++ behaviour scripts registered in the ECS.
  *
- * The LogicSystem serves as the gameplaY logic. It retrieves all entities
+ * The LogicSystem serves as the gameplay logic. It retrieves all entities
  * that contain a BehaviourComponent and executes their behaviour functions each frame.
 
  * Each BehaviourComponent maintains a list of script IDs
@@ -91,17 +91,42 @@ public:
     */
     void Shutdown() override;
 
-    //FILLTHISSHITJQ
+
+    /**
+    * @brief Registers a script into the LogicSystem.
+    *
+    * @param name Name of the script
+    * @param script BehaviourFCT of the script
+    * @param id ScriptID of the script
+    * 
+    */
     void RegisterScript(const std::string& name, const BehaviourFCT& script, ScriptID id);
+
+    /**
+    * @brief Retrieves behaviour using script name.
+    *
+    * @param name Name of the script
+    * @return BehaviourFCT of script name
+    *
+    */
     BehaviourFCT* GetBehaviour(const std::string& name);
+
+    /**
+    * @brief Retrieves behaviour using script ID.
+    *
+    * @param id ID of script
+    * @return BehaviourFCT of script ID
+    *
+    */
     BehaviourFCT* GetBehaviourByID(ScriptID id);
 
+    // Map getters
     const std::unordered_map<std::string, ScriptID>& GetNameToIDMap() const { return m_nameToID; }
     const std::unordered_map<ScriptID, std::string>& GetIDToNameMap() const { return m_idToName; }
 
 private:
     LogicSystem() = default;  // Private constructor for singleton
-    std::unordered_map<std::string, BehaviourFCT> m_behaviours; //various behaviours (contain scripts)
-    std::unordered_map<std::string, ScriptID>     m_nameToID;
-    std::unordered_map<ScriptID, std::string>     m_idToName;
+    std::unordered_map<std::string, BehaviourFCT> m_behaviours; // various behaviours (contain scripts)
+    std::unordered_map<std::string, ScriptID>     m_nameToID;   // name to ID map
+    std::unordered_map<ScriptID, std::string>     m_idToName;   // ID to name map
 };
