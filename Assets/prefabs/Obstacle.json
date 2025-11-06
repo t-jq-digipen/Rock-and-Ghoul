@@ -1,0 +1,13 @@
+{
+    "entities": [
+        {
+            "components": {
+                "Physics": "{\"aabb\":{\"centerX\":1395.398193359375,\"centerY\":544.77880859375,\"dimX\":68.71399688720703,\"dimY\":69.48500061035156},\"circle\":{\"posX\":1395.398193359375,\"posY\":544.77880859375,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":1395.398193359375,\"posY\":544.77880859375,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+            },
+            "name": "Obstacle"
+        }
+    ],
+    "sceneName": "Obstacle"
+}
