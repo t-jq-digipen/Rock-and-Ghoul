@@ -7,14 +7,11 @@
 #include "BehaviourFCT.h"
 #include "DataDefs.h"
 #include "LogicSystem.h"
+
+
+//FILLTHISHITJQ
 struct BehaviourComponent
 {
-    //std::string scriptName;  // instead of BehaviourFCT*
-    //bool started = false;
-    //std::vector<ScriptID> scriptIDs;
-    //std::vector<std::string> scriptNames; // multiple scripts
-    //std::vector<bool> startedStates;
-
     Entity entityID{};
 
     std::unordered_map<ScriptID, bool> startedScripts;

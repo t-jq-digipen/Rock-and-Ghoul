@@ -902,8 +902,7 @@ void GuiSystem::Update(float dt) {
 
 void GuiSystem::Shutdown() {
     buttons.clear();
-    //audio = nullptr;
     textboxes.clear();
     dialogues.clear();
-    audio = nullptr;
+    //audio = nullptr;
 }

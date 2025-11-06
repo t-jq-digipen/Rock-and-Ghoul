@@ -11,33 +11,24 @@ void LogicSystem::Initialize()
 
 void LogicSystem::Update(float dt)
 {
-  /*  auto& reg = Registry::Get();
+    //each BehaviourComponent knows its entity ID
 
-    for (auto& [e, bc] : reg.Get_ComponentMap<BehaviourComponent>()) {
-        if (bc.scriptName.empty()) continue;
-
-        if (BehaviourFCT* f = GetBehaviour(bc.scriptName)) {
-            if (!bc.started) {
-                f->Init(e);
-                bc.started = true;
-            }
-            f->Update(e, dt);
-        }
-    }*/
     for (auto& [entity, bc] : m_registry.Get_ComponentMap<BehaviourComponent>())
     {
         bc.FixID(entity);
     }
 
+    //skip if paused or editing
     if (gsm.isPaused || gsm.inEditMode)
         return;
 
+    //each entity with a behaviour component
     for (auto& [entity, bc] : m_registry.Get_ComponentMap<BehaviourComponent>())
     {
         for (ScriptID scriptID : bc.scriptIDList)
         {
+            //find name from id
             std::string scriptName;
-            // keep scriptName synced with current ID (in case edited from ImGui)
             if (scriptID != ScriptID::NONE)
             {
                 const auto& idToName = m_idToName;
@@ -45,97 +36,24 @@ void LogicSystem::Update(float dt)
                 if (it != idToName.end())
                     scriptName = it->second;
             }
-
+            //get behaviourfct
             BehaviourFCT* f = GetBehaviour(scriptName);
             if (!f) continue;
 
-            // detect runtime script change
-            //static std::unordered_map<Entity, ScriptID> previousScript;
-            //if (previousScript[entity] != scriptID)
-            //{
-            //    // if changed, restart Init()
-            //    previousScript[entity] = scriptID;
-            //    bc.startedScripts[scriptID] = false;
-            //    std::cout << "[LogicSystem] Script changed at runtime on entity "
-            //        << entity << " -> " << scriptName << std::endl;
-            //}
-
-            // normal script execution
+            
             if (!bc.startedScripts[scriptID])
             {
+                //first time, call Init(entity)
                 f->Init(entity);
                 bc.startedScripts[scriptID] = true;
             }
-
+            //after call update
             f->Update(entity, dt);
         }
-        //// keep scriptName synced with current ID (in case edited from ImGui)
-        //if (bc.scriptID != ScriptID::NONE)
-        //{
-        //    const auto& idToName = m_idToName;
-        //    auto it = idToName.find(bc.scriptID);
-        //    if (it != idToName.end())
-        //        bc.scriptName = it->second;
-        //}
 
-        //BehaviourFCT* f = GetBehaviour(bc.scriptName);
-        //if (!f) continue;
-
-        //// detect runtime script change
-        //static std::unordered_map<Entity, ScriptID> previousScript;
-        //if (previousScript[entity] != bc.scriptID)
-        //{
-        //    // if changed, restart Init()
-        //    previousScript[entity] = bc.scriptID;
-        //    bc.started = false;
-        //    std::cout << "[LogicSystem] Script changed at runtime on entity "
-        //        << entity << " -> " << bc.scriptName << std::endl;
-        //}
-
-        //// normal script execution
-        //if (!bc.started)
-        //{
-        //    f->Init(entity);
-        //    bc.started = true;
-        //}
-
-        //f->Update(entity, dt);
     }
 
 }
-//void LogicSystem::Update(float dt)
-//{
-//    Registry& reg = Registry::Get();
-//
-//    for (auto& [entity, bc] : reg.Get_ComponentMap<BehaviourComponent>())
-//    {
-//        if (bc.scriptNames.empty()) continue;
-//
-//        // Ensure startedStates matches number of scripts
-//        if (bc.startedStates.size() < bc.scriptNames.size())
-//            bc.startedStates.resize(bc.scriptNames.size(), false);
-//
-//        for (size_t i = 0; i < bc.scriptNames.size(); ++i)
-//        {
-//            const std::string& scriptName = bc.scriptNames[i];
-//            bool started = bc.startedStates[i];
-//
-//            BehaviourFCT* fct = GetBehaviour(scriptName);
-//            if (!fct) continue; // skip if not found
-//
-//            if (!started)
-//            {
-//                fct->Init(entity);
-//                started = true;
-//            }
-//
-//            fct->Update(entity, dt);
-//
-//            // Save started flag back
-//            bc.startedStates[i] = started;
-//        }
-//    }
-//}
 
 void LogicSystem::Shutdown()
 {
@@ -143,14 +61,19 @@ void LogicSystem::Shutdown()
     m_behaviours.clear();
 }
 
+
+
+
+//FILLTHISSHITJQ
 void LogicSystem::RegisterScript(const std::string& name, const BehaviourFCT& script, ScriptID id)
 {
+    //Adds a new script to the system
     m_behaviours[name] = script;
     m_nameToID[name] = id;
     m_idToName[id] = name;
-    std::cout << "[LogicSystem] Registered script: " << name
-        << " (ID=" << static_cast<unsigned int>(id) << ")\n";
+    std::cout << "[LogicSystem] Registered script: " << name << " (ID=" << static_cast<unsigned int>(id) << ")\n";
 }
+
 BehaviourFCT* LogicSystem::GetBehaviourByID(ScriptID id)
 {
     auto it = m_idToName.find(id);

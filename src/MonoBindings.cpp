@@ -3,10 +3,20 @@
 #include <iostream>
 #include "Input.h"
 extern "C" {
+    //https://learn.microsoft.com/en-us/cpp/build/exporting-c-functions-for-use-in-c-or-cpp-language-executables?view=msvc-170
 
-    // ----------------------------------------------------
-    // ECS_GetPosition(uint entity, float* x, float* y)
-    // ----------------------------------------------------
+    //    // MyCFuncs.h
+    //#ifdef __cplusplus
+    //    extern "C" {  // only need to export C interface if
+    //        // used by C++ source code
+    //#endif
+    //
+    //        __declspec(dllimport) void MyCFunc();
+    //        __declspec(dllimport) void AnotherCFunc();
+    //
+    //#ifdef __cplusplus
+    //    }
+    //#endif
     __declspec(dllexport) void CS_GetPosition(unsigned int entity, float* x, float* y)
     {
         Registry& reg = Registry::Get();
@@ -17,9 +27,7 @@ extern "C" {
         *y = transform.pos.y;
     }
 
-    // ----------------------------------------------------
-    // ECS_SetPosition(uint entity, float x, float y)
-    // ----------------------------------------------------
+
     __declspec(dllexport) void CS_SetPosition(unsigned int entity, float x, float y)
     {
         Registry& reg = Registry::Get();
@@ -30,7 +38,7 @@ extern "C" {
         transform.pos.y = y;
     }
 
-    // === Get Rotation ===
+
     __declspec(dllexport) float CS_GetRotation(unsigned int entity)
     {
         Registry& reg = Registry::Get();
@@ -40,7 +48,7 @@ extern "C" {
         return t.rot;
     }
 
-    // === Set Rotation ===
+
     __declspec(dllexport) void CS_SetRotation(unsigned int entity, float rot)
     {
         Registry& reg = Registry::Get();
@@ -48,13 +56,6 @@ extern "C" {
             return;
         auto& t = reg.Get_Component<TransformComponent>(entity);
         t.rot = rot;
-    }
-    // ----------------------------------------------------
-    // Input check (optional bridge)
-    // ----------------------------------------------------
-    __declspec(dllexport) bool CS_IsKeyPressed(int key)
-    {
-        return Input::IsKeyPressed(key);
     }
 
 }

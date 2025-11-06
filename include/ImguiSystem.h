@@ -1,24 +1,24 @@
 /* ========================================================
- * @file        ImGuiSystem.h
- * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
- * @date        01 OCT 2025
+ * @file        ImguiSystem.cpp
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        06 NOV 2025
  *
  * @brief
+ * Implements the ImGuiSystem, which provides the in-game editor
+ * and debugging interface for the engine.
  *
- * Declares the ImGuiSystem, an engine subsystem that manages the in-game editor/debug UI.
- * 
- * Features:
- * - Toggles on/off with a key press (F1).
- * - Renders a single "Game Editor" window with selectable panels:
- *   - Engine Info: frame timings and system performance
- *   - Collision: collider stats, entity positions, and scene save/load
- *   - Hierarchy + : entity list with a editor
  *
- * Integrates with the engine's system interface (ISystem) and
- * provides hooks for initialization, update, render, and shutdown.
- * 
+ * - Engine Info: Displays Framerate and system timings
+ * - Collision + Scene: Shows collider stats, spatial grid stats and scene management
+ * - Entity Editor + Prefabs: Allows editing, adding, and saving entities.
+ * - Assets: Browser for textures and audio files via drag-and-drop import.
+ * - Game View: Renders the current scene with play/stop simulation controls.
+ * - Editor Camera: Provides overview of the level camera.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * It also supports prefab placement, entity dragging, file drag-and-drop
+ * imports, and scene.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -29,19 +29,29 @@
 #include <imgui_impl_opengl3.h>
 #include "DataDefs.h"
 
-/**
- * @class ImGuiSystem
- * @brief Provides the in-game debug/editor interface.
- *
- * Implements the ISystem interface to integrate ImGui into the
- * engine lifecycle. The system exposes multiple panels:
- * - Engine Info: Displays frame rate and system timings.
- * - Collision: Shows collider stats, entity positions, and scene save/load.
- * - Hierarchy + Editor: Lists all entities and allows inspecting/editing
- *   their components side by side.
- *
- * The editor can be toggled at runtime (default: F1).
- */
+ /**
+  * @class ImGuiSystem
+  * @brief Provides the in-game editor and debugging interface.
+  *
+  * Integrates ImGui into the engine lifecycle, offering a fully dockable
+  * workspace that consolidates multiple panels for real-time inspection,
+  * editing, and debugging. The editor can be toggled at runtime (default: F1).
+  *
+  * Panels include:
+  * - **Engine Info:** Displays framerate, frame time, and per-system timings.
+  * - **Collision + Scene:** Visualizes collider stats, spatial grid data,
+  *   and provides scene load/save management.
+  * - **Entity Editor + Prefabs:** Lists all entities, supports component
+  *   editing, prefab saving/loading, and runtime entity manipulation.
+  * - **Assets:** Provides an asset browser with image thumbnails, drag-and-drop
+  *   import for textures and audio, and FMOD audio preview.
+  * - **Game View:** Renders the current scene with Play/Stop simulation controls.
+  * - **Editor Camera:** Offers a minimap-style overview for panning and zooming.
+  *
+  * The system also supports entity dragging, prefab placement, and real-time
+  * debug overlays for colliders, velocity vectors, and spatial grid visualization.
+  */
+
 class ImGuiSystem : public ISystem {
 public:
     void Initialize() override;
@@ -86,17 +96,68 @@ private:
      * selected entity (transform, shape, sprite, physics, etc.).
      */
     void ShowInspectorWindow();
-
+    /**
+     * @brief Displays the Asset Preview window in the editor.
+     *
+     * Provides a visual browser for assets such as textures and audio files.
+     * Supports drag-and-drop importing, thumbnail previews, and audio playback.
+     */
     void ShowAssetPreviewWindow();
 
+    /**
+     * @brief Renders the Editor Camera minimap.
+     *
+     * Draws a top-down view of the level showing all entities and the current
+     * camera bounds. Allows panning and zooming to reposition the editor camera.
+     *
+     * viewportPos  The top-left corner of the camera panel.
+     * viewportSize The available size of the camera viewport.
+     */
     void ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize);
 
+    /**
+     * @brief Draws draggable handles for entities in the Game View.
+     *
+     * Displays small interactive handles for each entity’s position.
+     * Entities can be selected and repositioned in real time using mouse drag.
+     *
+     * panelPos   The Game View’s screen-space position.
+     * panelSize  The Game View’s size for coordinate scaling.
+     */
     void DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize);
 
+    /**
+    * @brief Displays prefab management controls.
+    *
+    * Enables saving selected entities as prefabs, deleting existing prefabs,
+    * and activating prefab placement mode for spawning directly in the Game View.
+    */
     void ShowPrefabControls();
+
+    /**
+     * @brief Displays the Scene Browser panel.
+     *
+     * Lists all available scene files, allowing users to create, load, save,
+     * or delete scenes directly from the editor.
+     */
     void ShowSceneBrowser();
 
+    /**
+     * @brief Renders play and stop controls for simulation.
+     *
+     * Allows switching between edit and play modes. Temporarily saves the
+     * current scene before simulation and restores it when editing resumes.
+     *
+     * isPlaying flag indicating current state.
+     */
     void ShowSimulationControls(bool& isPlaying);
+
+    /**
+     * @brief Displays component management.
+     *
+     * Allows adding or removing components while respecting dependency rules.
+     * 
+     */
     void ShowAddRemoveComponents();
 };
 

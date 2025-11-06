@@ -39,7 +39,7 @@ public:
 
 private:
     LogicSystem() = default;  // Private constructor for singleton
-    std::unordered_map<std::string, BehaviourFCT> m_behaviours;
+    std::unordered_map<std::string, BehaviourFCT> m_behaviours; //various behaviours (contain scripts)
     std::unordered_map<std::string, ScriptID>     m_nameToID;
     std::unordered_map<ScriptID, std::string>     m_idToName;
 };
