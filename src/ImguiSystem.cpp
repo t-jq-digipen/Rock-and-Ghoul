@@ -694,6 +694,8 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
         }
     }
 
+    if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
+
     ImGui::Text("AABB Colliders: %d / %d active", activeColliders, totalColliders);
     ImGui::Checkbox("Show Colliders", &showColliders);
     ImGui::Checkbox("Show Velocity", &showVelocity);
@@ -726,6 +728,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
             (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
     }
 
+    if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
     ImGui::Text("Scene Management:");
     ShowSceneBrowser();
 
