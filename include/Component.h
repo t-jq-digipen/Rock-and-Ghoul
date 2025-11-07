@@ -155,11 +155,13 @@ struct TransformComponent {
 //};
 
 struct LifetimeComponent {
-	float time;
+	float age{};
+	float lifetime{};
 
 	std::string Serialize() const {
 		json j = {
-			{"time", time}
+			{"age", age},
+			{"lifetime", lifetime}
 		};
 		return j.dump();
 	}
@@ -171,13 +173,14 @@ struct LifetimeComponent {
 		}
 		json j = json::parse(data);
 		LifetimeComponent temp;
-		temp.time = j.value("time", 0.0f);
+		temp.age = j.value("age", 0.0f);
+		temp.lifetime = j.value("lifetime", temp.age);
 		return temp;
 	}
 
 	Editor::ComponentData EditorData() {
 		Editor::ComponentData ret("Lifetime");
-		ret.Add_Data("time", { Editor::Widget_Float{&time, true, 0.f, 100.f} });
+		ret.Add_Data("lifetime", { Editor::Widget_Float{&lifetime, true, 0.f, 100.f} });
 
 		return ret;
 

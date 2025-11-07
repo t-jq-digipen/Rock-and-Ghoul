@@ -22,6 +22,8 @@
 #include "GameStateManager.h"
 #include "CoreEngine.h" // to check pause state for music
 #include "LogicSystem.h"
+#include "JsonLoad.h"
+#include "FilePath.h"
 
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
@@ -296,6 +298,7 @@ namespace PlayerMove {
 namespace RockScript {
 	static float stunnedtimer = 1.f;
 	static float atktimer = 1.f;
+	static bool shot = false;
 
 	std::unordered_map<Entity, size_t> subscriberID;
 
@@ -344,6 +347,7 @@ namespace RockScript {
 
 
 		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID) || !Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
+		
 		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
 
@@ -381,6 +385,7 @@ namespace RockScript {
 			{
 				atktimer = 0.f;
 				animstate = 3;
+				shot = false;
 			}
 		}
 		else if (stunnedtimer < 1.f)
@@ -392,6 +397,14 @@ namespace RockScript {
 		{
 			atktimer += dt;
 			animstate = 3;
+
+			if (atktimer >= 0.7f && !shot)
+			{
+				auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
+				
+				JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", transComp.pos.x, transComp.pos.y);
+				shot = true;
+			}
 		}
 
 		if (!Registry::Get().Has_Component<Animator::AnimatorComponent>(eID)) return;

@@ -113,6 +113,9 @@ void CoreEngine::Initialize() {
     registry.Register_Component<Movement::MovementComponent>("Movement", { "Transform", "Physics" });
     std::cout << "REGISTRY | REGISTERED MOVEMENT COMPONENT\n";
 
+    registry.Register_Component<LifetimeComponent>("Lifetime");
+    std::cout << "REGISTRY | REGISTERED LIFETIME COMPONENT\n";
+
     // marker for non-standard components which should be shifted out to game files
     std::cout << "NON DEFAULT COMPONENTS: \n==============================\n";
 
