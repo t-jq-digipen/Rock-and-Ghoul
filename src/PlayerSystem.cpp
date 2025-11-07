@@ -30,6 +30,11 @@ constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
 constexpr float DASH_IMPULSE = 1000.f;   // Dash boost
 
+
+// spatial footstep sfx
+std::unordered_map<Entity, float> footstepTimers;  // Timer per player
+float footstepInterval = 0.35f;  // Time between footsteps (in seconds)
+
 void NormalizeDiagonalMovement(float& x, float& y)
 {
 	const float l2 = x*x + y*y;
@@ -250,6 +255,8 @@ namespace PlayerMove {
 	{
 		std::cout << "Player script started" << std::endl;
 
+		footstepTimers[eID] = 0;
+
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
 
 			if (e.key == GLFW_KEY_LEFT_SHIFT)
@@ -291,6 +298,8 @@ namespace PlayerMove {
 	{
 		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID[e]);
 		subscriberID.erase(e);
+
+		footstepTimers.erase(e);
 		std::cout << "Player script ended" << std::endl;
 	}
 } // end namespace PlayerMove
@@ -350,6 +359,7 @@ namespace RockScript {
 		
 		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
+		auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
 
 		int animstate = 0; //idle
 
@@ -373,6 +383,29 @@ namespace RockScript {
 			moveComp.SetMovementDirection({ fx, fy });
 
 			if (moving) { animstate = 1; }
+
+			// Reset timer when not moving
+			if (!moving) {
+				footstepTimers[eID] = 0.0f;
+			}
+			else
+			{
+				// Increment timer
+				footstepTimers[eID] += dt;
+
+				// Play footstep when timer exceeds interval
+				if (footstepTimers[eID] >= footstepInterval) {
+
+					// Play footstep sound at player position using spatial audio
+					AudioSystem::PlaySoundAt(
+						"player_footstep_wood",
+						transComp.pos.x,
+						transComp.pos.y,
+						1.0f
+					);
+					footstepTimers[eID] = 0.0f;  // Reset timer
+				}
+			}
 
 			if (Input::IsKeyPressed(GLFW_KEY_G))
 			{
@@ -420,6 +453,7 @@ namespace RockScript {
 		std::cout << "Rock script ended" << std::endl;
 	}
 } // end namespace RockScript
+
 
 void PlayerSystem::Initialize()
 {
