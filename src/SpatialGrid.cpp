@@ -25,10 +25,8 @@ SpatialGrid::SpatialGrid(float cellSize)
 }
 
 void SpatialGrid::Clear() {
-    // Clear all entities from grid cells
-    for (auto& [cell, entities] : grid) {
-        entities.clear();
-    }
+    // Clear entire grid - more efficient than clearing individual vectors
+    grid.clear();
 }
 
 std::pair<int, int> SpatialGrid::WorldToCell(float x, float y) const {

@@ -322,8 +322,8 @@ void CollisionManager::CheckCollisions() {
 
     auto& physicsComps = m_registry.Get_ComponentMap<Physics::PhysicsComponent>();
 
-    // Clear and rebuild spatial grid AFTER we've used the old data for rendering
-    // spatialGrid.Clear();
+    // Clear and rebuild spatial grid
+    spatialGrid.Clear();
 
     // BROAD PHASE: Build spatial grid
     for (auto& [entity, phyComp] : physicsComps) {
