@@ -29,7 +29,7 @@
 #include <Camera.h>
 #include "LogicSystem.h"
 #include "CollisionManager.h"
-
+#include "CoreEngine.h"
  // ---------------------------------------------
  // @brief Temporary struct for per-frame draw queue
  // ---------------------------------------------
@@ -39,6 +39,7 @@
     const TransformComponent* transform;
     float sortY;
 };*/
+
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
@@ -91,10 +92,16 @@ void RenderSystem::Update(float dt) {
         renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f }); // clear main framebuffer
     }
 
-    /*if (ImGuiSystem::guiEnabled) {
-        renderer.BeginSceneCapture();
-        renderer.ClearBackground({ 0.1f, 0.1f, 0.1f, 1.0f }); // Background for game view
-    }*/
+    static bool wasPaused = false;
+
+    if (GSM_IsPaused()) {
+        wasPaused = true;
+    }
+    else if (wasPaused) {
+        // just unpaused — reset velocity cache so lines reappear immediately
+        DebugDraw::ClearVelocityCache();
+        wasPaused = false;
+    }
 
     Render::GetInstance().UpdateProjection();
    // renderer.ClearBackground({ 0.05f, 0.0f, 0.1f, 1.0f });
@@ -455,90 +462,6 @@ void RenderSystem::Update(float dt) {
     renderInstance.FlushBatch();*/
 
 
-/*  //Original version in case need ref
-    for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
-    {
-        spriteComp.Update_ImageSize();
-        if (spriteComp.IsAnimated())
-        {
-            // draw animated logic
-            TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
-            if (!m_registry.Has_Component<Animator::AnimatorComponent>(entID))
-            {
-                std::cout << "Warning, Entity: " << entID << " does NOT have AnimatorComponent\n";
-                continue;
-            }
-            Animator::AnimatorComponent& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
-
-            animComp.UpdateUV(spriteComp.Get_Image().widthPixels, spriteComp.Get_Image().heightPixels);
-            animComp.UpdateFrame(dt);
-
-
-            renderInstance.DrawImageSub(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, animComp.u0, animComp.v0, animComp.u1, animComp.v1, transComp.rot + spriteComp.Get_Rotation());
-        }
-        else
-        {
-           // TransformComponent& transComp = Get_TransformComponent(entID);
-            if (Input::IsKeyHeld(GLFW_KEY_SPACE))
-                spriteComp.Set_Tint({ 1.0f, 0.0f, 0.0f });
-            else
-                spriteComp.Set_Tint({ 1.0f, 1.0f, 1.0f });
-            renderInstance.SetTint(spriteComp.Get_Tint());
-            TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
-
-
-            renderInstance.DrawImageScaled(spriteComp.Get_Image(), transComp.pos.x, transComp.pos.y, spriteComp.Get_Scale().x, spriteComp.Get_Scale().y, transComp.rot + spriteComp.Get_Rotation());
-            renderInstance.ClearTint();
-
-        }
-    }
-    */
-
-    // Loop through all ShapeComponents in the ECS
-    /*for (auto& [entID, shapeComp] : m_registry.Get_ComponentMap<ShapeComponent>())
-    {   
-        // Skip entities without a transform (need position/rotation to draw)
-        if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
-        TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
-        Colour3 color = { shapeComp.color.x, shapeComp.color.y, shapeComp.color.z };
-        if (m_registry.Has_Component<TagComponent>(entID)) {
-            TagComponent& tag = m_registry.Get_Component<TagComponent>(entID);
-
-            if (shapeComp.shape == SHAPE_RECTANGLE && tag.tag == T_INSTANCING) { //check entity is using instancing
-                //Store matching entities inside InstanceData vector
-                InstanceData inst;
-                inst.position = transComp.pos;
-                inst.scale = transComp.scale;
-                inst.rotation = glm::radians(transComp.rot);
-                inst.uvRect = { 0,0,1,1 };
-                batch.push_back(inst);
-                continue;
-            }
-
-
-        }
-
-        if (shapeComp.shape == SHAPE_RECTANGLE) {
-            renderInstance.DrawRect(
-                transComp.pos,
-                shapeComp.dimensions.x,
-                shapeComp.dimensions.y,
-                color,
-                transComp.rot
-            );
-        }
-        else if (shapeComp.shape == SHAPE_CIRCLE) {
-            float radius = (shapeComp.dimensions.x + shapeComp.dimensions.y) / 4.0f;
-            renderInstance.DrawCircle(
-                transComp.pos,
-                radius,
-                color,
-                32
-            );
-        }
-
-    }*/
-
     // Debug drawing for spatial grid
     {
     SpatialGrid* grid = CollisionManager::GetSpatialGrid();
@@ -556,10 +479,8 @@ void RenderSystem::Update(float dt) {
             if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
             auto& t = m_registry.Get_Component<TransformComponent>(entID);
 
-            if (ImGuiSystem::showVelocity && m_registry.Has_Component<TagComponent>(entID)) {
-                auto& tag = m_registry.Get_Component<TagComponent>(entID);
-                if (tag.tag == T_PLAYER)
-                    DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
+            if (ImGuiSystem::showVelocity) {
+                DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
             }
 
             if (ImGuiSystem::showColliders) {
