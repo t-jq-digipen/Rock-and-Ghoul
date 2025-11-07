@@ -547,7 +547,6 @@ void RenderSystem::Update(float dt) {
             DebugDraw::DrawSpatialGrid(grid, renderInstance);
         }
     }
-    grid->ClearCollisionMarkers();
     }
 
     // Debug drawing for physics colliders / velocities

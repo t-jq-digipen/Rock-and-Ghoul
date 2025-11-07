@@ -56,13 +56,13 @@ void PhysicsSystem::Update(float dt) {
             transComp.pos = RG_Add(transComp.pos, deltaPos);
             // updatehitboxes w transform position
             phyComp.UpdateHitboxes(transComp.pos);
-            // Collili checks!!(or different place?)
-            // Collili reaction!!!
-            collisionManager.Clear();
-            collisionManager.CheckCollisions();
-            collisionManager.ProcessEvents();
         }
     }
+    // Collili checks!!(or different place?)
+    // Collili reaction!!!
+    collisionManager.Clear();
+    collisionManager.CheckCollisions();
+    collisionManager.ProcessEvents();
 }
 void PhysicsSystem::Shutdown() {
     std::cout << "PhysicsSystem Shutdown!\n";

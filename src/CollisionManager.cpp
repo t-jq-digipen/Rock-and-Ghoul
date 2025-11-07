@@ -80,7 +80,6 @@ void CollisionLayerManager::Clear() {
 
 void CollisionManager::Clear() {
     events.clear();
-    spatialGrid.Clear();
 }
 
 void CollisionManager::AddEvent(Entity a, Entity b) {
@@ -319,7 +318,7 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected)
 
 void CollisionManager::CheckCollisions() {
     // Clear collision markers from previous frame FIRST (before clearing grid)
-    //spatialGrid.ClearCollisionMarkers();
+    spatialGrid.ClearCollisionMarkers();
 
     auto& physicsComps = m_registry.Get_ComponentMap<Physics::PhysicsComponent>();
 
