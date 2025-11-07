@@ -232,6 +232,8 @@ void RenderSystem::Update(float dt) {
                     auto& spriteComp = m_registry.Get_Component<Sprite::SpriteComponent>(entID);
                     auto& transComp = m_registry.Get_Component<TransformComponent>(entID);
 
+                    spriteComp.Update_ImageSize();
+
                     bool isBatched = false;
                     if (m_registry.Has_Component<TagComponent>(entID))
                     {
@@ -505,10 +507,10 @@ void RenderSystem::Update(float dt) {
         //then draw them all at once
         renderInstance.DrawRectInstanced(batch, { 0.2f, 0.8f, 1.0f });
         batch.clear();
-    }/*
+    }
     if (ImGuiSystem::guiEnabled) {
         renderer.EndSceneCapture();
-    }*/
+    }
 }
 
 void RenderSystem::Shutdown() {
