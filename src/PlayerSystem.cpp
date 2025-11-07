@@ -295,11 +295,12 @@ namespace PlayerMove {
 
 namespace RockScript {
 	static float stunnedtimer = 1.f;
+	static float atktimer = 1.f;
 
 	std::unordered_map<Entity, size_t> subscriberID;
 
 	void Dash(Entity eID) {
-		if (stunnedtimer < 1.f) { return; }
+		if (stunnedtimer < 1.f || atktimer < 1.f) { return; }
 		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
 
@@ -350,7 +351,7 @@ namespace RockScript {
 
 		// MOVEMENT
 		// ================================================================================
-		if (stunnedtimer >= 1.f)
+		if (stunnedtimer >= 1.f && atktimer >= 1.f)
 		{
 			int hor = 0;
 			int ver = 0;
@@ -368,17 +369,29 @@ namespace RockScript {
 			moveComp.SetMovementDirection({ fx, fy });
 
 			if (moving) { animstate = 1; }
+
+			if (Input::IsKeyPressed(GLFW_KEY_G))
+			{
+				stunnedtimer = 0.f;
+				animstate = 2;
+				physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
+			}
+
+			if (Input::IsKeyPressed(GLFW_KEY_E))
+			{
+				atktimer = 0.f;
+				animstate = 3;
+			}
 		}
-		else
+		else if (stunnedtimer < 1.f)
 		{
 			stunnedtimer += dt;
 			animstate = 2;
 		}
-		if (Input::IsKeyPressed(GLFW_KEY_G))
+		else if (atktimer < 1.f)
 		{
-			stunnedtimer = 0.f;
-			animstate = 2;
-			physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
+			atktimer += dt;
+			animstate = 3;
 		}
 
 		if (!Registry::Get().Has_Component<Animator::AnimatorComponent>(eID)) return;
