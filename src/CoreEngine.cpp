@@ -2,7 +2,8 @@
  * @file        CoreEngine.cpp
  * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
  * @co-author   Manfred Sim         | manfred.sim@digipen.edu
- * @date        01 OCT 2025
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @date        01 NOV 2025
  *
  * @brief   Core Engine implementation and update loop
  *
@@ -111,6 +112,9 @@ void CoreEngine::Initialize() {
 
     registry.Register_Component<Movement::MovementComponent>("Movement", { "Transform", "Physics" });
     std::cout << "REGISTRY | REGISTERED MOVEMENT COMPONENT\n";
+
+    registry.Register_Component<LifetimeComponent>("Lifetime");
+    std::cout << "REGISTRY | REGISTERED LIFETIME COMPONENT\n";
 
     // marker for non-standard components which should be shifted out to game files
     std::cout << "NON DEFAULT COMPONENTS: \n==============================\n";

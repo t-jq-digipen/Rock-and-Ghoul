@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        LogicSystem.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu FILLTHISSHITJQ
+ * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
  * @date        07 NOV 2025
  *
  * @brief
@@ -82,9 +82,6 @@ void LogicSystem::Shutdown()
 }
 
 
-
-
-//FILLTHISSHITJQ
 void LogicSystem::RegisterScript(const std::string& name, const BehaviourFCT& script, ScriptID id)
 {
     //Adds a new script to the system

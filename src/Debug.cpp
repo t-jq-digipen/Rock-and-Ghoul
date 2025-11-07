@@ -16,6 +16,8 @@
 #include "Debug.h"
 #include <unordered_map>
 #include "glapp.h"
+static std::unordered_map<Entity, Vec2> lastPos;
+static std::unordered_map<Entity, Vec2> smoothVel;
 void DebugDraw::DrawAABB(const AABB& box, Render& renderer) {
     Vec2 topLeft{ box.min.x, box.max.y };
     Vec2 topRight{ box.max.x, box.max.y };
@@ -51,8 +53,8 @@ void DebugDraw::DrawHotspot(const Vec2& pos, Render& renderer) {
 
 void DebugDraw::DrawVelocity(Entity e, const TransformComponent& t, Render& renderer, float dt){
     //unordered map store per entity data
-    static std::unordered_map<Entity, Vec2> lastPos;
-    static std::unordered_map<Entity, Vec2> smoothVel;
+    //static std::unordered_map<Entity, Vec2> lastPos;
+    //static std::unordered_map<Entity, Vec2> smoothVel;
 
     Vec2 pos = t.pos;
     // initialize first frame
@@ -158,4 +160,9 @@ void DebugDraw::DrawSpatialGrid(SpatialGrid* grid, Render& renderer) {
     // Reset line width
     glLineWidth(1.0f);
 }
-
+void DebugDraw::ClearVelocityCache() {
+    static std::unordered_map<Entity, Vec2> empty;
+    static std::unordered_map<Entity, Vec2> empty2;
+    lastPos.clear();
+    smoothVel.clear();
+}

@@ -43,7 +43,8 @@ namespace Movement {
 	std::string MovementComponent::Serialize() const
 	{
 		json j = {
-			{"moveSpeed", moveSpeed}
+			{"moveSpeed", moveSpeed},
+			{"moveType", static_cast<unsigned int>(moveType)}
 		};
 		return j.dump();
 	}
@@ -56,7 +57,7 @@ namespace Movement {
 		MovementComponent move;
 		move.moveSpeed = j.value("moveSpeed", 5.f);
 		move.inputDirection = MOVE_NONE;
-		move.moveType = MOVE_POSITION;
+		move.moveType = static_cast<MovementType>(j.value("moveType", 1));
 		move.isMoving = false;
 		move.moveDirection = { 0.f, 0.f };
 

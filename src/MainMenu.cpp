@@ -130,6 +130,7 @@ void MainMenu::Load()
 void MainMenu::Init()
 {
     Render& renderer = Render::GetInstance();
+
     CrashHandler::Safe("MainMenu", "Init", [&] {
         std::cout << "Main Menu Initialized!!!" << std::endl;
         renderer.Init();

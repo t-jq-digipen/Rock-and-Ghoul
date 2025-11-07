@@ -1,9 +1,8 @@
 /* ========================================================
  * @file		Registry.h
  * @author		Tan Jun Quan | t.junquan@digipen.edu
- * @co-author   Yasmin Tazi  | yasmin.t@digipen.edu
 
- * @date		23 OCT 2025
+ * @date		30 OCT 2025
  *
  * @brief	Registry for ECS management
  *
@@ -24,7 +23,7 @@
  * RegisterComponent function, e.g:
  * - Registry::Get().Register_Component<ComponentTypename>();
  *
- * Copyright   2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -50,7 +49,6 @@
 #include "DataDefs.h"
 #include <nlohmann/json.hpp>
 
-// constexpr size_t MAX_COMPONENT_TYPES = 11; // max number of components TIS SHI NOT EVEN BEING USED
 
 // Make registry a singleton class with template list
 class Registry {
@@ -71,6 +69,20 @@ private:
 	std::unordered_map<std::type_index, std::vector<std::type_index>> componentDependencies;
 	std::unordered_map<std::type_index, std::vector<std::type_index>> componentDependents;
 
+	/**
+	 * @brief Registers a new component type with the registry.
+	 *
+	 * Creates a ComponentManager<Component> instance and records its
+	 * runtime type information, name, and optional dependency list.
+	 *
+	 * @tparam Component The component struct/class type to register.
+	 * @param name Human-readable component name (used for serialization & editor).
+	 * @param dependencies Optional list of component type names that must exist
+	 *                     on an entity before this component may be added.
+	 *
+	 * @throws std::runtime_error If the component is already registered.
+	 * @throws std::runtime_error If any dependency is not registered first.
+	 */
 	template<typename Component>
 	ComponentManager<Component>* Get_Manager() {
 		auto it = componentManagers.find(std::type_index(typeid(Component)));
@@ -82,18 +94,6 @@ private:
 		return static_cast<ComponentManager<Component>*>(it->second.get());
 	}
 
-	//template<typename Component>
-	//void Register_ComponentTypeName(const std::string& name)
-	//{
-	//	std::type_index typeIndex(typeid(Component));
-
-	//	if (componentTypeNames.find(name) != componentTypeNames.end())
-	//	{
-	//		throw std::runtime_error("COMPONENT NAME " + name + " ALREADY REGISTERED\n");
-	//	}
-
-	//	componentTypeNames[name] = typeIndex;
-	//}
 
 	// CRASH if never register component type
 	void IsComponentRegistered(std::type_index typeID) {
@@ -198,9 +198,15 @@ public:
 	}
 
 	/**
-	 * @brief Adds a Component to an entity.
-	 * @param eID Entity identifier.
-	 * @param component Component instance to add.
+	 * @brief Adds a component of the specified type to an entity.
+	 *
+	 * Ensures that all declared dependencies for this component type are
+	 * satisfied before adding. If dependencies are missing, no component
+	 * is added.
+	 *
+	 * @tparam Component The component type.
+	 * @param eID Entity to add the component to.
+	 * @param component Optional instance to copy into the manager.
 	 */
 	template<typename Component>
 	void Add_Component(Entity eID, const Component& component = {})
@@ -221,7 +227,17 @@ public:
 		manager->addComponent(eID, component);
 	}
 
-	// add default comp using typeID
+	/**
+	 * @brief Adds a component using its runtime type_index.
+	 *
+	 * Ensures that all declared dependencies for this component type are
+	 * satisfied before adding. If dependencies are missing, no component
+	 * is added.
+	 * Constructs a default instance using the component manager.
+	 *
+	 * @param eID Target entity ID.
+	 * @param typeID Runtime type of the component (must be registered).
+	 */
 	void Add_Component(Entity eID, std::type_index typeID)
 	{
 		IsComponentRegistered(typeID);
@@ -233,8 +249,12 @@ public:
 	}
 
 	/**
-	 * @brief Removes a specific component type from an entity.
-	 * @param eID Entity identifier.
+	 * @brief Removes a component of the given type from an entity.
+	 *
+	 * @tparam Component Component type to remove.
+	 * @param eID Entity ID.
+	 *
+	 * @note Removal is prevented if another component depends on this one.
 	 */
 	template<typename Component>
 	void Remove_Component(Entity eID)
@@ -249,7 +269,13 @@ public:
 		manager->removeComponent(eID);
 	}
 
-	// remove comp using typeID
+	/**
+	 * @brief Removes a component using its runtime type_index.
+	 * @param eID Entity ID.
+	 * @param typeID Runtime type identifier of the component.
+	 *
+	 * @note Removal is prevented if another component depends on this one.
+	 */
 	void Remove_Component(Entity eID, std::type_index typeID)
 	{
 		IsComponentRegistered(typeID);
@@ -261,6 +287,13 @@ public:
 		componentManagers[typeID]->removeComponent(eID);
 	}
 
+	/**
+	 * @brief Checks whether an entity has a component of the given type.
+	 *
+	 * @tparam Component Component type to check for.
+	 * @param eID Entity ID.
+	 * @return True if the entity has the component.
+	 */
 	template<typename Component>
 	bool Has_Component(Entity eID)
 	{
@@ -268,7 +301,13 @@ public:
 		return manager->hasComponent(eID);
 	}
 
-	// check has component using typeID
+	/**
+	 * @brief Checks whether an entity has a component of the given type.
+	 *
+	 * @param eID Entity ID.
+	 * @param typeID type_index of Component Type.
+	 * @return True if the entity has the component.
+	 */
 	bool Has_Component(Entity eID, std::type_index typeID)
 	{
 		IsComponentRegistered(typeID);
@@ -287,6 +326,12 @@ public:
 		return manager->getComponent(eID);
 	}
 
+	/**
+	 * @brief Retrieves the entire component map for a specific type.
+	 *
+	 * @tparam Component Component type.
+	 * @return Reference to an unordered_map mapping Entity ? Component.
+	 */
 	template<typename Component>
 	std::unordered_map<Entity, Component>& Get_ComponentMap()
 	{
@@ -294,6 +339,13 @@ public:
 		return manager->getComponents();
 	}
 
+	/**
+	 * @brief Serializes a single component attached to an entity.
+	 *
+	 * @tparam Component Component type.
+	 * @param eID Entity ID.
+	 * @return Optional string of serialized component data.
+	 */
 	template<typename Component>
 	std::optional<std::string> SaveComponent(Entity eID)
 	{
@@ -301,6 +353,13 @@ public:
 		return manager->SaveComponent(eID);
 	}
 
+	/**
+	 * @brief Loads a serialized component and attaches it to an entity.
+	 *
+	 * @tparam Component Component type.
+	 * @param eID Entity ID.
+	 * @param data Serialized component data.
+	 */
 	template<typename Component>
 	void LoadComponent(Entity eID, const std::string& data)
 	{
@@ -308,7 +367,11 @@ public:
 		manager->LoadComponent(eID, data);
 	}
 
-
+	/**
+	 * @brief Retrieves a component's registered name from its type_index.
+	 * @param typeIndex Component runtime type.
+	 * @return Human-readable component name.
+	 */
 	std::string Get_ComponentTypeName(std::type_index typeIndex)
 	{
 		for (auto it : componentTypeNames)
@@ -322,6 +385,11 @@ public:
 		throw std::runtime_error("Component name not registered properly\n");
 	}
 
+	/**
+	 * @brief Retrieves a component's type_index from its registered name.
+	 * @param name Component name.
+	 * @return std::type_index of the component.
+	 */
 	std::type_index Get_ComponentTypeIndex(std::string name)
 	{
 		if (componentTypeNames.find(name) == componentTypeNames.end())
@@ -357,6 +425,9 @@ public:
 		entityManager.destroyEntity(eID);
 	}
 
+	/**
+	 * @brief Removes all entities in the registry.
+	 */
 	void Remove_AllEntities()
 	{
 		for (Entity eID = 0; eID < entityManager.maxEntities(); eID++)   
@@ -365,21 +436,40 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Retrieves the global entity?name map.
+	 * @return Reference to name map.
+	 */
 	std::unordered_map<Entity, std::string>& Get_EntityNameMap()
 	{
 		return entityManager.GetEntityNameMap();
 	}
 
+	/**
+	 * @brief Assigns a human-readable name to an entity.
+	 * @param eID Entity ID.
+	 * @param name Name to assign.
+	 */
 	void Set_EntityName(Entity eID, const std::string& name)
 	{
 		entityManager.SetEntityName(eID, name);
 	}
 
+	/**
+	 * @brief Gets the human-readable name of an entity.
+	 * @param eID Entity ID.
+	 * @return The entity's name.
+	 */
 	std::string Get_EntityName(Entity eID)
 	{
 		return entityManager.GetEntityName(eID);
 	}
 
+	/**
+	 * @brief Retrieves the entity ID associated with a name.
+	 * @param name Entity name.
+	 * @return Entity ID.
+	 */
 	Entity Get_EntityID(const std::string& name)
 	{
 		return entityManager.GetEntityFromName(name);
@@ -390,10 +480,19 @@ public:
 	// EDITOR
 	// ================================================================================
 #pragma region EDITOR
+	/**
+	 * @brief Returns the order in which components were registered.
+	 * @return Vector of component type_index.
+	 */
 	const std::vector<std::type_index>& Get_ComponentOrder() {
 		return componentTypeList;
 	}
 
+	/**
+	 * @brief Generates editor metadata for a given entity.
+	 * @param eID Entity ID.
+	 * @return List of ComponentData structures.
+	 */
 	std::vector<Editor::ComponentData> Get_EntityData(Entity eID);
 #pragma endregion
 	// ================================================================================
@@ -401,6 +500,11 @@ public:
 	// SERIALIZATION
 	// ================================================================================
 #pragma region SERIALIZATION
+	/**
+	 * @brief Saves all components of an entity into a SavedEntity structure.
+	 * @param eID Entity ID.
+	 * @return Serialized entity.
+	 */
 	SavedEntity Save_Entity(Entity eID)
 	{
 		SavedEntity saved;
@@ -412,15 +516,14 @@ public:
 			std::string compType = Get_ComponentTypeName(typeID);
 			saved.componentData[compType] = componentManagers[typeID]->SaveComponent(eID);
 		}
-		/*
-		for (auto& [typeIndex, manager] : componentManagers)
-		{
-			std::string compType = Get_ComponentTypeName(typeIndex);
-			saved.componentData[compType] = manager->SaveComponent(eID);
-		}*/
 		return saved;
 	}
 
+	/**
+	 * @brief Reconstructs an entity and its components from serialized data.
+	 * @param saved SavedEntity struct.
+	 * @return Newly created entity ID.
+	 */
 	Entity Load_Entity(const SavedEntity& saved)
 	{
 		Entity eID = Create_Entity();
@@ -438,200 +541,10 @@ public:
 			}
 		}
 
-		//for (auto& [typeName, data] : saved.componentData)
-		//{
-		//	std::type_index typeIndex(Get_ComponentTypeIndex(typeName));
-		//	componentManagers[typeIndex]->LoadComponent(eID, data);
-		//}
-
 		return eID;
 	}
-
-	//Entity Load_Entity(const SavedEntity& saved)
-	//{
-	//	Entity eID = Create_Entity();
-	//	Set_EntityName(eID, saved.name);
-
-	//	std::cout << "[Registry] Loading entity '" << saved.name << "' (ID: " << eID << ")\n";
-
-	//	auto LoadIfExists = [&](const std::string& name)
-	//		{
-	//			auto it = saved.componentData.find(name);
-	//			if (it != saved.componentData.end())
-	//			{
-	//				try
-	//				{
-	//					std::type_index tID = Get_ComponentTypeIndex(name);
-	//					componentManagers[tID]->LoadComponent(eID, it->second);
-	//					std::cout << "  -> Loaded " << name << "\n";
-	//					return true;
-	//				}
-	//				catch (const std::exception& ex)
-	//				{
-	//					std::cerr << "  [ERROR] Failed to load " << name << ": " << ex.what() << "\n";
-	//				}
-	//			}
-	//			return false;
-	//		};
-
-
-	//	LoadIfExists("Transform");  // base position/scale
-	//	LoadIfExists("Sprite");     // before Animator needs texture
-	//	LoadIfExists("Animator");   // after Sprite
-
-
-	//	for (const auto& [compName, compData] : saved.componentData)
-	//	{
-	//		if (compName == "Transform" ||
-	//			compName == "Sprite" ||
-	//			compName == "Animator" ||
-	//			compData.empty() ||
-	//			compData == "{}" ||
-	//			compData == "null")
-	//			continue;
-
-	//		LoadIfExists(compName);
-	//	}
-
-	//	return eID;
-	//}
-
-
 #pragma endregion
 	// ================================================================================
 
-
-
-
-
 };
 
-
-//// Entity functions
-//// ========================================================
-///**
-// * @brief Creates a new entity.
-// * @return The unique ID of the created entity.
-// */
-//Entity Create_Entity();
-///**
-// * @brief Removes an entity and all of its components.
-// * @param eID The entity ID to remove.
-// */
-//void Remove_Entity(Entity eID);
-//// ======================================================== //
-//
-//
-//// overloads for adding
-///**
-// * @brief Adds a Component to an entity.
-// * @param eID Entity identifier.
-// * @param comp Component instance to add.
-// */
-//// ========================================================
-//void Add_Component(Entity eID, TransformComponent			const& comp);
-//void Add_Component(Entity eID, Sprite::SpriteComponent		const& comp);
-//void Add_Component(Entity eID, Animator::AnimatorComponent	const& comp);
-//void Add_Component(Entity eID, Physics::PhysicsComponent	const& comp);
-//void Add_Component(Entity eID, AudioComponent				const& comp);
-//void Add_Component(Entity eID, LifetimeComponent			const& comp);
-//void Add_Component(Entity eID, HealthComponent				const& comp);
-//void Add_Component(Entity eID, TagComponent					const& comp);
-//void Add_Component(Entity eID, InputComponent				const& comp);
-//void Add_Component(Entity eID, ShapeComponent				const& comp);
-//void Add_Component(Entity eID, ElementComponent				const& comp);
-//// ======================================================== //
-//
-//// removal
-//// ========================================================
-///**
-// * @brief Removes a specific component type from an entity.
-// * @param eID Entity identifier.
-// * @param cID Component type identifier.
-// */
-//void Remove_Component(Entity eID, ComponentTypeID const& cID);
-///**
-// * @brief Removes a specific component type from an entity.
-// * @param eID Entity identifier.
-// * @param cIDlist Initializer list of Component type identifiers
-// */
-//void Remove_Components(Entity eID, std::initializer_list<ComponentTypeID> cIDlist);
-//// ======================================================== //
-//
-///**
-// * @brief Checks whether an entity has the given component type.
-// * @param eID Entity identifier.
-// * @param cID Component type identifier.
-// * @return True if the entity has the component, false otherwise.
-// */
-//bool Has_Component(Entity eID, ComponentTypeID const& cID);
-//
-//// Gets the component of the entity from the specified type
-///**
-// * @brief Retrieves the Component of an entity.
-// * @param eID Entity identifier.
-// * @return Reference to the entity s Component.
-// */
-//// ========================================================
-//TransformComponent			& Get_TransformComponent(Entity eID);
-//Sprite::SpriteComponent		& Get_SpriteComponent(Entity eID);
-//Animator::AnimatorComponent	& Get_AnimatorComponent(Entity eID);
-//Physics::PhysicsComponent	& Get_PhysicsComponent(Entity eID);
-//AudioComponent				& Get_AudioComponent(Entity eID);
-//LifetimeComponent			& Get_LifetimeComponent(Entity eID);
-//HealthComponent				& Get_HealthComponent(Entity eID);
-//TagComponent				& Get_TagComponent(Entity eID);
-//InputComponent				& Get_InputComponent(Entity eID);
-//ShapeComponent				& Get_ShapeComponent(Entity eID);
-//ElementComponent			& Get_ElementComponent(Entity eID);
-//// ======================================================== //
-//
-//// Manager accessors
-///**
-// * @brief Retrieves the Manager of a component.
-// * @return Reference to the Component's manager.
-// */
-//// ========================================================
-//ComponentManager<TransformComponent>			& CM_Transform();
-//ComponentManager<Sprite::SpriteComponent>		& CM_Sprite();
-//ComponentManager<Animator::AnimatorComponent>	& CM_Animator();
-//ComponentManager<Physics::PhysicsComponent>		& CM_Physics();
-//ComponentManager<AudioComponent>				& CM_Audio();
-//ComponentManager<LifetimeComponent>				& CM_Lifetime();
-//ComponentManager<HealthComponent>				& CM_Health();
-//ComponentManager<TagComponent>					& CM_Tag();
-//ComponentManager<InputComponent>				& CM_Input();
-//ComponentManager<ShapeComponent>				& CM_Shape();
-//ComponentManager<ElementComponent>				& CM_Element();
-//// ======================================================== //
-
-// Component list accessor?
-
-/**
- * @brief Returns reference to the static entity name map singleton.
- *
- *
- * @return std::unordered_map<Entity, std::string>& Reference to the name map.
- */
- //std::unordered_map<Entity, std::string>& GetEntityNameMap();
- // 
- // /**
- // * @brief Assigns a nice readable name to an entity
- // *
- // * Used for debugging, serialization, and editor display.
- // *
- // * @param eID The entity ID to name.
- // * @param name The string name to assign (e.g., "Player").
- // */
- //void SetEntityName(Entity eID, const std::string& name);
- //
- ///**
- // * @brief Retrieves the name associated with an entity.
- // *
- // * Returns the custom name if one was set via SetEntityName(), otherwise
- // * generates a default name in the format "Entity_{ID}".
- // *
- // * @param eID The entity ID to query.
- // * @return std::string The entity's name or auto-generated fallback.
- // */
- //std::string GetEntityName(Entity eID);

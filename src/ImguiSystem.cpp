@@ -180,14 +180,17 @@ namespace
     }
 }
 
-//FILLTHISSHITJQ
-// Checkbox
+// Widget templates for component data
+// ========================================================
+#pragma region WIDGETS
+
+// Checkbox | For bool
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
     if (!w.ref) return;
     ImGui::Checkbox(label.c_str(), w.ref);
 }
 
-// Text
+// Text     | For string
 static void MakeWidget(Editor::Widget_String& w, const std::string& label) {
     if (!w.ref) return;
     char buf[128];
@@ -199,7 +202,7 @@ static void MakeWidget(Editor::Widget_String& w, const std::string& label) {
     }
 }
 
-// Dropdown
+// Dropdown | For enum (e.g image ID, animation states, etc.
 static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label)
 {
     if (!w.ref || w.options.empty()) return;
@@ -224,7 +227,7 @@ static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label)
 }
 
 
-// Int
+// Int      | For int lol
 static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
     if (!w.ref) return;
     if (w.slider && w.min != w.max)
@@ -233,7 +236,7 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
         ImGui::InputInt(label.c_str(), w.ref);
 }
 
-// Float
+// Float    | For float lol
 static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
     if (!w.ref) return;
     if (w.slider && w.min != w.max)
@@ -242,7 +245,7 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
         ImGui::InputFloat(label.c_str(), w.ref);
 }
 
-// AnimatorFrames
+// AnimatorFrames (SPECIFIC FOR ANIMATOR BC I CANNOT FIGURE OUT HOW TO MAKE IT PROPERLY might remove)
 static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
     (void)label;
     if (!w.ref) return;
@@ -253,6 +256,9 @@ static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
     MakeWidget(w.current_state, "Animation state");
 
 }
+
+#pragma endregion WIDGETS
+// ========================================================
 
 
 void ImGuiSystem::OnFileDropped(const std::string& path)
@@ -527,6 +533,46 @@ void ImGuiSystem::Update(float dt)
     
     if (ImGui::Begin("Entity Editor + Prefabs")) {
         if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
+        // MakeNeaterNextTime
+        if (ImGui::Button("Add Entity"))
+        {
+            Entity newEntity = m_registry.Create_Entity();
+            selectedEntity = newEntity;
+
+            // Store editor name
+            m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
+
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
+        {
+            Registry& reg = Registry::Get();
+            SavedEntity src = reg.Save_Entity(selectedEntity);
+
+            //filter out empty json data
+            for (auto it = src.componentData.begin(); it != src.componentData.end();)
+            {
+                if (it->second.empty() || it->second == "{}" || it->second == "null")
+                {
+                    std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
+                    it = src.componentData.erase(it);
+                }
+                else
+                    ++it;
+            }
+
+            reg.Load_Entity(src);
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
+        {
+            m_registry.Remove_Entity(selectedEntity);
+            selectedEntity = INVALID_ENTITY;
+        }
+
+        ImGui::Separator();
         ImGui::Columns(2, "EntityColumns", true);
         ShowHierarchyWindow();     // left: list
         ImGui::NextColumn();
@@ -712,30 +758,30 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
 
     // Spatial Grid Statistics
     //FILLTHISSHITYASM
-    ImGui::Separator();
-    ImGui::Text("Spatial Grid (Broad Phase):");
-    SpatialGrid* grid = CollisionManager::GetSpatialGrid();
-    if (grid) {
-        auto stats = grid->GetStats();
-        size_t collisionCellCount = grid->GetCollisionCellCount();
+    //ImGui::Separator();
+    //ImGui::Text("Spatial Grid (Broad Phase):");
+    //SpatialGrid* grid = CollisionManager::GetSpatialGrid();
+    //if (grid) {
+    //    auto stats = grid->GetStats();
+    //    size_t collisionCellCount = grid->GetCollisionCellCount();
 
-        ImGui::Text("  Cell Size: 150.0 units");
-        ImGui::Text("  Occupied Cells: %llu", (unsigned long long)stats.occupiedCells);
-        ImGui::Text("  Total Entities: %llu", (unsigned long long)stats.totalEntities);
-        ImGui::Text("  Avg per Cell: %.2f", stats.avgEntitiesPerCell);
-        ImGui::Text("  Max in Cell: %llu", (unsigned long long)stats.maxEntitiesInCell);
+    //    ImGui::Text("  Cell Size: 150.0 units");
+    //    ImGui::Text("  Occupied Cells: %llu", (unsigned long long)stats.occupiedCells);
+    //    ImGui::Text("  Total Entities: %llu", (unsigned long long)stats.totalEntities);
+    //    ImGui::Text("  Avg per Cell: %.2f", stats.avgEntitiesPerCell);
+    //    ImGui::Text("  Max in Cell: %llu", (unsigned long long)stats.maxEntitiesInCell);
 
-        // Collision cells (shown in red when visualized)
-        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f),
-            "  Cells with Collisions: %llu", (unsigned long long)collisionCellCount);
+    //    // Collision cells (shown in red when visualized)
+    //    ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f),
+    //        "  Cells with Collisions: %llu", (unsigned long long)collisionCellCount);
 
-        // Performance estimation
-        int naiveChecks = (totalColliders * (totalColliders - 1)) / 2;
-        ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f),
-            "  Optimization: %d -> ~%d checks",
-            naiveChecks,
-            (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
-    }
+    //    // Performance estimation
+    //    int naiveChecks = (totalColliders * (totalColliders - 1)) / 2;
+    //    ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f),
+    //        "  Optimization: %d -> ~%d checks",
+    //        naiveChecks,
+    //        (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
+    //}
 
     if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
     ImGui::Text("Scene Management:");
@@ -923,44 +969,45 @@ void ImGuiSystem::ShowHierarchyWindow() {
 
     EnsureSelectionValid();
 
-    if (ImGui::Button("Add Entity"))
-    {
-        Entity newEntity = m_registry.Create_Entity();
-        selectedEntity = newEntity;
+    //if (ImGui::Button("Add Entity"))
+    //{
+    //    Entity newEntity = m_registry.Create_Entity();
+    //    selectedEntity = newEntity;
 
-        // Store editor name
-        m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
+    //    // Store editor name
+    //    m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
 
-    }
+    //}
 
-    ImGui::SameLine();
-    if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
-    {
-        Registry& reg = Registry::Get();
-        SavedEntity src = reg.Save_Entity(selectedEntity);
+    //ImGui::SameLine();
+    //if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
+    //{
+    //    Registry& reg = Registry::Get();
+    //    SavedEntity src = reg.Save_Entity(selectedEntity);
 
-        //filter out empty json data
-        for (auto it = src.componentData.begin(); it != src.componentData.end();)
-        {
-            if (it->second.empty() || it->second == "{}" || it->second == "null")
-            {
-                std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
-                it = src.componentData.erase(it);
-            }
-            else
-            ++it;
-        }
+    //    //filter out empty json data
+    //    for (auto it = src.componentData.begin(); it != src.componentData.end();)
+    //    {
+    //        if (it->second.empty() || it->second == "{}" || it->second == "null")
+    //        {
+    //            std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
+    //            it = src.componentData.erase(it);
+    //        }
+    //        else
+    //        ++it;
+    //    }
 
-       reg.Load_Entity(src);
-    }
+    //   reg.Load_Entity(src);
+    //}
 
-    ImGui::SameLine();
-    if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
-    {
-        m_registry.Remove_Entity(selectedEntity);
-        selectedEntity = INVALID_ENTITY;
-    }
-    ImGui::Separator();
+    //ImGui::SameLine();
+    //if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
+    //{
+    //    m_registry.Remove_Entity(selectedEntity);
+    //    selectedEntity = INVALID_ENTITY;
+    //}
+    //
+    //ImGui::Separator();
 
 
     // show all known entities
@@ -996,11 +1043,13 @@ void ImGuiSystem::ShowInspectorWindow()
     ImGui::Separator();
 
     // show all editable components for the selected entity
-     //FILLTHISSHITJQ
+    // Get entity data in a vector of ComponentData. ComponentData holds name and a map of <DataName(std::string), WidgetData>
     std::vector<Editor::ComponentData> compDataVec = m_registry.Get_EntityData(selectedEntity);
     for (auto& componentData : compDataVec)
     {
         const std::string& compName = componentData.GetComponentName();
+
+        // Custom data fields for animator component
         if (compName == "Animator")
         {
             Animator::AnimatorComponent& animcomp = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
@@ -1016,34 +1065,37 @@ void ImGuiSystem::ShowInspectorWindow()
                     ImGui::PopID();
                 }
 
-                //FILLTHISSHITJQ
-                if (true)
+                // need to figure out how to add state...
+                animcomp.UpdateUV();
+                Animator::ActiveFrames temp = animcomp.GetFrames();
+
+                Editor::Widget_Int widgetrow(&temp.row, true, 0, animcomp.GetTotalRows());
+                Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());
+                Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, animcomp.GetTotalCols());
+                Editor::Widget_Float widgetduration(&temp.duration);
+                ImGui::PushItemWidth(50);
+                MakeWidget(widgetrow, "row");
+                ImGui::SameLine();
+                MakeWidget(widgetcolstart, "first col");
+                ImGui::SameLine();
+                MakeWidget(widgetcolend, "last col");
+                ImGui::PopItemWidth();
+                MakeWidget(widgetduration, "duration");
+
+                ImGui::Separator();
+                if (ImGui::SmallButton("Add State"))
                 {
-                    // need to figure out how to call add state or change state...
-                    animcomp.UpdateUV();
-                    Animator::ActiveFrames temp = animcomp.GetFrames();
-
-                    Editor::Widget_Int widgetrow(&temp.row, true, 0, animcomp.GetTotalRows());
-                    Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());
-                    Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, animcomp.GetTotalCols());
-                    Editor::Widget_Float widgetduration(&temp.duration);
-                    ImGui::PushItemWidth(50);
-                    MakeWidget(widgetrow, "state rows");
-                    ImGui::SameLine();
-                    MakeWidget(widgetcolstart, "first col");
-                    ImGui::SameLine();
-                    MakeWidget(widgetcolend, "last col");
-                    ImGui::PopItemWidth();
-                    MakeWidget(widgetduration, "duration");
-
-                    animcomp.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);
+                    animcomp.AddState(animcomp.GetStateFrames().size(), { 0,0,0 });
                 }
+
+                animcomp.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);
+                
 
                 ImGui::TreePop();
             }
 
         }
-        //FILLTHISSHITJQ
+        // Custom data fields for behaviour component
         else if (compName == "Behaviour")
         {
             BehaviourComponent& behaviourComp = m_registry.Get_Component<BehaviourComponent>(selectedEntity);
@@ -1583,7 +1635,6 @@ void ImGuiSystem::ShowAssetPreviewWindow()
     }
 }
 
-//FILLTHISSHITJQ
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
     (void)viewportSize;
@@ -2028,7 +2079,9 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     float startX = (panelWidth - totalWidth) * 0.5f;
     ImGui::SetCursorPosX(startX);
 
+    bool inEdit = gsm.InEditMode();
     //play
+    if (!inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
         //FILLTHISSHITYASM
@@ -2059,10 +2112,12 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         isPlaying = true;
         std::cout << "[Editor] Gameplay started.\n";
     }
+    if (!inEdit) { ImGui::EndDisabled(); }
 
     ImGui::SameLine(0, spacing);
 
     //STOP
+    if (inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
     {
         gsm.isPaused = true;
@@ -2109,6 +2164,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
     }
+    if (inEdit) { ImGui::EndDisabled(); }
 
     ImGui::SameLine(spacing * 2);
     //COLORS

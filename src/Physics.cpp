@@ -93,7 +93,7 @@ namespace Physics {
 	PhysicsComponent::PhysicsComponent()
 		: vel{ 0.f, 0.f }
 		, acceleration{ 0.f, 0.f }
-		, decay{ 0.95f }       // Slight damping
+		, decay{ 0.015f }       // Slight damping
 		, maxSpeed{ 500.f }    // Prevent tunneling
 		, isStatic{ false }
 		, willCollide{ false }
@@ -543,8 +543,8 @@ namespace Physics {
 
 		ret.Add_Data("WillCollide", Editor::Widget_Checkmark{ &willCollide });
 
-		ret.Add_Data("AABB width", Editor::Widget_Float{ &aabbhitbox.dim.x, true, 10.f, 1000.f });
-		ret.Add_Data("AABB height", Editor::Widget_Float{ &aabbhitbox.dim.y, true, 10.f, 1000.f });
+		ret.Add_Data("AABB width", Editor::Widget_Float{ &aabbhitbox.dim.x, true, 10.f, 3000.f });
+		ret.Add_Data("AABB height", Editor::Widget_Float{ &aabbhitbox.dim.y, true, 10.f, 3000.f });
 
 		ret.Add_Data("Circle radius", Editor::Widget_Float{ &circlehitbox.rad, true, 10.f, 500.f });
 

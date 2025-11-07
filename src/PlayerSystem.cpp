@@ -22,6 +22,8 @@
 #include "GameStateManager.h"
 #include "CoreEngine.h" // to check pause state for music
 #include "LogicSystem.h"
+#include "JsonLoad.h"
+#include "FilePath.h"
 
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
@@ -293,6 +295,132 @@ namespace PlayerMove {
 	}
 } // end namespace PlayerMove
 
+namespace RockScript {
+	static float stunnedtimer = 1.f;
+	static float atktimer = 1.f;
+	static bool shot = false;
+
+	std::unordered_map<Entity, size_t> subscriberID;
+
+	void Dash(Entity eID) {
+		if (stunnedtimer < 1.f || atktimer < 1.f) { return; }
+		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
+		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
+
+		// Vec2 dashDir = moveComp.GetMovementDirection();
+		int hor = 0;
+		int ver = 0;
+		if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
+		if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
+		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+		float fx = static_cast<float>(hor);
+		float fy = static_cast<float>(ver);
+
+		Vec2 dashDir{ fx, fy };
+
+		NormalizeDiagonalMovement(dashDir.x, dashDir.y);
+
+		if (RG_LengthSquared(dashDir) > 0.01f) {
+			dashDir = RG_Normalize(dashDir);
+			Vec2 dashImpulse = RG_Scale(dashDir, DASH_IMPULSE);
+			physics.ApplyLinearImpulse(dashImpulse);
+		}
+
+	}
+
+	inline void Start(Entity eID)
+	{
+		std::cout << "Rock script started" << std::endl;
+
+		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
+
+			if (e.key == GLFW_KEY_LEFT_SHIFT)
+			{
+				Dash(eID);
+			}
+			});
+	}
+
+	inline void Update(Entity eID, float dt) {
+		(void)dt;
+
+
+		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID) || !Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
+		
+		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
+		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
+
+		int animstate = 0; //idle
+
+		// MOVEMENT
+		// ================================================================================
+		if (stunnedtimer >= 1.f && atktimer >= 1.f)
+		{
+			int hor = 0;
+			int ver = 0;
+			if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
+			if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
+			if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
+			if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+			float fx = static_cast<float>(hor);
+			float fy = static_cast<float>(ver);
+			NormalizeDiagonalMovement(fx, fy);
+
+			const bool moving = (fx != 0.f || fy != 0.f);
+			moveComp.SetIsMoving(moving);
+			moveComp.SetInputDirection(VelToDir(fx, fy));
+			moveComp.SetMovementDirection({ fx, fy });
+
+			if (moving) { animstate = 1; }
+
+			if (Input::IsKeyPressed(GLFW_KEY_G))
+			{
+				stunnedtimer = 0.f;
+				animstate = 2;
+				physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
+			}
+
+			if (Input::IsKeyPressed(GLFW_KEY_E))
+			{
+				atktimer = 0.f;
+				animstate = 3;
+				shot = false;
+			}
+		}
+		else if (stunnedtimer < 1.f)
+		{
+			stunnedtimer += dt;
+			animstate = 2;
+		}
+		else if (atktimer < 1.f)
+		{
+			atktimer += dt;
+			animstate = 3;
+
+			if (atktimer >= 0.7f && !shot)
+			{
+				auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
+				
+				JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", transComp.pos.x, transComp.pos.y);
+				shot = true;
+			}
+		}
+
+		if (!Registry::Get().Has_Component<Animator::AnimatorComponent>(eID)) return;
+		auto& animComp = Registry::Get().Get_Component<Animator::AnimatorComponent>(eID);
+
+		animComp.SetState(animstate);
+	}
+
+	inline void End(Entity e)
+	{
+		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID[e]);
+		subscriberID.erase(e);
+		std::cout << "Rock script ended" << std::endl;
+	}
+} // end namespace RockScript
+
 void PlayerSystem::Initialize()
 {
 	{
@@ -301,6 +429,13 @@ void PlayerSystem::Initialize()
 		player.Update = [](Entity e, float dt) { PlayerMove::Update(e, dt); };
 		player.End = [](Entity e) { PlayerMove::End(e); };
 		LogicSystem::Get().RegisterScript("PlayerMovement", player, ScriptID::PLAYER);
+	}
+	{
+		BehaviourFCT player;
+		player.Init = [](Entity e) { RockScript::Start(e); };
+		player.Update = [](Entity e, float dt) { RockScript::Update(e, dt); };
+		player.End = [](Entity e) { RockScript::End(e); };
+		LogicSystem::Get().RegisterScript("RockScript", player, ScriptID::ROCK_SCRIPT);
 	}
 }
 

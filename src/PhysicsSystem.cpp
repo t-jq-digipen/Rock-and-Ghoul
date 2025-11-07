@@ -62,6 +62,20 @@ void PhysicsSystem::Update(float dt) {
             collisionManager.CheckCollisions();
             collisionManager.ProcessEvents();
         }
+
+        std::vector<Entity> expired{};
+        for (auto& [entID, lifeComp] : m_registry.Get_ComponentMap<LifetimeComponent>())
+        {
+            lifeComp.age += dt;
+            if (lifeComp.age >= lifeComp.lifetime)
+            {
+                expired.push_back(entID);
+            }
+        }
+        for (Entity eID : expired)
+        {
+            m_registry.Remove_Entity(eID);
+        }
     }
 }
 void PhysicsSystem::Shutdown() {

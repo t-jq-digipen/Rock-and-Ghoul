@@ -74,8 +74,8 @@ void Level1::Load()
 	CrashHandler::Safe("Level1", "Load", [&] {
 		std::cout << "Level 1 Loaded!!!" << std::endl;
 
-		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
-		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
+		bgTexture = renderer.LoadTexture("../Assets/Env02_NormalWorld.PNG");
+		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/Env02_NormalWorld.PNG");
 		});
 	RenderSystem::ClearBackgroundTextures();
 	RenderSystem::AddBackgroundTexture(bgTexture);
@@ -176,7 +176,7 @@ void Level1::Init()
 		std::cout << "Level 1 Initialized!!!" << std::endl;
 		// 1. Initialize the Renderer
 		renderer.Init();
-		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
+		bgTexture = renderer.LoadTexture("../Assets/Env02_NormalWorld.PNG");
 		if (!bgTexture)
 			std::cerr << "[Level1] Failed to reload background texture!" << std::endl;
 		else {
@@ -235,11 +235,7 @@ void Level1::Init()
 			std::cout << "Found level1.json, attempting to load..." << std::endl;
 			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
 			if (sceneLoaded) {
-				registry.Get_EntityID("Waffle");
-				registry.Get_EntityID("Player");
-				registry.Get_EntityID("Rectangle");
-				registry.Get_EntityID("Circle");
-				registry.Get_EntityID("ghoul");
+				
 
 				std::cout << "Scene loaded successfully from level1.json!" << std::endl;
 			}
@@ -584,39 +580,39 @@ void Level1::Update()
 	}
 
 
-	//std::cout << "Level 1 Updating!!!" << std::endl;
-	// Save scene on F5
-	if (Input::IsKeyPressed(GLFW_KEY_F5)) {
-		if (!std::filesystem::exists(FilePath::SAVES_FOLDER)) {
-			std::filesystem::create_directories(FilePath::SAVES_FOLDER);
-		}
+	////std::cout << "Level 1 Updating!!!" << std::endl;
+	//// Save scene on F5
+	//if (Input::IsKeyPressed(GLFW_KEY_F5)) {
+	//	if (!std::filesystem::exists(FilePath::SAVES_FOLDER)) {
+	//		std::filesystem::create_directories(FilePath::SAVES_FOLDER);
+	//	}
 
-		JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "Level1");
-		std::cout << "Scene saved!" << std::endl;
-	}
+	//	JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "Level1");
+	//	std::cout << "Scene saved!" << std::endl;
+	//}
 
-	// Load scene on F9
-	if (Input::IsKeyPressed(GLFW_KEY_F9)) {
-		JsonLoad::ClearAllEntities();
+	//// Load scene on F9
+	//if (Input::IsKeyPressed(GLFW_KEY_F9)) {
+	//	JsonLoad::ClearAllEntities();
 
-		if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
-			std::cout << "Scene loaded successfully!" << std::endl;
+	//	if (JsonLoad::LoadScene(FilePath::LEVEL1_SCENE)) {
+	//		std::cout << "Scene loaded successfully!" << std::endl;
 
-			// Find waffle by checking for its sprite texture
-			for (Entity e = 0; e < 10; ++e) {
-				if (!EntityManager::get().isAlive(e)) continue;
+	//		// Find waffle by checking for its sprite texture
+	//		for (Entity e = 0; e < 10; ++e) {
+	//			if (!EntityManager::get().isAlive(e)) continue;
 
-				if (registry.Has_Component<Sprite::SpriteComponent>(e)) {
-					auto& s = registry.Get_Component<Sprite::SpriteComponent>(e);
-					if (s.Get_TexturePath().find("Waffle") != std::string::npos) {
-						std::cout << "Found waffle at Entity " << e << std::endl;
-						// waffle = e;  // Update the waffle variable
-						break;
-					}
-				}
-			}
-		}
-	}
+	//			if (registry.Has_Component<Sprite::SpriteComponent>(e)) {
+	//				auto& s = registry.Get_Component<Sprite::SpriteComponent>(e);
+	//				if (s.Get_TexturePath().find("Waffle") != std::string::npos) {
+	//					std::cout << "Found waffle at Entity " << e << std::endl;
+	//					// waffle = e;  // Update the waffle variable
+	//					break;
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 
 	CrashHandler::Safe("Level1", "Update", [&] {
 		// to test game state changes (do not trigger if GUI Editor is open)
@@ -662,28 +658,28 @@ void Level1::Update()
 // Draws Level 1
 void Level1::Draw()
 {
-	Render& renderer = Render::GetInstance();
-	CrashHandler::Safe("Level1", "Draw", [&] {
-		//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		//glClear(GL_COLOR_BUFFER_BIT);
-		//if (bgTexture) {
-			//renderer.useCamera = false; //uncomment then bg text will cover whole screen but look abit funny
-		//	renderer.DrawTexturedQuad(
-		//		{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
-		//		{ (float)GLApp::width, (float)GLApp::height },   // full screen size
-		//		bgTexture
-		//	);
-		//renderer.useCamera = true; //uncomment then bg text will cover whole screen but look abit funny
-		//}
+	//Render& renderer = Render::GetInstance();
+	//CrashHandler::Safe("Level1", "Draw", [&] {
+	//	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	//	//glClear(GL_COLOR_BUFFER_BIT);
+	//	//if (bgTexture) {
+	//		//renderer.useCamera = false; //uncomment then bg text will cover whole screen but look abit funny
+	//	//	renderer.DrawTexturedQuad(
+	//	//		{ GLApp::width * 0.5f, GLApp::height * 0.5f },   // center of screen
+	//	//		{ (float)GLApp::width, (float)GLApp::height },   // full screen size
+	//	//		bgTexture
+	//	//	);
+	//	//renderer.useCamera = true; //uncomment then bg text will cover whole screen but look abit funny
+	//	//}
 
 
-		if (fretboard) {
-			renderer.useCamera = false;
-			fretboard->Draw(renderer);
-			fretboard->GetSpellManager().Draw(renderer);
-			renderer.useCamera = true;
-		}
-	});
+	//	if (fretboard) {
+	//		renderer.useCamera = false;
+	//		fretboard->Draw(renderer);
+	//		fretboard->GetSpellManager().Draw(renderer);
+	//		renderer.useCamera = true;
+	//	}
+	//});
 }
 
 // Frees Level 1

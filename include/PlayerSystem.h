@@ -30,8 +30,6 @@ enum PlayerState : unsigned int {
 
 namespace PlayerMove {
 
-
-
     inline void Start(Entity e);
 
     inline void Update(Entity e, float dt);
