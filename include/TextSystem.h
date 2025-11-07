@@ -1,3 +1,21 @@
+/* ========================================================
+ * @file	    TextSystem.h
+ * @author	    Manfred Sim | manfred.sim@digipen.edu
+ * @date	    30 OCT 2025
+ *
+ * @brief		Declares the Text System for the GUI editor.
+ *
+ * The Text System is responsible for rendering text and
+ * handling typing behavior of dialogue boxes used by the
+ * GUI editor. This file also contains declaration of the 
+ * TextComponent that will be used for defining dialogue boxes
+ * and helper functions that are used to simulate the
+ * typing of dialogue text.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #include <string>
 #include <vector>

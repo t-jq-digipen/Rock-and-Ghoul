@@ -1,3 +1,29 @@
+/* ========================================================
+ * @file	    EnemySystem.h
+ * @author	    Manfred Sim         | manfred.sim@digipen.edu
+ * @date	    01 NOV 2025
+ *
+ * @brief	Enemy System for handling enemy behaviour.
+ *
+ * This file declares an enemy system for the core engine,
+ * determining enemy logic with scripts and enemy states.
+ * 
+ * Enemy States:
+ * - E_IDLE : Enemy is idle and stationary.
+ * - E_ROAMING : Enemy is roaming around its starting position.
+ * - E_DETECTING : Enemy is checking if player is nearby. (NP)
+ * - E_CHASING : Enemy is chasing after the player.
+ * - E_ATTACKING : Enemy is targeting the player with attacks. (NP)
+ * - E_COOLDOWN : Enemy enters state of cooldown after executing an attack. (NP)
+ * - E_STAGGERED : Enemy staggers when attacked. (NP)
+ * - E_RETURNING : Enemy is returning to its starting position.
+ * 
+ * (NP) - Not implemented yet.
+ *
+ * Copyright ? 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #include "System.h"
 

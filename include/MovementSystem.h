@@ -5,7 +5,8 @@
  *
  * @brief	Movement system for ECS
  *
- * This file declares the Movement system for the ECS.
+ * This file declares the Movement system for the ECS,
+ * managing movement logic based on movement type.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================

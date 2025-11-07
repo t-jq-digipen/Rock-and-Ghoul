@@ -133,7 +133,7 @@ public:
 			IsComponentRegistered(dep);
 			if (!componentManagers[dep]->hasComponent(eID))
 			{
-				std::cout << "Entity " << eID << " Dependency type " << Get_ComponentTypeName(dep) << " for " << Get_ComponentTypeName(typeID) << " not found\n";
+				// std::cout << "Entity " << eID << " Dependency type " << Get_ComponentTypeName(dep) << " for " << Get_ComponentTypeName(typeID) << " not found\n";
 				return false;
 			}
 		}
@@ -152,7 +152,7 @@ public:
 			IsComponentRegistered(typeID);
 			if (componentManagers[reliant]->hasComponent(eID))
 			{
-				std::cout << "Entity " << eID << "Component type " << Get_ComponentTypeName(reliant) << " is relying on " << Get_ComponentTypeName(typeID) << '\n';
+				// std::cout << "Entity " << eID << "Component type " << Get_ComponentTypeName(reliant) << " is relying on " << Get_ComponentTypeName(typeID) << '\n';
 				return true;
 			}
 		}

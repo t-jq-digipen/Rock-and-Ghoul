@@ -757,31 +757,30 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::Checkbox("Show Spatial Grid", &showSpatialGrid);
 
     // Spatial Grid Statistics
-    //FILLTHISSHITYASM
-    //ImGui::Separator();
-    //ImGui::Text("Spatial Grid (Broad Phase):");
-    //SpatialGrid* grid = CollisionManager::GetSpatialGrid();
-    //if (grid) {
-    //    auto stats = grid->GetStats();
-    //    size_t collisionCellCount = grid->GetCollisionCellCount();
+    ImGui::Separator();
+    ImGui::Text("Spatial Grid (Broad Phase):");
+    SpatialGrid* grid = CollisionManager::GetSpatialGrid();
+    if (grid) {
+        auto stats = grid->GetStats();
+        size_t collisionCellCount = grid->GetCollisionCellCount();
+        // Cell size is 150.0 by default
+        ImGui::Text("  Cell Size: 150.0 units");
+        ImGui::Text("  Occupied Cells: %llu", (unsigned long long)stats.occupiedCells);
+        ImGui::Text("  Total Entities: %llu", (unsigned long long)stats.totalEntities);
+        ImGui::Text("  Avg per Cell: %.2f", stats.avgEntitiesPerCell);
+        ImGui::Text("  Max in Cell: %llu", (unsigned long long)stats.maxEntitiesInCell);
 
-    //    ImGui::Text("  Cell Size: 150.0 units");
-    //    ImGui::Text("  Occupied Cells: %llu", (unsigned long long)stats.occupiedCells);
-    //    ImGui::Text("  Total Entities: %llu", (unsigned long long)stats.totalEntities);
-    //    ImGui::Text("  Avg per Cell: %.2f", stats.avgEntitiesPerCell);
-    //    ImGui::Text("  Max in Cell: %llu", (unsigned long long)stats.maxEntitiesInCell);
+        // Collision cells (shown in red when visualized)
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f),
+            "  Cells with Collisions: %llu", (unsigned long long)collisionCellCount);
 
-    //    // Collision cells (shown in red when visualized)
-    //    ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f),
-    //        "  Cells with Collisions: %llu", (unsigned long long)collisionCellCount);
-
-    //    // Performance estimation
-    //    int naiveChecks = (totalColliders * (totalColliders - 1)) / 2;
-    //    ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f),
-    //        "  Optimization: %d -> ~%d checks",
-    //        naiveChecks,
-    //        (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
-    //}
+        // Performance estimation
+        int naiveChecks = (totalColliders * (totalColliders - 1)) / 2;
+        ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f),
+            "  Optimization: %d -> ~%d checks",
+            naiveChecks,
+            (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
+    }
 
     if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
     ImGui::Text("Scene Management:");

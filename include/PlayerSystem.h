@@ -41,10 +41,6 @@ class PlayerSystem : public ISystem {
 private:
     void WASD_Movement(Entity eID, float& dt);
 
-    // spatial footstep sfx
-    std::unordered_map<Entity, float> footstepTimers;  // Timer per player
-    float footstepInterval = 0.35f;  // Time between footsteps (in seconds)
-
     void UpdateFootsteps(Entity eID, float dt);
     void PlayFootstep(Entity eID);
     // static inline Movement::InputDirection VelToDir(float x, float y);

@@ -5,10 +5,9 @@
  *
  * @brief   Implementation of spatial partitioning system
  *
- * RUBRIC: Physics/Collisions - Option 1
  * Broad phase collision spatial partitioning (Implicit grid)
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -25,10 +24,8 @@ SpatialGrid::SpatialGrid(float cellSize)
 }
 
 void SpatialGrid::Clear() {
-    // Clear all entities from grid cells
-    for (auto& [cell, entities] : grid) {
-        entities.clear();
-    }
+    // Clear entire grid - more efficient than clearing individual vectors
+    grid.clear();
 }
 
 std::pair<int, int> SpatialGrid::WorldToCell(float x, float y) const {
