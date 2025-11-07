@@ -1,3 +1,32 @@
+/* ========================================================
+ * @file	    EnemySystem.cpp
+ * @author	    Manfred Sim         | manfred.sim@digipen.edu
+ * @date	    01 NOV 2025
+ *
+ * @brief	Enemy System for handling enemy behaviour.
+ *
+ * This file implements the logic of an enemy entity based on
+ * the attached script and switches between enemy states
+ * accordingly.
+ * 
+ * Current Implemented Enemy Logic:
+ * - Enemy enters E_ROAMING state upon startup, moving up and
+ * down around its starting position.
+ * - If player enters a detection radius, enemy enters E_CHASING
+ * state and gives chase after the player.
+ * - If player manages to get far enough from the enemy, enemy
+ * enters E_RETURNING state and quickly returns to its starting
+ * position.
+ * - While in E_RETURNING, enemy will return to E_ROAMING state
+ * once it reaches its starting position. Otherwise if player
+ * enters the enemy's detection radius, enemy will return to
+ * E_CHASING state again and continue to chase after the player.
+ *
+ * Copyright ? 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
+
 #pragma once
 #include "EnemySystem.h"
 #include "MovementSystem.h"
@@ -250,14 +279,14 @@ namespace EnemyAI
 				}
 				break;
 			case E_CHASING:
-				// std::cout << "Ghoul is CHASING YOU!" << std::endl;
+				std::cout << "Ghoul is CHASING YOU!" << std::endl;
 				if (player == INVALID_ENTITY || dist > loseRad)
 				{
 					st.state = E_RETURNING;
 				}
 				break;
 			case E_RETURNING:
-				// std::cout << "Ghoul is RETURNING..." << std::endl;
+				std::cout << "Ghoul is RETURNING..." << std::endl;
 				if (player != INVALID_ENTITY && dist <= detectRad)
 				{
 					st.state = E_CHASING;
@@ -269,7 +298,7 @@ namespace EnemyAI
 				}
 				break;
 			default:
-				// std::cout << "Ghoul is IDLING." << std::endl;
+				std::cout << "Ghoul is IDLING." << std::endl;
 				break;
 		}
 	}

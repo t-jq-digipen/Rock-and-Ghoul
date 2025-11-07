@@ -1,3 +1,26 @@
+/* ========================================================
+ * @file        GuiSystem.h
+ * @author		Manfred Sim | manfred.sim@digipen.edu
+ * @date        30 OCT 2025
+ *
+ * @brief
+ *
+ * Declares the GuiSystem, an engine subsystem that manages the 
+ * in-game editor for UI elements (buttons, textboxes and
+ * dialogue boxes).
+ *
+ * Features:
+ * - Toggles on/off with a key press (F8).
+ * - Renders a single "GUI Editor" window onto the game screen
+ * with selectable panels for each active UI element.
+ * - Scales with the game screen, including when ImGui Editor 
+ * is active.
+ * - Configurations for each UI element type.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #include "System.h"
 #include "Render.h"

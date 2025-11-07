@@ -13,10 +13,16 @@
  * needed to run the game, as well as the following core systems:
  * 
  * - Audio Manager (for managing audio files)
- * - Render System (for rendering shape and sprite components)
+ * - Logic System (for attaching logic scripts to entities)
+ * - Movement System (for rendering movement component)
  * - Player System (for handling player behaviour)
+ * - Enemy System (for handling enemy behaviour)
+ * - Forces Manager (for applying forces onto entities)
  * - Physics System (for handling in-game physics and collisions)
+ * - Render System (for rendering shape and sprite components)
+ * - Gui System (for rendering GUI elements in the game)
  * - ImGui System (for implementing game editor)
+ * - Mono System (for implementing mono scripts)
  *
  * Cleans up all resources once the application is closed.
  *
