@@ -1,6 +1,17 @@
 /* ========================================================
  * @file    AudioCache.cpp
- * @brief   Implementation of AudioCache system with Bank Loading
+ * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @date    15 OCT 2025
+ *
+ * @brief   Implementation file for the AudioCache asset management system
+ *
+ * This file contains the implementation of the AudioCache class, which
+ * provides centralized management of audio assets through an audio manifest
+ * JSON file. The JSON manifest file defines audio assets organized by category
+ * (music, sfx, ui, ambience). The cache implements a bank system for batch
+ * loading/unloading of related audio assets.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "AudioCache.h"
@@ -17,6 +28,17 @@ std::unordered_map<int, std::string> AudioCache::idToName;
 std::unordered_map<std::string, std::vector<std::string>> AudioCache::banks;
 int AudioCache::nextID = 0;
 
+/**
+ * @brief Initializes the AudioCache system by parsing the audio manifest file.
+ *
+ * This function loads and parses a JSON manifest file. The manifest is parsed to
+ * fill up the internal asset registry, but audio files are not loaded into memory
+ * until requested.
+ *
+ * @param manifestPath File path to the JSON audio manifest file.
+ * @return bool True if the manifest was successfully parsed and the cache
+ *         initialized, false if parsing failed or the file was not found.
+ */
 bool AudioCache::Initialize(const std::string& manifestPath) {
     if (!ParseManifest(manifestPath)) {
         std::cerr << "[AudioCache] Failed to parse manifest!" << std::endl;
@@ -26,6 +48,18 @@ bool AudioCache::Initialize(const std::string& manifestPath) {
     return true;
 }
 
+/**
+ * @brief Parses the JSON audio manifest file and populates the asset registry.
+ *
+ * This function reads and parses a JSON manifest file containing audio asset
+ * definitions organized by category (music, sfx, ui, ambience). For each
+ * asset, it extracts data like name, file path, loop settings,
+ * group classification, and spatial audio parameters (minDistance, maxDistance).
+ *
+ * @param manifestPath File path to the JSON audio manifest file.
+ * @return bool True if parsing succeeded and all assets were registered,
+ *         false if the file could not be read or JSON parsing failed.
+ */
 bool AudioCache::ParseManifest(const std::string& manifestPath) {
     try {
         std::string content = FileIO::ReadFile(manifestPath);
@@ -92,6 +126,9 @@ bool AudioCache::ParseManifest(const std::string& manifestPath) {
     }
 }
 
+/**
+ * @brief Shuts down the AudioCache and releases all loaded audio resources.
+ */
 void AudioCache::Shutdown() {
     for (auto& [name, asset] : assetsByName) {
         if (asset.sound) {
@@ -105,6 +142,18 @@ void AudioCache::Shutdown() {
     banks.clear();
 }
 
+/**
+ * @brief Retrieves an AudioAsset pointer by name.
+ *
+ * This function looks up an audio asset in the cache by name string.
+ * The returned AudioAsset contains data about the audio file including
+ * its path, loop settings, spatial audio properties, and a pointer to the
+ * loaded FMOD::Sound.
+ *
+ * @param name The name identifier of the audio asset as defined in the manifest.
+ * @return AudioAsset* Pointer to the AudioAsset if found, or nullptr if
+ *         no asset with the given name exists in the cache.
+ */
 AudioAsset* AudioCache::GetAsset(const std::string& name) {
     auto it = assetsByName.find(name);
     if (it != assetsByName.end()) {
@@ -113,14 +162,15 @@ AudioAsset* AudioCache::GetAsset(const std::string& name) {
     return nullptr;
 }
 
-AudioAsset* AudioCache::GetAssetByID(int id) {
-    auto it = idToName.find(id);
-    if (it != idToName.end()) {
-        return GetAsset(it->second);
-    }
-    return nullptr;
-}
-
+/**
+ * @brief Retrieves a loaded FMOD::Sound pointer by asset name.
+ * If the asset exists but hasn't been loaded yet, this function automatically
+ * loads it. If the asset doesn't exist in the cache or fails, nullptr is returned.
+ *
+ * @param name The name identifier of the audio asset as defined in the manifest.
+ * @return FMOD::Sound* Pointer to the loaded FMOD sound object, or nullptr
+ *         if the asset doesn't exist or failed to load.
+ */
 FMOD::Sound* AudioCache::GetSound(const std::string& name) {
     AudioAsset* asset = GetAsset(name);
     if (asset && asset->sound) {
@@ -136,19 +186,23 @@ FMOD::Sound* AudioCache::GetSound(const std::string& name) {
     return nullptr;
 }
 
-FMOD::Sound* AudioCache::GetSoundByID(int id) {
-    auto it = idToName.find(id);
-    if (it != idToName.end()) {
-        return GetSound(it->second);
-    }
-    return nullptr;
-}
-
+/**
+ * @brief Checks if an audio asset has been loaded into memory.
+ * @param name The name identifier of the audio asset.
+ * @return bool True if the asset exists and its FMOD::Sound is loaded,
+ *         false otherwise.
+ */
 bool AudioCache::IsLoaded(const std::string& name) {
     AudioAsset* asset = GetAsset(name);
     return (asset && asset->sound != nullptr);
 }
 
+/**
+ * @brief Explicitly loads an audio asset into memory.
+ * @param name The name identifier of the audio asset to load.
+ * @return bool True if the asset was loaded successfully or was already
+ *         loaded, false if the asset doesn't exist or loading failed.
+ */
 bool AudioCache::LoadAsset(const std::string& name) {
     AudioAsset* asset = GetAsset(name);
     if (!asset) {
@@ -163,6 +217,16 @@ bool AudioCache::LoadAsset(const std::string& name) {
     return LoadAudioFile(*asset);
 }
 
+/**
+ * @brief Loads an audio file into FMOD using asset data such as 
+ * looping behaviour. Loaded sound is stored in the asset's
+ * sound pointer.
+ *
+ * @param asset Reference to the AudioAsset to load. The asset's sound
+ *              pointer will be updated with the loaded FMOD::Sound.
+ * @return bool True if the audio file was successfully loaded into FMOD,
+ *         false if loading failed (e.g., file not found, unsupported format).
+ */
 bool AudioCache::LoadAudioFile(AudioAsset& asset) {
     FMOD_MODE mode = asset.spatial ? FMOD_3D : FMOD_2D;
 
@@ -180,6 +244,10 @@ bool AudioCache::LoadAudioFile(AudioAsset& asset) {
     return true;
 }
 
+/**
+ * @brief Unloads an audio asset from memory.
+ * @param name The name identifier of the audio asset to unload.
+ */
 void AudioCache::UnloadAsset(const std::string& name) {
     AudioAsset* asset = GetAsset(name);
     if (!asset) return;
@@ -194,6 +262,13 @@ void AudioCache::UnloadAsset(const std::string& name) {
 // BANK SYSTEM FUNCTIONS
 // ============================================================================
 
+/**
+ * @brief Loads all audio assets in a named bank. For example, "init" bank
+ * would contain main menu music and button click SFX.
+ * @param bankName The name identifier of the bank as defined in the manifest.
+ * @return bool True if all assets in the bank loaded successfully, false if
+ *         the bank doesn't exist or any asset failed to load.
+ */
 bool AudioCache::LoadBank(const std::string& bankName) {
     auto it = banks.find(bankName);
     if (it == banks.end()) {
@@ -214,6 +289,10 @@ bool AudioCache::LoadBank(const std::string& bankName) {
     return allLoaded;
 }
 
+/**
+ * @brief Unloads all audio assets in a named bank.
+ * @param bankName The name identifier of the bank as defined in the manifest.
+ */
 void AudioCache::UnloadBank(const std::string& bankName) {
     auto it = banks.find(bankName);
     if (it == banks.end()) {
@@ -227,6 +306,12 @@ void AudioCache::UnloadBank(const std::string& bankName) {
     }
 }
 
+/**
+ * @brief Retrieves the list of asset names in a bank.
+ * @param bankName The name identifier of the bank.
+ * @return std::vector<std::string> Vector of asset names in the bank, or
+ *         an empty vector if the bank doesn't exist.
+ */
 std::vector<std::string> AudioCache::GetBankAssets(const std::string& bankName) {
     auto it = banks.find(bankName);
     if (it != banks.end()) {
@@ -235,6 +320,13 @@ std::vector<std::string> AudioCache::GetBankAssets(const std::string& bankName) 
     return {};
 }
 
+/**
+ * @brief Retrieves a reference to all registered audio assets. Useful for
+ * editor tools, debugging, or populating UI elements with available audio
+ * assets.
+ * @return const std::unordered_map<std::string, AudioAsset>& Reference to
+ *         the complete asset registry map.
+ */
 const std::unordered_map<std::string, AudioAsset>& AudioCache::GetAllAssets() {
     return assetsByName;
 }
