@@ -8,7 +8,8 @@
  * This header file contains the declaration of the AudioSystem
  * class. The class initializes the audio system, loading
  * and playing sounds, managing audio channels for playback
- * control, and handling button sound effects.
+ * control, and handling button sound effects. It also declares
+ * functions for spatial audio positioning.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -180,8 +181,42 @@ public:
     static void RegisterButtonSound(ButtonType type, FMOD::Sound* sound);
 
     // spatial audio funcs
+    /**
+    * @brief Sets the 2D position of the audio listener.
+    *
+    * This function updates the position of the audio listener in 2D space,
+    * which is used to calculate spatial audio effects such as distance-based
+    * volume attenuation. The Z coordinate is always set to 0 for 2D audio.
+    *
+    * @param x The X coordinate of the listener position.
+    * @param y The Y coordinate of the listener position.
+    */
     static void SetListenerPosition(float x, float y);
+    /**
+     * @brief Plays a sound at a specific 2D position with spatial audio effects.
+     *
+     * This function plays an audio asset at the specified 2D coordinates with
+     * spatial audio positioning. Only if the asset is marked as spatial in the audio
+     * cache, the sound's volume will be affected by its distance from the listener.
+     *
+     * @param assetName The name of the audio asset in the AudioCache.
+     * @param x The X coordinate where the sound should be positioned.
+     * @param y The Y coordinate where the sound should be positioned.
+     * @param volume The base volume level for the sound (0.0 to 1.0).
+     * @return FMOD::Channel* Pointer to the channel playing the sound, or nullptr
+     *         if playback failed or the asset was not found.
+     */
     static FMOD::Channel* PlaySoundAt(const std::string& assetName, float x, float y, float volume = 1.0f);
+    /**
+     * @brief Configures the FMOD system for 2D spatial audio.
+     *
+     * This function sets up the FMOD audio system to handle spatial audio
+     * in a 2D environment. It configures 3D audio settings appropriately
+     * for 2D games and initializes the listener's
+     * position, velocity, and orientation to default values. This allows
+     * sounds to have distance-based volume attenuation while maintaining
+     * a 2D coordinate system.
+     */
     static void Configure2DSpatialAudio();
 
 private:

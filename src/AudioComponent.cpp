@@ -3,9 +3,22 @@
  * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
  * @date    4 NOV 2025
  *
- * @brief   Implementation of AudioComponent
+ * @brief   Implementation file for entity-based audio component system
  *
- * REFACTORED: Uses sound names instead of IDs for cleaner code
+ * This file contains the implementation of the AudioComponent member
+ * functions and the global Update_AudioComponents system function.
+ * It handles audio playback initialization, channel management,
+ * spatial audio positioning updates, and playback state tracking.
+ * The implementation integrates with the AudioCache for sound asset
+ * loading by name, the AudioSystem for FMOD channel control, and
+ * the Registry for entity component access. Editor integration is
+ * provided through the EditorData() function, which creates UI
+ * widgets for sound selection (dropdowns populated from AudioCache),
+ * volume control (sliders), auto-play toggles (checkboxes), and
+ * spatial audio configuration (distance parameters). The system
+ * update function processes all AudioComponent instances each frame,
+ * handling auto-play triggers, playback state updates, and spatial
+ * position synchronization with entity transforms.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -24,6 +37,10 @@ using json = nlohmann::json;
 // AUDIOCOMPONENT MEMBER FUNCTIONS
 // ============================================================================
 
+/**
+* @brief Play the main sound effect
+* @param eID Entity ID (for spatial positioning)
+*/
 void AudioComponent::PlaySound(Entity eID) {
     if (soundName.empty()) return;  // No sound assigned
 
@@ -52,6 +69,10 @@ void AudioComponent::PlaySound(Entity eID) {
     isPlaying = (channel != nullptr);
 }
 
+/**
+ * @brief Play the looping sound
+ * @param eID Entity ID (for spatial positioning)
+ */
 void AudioComponent::PlayLoopingSound(Entity eID) {
     if (loopingSoundName.empty()) return;  // No looping sound assigned
 
@@ -79,7 +100,9 @@ void AudioComponent::PlayLoopingSound(Entity eID) {
 
     isLoopingPlaying = (loopingChannel != nullptr);
 }
-
+/**
+ * @brief Stop the main sound
+ */
 void AudioComponent::StopSound() {
     if (channel) {
         channel->stop();
@@ -88,6 +111,9 @@ void AudioComponent::StopSound() {
     isPlaying = false;
 }
 
+/**
+ * @brief Stop the looping sound
+ */
 void AudioComponent::StopLoopingSound() {
     if (loopingChannel) {
         loopingChannel->stop();
@@ -95,7 +121,10 @@ void AudioComponent::StopLoopingSound() {
     }
     isLoopingPlaying = false;
 }
-
+/**
+ * @brief Update spatial audio position (called per frame)
+ * @param eID Entity ID to get position from
+ */
 void AudioComponent::UpdateSpatialPosition(Entity eID) {
     if (!spatial) return;
 
@@ -118,6 +147,9 @@ void AudioComponent::UpdateSpatialPosition(Entity eID) {
     }
 }
 
+/**
+ * @brief Update playback state (checks if sounds finished)
+ */
 void AudioComponent::UpdatePlaybackState() {
     // Check main sound
     if (channel) {
@@ -142,6 +174,10 @@ void AudioComponent::UpdatePlaybackState() {
     }
 }
 
+/**
+ * @brief Set volume for all channels
+ * @param vol Volume level (0.0 - 1.0)
+ */
 void AudioComponent::SetVolume(float vol) {
     volume = vol;
 
@@ -158,6 +194,18 @@ void AudioComponent::SetVolume(float vol) {
 // EDITOR INTEGRATION
 // ============================================================================
 
+/**
+ * @brief Get editor-compatible data for this component.
+ *
+ * This function creates and configures editor widgets for the AudioComponent,
+ * including dropdown menus for sound selection, checkboxes for auto-play
+ * settings, spatial audio toggles, volume sliders, and distance parameters
+ * for 3D spatial positioning. The widgets are populated with available
+ * audio assets from the AudioCache.
+ *
+ * @return Editor::ComponentData Object containing all configured editor widgets
+ *         for this component.
+ */
 Editor::ComponentData AudioComponent::EditorData() {
     Editor::ComponentData data("Audio");
 
@@ -237,6 +285,10 @@ Editor::ComponentData AudioComponent::EditorData() {
 // SYSTEM UPDATE FUNCTION
 // ============================================================================
 
+/**
+ * @brief Updates all AudioComponents in the registry
+ * @param dt Delta time (unused, but follows system pattern)
+ */
 void Update_AudioComponents(float dt) {
     (void)dt;  // Unused param
 

@@ -3,13 +3,19 @@
  * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
  * @date    4 NOV 2025
  *
- * @brief   Audio component for entity-based audio playback
+ * @brief   Header file for entity-based audio component system
  *
- * This component allows entities to have associated audio
- * that can be serialized, edited, and automatically updated.
- * Supports both 2D and spatial 3D audio positioning.
- *
- * REFACTORED: Removed redundant IDs - uses names only!
+ * This file defines the AudioComponent structure, which provides
+ * audio playback capabilities for entities in the ECS architecture.
+ * The component supports both one-shot sound effects and looping
+ * ambient audio, with optional audio spatial positioning based
+ * on entity transform data. It includes full serialization support
+ * for scene saving/loading and editor integration for visual
+ * configuration of audio properties. The component automatically
+ * manages FMOD channel lifecycles, spatial audio updates, and
+ * playback state tracking. Auto-play functionality allows sounds
+ * to trigger on entity spawn, and volume/distance parameters
+ * provide fine-grained control over audio behavior.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -29,9 +35,9 @@ using json = nlohmann::json;
  * @brief Component for attaching audio to entities with serialization support.
  */
 struct AudioComponent {
-    // Audio asset references (by name from AudioCache)
-    std::string soundName = "";        // Single sound effect name (empty = none)
-    std::string loopingSoundName = ""; // Looping sound name for ambient audio (empty = none)
+    // Name from AudioCache (empty means none)
+    std::string soundName = "";        // Single sound effect name
+    std::string loopingSoundName = ""; // Looping sound name for ambient audio
 
     // Playback state
     FMOD::Channel* channel = nullptr;
@@ -45,11 +51,11 @@ struct AudioComponent {
     bool spatial = false;         // Use 3D spatial positioning
 
     // Volume control
-    float volume = 1.0f;          // Master volume (0.0 - 1.0)
+    float volume = 1.0f;          // Master volume from 0.0 - 1.0
 
-    // Spatial audio settings (only used if spatial = true)
-    float minDistance = 1.0f;     // Distance at which sound is at full volume
-    float maxDistance = 100.0f;   // Distance at which sound is silent
+    // Spatial audio settings
+    float minDistance = 1.0f;     // full volume
+    float maxDistance = 100.0f;   // silent
 
     /**
      * @brief Default constructor
@@ -105,7 +111,7 @@ struct AudioComponent {
     void SetVolume(float vol);
 
     // ============================================================================
-    // REQUIRED ECS SERIALIZATION METHODS
+    // REQUIRED ECS SERIALIZATION FUNCTIONS
     // ============================================================================
 
     /**
@@ -143,7 +149,7 @@ struct AudioComponent {
 
         AudioComponent audio;
 
-        // Simply load the names - AudioCache::GetAsset() will validate at runtime
+        // Loading names of sounds, AudioCache::GetAsset() will validate at runtime
         audio.soundName = j.value("soundName", "");
         audio.loopingSoundName = j.value("loopingSoundName", "");
 
