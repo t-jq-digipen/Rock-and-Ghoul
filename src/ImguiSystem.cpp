@@ -959,6 +959,7 @@ void ImGuiSystem::ShowSceneBrowser()
                 empty.sceneName = sceneName;
                 JsonLoad::SaveCurrentScene(newPath, sceneName);
                 std::cout << "[Editor] Created new empty scene: " << newPath << "\n";
+                needRefresh = true;
             }
         }
     }
