@@ -10,7 +10,8 @@
 \author     Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
 \date       29 OCT 2025
 \brief
-Defines the Camera class used for 2D/2.5D rendering in the game engine.
+Defines the Camera class and declare functions used for 2D/2.5D rendering
+in the game engine.
 
 The Camera class provides view and projection transformations for rendering
 scenes using an orthographic projection. It supports panning, zooming, and
@@ -24,6 +25,9 @@ Key functionalities include:
 - Controlling camera position, zoom, and rotation
 - Computing combined view-projection transforms
 - Providing global access through a singleton instance
+- Supports following a moving target
+- Restricts camera movement to specified world-space boundaries
+- Provides world-to-screen and screen-to-world conversions
 
 Copyright � 2025 DigiPen, All rights reserved.
 */
@@ -75,6 +79,56 @@ public:
     /**************************************************************************/
     glm::mat4 GetViewProjection() const { return projMatrix * viewMatrix; }
 
+
+    /**************************************************************************/
+    /*!
+    \brief
+        Converts a point from normalized device coordinates (NDC)
+        to world-space coordinates.
+    */
+    /**************************************************************************/
+    Vec2 NDCToWorld(const Vec2& ndc) const;
+
+    /**************************************************************************/
+    /*!
+    \brief
+        Converts a point from world-space coordinates to normalized device
+        coordinates (NDC).
+    */
+    /**************************************************************************/
+    Vec2 WorldToNDC(const Vec2& world) const;
+
+    /**************************************************************************/
+    /*!
+    \brief
+        Retrieves the inverse of the combined view-projection matrix.
+    */
+    /**************************************************************************/
+    glm::mat4 GetInverseViewProjection() const;
+
+
+    /**************************************************************************/
+    /*!
+    \brief
+        Resets the camera to the center of its world bounds.
+    */
+    /**************************************************************************/
+    void ResetToCenter();
+
+    /**************************************************************************/
+   /*!
+   \brief
+       Smoothly follows a target (e.g., player entity) using linear
+       interpolation based on delta time.
+
+   \param targetPos
+       The position of the target to follow.
+   \param dt
+       Delta time .
+   */
+   /**************************************************************************/
+    void FollowTarget(const Vec2& targetPos, float dt);
+
     enum class Mode { EDITOR, GAME };
 
 
@@ -86,11 +140,11 @@ public:
     void SetAspectRatio(float a) { aspectRatio = a; }
     void SetViewWidth(float w) { viewWidth = w; }
     void SetBounds(const Vec2& min, const Vec2& max) { worldMin = min; worldMax = max; }
-
     void SetMode(Mode m) { mode = m; }
-    Mode GetMode() const { return mode; }
-    void ResetToCenter();
-    void FollowTarget(const Vec2& targetPos, float dt);
+
+ 
+
+
     // Accessors for camera data
     const Vec2& GetPosition() const { return position; }
     const Vec2& GetTargetPosition() const { return targetPosition; }
@@ -98,6 +152,7 @@ public:
     float GetRotation() const { return rotation; }
     float GetAspectRatio() const { return aspectRatio; }
     float GetViewWidth() const { return viewWidth; }
+    Mode GetMode() const { return mode; }
 
     const glm::mat4& GetViewMatrix() const { return viewMatrix; }
     const glm::mat4& GetProjMatrix() const { return projMatrix; }
@@ -105,10 +160,7 @@ public:
     const Vec2& GetWorldMin() const { return worldMin; }
     const Vec2& GetWorldMax() const { return worldMax; }
 
-    Vec2 NDCToWorld(const Vec2& ndc) const;
-
-    Vec2 WorldToNDC(const Vec2& world) const;
-    glm::mat4 GetInverseViewProjection() const;
+    
     // Update camera
     void UpdateCamera();
 

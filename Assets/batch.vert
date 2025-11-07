@@ -1,7 +1,7 @@
 /*!
 @file       batch.vert
 @author   kervinguancheng.ong@digipen.edu
-@date    	  02/10/2025
+@date    	  05/11/2025
 
 This file implements the vertex shader required for batch rendering
 

@@ -7,17 +7,20 @@
  * @brief   Rendering system class, consisting function declarations for drawing 2D
  *          primitives, images, and text using OpenGL.
  *
- * The Render class provides a interface for all
- * rendering operations including shapes, images, instanced
- * rendering, and text rendering. It manages OpenGL resources,
- * texture caching, and uses FreeType for font rendering.
+ * The Render class provides a central interface for all rendering
+ * operations, including shapes, images, instanced rendering, text
+ * rendering, and scene capture. It manages OpenGL resources such as
+ * shaders, framebuffers, textures, and VAOs, while offering a simple
+ * API for use by game systems and tools.
  *
  * Functionalities include:
- * - Drawing shapes (rectangles, squares, lines, circles)
+ * - Drawing shapes (rectangles, circles, lines)
  * - Loading, caching, and unloading textures
  * - Drawing images (full, scaled, sub-regions, rotated)
- * - Instanced rendering 
- * - Text rendering with FreeType
+ * - Batched/Instanced rendering for performance optimization
+ * - Text rendering using FreeType
+ * - Off-screen rendering via scene framebuffer (for ImGui or post-processing)
+ * - Screen-to-world coordinate conversion utilities
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -355,8 +358,48 @@ public:
 
 
     //Extra functions for font loading
+    /**
+    * @brief Loads a TrueType/OpenType font and stores it in the font cache.
+    *
+    * This function loads a font file using FreeType and
+    * creates a character map for rendering text. The font is stored and
+    * accessible via a user-defined key (e.g., "Bold", "Marker").
+    *
+    * @param fontPath Absolute or relative path to the font file on disk.
+    *                 Example: "../Assets/Fonts/Antonio-Bold.ttf".
+    * @param sizePx   Desired pixel height for glyph rendering (e.g., 48).
+    * @param key    Unique string identifier to store and later reference
+    *                 this font in the font cache.
+    *
+    * @return true if the font was successfully loaded and added to the cache,
+    *         false if loading failed 
+    */
     bool LoadFont(const std::string& fontPath, int sizePx, const std::string& key);
+
+
+
+    /**
+    * @brief Unloads and removes a previously loaded font from the cache.
+    *
+    * This function deletes all GPU resources associated
+    * with a given font and removes it from the font cache. Any
+    * after attempts to render text using that font key will fail unless
+    * the font is reloaded.
+    *
+    * @param key The unique string identifier of the font to unload.
+    */
     void UnloadFont(const std::string& key);
+
+
+    /**
+    * @brief Unloads all fonts currently stored in the cache. Typically called 
+    *          when switching game states or shutting down the rendering system
+    *         to ensure proper cleanup.
+    *
+    * This function clears the entire font cache, freeing GPU memory associated
+    * with all loaded fonts. After calling this, no text can be rendered until
+    * fonts are reloaded via LoadFont() or LoadFontAssetsFromJSON().
+    */
     void UnloadAllFonts();
 
 
@@ -525,10 +568,64 @@ public:
     /*void SetTint(const Colour3& tint);
     void ClearTint();*/
 
+
+
+    /**
+    * @brief Draws a rounded rectangle using two overlapping rectangles and four corner circles.
+    *        This function renders a rectangle with rounded corners centered at the given position.
+    *           The rounded corners are created by drawing four quarter-circle segments at each corner.
+    *
+    * @param pos   Center position of the rectangle in screen coordinates.
+    * @param width   Overall width of the rectangle.
+    * @param height  Overall height of the rectangle.
+    * @param radius  Corner radius for the rounded edges.
+    * @param color   Fill color of the rectangle.
+    *
+    */
     void DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color);
 
+
+
+    /**
+    * @brief Calculates the total pixel dimensions required to render a given text string.
+    *
+    * This function computes the total width and height of a text string based on the
+    * provided font key, scaling factor, and loaded glyph metrics. It is used
+    * for aligning, centering, bounding UI text before rendering.
+    *
+    * @param text     The text string to measure.
+    * @param scale    Scale factor applied to each glyph (affects both width and height).
+    * @param fontKey  Key identifying which loaded font to use (e.g., "Marker", "Bold").
+    *
+    * @return A Vec2 containing the computed width (x) and height (y) of the text in pixels.
+    *
+    */
     Vec2 CalculateTextSize(const std::string& text, float scale, const std::string& fontKey);
+
+
+    /**
+    * @brief Updates the orthographic projection matrix to match the current window size.
+    *
+    *   This function recalculates the renderer’s projection matrix so that the coordinate
+    * system matches the current window dimensions. The resulting projection maps (0, 0)
+    * to the bottom-left corner of the screen and (width, height) to the top-right corner
+    *
+    */
     void UpdateProjection();
+
+
+    /**
+    * @brief Draws a texture scaled to fill or fit the entire window while preserving aspect ratio.
+    *
+    * This function renders a fullscreen quad using the specified texture. The texture is
+    * scaled based on the window’s aspect ratio and either cropped or letterboxed
+    * to maintain visual consistent.
+    *
+    * @param texture  OpenGL texture ID to render. The texture must be valid and bound to GL_TEXTURE_2D.
+    * @param cover    If true, the texture fills the entire screen 
+    *                 If false, the texture fits within the screen
+    *
+    */
     void DrawFullscreenTexture(GLuint texture, bool cover = true);
 
    
@@ -785,15 +882,85 @@ private:
 
 public:
 
+    /**
+    * @brief Retrieves the current texture cache maintained by the renderer.
+    *
+    * Returns a map linking texture file paths to their corresponding OpenGL
+    * texture handles. This allows reuse of already loaded texturese.
+    *
+    * @return std::unordered_map<std::string, GLuint>
+    *         Map of file paths to OpenGL texture IDs.
+    *
+    */
     std::unordered_map<std::string, GLuint> Get_TextureCache() { return textureCache; }
     GLuint sceneFBO = 0;
     GLuint sceneColor = 0;
     GLuint sceneDepth = 0;
 
+
+
+    /**
+    * @brief Initializes the scene framebuffer and allocates its attachments.
+    *
+    * Creates and configures the OpenGL framebuffer, along with color and depth
+    * textures, based on the specified width and height of the game window.
+    *
+    * @param width   Width of the framebuffer in pixels.
+    * @param height  Height of the framebuffer in pixels.
+    */
     void InitSceneFramebuffer(int width, int height);
+
+
+
+    /**
+     * @brief Begins capturing all rendering to the scene framebuffer.
+     *
+     * Binds the off-screen framebuffer and redirects subsequent draw calls
+     * to the color and depth textures instead of the default window buffer.
+     *
+     */
     void BeginSceneCapture();
+
+
+    /**
+    * @brief Ends scene capture and restores rendering to the main framebuffer.
+    *
+    * Unbinds the scene framebuffer so subsequent rendering ,such as ImGui UI
+    * will draw directly to the window again.
+    *
+    */
     void EndSceneCapture();
+
+
+    /**
+    * @brief Retrieves the color texture containing the captured scene.
+    *
+    * Returns the OpenGL texture handle of the framebuffer’s color attachment,
+    * which holds the fully rendered scene image.
+    *
+    * @return GLuint  Texture ID of the captured scene.
+    *
+    * @note Used by ImGui, editor systems to display the
+    *       “Game View” 
+    */
     GLuint GetSceneTexture() const { return sceneColor; }
 
+
+
+    /**
+    * @brief Converts normalized screen coordinates into world-space coordinates.
+    *
+    * Takes an input position in Normalized Device Coordinates 
+    * and converts it into the equivalent position in world space, considering
+    * the current camera transform and projection.
+    *
+    * @param ndcX  Normalized X coordinate.
+    * @param ndcY  Normalized Y coordinate.
+    *
+    * @return Vec2 World-space position corresponding to the screen coordinate.
+    *
+    * @note Used for mouse picking, placing entities via editor tool,
+    *       or aligning objects based on screen-space input.
+    */
     Vec2 ScreenToWorld(float ndcX, float ndcY) const;
 };
