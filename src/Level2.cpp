@@ -402,37 +402,37 @@ void Level2::Update()
 
 	//std::cout << "Level 1 Updating!!!" << std::endl;
 	// Save scene on F5
-	if (Input::IsKeyPressed(GLFW_KEY_F5)) {
-		if (!std::filesystem::exists(FilePath::SAVES_FOLDER)) {
-			std::filesystem::create_directories(FilePath::SAVES_FOLDER);
-		}
+	//if (Input::IsKeyPressed(GLFW_KEY_F5)) {
+	//	if (!std::filesystem::exists(FilePath::SAVES_FOLDER)) {
+	//		std::filesystem::create_directories(FilePath::SAVES_FOLDER);
+	//	}
 
-		JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "Level2");
-		std::cout << "Scene saved!" << std::endl;
-	}
+	//	JsonLoad::SaveCurrentScene(FilePath::LEVEL2_SCENE, "Level2");
+	//	std::cout << "Scene saved!" << std::endl;
+	//}
 
-	// Load scene on F9
-	if (Input::IsKeyPressed(GLFW_KEY_F9)) {
-		JsonLoad::ClearAllEntities();
+	//// Load scene on F9
+	//if (Input::IsKeyPressed(GLFW_KEY_F9)) {
+	//	JsonLoad::ClearAllEntities();
 
-		if (JsonLoad::LoadScene(FilePath::LEVEL2_SCENE)) {
-			std::cout << "Scene loaded successfully!" << std::endl;
+	//	if (JsonLoad::LoadScene(FilePath::LEVEL2_SCENE)) {
+	//		std::cout << "Scene loaded successfully!" << std::endl;
 
-			// Find waffle by checking for its sprite texture
-			//for (Entity e = 0; e < 10; ++e) {
-			//	if (!EntityManager::get().isAlive(e)) continue;
+	//		// Find waffle by checking for its sprite texture
+	//		//for (Entity e = 0; e < 10; ++e) {
+	//		//	if (!EntityManager::get().isAlive(e)) continue;
 
-			//	if (registry.Has_Component<Sprite::SpriteComponent>(e)) {
-			//		auto& s = registry.Get_Component<Sprite::SpriteComponent>(e);
-			//		if (s.Get_TexturePath().find("Waffle") != std::string::npos) {
-			//			std::cout << "Found waffle at Entity " << e << std::endl;
-			//			waffle = e;  // Update the waffle variable
-			//			break;
-			//		}
-			//	}
-			//}
-		}
-	}
+	//		//	if (registry.Has_Component<Sprite::SpriteComponent>(e)) {
+	//		//		auto& s = registry.Get_Component<Sprite::SpriteComponent>(e);
+	//		//		if (s.Get_TexturePath().find("Waffle") != std::string::npos) {
+	//		//			std::cout << "Found waffle at Entity " << e << std::endl;
+	//		//			waffle = e;  // Update the waffle variable
+	//		//			break;
+	//		//		}
+	//		//	}
+	//		//}
+	//	}
+	//}
 
 	CrashHandler::Safe("Level2", "Update", [&] {
 		// to test game state changes (do not trigger if GUI Editor is open)
