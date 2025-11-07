@@ -133,31 +133,142 @@ public:
 
 
     // Modifiers for camera data
+    /**
+    * @brief Sets the camera’s position in world space.
+    * @param pos The new world-space position of the camera.
+    */
     void SetPosition(const Vec2& pos) { position = pos; }
+
+
+    /**
+    * @brief Sets the camera’s target position in world space.
+    * @param target The position the camera should look at.
+    */
     void SetTarget(const Vec2& target) { position = target; }
+
+
+    /**
+    * @brief Sets the zoom level of the camera.
+    * @param z The desired zoom factor 
+    */
     void SetZoom(float z) { zoom = z; }
+
+
+    /**
+    * @brief Sets the rotation of the camera in degrees.
+    * @param r The rotation angle in degrees.
+    */
     void SetRotation(float r) { rotation = r; }
+
+
+    /**
+    * @brief Sets the aspect ratio (width / height) for projection.
+    * @param a The new aspect ratio value.
+    */
     void SetAspectRatio(float a) { aspectRatio = a; }
+
+
+    /**
+    * @brief Sets the visible width of the view in world units.
+    * @param w The width of the view in world space.
+    */
     void SetViewWidth(float w) { viewWidth = w; }
+
+
+    /**
+    * @brief Defines the camera’s world boundaries.
+    * @param min The bottom-left bound of the visible world.
+    * @param max The top-right bound of the visible world.
+    */
     void SetBounds(const Vec2& min, const Vec2& max) { worldMin = min; worldMax = max; }
+
+
+    /**
+    * @brief Sets the active camera mode 
+    * @param m The camera mode to use.
+    */
     void SetMode(Mode m) { mode = m; }
 
  
 
 
     // Accessors for camera data
+
+    /**
+    * @brief Retrieves the current camera position in world space.
+    * @return The camera’s position vector.
+    */
     const Vec2& GetPosition() const { return position; }
+
+    /**
+    * @brief Retrieves the camera’s current target position.
+    * @return The position the camera is looking at.
+    */
     const Vec2& GetTargetPosition() const { return targetPosition; }
+
+
+    /**
+    * @brief Gets the current zoom level of the camera.
+    * @return The zoom factor.
+    */
     float GetZoom() const { return zoom; }
+
+
+    /**
+    * @brief Gets the camera’s rotation angle in degrees.
+    * @return The rotation value.
+    */
     float GetRotation() const { return rotation; }
+
+
+    /**
+    * @brief Gets the camera’s aspect ratio (width / height).
+    * @return The current aspect ratio.
+    */
     float GetAspectRatio() const { return aspectRatio; }
+
+
+    /**
+    * @brief Gets the width of the viewable area in world units.
+    * @return The view width.
+    */
     float GetViewWidth() const { return viewWidth; }
+
+
+    /**
+    * @brief Gets the current camera mode 
+    * @return The active camera mode.
+    */
     Mode GetMode() const { return mode; }
 
+
+
+    /**
+    * @brief Returns the current view matrix
+    * @return Reference to the 4×4 view matrix.
+    */
     const glm::mat4& GetViewMatrix() const { return viewMatrix; }
+
+
+    /**
+    * @brief Returns the current projection matrix
+    * @return Reference to the 4×4 projection matrix.
+    */
     const glm::mat4& GetProjMatrix() const { return projMatrix; }
 
+
+
+    /**
+     * @brief Gets the lower boundary of the camera’s visible world region.
+    * @return The minimum world-space coordinates.
+    */
     const Vec2& GetWorldMin() const { return worldMin; }
+
+
+    /**
+    * @brief Gets the upper boundary of the camera’s visible world region.
+    * @return The maximum world-space coordinates.
+    */
     const Vec2& GetWorldMax() const { return worldMax; }
 
     
