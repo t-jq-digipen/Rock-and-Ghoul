@@ -4,7 +4,34 @@
 #include <glapp.h>
 #include <iostream>
 
+/**************************************************************************/
+/*!
+\file       Camera.cpp
+\author     Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+\date       29 OCT 2025
+\brief
+Defines the Camera class and define functions used for 2D/2.5D rendering
+in the game engine.
 
+The Camera class provides view and projection transformations for rendering
+scenes using an orthographic projection. It supports panning, zooming, and
+rotation.
+
+The class maintains view and projection matrices that convert world-space
+coordinates into normalized device coordinates (NDC) for OpenGL rendering.
+
+Key functionalities include:
+- Maintaining orthographic projection and view matrices
+- Controlling camera position, zoom, and rotation
+- Computing combined view-projection transforms
+- Providing global access through a singleton instance
+- Supports following a moving target
+- Restricts camera movement to specified world-space boundaries
+- Provides world-to-screen and screen-to-world conversions
+
+Copyright ? 2025 DigiPen, All rights reserved.
+*/
+/**************************************************************************/
 
 Camera::Camera()
     : position(static_cast<float>(GLApp::width) / 2.0f, static_cast<float>(GLApp::height) / 2.0f),
