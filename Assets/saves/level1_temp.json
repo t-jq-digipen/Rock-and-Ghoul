@@ -104,8 +104,8 @@
         },
         {
             "components": {
-                "Animator": "{\"animDuration\":1.0,\"currentState\":1,\"frameColEnd\":7,\"frameColStart\":0,\"frameRow\":0,\"states\":{\"0\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":6},\"1\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":0}},\"totalCols\":10,\"totalRows\":10}",
-                "Behaviour": "{\"scripts\":[\"PlayerMovement\",\"CamTarget\"]}",
+                "Animator": "{\"animDuration\":1.0,\"currentState\":2,\"frameColEnd\":3,\"frameColStart\":0,\"frameRow\":4,\"states\":{\"0\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":6},\"1\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":0},\"2\":{\"col_end\":3,\"col_start\":0,\"duration\":1.0,\"row\":4}},\"totalCols\":10,\"totalRows\":10}",
+                "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
                 "Health": "{\"currentHP\":0.0,\"maxHP\":0.0}",
                 "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
                 "Physics": "{\"aabb\":{\"centerX\":510.9010009765625,\"centerY\":268.84100341796875,\"dimX\":150.04299926757813,\"dimY\":201.20199584960938},\"circle\":{\"posX\":510.9010009765625,\"posY\":268.84100341796875,\"rad\":0.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",

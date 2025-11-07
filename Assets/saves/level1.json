@@ -18,7 +18,7 @@
         },
         {
             "components": {
-                "Animator": "{\"animDuration\":1.0,\"currentState\":1,\"frameColEnd\":7,\"frameColStart\":0,\"frameRow\":0,\"states\":{\"0\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":6},\"1\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":0}},\"totalCols\":10,\"totalRows\":10}",
+                "Animator": "{\"animDuration\":1.0,\"currentState\":2,\"frameColEnd\":3,\"frameColStart\":0,\"frameRow\":4,\"states\":{\"0\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":6},\"1\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":0},\"2\":{\"col_end\":3,\"col_start\":0,\"duration\":1.0,\"row\":4}},\"totalCols\":10,\"totalRows\":10}",
                 "Behaviour": "{\"scripts\":[\"PlayerMovement\",\"CamTarget\"]}",
                 "Health": "{\"currentHP\":0.0,\"maxHP\":0.0}",
                 "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",

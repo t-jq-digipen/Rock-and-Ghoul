@@ -553,12 +553,13 @@ void RenderSystem::Update(float dt) {
     // Debug drawing for physics colliders / velocities
     if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {
         for (auto& [entID, physics] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
+
             if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
             auto& t = m_registry.Get_Component<TransformComponent>(entID);
 
-            if (ImGuiSystem::showVelocity && m_registry.Has_Component<TagComponent>(entID)) {
-                auto& tag = m_registry.Get_Component<TagComponent>(entID);
-                if (tag.tag == T_PLAYER)
+            if (ImGuiSystem::showVelocity) {
+                //auto& tag = m_registry.Get_Component<TagComponent>(entID);
+                //if (tag.tag == T_PLAYER)
                     DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
             }
 

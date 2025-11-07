@@ -28,7 +28,8 @@ enum class ScriptID : unsigned int {
     GHOUL,
     PATROL_ENEMY,
     PLAYER,
-    CAMERA_TRACK
+    CAMERA_TRACK,
+    ROCK_SCRIPT
 };
 
 /**
