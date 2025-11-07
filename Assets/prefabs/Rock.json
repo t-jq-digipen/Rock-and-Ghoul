@@ -1,0 +1,19 @@
+{
+    "entities": [
+        {
+            "components": {
+                "Animator": "{\"animDuration\":1.0,\"currentState\":3,\"frameColEnd\":8,\"frameColStart\":0,\"frameRow\":8,\"states\":{\"0\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":6},\"1\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":0},\"2\":{\"col_end\":3,\"col_start\":0,\"duration\":1.0,\"row\":4},\"3\":{\"col_end\":8,\"col_start\":0,\"duration\":1.0,\"row\":8}},\"totalCols\":10,\"totalRows\":10}",
+                "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
+                "Health": "{\"currentHP\":0.0,\"maxHP\":0.0}",
+                "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
+                "Physics": "{\"aabb\":{\"centerX\":524.2056884765625,\"centerY\":268.84100341796875,\"dimX\":153.9503631591797,\"dimY\":201.20199584960938},\"circle\":{\"posX\":524.2056884765625,\"posY\":268.84100341796875,\"rad\":0.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "RenderLayer": "{\"layer\":1}",
+                "Sprite": "{\"animated\":true,\"scaleX\":205.20831298828125,\"scaleY\":200.0,\"texturePath\":\"../Assets/rockspritesheet4.11.png\"}",
+                "Tag": "{\"tagID\":0}",
+                "Transform": "{\"posX\":524.2056884765625,\"posY\":268.84100341796875,\"rot\":0.0,\"scaleX\":1.0260415077209473,\"scaleY\":1.0}"
+            },
+            "name": "Rock"
+        }
+    ],
+    "sceneName": "Rock"
+}
