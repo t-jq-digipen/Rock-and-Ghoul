@@ -5,10 +5,9 @@
  *
  * @brief   Implementation of spatial partitioning system
  *
- * RUBRIC: Physics/Collisions - Option 1
  * Broad phase collision spatial partitioning (Implicit grid)
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 

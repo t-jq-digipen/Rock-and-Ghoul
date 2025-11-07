@@ -1,7 +1,8 @@
 /* ========================================================
  * @file        Debug.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        01 OCT 2025
+ * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu
+ * @date        07 NOV 2025
  *
  * @brief 
  * 
@@ -10,7 +11,7 @@
  * velocity vectors, and circle colliders using simple shapes 
  * and lines, helping with collision and physics debugging.
  * 
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "Debug.h"
@@ -96,67 +97,41 @@ void DebugDraw::DrawSpatialGrid(SpatialGrid* grid, Render& renderer) {
     auto debugInfo = grid->GetDebugInfo();
     float cellSize = grid->GetCellSize();
 
-    // Define world bounds for the entire grid (can adjust)
-    const float worldMinX = -2000.0f;
-    const float worldMaxX = 2000.0f;
-    const float worldMinY = -2000.0f;
-    const float worldMaxY = 2000.0f;
+    // Only draw occupied cells
+    // Green for cells with entities, red for cells with collisions
 
-    // Calculate grid cell range
-    int minCellX = static_cast<int>(std::floor(worldMinX / cellSize));
-    int maxCellX = static_cast<int>(std::floor(worldMaxX / cellSize));
-    int minCellY = static_cast<int>(std::floor(worldMinY / cellSize));
-    int maxCellY = static_cast<int>(std::floor(worldMaxY / cellSize));
+    for (size_t i = 0; i < debugInfo.cellCoords.size(); ++i) {
+        const auto& [cellX, cellY] = debugInfo.cellCoords[i];
 
-    Colour3 greenColor = { 0.0f, 0.5f, 0.0f };  // Dark green for all cells
+        float minX = cellX * cellSize;
+        float minY = cellY * cellSize;
+        float maxX = (cellX + 1) * cellSize;
+        float maxY = (cellY + 1) * cellSize;
 
-    // FIRST PASS: Draw ENTIRE grid in green
-    glLineWidth(1.0f);
-    for (int cellX = minCellX; cellX <= maxCellX; ++cellX) {
-        for (int cellY = minCellY; cellY <= maxCellY; ++cellY) {
-            float minX = cellX * cellSize;
-            float minY = cellY * cellSize;
-            float maxX = (cellX + 1) * cellSize;
-            float maxY = (cellY + 1) * cellSize;
+        Vec2 topLeft{ minX, maxY };
+        Vec2 topRight{ maxX, maxY };
+        Vec2 bottomLeft{ minX, minY };
+        Vec2 bottomRight{ maxX, minY };
 
-            Vec2 topLeft{ minX, maxY };
-            Vec2 topRight{ maxX, maxY };
-            Vec2 bottomLeft{ minX, minY };
-            Vec2 bottomRight{ maxX, minY };
+        // Red if collision, green otherwise
+        Colour3 color;
+        float lineWidth;
 
-            renderer.DrawLine(topLeft, topRight, greenColor);
-            renderer.DrawLine(topRight, bottomRight, greenColor);
-            renderer.DrawLine(bottomRight, bottomLeft, greenColor);
-            renderer.DrawLine(bottomLeft, topLeft, greenColor);
+        if (grid->CellHasCollision(cellX, cellY)) {
+            color = { 1.0f, 0.0f, 0.0f };  // Red for collisions
+            lineWidth = 3.0f;
+        } else {
+            color = { 0.0f, 0.5f, 0.0f };  // Green for occupied cells
+            lineWidth = 1.0f;
         }
+
+        glLineWidth(lineWidth);
+        renderer.DrawLine(topLeft, topRight, color);
+        renderer.DrawLine(topRight, bottomRight, color);
+        renderer.DrawLine(bottomRight, bottomLeft, color);
+        renderer.DrawLine(bottomLeft, topLeft, color);
     }
 
-    // SECOND PASS: Overlay RED on cells with collisions
-    glLineWidth(3.0f);  // Thicker lines for collision cells
-    Colour3 redColor = { 1.0f, 0.0f, 0.0f };  // Bright red
-
-    // Loop through the entire grid and check for collisions
-    for (int cellX = minCellX; cellX <= maxCellX; ++cellX) {
-        for (int cellY = minCellY; cellY <= maxCellY; ++cellY) {
-            // Only draw if this cell has a collision
-            if (grid->CellHasCollision(cellX, cellY)) {
-                float minX = cellX * cellSize;
-                float minY = cellY * cellSize;
-                float maxX = (cellX + 1) * cellSize;
-                float maxY = (cellY + 1) * cellSize;
-
-                Vec2 topLeft{ minX, maxY };
-                Vec2 topRight{ maxX, maxY };
-                Vec2 bottomLeft{ minX, minY };
-                Vec2 bottomRight{ maxX, minY };
-
-                renderer.DrawLine(topLeft, topRight, redColor);
-                renderer.DrawLine(topRight, bottomRight, redColor);
-                renderer.DrawLine(bottomRight, bottomLeft, redColor);
-                renderer.DrawLine(bottomLeft, topLeft, redColor);
-            }
-        }
-    }
     // Reset line width
     glLineWidth(1.0f);
 }

@@ -9,10 +9,8 @@
  * reduce collision checks from O(n^2) to O(n) by only checking
  * entities in nearby grid cells.
  *
- * RUBRIC: Physics/Collisions - Option 1
- * Broad phase collision spatial partitioning (Implicit grid)
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
