@@ -243,21 +243,21 @@ namespace EnemyAI
 		switch (st.state)
 		{
 			case E_ROAMING:
-				std::cout << "Ghoul is ROAMING!" << std::endl;
+				// std::cout << "Ghoul is ROAMING!" << std::endl;
 				if (player != INVALID_ENTITY && dist <= detectRad)
 				{
 					st.state = E_CHASING;
 				}
 				break;
 			case E_CHASING:
-				std::cout << "Ghoul is CHASING YOU!" << std::endl;
+				// std::cout << "Ghoul is CHASING YOU!" << std::endl;
 				if (player == INVALID_ENTITY || dist > loseRad)
 				{
 					st.state = E_RETURNING;
 				}
 				break;
 			case E_RETURNING:
-				std::cout << "Ghoul is RETURNING..." << std::endl;
+				// std::cout << "Ghoul is RETURNING..." << std::endl;
 				if (player != INVALID_ENTITY && dist <= detectRad)
 				{
 					st.state = E_CHASING;
@@ -269,7 +269,7 @@ namespace EnemyAI
 				}
 				break;
 			default:
-				std::cout << "Ghoul is IDLING." << std::endl;
+				// std::cout << "Ghoul is IDLING." << std::endl;
 				break;
 		}
 	}
