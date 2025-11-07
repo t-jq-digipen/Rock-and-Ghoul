@@ -6,17 +6,20 @@
  * @brief   Rendering system class, consisting function definitions for drawing 2D
  *          primitives, images, and text using OpenGL.
  *
- * The Render class provides a interface for all
- * rendering operations including shapes, images, instanced
- * rendering, and text rendering. It manages OpenGL resources,
- * texture caching, and uses FreeType for font rendering.
+ * The Render class provides a central interface for all rendering
+ * operations, including shapes, images, instanced rendering, text
+ * rendering, and scene capture. It manages OpenGL resources such as
+ * shaders, framebuffers, textures, and VAOs, while offering a simple
+ * API for use by game systems and tools.
  *
  * Functionalities include:
- * - Drawing shapes (rectangles, squares, lines, circles)
+ * - Drawing shapes (rectangles, circles, lines)
  * - Loading, caching, and unloading textures
  * - Drawing images (full, scaled, sub-regions, rotated)
- * - Instanced rendering
- * - Text rendering with FreeType
+ * - Batched/Instanced rendering for performance optimization
+ * - Text rendering using FreeType
+ * - Off-screen rendering via scene framebuffer (for ImGui or post-processing)
+ * - Screen-to-world coordinate conversion utilities
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -1759,7 +1762,8 @@ void Render::FlushBatch()
 
     glUseProgram(batchShader);
 
-    // Ensure projection is current (note might need use camera view projection)
+    // Ensure projection is current (
+    // might need use camera view projection)
     GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
     if (projLoc >= 0) {
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);

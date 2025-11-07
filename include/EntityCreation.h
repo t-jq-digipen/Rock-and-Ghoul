@@ -88,7 +88,19 @@ void GenerateInitialPrefabs(bool forceRegenerate);
 
 // void GenerateInitialPrefabs();
 
-
+/**
+ * @brief Creates a batched animated sprite entity for stress testing.
+ *
+ * This entity is configured for batched rendering and includes
+ * transform, sprite, animator, tag, and render layer components.
+ * The sprite uses a shared texture (via cache) and supports animation states.
+ *
+ * @param x             The x-position of the sprite
+ * @param y             The y-position of the sprite
+ * @param size          The size of the sprite.
+ * @param texturePath   The file path to the sprite’s texture.
+ * @return The newly created batched sprite entity.
+ */
 Entity Create_BatchedSprite(float x, float y, float size, const std::string& texturePath);
 
 Entity Create_Arrow(float const& x, float const& y);
