@@ -1084,7 +1084,7 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::Separator();
                 if (ImGui::SmallButton("Add State"))
                 {
-                    animcomp.AddState(animcomp.GetStateFrames().size(), { 0,0,0 });
+                    animcomp.AddState(static_cast<int>(animcomp.GetStateFrames().size()), { 0,0,0 });
                 }
 
                 animcomp.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);

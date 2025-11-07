@@ -116,7 +116,7 @@ void PlayerSystem::WASD_Movement(Entity eID, float& dt)
 	physics.ClearForces();
 
 	// Dash
-	constexpr float DASH_IMPULSE = 700.f;
+	// constexpr float DASH_IMPULSE = 700.f;
 
 	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT) && moving) {
 		Vec2 dashImpulse = { fx * DASH_IMPULSE, fy * DASH_IMPULSE };
@@ -433,7 +433,7 @@ namespace RockScript {
 
 			if (atktimer >= 0.7f && !shot)
 			{
-				auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
+				// auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
 				
 				JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", transComp.pos.x, transComp.pos.y);
 				shot = true;
