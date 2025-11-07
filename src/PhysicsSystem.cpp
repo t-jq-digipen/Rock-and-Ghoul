@@ -11,7 +11,7 @@
  * parts in the physics component, with reference to other
  * components such as Transform.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "PhysicsSystem.h"
@@ -56,11 +56,6 @@ void PhysicsSystem::Update(float dt) {
             transComp.pos = RG_Add(transComp.pos, deltaPos);
             // updatehitboxes w transform position
             phyComp.UpdateHitboxes(transComp.pos);
-            // Collili checks!!(or different place?)
-            // Collili reaction!!!
-            // collisionManager.Clear();
-            collisionManager.CheckCollisions();
-            collisionManager.ProcessEvents();
         }
 
         std::vector<Entity> expired{};
@@ -77,6 +72,11 @@ void PhysicsSystem::Update(float dt) {
             m_registry.Remove_Entity(eID);
         }
     }
+    // Collili checks!!(or different place?)
+    // Collili reaction!!!
+    collisionManager.Clear();
+    collisionManager.CheckCollisions();
+    collisionManager.ProcessEvents();
 }
 void PhysicsSystem::Shutdown() {
     std::cout << "PhysicsSystem Shutdown!\n";
