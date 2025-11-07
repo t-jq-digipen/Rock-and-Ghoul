@@ -60,5 +60,7 @@ namespace DebugDraw {
     void DrawCircleCollider(const Circle& circle, Render& renderer);
 
     void DrawSpatialGrid(SpatialGrid* grid, Render& renderer);
+
+    void ClearVelocityCache();
 }
 
