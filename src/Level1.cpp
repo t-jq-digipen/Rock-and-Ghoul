@@ -74,8 +74,8 @@ void Level1::Load()
 	CrashHandler::Safe("Level1", "Load", [&] {
 		std::cout << "Level 1 Loaded!!!" << std::endl;
 
-		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
-		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/background.jpg");
+		bgTexture = renderer.LoadTexture("../Assets/Env02_NormalWorld.PNG");
+		CrashHandler::LogIfZeroTexture(bgTexture, "../Assets/Env02_NormalWorld.PNG");
 		});
 	RenderSystem::ClearBackgroundTextures();
 	RenderSystem::AddBackgroundTexture(bgTexture);
@@ -176,7 +176,7 @@ void Level1::Init()
 		std::cout << "Level 1 Initialized!!!" << std::endl;
 		// 1. Initialize the Renderer
 		renderer.Init();
-		bgTexture = renderer.LoadTexture("../Assets/background.jpg");
+		bgTexture = renderer.LoadTexture("../Assets/Env02_NormalWorld.PNG");
 		if (!bgTexture)
 			std::cerr << "[Level1] Failed to reload background texture!" << std::endl;
 		else {
