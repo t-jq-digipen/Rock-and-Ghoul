@@ -76,11 +76,12 @@ void RenderSystem::Initialize() {
 }
 
 void RenderSystem::Update(float dt) {
-
+    
 
     Camera::GetInstance().UpdateCamera();
     Render& renderer = Render::GetInstance();
 
+    bool camcheck = renderer.useCamera;
     if (ImGuiSystem::guiEnabled) {
         renderer.BeginSceneCapture(); 
         renderer.ClearBackground({ 0.1f, 0.1f, 0.1f, 1.0f });
@@ -339,10 +340,12 @@ void RenderSystem::Update(float dt) {
     renderInstance.FlushBatch();
 
     // UI (rendered last, most in front)
+    renderer.useCamera = false;
     renderInstance.BeginBatch();
     DrawLayer(uiEntities);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
+    renderer.useCamera = camcheck;
 
     //Draw in the correct order
     /*DrawLayer(backgroundEntities);

@@ -294,9 +294,12 @@ namespace PlayerMove {
 } // end namespace PlayerMove
 
 namespace RockScript {
+	static float stunnedtimer = 1.f;
+
 	std::unordered_map<Entity, size_t> subscriberID;
 
 	void Dash(Entity eID) {
+		if (stunnedtimer < 1.f) { return; }
 		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
 
@@ -343,7 +346,6 @@ namespace RockScript {
 		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
 
-		static float stunnedtimer = 1.f;
 		int animstate = 0; //idle
 
 		// MOVEMENT
@@ -372,7 +374,7 @@ namespace RockScript {
 			stunnedtimer += dt;
 			animstate = 2;
 		}
-		if (Input::IsKeyPressed(GLFW_KEY_B))
+		if (Input::IsKeyPressed(GLFW_KEY_G))
 		{
 			stunnedtimer = 0.f;
 			animstate = 2;
