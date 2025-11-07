@@ -1,3 +1,27 @@
+/* ========================================================
+ * @file        GuiSystem.cpp
+ * @author		Manfred Sim | manfred.sim@digipen.edu
+ * @date        30 OCT 2025
+ *
+ * @brief
+ *
+ * Implements the GuiSystem, which provides a in-game editor 
+ * for UI elements (separate from ImGuiSystem). The system
+ * toggles with F8 and displays a single "GUI Editor" window 
+ * containing multiple features:
+ *
+ * Features:
+ * - Toggles on/off with a key press (F8).
+ * - Renders a single "GUI Editor" window onto the game screen
+ * with selectable panels for each active UI element.
+ * - Scales with the game screen, including when ImGui Editor
+ * is active.
+ * - Configurations for each UI element type.
+ *
+ * Copyright � 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "GuiSystem.h"
 #include "GameStateManager.h"
 #include "CoreEngine.h"
