@@ -48,6 +48,8 @@
 #include <iostream>
 #include "SpatialGrid.h"
 #include "CollisionManager.h"
+#include "Sprite.h"
+#include "Physics.h"
 
 
 // ========================================================
@@ -624,6 +626,89 @@ void ImGuiSystem::Update(float dt)
 
         // show it
         ImGui::Image( (ImTextureID)(intptr_t)texID, ImVec2(newWidth, newHeight), ImVec2(0, 1), ImVec2(1, 0) );
+        // =============================================
+        // DRAG-DROP TARGET: Drop images into Game View
+        // =============================================
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_IMAGE"))
+            {
+                const char* droppedPath = (const char*)payload->Data;
+                std::string texPath = droppedPath;
+
+                std::cout << "[Editor] Dropped image: " << texPath << "\n";
+
+                // --- Convert mouse position (on Game View image) -> world coords ---
+                ImVec2 mouse = ImGui::GetMousePos();
+                ImVec2 imgMin = cursor; // top-left of ImGui::Image
+                ImVec2 imgMax = ImVec2(cursor.x + newWidth, cursor.y + newHeight);
+
+                float u = (mouse.x - imgMin.x) / (imgMax.x - imgMin.x);
+                float v = (mouse.y - imgMin.y) / (imgMax.y - imgMin.y);
+
+                // to NDC, flip Y
+                float ndcX = u * 2.0f - 1.0f;
+                float ndcY = (1.0f - v) * 2.0f - 1.0f;
+
+                Camera& cam = Camera::GetInstance();
+                Vec2 world = cam.NDCToWorld({ ndcX, ndcY });
+
+                // --- Create entity + components ---
+                Registry& reg = Registry::Get();
+                Entity e = reg.Create_Entity();
+
+                // Transform
+                TransformComponent t;
+                t.pos = world;
+                reg.Add_Component<TransformComponent>(e, t);
+
+                // Sprite (uses Set_Image / Set_Size)
+                Sprite::SpriteComponent sprite;
+
+                Image img = CreateImage(texPath);
+                if (img.IsValid())
+                {
+                    sprite.Set_Image(img);
+                    // Auto-size to the actual texture size
+                    sprite.Set_Size(Vec2((float)img.widthPixels, (float)img.heightPixels));
+                }
+                else
+                {
+                    // Fallback size if texture load fails
+                    sprite.Set_Size(Vec2(100.f, 100.f));
+                    std::cerr << "[Editor] Warning: Failed to load image; using default 100x100.\n";
+                }
+                reg.Add_Component<Sprite::SpriteComponent>(e, sprite);
+
+                // Physics (AABB sized to sprite; SetStatic(false))
+                Physics::PhysicsComponent phys;
+
+                // Build an AABB around current transform using sprite size
+                Vec2 size = sprite.Get_Scale();         // your Sprite API's "size"
+                Vec2 half = size * 0.5f;
+                AABB aabb;
+                aabb.min = t.pos - half;
+                aabb.max = t.pos + half;
+
+                phys.Set_AABB(aabb);
+                phys.Set_Collision(true);
+                phys.SetStatic(false);                  // <-- correct method name
+                reg.Add_Component<Physics::PhysicsComponent>(e, phys);
+
+                // Sync hitboxes to ensure editor visuals are correct immediately
+                auto& pRef = reg.Get_Component<Physics::PhysicsComponent>(e);
+                pRef.UpdateHitboxes(t.pos);
+
+                // Optional: give a friendly name
+                reg.Get_EntityNameMap()[e] = std::filesystem::path(texPath).stem().string();
+
+                // Select it
+                ImGuiSystem::selectedEntity = e;
+
+                std::cout << "[Editor] Spawned image entity at (" << world.x << ", " << world.y << ")\n";
+            }
+            ImGui::EndDragDropTarget();
+        }
 
         //GUISYSTEM STUFF SCALE FOR MOUSE
         GameViewRect rect;
@@ -1319,6 +1404,13 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                     //same from earlier stuff
                     ImGui::Image((ImTextureID)(intptr_t)texID, ImVec2(thumbSize, thumbSize), ImVec2(0, 1), ImVec2(1, 0));
 
+                    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+                    {
+                        const std::string fullPath = "../Assets/" + g_imageNames[i];
+                        ImGui::SetDragDropPayload("ASSET_IMAGE", fullPath.c_str(), fullPath.size() + 1);
+                        ImGui::Text("Drag %s", g_imageNames[i].c_str());
+                        ImGui::EndDragDropSource();
+                    }
                     // filename
                     ImGui::TextWrapped("%s", g_imageNames[i].c_str());
                     ImGui::EndGroup();
