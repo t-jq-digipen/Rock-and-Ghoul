@@ -308,6 +308,8 @@ source_group("BaseEngine\\ECS\\Component\\Graphics" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Animator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Animator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderComponent.h
 
 )
 source_group("BaseEngine\\ECS\\Component\\Physics" FILES 

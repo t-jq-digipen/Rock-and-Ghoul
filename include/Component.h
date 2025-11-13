@@ -48,6 +48,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Registry.h"
+#include "RenderComponent.h"
 
 
 // System notes:
@@ -268,12 +269,6 @@ struct TagComponent {
 	}
 };
 
-enum RenderLayer {
-	LAYER_BACKGROUND,
-	LAYER_GAMEOBJECT,
-	LAYER_FOREGROUND,
-	LAYER_UI
-};
 
 struct RenderLayerComponent {
 	RenderLayer layer = LAYER_GAMEOBJECT;
