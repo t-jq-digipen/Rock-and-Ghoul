@@ -95,26 +95,26 @@ struct GameSettings {
     GameSettings() : volume(1.0f), resolutionWidth(1920), resolutionHeight(1080), fullscreen(false) {}
 };
 
-namespace Animator {
+
+
+/**
+* @struct ActiveFrames
+* @brief Represents a set of frames for a given animation and a duration it should take to play it.
+*/
+struct ActiveFrames {
+    int row = 0;	// Row index
+    int col_start = 0;	// First column index
+    int col_end = 0;	// Last column index
+    float duration = 0.f;	// Duration of time in seconds the animation takes to go from first column to last column
 
     /**
-    * @struct ActiveFrames
-    * @brief Represents a set of frames for a given animation and a duration it should take to play it.
-    */
-    struct ActiveFrames {
-        int row = 0;	// Row index
-        int col_start = 0;	// First column index
-        int col_end = 0;	// Last column index
-        float duration = 0.f;	// Duration of time in seconds the animation takes to go from first column to last column
+        * @brief Equality operator for ActiveFrames.
+        * @param rhs The ActiveFrames object to compare with.
+        * @return True if all fields (row, col_start, col_end, duration) match, false otherwise.
+        */
+    bool operator==(const ActiveFrames& rhs) const;
+};
 
-        /**
-         * @brief Equality operator for ActiveFrames.
-         * @param rhs The ActiveFrames object to compare with.
-         * @return True if all fields (row, col_start, col_end, duration) match, false otherwise.
-         */
-        bool operator==(const ActiveFrames& rhs) const;
-    };
-}
 
 namespace Editor {
     // Determines the type of editing widget
@@ -201,7 +201,7 @@ namespace Editor {
 
 
     struct Widget_Animator {
-        std::unordered_map<unsigned int, Animator::ActiveFrames>* ref = nullptr;
+        std::unordered_map<unsigned int, ActiveFrames>* ref = nullptr;
 
         Widget_Int total_rows;
         Widget_Int total_cols;
@@ -209,7 +209,7 @@ namespace Editor {
         Widget_Dropdown current_state;
 
 
-        Widget_Animator(std::unordered_map<unsigned int, Animator::ActiveFrames>* src, int* totrow, int* totcol, 
+        Widget_Animator(std::unordered_map<unsigned int, ActiveFrames>* src, int* totrow, int* totcol, 
                                 unsigned int* currentstate) :
             ref{src}, total_rows{totrow}, total_cols{totcol}, 
             current_state{currentstate}
@@ -230,7 +230,7 @@ namespace Editor {
                 return "State " + name + " already exists!";
             }
             // find available key position
-            while (!(ref->try_emplace(++key, Animator::ActiveFrames{}).second));
+            while (!(ref->try_emplace(++key, ActiveFrames{}).second));
 
             current_state.Add_Option(name, key);
 

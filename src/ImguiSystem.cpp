@@ -1135,7 +1135,50 @@ void ImGuiSystem::ShowInspectorWindow()
         const std::string& compName = componentData.GetComponentName();
 
         // Custom data fields for animator component
-        if (compName == "Animator")
+        if (compName == "Render")
+        {
+            RenderComponent& rendercomp = m_registry.Get_Component<RenderComponent>(selectedEntity);
+            if (ImGui::TreeNode(compName.c_str()))
+            {
+                // For m_type and m_layer
+                for (auto& [name, widgetVariant] : componentData.GetDataMap())
+                {
+                    ImGui::PushID(name.c_str());
+                    std::visit([&](auto& widget)
+                        { MakeWidget(widget, name); }, widgetVariant);
+                    ImGui::PopID();
+                }
+
+                // switch m_type for displays
+                switch (rendercomp.GetRenderType())
+                {
+                case RT_SHAPE:
+                {
+
+                }
+                break; // end RT_SHAPE
+
+                case RT_IMAGE:
+                {
+
+                }
+                break; // end RT_IMAGE
+
+                case RT_SPRITESHEET:
+                {
+
+                }
+                break; // end RT_SPRITESHEET
+
+                default:
+                    // this is wrong...
+                    break;
+                }
+
+                ImGui::TreePop();
+            }
+        }
+        else if (compName == "Animator")
         {
             Animator::AnimatorComponent& animcomp = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
             if (ImGui::TreeNode(compName.c_str()))
@@ -1152,7 +1195,7 @@ void ImGuiSystem::ShowInspectorWindow()
 
                 // need to figure out how to add state...
                 animcomp.UpdateUV();
-                Animator::ActiveFrames temp = animcomp.GetFrames();
+                ActiveFrames temp = animcomp.GetFrames();
 
                 Editor::Widget_Int widgetrow(&temp.row, true, 0, animcomp.GetTotalRows());
                 Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());

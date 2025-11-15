@@ -94,7 +94,14 @@ void CoreEngine::Initialize() {
 
     registry.Register_Component<Animator::AnimatorComponent>("Animator", { "Transform", "Sprite" });
     std::cout << "REGISTRY | REGISTERED ANIMATOR COMPONENT\n";
-    
+
+    registry.Register_Component<ShapeComponent>("Shape", { "Transform" });
+    std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";
+
+    // To replace shape/animator/render
+    registry.Register_Component<RenderComponent>("Render", { "Transform" });
+    std::cout << "REGISTRY | REGISTERED RENDER COMPONENT\n";
+
     registry.Register_Component<Physics::PhysicsComponent>("Physics", { "Transform" });
     std::cout << "REGISTRY | REGISTERED PHYSICS COMPONENT\n";
 
@@ -106,9 +113,6 @@ void CoreEngine::Initialize() {
 
     registry.Register_Component<InputComponent>("Input");
     std::cout << "REGISTRY | REGISTERED INPUT COMPONENT\n";
-
-    registry.Register_Component<ShapeComponent>("Shape", { "Transform" });
-    std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";
 
     registry.Register_Component<Movement::MovementComponent>("Movement", { "Transform", "Physics" });
     std::cout << "REGISTRY | REGISTERED MOVEMENT COMPONENT\n";

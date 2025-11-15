@@ -253,7 +253,7 @@
    //    json j = json::parse(data);
    //
    //    // Reconstruct ActiveFrames
-   //    Animator::ActiveFrames frames;
+   //    ActiveFrames frames;
    //    frames.row = j["frameRow"];
    //    frames.col_start = j["frameColStart"];
    //    frames.col_end = j["frameColEnd"];
@@ -275,7 +275,7 @@
    //    if (j.contains("states")) {
    //        for (auto& [stateKey, stateData] : j["states"].items()) {
    //            int stateID = std::stoi(stateKey);
-   //            Animator::ActiveFrames stateFrames;
+   //            ActiveFrames stateFrames;
    //            stateFrames.row = stateData["row"];
    //            stateFrames.col_start = stateData["col_start"];
    //            stateFrames.col_end = stateData["col_end"];

@@ -30,6 +30,7 @@
 #include "LogicSystem.h"
 #include "CollisionManager.h"
 #include "CoreEngine.h"
+#include "RenderComponent.h"
  // ---------------------------------------------
  // @brief Temporary struct for per-frame draw queue
  // ---------------------------------------------
@@ -55,6 +56,72 @@ void RenderSystem::ClearBackgroundTextures() {
 //extern Camera mainCamera;
 //Camera& mainCamera = Camera::GetInstance();
 
+// NEW RENDERCOMPONENT draw overloads
+void DrawItem(const Sprite::SpriteComponent& spriteComp, const TransformComponent& transComp) {
+    Image img = spriteComp.Get_Image();
+    Vec2 scaledSize = { img.widthPixels * spriteComp.Get_Scale().x, img.heightPixels * spriteComp.Get_Scale().y };
+
+    renderInstance.SubmitSpriteBatch(
+        img,
+        transComp.pos,
+        scaledSize,
+        transComp.rot + spriteComp.Get_Rotation()
+    );
+}
+
+void DrawItem(const Sprite::SpriteSheet& spriteSheet, const TransformComponent& transComp) {
+    Image img = spriteSheet.Sprite().Get_Image();
+    Vec2 scale = spriteSheet.Sprite().Get_Scale();
+
+    glm::vec4 uv(spriteSheet.u0 / img.widthPixels,
+        spriteSheet.v1 / img.heightPixels,
+        spriteSheet.u1 / img.widthPixels,
+        spriteSheet.v0 / img.heightPixels
+    );
+
+    renderInstance.SubmitSpriteBatchUV(
+        img,
+        transComp.pos,
+        scale,
+        uv,
+        transComp.rot + spriteSheet.Sprite().Get_Rotation()
+    );
+
+}
+
+void DrawItem(const ShapeComponent& shapeComp, const TransformComponent& transComp) {
+    Colour3 color = { shapeComp.color.x, shapeComp.color.y, shapeComp.color.z };
+    switch (shapeComp.shape)
+    {
+    case SHAPE_RECTANGLE:
+    {
+        renderInstance.DrawRect(
+            transComp.pos,
+            shapeComp.dimensions.x,
+            shapeComp.dimensions.y,
+            color,
+            transComp.rot
+        );
+    }
+    break; // end SHAPE_RECTANGLE
+
+    case SHAPE_CIRCLE:
+    {
+        float radius = (shapeComp.dimensions.x + shapeComp.dimensions.y) / 4.0f;
+        renderInstance.DrawCircle(
+            transComp.pos,
+            radius,
+            color,
+            32
+        );
+    }
+    break; // end SHAPE_CIRCLE
+
+    default:
+        break;
+    }
+}
+// NEW RENDERCOMPONENT draw overloads end
 
 void RenderSystem::Initialize() {
     // ? 
@@ -156,6 +223,7 @@ void RenderSystem::Update(float dt) {
     std::vector<RenderItem> foregroundEntities; //for sepcial effects? particles?
     std::vector<RenderItem> uiEntities;
 
+
     //Categorize entities by layer
     for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
     {
@@ -212,6 +280,36 @@ void RenderSystem::Update(float dt) {
         }
     }
 
+    // new rendercomp
+#pragma region new rendercomp
+
+    std::vector<std::pair<Entity,RenderComponent>> bg_list;
+    std::vector<std::pair<Entity,RenderComponent>> go_list;
+    std::vector<std::pair<Entity,RenderComponent>> fg_list; //for sepcial effects? particles?
+    std::vector<std::pair<Entity,RenderComponent>> ui_list;
+
+    // NEW RENDERCOMPONENT
+    for (auto& [entID, renderComp] : m_registry.Get_ComponentMap<RenderComponent>()) {
+
+        RenderLayer layer = LAYER_GAMEOBJECT; //default give them layer_gameobject, if want change need explicitly add layer comp to entitycreation.cpp
+
+        switch (renderComp.GetRenderLayer())
+        {
+        case LAYER_BACKGROUND:
+            bg_list.push_back({ entID,renderComp });
+            break;
+        case LAYER_GAMEOBJECT:
+            go_list.push_back({ entID,renderComp });
+            break;
+        case LAYER_FOREGROUND:
+            fg_list.push_back({ entID,renderComp });
+            break;
+        case LAYER_UI:
+            ui_list.push_back({ entID,renderComp });
+            break;
+        }
+    }
+
     //Sort the entities with GAMEOBJECT layer by Y-position
     std::sort(gameEntities.begin(), gameEntities.end(),
         [&](const RenderItem& a, const RenderItem& b) {
@@ -219,6 +317,30 @@ void RenderSystem::Update(float dt) {
             const auto& tb = m_registry.Get_Component<TransformComponent>(b.id);
             return ta.pos.y > tb.pos.y; // Higher Y = further back (drawn first)
         });
+
+    // SORT ENTITIES FOR NEW RENDERCOMPONENT
+    std::sort(go_list.begin(), go_list.end(),
+        [&](const std::pair<Entity, RenderComponent>& a, const std::pair<Entity, RenderComponent>& b) {
+            const auto& ta = m_registry.Get_Component<TransformComponent>(a.first);
+            const auto& tb = m_registry.Get_Component<TransformComponent>(b.first);
+            return ta.pos.y > tb.pos.y; // Higher Y = further back (drawn first)
+        });
+
+    auto drawLayerNEWJQ = [&](const std::vector<std::pair<Entity, RenderComponent>>& renderList)
+        {
+            for (const auto& [entID, renderComp] : renderList)
+            {
+                if (!m_registry.Has_Component<TransformComponent>(entID)) { continue; }
+                TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+
+                // update rendercomponent
+
+                // draw de thing
+                std::visit([&](auto& renderdata)
+                    { DrawItem(renderdata, transComp); }, renderComp.m_renderData);
+            }
+        };
+#pragma endregion new rendercomp
 
     //Draw a list of entities
     auto DrawLayer = [&](const std::vector<RenderItem>& entities)

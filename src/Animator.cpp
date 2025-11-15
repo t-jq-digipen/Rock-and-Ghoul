@@ -21,12 +21,12 @@
 #include <iostream>
 #include "Registry.h"
 
-namespace Animator {
+bool ActiveFrames::operator==(const ActiveFrames& rhs) const
+{
+	return (this->row == rhs.row && this->col_start == rhs.col_start && this->col_end == rhs.col_end && this->duration == rhs.duration);
+}
 
-	bool ActiveFrames::operator==(const ActiveFrames& rhs) const
-	{
-		return (this->row == rhs.row && this->col_start == rhs.col_start && this->col_end == rhs.col_end && this->duration == rhs.duration);
-	}
+namespace Animator {
 
 	AnimatorComponent::AnimatorComponent() :
 		m_total_rows{}, m_total_cols{}, m_current_row{}, m_current_col{},

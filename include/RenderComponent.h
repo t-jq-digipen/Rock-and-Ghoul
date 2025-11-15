@@ -87,9 +87,23 @@ private:
 	RenderType m_type;
 	// For rendering layers
 	RenderLayer m_layer;	
+
+public:
 	// Actual render data
-	std::variant<Sprite::SpriteComponent, Animator::AnimatorComponent, ShapeComponent> m_renderData;
+	std::variant<Sprite::SpriteComponent, Sprite::SpriteSheet, ShapeComponent> m_renderData;
 
 public:
 	RenderComponent();
+
+	RenderType GetRenderType() { return m_type; }
+
+	RenderLayer GetRenderLayer() { return m_layer; }
+
+	void UpdateData();
+
+	std::string Serialize() const;
+
+	static RenderComponent DeSerialize(Entity eID, const std::string& data);
+
+	Editor::ComponentData EditorData();
 };

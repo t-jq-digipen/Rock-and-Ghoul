@@ -145,4 +145,135 @@ namespace Sprite {
 		Editor::ComponentData EditorData();
 	};
 
+
+	class SpriteSheet {
+		// Sprite data
+	private:
+		SpriteComponent m_sprite;
+
+		// Animator data
+	private:
+		int m_total_rows;		// Total number of rows in spritesheet
+		int m_total_cols;		// Total number of columns in spritesheet
+
+		int m_current_row;		// Current row index of spritesheet
+		int m_current_col;		// Current column index of spritesheet
+
+		float m_uv_height;		// UV height of single frame
+		float m_uv_width;		// UV width of single frame
+
+
+		float anim_duration;	// Time to cycle through the frames in seconds
+		float anim_timer;		// Time elapsed
+
+		ActiveFrames frames;	// Which frames to call
+		int range;				// Number of frames we are looping through
+
+		// using int for key for enumeration
+		std::unordered_map<unsigned int, ActiveFrames> stateframe;	// A map with int key for active frames
+
+		// store state names
+		std::unordered_map<std::string, unsigned int> stateNames;
+
+		// Using int for enumeration compatibility with developers
+		unsigned int m_current_state = 0;							// Animation state
+
+	public:
+		float u0, v0, u1, v1;								// For sub image drawing
+
+
+	public:
+		SpriteSheet();
+
+		SpriteComponent& Sprite() { return m_sprite; }
+
+		const SpriteComponent& Sprite() const { return m_sprite; }
+
+
+		/**
+		 * @brief Update UV coordinates based on the current row and column.
+		 */
+		void UpdateUV();
+
+		void UpdateUV(int imageWidthPixels, int imageHeightPixels);
+
+		// void UpdateStateFrames();
+
+		/**
+		 * @brief Set the active animation frames and duration.
+		 * @param framerange The range of frames (row and column indices).
+		 * @param duration Duration (in seconds) of the animation cycle. Zero means a single-frame animation.
+		 * @throws std::runtime_error if duration == 0 but multiple frames are specified.
+		 */
+		void SetFrames(ActiveFrames const& framerange);
+
+		/**
+		 * @brief Reset the animation timer to zero.
+		 */
+		void ResetTimer();
+
+		/**
+		 * @brief Update the current animation frame based on elapsed time.
+		 * @param dt Delta time (seconds) since the last update.
+		 */
+		void UpdateFrame(float dt);
+
+		/**
+		 * @brief Get the total number of rows in the sprite sheet.
+		 * @return The number of rows.
+		 */
+		int GetTotalRows() const { return m_total_rows; }
+		/**
+		 * @brief Get the total number of columns in the sprite sheet.
+		 * @return The number of columns.
+		 */
+		int GetTotalCols() const { return m_total_cols; }
+		/**
+		 * @brief Get the duration of the current animation cycle.
+		 * @return The animation duration in seconds.
+		 */
+		float GetAnimDuration() const { return anim_duration; }
+		/**
+		 * @brief Get the currently active frame range.
+		 * @return The ActiveFrames object representing the current frame range.
+		 */
+		ActiveFrames GetFrames() const { return frames; }
+
+		/**
+		 * @brief Set the animator to a new state, if it has been registered.
+		 * @param state The state identifier to switch to.
+		 * @throws std::runtime_error if the state was not registered with AddState().
+		 */
+		void SetState(unsigned int state);
+		/**
+		 * @brief Add a new animation state.
+		 * @param state The state identifier.
+		 * @param frames The ActiveFrames definition for the state.
+		 *
+		 * If the state already exists, no action is taken (prints a warning).
+		 */
+		void AddState(int state, ActiveFrames const& framerange, const std::string& statename = "");
+
+		/**
+		 * @brief Get all registered animation states.
+		 * @return An unordered_map of state IDs mapped to their corresponding ActiveFrames.
+		 */
+		std::unordered_map<unsigned int, ActiveFrames>& GetStateFrames() { return stateframe; }
+
+		void EditFrames(int row, int colstart, int colend, float duration);
+
+
+		/**
+		 * @brief Get the current active animation state.
+		 * @return The integer identifier of the current state.
+		 */
+		int GetCurrentState() const { return m_current_state; }
+
+		std::string Serialize() const;
+
+		static SpriteSheet DeSerialize(Entity eID, const std::string& data);
+
+		Editor::ComponentData EditorData();
+	};
+
 	};
