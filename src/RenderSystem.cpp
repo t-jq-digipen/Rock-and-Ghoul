@@ -292,8 +292,6 @@ void RenderSystem::Update(float dt) {
     for (auto& [entID, renderComp] : m_registry.Get_ComponentMap<RenderComponent>()) {
         renderComp.UpdateData(dt);
 
-        RenderLayer layer = LAYER_GAMEOBJECT; //default give them layer_gameobject, if want change need explicitly add layer comp to entitycreation.cpp
-
         switch (renderComp.GetRenderLayer())
         {
         case LAYER_BACKGROUND:
