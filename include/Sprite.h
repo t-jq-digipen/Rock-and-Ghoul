@@ -239,6 +239,9 @@ namespace Sprite {
 		 */
 		ActiveFrames GetFrames() const { return frames; }
 
+
+		ActiveFrames& GetFrames() { return frames; }
+
 		/**
 		 * @brief Set the animator to a new state, if it has been registered.
 		 * @param state The state identifier to switch to.

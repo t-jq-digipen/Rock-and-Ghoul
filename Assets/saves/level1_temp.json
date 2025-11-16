@@ -2,6 +2,13 @@
     "entities": [
         {
             "components": {
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"animated\\\":false,\\\"currentState\\\":0,\\\"frameColEnd\\\":3,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0}},\\\"texturePath\\\":\\\"../Assets/Waffle_Sprites.png\\\",\\\"totalCols\\\":6,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
+                "Transform": "{\"posX\":725.1500244140625,\"posY\":292.0169982910156,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "New Entity 16"
+        },
+        {
+            "components": {
                 "RenderLayer": "{\"layer\":3}",
                 "Sprite": "{\"animated\":false,\"scaleX\":0.4000000059604645,\"scaleY\":0.4000000059604645,\"texturePath\":\"../Assets/UI_Guitar.PNG\"}",
                 "Transform": "{\"posX\":379.0559997558594,\"posY\":50.98699951171875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"

@@ -290,6 +290,7 @@ void RenderSystem::Update(float dt) {
 
     // NEW RENDERCOMPONENT
     for (auto& [entID, renderComp] : m_registry.Get_ComponentMap<RenderComponent>()) {
+        renderComp.UpdateData(dt);
 
         RenderLayer layer = LAYER_GAMEOBJECT; //default give them layer_gameobject, if want change need explicitly add layer comp to entitycreation.cpp
 
@@ -455,18 +456,21 @@ void RenderSystem::Update(float dt) {
     // Background (rendered behind game objects)
     renderInstance.BeginBatch();
     DrawLayer(backgroundEntities);
+    drawLayerNEWJQ(bg_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
 
     // Game objects
     renderInstance.BeginBatch();
     DrawLayer(gameEntities);
+    drawLayerNEWJQ(go_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
 
     // Foreground (rendered above game objects)
     renderInstance.BeginBatch();
     DrawLayer(foregroundEntities);
+    drawLayerNEWJQ(fg_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
 
@@ -474,6 +478,7 @@ void RenderSystem::Update(float dt) {
     renderer.useCamera = false;
     renderInstance.BeginBatch();
     DrawLayer(uiEntities);
+    drawLayerNEWJQ(ui_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
     renderer.useCamera = camcheck;

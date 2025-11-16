@@ -14,10 +14,18 @@ void Fix(Sprite::SpriteSheet& spriteSheet) {
 void Fix(ShapeComponent&) { /*do nothing*/ }
 
 
-void RenderComponent::UpdateData() {
+void RenderComponent::UpdateData(float dt) {
 
 	std::visit([&](auto& data)
 		{ Fix(data); }, m_renderData);
+
+	if (m_type == RT_SPRITESHEET)
+	{
+		std::get<Sprite::SpriteSheet>(m_renderData).UpdateFrame(dt);
+		
+	}
+
+
 }
 
 std::string RenderComponent::Serialize() const {
@@ -79,16 +87,6 @@ RenderComponent RenderComponent::DeSerialize(Entity eID, const std::string& data
 Editor::ComponentData RenderComponent::EditorData() {
 	Editor::ComponentData ret("Render");
 
-	// RenderType dropdown
-	{
-		Editor::Widget_Dropdown dropdown;
-		dropdown.ref = reinterpret_cast<unsigned int*>(&m_type);
-		dropdown.Add_Option("Shape", static_cast<unsigned int>(RT_SHAPE));
-		dropdown.Add_Option("Image", static_cast<unsigned int>(RT_IMAGE));
-		dropdown.Add_Option("Spritesheet", static_cast<unsigned int>(RT_SPRITESHEET));
-		ret.Add_Data("Type", dropdown);
-	}
-
 	// RenderLayer dropdown
 	{
 		Editor::Widget_Dropdown dropdown;
@@ -98,6 +96,16 @@ Editor::ComponentData RenderComponent::EditorData() {
 		dropdown.Add_Option("Foreground", LAYER_FOREGROUND);
 		dropdown.Add_Option("UI", LAYER_UI);
 		ret.Add_Data("Layer", dropdown);
+	}
+
+	// RenderType dropdown
+	{
+		Editor::Widget_Dropdown dropdown;
+		dropdown.ref = reinterpret_cast<unsigned int*>(&m_type);
+		dropdown.Add_Option("Shape", static_cast<unsigned int>(RT_SHAPE));
+		dropdown.Add_Option("Image", static_cast<unsigned int>(RT_IMAGE));
+		dropdown.Add_Option("Spritesheet", static_cast<unsigned int>(RT_SPRITESHEET));
+		ret.Add_Data("Type", dropdown);
 	}
 
 	// Data to be determined in imguisystem...

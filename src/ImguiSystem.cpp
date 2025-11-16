@@ -1140,6 +1140,7 @@ void ImGuiSystem::ShowInspectorWindow()
             RenderComponent& rendercomp = m_registry.Get_Component<RenderComponent>(selectedEntity);
             if (ImGui::TreeNode(compName.c_str()))
             {
+                RenderType startRenderType = rendercomp.GetRenderType();
                 // For m_type and m_layer
                 for (auto& [name, widgetVariant] : componentData.GetDataMap())
                 {
@@ -1149,23 +1150,183 @@ void ImGuiSystem::ShowInspectorWindow()
                     ImGui::PopID();
                 }
 
+                bool typeChanged = (startRenderType != rendercomp.GetRenderType());
+                if (typeChanged && (startRenderType == RT_IMAGE))
+                {
+                    
+                }
+
                 // switch m_type for displays
                 switch (rendercomp.GetRenderType())
                 {
                 case RT_SHAPE:
                 {
+                    ImGui::SeparatorText("Shape");
 
+                    if (typeChanged) { rendercomp.m_renderData = ShapeComponent(); }
+                    ShapeComponent& shape = std::get<ShapeComponent>(rendercomp.m_renderData);
+                    Editor::ComponentData shapedata = shape.EditorData();
+                    for (auto& [name, widgetVariant] : shapedata.GetDataMap())
+                    {
+                        ImGui::PushID(name.c_str());
+                        std::visit([&](auto& widget)
+                            { MakeWidget(widget, name); }, widgetVariant);
+                        ImGui::PopID();
+                    }
                 }
                 break; // end RT_SHAPE
 
                 case RT_IMAGE:
                 {
+                    ImGui::SeparatorText("Sprite");
 
+                    if (typeChanged) { 
+                        if (startRenderType == RT_SPRITESHEET) { rendercomp.m_renderData = std::get<Sprite::SpriteSheet>(rendercomp.m_renderData).Sprite(); }
+                        else { rendercomp.m_renderData = Sprite::SpriteComponent(); }
+                    }
+                    Sprite::SpriteComponent& sprite = std::get<Sprite::SpriteComponent>(rendercomp.m_renderData);
+
+                    Editor::ComponentData spritedata = sprite.EditorData();
+                    for (auto& [name, widgetVariant] : spritedata.GetDataMap())
+                    {
+                        ImGui::PushID(name.c_str());
+                        std::visit([&](auto& widget)
+                            { MakeWidget(widget, name); }, widgetVariant);
+                        ImGui::PopID();
+                    }
+                    // Display the sprite
+                    {
+                        GLuint texID = sprite.Get_Image().textureID;
+                        const float texW = (float)sprite.Get_Image().widthPixels;
+                        const float texH = (float)sprite.Get_Image().heightPixels;
+
+                        ImVec2 avail = ImGui::GetContentRegionAvail();
+
+                        float scale = (texW != 0) ? avail.x / texW : 0.f;
+
+                        ImVec2 displaySize(texW * scale, texH * scale);
+
+                        ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+                    }
                 }
                 break; // end RT_IMAGE
 
                 case RT_SPRITESHEET:
                 {
+                    ImGui::SeparatorText("SpriteSheet");
+
+                    if (typeChanged) { 
+                        Sprite::SpriteComponent tempsprite = Sprite::SpriteComponent();
+                        if (startRenderType == RT_IMAGE) { tempsprite = std::get<Sprite::SpriteComponent>(rendercomp.m_renderData); }
+                        rendercomp.m_renderData = Sprite::SpriteSheet(); 
+                        std::get<Sprite::SpriteSheet>(rendercomp.m_renderData).Sprite() = tempsprite;
+                    }
+                    Sprite::SpriteSheet& spritesheet = std::get<Sprite::SpriteSheet>(rendercomp.m_renderData);
+                    Sprite::SpriteComponent& sprite = spritesheet.Sprite();
+
+                    // Sprite stuff
+
+                    Editor::ComponentData spritedata = sprite.EditorData();
+                    for (auto& [name, widgetVariant] : spritedata.GetDataMap())
+                    {
+                        ImGui::PushID(name.c_str());
+                        std::visit([&](auto& widget)
+                            { MakeWidget(widget, name); }, widgetVariant);
+                        ImGui::PopID();
+                    }
+
+                    spritesheet.UpdateUV();
+                    ActiveFrames& temp = spritesheet.GetFrames();
+
+                    // Display the sprite
+                    {
+                        GLuint texID = sprite.Get_Image().textureID;
+                        const float texW = (float)sprite.Get_Image().widthPixels;
+                        const float texH = (float)sprite.Get_Image().heightPixels;
+
+                        ImVec2 avail = ImGui::GetContentRegionAvail();
+
+                        float scale = (texW != 0) ? avail.x / texW : 0.f;
+
+                        ImVec2 displaySize(texW * scale, texH * scale);
+
+                        ImVec2 imagePos = ImGui::GetCursorScreenPos();
+
+                        ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+
+                        ImDrawList* grid = ImGui::GetWindowDrawList();
+
+
+                        int rows = spritesheet.GetTotalRows();
+                        int cols = spritesheet.GetTotalCols();
+
+                        float cellW = displaySize.x / cols;
+                        float cellH = displaySize.y / rows;
+
+                        for (int c = 1; c < cols; ++c)
+                        {
+                            float x = imagePos.x + c * cellW;
+                            grid->AddLine(ImVec2(x, imagePos.y), ImVec2(x, imagePos.y + displaySize.y), IM_COL32(255, 255, 255, 128));
+                        }
+
+                        for (int r = 1; r < rows; ++r)
+                        {
+                            float y = imagePos.y + r * cellH;
+                            grid->AddLine(ImVec2(imagePos.x, y), ImVec2(imagePos.x + displaySize.x, y), IM_COL32(255, 255, 255, 128));
+                        }
+
+                        int r = temp.row;
+                        int cstart = temp.col_start;
+                        int cend = temp.col_end;
+
+                        for (int c = cstart; c <= cend; ++c)
+                        {
+                            ImVec2 p0(imagePos.x + c * cellW,
+                                imagePos.y + r * cellH);
+
+                            ImVec2 p1(imagePos.x + (c + 1) * cellW,
+                                imagePos.y + (r + 1) * cellH);
+
+                            // Draw filled highlight
+                            grid->AddRectFilled(p0, p1, IM_COL32(255, 255, 0, 80));
+
+                            // Draw border
+                            grid->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
+                        }
+                    }
+                    
+                    // Spritesheet stuff
+                    Editor::ComponentData spritesheetdata = spritesheet.EditorData();
+                    for (auto& [name, widgetVariant] : spritesheetdata.GetDataMap())
+                    {
+                        ImGui::PushID(name.c_str());
+                        std::visit([&](auto& widget) {
+                            MakeWidget(widget, name);
+                            }, widgetVariant);
+                        ImGui::PopID();
+                    }
+
+
+                    Editor::Widget_Int widgetrow(&temp.row, true, 0, spritesheet.GetTotalRows());
+                    Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, spritesheet.GetTotalCols());
+                    Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, spritesheet.GetTotalCols());
+                    Editor::Widget_Float widgetduration(&temp.duration);
+                    ImGui::PushItemWidth(50);
+                    MakeWidget(widgetrow, "row");
+                    ImGui::SameLine();
+                    MakeWidget(widgetcolstart, "first col");
+                    ImGui::SameLine();
+                    MakeWidget(widgetcolend, "last col");
+                    ImGui::PopItemWidth();
+                    MakeWidget(widgetduration, "duration");
+
+                    ImGui::Separator();
+                    if (ImGui::SmallButton("Add State"))
+                    {
+                        spritesheet.AddState(static_cast<int>(spritesheet.GetStateFrames().size()), { 0,0,0 });
+                    }
+
+                    spritesheet.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);
 
                 }
                 break; // end RT_SPRITESHEET

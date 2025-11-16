@@ -99,7 +99,7 @@ public:
 
 	RenderLayer GetRenderLayer() { return m_layer; }
 
-	void UpdateData();
+	void UpdateData(float dt);
 
 	std::string Serialize() const;
 

@@ -277,12 +277,14 @@ namespace Editor {
     class ComponentData {
     private:
         std::string ComponentName;
-        std::map<DataName, WidgetData> ComponentInfo;
+        std::vector<std::pair<DataName, WidgetData>> ComponentInfo;
+        //std::map<DataName, WidgetData> ComponentInfo;
     public:
         ComponentData(const std::string& name) : ComponentName{ name }, ComponentInfo{} {}
 
         void Add_Data(const DataName& name, const WidgetData& dataf) {
-            ComponentInfo[name] = dataf;
+            //ComponentInfo[name] = dataf;
+            ComponentInfo.emplace_back(name,dataf);
         }
 
         void Clear_Data() {
@@ -296,7 +298,8 @@ namespace Editor {
             }
         }
 
-        std::map<DataName, WidgetData>& GetDataMap() { return ComponentInfo; }
+        // std::map<DataName, WidgetData>& GetDataMap() { return ComponentInfo; }
+        std::vector<std::pair<DataName, WidgetData>>& GetDataMap() { return ComponentInfo; }
 
         const std::string& GetComponentName() const { return ComponentName; }
 

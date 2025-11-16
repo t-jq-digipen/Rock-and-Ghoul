@@ -155,7 +155,7 @@ namespace Sprite {
 
 	SpriteSheet::SpriteSheet() : 
 		m_sprite{},
-		m_total_rows{}, m_total_cols{}, m_current_row{}, m_current_col{},
+		m_total_rows{1}, m_total_cols{1}, m_current_row{}, m_current_col{},
 		m_uv_height{}, m_uv_width{}, anim_duration{}, anim_timer{},
 		frames{}, range{}, u0{}, v0{}, u1{}, v1{}
 	{}
@@ -173,8 +173,15 @@ namespace Sprite {
 		{
 			SetFrames(stateframe[m_current_state]);
 		}
+		if (m_total_cols == 0) { m_total_cols = 1; }
+		if (m_total_rows == 0) { m_total_rows = 1; }
+		m_uv_width = static_cast<float>(Sprite().Get_Image().widthPixels) / static_cast<float>(m_total_cols);
+		m_uv_height = static_cast<float>(Sprite().Get_Image().heightPixels) / static_cast<float>(m_total_rows);
+
+		int fliprow = (m_total_rows - 1) - m_current_row;
+
 		u0 = m_current_col * m_uv_width;
-		v0 = m_current_row * m_uv_height;
+		v0 = fliprow * m_uv_height;
 		u1 = u0 + m_uv_width;
 		v1 = v0 + m_uv_height;
 	}
@@ -189,8 +196,10 @@ namespace Sprite {
 		m_uv_height = static_cast<float>(imageHeightPixels) / static_cast<float>(m_total_rows);
 		m_current_row = frames.row;
 		m_current_col = frames.col_start;
+		int fliprow = (m_total_rows - 1) - m_current_row;
+
 		u0 = m_current_col * m_uv_width;
-		v0 = m_current_row * m_uv_height;
+		v0 = fliprow * m_uv_height;
 		u1 = u0 + m_uv_width;
 		v1 = v0 + m_uv_height;
 	}
@@ -253,6 +262,7 @@ namespace Sprite {
 		Loop_Timer(anim_timer, anim_duration);
 
 		// Assign current row and col
+		range = frames.col_end - frames.col_start;
 		m_current_row = frames.row;
 		m_current_col = frames.col_start + static_cast<int>((anim_timer / anim_duration) * (range + 1));
 		if (m_current_col > frames.col_end)
@@ -395,5 +405,28 @@ namespace Sprite {
 		}
 
 		ret.UpdateUV(imageWidth, imageHeight);
+
+		return ret;
+	}
+
+	Editor::ComponentData SpriteSheet::EditorData() {
+		Editor::ComponentData ret("SpriteSheet");
+
+		//ret.Add_Data("Total Rows", Editor::Widget_Int(&m_total_rows));
+		//ret.Add_Data("Total Cols", Editor::Widget_Int(&m_total_cols));
+
+		//ret.Add_Data("Total Rows", Editor::Widget_Int{ reinterpret_cast<int*>(&m_total_rows) });
+		//ret.Add_Data("Total Cols", Editor::Widget_Int{ reinterpret_cast<int*>(&m_total_cols) });
+
+		Editor::Widget_Animator animwidget(&stateframe, &m_total_rows, &m_total_cols, &m_current_state);
+		/*for (auto& [name, state] : stateNames)
+		{
+			animwidget.current_state.Add_Option(name, state);
+		}*/
+
+		ret.Add_Data("Animator values", animwidget);
+		// ret.Add_Data("Animator States", animwidget);
+
+		return ret;
 	}
 }
