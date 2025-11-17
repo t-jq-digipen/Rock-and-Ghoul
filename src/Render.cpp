@@ -1599,10 +1599,17 @@ void Render::InitBatch()
     }
 
     // Also set the projection once here, update projection elsewhere if needed
-    GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
+    /*GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
     if (projLoc >= 0) {
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
-    } // reuse existing projection (see first if need use camera view project matrix)
+    } // reuse existing projection (see first if need use camera view project matrix)*/
+
+    //use camera view proj matrix
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
+    glUniformMatrix4fv(glGetUniformLocation(batchShader, "uProjection"),
+        1, GL_FALSE, &projMatrix[0][0]);
 
     glUseProgram(0);
 
@@ -1764,10 +1771,17 @@ void Render::FlushBatch()
 
     // Ensure projection is current (
     // might need use camera view projection)
-    GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
+    /*GLint projLoc = glGetUniformLocation(batchShader, "uProjection");
     if (projLoc >= 0) {
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
-    }
+    }*/
+
+    //use camera view proj matrix
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
+    glUniformMatrix4fv(glGetUniformLocation(batchShader, "uProjection"),
+        1, GL_FALSE, &projMatrix[0][0]);
 
     glBindVertexArray(batchVAO);
     glDrawElements(GL_TRIANGLES,
