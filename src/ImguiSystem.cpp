@@ -680,24 +680,23 @@ void ImGuiSystem::Update(float dt)
                 }
                 reg.Add_Component<Sprite::SpriteComponent>(e, sprite);
 
-                // Physics (AABB sized to sprite; SetStatic(false))
+                // Physics
                 Physics::PhysicsComponent phys;
+                phys.SetStatic(false);
+                reg.Add_Component<Physics::PhysicsComponent>(e, phys);
 
-                // Build an AABB around current transform using sprite size
-                Vec2 size = sprite.Get_Scale();         // your Sprite API's "size"
+                // Collider (AABB sized to sprite)
+                Vec2 size = sprite.Get_Scale();
                 Vec2 half = size * 0.5f;
                 AABB aabb;
                 aabb.min = t.pos - half;
                 aabb.max = t.pos + half;
+                aabb.dim = size;
 
-                phys.Set_AABB(aabb);
-                phys.Set_Collision(true);
-                phys.SetStatic(false);                  // <-- correct method name
-                reg.Add_Component<Physics::PhysicsComponent>(e, phys);
-
-                // Sync hitboxes to ensure editor visuals are correct immediately
-                auto& pRef = reg.Get_Component<Physics::PhysicsComponent>(e);
-                pRef.UpdateHitboxes(t.pos);
+                Circle circle = {t.pos, 0.f};
+                ColliderComponent collider(aabb, circle, true);
+                collider.UpdateHitboxes(t.pos);
+                reg.Add_Component<ColliderComponent>(e, collider);
 
                 // Optional: give a friendly name
                 reg.Get_EntityNameMap()[e] = std::filesystem::path(texPath).stem().string();
@@ -827,9 +826,9 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     int activeColliders = 0;
     int totalColliders = 0;
 
-    for (auto& [entity, physics] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
+    for (auto& [entity, collider] : m_registry.Get_ComponentMap<ColliderComponent>()) {
         totalColliders++;
-        if (physics.CollisionActive()) { // Use the physics comp collision active check
+        if (collider.IsActive()) {
             activeColliders++;
         }
     }
@@ -1442,6 +1441,101 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
+        // Custom data fields for collider component (collision layers)
+        else if (compName == "Collider")
+        {
+            if (ImGui::TreeNode(compName.c_str()))
+            {
+                // Get component reference inside TreeNode to avoid stale references
+                ColliderComponent& collider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
+                // Show default component fields (AABB, Circle, isTrigger, isActive)
+                for (auto& [name, widgetVariant] : componentData.GetDataMap())
+                {
+                    ImGui::PushID(name.c_str());
+                    std::visit([&](auto& widget)
+                        { MakeWidget(widget, name); }, widgetVariant);
+                    ImGui::PopID();
+                }
+
+                ImGui::Separator();
+                ImGui::TextColored(ImVec4(0.7f, 0.9f, 1.0f, 1.0f), "Collision Layers");
+
+                // Create checkboxes for each registered layer
+                std::vector<std::string> layers = {"Player", "Enemy", "Projectile", "Wall"};
+
+                ImGui::Text("Collides With:");
+
+                // Get current mask once
+                uint32_t currentMask = collider.GetMask();
+
+                // Debug: show current layer and mask values
+                ImGui::Text("Layer: 0x%X", collider.GetLayer());
+                ImGui::Text("Mask: 0x%X", currentMask);
+                ImGui::Text("Is Trigger: %s", collider.IsTrigger() ? "YES" : "NO");
+                ImGui::Text("Is Active: %s", collider.IsActive() ? "YES" : "NO");
+
+                // Show if entity has a tag
+                if (m_registry.Has_Component<TagComponent>(selectedEntity)) {
+                    auto& tag = m_registry.Get_Component<TagComponent>(selectedEntity);
+                    const char* tagNames[] = {"PLAYER", "ENEMY", "PROJECTILE", "WALL", "INSTANCING", "BATCH", "TEST", "OBJECT"};
+                    if (tag.tag < 8) {
+                        ImGui::Text("Tag: %s", tagNames[tag.tag]);
+                    }
+
+                    // Button to fix layers based on tag
+                    if (ImGui::Button("Auto-Setup Layer from Tag")) {
+                        CollisionManager::SetupCollisionLayers();
+                        std::cout << "[Editor] Re-ran SetupCollisionLayers for all entities" << std::endl;
+                    }
+                } else {
+                    ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "No TagComponent!");
+                }
+
+                int layerIndex = 0;
+                for (const std::string& layerName : layers)
+                {
+                    ImGui::PushID(layerIndex++);
+
+                    uint32_t layerBit = CollisionLayerManager::Get().GetLayerBit(layerName);
+                    bool isSet = (currentMask & layerBit) != 0;
+                    bool previousState = isSet;
+
+                    ImGui::Checkbox(layerName.c_str(), &isSet);
+
+                    // Only update if the state actually changed
+                    if (isSet != previousState)
+                    {
+                        // Get fresh reference BEFORE making any changes
+                        auto& freshCollider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
+
+                        // Log before modification
+                        std::cout << "[Editor] BEFORE toggle " << layerName << ": "
+                                  << "layer=0x" << std::hex << freshCollider.GetLayer()
+                                  << " mask=0x" << freshCollider.GetMask()
+                                  << " trigger=" << (freshCollider.IsTrigger() ? "YES" : "NO")
+                                  << " active=" << (freshCollider.IsActive() ? "YES" : "NO") << std::dec << std::endl;
+
+                        if (isSet) {
+                            currentMask |= layerBit;
+                        } else {
+                            currentMask &= ~layerBit;
+                        }
+                        freshCollider.SetMask(currentMask);
+
+                        // Log after modification
+                        std::cout << "[Editor] AFTER toggle " << layerName << ": "
+                                  << "layer=0x" << std::hex << freshCollider.GetLayer()
+                                  << " mask=0x" << freshCollider.GetMask()
+                                  << " trigger=" << (freshCollider.IsTrigger() ? "YES" : "NO")
+                                  << " active=" << (freshCollider.IsActive() ? "YES" : "NO") << std::dec << std::endl;
+                    }
+
+                    ImGui::PopID();
+                }
+
+                ImGui::TreePop();
+            }
+        }
         else
         if (ImGui::TreeNode(compName.c_str()))
         {
@@ -1456,12 +1550,12 @@ void ImGuiSystem::ShowInspectorWindow()
         }
 
         if (selectedEntity != INVALID_ENTITY &&
-            m_registry.Has_Component<Physics::PhysicsComponent>(selectedEntity) &&
+            m_registry.Has_Component<ColliderComponent>(selectedEntity) &&
             m_registry.Has_Component<TransformComponent>(selectedEntity))
         {
-            auto& p = m_registry.Get_Component<Physics::PhysicsComponent>(selectedEntity);
+            auto& collider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
             auto& t = m_registry.Get_Component<TransformComponent>(selectedEntity);
-            p.UpdateHitboxes(t.pos);
+            collider.UpdateHitboxes(t.pos);
         }
     }
 
@@ -2206,11 +2300,11 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
             inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
                 mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
         }
-        // Physics collider bounds
-        else if (reg.Has_Component<Physics::PhysicsComponent>(entity))
+        // Collider bounds
+        else if (reg.Has_Component<ColliderComponent>(entity))
         {
-            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
-            const AABB& aabb = phys.Get_AABB();
+            auto& collider = reg.Get_Component<ColliderComponent>(entity);
+            const AABB& aabb = collider.Get_AABB();
             minW = aabb.min;
             maxW = aabb.max;
 
@@ -2295,10 +2389,10 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
         t.pos = Render::PanelToWorld(mouseScreen, panelPos, panelSize) + dragOffset;
 
-        if (reg.Has_Component<Physics::PhysicsComponent>(draggedEntity))
+        if (reg.Has_Component<ColliderComponent>(draggedEntity))
         {
-            auto& p = reg.Get_Component<Physics::PhysicsComponent>(draggedEntity);
-            p.UpdateHitboxes(t.pos);
+            auto& collider = reg.Get_Component<ColliderComponent>(draggedEntity);
+            collider.UpdateHitboxes(t.pos);
         }
     }
 
@@ -2566,6 +2660,31 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 
         std::cout << "[Editor] Temp scene saved before Play.\n";
 
+        // Don't call SetupCollisionLayers here - it would reset custom editor values
+        // Instead, just fix any broken static/trigger flags
+        Registry& reg = Registry::Get();
+        EntityManager& em = EntityManager::get();
+        for (Entity entity = 0; entity < em.maxEntities(); ++entity) {
+            if (!em.isAlive(entity)) continue;
+            if (!reg.Has_Component<TagComponent>(entity)) continue;
+
+            auto& tag = reg.Get_Component<TagComponent>(entity);
+
+            // Fix trigger flags for all collision entities
+            if (reg.Has_Component<ColliderComponent>(entity)) {
+                auto& collider = reg.Get_Component<ColliderComponent>(entity);
+                collider.SetTrigger(false);
+            }
+
+            // Fix static flags for players and enemies
+            if (reg.Has_Component<Physics::PhysicsComponent>(entity)) {
+                auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
+                if (tag.tag == T_PLAYER || tag.tag == T_ENEMY) {
+                    phys.SetStatic(false);
+                }
+            }
+        }
+
         gsm.isPaused = false;
         gsm.inEditMode = false;
         dragEditMode = false;
@@ -2612,6 +2731,9 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
             {
                 std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
                 JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
+                // Only call SetupCollisionLayers for fallback (old scene without Collider component)
+                CollisionManager::SetupCollisionLayers();
+                std::cout << "[Collision] Setup collision layers after fallback\n";
             }
         }
         else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
@@ -2627,6 +2749,9 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
             {
                 std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
                 JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
+                // Only call SetupCollisionLayers for fallback (old scene without Collider component)
+                CollisionManager::SetupCollisionLayers();
+                std::cout << "[Collision] Setup collision layers after fallback\n";
             }
         }
 

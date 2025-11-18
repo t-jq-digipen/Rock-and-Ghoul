@@ -28,6 +28,7 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include "GuiSystem.h"
+#include "CollisionManager.h"
 
 #include "CrashHandler.h"
 #include <PlayerSystem.h>
@@ -235,9 +236,12 @@ void Level1::Init()
 			std::cout << "Found level1.json, attempting to load..." << std::endl;
 			sceneLoaded = JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
 			if (sceneLoaded) {
-				
+
 
 				std::cout << "Scene loaded successfully from level1.json!" << std::endl;
+				// Setup collision layers after loading entities
+				CollisionManager::SetupCollisionLayers();
+				std::cout << "[Collision] Setup collision layers from tags" << std::endl;
 			}
 			else {
 				std::cout << "Failed to load scene from level1.json, will create from prefabs instead." << std::endl;
@@ -342,6 +346,10 @@ void Level1::Init()
 			Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
 			Create_ScriptedEntity("Mover", 400.f, 300.f);
 			Create_Arrow(1400.f, 400.f);
+
+			// Setup collision layers after creating entities from prefabs
+			CollisionManager::SetupCollisionLayers();
+			std::cout << "[Collision] Setup collision layers from tags" << std::endl;
 		}
 		std::cout << "==============================\n" << std::endl;
 		});

@@ -104,7 +104,7 @@ public:
 
     //void ActionStop_Static(Entity dynamic, Entity staticObj);
 
-    void CollisionActions(Entity a, Entity b, bool intersected);
+    void CollisionActions(Entity a, Entity b, bool intersected, bool isTrigger = false);
 
     /**
      * @brief Resolves collision using impulse-based response (MEETS RUBRIC).
@@ -118,4 +118,13 @@ public:
      * @return Pointer to the spatial grid, or nullptr if not available
      */
     static class SpatialGrid* GetSpatialGrid();
+
+    /**
+     * @brief Setup collision layers for all entities based on their TagComponent
+     *
+     * This helper function iterates through all entities with TagComponents
+     * and automatically assigns collision layers and masks based on their tag type.
+     * Call this after loading entities (e.g., in Level1::Load()).
+     */
+    static void SetupCollisionLayers();
 };

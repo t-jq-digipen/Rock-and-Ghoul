@@ -18,6 +18,7 @@
 
 #include "Physics.h"
 #include "CoreEngine.h"
+#include "CollisionManager.h"
 #include <cmath>
 
 namespace Physics {
@@ -95,39 +96,27 @@ namespace Physics {
 		, acceleration{ 0.f, 0.f }
 		, decay{ 0.015f }       // Slight damping
 		, maxSpeed{ 500.f }    // Prevent tunneling
-		, isStatic{ false }
-		, willCollide{ false }
-		, aabbhitbox{ { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, 0.f } }
-		, circlehitbox{ { 0.f, 0.f }, 0.f }
 		, mass{ 1.f }
 		, restitution{ 0.3f }  // Some bounce
 		, friction{ 0.1f }     // Slight friction
+		, isStatic{ false }
 		, onGround{ false }
 		, collisionFrameCount{ 0 }
-		, layerBit{ 0 }
-		, maskBit{ 0 }
-		, isTrigger{ false }
 	{
-		forces.reserve(8); 
+		forces.reserve(8);
 	}
 
-	PhysicsComponent::PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref, bool makeStatic)
+	PhysicsComponent::PhysicsComponent(float decayval, float maxSpd, bool makeStatic)
 		: vel{ 0.f, 0.f }
 		, acceleration{ 0.f, 0.f }
 		, decay{ decayval }
-		, maxSpeed{ 500.f }
-		, isStatic{ makeStatic }
-		, willCollide{ solid }
-		, aabbhitbox{ aabbref }
-		, circlehitbox{ circleref }
+		, maxSpeed{ maxSpd }
 		, mass{ 1.f }
 		, restitution{ 0.3f }
 		, friction{ 0.1f }
+		, isStatic{ makeStatic }
 		, onGround{ false }
 		, collisionFrameCount{ 0 }
-		, layerBit{ 0 }
-		, maskBit{ 0 }
-		, isTrigger{ false }
 	{
 		forces.reserve(8);
 	}
@@ -270,11 +259,6 @@ namespace Physics {
 		position = RG_Add(position, RG_Scale(vel, dt));
 	}
 
-	void PhysicsComponent::UpdateHitboxes(Vec2 const& pos) {
-		Update_AABB(aabbhitbox, pos);
-		circlehitbox.pos = pos;
-	}
-
 	// ================================================================================
 	// VELOCITY CONTROL
 	// ================================================================================
@@ -301,65 +285,6 @@ namespace Physics {
 		ClearForces();
 	}
 
-	// ================================================================================
-	// COLLISION GETTERS/SETTERS
-	// ================================================================================
-
-	void PhysicsComponent::Set_Collision(bool set) {
-		willCollide = set;
-	}
-
-	const bool& PhysicsComponent::CollisionActive() const {
-		return willCollide;
-	}
-
-	// ================================================================================
-	// HITBOX GETTERS/SETTERS
-	// ================================================================================
-
-	const AABB& PhysicsComponent::Get_AABB() const {
-		return aabbhitbox;
-	}
-
-	const Circle& PhysicsComponent::Get_Circle() const {
-		return circlehitbox;
-	}
-
-	void PhysicsComponent::Set_AABB(AABB const& newAABB) {
-		aabbhitbox = newAABB;
-	}
-
-	void PhysicsComponent::Set_Circle(Circle const& newCircle) {
-		circlehitbox = newCircle;
-	}
-
-	// ================================================================================
-	// FILTER GETTERS/SETTERS
-	// ================================================================================
-
-	void PhysicsComponent::SetLayer(uint32_t bit) {
-		layerBit = bit;
-	}
-
-	void PhysicsComponent::SetMask(uint32_t mask) {
-		maskBit = mask;
-	}
-
-	void PhysicsComponent::SetTrigger(bool trigger) {
-		isTrigger = trigger;
-	}
-
-	uint32_t PhysicsComponent::GetLayer() {
-		return layerBit;
-	}
-
-	uint32_t PhysicsComponent::GetMask() {
-		return maskBit;
-	}
-
-	bool PhysicsComponent::IsTrigger() {
-		return isTrigger;
-	}
 
 	// ================================================================================
 	// STATIC/DYNAMIC CONTROL
@@ -457,31 +382,15 @@ namespace Physics {
 	// ================================================================================
 
 	std::string PhysicsComponent::Serialize() const {
-		// Calculate center from AABB for saving
-		float centerX = (aabbhitbox.min.x + aabbhitbox.max.x) * 0.5f;
-		float centerY = (aabbhitbox.min.y + aabbhitbox.max.y) * 0.5f;
-
 		nlohmann::json j = {
 			{"velX", vel.x},
 			{"velY", vel.y},
 			{"decay", decay},
 			{"maxSpeed", maxSpeed},
 			{"isStatic", isStatic},
-			{"willCollide", willCollide},
 			{"mass", mass},
 			{"restitution", restitution},
-			{"friction", friction},
-			{"aabb", {
-				{"centerX", centerX},
-				{"centerY", centerY},
-				{"dimX", aabbhitbox.dim.x},
-				{"dimY", aabbhitbox.dim.y}
-			}},
-			{"circle", {
-				{"posX", circlehitbox.pos.x},
-				{"posY", circlehitbox.pos.y},
-				{"rad", circlehitbox.rad}
-			}}
+			{"friction", friction}
 		};
 		return j.dump();
 	}
@@ -503,31 +412,44 @@ namespace Physics {
 		phys.decay = j.value("decay", 0.015f);
 		phys.maxSpeed = j.value("maxSpeed", 500.0f);
 		phys.isStatic = j.value("isStatic", false);
-		phys.willCollide = j.value("willCollide", false);
 		phys.mass = j.value("mass", 1.0f);
 		phys.restitution = j.value("restitution", 0.5f);
 		phys.friction = j.value("friction", 0.1f);
 
-		// Deserialize AABB
-		if (j.contains("aabb")) {
-			const auto& aabbJson = j["aabb"];
-			Vec2 center = {
-				aabbJson.value("centerX", 0.0f),
-				aabbJson.value("centerY", 0.0f)
-			};
-			Vec2 dimensions = {
-				aabbJson.value("dimX", 0.0f),
-				aabbJson.value("dimY", 0.0f)
-			};
-			phys.aabbhitbox = Create_AABB(center, dimensions);
-		}
+		// BACKWARD COMPATIBILITY: If old JSON has collision data, create ColliderComponent automatically
+		if (j.contains("aabb") || j.contains("circle") || j.contains("willCollide")) {
+			Registry& reg = Registry::Get();
 
-		// Deserialize Circle
-		if (j.contains("circle")) {
-			const auto& circleJson = j["circle"];
-			phys.circlehitbox.pos.x = circleJson.value("posX", 0.0f);
-			phys.circlehitbox.pos.y = circleJson.value("posY", 0.0f);
-			phys.circlehitbox.rad = circleJson.value("rad", 0.0f);
+			// Create AABB from old data
+			AABB aabb;
+			if (j.contains("aabb")) {
+				const auto& aabbJson = j["aabb"];
+				Vec2 center = {
+					aabbJson.value("centerX", 0.0f),
+					aabbJson.value("centerY", 0.0f)
+				};
+				Vec2 dimensions = {
+					aabbJson.value("dimX", 0.0f),
+					aabbJson.value("dimY", 0.0f)
+				};
+				aabb = Create_AABB(center, dimensions);
+			}
+
+			// Create Circle from old data
+			Circle circle;
+			if (j.contains("circle")) {
+				const auto& circleJson = j["circle"];
+				circle.pos.x = circleJson.value("posX", 0.0f);
+				circle.pos.y = circleJson.value("posY", 0.0f);
+				circle.rad = circleJson.value("rad", 0.0f);
+			}
+
+			// Create and add ColliderComponent
+			bool willCollide = j.value("willCollide", true);
+			ColliderComponent collider(aabb, circle, willCollide);
+			reg.Add_Component<ColliderComponent>(eID, collider);
+
+			std::cout << "[Migration] Converted old Physics collision data to ColliderComponent for entity " << eID << "\n";
 		}
 
 		return phys;
@@ -537,16 +459,17 @@ namespace Physics {
 	// EDITOR
 	// ================================================================================
 
-	// NEED TO ADD WIDGET STUFF
 	Editor::ComponentData PhysicsComponent::EditorData() {
-	Editor::ComponentData ret(Registry::Get().Get_ComponentTypeName(typeid(PhysicsComponent)));
+		Editor::ComponentData ret(Registry::Get().Get_ComponentTypeName(typeid(PhysicsComponent)));
 
-		ret.Add_Data("WillCollide", Editor::Widget_Checkmark{ &willCollide });
-
-		ret.Add_Data("AABB width", Editor::Widget_Float{ &aabbhitbox.dim.x, true, 10.f, 3000.f });
-		ret.Add_Data("AABB height", Editor::Widget_Float{ &aabbhitbox.dim.y, true, 10.f, 3000.f });
-
-		ret.Add_Data("Circle radius", Editor::Widget_Float{ &circlehitbox.rad, true, 10.f, 500.f });
+		ret.Add_Data("Velocity X", Editor::Widget_Float{ &vel.x });
+		ret.Add_Data("Velocity Y", Editor::Widget_Float{ &vel.y });
+		ret.Add_Data("Decay", Editor::Widget_Float{ &decay, true, 0.0f, 1.0f });
+		ret.Add_Data("Max Speed", Editor::Widget_Float{ &maxSpeed, true, 0.f, 2000.f });
+		ret.Add_Data("Mass", Editor::Widget_Float{ &mass, true, 0.1f, 100.f });
+		ret.Add_Data("Restitution", Editor::Widget_Float{ &restitution, true, 0.f, 1.f });
+		ret.Add_Data("Friction", Editor::Widget_Float{ &friction, true, 0.f, 1.f });
+		ret.Add_Data("Is Static", Editor::Widget_Checkmark{ &isStatic });
 
 		return ret;
 	}

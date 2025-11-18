@@ -9,7 +9,7 @@
  * used by the Level 2. While in Level 2, the game is in
  * its playing state.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -28,6 +28,7 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include "GuiSystem.h"
+#include "CollisionManager.h"
 
 #include "CrashHandler.h"
 #include <PlayerSystem.h>
@@ -213,6 +214,9 @@ void Level2::Init()
 				//ghoul = registry2.Get_EntityID("Enemy");
 
 				std::cout << "Scene loaded successfully from level2.json!" << std::endl;
+				// Setup collision layers after loading entities
+				CollisionManager::SetupCollisionLayers();
+				std::cout << "[Collision] Setup collision layers from tags" << std::endl;
 			}
 			else {
 				std::cout << "Failed to load scene from level2.json, will create from prefabs instead." << std::endl;
@@ -253,6 +257,10 @@ void Level2::Init()
 
 			// Right wall
 			Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
+
+			// Setup collision layers after creating entities from prefabs
+			CollisionManager::SetupCollisionLayers();
+			std::cout << "[Collision] Setup collision layers from tags" << std::endl;
 		}
 		std::cout << "==============================\n" << std::endl;
 		});

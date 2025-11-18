@@ -37,14 +37,18 @@ void PhysicsSystem::Initialize() {
 void PhysicsSystem::Update(float dt) {
     // dt is now fixedDt that is passed from CoreEngine
 
+    static int debugCounter = 0;
+    if (++debugCounter % 60 == 0) {
+        std::cout << "[PhysicsSystem] Update called, dt=" << dt << std::endl;
+    }
+
     // getting number of fixed timesteps to execute this frame
     int numSteps = frameRate.GetCurrentNumberOfSteps();
     
     // loop for each fixed timestep that needs to be simulated
     for (int step = 0; step < numSteps; ++step)
     {
-        // Step 1: Move entities
-        // for new physics component
+        // Step 1: Move entities with physics
         for (auto& [entID, phyComp] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>())
         {
             // Get transform component to multiply by fixed dt
@@ -54,8 +58,15 @@ void PhysicsSystem::Update(float dt) {
             // Update transform positions
             Vec2 deltaPos = RG_Scale(phyComp.Get_Vel(), dt);
             transComp.pos = RG_Add(transComp.pos, deltaPos);
-            // updatehitboxes w transform position
-            phyComp.UpdateHitboxes(transComp.pos);
+        }
+
+        // Step 2: Update collider hitboxes after all transforms moved
+        for (auto& [entID, collider] : m_registry.Get_ComponentMap<ColliderComponent>())
+        {
+            if (m_registry.Has_Component<TransformComponent>(entID)) {
+                TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+                collider.UpdateHitboxes(transComp.pos);
+            }
         }
 
         std::vector<Entity> expired{};

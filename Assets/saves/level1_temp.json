@@ -2,118 +2,78 @@
     "entities": [
         {
             "components": {
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"animated\\\":false,\\\"currentState\\\":0,\\\"frameColEnd\\\":3,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0}},\\\"texturePath\\\":\\\"../Assets/Waffle_Sprites.png\\\",\\\"totalCols\\\":6,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
-                "Transform": "{\"posX\":725.1500244140625,\"posY\":292.0169982910156,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "New Entity 16"
-        },
-        {
-            "components": {
-                "RenderLayer": "{\"layer\":3}",
-                "Sprite": "{\"animated\":false,\"scaleX\":0.4000000059604645,\"scaleY\":0.4000000059604645,\"texturePath\":\"../Assets/UI_Guitar.PNG\"}",
-                "Transform": "{\"posX\":379.0559997558594,\"posY\":50.98699951171875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "New Entity 15"
-        },
-        {
-            "components": {
-                "Physics": "{\"aabb\":{\"centerX\":-246.58392333984375,\"centerY\":180.63711547851563,\"dimX\":64.5510025024414,\"dimY\":407.8110046386719},\"circle\":{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
-            },
-            "name": "Entity_8"
-        },
-        {
-            "components": {
-                "Physics": "{\"aabb\":{\"centerX\":-145.274169921875,\"centerY\":555.2919921875,\"dimX\":167.21200561523438,\"dimY\":407.8110046386719},\"circle\":{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
-            },
-            "name": "Entity_8"
-        },
-        {
-            "components": {
-                "Physics": "{\"aabb\":{\"centerX\":425.2034912109375,\"centerY\":712.0353393554688,\"dimX\":308.79901123046875,\"dimY\":191.6739959716797},\"circle\":{\"posX\":425.2034912109375,\"posY\":712.0353393554688,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":425.2034912109375,\"posY\":712.0353393554688,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Physics": "{\"aabb\":{\"centerX\":902.6371459960938,\"centerY\":640.3539428710938,\"dimX\":466.52398681640625,\"dimY\":210.6439971923828},\"circle\":{\"posX\":902.6371459960938,\"posY\":640.3539428710938,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":902.6371459960938,\"posY\":640.3539428710938,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
                 "MonoScriptComponent": "Rotator",
-                "Sprite": "{\"animated\":false,\"scaleX\":1.0343751907348633,\"scaleY\":1.0,\"texturePath\":\"../Assets/left.png\"}",
-                "Transform": "{\"posX\":1448.12548828125,\"posY\":400.0,\"rot\":528.0000610351563,\"scaleX\":1.0343751907348633,\"scaleY\":1.0}"
+                "Sprite": "{\"animated\":false,\"scaleX\":0.721907913684845,\"scaleY\":1.0,\"texturePath\":\"../Assets/left.png\"}",
+                "Transform": "{\"posX\":1010.6712036132813,\"posY\":400.0,\"rot\":528.0000610351563,\"scaleX\":0.721907913684845,\"scaleY\":1.0}"
             },
             "name": "arrow"
         },
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
+                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":836.2081909179688,\"aabb_maxY\":500.0,\"aabb_minX\":836.2081909179688,\"aabb_minY\":500.0,\"circle_posX\":836.2081909179688,\"circle_posY\":500.0,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":2,\"maskBit\":13}",
                 "Input": "{\"scheme\":0}",
                 "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
-                "Physics": "{\"aabb\":{\"centerX\":1198.1488037109375,\"centerY\":500.0,\"dimX\":0.0,\"dimY\":0.0},\"circle\":{\"posX\":1198.1488037109375,\"posY\":500.0,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":false}",
-                "Sprite": "{\"animated\":false,\"scaleX\":0.10343749076128006,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Ghoul_2048px.PNG\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
+                "Sprite": "{\"animated\":false,\"scaleX\":0.07219075411558151,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Ghoul_2048px.PNG\"}",
                 "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":1198.1488037109375,\"posY\":500.0,\"rot\":0.0,\"scaleX\":1.0343751907348633,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":836.2081909179688,\"posY\":500.0,\"rot\":0.0,\"scaleX\":0.721907913684845,\"scaleY\":1.0}"
             },
             "name": "ghoul"
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":1009.8153076171875,\"centerY\":400.0,\"dimX\":0.0,\"dimY\":0.0},\"circle\":{\"posX\":1009.8153076171875,\"posY\":400.0,\"rad\":0.0},\"decay\":0.949999988079071,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":20.428415298461914,\"velY\":0.0,\"willCollide\":false}",
-                "Shape": "{\"colorX\":1.0,\"colorY\":0.0,\"colorZ\":1.0,\"dimX\":51.71876525878906,\"dimY\":50.0,\"shapeType\":0}",
+                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":704.7671508789063,\"aabb_maxY\":400.0,\"aabb_minX\":704.7671508789063,\"aabb_minY\":400.0,\"circle_posX\":704.7671508789063,\"circle_posY\":400.0,\"circle_rad\":0.0,\"isActive\":false,\"isTrigger\":false,\"layerBit\":1,\"maskBit\":15}",
+                "Physics": "{\"decay\":0.949999988079071,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":20.428415298461914,\"velY\":0.0}",
+                "Shape": "{\"colorX\":1.0,\"colorY\":0.0,\"colorZ\":1.0,\"dimX\":36.09539794921875,\"dimY\":50.0,\"shapeType\":0}",
                 "Tag": "{\"tagID\":6}",
-                "Transform": "{\"posX\":1009.8153076171875,\"posY\":400.0,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":50.0}"
+                "Transform": "{\"posX\":704.7671508789063,\"posY\":400.0,\"rot\":0.0,\"scaleX\":36.09539794921875,\"scaleY\":50.0}"
             },
             "name": "FixedDT_Test"
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":949.88671875,\"centerY\":733.8831787109375,\"dimX\":2462.9189453125,\"dimY\":100.98699951171875},\"circle\":{\"posX\":949.8865966796875,\"posY\":733.8831787109375,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Collider": "{\"aabb_dimX\":1718.9129638671875,\"aabb_dimY\":100.98699951171875,\"aabb_maxX\":1522.398193359375,\"aabb_maxY\":784.376708984375,\"aabb_minX\":-196.5147705078125,\"aabb_minY\":683.3896484375,\"circle_posX\":662.9417114257813,\"circle_posY\":733.8831787109375,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":8,\"maskBit\":7}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":949.8865966796875,\"posY\":733.8831787109375,\"rot\":0.0,\"scaleX\":1986.0001220703125,\"scaleY\":50.0}"
+                "Transform": "{\"posX\":662.9417114257813,\"posY\":733.8831787109375,\"rot\":0.0,\"scaleX\":1386.06298828125,\"scaleY\":50.0}"
             },
             "name": "Entity_6"
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":993.0,\"centerY\":25.0,\"dimX\":2435.14208984375,\"dimY\":50.0},\"circle\":{\"posX\":993.0000610351563,\"posY\":25.0,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Collider": "{\"aabb_dimX\":1699.526611328125,\"aabb_dimY\":50.0,\"aabb_maxX\":1542.7947998046875,\"aabb_maxY\":50.0,\"aabb_minX\":-156.7318115234375,\"aabb_minY\":0.0,\"circle_posX\":693.031494140625,\"circle_posY\":25.0,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":8,\"maskBit\":7}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":993.0000610351563,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1986.0001220703125,\"scaleY\":50.0}"
+                "Transform": "{\"posX\":693.031494140625,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1386.06298828125,\"scaleY\":50.0}"
             },
             "name": "Entity_7"
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":-38.22991943359375,\"centerY\":757.911376953125,\"dimX\":167.21200561523438,\"dimY\":407.8110046386719},\"circle\":{\"posX\":-38.22991943359375,\"posY\":757.911376953125,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Collider": "{\"aabb_dimX\":116.70008087158203,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":31.668737411499023,\"aabb_maxY\":961.81689453125,\"aabb_minX\":-85.03134155273438,\"aabb_minY\":554.005859375,\"circle_posX\":-26.681303024291992,\"circle_posY\":757.911376953125,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":8,\"maskBit\":7}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-38.22991943359375,\"posY\":757.911376953125,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+                "Transform": "{\"posX\":-26.681303024291992,\"posY\":757.911376953125,\"rot\":0.0,\"scaleX\":36.09539794921875,\"scaleY\":1080.0}"
             },
             "name": "Entity_8"
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":1856.9202880859375,\"centerY\":626.0176391601563,\"dimX\":180.4720001220703,\"dimY\":166.00900268554688},\"circle\":{\"posX\":1856.9202880859375,\"posY\":626.0176391601563,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Collider": "{\"aabb_dimX\":125.95443725585938,\"aabb_dimY\":166.00900268554688,\"aabb_maxX\":1358.953125,\"aabb_maxY\":709.0221557617188,\"aabb_minX\":1232.998779296875,\"aabb_minY\":543.0131225585938,\"circle_posX\":1295.9759521484375,\"circle_posY\":626.0176391601563,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":8,\"maskBit\":7}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":1856.9202880859375,\"posY\":626.0176391601563,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+                "Transform": "{\"posX\":1295.9759521484375,\"posY\":626.0176391601563,\"rot\":0.0,\"scaleX\":36.09539794921875,\"scaleY\":1080.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
+                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":288.76318359375,\"aabb_maxY\":555.0928344726563,\"aabb_minX\":288.76318359375,\"aabb_minY\":555.0928344726563,\"circle_posX\":288.76318359375,\"circle_posY\":555.0928344726563,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":0,\"maskBit\":0}",
                 "Input": "{\"scheme\":2}",
                 "MonoScriptComponent": "Mover",
-                "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":206.87506103515625,\"dimY\":200.0,\"shapeType\":1}",
-                "Transform": "{\"posX\":413.7501220703125,\"posY\":555.0928344726563,\"rot\":0.0,\"scaleX\":103.43753051757813,\"scaleY\":100.0}"
+                "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":144.381591796875,\"dimY\":200.0,\"shapeType\":1}",
+                "Transform": "{\"posX\":288.76318359375,\"posY\":555.0928344726563,\"rot\":0.0,\"scaleX\":72.1907958984375,\"scaleY\":100.0}"
             },
             "name": "ScriptedCircle"
         },
@@ -121,29 +81,83 @@
             "components": {
                 "Animator": "{\"animDuration\":1.0,\"currentState\":3,\"frameColEnd\":8,\"frameColStart\":0,\"frameRow\":8,\"states\":{\"0\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":6},\"1\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":0},\"2\":{\"col_end\":3,\"col_start\":0,\"duration\":1.0,\"row\":4},\"3\":{\"col_end\":8,\"col_start\":0,\"duration\":1.0,\"row\":8}},\"totalCols\":10,\"totalRows\":10}",
                 "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
+                "Collider": "{\"aabb_dimX\":104.71753692626953,\"aabb_dimY\":201.20199584960938,\"aabb_maxX\":408.9251708984375,\"aabb_maxY\":369.4420166015625,\"aabb_minX\":304.2076416015625,\"aabb_minY\":168.24000549316406,\"circle_posX\":356.56640625,\"circle_posY\":268.84100341796875,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":1,\"maskBit\":12}",
                 "Health": "{\"currentHP\":0.0,\"maxHP\":0.0}",
                 "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
-                "Physics": "{\"aabb\":{\"centerX\":510.9010009765625,\"centerY\":268.84100341796875,\"dimX\":150.04299926757813,\"dimY\":201.20199584960938},\"circle\":{\"posX\":510.9010009765625,\"posY\":268.84100341796875,\"rad\":0.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "RenderLayer": "{\"layer\":1}",
-                "Sprite": "{\"animated\":true,\"scaleX\":200.0,\"scaleY\":200.0,\"texturePath\":\"../Assets/rockspritesheet4.11.png\"}",
+                "Sprite": "{\"animated\":true,\"scaleX\":139.58335876464844,\"scaleY\":200.0,\"texturePath\":\"../Assets/rockspritesheet4.11.png\"}",
                 "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":510.9010009765625,\"posY\":268.84100341796875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":356.56640625,\"posY\":268.84100341796875,\"rot\":0.0,\"scaleX\":0.6979168653488159,\"scaleY\":1.0}"
             },
             "name": "Rock"
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":2005.168212890625,\"centerY\":508.46014404296875,\"dimX\":136.69700622558594,\"dimY\":1000.0},\"circle\":{\"posX\":2005.168212890625,\"posY\":508.46014404296875,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Collider": "{\"aabb_dimX\":95.40313720703125,\"aabb_dimY\":1000.0,\"aabb_maxX\":1447.14208984375,\"aabb_maxY\":1008.4601440429688,\"aabb_minX\":1351.739013671875,\"aabb_minY\":8.46014404296875,\"circle_posX\":1399.4405517578125,\"circle_posY\":508.46014404296875,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":8,\"maskBit\":7}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":2005.168212890625,\"posY\":508.46014404296875,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+                "Transform": "{\"posX\":1399.4405517578125,\"posY\":508.46014404296875,\"rot\":0.0,\"scaleX\":36.09539794921875,\"scaleY\":1080.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":1505.2034912109375,\"centerY\":723.50439453125,\"dimX\":270.3009948730469,\"dimY\":191.6739959716797},\"circle\":{\"posX\":1505.2034912109375,\"posY\":723.50439453125,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Collider": "{\"aabb_dimX\":188.64759826660156,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":1144.8306884765625,\"aabb_maxY\":819.3413696289063,\"aabb_minX\":956.1830444335938,\"aabb_minY\":627.6674194335938,\"circle_posX\":1050.5068359375,\"circle_posY\":723.50439453125,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":8,\"maskBit\":7}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":1505.2034912109375,\"posY\":723.50439453125,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+                "Transform": "{\"posX\":1050.5068359375,\"posY\":723.50439453125,\"rot\":0.0,\"scaleX\":36.09539794921875,\"scaleY\":1080.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"animated\\\":false,\\\"currentState\\\":0,\\\"frameColEnd\\\":3,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0}},\\\"texturePath\\\":\\\"../Assets/Waffle_Sprites.png\\\",\\\"totalCols\\\":6,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
+                "Transform": "{\"posX\":506.09429931640625,\"posY\":292.0169982910156,\"rot\":0.0,\"scaleX\":0.6979168653488159,\"scaleY\":1.0}"
+            },
+            "name": "New Entity 16"
+        },
+        {
+            "components": {
+                "RenderLayer": "{\"layer\":3}",
+                "Sprite": "{\"animated\":false,\"scaleX\":0.2791667878627777,\"scaleY\":0.4000000059604645,\"texturePath\":\"../Assets/UI_Guitar.PNG\"}",
+                "Transform": "{\"posX\":264.5495910644531,\"posY\":50.98699951171875,\"rot\":0.0,\"scaleX\":0.6979168653488159,\"scaleY\":1.0}"
+            },
+            "name": "New Entity 15"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":45.051231384277344,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-149.5694122314453,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-194.6206512451172,\"aabb_minY\":-23.268386840820313,\"circle_posX\":-172.09503173828125,\"circle_posY\":180.63711547851563,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":8,\"maskBit\":7}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":-172.09503173828125,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":36.09539794921875,\"scaleY\":1080.0}"
+            },
+            "name": "Entity_8"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":116.70008087158203,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-43.039249420166016,\"aabb_maxY\":759.197509765625,\"aabb_minX\":-159.7393341064453,\"aabb_minY\":351.386474609375,\"circle_posX\":-101.38928985595703,\"circle_posY\":555.2919921875,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":8,\"maskBit\":7}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":-101.38928985595703,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":36.09539794921875,\"scaleY\":1080.0}"
+            },
+            "name": "Entity_8"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":215.5160369873047,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":404.5146484375,\"aabb_maxY\":807.872314453125,\"aabb_minX\":188.99859619140625,\"aabb_minY\":616.1983642578125,\"circle_posX\":296.7566223144531,\"circle_posY\":712.0353393554688,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":8,\"maskBit\":7}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":296.7566223144531,\"posY\":712.0353393554688,\"rot\":0.0,\"scaleX\":36.09539794921875,\"scaleY\":1080.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":325.59490966796875,\"aabb_dimY\":210.6439971923828,\"aabb_maxX\":792.76318359375,\"aabb_maxY\":745.6759643554688,\"aabb_minX\":467.1683044433594,\"aabb_minY\":535.0319213867188,\"circle_posX\":629.9657592773438,\"circle_posY\":640.3539428710938,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layerBit\":8,\"maskBit\":7}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":629.9657592773438,\"posY\":640.3539428710938,\"rot\":0.0,\"scaleX\":36.09539794921875,\"scaleY\":1080.0}"
             },
             "name": "Obstacle"
         }

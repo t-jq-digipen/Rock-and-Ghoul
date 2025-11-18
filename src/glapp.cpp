@@ -401,12 +401,12 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
             transform.scale.y *= scaleY;
         }
 
-        // update AABBs
-        for (auto& [entID, physics] : reg.Get_ComponentMap<Physics::PhysicsComponent>()) {
+        // update colliders
+        for (auto& [entID, collider] : reg.Get_ComponentMap<ColliderComponent>()) {
             if (reg.Has_Component<TransformComponent>(entID)) {
                 auto& transform = reg.Get_Component<TransformComponent>(entID);
                 // aabb
-                AABB& aabb = physics.Get_AABB();
+                AABB& aabb = collider.Get_AABB();
                 aabb.min.x *= scaleX;
                 aabb.max.x *= scaleX;
                 aabb.min.y *= scaleY;
@@ -414,13 +414,13 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
                 aabb.dim.x *= scaleX;
                 aabb.dim.y *= scaleY;
                 //circle
-                Circle& circle = physics.Get_Circle();
+                Circle& circle = collider.Get_Circle();
                 circle.pos.x = transform.pos.x;
                 circle.pos.y = transform.pos.y;
                 circle.rad *= (scaleX + scaleY) * 0.5f;
 
-                
-                physics.UpdateHitboxes(transform.pos);
+
+                collider.UpdateHitboxes(transform.pos);
             }
         }
         // scale all sprite components

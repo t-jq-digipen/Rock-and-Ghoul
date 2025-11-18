@@ -159,8 +159,8 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
             Circle circle = { {0, 0}, 200.f };
-            Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-            Registry::Get().Add_Component<Physics::PhysicsComponent>(player, temp);
+            Registry::Get().Add_Component<Physics::PhysicsComponent>(player, Physics::PhysicsComponent(0.015f, 500.f, false));
+            Registry::Get().Add_Component<ColliderComponent>(player, ColliderComponent(aabb, circle, true));
 
             Registry::Get().Add_Component<InputComponent>(player, InputComponent{ CS_WASD });
             Registry::Get().Add_Component<TagComponent>(player, TagComponent{ T_PLAYER });
@@ -224,8 +224,8 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
             Circle circle = { {0, 0}, 200.f };
-            Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-            Registry::Get().Add_Component<Physics::PhysicsComponent>(waffle, temp);
+            Registry::Get().Add_Component<Physics::PhysicsComponent>(waffle, Physics::PhysicsComponent(0.015f, 500.f, false));
+            Registry::Get().Add_Component<ColliderComponent>(waffle, ColliderComponent(aabb, circle, true));
 
             Registry::Get().Add_Component<InputComponent>(waffle, InputComponent{ CS_IJKL });
             Registry::Get().Add_Component<TagComponent>(waffle, TagComponent{ T_OBJECT });
@@ -273,8 +273,8 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
             Circle circle = { {0, 0}, 200.f };
-            Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
-            Registry::Get().Add_Component<Physics::PhysicsComponent>(rect, phys);
+            Registry::Get().Add_Component<Physics::PhysicsComponent>(rect, Physics::PhysicsComponent(0.015f, 500.f, false));
+            Registry::Get().Add_Component<ColliderComponent>(rect, ColliderComponent(aabb, circle, true));
 
             Registry::Get().Add_Component<ShapeComponent>(rect, ShapeComponent{ SHAPE_RECTANGLE, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
             Registry::Get().Add_Component<InputComponent>(rect, InputComponent{ CS_WASD });
@@ -310,8 +310,8 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
             Circle circle = { {0, 0}, 100.f };
-            Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
-            Registry::Get().Add_Component<Physics::PhysicsComponent>(circle_ent, phys);
+            Registry::Get().Add_Component<Physics::PhysicsComponent>(circle_ent, Physics::PhysicsComponent(0.015f, 500.f, false));
+            Registry::Get().Add_Component<ColliderComponent>(circle_ent, ColliderComponent(aabb, circle, true));
 
             Registry::Get().Add_Component<ShapeComponent>(circle_ent, ShapeComponent{ SHAPE_CIRCLE, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} });
             Registry::Get().Add_Component<InputComponent>(circle_ent, InputComponent{ CS_ARROWS });
@@ -347,8 +347,8 @@ Entity Create_Wall(float x, float y, float width, float height) {
     Registry::Get().Add_Component<TransformComponent>(wall, TransformComponent{ {x, y}, {width, height} });
     AABB aabb = Create_AABB({ x, y }, { width, height });
     Circle circle = { {x, y}, 0.0f }; // zero radius
-    Physics::PhysicsComponent phys(0.0f, true, aabb, circle, true);
-    Registry::Get().Add_Component<Physics::PhysicsComponent>(wall, phys);
+    Registry::Get().Add_Component<Physics::PhysicsComponent>(wall, Physics::PhysicsComponent(0.0f, 500.f, true));
+    Registry::Get().Add_Component<ColliderComponent>(wall, ColliderComponent(aabb, circle, true));
 
     Registry::Get().Add_Component<TagComponent>(wall, TagComponent{ T_WALL });
     return wall;
