@@ -89,14 +89,14 @@ void CoreEngine::Initialize() {
     registry.Register_Component<TransformComponent>("Transform");
     std::cout << "REGISTRY | REGISTERED TRANSFORM COMPONENT\n";
 
-    registry.Register_Component<Sprite::SpriteComponent>("Sprite", { "Transform" });
+   /* registry.Register_Component<Sprite::SpriteComponent>("Sprite", { "Transform" });
     std::cout << "REGISTRY | REGISTERED SPRITE COMPONENT\n";
 
     registry.Register_Component<Animator::AnimatorComponent>("Animator", { "Transform", "Sprite" });
     std::cout << "REGISTRY | REGISTERED ANIMATOR COMPONENT\n";
 
     registry.Register_Component<ShapeComponent>("Shape", { "Transform" });
-    std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";
+    std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";*/
 
     // To replace shape/animator/render
     registry.Register_Component<RenderComponent>("Render", { "Transform" });

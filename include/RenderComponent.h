@@ -2,6 +2,7 @@
 #include "Animator.h"
 #include "Sprite.h"
 #include <variant>
+#include <optional>
 
 
 enum ShapeType {
@@ -97,9 +98,23 @@ public:
 
 	RenderType GetRenderType() { return m_type; }
 
+	const RenderType GetRenderType() const { return m_type; }
+
+	void SetRenderType(RenderType rt) { m_type = rt; }
+
 	RenderLayer GetRenderLayer() { return m_layer; }
 
+	const RenderLayer GetRenderLayer() const { return m_layer; }
+
+	void SetRenderLayer(RenderLayer rl) { m_layer = rl; }
+
 	void UpdateData(float dt);
+
+	ShapeComponent& GetShape();
+
+	Sprite::SpriteComponent& GetSprite();
+
+	Sprite::SpriteSheet& GetSpriteSheet();
 
 	std::string Serialize() const;
 

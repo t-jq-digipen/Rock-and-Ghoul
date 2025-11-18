@@ -223,16 +223,23 @@ namespace Sprite {
 		 * @return The number of rows.
 		 */
 		int GetTotalRows() const { return m_total_rows; }
+
+		void SetTotalRows(int r) { m_total_rows = r; }
+
 		/**
 		 * @brief Get the total number of columns in the sprite sheet.
 		 * @return The number of columns.
 		 */
 		int GetTotalCols() const { return m_total_cols; }
+
+		void SetTotalCols(int c) { m_total_cols = c; }
+
 		/**
 		 * @brief Get the duration of the current animation cycle.
 		 * @return The animation duration in seconds.
 		 */
 		float GetAnimDuration() const { return anim_duration; }
+
 		/**
 		 * @brief Get the currently active frame range.
 		 * @return The ActiveFrames object representing the current frame range.

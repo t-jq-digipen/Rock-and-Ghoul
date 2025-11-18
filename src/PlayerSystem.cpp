@@ -24,6 +24,7 @@
 #include "LogicSystem.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
+#include "RenderComponent.h"
 
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
@@ -266,10 +267,11 @@ namespace PlayerMove {
 			});
 	}
 
-	inline void Update(Entity eID, float dt) {
-		(void)dt;
-		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
-		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
+	inline void Update(Entity eID, float) {
+		Registry& registry = Registry::Get();
+
+		if (!registry.Has_Component<Movement::MovementComponent>(eID)) return;
+		auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
 
 		int hor = 0;
 		int ver = 0;
@@ -287,11 +289,16 @@ namespace PlayerMove {
 		moveComp.SetMovementDirection({ fx, fy });
 
 
-		if (!Registry::Get().Has_Component<Animator::AnimatorComponent>(eID)) return;
-		auto& animComp = Registry::Get().Get_Component<Animator::AnimatorComponent>(eID);
+		//if (!registry.Has_Component<Animator::AnimatorComponent>(eID)) return;
+		//auto& animComp = Registry::Get().Get_Component<Animator::AnimatorComponent>(eID);
+
+		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
+		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
+
+		Sprite::SpriteSheet& spriteSheet = renderComp.GetSpriteSheet();
 
 		PlayerState animstate = (moving) ? PS_WALK : PS_IDLE;
-		animComp.SetState(animstate);
+		spriteSheet.SetState(animstate);
 	}
 
 	inline void End(Entity e)
@@ -352,14 +359,14 @@ namespace RockScript {
 	}
 
 	inline void Update(Entity eID, float dt) {
-		(void)dt;
+		Registry& registry = Registry::Get();
 
 
-		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID) || !Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
+		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
 		
-		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
-		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
-		auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
+		auto& moveComp	= registry.Get_Component<Movement::MovementComponent>(eID);
+		auto& physics		= registry.Get_Component<Physics::PhysicsComponent>(eID);
+		auto& transComp			= registry.Get_Component<TransformComponent>(eID);
 
 		int animstate = 0; //idle
 
@@ -440,10 +447,12 @@ namespace RockScript {
 			}
 		}
 
-		if (!Registry::Get().Has_Component<Animator::AnimatorComponent>(eID)) return;
-		auto& animComp = Registry::Get().Get_Component<Animator::AnimatorComponent>(eID);
+		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
+		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
 
-		animComp.SetState(animstate);
+		Sprite::SpriteSheet& spriteSheet = renderComp.GetSpriteSheet();
+
+		spriteSheet.SetState(animstate);
 	}
 
 	inline void End(Entity e)

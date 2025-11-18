@@ -341,6 +341,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
     std::cout << "Skipped: " << skippedCount << " existing prefabs" << std::endl;
     std::cout << "==============================\n" << std::endl;
 }
+
 Entity Create_Wall(float x, float y, float width, float height) {
     Entity wall = Registry::Get().Create_Entity();
     Registry::Get().Add_Component<ShapeComponent>(wall, ShapeComponent{ SHAPE_RECTANGLE });
@@ -426,10 +427,16 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
 
     // Sprite (animated true)
     Sprite::SpriteComponent sprite(texturePath, { size, size }, true);
-    Registry::Get().Add_Component<Sprite::SpriteComponent>(instance, sprite);
+    
+
+    Sprite::SpriteSheet spritesheet;
+    spritesheet.Sprite() = sprite;
+
+    spritesheet.SetTotalRows(3);
+    spritesheet.SetTotalCols(6);
 
     // Load texture safely through Render texture cache (ensures reuse)
-    Image img = sprite.Get_Image();
+    // Image img = sprite.Get_Image();
 
     // Correct constructor: include width and height explicitly
     Animator::AnimatorComponent anim(
@@ -440,13 +447,17 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
     );
 
     // Add proper states like the prefab does
-    anim.AddState(PS_IDLE, { 3, 0, 1, 1.0f });
-    anim.AddState(PS_WALK, { 3, 2, 3, 0.5f });
+    spritesheet.AddState(PS_IDLE, { 3, 0, 1, 1.0f });
+    spritesheet.AddState(PS_WALK, { 3, 2, 3, 0.5f });
 
     // Update initial UVs
-    anim.UpdateUV(img.widthPixels, img.heightPixels);
+    spritesheet.UpdateUV();
 
-    Registry::Get().Add_Component<Animator::AnimatorComponent>(instance, anim);
+    Registry::Get().Add_Component<RenderComponent>(instance);
+    Registry::Get().Get_Component<RenderComponent>(instance).SetRenderType(RT_SPRITESHEET);
+    Registry::Get().Get_Component<RenderComponent>(instance).SetRenderLayer(LAYER_FOREGROUND);
+
+    Registry::Get().Get_Component<RenderComponent>(instance).m_renderData = spritesheet;
 
     // Tag for batching
     Registry::Get().Add_Component<TagComponent>(instance, TagComponent{ T_BATCH });

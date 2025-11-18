@@ -16,6 +16,34 @@ void Fix(ShapeComponent&) { /*do nothing*/ }
 
 void RenderComponent::UpdateData(float dt) {
 
+	//switch (m_type)
+	//{
+	//case RT_SHAPE:
+	//{
+	//	return;
+	//}
+	//break; // end RT_SHAPE
+
+	//case RT_IMAGE:
+	//{
+	//	std::get<Sprite::SpriteComponent>(m_renderData).Update_ImageSize();
+	//	return;
+	//}
+	//break; // end RT_IMAGE
+
+	//case RT_SPRITESHEET:
+	//{
+	//	Sprite::SpriteSheet& spritesheet = std::get<Sprite::SpriteSheet>(m_renderData);
+	//	spritesheet.Sprite().Update_ImageSize();
+	//	spritesheet.UpdateFrame(dt);
+	//	return;
+	//}
+	//break; // end RT_SPRITESHEET
+
+	//default:
+	//	break;
+	//}
+
 	std::visit([&](auto& data)
 		{ Fix(data); }, m_renderData);
 
@@ -25,7 +53,33 @@ void RenderComponent::UpdateData(float dt) {
 		
 	}
 
+}
 
+ShapeComponent& RenderComponent::GetShape() {
+	if (m_type != RT_SHAPE) {
+		std::cout << "Render component type wrong :( not shape!\n";
+		ShapeComponent temp{};
+		return temp; 
+	}
+	return std::get<ShapeComponent>(m_renderData);
+}
+
+Sprite::SpriteComponent& RenderComponent::GetSprite() {
+	if (m_type != RT_IMAGE) {
+		Sprite::SpriteComponent temp{};
+		std::cout << "Render component type wrong :( not image!\n"; 
+		return temp; 
+	}
+	return std::get<Sprite::SpriteComponent>(m_renderData);
+}
+
+Sprite::SpriteSheet& RenderComponent::GetSpriteSheet() {
+	if (m_type != RT_SPRITESHEET) {
+		Sprite::SpriteSheet temp{};
+		std::cout << "Render component type wrong :( not spritesheet!\n";
+		return temp;
+	}
+	return std::get<Sprite::SpriteSheet>(m_renderData);
 }
 
 std::string RenderComponent::Serialize() const {

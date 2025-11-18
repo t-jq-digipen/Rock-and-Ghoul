@@ -678,7 +678,9 @@ void ImGuiSystem::Update(float dt)
                     sprite.Set_Size(Vec2(100.f, 100.f));
                     std::cerr << "[Editor] Warning: Failed to load image; using default 100x100.\n";
                 }
-                reg.Add_Component<Sprite::SpriteComponent>(e, sprite);
+                reg.Add_Component<RenderComponent>(e);
+                reg.Get_Component<RenderComponent>(e).m_renderData = sprite;
+                // reg.Add_Component<Sprite::SpriteComponent>(e, sprite);
 
                 // Physics (AABB sized to sprite; SetStatic(false))
                 Physics::PhysicsComponent phys;
@@ -1237,7 +1239,7 @@ void ImGuiSystem::ShowInspectorWindow()
 
                     spritesheet.UpdateUV();
                     ActiveFrames& temp = spritesheet.GetFrames();
-
+                    ImVec2 displaySize{};
                     // Display the sprite
                     {
                         GLuint texID = sprite.Get_Image().textureID;
@@ -1248,7 +1250,7 @@ void ImGuiSystem::ShowInspectorWindow()
 
                         float scale = (texW != 0) ? avail.x / texW : 0.f;
 
-                        ImVec2 displaySize(texW * scale, texH * scale);
+                        displaySize = { texW * scale, texH * scale };
 
                         ImVec2 imagePos = ImGui::GetCursorScreenPos();
 
@@ -1305,19 +1307,20 @@ void ImGuiSystem::ShowInspectorWindow()
                             }, widgetVariant);
                         ImGui::PopID();
                     }
+                    spritesheet.SetState(spritesheet.GetCurrentState());
 
 
                     Editor::Widget_Int widgetrow(&temp.row, true, 0, spritesheet.GetTotalRows());
                     Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, spritesheet.GetTotalCols());
                     Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, spritesheet.GetTotalCols());
                     Editor::Widget_Float widgetduration(&temp.duration);
-                    ImGui::PushItemWidth(50);
+                    //ImGui::PushItemWidth(displaySize.x/4);
                     MakeWidget(widgetrow, "row");
-                    ImGui::SameLine();
+                    //ImGui::SameLine();
                     MakeWidget(widgetcolstart, "first col");
-                    ImGui::SameLine();
+                    //ImGui::SameLine();
                     MakeWidget(widgetcolend, "last col");
-                    ImGui::PopItemWidth();
+                    //ImGui::PopItemWidth();
                     MakeWidget(widgetduration, "duration");
 
                     ImGui::Separator();
@@ -1339,51 +1342,51 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
-        else if (compName == "Animator")
-        {
-            Animator::AnimatorComponent& animcomp = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
-            if (ImGui::TreeNode(compName.c_str()))
-            {
-                // --- show component fields ---
-                for (auto& [name, widgetVariant] : componentData.GetDataMap())
-                {
-                    ImGui::PushID(name.c_str());
-                    std::visit([&](auto& widget) {
-                        MakeWidget(widget, name);
-                        }, widgetVariant);
-                    ImGui::PopID();
-                }
+        //else if (compName == "Animator")
+        //{
+        //    Animator::AnimatorComponent& animcomp = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
+        //    if (ImGui::TreeNode(compName.c_str()))
+        //    {
+        //        // --- show component fields ---
+        //        for (auto& [name, widgetVariant] : componentData.GetDataMap())
+        //        {
+        //            ImGui::PushID(name.c_str());
+        //            std::visit([&](auto& widget) {
+        //                MakeWidget(widget, name);
+        //                }, widgetVariant);
+        //            ImGui::PopID();
+        //        }
 
-                // need to figure out how to add state...
-                animcomp.UpdateUV();
-                ActiveFrames temp = animcomp.GetFrames();
+        //        // need to figure out how to add state...
+        //        animcomp.UpdateUV();
+        //        ActiveFrames temp = animcomp.GetFrames();
 
-                Editor::Widget_Int widgetrow(&temp.row, true, 0, animcomp.GetTotalRows());
-                Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());
-                Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, animcomp.GetTotalCols());
-                Editor::Widget_Float widgetduration(&temp.duration);
-                ImGui::PushItemWidth(50);
-                MakeWidget(widgetrow, "row");
-                ImGui::SameLine();
-                MakeWidget(widgetcolstart, "first col");
-                ImGui::SameLine();
-                MakeWidget(widgetcolend, "last col");
-                ImGui::PopItemWidth();
-                MakeWidget(widgetduration, "duration");
+        //        Editor::Widget_Int widgetrow(&temp.row, true, 0, animcomp.GetTotalRows());
+        //        Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());
+        //        Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, animcomp.GetTotalCols());
+        //        Editor::Widget_Float widgetduration(&temp.duration);
+        //        ImGui::PushItemWidth(50);
+        //        MakeWidget(widgetrow, "row");
+        //        ImGui::SameLine();
+        //        MakeWidget(widgetcolstart, "first col");
+        //        ImGui::SameLine();
+        //        MakeWidget(widgetcolend, "last col");
+        //        ImGui::PopItemWidth();
+        //        MakeWidget(widgetduration, "duration");
 
-                ImGui::Separator();
-                if (ImGui::SmallButton("Add State"))
-                {
-                    animcomp.AddState(static_cast<int>(animcomp.GetStateFrames().size()), { 0,0,0 });
-                }
+        //        ImGui::Separator();
+        //        if (ImGui::SmallButton("Add State"))
+        //        {
+        //            animcomp.AddState(static_cast<int>(animcomp.GetStateFrames().size()), { 0,0,0 });
+        //        }
 
-                animcomp.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);
-                
+        //        animcomp.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);
+        //        
 
-                ImGui::TreePop();
-            }
+        //        ImGui::TreePop();
+        //    }
 
-        }
+        //}
         // Custom data fields for behaviour component
         else if (compName == "Behaviour")
         {
@@ -1496,12 +1499,12 @@ void ImGuiSystem::ShowAddRemoveComponents()
             if (ImGui::SmallButton(("Remove##" + compName).c_str()))
             {
                 //std::string compName = m_registry.Get_ComponentTypeName(typeID);
-                if (compName == "Animator" &&
+                /*if (compName == "Animator" &&
                     m_registry.Has_Component<Sprite::SpriteComponent>(eID))
                 {
                     auto& sprite = m_registry.Get_Component<Sprite::SpriteComponent>(eID);
                     sprite.Set_Animated(false);
-                }
+                }*/
 
                 m_registry.Remove_Component(eID, typeID);
                 std::cout << "[Editor] Removed component from entity "<< eID << "\n";
@@ -2196,40 +2199,40 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         bool inside = false;
 
         // Sprite bounds
-        if (reg.Has_Component<Sprite::SpriteComponent>(entity))
-        {
-            auto& sprite = reg.Get_Component<Sprite::SpriteComponent>(entity);
-            Vec2 half = sprite.Get_Scale() * 0.5f;
-            minW = worldPos - half;
-            maxW = worldPos + half;
+        //if (reg.Has_Component<Sprite::SpriteComponent>(entity))
+        //{
+        //    auto& sprite = reg.Get_Component<Sprite::SpriteComponent>(entity);
+        //    Vec2 half = sprite.Get_Scale() * 0.5f;
+        //    minW = worldPos - half;
+        //    maxW = worldPos + half;
 
-            inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
-                mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
-        }
-        // Physics collider bounds
-        else if (reg.Has_Component<Physics::PhysicsComponent>(entity))
-        {
-            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
-            const AABB& aabb = phys.Get_AABB();
-            minW = aabb.min;
-            maxW = aabb.max;
+        //    inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
+        //        mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
+        //}
+        //// Physics collider bounds
+        //else if (reg.Has_Component<Physics::PhysicsComponent>(entity))
+        //{
+        //    auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
+        //    const AABB& aabb = phys.Get_AABB();
+        //    minW = aabb.min;
+        //    maxW = aabb.max;
 
-            inside = (mouseWorld.x >= aabb.min.x && mouseWorld.x <= aabb.max.x &&
-                mouseWorld.y >= aabb.min.y && mouseWorld.y <= aabb.max.y);
-        }
-        // Shape bounds
-        else if (reg.Has_Component<ShapeComponent>(entity))
-        {
-            auto& shape = reg.Get_Component<ShapeComponent>(entity);
-            Vec2 half = shape.dimensions * 0.5f;
-            minW = worldPos - half;
-            maxW = worldPos + half;
+        //    inside = (mouseWorld.x >= aabb.min.x && mouseWorld.x <= aabb.max.x &&
+        //        mouseWorld.y >= aabb.min.y && mouseWorld.y <= aabb.max.y);
+        //}
+        //// Shape bounds
+        //else if (reg.Has_Component<ShapeComponent>(entity))
+        //{
+        //    auto& shape = reg.Get_Component<ShapeComponent>(entity);
+        //    Vec2 half = shape.dimensions * 0.5f;
+        //    minW = worldPos - half;
+        //    maxW = worldPos + half;
 
-            inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
-                mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
-        }
-        // Fallback — constant screen-size square (~40×40 px)
-        else
+        //    inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
+        //        mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
+        //}
+        //// Fallback — constant screen-size square (~40×40 px)
+        //else
         {
             ImVec2 center = Render::WorldToPanel(worldPos, panelPos, panelSize);
             float boxSize = 40.f; // in pixels

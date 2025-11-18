@@ -3,10 +3,10 @@
         {
             "components": {
                 "Lifetime": "{\"age\":0.0,\"lifetime\":3.005000114440918}",
-                "Physics": "{\"aabb\":{\"centerX\":672.8495483398438,\"centerY\":280.9911804199219,\"dimX\":112.66100311279297,\"dimY\":86.99600219726563},\"circle\":{\"posX\":672.8495483398438,\"posY\":280.9911804199219,\"rad\":0.0},\"decay\":0.0,\"friction\":0.0,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":500.0,\"velY\":0.0,\"willCollide\":false}",
-                "Sprite": "{\"animated\":false,\"scaleX\":0.5,\"scaleY\":0.5,\"texturePath\":\"../Assets/right.png\"}",
+                "Physics": "{\"aabb\":{\"centerX\":737.8406982421875,\"centerY\":259.9646301269531,\"dimX\":112.66100311279297,\"dimY\":86.99600219726563},\"circle\":{\"posX\":737.8406982421875,\"posY\":259.9646301269531,\"rad\":0.0},\"decay\":0.0,\"friction\":0.0,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":500.0,\"velY\":0.0,\"willCollide\":false}",
+                "Render": "{\"renderData\":\"{\\\"animated\\\":false,\\\"scaleX\\\":0.5,\\\"scaleY\\\":0.5,\\\"texturePath\\\":\\\"../Assets/right.png\\\"}\",\"renderLayer\":1,\"renderType\":1}",
                 "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":672.8495483398438,\"posY\":280.9911804199219,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":737.8406982421875,\"posY\":259.9646301269531,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "projectile"
         }

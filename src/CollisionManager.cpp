@@ -372,14 +372,14 @@ void CollisionManager::CheckCollisions() {
         // Determine collision shapes
         bool aIsCircle = false, bIsCircle = false;
 
-        if (m_registry.Has_Component<ShapeComponent>(a)) {
-            auto& shapeA = m_registry.Get_Component<ShapeComponent>(a);
-            aIsCircle = (shapeA.shape == SHAPE_CIRCLE);
-        }
-        if (m_registry.Has_Component<ShapeComponent>(b)) {
-            auto& shapeB = m_registry.Get_Component<ShapeComponent>(b);
-            bIsCircle = (shapeB.shape == SHAPE_CIRCLE);
-        }
+        //if (m_registry.Has_Component<ShapeComponent>(a)) {
+        //    auto& shapeA = m_registry.Get_Component<ShapeComponent>(a);
+        //    aIsCircle = (shapeA.shape == SHAPE_CIRCLE);
+        //}
+        //if (m_registry.Has_Component<ShapeComponent>(b)) {
+        //    auto& shapeB = m_registry.Get_Component<ShapeComponent>(b);
+        //    bIsCircle = (shapeB.shape == SHAPE_CIRCLE);
+        //}
 
         // NARROW PHASE: Precise collision detection
         bool hit = false;

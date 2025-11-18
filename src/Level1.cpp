@@ -444,9 +444,11 @@ void Level1::Update()
 		for (auto& [entID, tag] : registry.Get_ComponentMap<TagComponent>())
 		{
 			if ((tag.tag == T_BATCH ) &&
-				registry.Has_Component<Animator::AnimatorComponent>(entID))
+				registry.Has_Component<RenderComponent>(entID))
 			{
-				auto& anim = registry.Get_Component<Animator::AnimatorComponent>(entID);
+				RenderComponent& renderComp = registry.Get_Component<RenderComponent>(entID);
+				if (renderComp.GetRenderType() != RT_SPRITESHEET) continue;
+				auto& anim = registry.Get_Component<RenderComponent>(entID).GetSpriteSheet();
 				if (anim.GetCurrentState() == PS_WALK) anim.SetState(PS_IDLE);
 				else anim.SetState(PS_WALK);
 			}
