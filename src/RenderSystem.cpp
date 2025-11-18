@@ -337,19 +337,19 @@ void RenderSystem::Update(float dt) {
                 {
                 case RT_SHAPE:
                 {
-                    DrawItem(std::get<ShapeComponent>(renderComp.m_renderData), transComp);
+                    DrawItem(renderComp.GetShape(), transComp);
                 }
                 break; // end RT_SHAPE
 
                 case RT_IMAGE:
                 {
-                    DrawItem(std::get<Sprite::SpriteComponent>(renderComp.m_renderData), transComp);
+                    DrawItem(renderComp.GetSprite(), transComp);
                 }
                 break; // end RT_IMAGE
 
                 case RT_SPRITESHEET:
                 {
-                    DrawItem(std::get<Sprite::SpriteSheet>(renderComp.m_renderData), transComp);
+                    DrawItem(renderComp.GetSpriteSheet(), transComp);
                 }
                 break; // end RT_SPRITESHEET
 

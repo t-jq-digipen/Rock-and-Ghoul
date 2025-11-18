@@ -104,6 +104,10 @@ namespace Sprite {
 		
 	}
 
+	void SpriteComponent::Update(float) {
+		Update_ImageSize();
+	}
+
 	std::string SpriteComponent::Serialize() const {
 
 		json j = {
@@ -281,7 +285,7 @@ namespace Sprite {
 			std::cout << "U NEVER SET THIS STATE " << state << " BEFORE!!! WHAT U DOING!!!\n";
 			SetState(0);
 			return;
-			throw std::runtime_error("NEVER DECLARE STATE THEN GO SET STATE FOR SPRITESHEET\n");
+			// throw std::runtime_error("NEVER DECLARE STATE THEN GO SET STATE FOR SPRITESHEET\n");
 		}
 
 		// HAS frames of this key
@@ -322,7 +326,11 @@ namespace Sprite {
 		stateframe[m_current_state].duration = duration;
 	}
 
+	void SpriteSheet::Update(float dt) {
+		m_sprite.Update_ImageSize();
 
+		UpdateFrame(dt);
+	}
 
 	std::string SpriteSheet::Serialize() const {
 		json statesJson = json::object();

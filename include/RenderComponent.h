@@ -1,4 +1,5 @@
 #pragma once
+#include "DataDefs.h"	// For rendertype, renderlayer, IRenderData
 #include "Animator.h"
 #include "Sprite.h"
 #include <variant>
@@ -10,12 +11,14 @@ enum ShapeType {
 	SHAPE_CIRCLE
 };
 
-struct ShapeComponent {
+struct ShapeComponent : public IRenderData {
 	ShapeType shape = SHAPE_RECTANGLE;
 	Vec2 dimensions = { 1.f, 1.f };
 	Vec3 color = { 1.0f, 1.0f, 1.0f };
 
-	std::string Serialize() const {
+	void Update(float) override {}
+
+	std::string Serialize() const override {
 		json j = {
 			{"shapeType", static_cast<int>(shape)},
 			{"dimX", dimensions.x},
@@ -25,6 +28,12 @@ struct ShapeComponent {
 			{"colorZ", color.z}
 		};
 		return j.dump();
+	}
+
+	RenderType GetType() const override { return RT_SHAPE; }
+
+	std::unique_ptr<IRenderData> Clone() const override {
+		return std::make_unique<ShapeComponent>(*this);
 	}
 
 	static ShapeComponent DeSerialize(Entity eID, const std::string& data) {
@@ -65,42 +74,33 @@ struct ShapeComponent {
 	}
 };
 
-enum RenderType {
-	RT_SHAPE,
-	RT_IMAGE,
-	RT_SPRITESHEET
-};
 
-enum RenderLayer {
-	LAYER_BACKGROUND,
-	LAYER_GAMEOBJECT,
-	LAYER_FOREGROUND,
-	LAYER_UI
-};
 
-class IRenderType {
-
-};
 
 class RenderComponent {
 private:
 	// Type for serialization/editing
-	RenderType m_type;
+	//RenderType m_type;
 	// For rendering layers
 	RenderLayer m_layer;	
 
 public:
 	// Actual render data
-	std::variant<Sprite::SpriteComponent, Sprite::SpriteSheet, ShapeComponent> m_renderData;
+	//std::variant<Sprite::SpriteComponent, Sprite::SpriteSheet, ShapeComponent> m_renderData;
+	std::unique_ptr<IRenderData> m_renderData;
 
 public:
 	RenderComponent();
 
-	RenderType GetRenderType() { return m_type; }
+	RenderComponent(const RenderComponent& rhs);
 
-	const RenderType GetRenderType() const { return m_type; }
+	RenderComponent& operator=(const RenderComponent& rhs);
 
-	void SetRenderType(RenderType rt) { m_type = rt; }
+	RenderType GetRenderType();
+
+	const RenderType GetRenderType() const;
+
+	void SetRenderType(RenderType rt);
 
 	RenderLayer GetRenderLayer() { return m_layer; }
 
@@ -112,9 +112,21 @@ public:
 
 	ShapeComponent& GetShape();
 
+	const ShapeComponent& GetShape() const;
+
 	Sprite::SpriteComponent& GetSprite();
 
+	const Sprite::SpriteComponent& GetSprite() const;
+
 	Sprite::SpriteSheet& GetSpriteSheet();
+
+	const Sprite::SpriteSheet& GetSpriteSheet() const;
+
+	void SetShape(ShapeComponent const& shape);
+
+	void SetSprite(Sprite::SpriteComponent const& sprite);
+
+	void SetSpriteSheet(Sprite::SpriteSheet const& spritesheet);
 
 	std::string Serialize() const;
 

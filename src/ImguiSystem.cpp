@@ -679,7 +679,7 @@ void ImGuiSystem::Update(float dt)
                     std::cerr << "[Editor] Warning: Failed to load image; using default 100x100.\n";
                 }
                 reg.Add_Component<RenderComponent>(e);
-                reg.Get_Component<RenderComponent>(e).m_renderData = sprite;
+                reg.Get_Component<RenderComponent>(e).SetSprite(sprite);
                 // reg.Add_Component<Sprite::SpriteComponent>(e, sprite);
 
                 // Physics (AABB sized to sprite; SetStatic(false))
@@ -1142,7 +1142,6 @@ void ImGuiSystem::ShowInspectorWindow()
             RenderComponent& rendercomp = m_registry.Get_Component<RenderComponent>(selectedEntity);
             if (ImGui::TreeNode(compName.c_str()))
             {
-                RenderType startRenderType = rendercomp.GetRenderType();
                 // For m_type and m_layer
                 for (auto& [name, widgetVariant] : componentData.GetDataMap())
                 {
@@ -1152,21 +1151,31 @@ void ImGuiSystem::ShowInspectorWindow()
                     ImGui::PopID();
                 }
 
-                bool typeChanged = (startRenderType != rendercomp.GetRenderType());
-                if (typeChanged && (startRenderType == RT_IMAGE))
+                RenderType startRenderType = rendercomp.GetRenderType();
+                RenderType type = rendercomp.GetRenderType();
+                // RenderType dropdown
                 {
-                    
+                    Editor::Widget_Dropdown dropdown;
+                    dropdown.ref = reinterpret_cast<unsigned int*>(&type);
+                    dropdown.Add_Option("Shape", static_cast<unsigned int>(RT_SHAPE));
+                    dropdown.Add_Option("Image", static_cast<unsigned int>(RT_IMAGE));
+                    dropdown.Add_Option("Spritesheet", static_cast<unsigned int>(RT_SPRITESHEET));
+                    MakeWidget(dropdown, "Type");
                 }
 
+                bool typeChanged = (type != startRenderType);
+
                 // switch m_type for displays
-                switch (rendercomp.GetRenderType())
+                switch (type)
                 {
                 case RT_SHAPE:
                 {
                     ImGui::SeparatorText("Shape");
 
-                    if (typeChanged) { rendercomp.m_renderData = ShapeComponent(); }
-                    ShapeComponent& shape = std::get<ShapeComponent>(rendercomp.m_renderData);
+                    // if (typeChanged) { rendercomp.m_renderData = ShapeComponent(); }
+
+                    if (typeChanged) { rendercomp.SetRenderType(type); }
+                    ShapeComponent& shape = rendercomp.GetShape();
                     Editor::ComponentData shapedata = shape.EditorData();
                     for (auto& [name, widgetVariant] : shapedata.GetDataMap())
                     {
@@ -1183,10 +1192,16 @@ void ImGuiSystem::ShowInspectorWindow()
                     ImGui::SeparatorText("Sprite");
 
                     if (typeChanged) { 
-                        if (startRenderType == RT_SPRITESHEET) { rendercomp.m_renderData = std::get<Sprite::SpriteSheet>(rendercomp.m_renderData).Sprite(); }
-                        else { rendercomp.m_renderData = Sprite::SpriteComponent(); }
+                        if (startRenderType == RT_SPRITESHEET) {
+                            Sprite::SpriteComponent temp = rendercomp.GetSpriteSheet().Sprite(); 
+                            rendercomp.SetSprite(temp);
+                        }
+                        else 
+                        { 
+                            rendercomp.SetRenderType(type); 
+                        }
                     }
-                    Sprite::SpriteComponent& sprite = std::get<Sprite::SpriteComponent>(rendercomp.m_renderData);
+                    Sprite::SpriteComponent& sprite = rendercomp.GetSprite();
 
                     Editor::ComponentData spritedata = sprite.EditorData();
                     for (auto& [name, widgetVariant] : spritedata.GetDataMap())
@@ -1218,12 +1233,17 @@ void ImGuiSystem::ShowInspectorWindow()
                     ImGui::SeparatorText("SpriteSheet");
 
                     if (typeChanged) { 
-                        Sprite::SpriteComponent tempsprite = Sprite::SpriteComponent();
-                        if (startRenderType == RT_IMAGE) { tempsprite = std::get<Sprite::SpriteComponent>(rendercomp.m_renderData); }
-                        rendercomp.m_renderData = Sprite::SpriteSheet(); 
-                        std::get<Sprite::SpriteSheet>(rendercomp.m_renderData).Sprite() = tempsprite;
+                        if (startRenderType == RT_IMAGE) {
+                            Sprite::SpriteComponent tempsprite = rendercomp.GetSprite();
+                            rendercomp.SetRenderType(type);
+                            rendercomp.GetSpriteSheet().Sprite() = tempsprite;
+                        }
+                        else
+                        {
+                            rendercomp.SetRenderType(type);
+                        }
                     }
-                    Sprite::SpriteSheet& spritesheet = std::get<Sprite::SpriteSheet>(rendercomp.m_renderData);
+                    Sprite::SpriteSheet& spritesheet = rendercomp.GetSpriteSheet();
                     Sprite::SpriteComponent& sprite = spritesheet.Sprite();
 
                     // Sprite stuff
@@ -2262,7 +2282,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         }
 
         // Convert to panel for draw (for sprite/physics/shape)
-        ImVec2 min = Render::WorldToPanel(minW, panelPos, panelSize);
+        /*ImVec2 min = Render::WorldToPanel(minW, panelPos, panelSize);
         ImVec2 max = Render::WorldToPanel(maxW, panelPos, panelSize);
 
         ImU32 color =
@@ -2275,7 +2295,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         dl->AddRect(min, max, color, 0.f, 0, 2.f);
 
         if (inside)
-            hovered = entity;
+            hovered = entity;*/
     }
 
     // ──────────────────────────────────────────────

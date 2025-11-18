@@ -95,7 +95,33 @@ struct GameSettings {
     GameSettings() : volume(1.0f), resolutionWidth(1920), resolutionHeight(1080), fullscreen(false) {}
 };
 
+enum RenderType {
+    RT_SHAPE,
+    RT_IMAGE,
+    RT_SPRITESHEET
+};
 
+enum RenderLayer {
+    LAYER_BACKGROUND,
+    LAYER_GAMEOBJECT,
+    LAYER_FOREGROUND,
+    LAYER_UI
+};
+
+// Type erased render data type
+class IRenderData {
+public:
+
+    virtual ~IRenderData() = default;
+
+    virtual void Update(float) = 0;
+
+    virtual std::string Serialize() const = 0;
+
+    virtual RenderType GetType() const = 0;
+
+    virtual std::unique_ptr<IRenderData> Clone() const = 0;
+};
 
 /**
 * @struct ActiveFrames
