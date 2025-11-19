@@ -32,7 +32,7 @@
 #include "CrashHandler.h"
 #include <PlayerSystem.h>
 #include <Camera.h>
-
+#include "SceneManager.h"
 constexpr float LEVEL_WIDTH = 1920.f;
 constexpr float LEVEL_HEIGHT = 1080.f;
 constexpr float WALL_THICKNESS = 50.f;
@@ -61,7 +61,7 @@ void Level2::Load()
 		CrashHandler::LogIfZeroTexture(bgTexture2, "../Assets/MainMenu_Background.jpg");
 		});
 	RenderSystem::ClearBackgroundTextures();
-	RenderSystem::AddBackgroundTexture(bgTexture2);
+	RenderSystem::AddBackgroundTexture(bgTexture2, "../Assets/MainMenu_Background.jpg");
 
 	// ===== FIX: Ensure prefabs folder exists =====
 	std::cout << "\n=== CHECKING PREFABS FOLDER ===" << std::endl;
@@ -175,7 +175,7 @@ void Level2::Init()
 		//	.centered = true });
 
 		// Button to go to Level 1
-		GuiSystem::Get().AddButton({
+		/*GuiSystem::Get().AddButton({
 			.label = "LEVEL 1",
 			.pos = {1650.0f, 150.0f},
 			.size = {300.0f, 150.0f},
@@ -183,7 +183,7 @@ void Level2::Init()
 			.onClick = [] { GSM_SetNextState(GameState::GS_LEVEL1); },
 			.soundType = AudioSystem::ButtonType::QUIT,
 			.shape = ButtonShape::Rounded
-			});
+			});*/
 
 		//GuiSystem::Get().AddTextBox({
 		//	.text = "ENEMY AI is being tested here",
@@ -436,11 +436,11 @@ void Level2::Update()
 
 	CrashHandler::Safe("Level2", "Update", [&] {
 		// to test game state changes (do not trigger if GUI Editor is open)
-		if (Input::IsKeyPressed(GLFW_KEY_8) && !GuiSystem::Get().GetEditMode())
-		{
-			GSM_SetNextState(GameState::GS_MAIN_MENU);
-			//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
-		}
+		//if (Input::IsKeyPressed(GLFW_KEY_8) && !GuiSystem::Get().GetEditMode())
+		//{
+		//	GSM_SetNextState(GameState::GS_MAIN_MENU);
+		//	//nextState = GameState::GS_MAIN_MENU;     // go to main menu state
+		//}
 		//else if (Input::IsKeyPressed(GLFW_KEY_R) && !GuiSystem::Get().GetEditMode())
 		//{
 		//	GSM_SetNextState(GameState::GS_RESTART);
@@ -448,14 +448,14 @@ void Level2::Update()
 		//	std::cout << "Level 2 Restarted!!!" << std::endl;
 		//}
 
-		if (Input::IsKeyPressed(GLFW_KEY_P) && !GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
-		{
-			GSM_SetIsPaused(true);
-		}
-		else if (Input::IsKeyPressed(GLFW_KEY_P) && GSM_IsPaused() && !GuiSystem::Get().GetEditMode())
-		{
-			GSM_SetIsPaused(false);
-		}
+		//if (Input::IsKeyPressed(GLFW_KEY_P) && !IsPaused() && !GuiSystem::Get().GetEditMode())
+		//{
+		//	GSM_SetIsPaused(true);
+		//}
+		//else if (Input::IsKeyPressed(GLFW_KEY_P) && IsPaused() && !GuiSystem::Get().GetEditMode())
+		//{
+		//	GSM_SetIsPaused(false);
+		//}
 
 		//if (fretboard) {
 		//	fretboard->PlayerInput();

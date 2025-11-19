@@ -11,18 +11,18 @@
  * loop of the game.
  *
  * The engine:
- * - Initializes various systems and the Game State Manager(GSM).
+ * - Initializes all engine systems.
  * - Controls frame rate and delta-time clamping.
  * - Manages system updates and timing measurements for tracking
- *   system performances
- * - Handles rendering, input management, and gamestate transitions.
+ *   system performance.
+ * - Handles rendering, input management, and scene transitions
+ *   through SceneManager.
  * - Shuts down all subsystems.
  *
- * The GSM has global functions provided for interfacing, allowing
- * retrieval and modification of current, previous, and next states
- * outside of the engine code.
+ * GSM is kept only as a legacy global while older code still
+ * references it, but scene flow is now driven by SceneManager.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -30,43 +30,58 @@
 #include "System.h"
 #include "glapp.h"
 #include "Input.h"
+
 #include <GLFW/glfw3.h>
-#include "GameStateManager.h"
 #include <iostream>
 #include <string>
+#include <algorithm>
+#include <chrono>
+#include <typeinfo>
+
+
 #include "ImguiSystem.h"
 #include "FrameRateController.h"
-#include <algorithm>
 #include "DataDefs.h"
 #include "MovementSystem.h"
 #include <nlohmann/json.hpp>
 #include "RenderSystem.h"
 #include "GuiSystem.h"
-
 #include "PlayerSystem.h"
 #include "EnemySystem.h"
 #include "PhysicsSystem.h"
-
 #include "BehaviourComponent.h"
 #include "GameScripts.h"
 #include "AudioComponent.h"
-
 #include "MonoSystem.h"
 #include "MonoScriptComponent.h"
-CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
+#include "SceneManager.h"
+
+CoreEngine::CoreEngine()
+    : systems{}
+    , timings{}
+    , running(true)
+    , lastFrame(0.0)
+{
+}
+
+// Target FPS
 FrameRateController frameRate(60);
 
-GSM gsm;
-float g_dt; // Global dt
-bool g_gamePaused = false; // pause state flag
+// Legacy globals (still used in some systems like LogicSystem / scripts)
+//GSM   gsm;
+float g_dt;           // Global fixed dt
+bool  g_gamePaused = false;
 
-void CoreEngine::AddSystem(ISystem* sys) {
+void CoreEngine::AddSystem(ISystem* sys)
+{
     systems.push_back(sys);
 }
 
-void CoreEngine::Initialize() {
-    // --- SYSTEMS ---
-
+void CoreEngine::Initialize()
+{
+    // ----------------------------------------------------
+    // Register Systems (order matters!)
+    // ----------------------------------------------------
     AddSystem(&LogicSystem::Get());
     AddSystem(new MovementSystem());
     AddSystem(new PlayerSystem());
@@ -78,29 +93,25 @@ void CoreEngine::Initialize() {
     AddSystem(new ImGuiSystem());
     AddSystem(&MonoSystem::Get());
 
-
-    // --- SYSTEMS END ---
-
     std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
         << " at " << (void*)&GLApp::ptr_window << std::endl;
 
-    // --- COMPONENTS ---
+    // ----------------------------------------------------
+    // Register Components
+    // ----------------------------------------------------
     Registry& registry = Registry::Get();
     std::cout << "\n\nINITIALIZING REGISTRY\n==============================\n";
     std::cout << "INITIALIZING DEFAULT COMPONENTS: \n==============================\n";
+
     registry.Register_Component<TransformComponent>("Transform");
     std::cout << "REGISTRY | REGISTERED TRANSFORM COMPONENT\n";
 
-   /* registry.Register_Component<Sprite::SpriteComponent>("Sprite", { "Transform" });
-    std::cout << "REGISTRY | REGISTERED SPRITE COMPONENT\n";
+    // Old sprite / animator / shape chain replaced by RenderComponent
+    //registry.Register_Component<Sprite::SpriteComponent>("Sprite", { "Transform" });
+    //registry.Register_Component<Animator::AnimatorComponent>("Animator", { "Transform", "Sprite" });
+    //registry.Register_Component<ShapeComponent>("Shape", { "Transform" });
 
-    registry.Register_Component<Animator::AnimatorComponent>("Animator", { "Transform", "Sprite" });
-    std::cout << "REGISTRY | REGISTERED ANIMATOR COMPONENT\n";
-
-    registry.Register_Component<ShapeComponent>("Shape", { "Transform" });
-    std::cout << "REGISTRY | REGISTERED SHAPE COMPONENT\n";*/
-
-    // To replace shape/animator/render
+    // New render pipeline
     registry.Register_Component<RenderComponent>("Render", { "Transform" });
     std::cout << "REGISTRY | REGISTERED RENDER COMPONENT\n";
 
@@ -122,262 +133,151 @@ void CoreEngine::Initialize() {
     registry.Register_Component<LifetimeComponent>("Lifetime");
     std::cout << "REGISTRY | REGISTERED LIFETIME COMPONENT\n";
 
-    // marker for non-standard components which should be shifted out to game files
     std::cout << "NON DEFAULT COMPONENTS: \n==============================\n";
 
     registry.Register_Component<TagComponent>("Tag");
     std::cout << "REGISTRY | REGISTERED TAG COMPONENT\n";
-    /*registry.Register_Component<ElementComponent>("Element");
-    std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";*/
+
     registry.Register_Component<BehaviourComponent>("Behaviour");
-    //Registry::Get().Register_Component<>("MonoScriptComponent");
+    std::cout << "REGISTRY | REGISTERED BEHAVIOUR COMPONENT\n";
+
     registry.Register_Component<MonoScriptComponent>("MonoScriptComponent");
+    std::cout << "REGISTRY | REGISTERED MONOSCRIPT COMPONENT\n";
 
     registry.Register_Component<RenderLayerComponent>("RenderLayer");
     std::cout << "REGISTRY | REGISTERED RENDERLAYER COMPONENT\n";
-    // --- COMPONENTS END ---
 
-    for (auto s : systems) s->Initialize();
-    gsm.Init(GameState::GS_MAIN_MENU);
+    // ----------------------------------------------------
+    // Initialize all systems
+    // ----------------------------------------------------
+    for (auto* s : systems)
+        s->Initialize();
+
+    // ----------------------------------------------------
+    // Initial scene
+    // ----------------------------------------------------
+    SceneManager& sm = SceneManager::Get();
+
+    // Load your default scene (main menu)
+    sm.LoadScene("../Assets/saves/MainMenu.json");
+
+    // Legacy GSM init – can be removed once all GSM users are gone
+    //gsm.Init(GameState::GS_MAIN_MENU);
+
+    // Flag for ImGui / editor that engine is ready
     GLApp::gameInitialized = true;
-    //RegisterAllGameScripts();
 }
 
-void CoreEngine::Run() {
-    std::cout << "EngRun\n";
-    double lastTitleUpdate = glfwGetTime();
-    int frames = 0;
-    while (running && !glfwWindowShouldClose(GLApp::ptr_window) && GSM_CurrentState() != GameState::GS_QUIT) {
-        if (gsm.GetCurrentState() != GameState::GS_RESTART)
-        {
-            // --- 1. Bind function pointers for the 
-            // current state
-            gsm.Update();
-
-            // --- 2. Load + Init ONCE for this state
-            gsm.CallLoad();
-        }
-        else
-        {
-            gsm.Restart();
-        }
-
-        gsm.CallInit();
-
-        // --- 3. Frame loop for this state
-        while (gsm.GetNextState() == gsm.GetCurrentState()) {
-            frameRate.StartFrame();
-
-            glfwPollEvents();
-
-            // getting actual frame time
-            float dt = static_cast<float>(frameRate.GetDeltaTime());
-            dt = std::clamp(dt, 0.0f, 0.05f);
-
-            // getting fixed timestep info (fixed dt variable)
-            float fixedDt = static_cast<float>(frameRate.GetFixedDeltaTime());
-            int numSteps = frameRate.GetCurrentNumberOfSteps();
-
-            // fixed dt proof to console
-            static bool lagSimulationActive = false;
-            if (Input::IsKeyPressed(GLFW_KEY_L)) {
-                lagSimulationActive = !lagSimulationActive;
-                if (lagSimulationActive) {
-                    std::cout << "\n[FIXED DT] LAG TEST STARTED\n";
-                }
-                else {
-                    std::cout << "[FIXED DT] LAG TEST STOPPED\n\n";
-                }
-            }
-
-            if (lagSimulationActive) {
-                // busy wait loop
-                double endTime = glfwGetTime() + 0.05;  // Wait 50ms
-                while (glfwGetTime() < endTime) {
-                    // busy waiting
-                }
-
-                static int frameCounter = 0;
-                if (++frameCounter % 30 == 0) {
-                    std::cout << "[LAG] Frame DT: " << dt << "s | Physics Steps: " << numSteps
-                        << " | Fixed DT: " << fixedDt << "s" << std::endl;
-                }
-            }
-
-            // Save real dt for audio (music should always play even in edit mode)
-            float audioDt = dt;
-
-            // Handle play/stop flags
-            if (gsm.isPaused && gsm.inEditMode)
-            {
-                // In edit mode freeze simulation
-                fixedDt = 0.0f;
-                numSteps = 0;  // No physics updates in edit mode
-            }
-
-            // Set global dt to fixed timestep for deterministic simulation
-            g_dt = fixedDt;
-
-            // --- 1. Update logic ---
-            gsm.CallUpdate();
-
-            // --- 2. Capture game view for ImGui ---
-            Render& renderer = Render::GetInstance();
-            renderer.BeginSceneCapture();
-
-            // Draw the current game scene or main menu
-            gsm.CallDraw();
-
-
-
-
-            // Finish capture � ImGui will display this texture inside "Game View"
-            renderer.EndSceneCapture();
-            // NEED TO FIGURE OUT HOW TO SPLIT THIS PER DRAW/UPDATE
-
-            //loop through all systems managed by the engine
-            for (auto s : systems) {
-                //high-resolution clock
-                using clock = std::chrono::high_resolution_clock;
-                // Record the starting timestamp before running the system update
-                auto start = clock::now();
-                // Call the system's update function, passing delta time for this frame
-                if (!gsm.isPaused && !gsm.inEditMode)
-                {
-                    // Only update systems when in gameplay
-                    s->Update(fixedDt);  // Changed from g_dt to fixedDt
-                }
-                else
-                {
-                    //Still render ImGui overlay while editing
-                    if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s))
-                        imguiSystem->Update(0.0f);
-                    else if (auto* renderSystem = dynamic_cast<RenderSystem*>(s))
-                        renderSystem->Update(0.0f);
-                    else if (auto* physicsSystem = dynamic_cast<Physics::PhysicsComponent*>(s))
-                        physicsSystem->Update(0.0f);
-                    else if (auto* audioManager = dynamic_cast<AudioManager*>(s))
-                        audioManager->Update(audioDt);  // use real dt for audio
-                    // GuiSystem::Get().Update(0.0f);
-                }
-                // Record the ending timestamp immediately after update finishes
-                auto end = clock::now();
-                //how long the update took in milliseconds
-                double elapsedMs = std::chrono::duration<double, std::milli>(end - start).count();
-                // ISystem* s = new PhysicsSystem();
-                //*s dereferences the pointer, so typeid(*s) looks at the dynamic type of the object (PhysicsSystem),
-                // returns a const char* that represents the type's name.
-                // Get the system's type name (like "class PhysicsSystem") as a string
-                std::string sysName = typeid(*s).name();
-                timings[sysName].ms = elapsedMs;
-
-                // call Render() immediately after Update()
-                if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s)) {
-                    renderer.EndSceneCapture();
-                    imguiSystem->Render();
-                }
-            }
-            gsm.CallDraw();
-            if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
-                GSM_SetNextState(GameState::GS_QUIT);
-
-            Input::Update();
-            glfwSwapBuffers(GLApp::ptr_window);
-            frameRate.EndFrame();
-
-            frames++;
-            double now = glfwGetTime();
-            if (now - lastTitleUpdate >= 1.0) {
-                double fps = frames / (now - lastTitleUpdate);
-
-                std::string title = "Rock & Ghoul - FPS: " + std::to_string((int)fps);
-                glfwSetWindowTitle(GLApp::ptr_window, title.c_str());
-
-                frames = 0;
-                lastTitleUpdate = now;
-            }
-        }
-
-
-        // --- 4. Clean up the old state
-        gsm.CallFree();
-        if (gsm.GetNextState() != GameState::GS_RESTART) {
-            gsm.CallUnload();
-        }
-
-        // --- 5. Actually switch state
-        gsm.ChangeNextState();
-    }
-}
-
-void CoreEngine::Shutdown() {
-    GLApp::gameInitialized = false;
-    for (int i = (int)systems.size() - 1; i >= 0; --i) {
-        systems[i]->Shutdown();
-        if (systems[i] != &GuiSystem::Get() && systems[i] != &LogicSystem::Get() && systems[i] != &MonoSystem::Get())
-            delete systems[i];
-    }
-    systems.clear();
-    gsm.Close();   // To exit the game state manager
-
-}
-
-void CoreEngine::Quit() {
-    running = false;
-}
-
-// GAME STATE MANAGER
-// ================================================================================
-
-// STATE GETTERS
-// ----------------------------------------
-const GameState& GSM_PreviousState() { return gsm.GetPreviousState(); }
-const GameState& GSM_CurrentState() { return gsm.GetCurrentState(); }
-const GameState& GSM_NextState() { return gsm.GetNextState(); }
-const bool GSM_IsPaused() { return gsm.IsPaused(); }
-const bool GSM_InEditMode() { return gsm.InEditMode(); }
-// ----------------------------------------
-
-
-// SETTERS
-// ----------------------------------------
-void GSM_SetPreviousState(GameState state) { gsm.SetPreviousState(state); }
-void GSM_SetCurrentState(GameState state) { gsm.SetCurrentState(state); }
-void GSM_SetNextState(GameState state) { gsm.SetNextState(state); }
-void GSM_SetIsPaused(bool isPaused) { gsm.SetPaused(isPaused); }
-void GSM_SetInEditMode(bool inEditMode) { gsm.SetEditMode(inEditMode); }
-// ----------------------------------------
-
-// PAUSE STATE
-// ----------------------------------------
-bool GSM_IsGamePaused() { return g_gamePaused; }
-void GSM_SetGamePaused(bool paused) { g_gamePaused = paused; }
-
-// DEBUGGER
-std::ostream& operator<<(std::ostream& os, const GameState& state)
+void CoreEngine::Run()
 {
-    switch (state)
+    std::cout << "EngRun\n";
+
+    double lastTitleUpdate = glfwGetTime();
+    int    frames = 0;
+
+    while (running && !glfwWindowShouldClose(GLApp::ptr_window))
     {
-    case GameState::GS_MAIN_MENU:
+        frameRate.StartFrame();
+        glfwPollEvents();
+
+        float dt = static_cast<float>(frameRate.GetDeltaTime());
+        dt = std::clamp(dt, 0.0f, 0.05f); // clamp variable dt
+
+        float fixedDt = static_cast<float>(frameRate.GetFixedDeltaTime());
+        int   numSteps = frameRate.GetCurrentNumberOfSteps();
+
+        // Let SceneManager do any book-keeping if it ever needs to
+        SceneManager& sm = SceneManager::Get();
+        sm.Update(dt, fixedDt, numSteps);
+
+        // expose fixed dt to scripts / systems that still read g_dt
+        g_dt = fixedDt;
+
+        // ------------------------------------------------
+        // Update all systems
+        // ------------------------------------------------
+        for (auto* s : systems)
+        {
+            using clock = std::chrono::high_resolution_clock;
+            auto start = clock::now();
+
+            // 1. RenderSystem ALWAYS runs
+            if (auto* render = dynamic_cast<RenderSystem*>(s))
+            {
+                render->Update(fixedDt);
+            }
+            // 2. ImGuiSystem ALWAYS runs (so you can change scenes, press play, etc.)
+            else if (auto* imgui = dynamic_cast<ImGuiSystem*>(s))
+            {
+                imgui->Update(dt);
+            }
+            // 3. All other systems only when actually playing
+            else
+            {
+                if (sm.IsPlaying() && !sm.IsPaused())
+                {
+                    s->Update(fixedDt);
+                }
+            }
+
+            auto   end = clock::now();
+            double elapsedMs = std::chrono::duration<double, std::milli>(end - start).count();
+
+            std::string sysName = typeid(*s).name();
+            timings[sysName].ms = elapsedMs;
+
+            // ImGui render pass MUST happen after all systems
+            if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s))
+            {
+                imguiSystem->Render();
+            }
+        }
+
+        // Input needs a frame-end update
+        Input::Update();
+
+        // Present frame
+        glfwSwapBuffers(GLApp::ptr_window);
+        frameRate.EndFrame();
+
+        // ---------------------------------------------
+        // FPS in window title
+        // ---------------------------------------------
+        frames++;
+        double now = glfwGetTime();
+        if (now - lastTitleUpdate >= 1.0)
+        {
+            double fps = frames / (now - lastTitleUpdate);
+            std::string title = "Rock & Ghoul - FPS: " + std::to_string(static_cast<int>(fps));
+            glfwSetWindowTitle(GLApp::ptr_window, title.c_str());
+            frames = 0;
+            lastTitleUpdate = now;
+        }
+    }
+}
+
+void CoreEngine::Shutdown()
+{
+    GLApp::gameInitialized = false;
+
+    // Shut down in reverse order; delete only heap-allocated ones
+    for (int i = static_cast<int>(systems.size()) - 1; i >= 0; --i)
     {
-        os << "Main Menu";
-        break;
+        ISystem* s = systems[i];
+        s->Shutdown();
+
+        if (s != &GuiSystem::Get() &&
+            s != &LogicSystem::Get() &&
+            s != &MonoSystem::Get())
+        {
+            delete s;
+        }
     }
-    case GameState::GS_LEVEL1:
-    {
-        os << "Level 1";
-        break;
-    }
-    case GameState::GS_RESTART:
-    {
-        os << "Restart";
-        break;
-    }
-    case GameState::GS_QUIT:
-    {
-        os << "Quit";
-        break;
-    }
-    }
-    return os;
+
+    systems.clear();
+}
+
+void CoreEngine::Quit()
+{
+    running = false;
 }

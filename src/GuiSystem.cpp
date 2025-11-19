@@ -940,3 +940,22 @@ void GuiSystem::Shutdown() {
     dialogues.clear();
     //audio = nullptr;
 }
+
+std::string ButtonShapeToString(ButtonShape shape) {
+    switch (shape) {
+    case ButtonShape::Rounded: return "Rounded";
+    case ButtonShape::Rectangle:  return "Rectangle";
+    default:                   return "Rectangle";
+    }
+}
+
+ButtonShape StringToButtonShape(const std::string& s) {
+    if (s == "Rounded") return ButtonShape::Rounded;
+    return ButtonShape::Rectangle;
+}
+
+void GuiSystem::Clear() {
+    buttons.clear();
+    textboxes.clear();
+    dialogues.clear();
+}

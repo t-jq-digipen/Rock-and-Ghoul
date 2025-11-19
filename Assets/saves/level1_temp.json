@@ -1,4 +1,7 @@
 {
+    "backgrounds": [
+        "../Assets/Env02_NormalWorld.PNG"
+    ],
     "entities": [
         {
             "components": {
@@ -73,7 +76,6 @@
             "components": {
                 "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
                 "Input": "{\"scheme\":0}",
-                "MonoScriptComponent": "{\"scripts\":[\"Rotator\"]}",
                 "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
                 "Physics": "{\"aabb\":{\"centerX\":1198.1488037109375,\"centerY\":500.0,\"dimX\":0.0,\"dimY\":0.0},\"circle\":{\"posX\":1198.1488037109375,\"posY\":500.0,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":false}",
                 "Render": "{\"renderData\":\"{\\\"animated\\\":false,\\\"scaleX\\\":0.10000000149011612,\\\"scaleY\\\":0.10000000149011612,\\\"texturePath\\\":\\\"../Assets/Ghoul_2048px.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
@@ -122,5 +124,9 @@
             "name": "New Entity 15"
         }
     ],
-    "sceneName": "level1_temp.json"
+    "fontConfig": "../Assets/fontAssets.json",
+    "gui": {
+        "buttons": []
+    },
+    "sceneName": "level1_temp"
 }

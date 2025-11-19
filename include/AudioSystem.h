@@ -20,7 +20,7 @@
 #pragma once
 #include "System.h"
 #include "Audio.h"
-#include "GameStateManager.h"
+//#include "GameStateManager.h"
 
  /**
   * @class AudioManager
@@ -218,7 +218,7 @@ private:
     FMOD::Sound* level1Music = nullptr;
 
     // State tracking
-    GameState lastState = GameState::GS_MAIN_MENU;
+    std::string lastScene = "";
 
     /**
      * @brief Updates the active crossfade between music tracks.
@@ -239,5 +239,5 @@ private:
      * @param currentState Current game state.
      * @param previousState The game state from the previous frame.
      */
-    void HandleMusicForState(GameState currentState, GameState previousState);
+    void HandleMusicForScene(const std::string& currentScene, const std::string& previousScene);
 };

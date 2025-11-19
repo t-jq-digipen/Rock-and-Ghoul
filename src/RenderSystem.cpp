@@ -31,6 +31,7 @@
 #include "CollisionManager.h"
 #include "CoreEngine.h"
 #include "RenderComponent.h"
+#include "SceneManager.h"
  // ---------------------------------------------
  // @brief Temporary struct for per-frame draw queue
  // ---------------------------------------------
@@ -45,14 +46,22 @@
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
 static std::vector<GLuint> s_backgroundTextures;
+static std::vector<std::string> s_backgroundTexturePaths;
 
-void RenderSystem::AddBackgroundTexture(GLuint tex) {
+void RenderSystem::AddBackgroundTexture(GLuint tex, const std::string& path) {
     s_backgroundTextures.push_back(tex);
+    s_backgroundTexturePaths.push_back(path);
+}
+
+std::vector<std::string> RenderSystem::GetBackgroundTexturePaths() {
+    return s_backgroundTexturePaths;
 }
 
 void RenderSystem::ClearBackgroundTextures() {
     s_backgroundTextures.clear();
+    s_backgroundTexturePaths.clear();
 }
+
 //extern Camera mainCamera;
 //Camera& mainCamera = Camera::GetInstance();
 
@@ -128,7 +137,8 @@ void RenderSystem::Initialize() {
     std::cout << "[RenderSystem] Initializing..." << std::endl;
 
     Render& renderer = Render::GetInstance();
-
+    renderer.Init();        // quad VAO/VBO + sprite shader
+    //renderer.InitBatch();
     // Initialize your offscreen framebuffer for Game View
     renderer.InitSceneFramebuffer(GLApp::width, GLApp::height);
 
@@ -147,8 +157,9 @@ void RenderSystem::Update(float dt) {
     
 
     Camera::GetInstance().UpdateCamera();
-    Render& renderer = Render::GetInstance();
 
+    Render& renderer = Render::GetInstance();
+    
     bool camcheck = renderer.useCamera;
     if (ImGuiSystem::guiEnabled) {
         renderer.BeginSceneCapture(); 
@@ -162,11 +173,19 @@ void RenderSystem::Update(float dt) {
 
     static bool wasPaused = false;
 
-    if (GSM_IsPaused()) {
+    // New pause logic driven by SceneManager
+    SceneManager& sm = SceneManager::Get();
+
+    // Simulation is paused whenever we are NOT in play mode
+    bool simPaused = !sm.IsPlaying();
+
+    if (simPaused)
+    {
         wasPaused = true;
     }
-    else if (wasPaused) {
-        // just unpaused — reset velocity cache so lines reappear immediately
+    else if (wasPaused)
+    {
+        // Just unpaused → reset velocity lines so they snap correctly
         DebugDraw::ClearVelocityCache();
         wasPaused = false;
     }
@@ -175,8 +194,10 @@ void RenderSystem::Update(float dt) {
    // renderer.ClearBackground({ 0.05f, 0.0f, 0.1f, 1.0f });
     // ===== DRAW BACKGROUND IF SET =====
 
+    renderer.useCamera = false;   // disable camera for bg
     for (GLuint tex : s_backgroundTextures)
         renderer.DrawFullscreenTexture(tex, true);
+    renderer.useCamera = camcheck; // restore camera state
    
 
 

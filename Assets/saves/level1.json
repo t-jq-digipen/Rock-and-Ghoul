@@ -1,4 +1,8 @@
+
 {
+    "backgrounds": [
+        "../Assets/Env02_NormalWorld.PNG"
+    ],
     "entities": [
         {
             "components": {

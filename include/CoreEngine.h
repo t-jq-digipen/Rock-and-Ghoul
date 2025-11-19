@@ -67,31 +67,31 @@ public:
 
 
 
-// GSM functions
-
-// STATE GETTERS
-// ----------------------------------------
-const GameState& GSM_PreviousState();
-const GameState& GSM_CurrentState();
-const GameState& GSM_NextState();
-const bool GSM_IsPaused();
-const bool GSM_InEditMode();
-// ----------------------------------------
-
-// SETTERS
-// ----------------------------------------
-void GSM_SetPreviousState(GameState state);
-void GSM_SetCurrentState(GameState state);
-void GSM_SetNextState(GameState state);
-void GSM_SetIsPaused(bool isPaused);
-void GSM_SetInEditMode(bool inEditMode);
-// ----------------------------------------
-
-// PAUSE STATE FUNCTIONS
-// ----------------------------------------
-// wannna pause all of gameplay where it is. when state changes entirely it'll unload so pause needs to have its own thing otherwise it'll unload and reload level each time
-bool GSM_IsGamePaused();
-void GSM_SetGamePaused(bool paused);
-
-// DEBUGGER
-std::ostream& operator<<(std::ostream& os, const GameState& state);
+//// GSM functions
+//
+//// STATE GETTERS
+//// ----------------------------------------
+//const GameState& GSM_PreviousState();
+//const GameState& GSM_CurrentState();
+//const GameState& GSM_NextState();
+//const bool GSM_IsPaused();
+//const bool GSM_InEditMode();
+//// ----------------------------------------
+//
+//// SETTERS
+//// ----------------------------------------
+//void GSM_SetPreviousState(GameState state);
+//void GSM_SetCurrentState(GameState state);
+//void GSM_SetNextState(GameState state);
+//void GSM_SetIsPaused(bool isPaused);
+//void GSM_SetInEditMode(bool inEditMode);
+//// ----------------------------------------
+//
+//// PAUSE STATE FUNCTIONS
+//// ----------------------------------------
+//// wannna pause all of gameplay where it is. when state changes entirely it'll unload so pause needs to have its own thing otherwise it'll unload and reload level each time
+//bool GSM_IsGamePaused();
+//void GSM_SetGamePaused(bool paused);
+//
+//// DEBUGGER
+//std::ostream& operator<<(std::ostream& os, const GameState& state);

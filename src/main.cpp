@@ -113,7 +113,7 @@ int main() {
             // Create audio manager
             AudioManager* audio = new AudioManager();
             engine.AddSystem(audio);
-            MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
+            //MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
 
             // initialize all systems (FMOD, OpenGL, etc.)
             engine.Initialize();

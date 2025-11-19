@@ -27,6 +27,7 @@
 #include "RenderComponent.h"
 #include "MonoSystem.h"
 #include "MonoScriptComponent.h"
+#include "SceneManager.h"
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
@@ -488,8 +489,9 @@ void PlayerSystem::Initialize()
 
 void PlayerSystem::Update(float dt)
 {
+	SceneManager& sm = SceneManager::Get();
 	// check if game paused
-	if (GSM_IsGamePaused()) {
+	if (sm.IsPaused()) {
 		return;  // Don't update player movement or footsteps when paused
 	}
 

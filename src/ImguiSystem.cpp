@@ -52,7 +52,7 @@
 #include "Physics.h"
 #include "MonoSystem.h"
 #include "MonoScriptComponent.h"
-
+#include "SceneManager.h"
 // ========================================================
 // File-Local Static Variables (Editor State)
 // ========================================================
@@ -68,7 +68,7 @@ static std::string pendingDestPath; //store dest path of existing img
 // runtime thumbnail cache
 static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
-
+auto& sm = SceneManager::Get();
 //g_loadedThumbnails[0] = Image(texture for "player.png")
 //g_imageNames[0] = "player.png"
 
@@ -84,7 +84,7 @@ bool   ImGuiSystem::showSpatialGrid = false;
 bool   ImGuiSystem::dragEditMode = false; //drag handle
 bool   ImGuiSystem::guiEnabled = false; //f1 
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
-extern GSM gsm; //play/stop game state
+
 
 // ========================================================
 // Anonymous Namespace
@@ -415,8 +415,7 @@ void ImGuiSystem::Initialize() {
 
 
     InitializeImGui();
-    gsm.inEditMode = false;  // not in editor mode
-    gsm.isPaused = false;    // unpause game logic / physics
+
 }
 
 
@@ -499,7 +498,7 @@ void ImGuiSystem::Update(float dt)
     
 
     if (ImGui::Begin("Editor Camera")) {
-        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         ImVec2 cursor = ImGui::GetCursorScreenPos();
         ImVec2 size = ImGui::GetContentRegionAvail();
 
@@ -511,31 +510,31 @@ void ImGuiSystem::Update(float dt)
         else {
             ImGui::TextDisabled("Panel too small to display");
         }
-        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
 
 
     if (ImGui::Begin("Engine Info")) {
-        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         ShowEngineDebugWindow();
-        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
 
 
     if (ImGui::Begin("Collision + Scene")) {
-        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         ShowCollisionDebugWindow();
-        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
     
     if (ImGui::Begin("Entity Editor + Prefabs")) {
-        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         // MakeNeaterNextTime
         if (ImGui::Button("Add Entity"))
         {
@@ -588,16 +587,16 @@ void ImGuiSystem::Update(float dt)
         ImGui::Separator();
         ShowPrefabControls();      //prefabs
 
-        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
         
     }
     ImGui::End();
 
 
     if (ImGui::Begin("Assets")) {
-        if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         ShowAssetPreviewWindow();
-        if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
        
     }
     ImGui::End();
@@ -605,9 +604,9 @@ void ImGuiSystem::Update(float dt)
 
     // game view panel
     if (ImGui::Begin("Game View")) {
-        bool isPlaying = !gsm.isPaused && !gsm.inEditMode;
+        bool isPlaying = !sm.isPaused && !sm.inEditMode;
         ShowSimulationControls(isPlaying);
-        isPlaying = !gsm.isPaused && !gsm.inEditMode;
+        isPlaying = !sm.isPaused && !sm.inEditMode;
         ImVec2 avail = ImGui::GetContentRegionAvail();
 
         //16:9 ratio
@@ -837,8 +836,6 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
         }
     }
 
-    if (!gsm.isPaused && !gsm.inEditMode) ImGui::EndDisabled();
-
     ImGui::Text("AABB Colliders: %d / %d active", activeColliders, totalColliders);
     ImGui::Checkbox("Show Colliders", &showColliders);
     ImGui::Checkbox("Show Velocity", &showVelocity);
@@ -870,7 +867,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
             (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
     }
 
-    if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
+
     ImGui::Text("Scene Management:");
     ShowSceneBrowser();
 
@@ -984,36 +981,23 @@ void ImGuiSystem::ShowSceneBrowser()
     // Buttons
     if (ImGui::Button("Load Scene") && selectedScene >= 0)
     {
-        std::string sceneName = sceneFiles[selectedScene];
-        std::string path = sceneFolder + sceneName + ".json";
+        std::string sceneName = sceneFiles[selectedScene];        // "Level2"
+        std::string path = sceneFolder + sceneName + ".json";     //  "../Assets/saves/Level2.json"
 
-        JsonLoad::ClearAllEntities();
+        SceneManager& sm = SceneManager::Get();
 
-        if (JsonLoad::LoadScene(path))
-        {
-            std::cout << "[Editor] Loaded scene: " << path << "\n";
+        // Always return to editor mode when loading scenes
+        sm.EnterEditMode();
 
+        // Load the selected scene (real file, not temp)
+        sm.LoadScene(path);
 
-            if (sceneName == "Level1" || sceneName == "level1")
-            {
-                GSM_SetNextState(GameState::GS_LEVEL1);
-                std::cout << "[Editor] Switching to LEVEL 1 state.\n";
-            }
-            else if (sceneName == "Level2" || sceneName == "level2")
-            {
-                GSM_SetNextState(GameState::GS_LEVEL2);
-                std::cout << "[Editor] Switching to LEVEL 2 state.\n";
-            }
-            else
-            {
-                std::cout << "[Editor] Loaded custom scene (no state switch).\n";
-            }
-        }
-        else
-        {
-            std::cerr << "[Editor] Failed to load scene: " << path << "\n";
-        }
+        // Clear selection in hierarchy
+        ImGuiSystem::selectedEntity = INVALID_ENTITY;
+
+        std::cout << "[Editor] Loaded scene: " << path << "\n";
     }
+
 
 
     ImGui::SameLine();
@@ -2040,7 +2024,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
     (void)viewportSize;
-    bool isPlaying = !gsm.isPaused && !gsm.inEditMode;
+    bool isPlaying = !sm.isPaused && !sm.inEditMode;
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
@@ -2652,97 +2636,57 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     float totalWidth = buttonWidth * 2 + spacing;
     float startX = (panelWidth - totalWidth) * 0.5f;
     ImGui::SetCursorPosX(startX);
-
-    bool inEdit = gsm.InEditMode();
-    //play
+    SceneManager& sm = SceneManager::Get();
+    bool inEdit = sm.inEditMode;
+    // ───────────────────────────────
+     // PLAY BUTTON
+     // ───────────────────────────────
     if (!inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
-        //FILLTHISSHITYASM
-        // Save the current edited scene before starting simulation
-        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-        {
-            JsonLoad::SaveCurrentScene(FilePath::LEVEL1_TEMP_SCENE, "level1_temp.json");
-              
-        }
-        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-        {
-            JsonLoad::SaveCurrentScene(FilePath::LEVEL2_TEMP_SCENE, "level2_temp.json");
-        }
+        // Save TEMP version of scene
+        sm.SaveScene(sm.GetTempScenePath());
 
-        std::cout << "[Editor] Temp scene saved before Play.\n";
+        // Switch to play mode
+        sm.EnterPlayMode();
 
-        gsm.isPaused = false;
-        gsm.inEditMode = false;
+        // Disable drag handles
         dragEditMode = false;
-        Camera& cam = Camera::GetInstance();
-        cam.SetMode(Camera::Mode::GAME);
-        cam.SetZoom(1.0f);
-        cam.ResetToCenter();
 
-        LogicSystem::Get().Initialize();
-
-        std::cout << "[Camera] Switched to GAME mode\n";
-        isPlaying = true;
         std::cout << "[Editor] Gameplay started.\n";
+        isPlaying = true;
     }
+   
     if (!inEdit) { ImGui::EndDisabled(); }
 
     ImGui::SameLine(0, spacing);
 
-    //STOP
+    // ───────────────────────────────
+    // STOP BUTTON
+    // ─────────────────────────────── 
     if (inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
     {
-        gsm.isPaused = true;
-        gsm.inEditMode = true;
+        // Switch to editor mode
+        sm.EnterEditMode();
 
-        Camera& cam = Camera::GetInstance();
-        cam.SetMode(Camera::Mode::EDITOR);
-        cam.ResetToCenter();
-
-
-        std::cout << "[Camera] Switched to EDITOR mode\n";
-        isPlaying = false;
-        //FILLTHISSHITYASM
-        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-        {
-               
-            JsonLoad::ClearAllEntities();
-
-            if (JsonLoad::LoadScene(FilePath::LEVEL1_TEMP_SCENE))
-            {
-                std::cout << "[Editor] Saved level scene, restored temp edits.\n";
-            }
-            else
-            {
-                std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
-                JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
-            }
-        }
-        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-        {
-
-            JsonLoad::ClearAllEntities();
-
-            if (JsonLoad::LoadScene(FilePath::LEVEL2_TEMP_SCENE))
-            {
-                std::cout << "[Editor] Saved level scene, restored temp edits.\n";
-            }
-            else
-            {
-                std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
-                JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
-            }
-        }
+        // Reload TEMP version of scene
+        JsonLoad::ClearAllEntities();
+        JsonLoad::LoadScene(sm.GetTempScenePath());
 
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
+
+        std::cout << "[Editor] Gameplay stopped.\n";
+        isPlaying = false;
     }
     if (inEdit) { ImGui::EndDisabled(); }
 
+    // Status text
     ImGui::SameLine(spacing * 2);
-    //COLORS
-    ImGui::TextColored( isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f), isPlaying ? "PLAYING" : "EDITING");
+    ImGui::TextColored(
+        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
+        isPlaying ? "PLAYING" : "EDITING"
+    );
 }
 
 void ImGuiSystem::Shutdown() {

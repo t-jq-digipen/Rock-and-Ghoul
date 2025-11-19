@@ -350,6 +350,9 @@ source_group("BaseEngine\\Managers" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStates.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/SceneManager.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/SceneManager.cpp
+
 )
 
 source_group("BaseEngine\\Managers\\Frame Rate" FILES 
@@ -412,17 +415,13 @@ source_group("others\\EventBus" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EventBus.h
 )
 source_group("Game\\Levels" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Level1.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Level1.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Level2.cpp
+       ${CMAKE_CURRENT_SOURCE_DIR}/src/Level2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Level2.h
 
 )
 
 source_group("Game\\Main Menu" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/MainMenu.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/MainMenu.h
-)
+   )
 
 source_group("Game\\Main" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp

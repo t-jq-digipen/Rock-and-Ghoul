@@ -23,7 +23,10 @@
 #include "Render.h"
 #include "AudioComponent.h"
 #include <iostream>
-
+#include "RenderSystem.h"
+#include "GuiSystem.h"
+#include "CoreEngine.h"
+#include "SceneManager.h"
 #pragma region ComponentSavers
 
  /**
@@ -587,9 +590,25 @@ void JsonLoad::from_json(const json& j, SavedEntity& e) {
 void JsonLoad::to_json(json& j, const SavedScene& s) {
     j = json{
         {"sceneName", s.sceneName},
-        {"entities", json::array()}
-    };
+        {"backgrounds", s.backgroundTextures},
+        {"fontConfig", s.fontConfigPath},
 
+         {"gui", {
+             {"buttons", json::array()}
+         }},
+        {"entities", json::array()}
+
+    };
+    for (const auto& btn : s.guiButtons) {
+        j["gui"]["buttons"].push_back({
+            {"label", btn.label},
+            {"pos", {btn.pos.x, btn.pos.y}},
+            {"size", {btn.size.x, btn.size.y}},
+            {"color", {btn.color.r, btn.color.g, btn.color.b}},
+            {"shape", btn.shape},
+            {"action", btn.action}
+            });
+    }
     for (const auto& entity : s.entities) {
         json entityJson;
         to_json(entityJson, entity);
@@ -606,7 +625,23 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
 void JsonLoad::from_json(const json& j, SavedScene& s) {
     s.sceneName = j["sceneName"];
     s.entities.clear();
-
+    if (j.contains("backgrounds")) {
+        s.backgroundTextures = j["backgrounds"].get<std::vector<std::string>>();
+    }
+    if (j.contains("fontConfig"))
+        s.fontConfigPath = j["fontConfig"];
+    if (j.contains("gui") && j["gui"].contains("buttons")) {
+        for (auto& btn : j["gui"]["buttons"]) {
+            SavedScene::SavedButton b;
+            b.label = btn["label"];
+            b.pos = { btn["pos"][0], btn["pos"][1] };
+            b.size = { btn["size"][0], btn["size"][1] };
+            b.color = { btn["color"][0], btn["color"][1], btn["color"][2] };
+            b.shape = btn["shape"];
+            b.action = btn.value("action", "");
+            s.guiButtons.push_back(b);
+        }
+    }
     for (const auto& entityJson : j["entities"]) {
         SavedEntity entity;
         from_json(entityJson, entity);
@@ -654,10 +689,23 @@ void JsonLoad::from_json(const json& j, GameSettings& s) {
  *         occurred during serialization or file writing.
  */
 bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& sceneName) {
+
     try {
         SavedScene scene;
         scene.sceneName = sceneName;
-
+        scene.backgroundTextures = RenderSystem::GetBackgroundTexturePaths();
+        scene.fontConfigPath = "../Assets/fontAssets.json";
+        auto& gui = GuiSystem::Get();
+        for (auto& b : gui.GetButtons()) {
+            SavedScene::SavedButton sb;
+            sb.label = b.label;
+            sb.pos = b.pos;
+            sb.size = b.size;
+            sb.color = b.color;
+            sb.shape = ButtonShapeToString(b.shape);
+            sb.action = b.action; 
+            scene.guiButtons.push_back(sb);
+        }
         // Get all alive entities
         EntityManager& em = EntityManager::get();
         int entityCount = 0;
@@ -721,6 +769,50 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             Registry::Get().Load_Entity(savedEntity);
             //Entity e = SavedToEntity(savedEntity);
             // std::cout << "Created entity ID: " << e << " (was: " << savedEntity.id << ")" << std::endl;
+        }
+        RenderSystem::ClearBackgroundTextures();
+        for (auto& path : scene.backgroundTextures) {
+            GLuint tex = Render::GetInstance().LoadTexture(path);
+
+            if (!tex) {
+                std::cout << "[ERROR] Failed to load background: " << path << "\n";
+            }
+            RenderSystem::AddBackgroundTexture(tex, path);
+            std::cout << "Loading background: " << std::filesystem::absolute(path) << "\n";
+        }
+
+        Render& renderer = Render::GetInstance();
+        renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
+        // RESTORE GUI BUTTONS
+        GuiSystem::Get().Clear();
+        for (auto& b : scene.guiButtons) {
+            ButtonConfig cfg;
+            cfg.label = b.label;
+            cfg.pos = b.pos;
+            cfg.size = b.size;
+            cfg.color = b.color;
+            cfg.shape = StringToButtonShape(b.shape);
+            if (b.action == "LoadLevel1") {
+                cfg.onClick = []() {
+                    SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json");
+                    };
+            }
+            else if (b.action == "Quit") {
+                cfg.onClick = []() {
+                    CoreEngine::GetInstance().Quit();
+                    };
+            }
+            else if (b.action == "LoadMainMenu") {
+                cfg.onClick = []() {
+                    SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
+                    };
+            }
+            else {
+                cfg.onClick = nullptr;
+            }
+
+
+            GuiSystem::Get().AddButton(cfg);
         }
 
         return true;

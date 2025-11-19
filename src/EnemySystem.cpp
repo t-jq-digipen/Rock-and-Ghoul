@@ -37,6 +37,7 @@
 #include "LogicSystem.h"
 #include "GameScripts.h"
 #include "CoreEngine.h"
+#include "SceneManager.h"
 
 // Temporary const values
 static constexpr float DETECT_RADIUS = 300.f; // detection radius
@@ -327,9 +328,9 @@ void EnemySystem::Initialize()
 
 void EnemySystem::Update(float dt)
 {
-
+	SceneManager& sm = SceneManager::Get();
 	// check if game paused
-	if (GSM_IsGamePaused())
+	if (sm.IsPaused())
 	{
 		return;  // Don't update enemy movement or footsteps when paused
 	}	

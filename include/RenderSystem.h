@@ -32,7 +32,8 @@ public:
     void Update(float dt) override;
     void Shutdown() override;
 
-    static void AddBackgroundTexture(GLuint texID);
+    static void AddBackgroundTexture(GLuint texID, const std::string& path);
+    static std::vector<std::string> GetBackgroundTexturePaths();
     static void ClearBackgroundTextures();
 private:
     Registry& m_registry = Registry::Get();

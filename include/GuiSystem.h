@@ -42,9 +42,12 @@ struct ButtonConfig {
     Vec2 pos;
     Vec2 size{ 200.f, 100.f };
     Colour3 color{ 0.3f, 0.3f, 0.3f };
+    std::string action = "";
     std::function<void()> onClick = nullptr;
     AudioSystem::ButtonType soundType = AudioSystem::ButtonType::PLAY;
     ButtonShape shape = ButtonShape::Rectangle;
+
+    
     float textScale = 1.0f;
 
     // baseline (screen-space anchors)
@@ -79,6 +82,10 @@ struct Button {
     bool hovered = false;
     bool pressed = false;
 };
+
+std::string ButtonShapeToString(ButtonShape shape);
+ButtonShape StringToButtonShape(const std::string& s);
+
 class GuiSystem : public ISystem {
 public:
     static GuiSystem& Get() {
@@ -101,6 +108,13 @@ public:
 
 
     void SetGameViewRect(const GameViewRect& rect) { m_gameViewRect = rect; }
+
+    const std::vector<ButtonConfig>& GetButtons() const { return buttons; }
+    const std::vector<TextBoxConfig>& GetTextBoxes() const { return textboxes; }
+    const std::vector<DialogueConfig>& GetDialogues() const { return dialogues; }
+    void Clear();
+
+
 private:
 
     std::vector<ButtonConfig> buttons;

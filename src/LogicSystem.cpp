@@ -22,7 +22,8 @@
 #include "Registry.h"
 #include <iostream>
 #include "CoreEngine.h"
-extern GSM gsm;
+#include "SceneManager.h"
+//extern GSM gsm;
 
 void LogicSystem::Initialize()
 {
@@ -37,9 +38,9 @@ void LogicSystem::Update(float dt)
     {
         bc.FixID(entity);
     }
-
+    SceneManager& sm = SceneManager::Get();
     //skip if paused or editing
-    if (gsm.isPaused || gsm.inEditMode)
+    if (sm.isPaused || sm.inEditMode)
         return;
 
     //each entity with a behaviour component

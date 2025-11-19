@@ -72,7 +72,18 @@ struct SavedPhysics {
 struct SavedScene {
     std::string sceneName;  
     std::vector<SavedEntity> entities; 
+    std::vector<std::string> backgroundTextures;
+    std::string fontConfigPath;
 
+    struct SavedButton {
+        std::string label;
+        Vec2 pos;
+        Vec2 size;
+        Colour3 color;
+        std::string shape;
+        std::string action;
+    };
+    std::vector<SavedButton> guiButtons;
     /**
      * @brief Default constructor with no name.
      */

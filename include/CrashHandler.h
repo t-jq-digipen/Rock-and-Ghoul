@@ -306,7 +306,7 @@ namespace CrashHandler {
     inline void Safe(const char* file, const char* state, T&& fn) {
         if (RunProtected(std::forward<T>(fn)) != 0) {
             Logf("%s::%s failed (caught exception)", file, state); 
-            GSM_SetNextState(GameState::GS_QUIT); // safe shutdown
+            //GSM_SetNextState(GameState::GS_QUIT); // safe shutdown
         }
     }
 

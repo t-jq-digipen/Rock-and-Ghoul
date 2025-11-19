@@ -27,7 +27,7 @@
 #include "Camera.h"
 #include "GameStateManager.h"
 #include <iostream>
-
+#include "SceneManager.h"
  // Static members
 FMOD::System* AudioSystem::mSystem = nullptr;
 
@@ -342,7 +342,6 @@ void AudioManager::Initialize() {
         std::cout << "[AudioManager] Main menu music started\n";
     }
 
-    lastState = GameState::GS_MAIN_MENU;
 }
 
 /**
@@ -385,28 +384,64 @@ void AudioManager::UpdateCrossfade(float dt) {
  * @param currentState Current game state.
  * @param previousState The game state from previous frame.
  */
-void AudioManager::HandleMusicForState(GameState currentState, GameState previousState) {
-    // DETECT TRANSITION TO LEVEL 1!
-    if (currentState == GameState::GS_LEVEL1 && previousState != GameState::GS_LEVEL1) {
-        if (level1Music) {
+//void AudioManager::HandleMusicForState(GameState currentState, GameState previousState) {
+//    // DETECT TRANSITION TO LEVEL 1!
+//    if (currentState == GameState::GS_LEVEL1 && previousState != GameState::GS_LEVEL1) {
+//        if (level1Music) {
+//            CrossfadeTo(level1Music, 4.0f);
+//        }
+//        else {
+//            std::cerr << "[AudioManager] ERROR: level1Music is NULL!" << std::endl;
+//        }
+//    }
+//
+//    // DETECT TRANSITION BACK TO MAIN MENU FROM LEVEL 1!
+//    if (currentState == GameState::GS_MAIN_MENU && previousState == GameState::GS_LEVEL1) {
+//        // Play button sound
+//        AudioSystem::PlayButtonSound(AudioSystem::ButtonType::PLAY);
+//
+//        // Crossfade back to main menu music
+//        if (mainMenuMusic) {
+//            CrossfadeTo(mainMenuMusic, 4.0f);
+//        }
+//        else {
+//            std::cerr << "[AudioManager] ERROR: mainMenuMusic is NULL!" << std::endl;
+//        }
+//    }
+//}
+void AudioManager::HandleMusicForScene(const std::string& currentScene, const std::string& previousScene)
+{
+    // ==============================
+    // ENTERING LEVEL 1
+    // ==============================
+    if (currentScene == "level1" && previousScene != "level1")
+    {
+        if (level1Music)
+        {
+            std::cout << "[AudioManager] Crossfade -> Level1 Music\n";
             CrossfadeTo(level1Music, 4.0f);
         }
-        else {
-            std::cerr << "[AudioManager] ERROR: level1Music is NULL!" << std::endl;
+        else
+        {
+            std::cerr << "[AudioManager] ERROR: level1Music is NULL!\n";
         }
     }
 
-    // DETECT TRANSITION BACK TO MAIN MENU FROM LEVEL 1!
-    if (currentState == GameState::GS_MAIN_MENU && previousState == GameState::GS_LEVEL1) {
-        // Play button sound
+    // ==============================
+    // GOING BACK TO MAIN MENU
+    // ==============================
+    if (currentScene == "MainMenu" && previousScene == "level1")
+    {
         AudioSystem::PlayButtonSound(AudioSystem::ButtonType::PLAY);
 
-        // Crossfade back to main menu music
-        if (mainMenuMusic) {
+        if (mainMenuMusic)
+        {
+            std::cout << "[AudioManager] Crossfade -> MainMenu Music\n";
             CrossfadeTo(mainMenuMusic, 4.0f);
         }
-        else {
-            std::cerr << "[AudioManager] ERROR: mainMenuMusic is NULL!" << std::endl;
+        else
+        {
+            std::cerr << "[AudioManager] ERROR: mainMenuMusic is NULL!\n";
         }
     }
 }
@@ -620,20 +655,22 @@ void AudioManager::Update(float dt) {
     Update_AudioComponents(dt);
 
     // Get current game state
-    GameState currentState = GSM_CurrentState();
-
+   // GameState currentState = GSM_CurrentState();
+    SceneManager& sm = SceneManager::Get();
     // Handle P key for game pause (music continues)
-    if (Input::IsKeyPressed(GLFW_KEY_P) && currentState == GameState::GS_LEVEL1) {
-        GSM_SetGamePaused(!GSM_IsGamePaused());
-        std::cout << (GSM_IsGamePaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+    if (Input::IsKeyPressed(GLFW_KEY_P) && sm.IsPlaying()) {
+        sm.TogglePause();
+        std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
     }
 
     // Music always updates (crossfade continues even when game is paused)
     UpdateCrossfade(dt);
+    //SceneManager& sm = SceneManager::Get();
 
-    // Handle state-based music changes
-    HandleMusicForState(currentState, lastState);
-    lastState = currentState;
+    std::string scene = sm.GetCurrentSceneName();
+    HandleMusicForScene(scene, lastScene);
+
+    lastScene = scene;
 }
 
 // ============================================================================
