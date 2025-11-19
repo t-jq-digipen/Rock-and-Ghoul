@@ -389,54 +389,54 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
 
     glViewport(0, 0, newwidth, newheight);
     Render::GetInstance().InitSceneFramebuffer(newwidth, newheight);
+    Render::GetInstance().SetWindowScale(scaleX, scaleY);
+    //if (GLApp::gameInitialized) {
+    //    Registry& reg = Registry::Get();
 
-    if (GLApp::gameInitialized) {
-        Registry& reg = Registry::Get();
+    //    // Scale all entity positions
+    //    for (auto& [entID, transform] : reg.Get_ComponentMap<TransformComponent>()) {
+    //        transform.pos.x *= scaleX;
+    //        transform.pos.y *= scaleY;
+    //        transform.scale.x *= scaleX;
+    //        transform.scale.y *= scaleY;
+    //    }
 
-        // Scale all entity positions
-        for (auto& [entID, transform] : reg.Get_ComponentMap<TransformComponent>()) {
-            transform.pos.x *= scaleX;
-            transform.pos.y *= scaleY;
-            transform.scale.x *= scaleX;
-            transform.scale.y *= scaleY;
-        }
+    //    // update AABBs
+    //    for (auto& [entID, physics] : reg.Get_ComponentMap<Physics::PhysicsComponent>()) {
+    //        if (reg.Has_Component<TransformComponent>(entID)) {
+    //            auto& transform = reg.Get_Component<TransformComponent>(entID);
+    //            // aabb
+    //            AABB& aabb = physics.Get_AABB();
+    //            aabb.min.x *= scaleX;
+    //            aabb.max.x *= scaleX;
+    //            aabb.min.y *= scaleY;
+    //            aabb.max.y *= scaleY;
+    //            aabb.dim.x *= scaleX;
+    //            aabb.dim.y *= scaleY;
+    //            //circle
+    //            Circle& circle = physics.Get_Circle();
+    //            circle.pos.x = transform.pos.x;
+    //            circle.pos.y = transform.pos.y;
+    //            circle.rad *= (scaleX + scaleY) * 0.5f;
 
-        // update AABBs
-        for (auto& [entID, physics] : reg.Get_ComponentMap<Physics::PhysicsComponent>()) {
-            if (reg.Has_Component<TransformComponent>(entID)) {
-                auto& transform = reg.Get_Component<TransformComponent>(entID);
-                // aabb
-                AABB& aabb = physics.Get_AABB();
-                aabb.min.x *= scaleX;
-                aabb.max.x *= scaleX;
-                aabb.min.y *= scaleY;
-                aabb.max.y *= scaleY;
-                aabb.dim.x *= scaleX;
-                aabb.dim.y *= scaleY;
-                //circle
-                Circle& circle = physics.Get_Circle();
-                circle.pos.x = transform.pos.x;
-                circle.pos.y = transform.pos.y;
-                circle.rad *= (scaleX + scaleY) * 0.5f;
+    //            
+    //            physics.UpdateHitboxes(transform.pos);
+    //        }
+    //    }
+    //    // scale all sprite components
+    //    for (auto& [entID, sprite] : reg.Get_ComponentMap<Sprite::SpriteComponent>()) {
+    //        Vec2 currentScale = sprite.Get_Scale();
+    //        sprite.Set_Size({
+    //            currentScale.x * scaleX,
+    //            currentScale.y * scaleY
+    //            });
+    //    }
 
-                
-                physics.UpdateHitboxes(transform.pos);
-            }
-        }
-        // scale all sprite components
-        for (auto& [entID, sprite] : reg.Get_ComponentMap<Sprite::SpriteComponent>()) {
-            Vec2 currentScale = sprite.Get_Scale();
-            sprite.Set_Size({
-                currentScale.x * scaleX,
-                currentScale.y * scaleY
-                });
-        }
-
-        for (auto& [entID, shape] : reg.Get_ComponentMap<ShapeComponent>()) {
-            shape.dimensions.x *= scaleX;
-            shape.dimensions.y *= scaleY;
-        }
-    }
+    //    for (auto& [entID, shape] : reg.Get_ComponentMap<ShapeComponent>()) {
+    //        shape.dimensions.x *= scaleX;
+    //        shape.dimensions.y *= scaleY;
+    //    }
+    //}
 }
 
 /*  _________________________________________________________________________*/

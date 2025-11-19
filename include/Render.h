@@ -879,7 +879,8 @@ private:
 
     // converts normalized device coordinates (-1,1) to world-space
    
-
+    // wnidow scale values
+    Vec2 m_WindowScale = { 1.f,1.f };
 public:
 
     /**
@@ -963,4 +964,6 @@ public:
     *       or aligning objects based on screen-space input.
     */
     Vec2 ScreenToWorld(float ndcX, float ndcY) const;
+
+    void SetWindowScale(float scaleX, float scaleY);
 };
