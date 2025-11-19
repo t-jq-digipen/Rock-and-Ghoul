@@ -33,6 +33,8 @@ bool GLApp::gameInitialized = false;
 ----------------------------------------------------------------------------- */
 GLint GLApp::width = 0;
 GLint GLApp::height = 0;
+GLint GLApp::baseWidth = 0;
+GLint GLApp::baseHeight = 0;
 GLdouble GLApp::fps = 0.0;
 GLdouble GLApp::delta_time = 0.0;
 std::string GLApp::title;
@@ -64,6 +66,8 @@ with each buffer of size width x height pixels
 bool GLApp::init(GLint w, GLint h, std::string t) {
   GLApp::width = w;
   GLApp::height = h;
+  GLApp::baseWidth = w;
+  GLApp::baseHeight = h;
   GLApp::title = t;
 
   if (!glfwInit()) {
@@ -380,8 +384,9 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
   // use the entire framebuffer as drawing region
     (void)ptr_win;
     //scale factors BEFORE updating GLApp::width/height
-    float scaleX = (float)newwidth / (float)GLApp::width;
-    float scaleY = (float)newheight / (float)GLApp::height;
+    float scaleX = (float)newwidth / (float)GLApp::baseWidth;
+    float scaleY = (float)newheight / (float)GLApp::baseHeight;
+
 
     //update the global width/height
     GLApp::width = newwidth;

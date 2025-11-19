@@ -2204,7 +2204,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
     Entity hovered = INVALID_ENTITY;
 
     // Convert mouse to world-space once
-    Vec2 mouseWorld = Render::PanelToWorld(mouseScreen, panelPos, panelSize);
+    Vec2 mouseWorld = Render::GetInstance().PanelToWorld(mouseScreen, panelPos, panelSize);
 
     // ──────────────────────────────────────────────
     // Draw all entity boxes
@@ -2254,14 +2254,14 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         //// Fallback — constant screen-size square (~40×40 px)
         //else
         {
-            ImVec2 center = Render::WorldToPanel(worldPos, panelPos, panelSize);
+            ImVec2 center = Render::GetInstance().WorldToPanel(worldPos, panelPos, panelSize);
             float boxSize = 40.f; // in pixels
             ImVec2 minPanel(center.x - boxSize * 0.5f, center.y - boxSize * 0.5f);
             ImVec2 maxPanel(center.x + boxSize * 0.5f, center.y + boxSize * 0.5f);
 
             // Convert back to world to check click in same space
-            Vec2 minWClick = Render::PanelToWorld(minPanel, panelPos, panelSize);
-            Vec2 maxWClick = Render::PanelToWorld(maxPanel, panelPos, panelSize);
+            Vec2 minWClick = Render::GetInstance().PanelToWorld(minPanel, panelPos, panelSize);
+            Vec2 maxWClick = Render::GetInstance().PanelToWorld(maxPanel, panelPos, panelSize);
 
             inside = (mouseWorld.x >= minWClick.x && mouseWorld.x <= maxWClick.x &&
                 mouseWorld.y >= minWClick.y && mouseWorld.y <= maxWClick.y);
@@ -2308,7 +2308,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
         isDragging = true;
 
         auto& t = reg.Get_Component<TransformComponent>(hovered);
-        dragOffset = t.pos - Render::PanelToWorld(mouseScreen, panelPos, panelSize);
+        dragOffset = t.pos - Render::GetInstance().PanelToWorld(mouseScreen, panelPos, panelSize);
 
         std::cout << "[Editor] Selected and started dragging entity " << hovered << "\n";
     }
@@ -2316,7 +2316,7 @@ void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
     if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown && mouseInPanel)
     {
         auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
-        t.pos = Render::PanelToWorld(mouseScreen, panelPos, panelSize) + dragOffset;
+        t.pos = Render::GetInstance().PanelToWorld(mouseScreen, panelPos, panelSize) + dragOffset;
 
         if (reg.Has_Component<Physics::PhysicsComponent>(draggedEntity))
         {
@@ -2594,8 +2594,8 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         dragEditMode = false;
         Camera& cam = Camera::GetInstance();
         cam.SetMode(Camera::Mode::GAME);
-        cam.SetZoom(1.0f);
         cam.ResetToCenter();
+        cam.SetZoom(1.15f);
 
         LogicSystem::Get().Initialize();
 

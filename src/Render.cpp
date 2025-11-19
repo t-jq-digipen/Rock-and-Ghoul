@@ -226,6 +226,7 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glm::mat4 projMatrix = useCamera
         ? mainCamera.GetViewProjection()
         : projection;
+
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
         1, GL_FALSE, &projMatrix[0][0]);
 
@@ -253,8 +254,8 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
 
 void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) {
     GLfloat vertices[4] = {
-        start.x * m_WindowScale.x, start.y * m_WindowScale.y,
-        end.x * m_WindowScale.x,   end.y * m_WindowScale.y
+        start.x, start.y,
+        end.x,   end.y
     };
 
     GLuint vboLine, vaoLine;
@@ -306,13 +307,13 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     vertices.reserve((segments + 2) * 2);
 
     //center point
-    vertices.push_back(center.x * m_WindowScale.x);
-    vertices.push_back(center.y * m_WindowScale.y);
+    vertices.push_back(center.x);
+    vertices.push_back(center.y);
 
     for (int i = 0; i <= segments; i++) {
         float angle = static_cast<float>((2.0f * 3.1415 * i) / segments);
-        float x = center.x + m_WindowScale.x * radius * cos(angle);
-        float y = center.y + m_WindowScale.y * radius * sin(angle);
+        float x = center.x + radius * cos(angle);
+        float y = center.y + radius * sin(angle);
         vertices.push_back(x);
         vertices.push_back(y);
     }
@@ -385,8 +386,8 @@ void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3&
         1, GL_FALSE, &projMatrix[0][0]);
 
     //set uniforms
-    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x * m_WindowScale.x, pos.y * m_WindowScale.y);
-    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), width * m_WindowScale.x, height * m_WindowScale.y);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), pos.x, pos.y);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), width, height);
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
@@ -1700,7 +1701,7 @@ void Render::SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2
 
     // Build a quad centered at (0,0), then rotate/translate to pos
     // size = (w,h)
-    const glm::vec2 half = { size.x * 0.5f * m_WindowScale.x, size.y * 0.5f * m_WindowScale.y };
+    const glm::vec2 half = { size.x * 0.5f, size.y * 0.5f};
 
     // CCW: bl, br, tr, tl  (match index pattern 0-1-2, 2-3-0)
     glm::vec2 local[4] = {
@@ -1713,7 +1714,7 @@ void Render::SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2
     // Rotate then translate to world
     glm::vec2 world[4];
     for (int i = 0; i < 4; ++i) {
-        world[i] = Rotate2D(local[i], rotation) + glm::vec2(pos.x * m_WindowScale.x, pos.y * m_WindowScale.y);
+        world[i] = Rotate2D(local[i], rotation) + glm::vec2(pos.x, pos.y);
     }
 
     // UVs (u0,v0,u1,v1) => (bl, br, tr, tl)
@@ -2008,7 +2009,7 @@ Vec2 Render::PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImV
 
     float halfWidth = (GLApp::width * 0.5f) / zoom;
     float halfHeight = (GLApp::height * 0.5f) / zoom;
-
+    
     return {
         camPos.x + ndcX * halfWidth,
         camPos.y + ndcY * halfHeight
@@ -2031,8 +2032,8 @@ ImVec2 Render::WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImV
     float v = 1.f - (ndcY * 0.5f + 0.5f);
 
     return ImVec2(
-        panelPos.x + u * panelSize.x,
-        panelPos.y + v * panelSize.y
+        (panelPos.x + u * panelSize.x),
+        (panelPos.y + v * panelSize.y)
     );
 }
 

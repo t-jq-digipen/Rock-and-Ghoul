@@ -22,7 +22,7 @@
                 "Health": "{\"currentHP\":0.0,\"maxHP\":0.0}",
                 "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
                 "Physics": "{\"aabb\":{\"centerX\":510.9010009765625,\"centerY\":268.84100341796875,\"dimX\":150.04299926757813,\"dimY\":201.20199584960938},\"circle\":{\"posX\":510.9010009765625,\"posY\":268.84100341796875,\"rad\":0.0},\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"animated\\\":false,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"scaleX\\\":200.0,\\\"scaleY\\\":200.0,\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":9},\\\"2\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5},\\\"3\\\":{\\\"col_end\\\":8,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1}},\\\"texturePath\\\":\\\"../Assets/rockspritesheet4.11.png\\\",\\\"totalCols\\\":10,\\\"totalRows\\\":10}\",\"renderLayer\":1,\"renderType\":2}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"animated\\\":false,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"scaleX\\\":500.0,\\\"scaleY\\\":500.0,\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":9},\\\"2\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5},\\\"3\\\":{\\\"col_end\\\":8,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1}},\\\"texturePath\\\":\\\"../Assets/rockspritesheet4.11.png\\\",\\\"totalCols\\\":10,\\\"totalRows\\\":10}\",\"renderLayer\":1,\"renderType\":2}",
                 "Tag": "{\"tagID\":0}",
                 "Transform": "{\"posX\":510.9010009765625,\"posY\":268.84100341796875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
@@ -54,7 +54,7 @@
         },
         {
             "components": {
-                "Physics": "{\"aabb\":{\"centerX\":949.8866577148438,\"centerY\":733.8831787109375,\"dimX\":2462.9189453125,\"dimY\":100.98699951171875},\"circle\":{\"posX\":949.8865966796875,\"posY\":733.8831787109375,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Physics": "{\"aabb\":{\"centerX\":949.88671875,\"centerY\":733.8831787109375,\"dimX\":2462.9189453125,\"dimY\":100.98699951171875},\"circle\":{\"posX\":949.8865966796875,\"posY\":733.8831787109375,\"rad\":0.0},\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
                 "Tag": "{\"tagID\":3}",
                 "Transform": "{\"posX\":949.8865966796875,\"posY\":733.8831787109375,\"rot\":0.0,\"scaleX\":1986.0001220703125,\"scaleY\":50.0}"
             },
@@ -116,7 +116,6 @@
         {
             "components": {
                 "RenderLayer": "{\"layer\":3}",
-                "Sprite": "{\"animated\":false,\"scaleX\":0.4000000059604645,\"scaleY\":0.4000000059604645,\"texturePath\":\"../Assets/UI_Guitar.PNG\"}",
                 "Transform": "{\"posX\":379.0559997558594,\"posY\":50.98699951171875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "New Entity 15"
