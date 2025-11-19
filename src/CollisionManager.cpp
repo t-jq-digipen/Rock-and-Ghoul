@@ -2,7 +2,7 @@
  * @file        CollisionManager.cpp
  * @author      Yasmin Tazi        | yasmin.t@digipen.edu
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        06 NOV 2025
+ * @date        19 NOV 2025
  *
  * @brief
  *
@@ -71,14 +71,10 @@ std::string CollisionLayerManager::GetLayerName(uint32_t bit) const {
 }
 
 bool CollisionLayerManager::ShouldCollide(uint32_t layerA, uint32_t maskA, uint32_t layerB, uint32_t maskB) const {
-    // If both entities have no layers set (0), allow collision (placeholder for now)
-    if (layerA == 0 && layerB == 0) {
-        return true;
-    }
-
-    // If one has layer but the other doesn't, allow collision (also placeholder)
+    // If either entity has no layer set (0), don't collide
+    // This prevents entities without proper collision setup from affecting the system
     if (layerA == 0 || layerB == 0) {
-        return true;
+        return false;
     }
 
     // Both have layers set, use mask filtering
@@ -554,14 +550,75 @@ SpatialGrid* CollisionManager::GetSpatialGrid() {
 // ============================================================================
 
 void ColliderComponent::SetLayer(const std::string& name) {
+    layerName = name;
     layerBit = CollisionLayerManager::Get().GetLayerBit(name);
 }
 
 void ColliderComponent::SetMask(const std::vector<std::string>& names) {
+    maskNames = names;
     maskBit = 0;
     for (const auto& name : names) {
         maskBit |= CollisionLayerManager::Get().GetLayerBit(name);
     }
+}
+
+void ColliderComponent::SetMask(uint32_t mask) {
+    maskBit = mask;
+    maskNames.clear();
+
+    // Convert bits back to names by checking each registered layer
+    // We need to iterate through all possible bit positions (0-31)
+    for (uint32_t i = 0; i < 32; ++i) {
+        uint32_t bit = 1 << i;
+        if (mask & bit) {
+            std::string name = CollisionLayerManager::Get().GetLayerName(bit);
+            if (!name.empty()) {
+                maskNames.push_back(name);
+            }
+        }
+    }
+}
+
+std::string ColliderComponent::Serialize() const {
+    json j = {
+        {"aabb_minX", aabbhitbox.min.x}, {"aabb_minY", aabbhitbox.min.y},
+        {"aabb_maxX", aabbhitbox.max.x}, {"aabb_maxY", aabbhitbox.max.y},
+        {"aabb_dimX", aabbhitbox.dim.x}, {"aabb_dimY", aabbhitbox.dim.y},
+        {"circle_posX", circlehitbox.pos.x}, {"circle_posY", circlehitbox.pos.y},
+        {"circle_rad", circlehitbox.rad},
+        {"layer", layerName}, {"mask", maskNames},
+        {"isTrigger", isTrigger}, {"isActive", isActive}
+    };
+    return j.dump();
+}
+
+ColliderComponent ColliderComponent::DeSerialize(Entity eID, const std::string& data) {
+    (void)eID;
+    if (data.empty()) return ColliderComponent();
+
+    json j = json::parse(data);
+
+    AABB aabb;
+    aabb.min = {j.value("aabb_minX", 0.f), j.value("aabb_minY", 0.f)};
+    aabb.max = {j.value("aabb_maxX", 0.f), j.value("aabb_maxY", 0.f)};
+    aabb.dim = {j.value("aabb_dimX", 0.f), j.value("aabb_dimY", 0.f)};
+
+    Circle circle;
+    circle.pos = {j.value("circle_posX", 0.f), j.value("circle_posY", 0.f)};
+    circle.rad = j.value("circle_rad", 0.f);
+
+    ColliderComponent comp(aabb, circle, j.value("isActive", true));
+    comp.isTrigger = j.value("isTrigger", false);
+
+    // Load layer/mask names and convert to bits
+    if (j.contains("layer")) {
+        comp.SetLayer(j["layer"].get<std::string>());
+    }
+    if (j.contains("mask")) {
+        comp.SetMask(j["mask"].get<std::vector<std::string>>());
+    }
+
+    return comp;
 }
 
 // ============================================================================

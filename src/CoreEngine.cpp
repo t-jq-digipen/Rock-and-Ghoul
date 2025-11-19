@@ -72,7 +72,6 @@ void CoreEngine::Initialize() {
     CollisionLayerManager::Get().RegisterLayer("Enemy");
     CollisionLayerManager::Get().RegisterLayer("Projectile");
     CollisionLayerManager::Get().RegisterLayer("Wall");
-    std::cout << "[Collision] Registered all collision layers\n";
 
     // --- SYSTEMS ---
     AddSystem(&LogicSystem::Get());
@@ -143,7 +142,6 @@ void CoreEngine::Initialize() {
     registry.Register_Component<MonoScriptComponent>("MonoScriptComponent");
 
     registry.Register_Component<RenderLayerComponent>("RenderLayer");
-    std::cout << "REGISTRY | REGISTERED RENDERLAYER COMPONENT\n";
     // --- COMPONENTS END ---
 
     for (auto s : systems) s->Initialize();

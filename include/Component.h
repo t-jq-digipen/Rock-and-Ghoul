@@ -281,10 +281,12 @@ struct ColliderComponent {
 	AABB aabbhitbox;
 	Circle circlehitbox;
 
-	// Collision filtering
-	uint32_t layerBit = 0;   // Which layer this entity belongs to
-	uint32_t maskBit = 0;    // Which layers it can collide with
-	bool isTrigger = false;  // If true, generate event but skip physics response
+	// Collision filtering (names for serialization, bits for runtime)
+	std::string layerName = "";                  // Layer name (for save/load)
+	std::vector<std::string> maskNames = {};     // Mask names (for save/load)
+	uint32_t layerBit = 0;                       // Runtime layer bit
+	uint32_t maskBit = 0;                        // Runtime mask bit
+	bool isTrigger = false;                      // If true, generate event but skip physics response
 
 	// Collision state
 	bool isActive = true;    // If false, skip collision checks entirely
@@ -315,7 +317,6 @@ struct ColliderComponent {
 
 	// Layer management (implementations in Component.cpp or inline)
 	void SetLayer(uint32_t bit) { layerBit = bit; }
-	void SetMask(uint32_t mask) { maskBit = mask; }
 	void SetTrigger(bool trigger) { isTrigger = trigger; }
 	void SetActive(bool active) { isActive = active; }
 
@@ -335,42 +336,10 @@ struct ColliderComponent {
 	// String-based layer setters (need CollisionManager)
 	void SetLayer(const std::string& name);
 	void SetMask(const std::vector<std::string>& names);
+	void SetMask(uint32_t mask);  // Overload for editor - updates both maskBit and maskNames
 
-	std::string Serialize() const {
-		json j = {
-			{"aabb_minX", aabbhitbox.min.x}, {"aabb_minY", aabbhitbox.min.y},
-			{"aabb_maxX", aabbhitbox.max.x}, {"aabb_maxY", aabbhitbox.max.y},
-			{"aabb_dimX", aabbhitbox.dim.x}, {"aabb_dimY", aabbhitbox.dim.y},
-			{"circle_posX", circlehitbox.pos.x}, {"circle_posY", circlehitbox.pos.y},
-			{"circle_rad", circlehitbox.rad},
-			{"layerBit", layerBit}, {"maskBit", maskBit},
-			{"isTrigger", isTrigger}, {"isActive", isActive}
-		};
-		return j.dump();
-	}
-
-	static ColliderComponent DeSerialize(Entity eID, const std::string& data) {
-		(void)eID;
-		if (data.empty()) return ColliderComponent();
-
-		json j = json::parse(data);
-
-		AABB aabb;
-		aabb.min = {j.value("aabb_minX", 0.f), j.value("aabb_minY", 0.f)};
-		aabb.max = {j.value("aabb_maxX", 0.f), j.value("aabb_maxY", 0.f)};
-		aabb.dim = {j.value("aabb_dimX", 0.f), j.value("aabb_dimY", 0.f)};
-
-		Circle circle;
-		circle.pos = {j.value("circle_posX", 0.f), j.value("circle_posY", 0.f)};
-		circle.rad = j.value("circle_rad", 0.f);
-
-		ColliderComponent comp(aabb, circle, j.value("isActive", true));
-		comp.layerBit = j.value("layerBit", 0u);
-		comp.maskBit = j.value("maskBit", 0u);
-		comp.isTrigger = j.value("isTrigger", false);
-
-		return comp;
-	}
+	std::string Serialize() const;
+	static ColliderComponent DeSerialize(Entity eID, const std::string& data);
 
 	Editor::ComponentData EditorData() {
 		Editor::ComponentData ret("Collider");

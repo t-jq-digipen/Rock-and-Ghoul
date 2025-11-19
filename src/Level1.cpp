@@ -101,9 +101,9 @@ void Level1::Load()
 	bool needsGeneration = false;
 	std::vector<std::string> missingPrefabs;
 
-	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Player.json")) {
+	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Rock.json")) {
 		needsGeneration = true;
-		missingPrefabs.push_back("Player.json");
+		missingPrefabs.push_back("Rock.json");
 	}
 	if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Waffle.json")) {
 		needsGeneration = true;
@@ -133,8 +133,8 @@ void Level1::Load()
 		// ===== FIX: Verify prefabs were actually created =====
 		std::cout << "\n=== VERIFYING PREFAB GENERATION ===" << std::endl;
 		bool allGenerated = true;
-		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Player.json")) {
-			std::cerr << "ERROR: Player.json was NOT generated!" << std::endl;
+		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Rock.json")) {
+			std::cerr << "ERROR: Rock.json was NOT generated!" << std::endl;
 			allGenerated = false;
 		}
 		if (!std::filesystem::exists(FilePath::PREFABS_FOLDER + "Waffle.json")) {
@@ -239,117 +239,21 @@ void Level1::Init()
 
 
 				std::cout << "Scene loaded successfully from level1.json!" << std::endl;
-				// Setup collision layers after loading entities
-				CollisionManager::SetupCollisionLayers();
-				std::cout << "[Collision] Setup collision layers from tags" << std::endl;
+				// Don't call SetupCollisionLayers here - the JSON file already has layer data
+				// SetupCollisionLayers would overwrite custom layer settings from the editor
 			}
 			else {
-				std::cout << "Failed to load scene from level1.json, will create from prefabs instead." << std::endl;
+				// Create empty scene if level1.json doesn't exist
+				std::cout << "level1.json not found, creating empty scene..." << std::endl;
+				std::cout << "Use the editor to add entities to your level." << std::endl;
+
+				// Save the empty scene
+				JsonLoad::SaveCurrentScene(FilePath::LEVEL1_SCENE, "level1.json");
+				std::cout << "Empty level1.json created." << std::endl;
 			}
 		}
 		else {
-			std::cout << "No level1.json found, will create entities from prefabs." << std::endl;
-		}
-
-		if (!sceneLoaded) {
-			// ===== Better error handling when creating from prefabs =====
-			std::cout << "Creating fresh entities from prefabs..." << std::endl;
-
-			Entity waffle = Create_Waffle(400.f, 400.f);
-			if (waffle == 0) {
-				std::cerr << "ERROR: Failed to create Waffle! Check if Waffle.json exists." << std::endl;
-			}
-			else {
-				std::cout << "Created Waffle (Entity " << waffle << ")" << std::endl;
-			}
-
-			Entity rock = Create_Player(200.f, 500.f);
-			if (rock == 0) {
-				std::cerr << "ERROR: Failed to create Player! Check if Player.json exists." << std::endl;
-			}
-			else {
-				std::cout << "Created Player (Entity " << rock << ")" << std::endl;
-			}
-
-			Entity square = Create_Shape(600.f, 500.f, SHAPE_RECTANGLE, CS_IJKL);
-			if (square == 0) {
-				std::cerr << "ERROR: Failed to create Rectangle! Check if Rectangle.json exists." << std::endl;
-			}
-			else {
-				std::cout << "Created Rectangle (Entity " << square << ")" << std::endl;
-			}
-
-			Entity roundy = Create_Shape(800.f, 500.f, SHAPE_CIRCLE, CS_ARROWS);
-			if (roundy == 0) {
-				std::cerr << "ERROR: Failed to create Circle! Check if Circle.json exists." << std::endl;
-			}
-			else {
-				std::cout << "Created Circle (Entity " << roundy << ")" << std::endl;
-			}
-
-			Entity ghoul = Create_Ghoul(1000.f, 500.f);
-			if (ghoul == 0) {
-				std::cerr << "ERROR: Failed to create Ghoul! Check if ghoul.json exists." << std::endl;
-			}
-			else {
-				std::cout << "Created Ghoul (Entity " << ghoul << ")" << std::endl;
-			}
-			std::cout << "Finished creating entities from prefabs." << std::endl;
-
-			// fixed dt test entity
-			std::cout << "\n[FIXED DT TEST] Creating test entity with constant velocity\n";
-
-			// create test entity
-			Entity testEntity = registry.Create_Entity();
-			registry.Set_EntityName(testEntity, "FixedDT_Test");
-
-			// add Transform component in the centre
-			TransformComponent testTransform;
-			testTransform.pos = { 400.0f, 400.0f };  // same as waffle position
-			testTransform.scale = { 50.0f, 50.0f };
-			testTransform.rot = 0.0f;
-			registry.Add_Component(testEntity, testTransform);
-
-			// add Shape component (magenta square so you can see it)
-			ShapeComponent testShape;
-			testShape.shape = SHAPE_RECTANGLE;
-			testShape.dimensions = { 50.0f, 50.0f };  // shape dimensions
-			testShape.color = { 1.0f, 0.0f, 1.0f };  // bright pink
-			registry.Add_Component(testEntity, testShape);
-
-			// physics component with CONSTANT velocity
-			Physics::PhysicsComponent testPhysics;
-			testPhysics.Set_Vel({ 50.0f, 0.0f });  // 50 pixels/second to the right
-			registry.Add_Component(testEntity, testPhysics);
-
-			// Tag to identify
-			TagComponent testTag;
-			testTag.tag = T_TEST;
-			registry.Add_Component(testEntity, testTag);
-
-			std::cout << "[FIXED DT TEST] Test entity created at (400, 400) moving at 50px/s\n";
-			std::cout << "[FIXED DT TEST] Screen width: " << LEVEL_WIDTH << "px\n";
-			std::cout << "[FIXED DT TEST] Expected time to cross screen: ~9.6 seconds\n";
-			std::cout << "[FIXED DT TEST] Press L to simulate lag - square should NOT slow down! Press L again to stop lag.\n";
-			std::cout << "[FIXED DT TEST] Look for PINK SQUARE moving left to right\n";
-			std::cout << "========================================\n\n";
-
-			Create_Wall(LEVEL_WIDTH / 2, LEVEL_HEIGHT - WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
-
-			// Bottom wall
-			Create_Wall(LEVEL_WIDTH / 2, WALL_THICKNESS / 2, LEVEL_WIDTH, WALL_THICKNESS);
-
-			// Left wall
-			Create_Wall(WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
-
-			// Right wall
-			Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
-			Create_ScriptedEntity("Mover", 400.f, 300.f);
-			Create_Arrow(1400.f, 400.f);
-
-			// Setup collision layers after creating entities from prefabs
-			CollisionManager::SetupCollisionLayers();
-			std::cout << "[Collision] Setup collision layers from tags" << std::endl;
+			std::cout << "No level1.json found..." << std::endl;
 		}
 		std::cout << "==============================\n" << std::endl;
 		});

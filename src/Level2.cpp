@@ -214,9 +214,8 @@ void Level2::Init()
 				//ghoul = registry2.Get_EntityID("Enemy");
 
 				std::cout << "Scene loaded successfully from level2.json!" << std::endl;
-				// Setup collision layers after loading entities
-				CollisionManager::SetupCollisionLayers();
-				std::cout << "[Collision] Setup collision layers from tags" << std::endl;
+				// Don't call SetupCollisionLayers here - the JSON file already has layer data
+				// SetupCollisionLayers would overwrite custom layer settings from the editor
 			}
 			else {
 				std::cout << "Failed to load scene from level2.json, will create from prefabs instead." << std::endl;
@@ -260,7 +259,6 @@ void Level2::Init()
 
 			// Setup collision layers after creating entities from prefabs
 			CollisionManager::SetupCollisionLayers();
-			std::cout << "[Collision] Setup collision layers from tags" << std::endl;
 		}
 		std::cout << "==============================\n" << std::endl;
 		});

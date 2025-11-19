@@ -2,9 +2,11 @@
     "entities": [
         {
             "components": {
+                "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
+                "Collider": "{\"aabb_dimX\":1.0,\"aabb_dimY\":1.0,\"aabb_maxX\":131.74258422851563,\"aabb_maxY\":425.7131042480469,\"aabb_minX\":131.74258422851563,\"aabb_minY\":425.7131042480469,\"circle_posX\":131.74258422851563,\"circle_posY\":425.7131042480469,\"circle_rad\":0.5,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"mask\":[\"Player\",\"Projectile\",\"Wall\"]}",
                 "Input": "{\"scheme\":0}",
-                "Movement": "{\"moveSpeed\":400.0}",
-                "Physics": "{\"aabb\":{\"centerX\":131.74258422851563,\"centerY\":425.7131042480469,\"dimX\":0.0,\"dimY\":0.0},\"circle\":{\"posX\":131.74258422851563,\"posY\":425.7131042480469,\"rad\":0.0},\"decay\":0.0,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":false}",
+                "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
                 "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Ghoul_2048px.PNG\"}",
                 "Tag": "{\"tagID\":1}",
                 "Transform": "{\"posX\":131.74258422851563,\"posY\":425.7131042480469,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"

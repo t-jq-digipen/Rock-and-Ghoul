@@ -2,8 +2,9 @@
     "entities": [
         {
             "components": {
+                "Collider": "{\"aabb_dimX\":1.0,\"aabb_dimY\":1.0,\"aabb_maxX\":0.0,\"aabb_maxY\":0.0,\"aabb_minX\":0.0,\"aabb_minY\":0.0,\"circle_posX\":0.0,\"circle_posY\":0.0,\"circle_rad\":0.5,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Projectile\",\"mask\":[\"Player\",\"Enemy\",\"Wall\"]}",
                 "Lifetime": "{\"age\":0.0,\"lifetime\":3.005000114440918}",
-                "Physics": "{\"aabb\":{\"centerX\":672.8495483398438,\"centerY\":280.9911804199219,\"dimX\":112.66100311279297,\"dimY\":86.99600219726563},\"circle\":{\"posX\":672.8495483398438,\"posY\":280.9911804199219,\"rad\":0.0},\"decay\":0.0,\"friction\":0.0,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":500.0,\"velY\":0.0,\"willCollide\":false}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.0,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":500.0,\"velY\":0.0}",
                 "Sprite": "{\"animated\":false,\"scaleX\":0.5,\"scaleY\":0.5,\"texturePath\":\"../Assets/right.png\"}",
                 "Tag": "{\"tagID\":2}",
                 "Transform": "{\"posX\":672.8495483398438,\"posY\":280.9911804199219,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"

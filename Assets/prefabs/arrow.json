@@ -2,7 +2,10 @@
     "entities": [
         {
             "components": {
+                "Collider": "{\"aabb_dimX\":1.0,\"aabb_dimY\":1.0,\"aabb_maxX\":0.0,\"aabb_maxY\":0.0,\"aabb_minX\":0.0,\"aabb_minY\":0.0,\"circle_posX\":0.0,\"circle_posY\":0.0,\"circle_rad\":0.5,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Projectile\",\"mask\":[\"Player\",\"Enemy\",\"Wall\"]}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Sprite": "{\"animated\":false,\"scaleX\":1.0,\"scaleY\":1.0,\"texturePath\":\"../Assets/left.png\"}",
+                "Tag": "{\"tagID\":2}",
                 "Transform": "{\"posX\":986.916015625,\"posY\":686.35498046875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "arrow"
