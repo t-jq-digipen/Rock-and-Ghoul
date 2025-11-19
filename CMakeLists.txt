@@ -5,8 +5,6 @@ project(team_aviddivas)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 add_definitions(-DGLEW_STATIC)
-add_definitions(-DUSE_CSD3151_AUTOMATION=0)
-
 set(ALL_LIBS
     glfw
     libglew_static
