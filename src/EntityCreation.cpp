@@ -474,37 +474,37 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
  * @param scriptName Name of the C# class inside GameScripts.dll (e.g. "PlayerScript").
  * @param x,y        World position to spawn at.
  */
-Entity Create_ScriptedEntity(const std::string& scriptName, float x, float y)
-{
-    Registry& reg = Registry::Get();
-
-    // Create entity and basic info
-    Entity cir = reg.Create_Entity();
-    reg.Set_EntityName(cir, "ScriptedCircle");
-
-    // Add Transform
-    reg.Add_Component<TransformComponent>(cir, TransformComponent{ {x, y}, {100.f, 100.f} });
-
-    // Add Shape + Input (optional)
-    //reg.Add_Component<ShapeComponent>(cir, ShapeComponent{ SHAPE_CIRCLE, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} });
-    reg.Add_Component<InputComponent>(cir, InputComponent{ CS_ARROWS });
-
-    // --- Add the Mono script binding ---
-    MonoScriptComponent msc;
-    msc.className = scriptName; // must match C# class name in GameScripts.dll
-    reg.Add_Component<MonoScriptComponent>(cir, msc);
-
-    std::cout << "[EntityCreation] Created scripted entity with Mono class: "
-        << scriptName << " (Entity " << cir << ")\n";
-
-    return cir;
-}
-
-Entity Create_Arrow(float const& x, float const& y) {
-
-    Entity arr = LoadEntity("arrow", x, y);
-    MonoScriptComponent script;
-    script.className = "Rotator"; // must match your C# class
-    Registry::Get().Add_Component<MonoScriptComponent>(arr, script);
-    return arr;
-}
+//Entity Create_ScriptedEntity(const std::string& scriptName, float x, float y)
+//{
+//    Registry& reg = Registry::Get();
+//
+//    // Create entity and basic info
+//    Entity cir = reg.Create_Entity();
+//    reg.Set_EntityName(cir, "ScriptedCircle");
+//
+//    // Add Transform
+//    reg.Add_Component<TransformComponent>(cir, TransformComponent{ {x, y}, {100.f, 100.f} });
+//
+//    // Add Shape + Input (optional)
+//    //reg.Add_Component<ShapeComponent>(cir, ShapeComponent{ SHAPE_CIRCLE, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} });
+//    reg.Add_Component<InputComponent>(cir, InputComponent{ CS_ARROWS });
+//
+//    // --- Add the Mono script binding ---
+//    MonoScriptComponent msc;
+//    msc.className = scriptName; // must match C# class name in GameScripts.dll
+//    reg.Add_Component<MonoScriptComponent>(cir, msc);
+//
+//    std::cout << "[EntityCreation] Created scripted entity with Mono class: "
+//        << scriptName << " (Entity " << cir << ")\n";
+//
+//    return cir;
+//}
+//
+//Entity Create_Arrow(float const& x, float const& y) {
+//
+//    Entity arr = LoadEntity("arrow", x, y);
+//    MonoScriptComponent script;
+//    script.className = "Rotator"; // must match your C# class
+//    Registry::Get().Add_Component<MonoScriptComponent>(arr, script);
+//    return arr;
+//}

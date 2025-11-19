@@ -25,7 +25,8 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include "RenderComponent.h"
-
+#include "MonoSystem.h"
+#include "MonoScriptComponent.h"
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
@@ -466,6 +467,9 @@ namespace RockScript {
 
 void PlayerSystem::Initialize()
 {
+	auto& mono = MonoSystem::Get();
+	mono.RegisterScript("Rotator", MonoScriptID::ROTATOR);
+	mono.RegisterScript("Mover", MonoScriptID::MOVER);
 	{
 		BehaviourFCT player;
 		player.Init = [](Entity e) { PlayerMove::Start(e); };

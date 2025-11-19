@@ -340,8 +340,8 @@ void Level1::Init()
 
 			// Right wall
 			Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
-			Create_ScriptedEntity("Mover", 400.f, 300.f);
-			Create_Arrow(1400.f, 400.f);
+			//Create_ScriptedEntity("Mover", 400.f, 300.f);
+			//Create_Arrow(1400.f, 400.f);
 		}
 		std::cout << "==============================\n" << std::endl;
 		});

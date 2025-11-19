@@ -46,12 +46,12 @@
 #include "PlayerSystem.h"
 #include "EnemySystem.h"
 #include "PhysicsSystem.h"
-#include "MonoSystem.h"
 
 #include "BehaviourComponent.h"
 #include "GameScripts.h"
 #include "AudioComponent.h"
 
+#include "MonoSystem.h"
 #include "MonoScriptComponent.h"
 CoreEngine::CoreEngine() : systems{}, timings{}, running(true), lastFrame(0.0) {}
 FrameRateController frameRate(60);
@@ -76,7 +76,9 @@ void CoreEngine::Initialize() {
     AddSystem(new RenderSystem());
     AddSystem(&GuiSystem::Get());
     AddSystem(new ImGuiSystem());
-    AddSystem(new MonoSystem());
+    AddSystem(&MonoSystem::Get());
+
+
     // --- SYSTEMS END ---
 
     std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
@@ -312,7 +314,7 @@ void CoreEngine::Shutdown() {
     GLApp::gameInitialized = false;
     for (int i = (int)systems.size() - 1; i >= 0; --i) {
         systems[i]->Shutdown();
-        if (systems[i] != &GuiSystem::Get() && systems[i] != &LogicSystem::Get())
+        if (systems[i] != &GuiSystem::Get() && systems[i] != &LogicSystem::Get() && systems[i] != &MonoSystem::Get())
             delete systems[i];
     }
     systems.clear();
