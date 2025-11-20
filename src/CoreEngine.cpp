@@ -294,7 +294,7 @@ void CoreEngine::Run()
 void CoreEngine::Shutdown()
 {
     GLApp::gameInitialized = false;
-    SceneManager::Get().UnloadCurrentScene();
+    //SceneManager::Get().UnloadCurrentScene();
     Registry::Get().Remove_AllEntities();
     // Shut down update systems in reverse
     for (int i = (int)updateSystems.size() - 1; i >= 0; --i)
