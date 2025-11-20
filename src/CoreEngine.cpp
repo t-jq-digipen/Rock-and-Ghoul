@@ -63,6 +63,15 @@ CoreEngine::CoreEngine()
     , lastFrame(0.0)
 {
 }
+void CoreEngine::AddUpdateSystem(ISystem* sys)
+{
+    updateSystems.push_back(sys);
+}
+
+void CoreEngine::AddRenderSystem(ISystem* sys)
+{
+    renderSystems.push_back(sys);
+}
 
 // Target FPS
 FrameRateController frameRate(60);
@@ -82,17 +91,29 @@ void CoreEngine::Initialize()
     // ----------------------------------------------------
     // Register Systems (order matters!)
     // ----------------------------------------------------
-    AddSystem(&LogicSystem::Get());
-    AddSystem(new MovementSystem());
-    AddSystem(new PlayerSystem());
-    //AddSystem(new ForcesManager());
-    AddSystem(new EnemySystem());
-    AddSystem(new PhysicsSystem());
-    AddSystem(new RenderSystem());
-    AddSystem(&GuiSystem::Get());
-    AddSystem(new ImGuiSystem());
-    AddSystem(&MonoSystem::Get());
+    //AddSystem(&LogicSystem::Get());
+    //AddSystem(new MovementSystem());
+    //AddSystem(new PlayerSystem());
+    ////AddSystem(new ForcesManager());
+    //AddSystem(new EnemySystem());
+    //AddSystem(new PhysicsSystem());
+    //AddSystem(new RenderSystem());
+    //AddSystem(&GuiSystem::Get());
+    //AddSystem(new ImGuiSystem());
+    //AddSystem(&MonoSystem::Get());
 
+    AddUpdateSystem(&LogicSystem::Get());
+    AddUpdateSystem(&MonoSystem::Get());
+    AddUpdateSystem(new MovementSystem());
+    AddUpdateSystem(new PlayerSystem());
+    AddUpdateSystem(new EnemySystem());
+    AddUpdateSystem(new PhysicsSystem());
+
+
+    AddRenderSystem(new RenderSystem());
+    AddRenderSystem(&GuiSystem::Get());
+    AddRenderSystem(new ImGuiSystem());
+    
     std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
         << " at " << (void*)&GLApp::ptr_window << std::endl;
 
@@ -150,8 +171,9 @@ void CoreEngine::Initialize()
     // ----------------------------------------------------
     // Initialize all systems
     // ----------------------------------------------------
-    for (auto* s : systems)
-        s->Initialize();
+    for (auto* s : updateSystems) s->Initialize();
+    for (auto* s : renderSystems)  s->Initialize();
+
 
     // ----------------------------------------------------
     // Initial scene
@@ -171,7 +193,8 @@ void CoreEngine::Initialize()
 void CoreEngine::Run()
 {
     std::cout << "EngRun\n";
-
+    FrameRateController frameRate(60);
+    SceneManager& sm = SceneManager::Get();
     double lastTitleUpdate = glfwGetTime();
     int    frames = 0;
 
@@ -186,52 +209,62 @@ void CoreEngine::Run()
         float fixedDt = static_cast<float>(frameRate.GetFixedDeltaTime());
         int   numSteps = frameRate.GetCurrentNumberOfSteps();
 
-        // Let SceneManager do any book-keeping if it ever needs to
+        
         SceneManager& sm = SceneManager::Get();
         sm.Update(dt, fixedDt, numSteps);
 
         // expose fixed dt to scripts / systems that still read g_dt
         g_dt = fixedDt;
+        updateTimings.clear();
+        renderTimings.clear();
 
-        // ------------------------------------------------
-        // Update all systems
-        // ------------------------------------------------
-        for (auto* s : systems)
+        for (auto* s : updateSystems)
+            updateTimings[typeid(*s).name()] = 0.0f;
+
+        for (auto* s : renderSystems)
+            renderTimings[typeid(*s).name()] = 0.0f;
+
+     
+        using clock = std::chrono::high_resolution_clock;
+
+        if (sm.IsPlaying() && !sm.IsPaused())
         {
-            using clock = std::chrono::high_resolution_clock;
-            auto start = clock::now();
-
-            // 1. RenderSystem ALWAYS runs
-            if (auto* render = dynamic_cast<RenderSystem*>(s))
+            for (int step = 0; step < numSteps; ++step)
             {
-                render->Update(fixedDt);
-            }
-            // 2. ImGuiSystem ALWAYS runs (so you can change scenes, press play, etc.)
-            else if (auto* imgui = dynamic_cast<ImGuiSystem*>(s))
-            {
-                imgui->Update(dt);
-            }
-            // 3. All other systems only when actually playing
-            else
-            {
-                if (sm.IsPlaying() && !sm.IsPaused())
+                for (auto* s : updateSystems)
                 {
+                    auto start = clock::now();
+
                     s->Update(fixedDt);
+
+                    auto end = clock::now();
+                    double ms = DurationMs(start, end);
+
+                    std::string name = typeid(*s).name();
+                    updateTimings[name] += ms;   // accumulate into stable entry
                 }
             }
-
-            auto   end = clock::now();
-            double elapsedMs = std::chrono::duration<double, std::milli>(end - start).count();
-
-            std::string sysName = typeid(*s).name();
-            timings[sysName].ms = elapsedMs;
-
-            // ImGui render pass MUST happen after all systems
-            if (auto* imguiSystem = dynamic_cast<ImGuiSystem*>(s))
-            {
-                imguiSystem->Render();
-            }
         }
+
+
+        float renderDt = fixedDt * numSteps;
+
+        for (auto* s : renderSystems)
+        {
+            auto start = clock::now();
+
+            s->Update(renderDt);
+
+            auto end = clock::now();
+            double ms = DurationMs(start, end);
+
+            std::string name = typeid(*s).name();
+            renderTimings[name] += ms;
+
+            if (auto* imgui = dynamic_cast<ImGuiSystem*>(s))
+                imgui->Render();
+        }
+
 
         // Input needs a frame-end update
         Input::Update();

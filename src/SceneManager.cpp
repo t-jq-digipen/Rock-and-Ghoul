@@ -39,7 +39,7 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
             currentScenePath = path;
 
             auto p = std::filesystem::path(path);
-            tempScenePath = (p.parent_path() / (p.stem().string() + "_temp" + p.extension().string())).string();
+            tempScenePath = "../Assets/saves/temp.json";
 
             std::cout << "[SceneManager] Loaded scene: " << path << "\n";
         }

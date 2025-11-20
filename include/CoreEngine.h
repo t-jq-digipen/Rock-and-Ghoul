@@ -34,6 +34,18 @@ class CoreEngine {
     bool running;
     double lastFrame;
 
+    struct TimingInfo { double ms = 0.0; };
+
+    double DurationMs(const std::chrono::high_resolution_clock::time_point& start,
+        const std::chrono::high_resolution_clock::time_point& end) const
+    {
+        return std::chrono::duration<double, std::milli>(end - start).count();
+    }
+    std::vector<ISystem*> updateSystems;
+    std::vector<ISystem*> renderSystems;
+
+    std::unordered_map<std::string, double> updateTimings;
+    std::unordered_map<std::string, double> renderTimings;
     // Systems (e.g physics/render/transform yada yada)
     CoreEngine();
 public:
@@ -42,6 +54,11 @@ public:
         static CoreEngine instance;
         return instance;
     }
+    void AddUpdateSystem(ISystem* sys);
+    void AddRenderSystem(ISystem* sys);
+
+    const std::unordered_map<std::string, double>& GetUpdateTimings() const { return updateTimings; }
+    const std::unordered_map<std::string, double>& GetRenderTimings()  const { return renderTimings; }
 
     // Adds systems to the Core Engine
     void AddSystem(ISystem* sys);

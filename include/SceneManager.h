@@ -32,6 +32,6 @@ private:
     SceneManager() = default;
 
     std::string currentScenePath;      // Which .json is currently loaded
-    std::string tempScenePath;         // Auto-generated temp version
+    std::string tempScenePath = "../Assets/saves/temp.json";         // Auto-generated temp version
     std::string pendingScene = "";
 };

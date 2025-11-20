@@ -796,27 +796,65 @@ void ImGuiSystem::Render() {
 }
 
 void ImGuiSystem::ShowEngineDebugWindow() {
+   
+    CoreEngine& engine = CoreEngine::GetInstance();
+
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-    ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate); //ms
-    CoreEngine& engine = CoreEngine::GetInstance(); //in coreengine.h
-    auto& timings = engine.GetTimings();
-
-    // total frame time
-    double total = 0.0;
-    for (auto& [name, t] : timings) total += t.ms;
-
     ImGui::Separator();
-    ImGui::Text("System Timings:");
-    //each system and display its timing
-    for (auto& [name, t] : timings) { //gets reference to the real map
-        // percentage of total frame time this system used
-        double percent = (total > 0.0) ? (t.ms / total) * 100.0 : 0.0;
-        //system name, elapsed time in ms, and percentage of total frame
-        ImGui::Text("%s: %.3f ms (%.1f%%)", name.c_str(), t.ms, percent);
 
-        //visual bar
-        ImGui::ProgressBar((float)(percent / 100.0f), ImVec2(-1, 0), (std::to_string((int)percent) + "%").c_str());
+
+    ImGui::SeparatorText("Update Systems");
+
+    double totalUpdate = 0.0;
+    for (auto& [name, t] : engine.GetUpdateTimings())
+        totalUpdate += t;
+
+    // Copy into sortable vector
+    std::vector<std::pair<std::string, double>> sortedUpdate(
+        engine.GetUpdateTimings().begin(),
+        engine.GetUpdateTimings().end()
+    );
+
+    // sort by system name
+    std::sort(sortedUpdate.begin(), sortedUpdate.end(),
+        [](auto& a, auto& b) { return a.first < b.first; }
+    );
+
+    // Draw update timings
+    for (auto& [name, t] : sortedUpdate)
+    {
+        double pct = (totalUpdate > 0.0) ? (t / totalUpdate) * 100.0 : 0.0;
+
+        ImGui::Text("%s: %.3f ms (%.1f%%)", name.c_str(), t, pct);
+        ImGui::ProgressBar((float)(pct / 100.0f), ImVec2(-1, 0));
     }
+
+    ImGui::SeparatorText("Render Systems");
+
+    double totalRender = 0.0;
+    for (auto& [name, t] : engine.GetRenderTimings())
+        totalRender += t;
+
+    // Copy into sortable vector
+    std::vector<std::pair<std::string, double>> sortedRender(
+        engine.GetRenderTimings().begin(),
+        engine.GetRenderTimings().end()
+    );
+
+    // sort by system name
+    std::sort(sortedRender.begin(), sortedRender.end(),
+        [](auto& a, auto& b) { return a.first < b.first; }
+    );
+
+    // Draw render timings
+    for (auto& [name, t] : sortedRender)
+    {
+        double pct = (totalRender > 0.0) ? (t / totalRender) * 100.0 : 0.0;
+
+        ImGui::Text("%s: %.3f ms (%.1f%%)", name.c_str(), t, pct);
+        ImGui::ProgressBar((float)(pct / 100.0f), ImVec2(-1, 0));
+    }
+
 
     ImGui::Separator();
     ImGui::Checkbox("Enable Drag Handles", &dragEditMode);
