@@ -104,6 +104,7 @@ void CoreEngine::Initialize()
 
     AddUpdateSystem(&LogicSystem::Get());
     AddUpdateSystem(&MonoSystem::Get());
+    AddUpdateSystem(&AudioManager::Get());
     AddUpdateSystem(new MovementSystem());
     AddUpdateSystem(new PlayerSystem());
     AddUpdateSystem(new EnemySystem());
@@ -215,6 +216,7 @@ void CoreEngine::Run()
 
         // expose fixed dt to scripts / systems that still read g_dt
         g_dt = fixedDt;
+
         updateTimings.clear();
         renderTimings.clear();
 
@@ -301,7 +303,8 @@ void CoreEngine::Shutdown()
 
         if (s != &GuiSystem::Get() &&
             s != &LogicSystem::Get() &&
-            s != &MonoSystem::Get())
+            s != &MonoSystem::Get() &&
+            s != &AudioManager::Get())
         {
             delete s;
         }

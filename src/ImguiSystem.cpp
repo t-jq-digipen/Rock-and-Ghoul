@@ -24,6 +24,10 @@
 
 
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>          // for glm::value_ptr
+#include <glm/gtc/matrix_transform.hpp>  // for translate/scale/rotate
+
 
 #include "imgui_internal.h"
 #include "ImGuiSystem.h"
@@ -53,6 +57,8 @@
 #include "MonoSystem.h"
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
+#include "ImGuizmo.h"
+
 // ========================================================
 // File-Local Static Variables (Editor State)
 // ========================================================
@@ -85,7 +91,8 @@ bool   ImGuiSystem::dragEditMode = false; //drag handle
 bool   ImGuiSystem::guiEnabled = false; //f1 
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 
-
+static ImGuizmo::OPERATION gizmoOperation = ImGuizmo::TRANSLATE;
+static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
 // ========================================================
 // Anonymous Namespace
 // ========================================================
@@ -181,6 +188,143 @@ namespace
             std::cerr << "[AudioManifest] Save failed: " << e.what() << "\n";
         }
     }
+}
+void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
+{
+    if (e == INVALID_ENTITY) return;
+
+    Registry& reg = Registry::Get();
+    if (!reg.Has_Component<TransformComponent>(e)) return;
+
+    auto& t = reg.Get_Component<TransformComponent>(e);
+
+    Vec2 minW, maxW;
+
+    // From Render Component
+    if (reg.Has_Component<RenderComponent>(e))
+    {
+        auto& r = reg.Get_Component<RenderComponent>(e);
+        switch (r.GetRenderType())
+        {
+        case RT_IMAGE:
+        {
+            Vec2 size = r.GetSprite().Get_Scale();
+            Vec2 half = size * 0.5f;
+            minW = t.pos - half;
+            maxW = t.pos + half;
+        }
+        break;
+
+        case RT_SPRITESHEET:
+        {
+            auto& spr = r.GetSpriteSheet().Sprite();
+            Vec2 size = spr.Get_Scale();
+            Vec2 half = size * 0.5f;
+            minW = t.pos - half;
+            maxW = t.pos + half;
+        }
+        break;
+
+        case RT_SHAPE:
+        {
+            Vec2 size = r.GetShape().dimensions;
+            Vec2 half = size * 0.5f;
+            minW = t.pos - half;
+            maxW = t.pos + half;
+        }
+        break;
+        }
+    }
+    // Physics fallback
+    else if (reg.Has_Component<Physics::PhysicsComponent>(e))
+    {
+        auto& phys = reg.Get_Component<Physics::PhysicsComponent>(e);
+        AABB a = phys.Get_AABB();
+        minW = a.min;
+        maxW = a.max;
+    }
+    else return;
+
+    // Convert world → panel (using your existing Render helper)
+    ImVec2 tl = Render::WorldToPanel(minW, cursor, { w, h });
+    ImVec2 br = Render::WorldToPanel(maxW, cursor, { w, h });
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+
+    // Outer glow
+    dl->AddRect(tl, br, IM_COL32(0, 255, 0, 60), 0.0f, 0, 6.0f);
+    // Main outline
+    dl->AddRect(tl, br, IM_COL32(0, 255, 0, 255), 0.0f, 0, 3.0f);
+
+}
+Entity PickEntityAtWorldPos(const Vec2& world)
+{
+    Registry& reg = Registry::Get();
+    Entity best = INVALID_ENTITY;
+    float bestDist = FLT_MAX;
+
+    for (auto& [e, t] : reg.Get_ComponentMap<TransformComponent>())
+    {
+        if (!EntityManager::get().isAlive(e))
+            continue;
+
+        bool hit = false;
+
+        if (reg.Has_Component<RenderComponent>(e))
+        {
+            auto& r = reg.Get_Component<RenderComponent>(e);
+            RenderType rt = r.GetRenderType();
+            Vec2 min, max;
+
+            if (rt == RT_IMAGE)
+            {
+                Vec2 s = r.GetSprite().Get_Scale();
+                Vec2 h = s * 0.5f;
+                min = t.pos - h;
+                max = t.pos + h;
+            }
+            else if (rt == RT_SPRITESHEET)
+            {
+                Vec2 s = r.GetSpriteSheet().Sprite().Get_Scale();
+                Vec2 h = s * 0.5f;
+                min = t.pos - h;
+                max = t.pos + h;
+            }
+            else if (rt == RT_SHAPE)
+            {
+                Vec2 s = r.GetShape().dimensions;
+                Vec2 h = s * 0.5f;
+                min = t.pos - h;
+                max = t.pos + h;
+            }
+
+            hit = (world.x >= min.x && world.x <= max.x &&
+                world.y >= min.y && world.y <= max.y);
+        }
+
+        if (!hit && reg.Has_Component<Physics::PhysicsComponent>(e))
+        {
+            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(e);
+            auto a = phys.Get_AABB();
+            hit = (world.x >= a.min.x && world.x <= a.max.x &&
+                world.y >= a.min.y && world.y <= a.max.y);
+        }
+
+        if (hit)
+        {
+            float dx = world.x - t.pos.x;
+            float dy = world.y - t.pos.y;
+            float d = dx * dx + dy * dy;
+
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = e;
+            }
+        }
+    }
+
+    return best;
 }
 
 // Widget templates for component data
@@ -422,6 +566,10 @@ void ImGuiSystem::Initialize() {
 void ImGuiSystem::Update(float dt)
 {
     (void)dt;
+    if (ImGui::IsKeyPressed(ImGuiKey_W)) gizmoOperation = ImGuizmo::TRANSLATE;
+    if (ImGui::IsKeyPressed(ImGuiKey_E)) gizmoOperation = ImGuizmo::ROTATE;
+    if (ImGui::IsKeyPressed(ImGuiKey_R)) gizmoOperation = ImGuizmo::SCALE;
+
     if (Input::IsKeyPressed(GLFW_KEY_F1))
         guiEnabled = !guiEnabled;
 
@@ -626,6 +774,137 @@ void ImGuiSystem::Update(float dt)
 
         // show it
         ImGui::Image( (ImTextureID)(intptr_t)texID, ImVec2(newWidth, newHeight), ImVec2(0, 1), ImVec2(1, 0) );
+
+        DrawSelectionOutline(selectedEntity, cursor, newWidth, newHeight);
+
+        ImGuizmo::BeginFrame();
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::SetDrawlist();
+        ImGuizmo::SetRect(cursor.x, cursor.y, newWidth, newHeight);
+
+
+        Registry& reg = Registry::Get();
+
+        if (selectedEntity != INVALID_ENTITY &&
+            reg.Has_Component<TransformComponent>(selectedEntity))
+        {
+            TransformComponent& t = reg.Get_Component<TransformComponent>(selectedEntity);
+
+            // -------------------------------------------------------
+            // 1. Compose the model matrix from TransformComponent
+            // -------------------------------------------------------
+            glm::mat4 model = glm::translate(glm::mat4(1.0f),
+                glm::vec3(t.pos.x, t.pos.y, 0.0f));
+
+            model = glm::rotate(model, glm::radians(t.rot), glm::vec3(0, 0, 1));
+            model = glm::scale(model,
+                glm::vec3(t.scale.x, t.scale.y, 1.0f));
+
+            // -------------------------------------------------------
+            // 2. Get Camera view and projection matrices
+            // -------------------------------------------------------
+            Camera& cam = Camera::GetInstance();
+
+            glm::mat4 view = cam.GetViewMatrix();
+            glm::mat4 proj = cam.GetProjMatrix();
+
+            // For 2D: use orthographic gizmo mode
+            ImGuizmo::SetOrthographic(true);
+
+            // -------------------------------------------------------
+            // 3. Manipulate gizmo
+            // -------------------------------------------------------
+            ImGuizmo::Manipulate(
+                glm::value_ptr(view),
+                glm::value_ptr(proj),
+                gizmoOperation,    // TRANSLATE / ROTATE / SCALE
+                gizmoMode,         // WORLD or LOCAL
+                glm::value_ptr(model)
+            );
+
+            // -------------------------------------------------------
+            // 4. If actively manipulating, apply values back to ECS
+            // -------------------------------------------------------
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 translation, rotation3, scale;
+                ImGuizmo::DecomposeMatrixToComponents(
+                    glm::value_ptr(model),
+                    glm::value_ptr(translation),
+                    glm::value_ptr(rotation3),
+                    glm::value_ptr(scale)
+                );
+
+                // Update transform
+                t.pos.x = translation.x;
+                t.pos.y = translation.y;
+
+                t.rot = rotation3.z;        // only Z rotation matters in 2D
+                if (reg.Has_Component<RenderComponent>(selectedEntity))
+                {
+                    auto& r = reg.Get_Component<RenderComponent>(selectedEntity);
+
+                    if (r.GetRenderType() == RT_IMAGE)
+                    {
+                        auto& sprite = r.GetSprite();
+                        Vec2 base = sprite.Get_Scale();   // original size
+                        sprite.Set_Size(Vec2(base.x * scale.x,
+                            base.y * scale.y));
+                    }
+                    else if (r.GetRenderType() == RT_SPRITESHEET)
+                    {
+                        auto& sprite = r.GetSpriteSheet().Sprite();
+                        Vec2 base = sprite.Get_Scale();
+                        sprite.Set_Size(Vec2(base.x * scale.x,
+                            base.y * scale.y));
+                    }
+                    else if (r.GetRenderType() == RT_SHAPE)
+                    {
+                        auto& shape = r.GetShape();
+                        shape.dimensions.x *= scale.x;
+                        shape.dimensions.y *= scale.y;
+                    }
+                }
+
+                // -------------------------------------------------------
+                // 5. Update hitboxes for PhysicsComponent (if present)
+                // -------------------------------------------------------
+                if (reg.Has_Component<Physics::PhysicsComponent>(selectedEntity))
+                {
+                    auto& phys = reg.Get_Component<Physics::PhysicsComponent>(selectedEntity);
+                    phys.UpdateHitboxes(t.pos);
+                }
+            }
+        }
+       
+        if (!isPlaying && ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        {
+            if (!ImGuizmo::IsUsing())
+            {
+                // Convert mouse position to world position
+                ImVec2 mousePos = ImGui::GetMousePos();
+
+                ImVec2 imgMin = cursor;
+                ImVec2 imgMax = ImVec2(cursor.x + newWidth, cursor.y + newHeight);
+
+                if (mousePos.x >= imgMin.x && mousePos.x <= imgMax.x &&
+                    mousePos.y >= imgMin.y && mousePos.y <= imgMax.y)
+                {
+                    float u = (mousePos.x - imgMin.x) / (imgMax.x - imgMin.x);
+                    float v = (mousePos.y - imgMin.y) / (imgMax.y - imgMin.y);
+
+                    float ndcX = u * 2.0f - 1.0f;
+                    float ndcY = (1.0f - v) * 2.0f - 1.0f;
+
+                    Camera& cam = Camera::GetInstance();
+                    Vec2 world = cam.NDCToWorld({ ndcX, ndcY });
+
+                    selectedEntity = PickEntityAtWorldPos(world);
+                }
+            }
+        }
+
+
         // =============================================
         // DRAG-DROP TARGET: Drop images into Game View
         // =============================================
@@ -661,7 +940,8 @@ void ImGuiSystem::Update(float dt)
                 TransformComponent t;
                 t.pos = world;
                 reg.Add_Component<TransformComponent>(e, t);
-
+                RenderComponent rc;
+                rc.SetRenderType(RT_IMAGE);
                 // Sprite (uses Set_Image / Set_Size)
                 Sprite::SpriteComponent sprite;
 
@@ -678,8 +958,8 @@ void ImGuiSystem::Update(float dt)
                     sprite.Set_Size(Vec2(100.f, 100.f));
                     std::cerr << "[Editor] Warning: Failed to load image; using default 100x100.\n";
                 }
-                reg.Add_Component<RenderComponent>(e);
-                reg.Get_Component<RenderComponent>(e).SetSprite(sprite);
+                rc.SetSprite(sprite);
+                reg.Add_Component<RenderComponent>(e, rc);
                 // reg.Add_Component<Sprite::SpriteComponent>(e, sprite);
 
                 // Physics (AABB sized to sprite; SetStatic(false))
@@ -721,10 +1001,15 @@ void ImGuiSystem::Update(float dt)
 
         GuiSystem::Get().SetGameViewRect(rect);
 
-        if (dragEditMode) {
-            DrawEntityDragHandles(cursor, ImVec2(newWidth, newHeight));
+        //if (dragEditMode) {
+        //    DrawEntityDragHandles(cursor, ImVec2(newWidth, newHeight));
+        //}
+        if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selectedEntity != INVALID_ENTITY)
+        {
+            Registry::Get().Remove_Entity(selectedEntity);
+            std::cout << "[Editor] Deleted entity " << selectedEntity << " via Delete key\n";
+            selectedEntity = INVALID_ENTITY;
         }
-
         // ----------------------
         // Prefab Mouse Spawner
         // ----------------------
@@ -856,8 +1141,8 @@ void ImGuiSystem::ShowEngineDebugWindow() {
     }
 
 
-    ImGui::Separator();
-    ImGui::Checkbox("Enable Drag Handles", &dragEditMode);
+    /*ImGui::Separator();
+    ImGui::Checkbox("Enable Drag Handles", &dragEditMode);*/
 
 }
 
@@ -1163,6 +1448,7 @@ void ImGuiSystem::ShowInspectorWindow()
         if (compName == "Render")
         {
             RenderComponent& rendercomp = m_registry.Get_Component<RenderComponent>(selectedEntity);
+
             if (ImGui::TreeNode(compName.c_str()))
             {
                 // For m_type and m_layer
@@ -2288,164 +2574,164 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 //}
 
 
-void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
-{
-    Registry& reg = Registry::Get();
-    ImDrawList* dl = ImGui::GetWindowDrawList();
-
-    ImVec2 mouseScreen = ImGui::GetMousePos();
-    bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-    bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-    bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
-
-    // Check if mouse inside viewport
-    bool mouseInPanel =
-        (mouseScreen.x >= panelPos.x && mouseScreen.x <= panelPos.x + panelSize.x) &&
-        (mouseScreen.y >= panelPos.y && mouseScreen.y <= panelPos.y + panelSize.y);
-
-    static Entity draggedEntity = INVALID_ENTITY;
-    static Vec2 dragOffset{ 0.f, 0.f };
-    static bool isDragging = false;
-    Entity hovered = INVALID_ENTITY;
-
-    // Convert mouse to world-space once
-    Vec2 mouseWorld = Render::PanelToWorld(mouseScreen, panelPos, panelSize);
-
-    // ──────────────────────────────────────────────
-    // Draw all entity boxes
-    // ──────────────────────────────────────────────
-    for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
-    {
-        if (!EntityManager::get().isAlive(entity))
-            continue;
-
-        Vec2 worldPos = transform.pos;
-        Vec2 minW, maxW;
-        bool inside = false;
-
-        // Sprite bounds
-        //if (reg.Has_Component<Sprite::SpriteComponent>(entity))
-        //{
-        //    auto& sprite = reg.Get_Component<Sprite::SpriteComponent>(entity);
-        //    Vec2 half = sprite.Get_Scale() * 0.5f;
-        //    minW = worldPos - half;
-        //    maxW = worldPos + half;
-
-        //    inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
-        //        mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
-        //}
-        //// Physics collider bounds
-        //else if (reg.Has_Component<Physics::PhysicsComponent>(entity))
-        //{
-        //    auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
-        //    const AABB& aabb = phys.Get_AABB();
-        //    minW = aabb.min;
-        //    maxW = aabb.max;
-
-        //    inside = (mouseWorld.x >= aabb.min.x && mouseWorld.x <= aabb.max.x &&
-        //        mouseWorld.y >= aabb.min.y && mouseWorld.y <= aabb.max.y);
-        //}
-        //// Shape bounds
-        //else if (reg.Has_Component<ShapeComponent>(entity))
-        //{
-        //    auto& shape = reg.Get_Component<ShapeComponent>(entity);
-        //    Vec2 half = shape.dimensions * 0.5f;
-        //    minW = worldPos - half;
-        //    maxW = worldPos + half;
-
-        //    inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
-        //        mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
-        //}
-        //// Fallback — constant screen-size square (~40×40 px)
-        //else
-        {
-            ImVec2 center = Render::WorldToPanel(worldPos, panelPos, panelSize);
-            float boxSize = 40.f; // in pixels
-            ImVec2 minPanel(center.x - boxSize * 0.5f, center.y - boxSize * 0.5f);
-            ImVec2 maxPanel(center.x + boxSize * 0.5f, center.y + boxSize * 0.5f);
-
-            // Convert back to world to check click in same space
-            Vec2 minWClick = Render::PanelToWorld(minPanel, panelPos, panelSize);
-            Vec2 maxWClick = Render::PanelToWorld(maxPanel, panelPos, panelSize);
-
-            inside = (mouseWorld.x >= minWClick.x && mouseWorld.x <= maxWClick.x &&
-                mouseWorld.y >= minWClick.y && mouseWorld.y <= maxWClick.y);
-
-            // override draw region directly in panel space (since constant size)
-            dl->AddRectFilled(minPanel, maxPanel, IM_COL32(255, 255, 255, 25));
-            ImU32 color =
-                (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
-                (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
-                inside ? IM_COL32(255, 255, 0, 255) :
-                IM_COL32(255, 255, 255, 180);
-            dl->AddRect(minPanel, maxPanel, color, 0.f, 0, 2.f);
-
-            if (inside)
-                hovered = entity;
-
-            continue; // skip rest (we already drew)
-        }
-
-        // Convert to panel for draw (for sprite/physics/shape)
-        /*ImVec2 min = Render::WorldToPanel(minW, panelPos, panelSize);
-        ImVec2 max = Render::WorldToPanel(maxW, panelPos, panelSize);
-
-        ImU32 color =
-            (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
-            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
-            inside ? IM_COL32(255, 255, 0, 255) :
-            IM_COL32(255, 255, 255, 180);
-
-        dl->AddRectFilled(min, max, IM_COL32(255, 255, 255, 25));
-        dl->AddRect(min, max, color, 0.f, 0, 2.f);
-
-        if (inside)
-            hovered = entity;*/
-    }
-
-    // ──────────────────────────────────────────────
-    // Click select / drag / delete logic
-    // ──────────────────────────────────────────────
-    if (mouseClicked && mouseInPanel && hovered != INVALID_ENTITY)
-    {
-        selectedEntity = hovered;
-        draggedEntity = hovered;
-        isDragging = true;
-
-        auto& t = reg.Get_Component<TransformComponent>(hovered);
-        dragOffset = t.pos - Render::PanelToWorld(mouseScreen, panelPos, panelSize);
-
-        std::cout << "[Editor] Selected and started dragging entity " << hovered << "\n";
-    }
-
-    if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown && mouseInPanel)
-    {
-        auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
-        t.pos = Render::PanelToWorld(mouseScreen, panelPos, panelSize) + dragOffset;
-
-        if (reg.Has_Component<Physics::PhysicsComponent>(draggedEntity))
-        {
-            auto& p = reg.Get_Component<Physics::PhysicsComponent>(draggedEntity);
-            p.UpdateHitboxes(t.pos);
-        }
-    }
-
-    if (mouseReleased)
-    {
-        if (isDragging && draggedEntity != INVALID_ENTITY)
-            std::cout << "[Editor] Released entity " << draggedEntity << "\n";
-
-        isDragging = false;
-        draggedEntity = INVALID_ENTITY;
-    }
-
-    if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selectedEntity != INVALID_ENTITY)
-    {
-        reg.Remove_Entity(selectedEntity);
-        std::cout << "[Editor] Deleted entity " << selectedEntity << " via Delete key\n";
-        selectedEntity = INVALID_ENTITY;
-    }
-}
+//void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
+//{
+//    Registry& reg = Registry::Get();
+//    ImDrawList* dl = ImGui::GetWindowDrawList();
+//
+//    ImVec2 mouseScreen = ImGui::GetMousePos();
+//    bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+//    bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+//    bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+//
+//    // Check if mouse inside viewport
+//    bool mouseInPanel =
+//        (mouseScreen.x >= panelPos.x && mouseScreen.x <= panelPos.x + panelSize.x) &&
+//        (mouseScreen.y >= panelPos.y && mouseScreen.y <= panelPos.y + panelSize.y);
+//
+//    static Entity draggedEntity = INVALID_ENTITY;
+//    static Vec2 dragOffset{ 0.f, 0.f };
+//    static bool isDragging = false;
+//    Entity hovered = INVALID_ENTITY;
+//
+//    // Convert mouse to world-space once
+//    Vec2 mouseWorld = Render::PanelToWorld(mouseScreen, panelPos, panelSize);
+//
+//    // ──────────────────────────────────────────────
+//    // Draw all entity boxes
+//    // ──────────────────────────────────────────────
+//    for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
+//    {
+//        if (!EntityManager::get().isAlive(entity))
+//            continue;
+//
+//        Vec2 worldPos = transform.pos;
+//        Vec2 minW, maxW;
+//        bool inside = false;
+//
+//        // Sprite bounds
+//        //if (reg.Has_Component<Sprite::SpriteComponent>(entity))
+//        //{
+//        //    auto& sprite = reg.Get_Component<Sprite::SpriteComponent>(entity);
+//        //    Vec2 half = sprite.Get_Scale() * 0.5f;
+//        //    minW = worldPos - half;
+//        //    maxW = worldPos + half;
+//
+//        //    inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
+//        //        mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
+//        //}
+//        //// Physics collider bounds
+//        //else if (reg.Has_Component<Physics::PhysicsComponent>(entity))
+//        //{
+//        //    auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
+//        //    const AABB& aabb = phys.Get_AABB();
+//        //    minW = aabb.min;
+//        //    maxW = aabb.max;
+//
+//        //    inside = (mouseWorld.x >= aabb.min.x && mouseWorld.x <= aabb.max.x &&
+//        //        mouseWorld.y >= aabb.min.y && mouseWorld.y <= aabb.max.y);
+//        //}
+//        //// Shape bounds
+//        //else if (reg.Has_Component<ShapeComponent>(entity))
+//        //{
+//        //    auto& shape = reg.Get_Component<ShapeComponent>(entity);
+//        //    Vec2 half = shape.dimensions * 0.5f;
+//        //    minW = worldPos - half;
+//        //    maxW = worldPos + half;
+//
+//        //    inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
+//        //        mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
+//        //}
+//        //// Fallback — constant screen-size square (~40×40 px)
+//        //else
+//        {
+//            ImVec2 center = Render::WorldToPanel(worldPos, panelPos, panelSize);
+//            float boxSize = 40.f; // in pixels
+//            ImVec2 minPanel(center.x - boxSize * 0.5f, center.y - boxSize * 0.5f);
+//            ImVec2 maxPanel(center.x + boxSize * 0.5f, center.y + boxSize * 0.5f);
+//
+//            // Convert back to world to check click in same space
+//            Vec2 minWClick = Render::PanelToWorld(minPanel, panelPos, panelSize);
+//            Vec2 maxWClick = Render::PanelToWorld(maxPanel, panelPos, panelSize);
+//
+//            inside = (mouseWorld.x >= minWClick.x && mouseWorld.x <= maxWClick.x &&
+//                mouseWorld.y >= minWClick.y && mouseWorld.y <= maxWClick.y);
+//
+//            // override draw region directly in panel space (since constant size)
+//            dl->AddRectFilled(minPanel, maxPanel, IM_COL32(255, 255, 255, 25));
+//            ImU32 color =
+//                (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
+//                (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
+//                inside ? IM_COL32(255, 255, 0, 255) :
+//                IM_COL32(255, 255, 255, 180);
+//            dl->AddRect(minPanel, maxPanel, color, 0.f, 0, 2.f);
+//
+//            if (inside)
+//                hovered = entity;
+//
+//            continue; // skip rest (we already drew)
+//        }
+//
+//        // Convert to panel for draw (for sprite/physics/shape)
+//        /*ImVec2 min = Render::WorldToPanel(minW, panelPos, panelSize);
+//        ImVec2 max = Render::WorldToPanel(maxW, panelPos, panelSize);
+//
+//        ImU32 color =
+//            (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
+//            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
+//            inside ? IM_COL32(255, 255, 0, 255) :
+//            IM_COL32(255, 255, 255, 180);
+//
+//        dl->AddRectFilled(min, max, IM_COL32(255, 255, 255, 25));
+//        dl->AddRect(min, max, color, 0.f, 0, 2.f);
+//
+//        if (inside)
+//            hovered = entity;*/
+//    }
+//
+//    // ──────────────────────────────────────────────
+//    // Click select / drag / delete logic
+//    // ──────────────────────────────────────────────
+//    if (mouseClicked && mouseInPanel && hovered != INVALID_ENTITY)
+//    {
+//        selectedEntity = hovered;
+//        draggedEntity = hovered;
+//        isDragging = true;
+//
+//        auto& t = reg.Get_Component<TransformComponent>(hovered);
+//        dragOffset = t.pos - Render::PanelToWorld(mouseScreen, panelPos, panelSize);
+//
+//        std::cout << "[Editor] Selected and started dragging entity " << hovered << "\n";
+//    }
+//
+//    if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown && mouseInPanel)
+//    {
+//        auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
+//        t.pos = Render::PanelToWorld(mouseScreen, panelPos, panelSize) + dragOffset;
+//
+//        if (reg.Has_Component<Physics::PhysicsComponent>(draggedEntity))
+//        {
+//            auto& p = reg.Get_Component<Physics::PhysicsComponent>(draggedEntity);
+//            p.UpdateHitboxes(t.pos);
+//        }
+//    }
+//
+//    if (mouseReleased)
+//    {
+//        if (isDragging && draggedEntity != INVALID_ENTITY)
+//            std::cout << "[Editor] Released entity " << draggedEntity << "\n";
+//
+//        isDragging = false;
+//        draggedEntity = INVALID_ENTITY;
+//    }
+//
+//    if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selectedEntity != INVALID_ENTITY)
+//    {
+//        reg.Remove_Entity(selectedEntity);
+//        std::cout << "[Editor] Deleted entity " << selectedEntity << " via Delete key\n";
+//        selectedEntity = INVALID_ENTITY;
+//    }
+//}
 
 
 

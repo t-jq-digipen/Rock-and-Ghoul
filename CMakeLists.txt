@@ -9,6 +9,7 @@ set(ALL_LIBS
     glfw
     libglew_static
     imgui
+    imguizmo
     freetype
     nlohmann_json::nlohmann_json
 )

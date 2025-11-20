@@ -161,6 +161,35 @@ macro(import_mono)
     include_directories(${MONO_ROOT}/include ${MONO_ROOT}/include/mono-2.0)
 endmacro()
 
+# Macro to import ImGuizmo
+macro(import_imguizmo)
+    if (NOT TARGET imguizmo)  # Prevent multiple inclusion
+
+        FetchContent_Declare(
+            imguizmo
+            GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+            GIT_TAG master
+        )
+
+        FetchContent_GetProperties(imguizmo)
+        if (NOT imguizmo_POPULATED)
+            FetchContent_Populate(imguizmo)
+        endif()
+
+        # Create ImGuizmo library
+        add_library(imguizmo STATIC
+            ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp
+        )
+
+        target_include_directories(imguizmo PUBLIC
+            ${imguizmo_SOURCE_DIR}
+        )
+
+        # ImGuizmo depends on ImGui
+        target_link_libraries(imguizmo PUBLIC imgui)
+    endif()
+endmacro()
+
 # Macro to import all dependencies
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")
@@ -187,6 +216,7 @@ macro(importDependencies)
     message(STATUS "stb imported successfully.")
     import_json()
     import_mono()
+    import_imguizmo()
     message(STATUS "All dependencies have been imported successfully.")
 
 endmacro()

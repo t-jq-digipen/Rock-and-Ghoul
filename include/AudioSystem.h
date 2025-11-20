@@ -31,6 +31,11 @@
   */
 class AudioManager : public ISystem {
 public:
+    static AudioManager& Get() {
+        static AudioManager instance;
+        return instance;
+    }
+
     /**
      * @brief Initializes the FMOD audio system and preloads music tracks.
      *

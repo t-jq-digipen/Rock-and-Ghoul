@@ -103,7 +103,7 @@ struct MonoScriptComponent
             return comp;
 
         json j = json::parse(data);
-        MonoSystem& mono = MonoSystem::Get();
+        //MonoSystem& mono = MonoSystem::Get();
 
         for (auto& name : j["scripts"])
         {
