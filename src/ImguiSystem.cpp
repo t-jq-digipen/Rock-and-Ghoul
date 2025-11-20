@@ -1508,26 +1508,12 @@ void ImGuiSystem::ShowInspectorWindow()
                         // Get fresh reference BEFORE making any changes
                         auto& freshCollider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
 
-                        // Log before modification
-                        std::cout << "[Editor] BEFORE toggle " << layerName << ": "
-                                  << "layer=0x" << std::hex << freshCollider.GetLayer()
-                                  << " mask=0x" << freshCollider.GetMask()
-                                  << " trigger=" << (freshCollider.IsTrigger() ? "YES" : "NO")
-                                  << " active=" << (freshCollider.IsActive() ? "YES" : "NO") << std::dec << std::endl;
-
                         if (isSet) {
                             currentMask |= layerBit;
                         } else {
                             currentMask &= ~layerBit;
                         }
                         freshCollider.SetMask(currentMask);
-
-                        // Log after modification
-                        std::cout << "[Editor] AFTER toggle " << layerName << ": "
-                                  << "layer=0x" << std::hex << freshCollider.GetLayer()
-                                  << " mask=0x" << freshCollider.GetMask()
-                                  << " trigger=" << (freshCollider.IsTrigger() ? "YES" : "NO")
-                                  << " active=" << (freshCollider.IsActive() ? "YES" : "NO") << std::dec << std::endl;
                     }
 
                     ImGui::PopID();

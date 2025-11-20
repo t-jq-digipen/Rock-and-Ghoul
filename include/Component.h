@@ -2,7 +2,8 @@
  * @file		Component.h
  * @author		Tan Jun Quan		| t.junquan@digipen.edu
  * @co-author	Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
- * @date		26 OCT 2025
+ * @co-author	Yasmin Tazi			| yasmin.t@digipen.edu
+ * @date		19 NOV 2025
  *
  * @brief	Declaration of ECS component type IDs and minor
  *			components found within
@@ -336,7 +337,7 @@ struct ColliderComponent {
 	// String-based layer setters (need CollisionManager)
 	void SetLayer(const std::string& name);
 	void SetMask(const std::vector<std::string>& names);
-	void SetMask(uint32_t mask);  // Overload for editor - updates both maskBit and maskNames
+	void SetMask(uint32_t mask);  // Overload for editor to update both maskBit and maskNames
 
 	std::string Serialize() const;
 	static ColliderComponent DeSerialize(Entity eID, const std::string& data);
