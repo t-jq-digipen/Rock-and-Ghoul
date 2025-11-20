@@ -210,75 +210,75 @@ void RenderSystem::Update(float dt) {
 // sort the game object layer entities based on their y coords from 
 // reusable function drawlayer will be used to draw each layer
 // ======================================================
-    renderInstance.BeginBatch();
+    // renderInstance.BeginBatch();
 
-    struct RenderItem { //iidentify sprite or shape
-        Entity id;
-        bool isSprite;
-    };
+    //struct RenderItem { //iidentify sprite or shape
+    //    Entity id;
+    //    bool isSprite;
+    //};
 
-    //containers that contain entities for each layer
-    std::vector<RenderItem> backgroundEntities;
-    std::vector<RenderItem> gameEntities;
-    std::vector<RenderItem> foregroundEntities; //for sepcial effects? particles?
-    std::vector<RenderItem> uiEntities;
+    ////containers that contain entities for each layer
+    //std::vector<RenderItem> backgroundEntities;
+    //std::vector<RenderItem> gameEntities;
+    //std::vector<RenderItem> foregroundEntities; //for sepcial effects? particles?
+    //std::vector<RenderItem> uiEntities;
 
 
-    //Categorize entities by layer
-    for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
-    {
-        RenderLayer layer = LAYER_GAMEOBJECT; // default, if not specified 
+    ////Categorize entities by layer
+    //for (auto& [entID, spriteComp] : m_registry.Get_ComponentMap<Sprite::SpriteComponent>())
+    //{
+    //    RenderLayer layer = LAYER_GAMEOBJECT; // default, if not specified 
 
-        if (m_registry.Has_Component<RenderLayerComponent>(entID)) {
-            layer = m_registry.Get_Component<RenderLayerComponent>(entID).layer;
-        }
+    //    if (m_registry.Has_Component<RenderLayerComponent>(entID)) {
+    //        layer = m_registry.Get_Component<RenderLayerComponent>(entID).layer;
+    //    }
 
-        RenderItem item{ entID, true };
+    //    RenderItem item{ entID, true };
 
-        switch (layer)
-        {
-        case LAYER_BACKGROUND:
-            backgroundEntities.push_back(item);
-            break;
-        case LAYER_GAMEOBJECT:
-            gameEntities.push_back(item);
-            break;
-        case LAYER_FOREGROUND:
-            foregroundEntities.push_back(item);
-            break;
-        case LAYER_UI:
-            uiEntities.push_back(item);
-            break;
-        }
-    }
+    //    switch (layer)
+    //    {
+    //    case LAYER_BACKGROUND:
+    //        backgroundEntities.push_back(item);
+    //        break;
+    //    case LAYER_GAMEOBJECT:
+    //        gameEntities.push_back(item);
+    //        break;
+    //    case LAYER_FOREGROUND:
+    //        foregroundEntities.push_back(item);
+    //        break;
+    //    case LAYER_UI:
+    //        uiEntities.push_back(item);
+    //        break;
+    //    }
+    //}
 
-    //Handle the shape components
-    for (auto& [entID, shapeComp] : m_registry.Get_ComponentMap<ShapeComponent>()) {
+    ////Handle the shape components
+    //for (auto& [entID, shapeComp] : m_registry.Get_ComponentMap<ShapeComponent>()) {
 
-        RenderLayer layer = LAYER_GAMEOBJECT; //default give them layer_gameobject, if want change need explicitly add layer comp to entitycreation.cpp
+    //    RenderLayer layer = LAYER_GAMEOBJECT; //default give them layer_gameobject, if want change need explicitly add layer comp to entitycreation.cpp
 
-        if (m_registry.Has_Component<RenderLayerComponent>(entID)) {
-            layer = m_registry.Get_Component<RenderLayerComponent>(entID).layer;
-        }
+    //    if (m_registry.Has_Component<RenderLayerComponent>(entID)) {
+    //        layer = m_registry.Get_Component<RenderLayerComponent>(entID).layer;
+    //    }
 
-        RenderItem item{ entID, false };
+    //    RenderItem item{ entID, false };
 
-        switch (layer)
-        {
-        case LAYER_BACKGROUND:
-            backgroundEntities.push_back(item);
-            break;
-        case LAYER_GAMEOBJECT:
-            gameEntities.push_back(item);
-            break;
-        case LAYER_FOREGROUND:
-            foregroundEntities.push_back(item);
-            break;
-        case LAYER_UI:
-            uiEntities.push_back(item);
-            break;
-        }
-    }
+    //    switch (layer)
+    //    {
+    //    case LAYER_BACKGROUND:
+    //        backgroundEntities.push_back(item);
+    //        break;
+    //    case LAYER_GAMEOBJECT:
+    //        gameEntities.push_back(item);
+    //        break;
+    //    case LAYER_FOREGROUND:
+    //        foregroundEntities.push_back(item);
+    //        break;
+    //    case LAYER_UI:
+    //        uiEntities.push_back(item);
+    //        break;
+    //    }
+    //}
 
     // new rendercomp
 #pragma region new rendercomp
@@ -310,12 +310,12 @@ void RenderSystem::Update(float dt) {
     }
 
     //Sort the entities with GAMEOBJECT layer by Y-position
-    std::sort(gameEntities.begin(), gameEntities.end(),
-        [&](const RenderItem& a, const RenderItem& b) {
-            const auto& ta = m_registry.Get_Component<TransformComponent>(a.id);
-            const auto& tb = m_registry.Get_Component<TransformComponent>(b.id);
-            return ta.pos.y > tb.pos.y; // Higher Y = further back (drawn first)
-        });
+    //std::sort(gameEntities.begin(), gameEntities.end(),
+    //    [&](const RenderItem& a, const RenderItem& b) {
+    //        const auto& ta = m_registry.Get_Component<TransformComponent>(a.id);
+    //        const auto& tb = m_registry.Get_Component<TransformComponent>(b.id);
+    //        return ta.pos.y > tb.pos.y; // Higher Y = further back (drawn first)
+    //    });
 
     // SORT ENTITIES FOR NEW RENDERCOMPONENT
     std::sort(go_list.begin(), go_list.end(),
@@ -333,141 +333,164 @@ void RenderSystem::Update(float dt) {
                 TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
 
                 // update rendercomponent
+                switch (renderComp.GetRenderType())
+                {
+                case RT_SHAPE:
+                {
+                    DrawItem(renderComp.GetShape(), transComp);
+                }
+                break; // end RT_SHAPE
+
+                case RT_IMAGE:
+                {
+                    DrawItem(renderComp.GetSprite(), transComp);
+                }
+                break; // end RT_IMAGE
+
+                case RT_SPRITESHEET:
+                {
+                    DrawItem(renderComp.GetSpriteSheet(), transComp);
+                }
+                break; // end RT_SPRITESHEET
+
+                default:
+                    break;
+                }
 
                 // draw de thing
-                std::visit([&](auto& renderdata)
-                    { DrawItem(renderdata, transComp); }, renderComp.m_renderData);
+                /*std::visit([&](auto& renderdata)
+                    { DrawItem(renderdata, transComp); }, renderComp.m_renderData);*/
             }
         };
 #pragma endregion new rendercomp
 
     //Draw a list of entities
-    auto DrawLayer = [&](const std::vector<RenderItem>& entities)
-        {
-            for (const RenderItem& item : entities)
-            {
-                Entity entID = item.id;
+    //auto DrawLayer = [&](const std::vector<RenderItem>& entities)
+    //    {
+    //        for (const RenderItem& item : entities)
+    //        {
+    //            Entity entID = item.id;
 
-                if (item.isSprite) { //if is sprite..
+    //            if (item.isSprite) { //if is sprite..
 
-                    auto& spriteComp = m_registry.Get_Component<Sprite::SpriteComponent>(entID);
-                    auto& transComp = m_registry.Get_Component<TransformComponent>(entID);
+    //                auto& spriteComp = m_registry.Get_Component<Sprite::SpriteComponent>(entID);
+    //                auto& transComp = m_registry.Get_Component<TransformComponent>(entID);
 
-                    spriteComp.Update_ImageSize();
+    //                spriteComp.Update_ImageSize();
 
-                    bool isBatched = false;
-                    if (m_registry.Has_Component<TagComponent>(entID))
-                    {
-                        const auto& tag = m_registry.Get_Component<TagComponent>(entID);
-                        if (tag.tag == T_BATCH) {
-                            isBatched = true;
-                        }
-                    }
+    //                bool isBatched = false;
+    //                if (m_registry.Has_Component<TagComponent>(entID))
+    //                {
+    //                    const auto& tag = m_registry.Get_Component<TagComponent>(entID);
+    //                    if (tag.tag == T_BATCH) {
+    //                        isBatched = true;
+    //                    }
+    //                }
 
-                    if (spriteComp.IsAnimated())
-                    {
-                        auto& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
-                        animComp.UpdateFrame(dt);
+    //                if (spriteComp.IsAnimated())
+    //                {
+    //                    auto& animComp = m_registry.Get_Component<Animator::AnimatorComponent>(entID);
+    //                    animComp.UpdateFrame(dt);
 
-                        Image img = spriteComp.Get_Image();
-                        glm::vec4 uv(animComp.u0 / img.widthPixels,
-                            animComp.v1 / img.heightPixels,
-                            animComp.u1 / img.widthPixels,
-                            animComp.v0 / img.heightPixels);
+    //                    Image img = spriteComp.Get_Image();
+    //                    glm::vec4 uv(animComp.u0 / img.widthPixels,
+    //                        animComp.v1 / img.heightPixels,
+    //                        animComp.u1 / img.widthPixels,
+    //                        animComp.v0 / img.heightPixels);
 
-                        if (isBatched) {
-                            renderInstance.SubmitSpriteBatchUV(img, transComp.pos, spriteComp.Get_Scale(), uv, transComp.rot + spriteComp.Get_Rotation());
-                        }
-                        else {
-                            renderInstance.DrawImageSub(img,
-                                transComp.pos.x, transComp.pos.y,
-                                spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
-                                animComp.u0, animComp.v0, animComp.u1, animComp.v1,
-                                glm::radians(transComp.rot + spriteComp.Get_Rotation()));
-                        }
-                    }
-                    else
-                    {
-                        Image img = spriteComp.Get_Image();
-                        Vec2 scaledSize = { img.widthPixels * spriteComp.Get_Scale().x, img.heightPixels * spriteComp.Get_Scale().y };
+    //                    if (isBatched) {
+    //                        renderInstance.SubmitSpriteBatchUV(img, transComp.pos, spriteComp.Get_Scale(), uv, transComp.rot + spriteComp.Get_Rotation());
+    //                    }
+    //                    else {
+    //                        renderInstance.DrawImageSub(img,
+    //                            transComp.pos.x, transComp.pos.y,
+    //                            spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
+    //                            animComp.u0, animComp.v0, animComp.u1, animComp.v1,
+    //                            glm::radians(transComp.rot + spriteComp.Get_Rotation()));
+    //                    }
+    //                }
+    //                else
+    //                {
+    //                    Image img = spriteComp.Get_Image();
+    //                    Vec2 scaledSize = { img.widthPixels * spriteComp.Get_Scale().x, img.heightPixels * spriteComp.Get_Scale().y };
 
-                        if (isBatched) {
-                            renderInstance.SubmitSpriteBatch(img, transComp.pos, scaledSize, transComp.rot + spriteComp.Get_Rotation());
-                        }
-                        else {
-                            renderInstance.DrawImageScaled(img,
-                                transComp.pos.x, transComp.pos.y,
-                                spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
-                                glm::radians(transComp.rot + spriteComp.Get_Rotation()));
-                        }
-                    }
-                }
+    //                    if (isBatched) {
+    //                        renderInstance.SubmitSpriteBatch(img, transComp.pos, scaledSize, transComp.rot + spriteComp.Get_Rotation());
+    //                    }
+    //                    else {
+    //                        renderInstance.DrawImageScaled(img,
+    //                            transComp.pos.x, transComp.pos.y,
+    //                            spriteComp.Get_Scale().x, spriteComp.Get_Scale().y,
+    //                            glm::radians(transComp.rot + spriteComp.Get_Rotation()));
+    //                    }
+    //                }
+    //            }
 
-                //shape stuff here (if is shape...)
-                else {
+    //            //shape stuff here (if is shape...)
+    //            else {
 
-                    // Skip entities without a transform (need position/rotation to draw)
-                    if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
-                    TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
-                    ShapeComponent& shapeComp = m_registry.Get_Component<ShapeComponent>(entID);
-                    Colour3 color = { shapeComp.color.x, shapeComp.color.y, shapeComp.color.z };
+    //                // Skip entities without a transform (need position/rotation to draw)
+    //                if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
+    //                TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+    //                ShapeComponent& shapeComp = m_registry.Get_Component<ShapeComponent>(entID);
+    //                Colour3 color = { shapeComp.color.x, shapeComp.color.y, shapeComp.color.z };
 
-                    if (m_registry.Has_Component<TagComponent>(entID)) {
-                        TagComponent& tag = m_registry.Get_Component<TagComponent>(entID);
+    //                if (m_registry.Has_Component<TagComponent>(entID)) {
+    //                    TagComponent& tag = m_registry.Get_Component<TagComponent>(entID);
 
-                        if (shapeComp.shape == SHAPE_RECTANGLE && tag.tag == T_INSTANCING) { //check entity is using instancing
-                            //Store matching entities inside InstanceData vector
-                            InstanceData inst;
-                            inst.position = transComp.pos;
-                            inst.scale = transComp.scale;
-                            inst.rotation = glm::radians(transComp.rot);
-                            inst.uvRect = { 0,0,1,1 };
-                            batch.push_back(inst);
-                            continue;
-                        }
+    //                    if (shapeComp.shape == SHAPE_RECTANGLE && tag.tag == T_INSTANCING) { //check entity is using instancing
+    //                        //Store matching entities inside InstanceData vector
+    //                        InstanceData inst;
+    //                        inst.position = transComp.pos;
+    //                        inst.scale = transComp.scale;
+    //                        inst.rotation = glm::radians(transComp.rot);
+    //                        inst.uvRect = { 0,0,1,1 };
+    //                        batch.push_back(inst);
+    //                        continue;
+    //                    }
 
 
-                    }
+    //                }
 
-                    if (shapeComp.shape == SHAPE_RECTANGLE) {
-                        renderInstance.DrawRect(
-                            transComp.pos,
-                            shapeComp.dimensions.x,
-                            shapeComp.dimensions.y,
-                            color,
-                            transComp.rot
-                        );
-                    }
-                    else if (shapeComp.shape == SHAPE_CIRCLE) {
-                        float radius = (shapeComp.dimensions.x + shapeComp.dimensions.y) / 4.0f;
-                        renderInstance.DrawCircle(
-                            transComp.pos,
-                            radius,
-                            color,
-                            32
-                        );
-                    }
-                }
-            }
-        };
+    //                if (shapeComp.shape == SHAPE_RECTANGLE) {
+    //                    renderInstance.DrawRect(
+    //                        transComp.pos,
+    //                        shapeComp.dimensions.x,
+    //                        shapeComp.dimensions.y,
+    //                        color,
+    //                        transComp.rot
+    //                    );
+    //                }
+    //                else if (shapeComp.shape == SHAPE_CIRCLE) {
+    //                    float radius = (shapeComp.dimensions.x + shapeComp.dimensions.y) / 4.0f;
+    //                    renderInstance.DrawCircle(
+    //                        transComp.pos,
+    //                        radius,
+    //                        color,
+    //                        32
+    //                    );
+    //                }
+    //            }
+    //        }
+    //    };
 
     // Background (rendered behind game objects)
     renderInstance.BeginBatch();
-    DrawLayer(backgroundEntities);
+    // DrawLayer(backgroundEntities);
     drawLayerNEWJQ(bg_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
 
     // Game objects
     renderInstance.BeginBatch();
-    DrawLayer(gameEntities);
+    // DrawLayer(gameEntities);
     drawLayerNEWJQ(go_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
 
     // Foreground (rendered above game objects)
     renderInstance.BeginBatch();
-    DrawLayer(foregroundEntities);
+    // DrawLayer(foregroundEntities);
     drawLayerNEWJQ(fg_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
@@ -475,7 +498,7 @@ void RenderSystem::Update(float dt) {
     // UI (rendered last, most in front)
     renderer.useCamera = false;
     renderInstance.BeginBatch();
-    DrawLayer(uiEntities);
+    // DrawLayer(uiEntities);
     drawLayerNEWJQ(ui_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
@@ -616,11 +639,11 @@ void RenderSystem::Update(float dt) {
             if (ImGuiSystem::showColliders) {
                 DebugDraw::DrawAABB(physics.Get_AABB(), renderInstance);
 
-                if (m_registry.Has_Component<ShapeComponent>(entID)) {
-                    auto& shape = m_registry.Get_Component<ShapeComponent>(entID);
-                    if (shape.shape == SHAPE_CIRCLE)
-                        DebugDraw::DrawCircleCollider(physics.Get_Circle(), renderInstance);
-                }
+                //if (m_registry.Has_Component<ShapeComponent>(entID)) {
+                //    auto& shape = m_registry.Get_Component<ShapeComponent>(entID);
+                //    if (shape.shape == SHAPE_CIRCLE)
+                //        DebugDraw::DrawCircleCollider(physics.Get_Circle(), renderInstance);
+                //}
 
                 DebugDraw::DrawHotspot(t.pos, renderInstance);
             }

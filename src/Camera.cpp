@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "Remath.h"
+#include "Render.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glapp.h>
 #include <iostream>
@@ -62,10 +63,6 @@ void Camera::UpdateMatrices()
 
 void Camera::UpdateCamera()
 {
-
-    // FollowTarget(targetPosition, dt);
-    //const float followSpeed = 2.0f; // adjust for smoothness
-    //Vec2 newPos = RG_Lerp(position, targetPosition, followSpeed * dt);
 
     Vec2 newPos = GetPosition();
 

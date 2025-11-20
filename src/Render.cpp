@@ -226,6 +226,7 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glm::mat4 projMatrix = useCamera
         ? mainCamera.GetViewProjection()
         : projection;
+
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
         1, GL_FALSE, &projMatrix[0][0]);
 
@@ -1604,7 +1605,7 @@ void Render::InitBatch()
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
     } // reuse existing projection (see first if need use camera view project matrix)*/
 
-    //use camera view project matrix
+    //use camera view proj matrix
     glm::mat4 projMatrix = useCamera
         ? mainCamera.GetViewProjection()
         : projection;
@@ -1700,7 +1701,7 @@ void Render::SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2
 
     // Build a quad centered at (0,0), then rotate/translate to pos
     // size = (w,h)
-    const glm::vec2 half = { size.x * 0.5f, size.y * 0.5f };
+    const glm::vec2 half = { size.x * 0.5f, size.y * 0.5f};
 
     // CCW: bl, br, tr, tl  (match index pattern 0-1-2, 2-3-0)
     glm::vec2 local[4] = {
@@ -2008,7 +2009,7 @@ Vec2 Render::PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImV
 
     float halfWidth = (GLApp::width * 0.5f) / zoom;
     float halfHeight = (GLApp::height * 0.5f) / zoom;
-
+    
     return {
         camPos.x + ndcX * halfWidth,
         camPos.y + ndcY * halfHeight
@@ -2031,7 +2032,11 @@ ImVec2 Render::WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImV
     float v = 1.f - (ndcY * 0.5f + 0.5f);
 
     return ImVec2(
-        panelPos.x + u * panelSize.x,
-        panelPos.y + v * panelSize.y
+        (panelPos.x + u * panelSize.x),
+        (panelPos.y + v * panelSize.y)
     );
+}
+
+void Render::SetWindowScale(float scaleX, float scaleY) {
+    m_WindowScale = { scaleX, scaleY };
 }

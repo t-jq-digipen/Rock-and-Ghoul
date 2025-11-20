@@ -33,6 +33,8 @@ bool GLApp::gameInitialized = false;
 ----------------------------------------------------------------------------- */
 GLint GLApp::width = 0;
 GLint GLApp::height = 0;
+GLint GLApp::baseWidth = 0;
+GLint GLApp::baseHeight = 0;
 GLdouble GLApp::fps = 0.0;
 GLdouble GLApp::delta_time = 0.0;
 std::string GLApp::title;
@@ -64,6 +66,8 @@ with each buffer of size width x height pixels
 bool GLApp::init(GLint w, GLint h, std::string t) {
   GLApp::width = w;
   GLApp::height = h;
+  GLApp::baseWidth = w;
+  GLApp::baseHeight = h;
   GLApp::title = t;
 
   if (!glfwInit()) {
@@ -380,8 +384,9 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
   // use the entire framebuffer as drawing region
     (void)ptr_win;
     //scale factors BEFORE updating GLApp::width/height
-    float scaleX = (float)newwidth / (float)GLApp::width;
-    float scaleY = (float)newheight / (float)GLApp::height;
+    float scaleX = (float)newwidth / (float)GLApp::baseWidth;
+    float scaleY = (float)newheight / (float)GLApp::baseHeight;
+
 
     //update the global width/height
     GLApp::width = newwidth;
@@ -389,54 +394,54 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
 
     glViewport(0, 0, newwidth, newheight);
     Render::GetInstance().InitSceneFramebuffer(newwidth, newheight);
+    Render::GetInstance().SetWindowScale(scaleX, scaleY);
+    //if (GLApp::gameInitialized) {
+    //    Registry& reg = Registry::Get();
 
-    if (GLApp::gameInitialized) {
-        Registry& reg = Registry::Get();
+    //    // Scale all entity positions
+    //    for (auto& [entID, transform] : reg.Get_ComponentMap<TransformComponent>()) {
+    //        transform.pos.x *= scaleX;
+    //        transform.pos.y *= scaleY;
+    //        transform.scale.x *= scaleX;
+    //        transform.scale.y *= scaleY;
+    //    }
 
-        // Scale all entity positions
-        for (auto& [entID, transform] : reg.Get_ComponentMap<TransformComponent>()) {
-            transform.pos.x *= scaleX;
-            transform.pos.y *= scaleY;
-            transform.scale.x *= scaleX;
-            transform.scale.y *= scaleY;
-        }
+    //    // update AABBs
+    //    for (auto& [entID, physics] : reg.Get_ComponentMap<Physics::PhysicsComponent>()) {
+    //        if (reg.Has_Component<TransformComponent>(entID)) {
+    //            auto& transform = reg.Get_Component<TransformComponent>(entID);
+    //            // aabb
+    //            AABB& aabb = physics.Get_AABB();
+    //            aabb.min.x *= scaleX;
+    //            aabb.max.x *= scaleX;
+    //            aabb.min.y *= scaleY;
+    //            aabb.max.y *= scaleY;
+    //            aabb.dim.x *= scaleX;
+    //            aabb.dim.y *= scaleY;
+    //            //circle
+    //            Circle& circle = physics.Get_Circle();
+    //            circle.pos.x = transform.pos.x;
+    //            circle.pos.y = transform.pos.y;
+    //            circle.rad *= (scaleX + scaleY) * 0.5f;
 
-        // update AABBs
-        for (auto& [entID, physics] : reg.Get_ComponentMap<Physics::PhysicsComponent>()) {
-            if (reg.Has_Component<TransformComponent>(entID)) {
-                auto& transform = reg.Get_Component<TransformComponent>(entID);
-                // aabb
-                AABB& aabb = physics.Get_AABB();
-                aabb.min.x *= scaleX;
-                aabb.max.x *= scaleX;
-                aabb.min.y *= scaleY;
-                aabb.max.y *= scaleY;
-                aabb.dim.x *= scaleX;
-                aabb.dim.y *= scaleY;
-                //circle
-                Circle& circle = physics.Get_Circle();
-                circle.pos.x = transform.pos.x;
-                circle.pos.y = transform.pos.y;
-                circle.rad *= (scaleX + scaleY) * 0.5f;
+    //            
+    //            physics.UpdateHitboxes(transform.pos);
+    //        }
+    //    }
+    //    // scale all sprite components
+    //    for (auto& [entID, sprite] : reg.Get_ComponentMap<Sprite::SpriteComponent>()) {
+    //        Vec2 currentScale = sprite.Get_Scale();
+    //        sprite.Set_Size({
+    //            currentScale.x * scaleX,
+    //            currentScale.y * scaleY
+    //            });
+    //    }
 
-                
-                physics.UpdateHitboxes(transform.pos);
-            }
-        }
-        // scale all sprite components
-        for (auto& [entID, sprite] : reg.Get_ComponentMap<Sprite::SpriteComponent>()) {
-            Vec2 currentScale = sprite.Get_Scale();
-            sprite.Set_Size({
-                currentScale.x * scaleX,
-                currentScale.y * scaleY
-                });
-        }
-
-        for (auto& [entID, shape] : reg.Get_ComponentMap<ShapeComponent>()) {
-            shape.dimensions.x *= scaleX;
-            shape.dimensions.y *= scaleY;
-        }
-    }
+    //    for (auto& [entID, shape] : reg.Get_ComponentMap<ShapeComponent>()) {
+    //        shape.dimensions.x *= scaleX;
+    //        shape.dimensions.y *= scaleY;
+    //    }
+    //}
 }
 
 /*  _________________________________________________________________________*/

@@ -32,7 +32,7 @@ namespace Sprite {
 	 * Can represent both static images and animated spritesheets using bool m_anim.
 	 * Animated spritesheets would refer to Animator component.
 	 */
-	class SpriteComponent {
+	class SpriteComponent : public IRenderData {
 	private:
 		Image	m_image;	// Image struct
 		GLuint  m_oldtexID;	// old texID to check updates
@@ -137,8 +137,15 @@ namespace Sprite {
 		void Set_Tint(const Colour3& color) { tint = color; }
 		const Colour3& Get_Tint() const { return tint; }
 
+		void Update(float) override;
 
-		std::string Serialize() const;
+		RenderType GetType() const override { return RT_IMAGE; }
+
+		std::unique_ptr<IRenderData> Clone() const override {
+			return std::make_unique<SpriteComponent>(*this);
+		}
+
+		std::string Serialize() const override;
 
 		static SpriteComponent DeSerialize(Entity eID, const std::string& data);
 
@@ -146,7 +153,7 @@ namespace Sprite {
 	};
 
 
-	class SpriteSheet {
+	class SpriteSheet : public IRenderData {
 		// Sprite data
 	private:
 		SpriteComponent m_sprite;
@@ -223,16 +230,23 @@ namespace Sprite {
 		 * @return The number of rows.
 		 */
 		int GetTotalRows() const { return m_total_rows; }
+
+		void SetTotalRows(int r) { m_total_rows = r; }
+
 		/**
 		 * @brief Get the total number of columns in the sprite sheet.
 		 * @return The number of columns.
 		 */
 		int GetTotalCols() const { return m_total_cols; }
+
+		void SetTotalCols(int c) { m_total_cols = c; }
+
 		/**
 		 * @brief Get the duration of the current animation cycle.
 		 * @return The animation duration in seconds.
 		 */
 		float GetAnimDuration() const { return anim_duration; }
+
 		/**
 		 * @brief Get the currently active frame range.
 		 * @return The ActiveFrames object representing the current frame range.
@@ -272,7 +286,15 @@ namespace Sprite {
 		 */
 		int GetCurrentState() const { return m_current_state; }
 
-		std::string Serialize() const;
+		void Update(float) override;
+
+		RenderType GetType() const override { return RT_SPRITESHEET; }
+
+		std::unique_ptr<IRenderData> Clone() const override {
+			return std::make_unique<SpriteSheet>(*this);
+		}
+
+		std::string Serialize() const override;
 
 		static SpriteSheet DeSerialize(Entity eID, const std::string& data);
 

@@ -729,9 +729,9 @@ public:
     //camera to see which uses camera and which doesnt etc in main menu dont need
     bool useCamera = true;
 
-    static Vec2 PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImVec2& panelSize);
+    Vec2 PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImVec2& panelSize);
 
-    static ImVec2 WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImVec2& panelSize);
+    ImVec2 WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImVec2& panelSize);
 
 private:
     glm::vec2 uiScale = { 1.0f, 1.0f };
@@ -879,7 +879,8 @@ private:
 
     // converts normalized device coordinates (-1,1) to world-space
    
-
+    // wnidow scale values
+    Vec2 m_WindowScale = { 1.f,1.f };
 public:
 
     /**
@@ -963,4 +964,8 @@ public:
     *       or aligning objects based on screen-space input.
     */
     Vec2 ScreenToWorld(float ndcX, float ndcY) const;
+
+    void SetWindowScale(float scaleX, float scaleY);
+
+    float GetWindowScale() const { return m_WindowScale.x < m_WindowScale.y ? m_WindowScale.x : m_WindowScale.y; }
 };
