@@ -294,11 +294,12 @@ void CoreEngine::Run()
 void CoreEngine::Shutdown()
 {
     GLApp::gameInitialized = false;
-
-    // Shut down in reverse order; delete only heap-allocated ones
-    for (int i = static_cast<int>(systems.size()) - 1; i >= 0; --i)
+    SceneManager::Get().UnloadCurrentScene();
+    Registry::Get().Remove_AllEntities();
+    // Shut down update systems in reverse
+    for (int i = (int)updateSystems.size() - 1; i >= 0; --i)
     {
-        ISystem* s = systems[i];
+        ISystem* s = updateSystems[i];
         s->Shutdown();
 
         if (s != &GuiSystem::Get() &&
@@ -310,8 +311,22 @@ void CoreEngine::Shutdown()
         }
     }
 
-    systems.clear();
+    // Shut down render systems in reverse
+    for (int i = (int)renderSystems.size() - 1; i >= 0; --i)
+    {
+        ISystem* s = renderSystems[i];
+        s->Shutdown();
+
+        if (s != &GuiSystem::Get())   // only delete heap ones
+        {
+            delete s;
+        }
+    }
+
+    updateSystems.clear();
+    renderSystems.clear();
 }
+
 
 void CoreEngine::Quit()
 {

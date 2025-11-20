@@ -111,8 +111,8 @@ int main() {
             //Render& renderer = Render::GetInstance();
 
             // Create audio manager
-            AudioManager* audio = new AudioManager();
-            engine.AddSystem(audio);
+            //AudioManager* audio = new AudioManager();
+            //engine.AddSystem(audio);
             //MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
 
             // initialize all systems (FMOD, OpenGL, etc.)
