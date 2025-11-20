@@ -127,6 +127,13 @@ struct InstanceData {
     float rotation; //in radians
 };
 
+//Virtual always used a fixed sized defined in GLApp::VIRTUAL_H, GLApp::VIRTUAL_W
+//Window uses GLApp::Height, GLApp::Width
+//Default to virtual, for main menu/UI use Window
+enum class ResolutionMode {
+    Virtual,
+    Window
+};
 
 
 
@@ -729,9 +736,13 @@ public:
     //camera to see which uses camera and which doesnt etc in main menu dont need
     bool useCamera = true;
 
+    ResolutionMode resMode = ResolutionMode::Virtual;
+
     Vec2 PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImVec2& panelSize);
 
     ImVec2 WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImVec2& panelSize);
+
+    void UseVirtualWindow(bool enable);
 
 private:
     glm::vec2 uiScale = { 1.0f, 1.0f };

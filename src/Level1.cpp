@@ -65,6 +65,8 @@ void Level1::Load()
 	Render& renderer = Render::GetInstance();
 	Camera& cam = Camera::GetInstance();
 	
+	//for gameplays like levels, set the virtual window to true and use camera
+	renderer.UseVirtualWindow(true);
 	renderer.useCamera = true;
 	//is there a way to get the bgsize, kinda iffy erhh
 	Vec2 bgSize = { 2200.0f, 1080.0f };

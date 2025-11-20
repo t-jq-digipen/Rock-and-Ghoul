@@ -23,6 +23,7 @@ to OpenGL implementations.
 #include "Registry.h"
 #include "CoreEngine.h"
 #include "GuiSystem.h"
+#include <Camera.h>
 // Before asking GLFW to create an OpenGL context, we specify the minimum constraints
 // in that context:
 #define GL_MINOR 5
@@ -40,6 +41,10 @@ GLdouble GLApp::delta_time = 0.0;
 std::string GLApp::title;
 GLFWwindow* GLApp::ptr_window = nullptr;
 GLfloat GLApp::clear_color[4] = { 0.f, 0.f, 0.f, 1.f };
+GLfloat GLApp::VIRTUAL_H = 1080.f;
+GLfloat GLApp::VIRTUAL_W = 1920.f;
+
+
 
 /*  _________________________________________________________________________ */
 /*! init
@@ -395,6 +400,9 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
     glViewport(0, 0, newwidth, newheight);
     Render::GetInstance().InitSceneFramebuffer(newwidth, newheight);
     Render::GetInstance().SetWindowScale(scaleX, scaleY);
+
+    //Camera::GetInstance().UpdateMatrices();     // updates orthographic projection
+    //Render::GetInstance().UpdateProjection();   // send projection to sprite shader
     //if (GLApp::gameInitialized) {
     //    Registry& reg = Registry::Get();
 

@@ -91,6 +91,9 @@ void MainMenu::Load()
     //CrashHandler::Safe("MainMenu", "Load", [&] {
     //    std::cout << "Main Menu Loaded!!!" << std::endl;
     Render& renderer = Render::GetInstance();
+
+    //For stuff like UI/Main menu, use window itself, set it to false and we dont use camera so set to false too
+    renderer.UseVirtualWindow(false);
     renderer.useCamera = false;
     auto FontAssets = renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
     CrashHandler::Safe("MainMenu", "Load", [&] {

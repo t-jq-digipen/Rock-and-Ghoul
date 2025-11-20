@@ -1883,9 +1883,20 @@ void Render::DrawFullscreenTexture(GLuint texture, bool cover)
     if (texW == 0 || texH == 0)
         return; // invalid texture, skip draw
 
-    // 2. Compute scaling that maintains aspect ratio
-    const float winW = static_cast<float>(GLApp::width);
-    const float winH = static_cast<float>(GLApp::height);
+    // 2. Compute scaling that maintains aspect ratio 
+    //okay gotta figure this out, cause now i set it to always use a virtual 1920x1080 resolution so can match it when in full screen mode
+    // but gotta think about the case, whether it uses windowed or full screen???
+    float winW, winH;
+    if (resMode == ResolutionMode::Virtual) {
+        winW = 1920.0f;
+        winH = 1080.0f;
+    }
+    else {
+        winW = static_cast<float>(GLApp::width);
+        winH = static_cast<float>(GLApp::height);
+    }
+    //const float winW = 1920.f;//static_cast<float>(GLApp::width);
+    //const float winH = 1080.f;//static_cast<float>(GLApp::height);
     const float wr = winW / texW;
     const float hr = winH / texH;
 
@@ -1897,6 +1908,9 @@ void Render::DrawFullscreenTexture(GLuint texture, bool cover)
     DrawTexturedQuad({ winW * 0.5f, winH * 0.5f }, drawSize, texture);
 }
 
+void Render::UseVirtualWindow(bool enable) {
+    resMode = enable ? ResolutionMode::Virtual : ResolutionMode::Window;
+}
 
 void Render::InitSceneFramebuffer(int width, int height)
 {
