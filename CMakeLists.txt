@@ -346,7 +346,10 @@ source_group("BaseEngine\\Systems\\Physics" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
 )
-
+source_group("BaseEngine\\Systems\\Undo" FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/UndoSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/UndoSystem.cpp
+)
 source_group("BaseEngine\\Managers" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h

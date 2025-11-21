@@ -27,6 +27,7 @@
 #include "GuiSystem.h"
 #include "CoreEngine.h"
 #include "SceneManager.h"
+#include "UndoSystem.h"
 #pragma region ComponentSavers
 
  /**
@@ -961,7 +962,7 @@ void JsonLoad::ClearAllEntities() {
     for (Entity e : toRemove) {
         Registry::Get().Remove_Entity(e);
     }
-
+    UndoSystem::Get().Clear();
     std::cout << "Cleared " << toRemove.size() << " entities" << std::endl;
 }
 

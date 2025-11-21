@@ -58,6 +58,7 @@
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
 #include "ImGuizmo.h"
+#include "UndoSystem.h"
 
 // ========================================================
 // File-Local Static Variables (Editor State)
@@ -93,6 +94,7 @@ Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 
 static ImGuizmo::OPERATION gizmoOperation = ImGuizmo::TRANSLATE;
 static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
+static bool s_gizmoWasUsing = false;
 // ========================================================
 // Anonymous Namespace
 // ========================================================
@@ -338,17 +340,6 @@ inline float SmoothDampAngle(float current, float target, float factor)
     float diff = glm::mod(target - current + 540.0f, 360.0f) - 180.0f;
     return current + diff * factor;
 }
-float ApproachAngle(float current, float target, float maxDelta)
-{
-    // Normalize to [-180, 180]
-    float delta = fmodf(target - current + 540.0f, 360.0f) - 180.0f;
-
-    // Clamp turning speed
-    if (delta > maxDelta) delta = maxDelta;
-    if (delta < -maxDelta) delta = -maxDelta;
-
-    return current + delta;
-}
 
 // Widget templates for component data
 // ========================================================
@@ -518,6 +509,7 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         if (ent != INVALID_ENTITY)
         {
             selectedEntity = ent;
+            UndoSystem::Get().RecordAdd(ent);
             std::cout << "[ImGui Drop] Spawned prefab entity " << ent << std::endl;
         }
         else
@@ -595,7 +587,17 @@ void ImGuiSystem::Update(float dt)
 
     if (Input::IsKeyPressed(GLFW_KEY_F1))
         guiEnabled = !guiEnabled;
+    if (guiEnabled && sm.inEditMode)   // must be in editor mode
+    {
+        ImGuiIO& io = ImGui::GetIO();
 
+        // Ctrl+Z
+        if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z))
+        {
+            UndoSystem::Get().Undo();
+            EnsureSelectionValid(); // your existing helper
+        }
+    }
     if (!guiEnabled) {
         // Fullscreen mode when ImGui is off
         GameViewRect rect;
@@ -611,6 +613,16 @@ void ImGuiSystem::Update(float dt)
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    if (sm.inEditMode)   // use your SceneManager global 'sm'
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z))
+        {
+            UndoSystem::Get().Undo();
+            // Make sure selection doesn't point to dead entity
+            EnsureSelectionValid();
+        }
+    }
 
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -714,6 +726,7 @@ void ImGuiSystem::Update(float dt)
 
             // Store editor name
             m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
+            UndoSystem::Get().RecordAdd(newEntity);
 
         }
 
@@ -735,12 +748,19 @@ void ImGuiSystem::Update(float dt)
                     ++it;
             }
 
-            reg.Load_Entity(src);
+            Entity newEntity = reg.Load_Entity(src);
+            if (newEntity != INVALID_ENTITY)
+            {
+                selectedEntity = newEntity;
+                UndoSystem::Get().RecordAdd(newEntity);
+            }
         }
 
         ImGui::SameLine();
         if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
         {
+            SavedEntity snapshot = m_registry.Save_Entity(selectedEntity);
+            UndoSystem::Get().RecordRemove(snapshot);
             m_registry.Remove_Entity(selectedEntity);
             selectedEntity = INVALID_ENTITY;
         }
@@ -842,7 +862,12 @@ void ImGuiSystem::Update(float dt)
                 gizmoMode,
                 glm::value_ptr(model)
             );
+            bool usingGizmo = ImGuizmo::IsUsing();
 
+            if (usingGizmo && !s_gizmoWasUsing)
+            {
+                UndoSystem::Get().BeginModify(selectedEntity, t);
+            }
             // -------------------------------------------------------
             // 4. Apply result
             // -------------------------------------------------------
@@ -867,7 +892,7 @@ void ImGuiSystem::Update(float dt)
                     // Get mouse in world space
                     ImVec2 mouseScreen = ImGui::GetMousePos();
 
-                    // Convert panel → NDC
+                    // Convert panel to NDC
                     float u = (mouseScreen.x - cursor.x) / newWidth;
                     float v = (mouseScreen.y - cursor.y) / newHeight;
 
@@ -924,9 +949,15 @@ void ImGuiSystem::Update(float dt)
             }
             else
             {
+                if (s_gizmoWasUsing)
+                {
+                    UndoSystem::Get().EndModify(selectedEntity, t);
+                }
+
                 // Reset delta when gizmo released
                 lastScale = glm::vec3(1.0f);
             }
+            s_gizmoWasUsing = usingGizmo;
         }
 
        
@@ -1039,7 +1070,7 @@ void ImGuiSystem::Update(float dt)
 
                 // Select it
                 ImGuiSystem::selectedEntity = e;
-
+                UndoSystem::Get().RecordAdd(e);
                 std::cout << "[Editor] Spawned image entity at (" << world.x << ", " << world.y << ")\n";
             }
             ImGui::EndDragDropTarget();
@@ -1059,7 +1090,11 @@ void ImGuiSystem::Update(float dt)
         //}
         if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selectedEntity != INVALID_ENTITY)
         {
-            Registry::Get().Remove_Entity(selectedEntity);
+            Registry& reg = Registry::Get();
+
+            SavedEntity snapshot = reg.Save_Entity(selectedEntity);
+            UndoSystem::Get().RecordRemove(snapshot);
+            reg.Remove_Entity(selectedEntity);
             std::cout << "[Editor] Deleted entity " << selectedEntity << " via Delete key\n";
             selectedEntity = INVALID_ENTITY;
         }
@@ -1102,6 +1137,7 @@ void ImGuiSystem::Update(float dt)
                 if (newEnt != INVALID_ENTITY)
                 {
                     selectedEntity = newEnt;
+                    UndoSystem::Get().RecordAdd(newEnt);
                     std::cout << "[Editor] Spawned prefab at (" << worldX << ", " << worldY << ")\n";
                 }
                 else
