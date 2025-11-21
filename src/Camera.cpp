@@ -58,7 +58,7 @@ void Camera::UpdateMatrices()
     // Visible world region 
     //float halfW = (static_cast<float>(GLApp::width) * 0.5f) / zoom;
     //float halfH = (static_cast<float>(GLApp::height) * 0.5f) / zoom;
-    float halfW = (GLApp::VIRTUAL_W * 0.5f) / zoom;
+    /*float halfW = (GLApp::VIRTUAL_W * 0.5f) / zoom;
     float halfH = (GLApp::VIRTUAL_H * 0.5f) / zoom;
 
     projMatrix = glm::ortho(-halfW, halfW, -halfH, halfH, -1.0f, 1.0f);
@@ -87,6 +87,7 @@ void Camera::UpdateMatrices()
 
     // View transform (world to camera)
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-position.x, -position.y, 0.0f));
+
 }
 
 void Camera::UpdateCamera()

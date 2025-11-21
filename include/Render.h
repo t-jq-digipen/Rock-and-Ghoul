@@ -744,6 +744,8 @@ public:
 
     void UseVirtualWindow(bool enable);
 
+    void DrawLetterboxedTexture(GLuint texture);
+
 private:
     glm::vec2 uiScale = { 1.0f, 1.0f };
     /**
@@ -980,7 +982,9 @@ public:
 
     float GetWindowScale() const { return m_WindowScale.x < m_WindowScale.y ? m_WindowScale.x : m_WindowScale.y; }
 
-    /*void DrawScreenQuad(GLuint texture, float x, float y, float w, float h);
+    //void DrawScreenQuad(GLuint texture, float x, float y, float w, float h);
 
-    void PresentScene();*/
+    void PresentScene();
+
+    void ApplyLetterboxViewport();
 };

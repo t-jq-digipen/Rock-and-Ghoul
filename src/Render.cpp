@@ -2088,6 +2088,181 @@ void Render::SetWindowScale(float scaleX, float scaleY) {
     m_WindowScale = { scaleX, scaleY };
 }
 
+void Render::PresentScene()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    float targetW = (float)GLApp::VIRTUAL_W;   // 1920
+    float targetH = (float)GLApp::VIRTUAL_H;   // 1080
+    float winW = (float)GLApp::width;
+    float winH = (float)GLApp::height;
+
+    float scale = std::min(winW / targetW, winH / targetH);
+
+    int drawW = (int)(targetW * scale);
+    int drawH = (int)(targetH * scale);
+
+    int offsetX = (int)((winW - drawW) * 0.5f);
+    int offsetY = (int)((winH - drawH) * 0.5f);
+
+    // Clear screen to black (letterbox bars)
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Set viewport to the letterboxed region
+    glViewport(offsetX, offsetY, drawW, drawH);
+
+    // Draw the scene texture using your existing fullscreen quad
+    DrawTexturedQuad({ 0,0 }, { targetW,targetH }, GetSceneTexture());
+}
+
+
+void Render::DrawLetterboxedTexture(GLuint texture)
+{
+    if (!texture) return;
+
+    //Get texture size
+    int texW = 0, texH = 0;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texW);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &texH);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    if (texW == 0 || texH == 0)
+        return;
+
+    //Compute letterboxed region in pixels
+    float winW = static_cast<float>(GLApp::width);
+    float winH = static_cast<float>(GLApp::height);
+
+    float texAspect = static_cast<float>(texW) / static_cast<float>(texH);
+    float winAspect = winW / winH;
+
+    float drawW, drawH;
+
+    if (winAspect > texAspect)
+    {
+        // Window is wider than texture, fit HEIGHT, add bars left/right
+        drawH = winH;
+        drawW = drawH * texAspect;
+    }
+    else
+    {
+        // Window is talle, fit WIDTH, add bars top/bottom
+        drawW = winW;
+        drawH = drawW / texAspect;
+    }
+
+    float offsetX = (winW - drawW) * 0.5f;
+    float offsetY = (winH - drawH) * 0.5f;
+
+    //screen-space projection (no camera) ---
+    bool oldUseCam = useCamera;
+    useCamera = false;
+
+    // make sure projection is 0..width x 0..height
+    UpdateProjection();
+
+    // Center of the letterbox rect in screen space
+    Vec2 center{
+        offsetX + drawW * 0.5f,
+        offsetY + drawH * 0.5f
+    };
+
+    Vec2 size{ drawW, drawH };
+
+    // Just draw the quad in the computed rect
+    DrawTexturedQuad(center, size, texture);
+
+    // restore camera flag
+    useCamera = oldUseCam;
+}
+
+/*void Render::DrawLetterboxedTexture(GLuint texture)
+{
+    if (!texture) return;
+
+    // --- 1. Get texture size ---
+    int texW = 0, texH = 0;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texW);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &texH);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    if (texW == 0 || texH == 0)
+        return;
+
+    // --- 2. Use whatever viewport is active ---
+    GLint vp[4];
+    glGetIntegerv(GL_VIEWPORT, vp);   // <- IMPORTANT
+    float vpX = vp[0];
+    float vpY = vp[1];
+    float vpW = vp[2];
+    float vpH = vp[3];
+
+    // --- 3. Compute aspect fit *inside viewport*
+    float texAspect = (float)texW / (float)texH;
+    float vpAspect = vpW / vpH;
+
+    float drawW, drawH;
+
+    if (vpAspect > texAspect)
+    {
+        drawH = vpH;
+        drawW = drawH * texAspect;
+    }
+    else
+    {
+        drawW = vpW;
+        drawH = drawW / texAspect;
+    }
+
+    // --- 4. Build projection JUST for current viewport ---
+    glm::mat4 proj = glm::ortho(0.0f, drawW, 0.0f, drawH);
+
+    // disable camera
+    bool oldCam = useCamera;
+    useCamera = false;
+
+    glUseProgram(shaderProgram);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &proj[0][0]);
+
+    // --- 5. Draw quad centered in viewport ---
+    Vec2 center{ drawW * 0.5f, drawH * 0.5f };
+    Vec2 size{ drawW, drawH };
+
+    DrawTexturedQuad(center, size, texture);
+
+    useCamera = oldCam;
+}*/
+
+
+void Render::ApplyLetterboxViewport()
+{
+    float targetAspect = 16.0f / 9.0f;
+    float windowAspect = (float)GLApp::width / (float)GLApp::height;
+
+    int vpX = 0, vpY = 0;
+    int vpW = GLApp::width;
+    int vpH = GLApp::height;
+
+    if (windowAspect > targetAspect)
+    {
+        // Window is too wide
+        vpW = int(GLApp::height * targetAspect);
+        vpX = (GLApp::width - vpW) / 2;
+    }
+    else
+    {
+        // Window is too tal
+        vpH = int(GLApp::width / targetAspect);
+        vpY = (GLApp::height - vpH) / 2;
+    }
+
+    glViewport(vpX, vpY, vpW, vpH);
+}
+
 
 /*void Render::DrawScreenQuad(GLuint texture, float x, float y, float w, float h)
 {

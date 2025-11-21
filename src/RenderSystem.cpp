@@ -158,6 +158,7 @@ void RenderSystem::Update(float dt) {
     else {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, GLApp::width, GLApp::height);
+        //renderer.ApplyLetterboxViewport();
         renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f }); // clear main framebuffer
     }
 
@@ -176,8 +177,34 @@ void RenderSystem::Update(float dt) {
    // renderer.ClearBackground({ 0.05f, 0.0f, 0.1f, 1.0f });
     // ===== DRAW BACKGROUND IF SET =====
 
-    for (GLuint tex : s_backgroundTextures)
-        renderer.DrawFullscreenTexture(tex, true);
+    /*for (GLuint tex : s_backgroundTextures)
+        renderer.DrawFullscreenTexture(tex, true);*/
+
+        // ===== DRAW BACKGROUND IF SET =====
+
+    // figure out current game state 
+    GameState currState = GSM_CurrentState();  
+
+    if (currState == GameState::GS_MAIN_MENU)
+    {
+        // Main Menu: draw backgrounds letterboxed in screen space,
+        // NOT using the camera.
+        // Clear to black first so we get bars.
+        renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
+
+        for (GLuint tex : s_backgroundTextures)
+        {
+            renderer.DrawLetterboxedTexture(tex);
+        }
+    }
+    else
+    {
+        // keep existing behaviour (camera + world)
+        for (GLuint tex : s_backgroundTextures)
+        {
+            renderer.DrawFullscreenTexture(tex, true); 
+        }
+    }
    
 
 
@@ -659,6 +686,8 @@ void RenderSystem::Update(float dt) {
     if (ImGuiSystem::guiEnabled) {
         renderer.EndSceneCapture();
     }
+    //renderer.EndSceneCapture();
+    //renderer.PresentScene();
 }
 
 void RenderSystem::Shutdown() {
