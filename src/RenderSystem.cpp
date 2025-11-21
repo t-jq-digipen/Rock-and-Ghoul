@@ -145,7 +145,7 @@ void RenderSystem::Initialize() {
 
 void RenderSystem::Update(float dt) {
     
-    Camera::GetInstance().UpdateMatrices();
+    //Camera::GetInstance().UpdateMatrices();
 
     Camera::GetInstance().UpdateCamera();
     Render& renderer = Render::GetInstance();

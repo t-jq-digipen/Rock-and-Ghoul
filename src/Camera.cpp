@@ -53,15 +53,37 @@ Camera::Camera()
  */
 void Camera::UpdateMatrices()
 {
-    aspectRatio = static_cast<float>(GLApp::width) / static_cast<float>(GLApp::height);
+   /*aspectRatio = static_cast<float>(GLApp::width) / static_cast<float>(GLApp::height);
 
     // Visible world region 
-    /*float halfW = (static_cast<float>(GLApp::width) * 0.5f) / zoom;
-    float halfH = (static_cast<float>(GLApp::height) * 0.5f) / zoom;*/
+    //float halfW = (static_cast<float>(GLApp::width) * 0.5f) / zoom;
+    //float halfH = (static_cast<float>(GLApp::height) * 0.5f) / zoom;
     float halfW = (GLApp::VIRTUAL_W * 0.5f) / zoom;
     float halfH = (GLApp::VIRTUAL_H * 0.5f) / zoom;
 
     projMatrix = glm::ortho(-halfW, halfW, -halfH, halfH, -1.0f, 1.0f);
+
+    // View transform (world to camera)
+    viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-position.x, -position.y, 0.0f));*/
+
+    float targetAspect = GLApp::VIRTUAL_W / GLApp::VIRTUAL_H;
+    float windowAspect = (float)GLApp::width / (float)GLApp::height;
+
+    float halfW = (GLApp::VIRTUAL_W * 0.5f) / zoom;
+    float halfH = (GLApp::VIRTUAL_H * 0.5f) / zoom;
+
+    if (windowAspect > targetAspect)
+    {
+        // window too wide, widen x
+        halfW *= (windowAspect / targetAspect);
+    }
+    else
+    {
+        // window too tall, extend y
+        halfH *= (targetAspect / windowAspect);
+    }
+
+    projMatrix = glm::ortho(-halfW, halfW, -halfH, halfH, -1.f, 1.f);
 
     // View transform (world to camera)
     viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-position.x, -position.y, 0.0f));

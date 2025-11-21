@@ -979,4 +979,8 @@ public:
     void SetWindowScale(float scaleX, float scaleY);
 
     float GetWindowScale() const { return m_WindowScale.x < m_WindowScale.y ? m_WindowScale.x : m_WindowScale.y; }
+
+    /*void DrawScreenQuad(GLuint texture, float x, float y, float w, float h);
+
+    void PresentScene();*/
 };

@@ -1908,6 +1908,39 @@ void Render::DrawFullscreenTexture(GLuint texture, bool cover)
     DrawTexturedQuad({ winW * 0.5f, winH * 0.5f }, drawSize, texture);
 }
 
+/*void Render::DrawFullscreenTexture(GLuint texture, bool cover)
+{
+    if (!texture) return;
+
+    //Get texture dimensions
+    int texW = 0, texH = 0;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texW);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &texH);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    if (texW == 0 || texH == 0)
+        return; // invalid texture, skip draw
+
+    //Use actual window size for main menu / backgrounds
+    const float winW = static_cast<float>(GLApp::width);
+    const float winH = static_cast<float>(GLApp::height);
+
+    const float wr = winW / texW;
+    const float hr = winH / texH;
+
+    // "cover" = fill and crop, "contain" = fit and letterbox
+    const float s = cover ? std::max(wr, hr) : std::min(wr, hr);
+
+    const float drawW = texW * s;
+    const float drawH = texH * s;
+
+    const float posX = (winW - drawW) * 0.5f;
+    const float posY = (winH - drawH) * 0.5f;
+
+    DrawScreenQuad(texture, posX, posY, drawW, drawH);
+}*/
+
 void Render::UseVirtualWindow(bool enable) {
     resMode = enable ? ResolutionMode::Virtual : ResolutionMode::Window;
 }
@@ -2054,3 +2087,65 @@ ImVec2 Render::WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImV
 void Render::SetWindowScale(float scaleX, float scaleY) {
     m_WindowScale = { scaleX, scaleY };
 }
+
+
+/*void Render::DrawScreenQuad(GLuint texture, float x, float y, float w, float h)
+{
+    if (!texture) return;
+
+    // Save state we’re about to override
+    bool prevUseCamera = useCamera;
+    glm::mat4 prevProjection = projection;
+
+    // We want *pure screen-space*, no camera
+    useCamera = false;
+
+    // Projection in pixels: (0,0) bottom-left, (width,height) top-right
+    projection = glm::ortho(
+        0.0f, static_cast<float>(GLApp::width),
+        0.0f, static_cast<float>(GLApp::height),
+        -1.0f, 1.0f
+    );
+
+    // Center position for your existing DrawTexturedQuad API
+    Vec2 center{ x + w * 0.5f, y + h * 0.5f };
+    Vec2 size{ w, h };
+
+    // This will now use the updated `projection` and `useCamera = false`
+    DrawTexturedQuad(center, size, texture);
+
+    // Restore previous state so game/world rendering isn’t affected
+    useCamera = prevUseCamera;
+    projection = prevProjection;
+}
+
+void Render::PresentScene()
+{
+    GLuint tex = GetSceneTexture();
+    if (!tex) return;
+
+    float virtualW = 1920.f;
+    float virtualH = 1080.f;
+
+    float winW = (float)GLApp::width;
+    float winH = (float)GLApp::height;
+
+    float sx = winW / virtualW;
+    float sy = winH / virtualH;
+    float s = std::min(sx, sy);
+
+    float renderW = virtualW * s;
+    float renderH = virtualH * s;
+
+    float offsetX = (winW - renderW) * 0.5f;
+    float offsetY = (winH - renderH) * 0.5f;
+
+    // Clear real window
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, winW, winH);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Draw the scaled, centered scene in screen space
+    DrawScreenQuad(tex, offsetX, offsetY, renderW, renderH);
+}*/
