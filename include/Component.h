@@ -283,8 +283,8 @@ struct ColliderComponent {
 	Circle circlehitbox;
 
 	// Collision filtering (names for serialization, bits for runtime)
-	std::string layerName = "";                  // Layer name (for save/load)
-	std::vector<std::string> maskNames = {};     // Mask names (for save/load)
+	//std::string layerName = "";                  // Layer name (for save/load)
+	//std::vector<std::string> maskNames = {};     // Mask names (for save/load)
 	uint32_t layerBit = 0;                       // Runtime layer bit
 	uint32_t maskBit = 0;                        // Runtime mask bit
 	bool isTrigger = false;                      // If true, generate event but skip physics response

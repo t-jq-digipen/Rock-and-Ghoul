@@ -550,12 +550,12 @@ SpatialGrid* CollisionManager::GetSpatialGrid() {
 // ============================================================================
 
 void ColliderComponent::SetLayer(const std::string& name) {
-    layerName = name;
+    //layerName = name;
     layerBit = CollisionLayerManager::Get().GetLayerBit(name);
 }
 
 void ColliderComponent::SetMask(const std::vector<std::string>& names) {
-    maskNames = names;
+    //maskNames = names;
     maskBit = 0;
     for (const auto& name : names) {
         maskBit |= CollisionLayerManager::Get().GetLayerBit(name);
@@ -564,29 +564,43 @@ void ColliderComponent::SetMask(const std::vector<std::string>& names) {
 
 void ColliderComponent::SetMask(uint32_t mask) {
     maskBit = mask;
-    maskNames.clear();
+    //maskNames.clear();
 
     // Convert bits back to names by checking each registered layer
     // We need to iterate through all possible bit positions (0-31)
+    //for (uint32_t i = 0; i < 32; ++i) {
+    //    uint32_t bit = 1 << i;
+    //    if (mask & bit) {
+    //        std::string name = CollisionLayerManager::Get().GetLayerName(bit);
+    //        if (!name.empty()) {
+    //            maskNames.push_back(name);
+    //        }
+    //    }
+    //}
+}
+
+std::string ColliderComponent::Serialize() const {
+    std::string layerName = CollisionLayerManager::Get().GetLayerName(layerBit);
+    std::vector<std::string> maskNames;
+
     for (uint32_t i = 0; i < 32; ++i) {
         uint32_t bit = 1 << i;
-        if (mask & bit) {
+        if (maskBit & bit) {
             std::string name = CollisionLayerManager::Get().GetLayerName(bit);
             if (!name.empty()) {
                 maskNames.push_back(name);
             }
         }
     }
-}
 
-std::string ColliderComponent::Serialize() const {
     json j = {
         {"aabb_minX", aabbhitbox.min.x}, {"aabb_minY", aabbhitbox.min.y},
         {"aabb_maxX", aabbhitbox.max.x}, {"aabb_maxY", aabbhitbox.max.y},
         {"aabb_dimX", aabbhitbox.dim.x}, {"aabb_dimY", aabbhitbox.dim.y},
         {"circle_posX", circlehitbox.pos.x}, {"circle_posY", circlehitbox.pos.y},
         {"circle_rad", circlehitbox.rad},
-        {"layer", layerName}, {"mask", maskNames},
+        {"layer", layerName}, 
+        {"mask", maskNames},
         {"isTrigger", isTrigger}, {"isActive", isActive}
     };
     return j.dump();

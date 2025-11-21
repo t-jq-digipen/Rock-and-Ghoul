@@ -664,18 +664,6 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         for (Entity e = 0; e < em.maxEntities(); ++e) {
             if (em.isAlive(e)) {
                 std::cout << "Saving entity ID: " << e << std::endl;
-
-                // Debug: check what components it has
-                if (Registry::Get().Has_Component<TransformComponent>(e)) std::cout << "  - Has Transform" << std::endl;
-                if (Registry::Get().Has_Component<Sprite::SpriteComponent>(e)) std::cout << "  - Has Sprite" << std::endl;
-                if (Registry::Get().Has_Component<Physics::PhysicsComponent>(e)) std::cout << "  - Has Physics" << std::endl;
-                if (Registry::Get().Has_Component<ColliderComponent>(e)) std::cout << "  - Has Collider" << std::endl;
-                if (Registry::Get().Has_Component<HealthComponent>(e)) std::cout << "  - Has Health" << std::endl;
-                if (Registry::Get().Has_Component<TagComponent>(e)) std::cout << "  - Has Tag" << std::endl;
-                if (Registry::Get().Has_Component<InputComponent>(e)) std::cout << "  - Has Input" << std::endl;
-                if (Registry::Get().Has_Component<Movement::MovementComponent>(e)) std::cout << "  - Has Movement" << std::endl;
-                if (Registry::Get().Has_Component<AudioComponent>(e)) std::cout << "  - Has Audio" << std::endl;
-
                 SavedEntity saved = Registry::Get().Save_Entity(e);
 
                 // Debug: show what was actually saved

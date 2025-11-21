@@ -56,6 +56,8 @@ public:
 
     std::string GetLayerName(uint32_t bit) const;
 
+    const std::unordered_map<uint32_t, std::string>& GetLayerNameMap() const { return layerNames; }
+
     bool ShouldCollide(uint32_t layerA, uint32_t maskA, uint32_t layerB, uint32_t maskB) const;
 
     void Clear();

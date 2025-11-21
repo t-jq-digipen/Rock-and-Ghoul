@@ -1448,6 +1448,39 @@ void ImGuiSystem::ShowInspectorWindow()
             {
                 // Get component reference inside TreeNode to avoid stale references
                 ColliderComponent& collider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
+
+                {
+                    std::vector<uint32_t> layerBitsOrdered;
+                    std::vector<const char*> layerNames;
+                    layerBitsOrdered.reserve(CollisionLayerManager::Get().GetLayerNameMap().size());
+
+
+                    for (auto& [bit, layername] : CollisionLayerManager::Get().GetLayerNameMap())
+                    {
+                        layerBitsOrdered.push_back(bit);
+                        layerNames.push_back(layername.c_str());
+                    }
+
+                    uint32_t currBit = (int)collider.GetLayer();
+                    int currIndex = 0;
+
+                    for (int i = 0; i < (int)layerBitsOrdered.size(); i++)
+                    {
+                        if (layerBitsOrdered[i] == currBit)
+                        {
+                            currIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (ImGui::Combo("Layer", &currIndex, layerNames.data(), (int)layerNames.size()))
+                    {
+                        uint32_t newBit = layerBitsOrdered[currIndex];
+                        collider.SetLayer(newBit);
+                    }
+
+                }
+
                 // Show default component fields (AABB, Circle, isTrigger, isActive)
                 for (auto& [name, widgetVariant] : componentData.GetDataMap())
                 {
@@ -1475,21 +1508,21 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::Text("Is Active: %s", collider.IsActive() ? "YES" : "NO");
 
                 // Show if entity has a tag
-                if (m_registry.Has_Component<TagComponent>(selectedEntity)) {
-                    auto& tag = m_registry.Get_Component<TagComponent>(selectedEntity);
-                    const char* tagNames[] = {"PLAYER", "ENEMY", "PROJECTILE", "WALL", "INSTANCING", "BATCH", "TEST", "OBJECT"};
-                    if (tag.tag < 8) {
-                        ImGui::Text("Tag: %s", tagNames[tag.tag]);
-                    }
+                //if (m_registry.Has_Component<TagComponent>(selectedEntity)) {
+                //    auto& tag = m_registry.Get_Component<TagComponent>(selectedEntity);
+                //    const char* tagNames[] = {"PLAYER", "ENEMY", "PROJECTILE", "WALL", "INSTANCING", "BATCH", "TEST", "OBJECT"};
+                //    if (tag.tag < 8) {
+                //        ImGui::Text("Tag: %s", tagNames[tag.tag]);
+                //    }
 
-                    // Button to fix layers based on tag
-                    if (ImGui::Button("Auto-Setup Layer from Tag")) {
-                        CollisionManager::SetupCollisionLayers();
-                        std::cout << "[Editor] Re-ran SetupCollisionLayers for all entities" << std::endl;
-                    }
-                } else {
-                    ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "No TagComponent!");
-                }
+                //    // Button to fix layers based on tag
+                //    if (ImGui::Button("Auto-Setup Layer from Tag")) {
+                //        CollisionManager::SetupCollisionLayers();
+                //        std::cout << "[Editor] Re-ran SetupCollisionLayers for all entities" << std::endl;
+                //    }
+                //} else {
+                //    ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "No TagComponent!");
+                //}
 
                 int layerIndex = 0;
                 for (const std::string& layerName : layers)
@@ -2718,7 +2751,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
                 std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
                 JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
                 // Only call SetupCollisionLayers for fallback (old scene without Collider component)
-                CollisionManager::SetupCollisionLayers();
+                // CollisionManager::SetupCollisionLayers();
                 std::cout << "[Collision] Setup collision layers after fallback\n";
             }
         }
@@ -2736,7 +2769,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
                 std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
                 JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
                 // Only call SetupCollisionLayers for fallback (old scene without Collider component)
-                CollisionManager::SetupCollisionLayers();
+                // CollisionManager::SetupCollisionLayers();
                 std::cout << "[Collision] Setup collision layers after fallback\n";
             }
         }
