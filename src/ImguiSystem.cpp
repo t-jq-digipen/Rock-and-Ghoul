@@ -595,7 +595,7 @@ void ImGuiSystem::Update(float dt)
         if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z))
         {
             UndoSystem::Get().Undo();
-            EnsureSelectionValid(); // your existing helper
+            EnsureSelectionValid(); 
         }
     }
     if (!guiEnabled) {
@@ -613,16 +613,6 @@ void ImGuiSystem::Update(float dt)
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (sm.inEditMode)   // use your SceneManager global 'sm'
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z))
-        {
-            UndoSystem::Get().Undo();
-            // Make sure selection doesn't point to dead entity
-            EnsureSelectionValid();
-        }
-    }
 
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
