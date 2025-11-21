@@ -424,18 +424,18 @@ void GLApp::fbsize_cb(GLFWwindow *ptr_win, int newwidth, int newheight) {
             }
         }
         // scale all sprite components
-        for (auto& [entID, sprite] : reg.Get_ComponentMap<Sprite::SpriteComponent>()) {
+      /*  for (auto& [entID, sprite] : reg.Get_ComponentMap<Sprite::SpriteComponent>()) {
             Vec2 currentScale = sprite.Get_Scale();
             sprite.Set_Size({
                 currentScale.x * scaleX,
                 currentScale.y * scaleY
                 });
-        }
+        //}*/
 
-        for (auto& [entID, shape] : reg.Get_ComponentMap<ShapeComponent>()) {
-            shape.dimensions.x *= scaleX;
-            shape.dimensions.y *= scaleY;
-        }
+        //for (auto& [entID, shape] : reg.Get_ComponentMap<ShapeComponent>()) {
+        //    shape.dimensions.x *= scaleX;
+        //    shape.dimensions.y *= scaleY;
+        //}
     }
 }
 

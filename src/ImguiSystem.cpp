@@ -327,6 +327,29 @@ Entity PickEntityAtWorldPos(const Vec2& world)
     return best;
 }
 
+inline float AngleToMouse(const Vec2& posWorld, const Vec2& mouseWorld)
+{
+    return glm::degrees(atan2(mouseWorld.y - posWorld.y,
+        mouseWorld.x - posWorld.x));
+}
+
+inline float SmoothDampAngle(float current, float target, float factor)
+{
+    float diff = glm::mod(target - current + 540.0f, 360.0f) - 180.0f;
+    return current + diff * factor;
+}
+float ApproachAngle(float current, float target, float maxDelta)
+{
+    // Normalize to [-180, 180]
+    float delta = fmodf(target - current + 540.0f, 360.0f) - 180.0f;
+
+    // Clamp turning speed
+    if (delta > maxDelta) delta = maxDelta;
+    if (delta < -maxDelta) delta = -maxDelta;
+
+    return current + delta;
+}
+
 // Widget templates for component data
 // ========================================================
 #pragma region WIDGETS
@@ -782,6 +805,8 @@ void ImGuiSystem::Update(float dt)
         ImGuizmo::SetDrawlist();
         ImGuizmo::SetRect(cursor.x, cursor.y, newWidth, newHeight);
 
+        static glm::vec3 lastScale(1.0f);    // tracks previous frame scale
+        static float lastRot = 0.0f;
 
         Registry& reg = Registry::Get();
 
@@ -791,55 +816,81 @@ void ImGuiSystem::Update(float dt)
             TransformComponent& t = reg.Get_Component<TransformComponent>(selectedEntity);
 
             // -------------------------------------------------------
-            // 1. Compose the model matrix from TransformComponent
+            // 1. Compose model matrix from ECS transform
             // -------------------------------------------------------
-            glm::mat4 model = glm::translate(glm::mat4(1.0f),
-                glm::vec3(t.pos.x, t.pos.y, 0.0f));
+            glm::mat4 model = glm::translate(glm::mat4(1.0f),glm::vec3(t.pos.x, t.pos.y, 0.0f));
 
             model = glm::rotate(model, glm::radians(t.rot), glm::vec3(0, 0, 1));
-            model = glm::scale(model,
-                glm::vec3(t.scale.x, t.scale.y, 1.0f));
+            model = glm::scale(model, glm::vec3(t.scale.x, t.scale.y, 1.0f));
 
             // -------------------------------------------------------
-            // 2. Get Camera view and projection matrices
+            // 2. Camera matrices
             // -------------------------------------------------------
             Camera& cam = Camera::GetInstance();
-
             glm::mat4 view = cam.GetViewMatrix();
             glm::mat4 proj = cam.GetProjMatrix();
 
-            // For 2D: use orthographic gizmo mode
             ImGuizmo::SetOrthographic(true);
 
             // -------------------------------------------------------
-            // 3. Manipulate gizmo
+            // 3. Manipulate
             // -------------------------------------------------------
             ImGuizmo::Manipulate(
                 glm::value_ptr(view),
                 glm::value_ptr(proj),
-                gizmoOperation,    // TRANSLATE / ROTATE / SCALE
-                gizmoMode,         // WORLD or LOCAL
+                gizmoOperation,
+                gizmoMode,
                 glm::value_ptr(model)
             );
 
             // -------------------------------------------------------
-            // 4. If actively manipulating, apply values back to ECS
+            // 4. Apply result
             // -------------------------------------------------------
             if (ImGuizmo::IsUsing())
             {
-                glm::vec3 translation, rotation3, scale;
+                glm::vec3 translation, rotation3, scaleAbs;
                 ImGuizmo::DecomposeMatrixToComponents(
                     glm::value_ptr(model),
                     glm::value_ptr(translation),
                     glm::value_ptr(rotation3),
-                    glm::value_ptr(scale)
+                    glm::value_ptr(scaleAbs)
                 );
 
-                // Update transform
+                // POSITION + ROTATION
                 t.pos.x = translation.x;
                 t.pos.y = translation.y;
+                // -------------------------
+                // Rotation follows mouse
+                // -------------------------
+                if (gizmoOperation == ImGuizmo::ROTATE)
+                {
+                    // Get mouse in world space
+                    ImVec2 mouseScreen = ImGui::GetMousePos();
 
-                t.rot = rotation3.z;        // only Z rotation matters in 2D
+                    // Convert panel → NDC
+                    float u = (mouseScreen.x - cursor.x) / newWidth;
+                    float v = (mouseScreen.y - cursor.y) / newHeight;
+
+                    float ndcX = u * 2.0f - 1.0f;
+                    float ndcY = (1.0f - v) * 2.0f - 1.0f;
+
+                    Camera& cam = Camera::GetInstance();
+                    Vec2 mouseWorld = cam.NDCToWorld({ ndcX, ndcY });
+
+                    float targetRot = AngleToMouse(t.pos, mouseWorld);
+                    // smoothing factor: 0.0f = no movement, 1.0f = instant snap
+                    float smoothing = 0.18f;
+
+                    t.rot = SmoothDampAngle(t.rot, targetRot, smoothing);
+                }
+
+
+                // ======================================================
+                // incremental scaling using per-frame delta
+                // ======================================================
+                glm::vec3 scaleDelta = scaleAbs / lastScale;  // element-wise
+                lastScale = scaleAbs;
+
                 if (reg.Has_Component<RenderComponent>(selectedEntity))
                 {
                     auto& r = reg.Get_Component<RenderComponent>(selectedEntity);
@@ -847,35 +898,37 @@ void ImGuiSystem::Update(float dt)
                     if (r.GetRenderType() == RT_IMAGE)
                     {
                         auto& sprite = r.GetSprite();
-                        Vec2 base = sprite.Get_Scale();   // original size
-                        sprite.Set_Size(Vec2(base.x * scale.x,
-                            base.y * scale.y));
+                        Vec2 cur = sprite.Get_Scale();
+                        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
                     }
                     else if (r.GetRenderType() == RT_SPRITESHEET)
                     {
                         auto& sprite = r.GetSpriteSheet().Sprite();
-                        Vec2 base = sprite.Get_Scale();
-                        sprite.Set_Size(Vec2(base.x * scale.x,
-                            base.y * scale.y));
+                        Vec2 cur = sprite.Get_Scale();
+                        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
                     }
                     else if (r.GetRenderType() == RT_SHAPE)
                     {
                         auto& shape = r.GetShape();
-                        shape.dimensions.x *= scale.x;
-                        shape.dimensions.y *= scale.y;
+                        shape.dimensions.x *= scaleDelta.x;
+                        shape.dimensions.y *= scaleDelta.y;
                     }
                 }
 
-                // -------------------------------------------------------
-                // 5. Update hitboxes for PhysicsComponent (if present)
-                // -------------------------------------------------------
+                // Update hitbox
                 if (reg.Has_Component<Physics::PhysicsComponent>(selectedEntity))
                 {
                     auto& phys = reg.Get_Component<Physics::PhysicsComponent>(selectedEntity);
                     phys.UpdateHitboxes(t.pos);
                 }
             }
+            else
+            {
+                // Reset delta when gizmo released
+                lastScale = glm::vec3(1.0f);
+            }
         }
+
        
         if (!isPlaying && ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
