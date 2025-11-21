@@ -286,7 +286,7 @@ struct ColliderComponent {
 	//std::string layerName = "";                  // Layer name (for save/load)
 	//std::vector<std::string> maskNames = {};     // Mask names (for save/load)
 	uint32_t layerBit = 0;                       // Runtime layer bit
-	uint32_t maskBit = 0;                        // Runtime mask bit
+	// uint32_t maskBit = 0;                        // Runtime mask bit
 	bool isTrigger = false;                      // If true, generate event but skip physics response
 
 	// Collision state
@@ -296,7 +296,7 @@ struct ColliderComponent {
 		: aabbhitbox{{0.f, 0.f}, {0.f, 0.f}, {0.f, 0.f}}
 		, circlehitbox{{0.f, 0.f}, 0.f}
 		, layerBit(0)
-		, maskBit(0)
+//		, maskBit(0)
 		, isTrigger(false)
 		, isActive(true)
 	{}
@@ -305,7 +305,7 @@ struct ColliderComponent {
 		: aabbhitbox(aabb)
 		, circlehitbox(circle)
 		, layerBit(0)
-		, maskBit(0)
+//		, maskBit(0)
 		, isTrigger(false)
 		, isActive(active)
 	{}
@@ -322,7 +322,7 @@ struct ColliderComponent {
 	void SetActive(bool active) { isActive = active; }
 
 	uint32_t GetLayer() const { return layerBit; }
-	uint32_t GetMask() const { return maskBit; }
+	//uint32_t GetMask() const { return maskBit; }
 	bool IsTrigger() const { return isTrigger; }
 	bool IsActive() const { return isActive; }
 
@@ -336,8 +336,8 @@ struct ColliderComponent {
 
 	// String-based layer setters (need CollisionManager)
 	void SetLayer(const std::string& name);
-	void SetMask(const std::vector<std::string>& names);
-	void SetMask(uint32_t mask);  // Overload for editor to update both maskBit and maskNames
+	//void SetMask(const std::vector<std::string>& names);
+	//void SetMask(uint32_t mask);  // Overload for editor to update both maskBit and maskNames
 
 	std::string Serialize() const;
 	static ColliderComponent DeSerialize(Entity eID, const std::string& data);

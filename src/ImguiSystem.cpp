@@ -1499,7 +1499,7 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::Text("Collides With:");
 
                 // Get current mask once
-                uint32_t currentMask = collider.GetMask();
+                uint32_t currentMask = CollisionLayerManager::Get().GetLayerMask(collider.GetLayer());
 
                 // Debug: show current layer and mask values
                 ImGui::Text("Layer: 0x%X", collider.GetLayer());
@@ -1546,7 +1546,7 @@ void ImGuiSystem::ShowInspectorWindow()
                         } else {
                             currentMask &= ~layerBit;
                         }
-                        freshCollider.SetMask(currentMask);
+                        //freshCollider.SetMask(currentMask);
                     }
 
                     ImGui::PopID();

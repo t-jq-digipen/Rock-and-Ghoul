@@ -27,19 +27,20 @@ struct CollisionEvent {
 };
 
 // convert a tag enum to a readable string
-constexpr const char* TagToString(C_TagID tag) {
-    switch (tag) {
-    case T_PLAYER:     return "Player";
-    case T_ENEMY:      return "Enemy";
-    case T_PROJECTILE: return "Projectile";
-    default:           return "Unknown";
-    }
-}
+//constexpr const char* TagToString(C_TagID tag) {
+//    switch (tag) {
+//    case T_PLAYER:     return "Player";
+//    case T_ENEMY:      return "Enemy";
+//    case T_PROJECTILE: return "Projectile";
+//    default:           return "Unknown";
+//    }
+//}
 
 class CollisionLayerManager {
 private:
     std::unordered_map<std::string, uint32_t> layerBits;
     std::unordered_map<uint32_t, std::string> layerNames;
+    std::unordered_map<uint32_t, uint32_t> layerMasks;
     uint32_t nextBit = 0;
 
     CollisionLayerManager() {}
@@ -52,6 +53,14 @@ public:
 
     uint32_t RegisterLayer(const std::string& name);
 
+    void LoadCollisionSettings();
+
+    void SaveCollisionSettings();
+
+    void SetLayerMask(uint32_t layerBit, uint32_t maskBit);
+
+    uint32_t GetLayerMask(uint32_t layerBit) const;
+
     uint32_t GetLayerBit(const std::string& name) const;
 
     std::string GetLayerName(uint32_t bit) const;
@@ -59,6 +68,8 @@ public:
     const std::unordered_map<uint32_t, std::string>& GetLayerNameMap() const { return layerNames; }
 
     bool ShouldCollide(uint32_t layerA, uint32_t maskA, uint32_t layerB, uint32_t maskB) const;
+
+    bool ShouldCollide(uint32_t layerA, uint32_t layerB) const;
 
     void Clear();
 };
@@ -128,5 +139,5 @@ public:
      * and automatically assigns collision layers and masks based on their tag type.
      * Call this after loading entities (e.g., in Level1::Load()).
      */
-    static void SetupCollisionLayers();
+    //static void SetupCollisionLayers();
 };

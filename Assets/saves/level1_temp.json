@@ -2,19 +2,23 @@
     "entities": [
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":51.71876525878906,\"aabb_dimY\":1080.0,\"aabb_maxX\":687.119384765625,\"aabb_maxY\":951.8179931640625,\"aabb_minX\":635.400634765625,\"aabb_minY\":-128.1820068359375,\"circle_posX\":661.260009765625,\"circle_posY\":411.8179931640625,\"circle_rad\":540.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"mask\":[\"Enemy\",\"Projectile\"]}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":661.260009765625,\"posY\":411.8179931640625,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+                "Behaviour": "{\"scripts\":[\"ManfredEnemy\",\"CamTarget\"]}",
+                "Collider": "{\"aabb_dimX\":1.0,\"aabb_dimY\":1.0,\"aabb_maxX\":1331.8453369140625,\"aabb_maxY\":487.7181701660156,\"aabb_minX\":1330.8453369140625,\"aabb_minY\":486.7181701660156,\"circle_posX\":1331.3453369140625,\"circle_posY\":487.2181701660156,\"circle_rad\":0.5,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\"}",
+                "Input": "{\"scheme\":1}",
+                "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
+                "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Ghoul_2048px.PNG\"}",
+                "Tag": "{\"tagID\":1}",
+                "Transform": "{\"posX\":1331.3453369140625,\"posY\":487.2181701660156,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
-            "name": "Obstacle"
+            "name": "ghoul"
         },
         {
             "components": {
                 "Animator": "{\"animDuration\":1.0,\"currentState\":3,\"frameColEnd\":8,\"frameColStart\":0,\"frameRow\":8,\"states\":{\"0\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":6},\"1\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":0},\"2\":{\"col_end\":3,\"col_start\":0,\"duration\":1.0,\"row\":4},\"3\":{\"col_end\":8,\"col_start\":0,\"duration\":1.0,\"row\":8}},\"totalCols\":10,\"totalRows\":10}",
                 "Audio": "{\"autoPlay\":false,\"autoPlayLooping\":false,\"loopingSoundName\":\"\",\"maxDistance\":100.0,\"minDistance\":10.0,\"soundName\":\"player_die\",\"spatial\":true,\"volume\":0.800000011920929}",
                 "Behaviour": "{\"scripts\":[\"RockScript\"]}",
-                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":200.0,\"aabb_maxX\":683.199951171875,\"aabb_maxY\":500.8999938964844,\"aabb_minX\":483.199951171875,\"aabb_minY\":300.8999938964844,\"circle_posX\":583.199951171875,\"circle_posY\":400.8999938964844,\"circle_rad\":200.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\",\"mask\":[\"Enemy\",\"Wall\"]}",
+                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":200.0,\"aabb_maxX\":683.199951171875,\"aabb_maxY\":500.8999938964844,\"aabb_minX\":483.199951171875,\"aabb_minY\":300.8999938964844,\"circle_posX\":583.199951171875,\"circle_posY\":400.8999938964844,\"circle_rad\":200.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\"}",
                 "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                 "Input": "{\"scheme\":0}",
                 "Movement": "{\"moveSpeed\":500.0,\"moveType\":0}",
@@ -27,16 +31,12 @@
         },
         {
             "components": {
-                "Behaviour": "{\"scripts\":[\"ManfredEnemy\",\"CamTarget\"]}",
-                "Collider": "{\"aabb_dimX\":1.0,\"aabb_dimY\":1.0,\"aabb_maxX\":1331.8453369140625,\"aabb_maxY\":487.7181701660156,\"aabb_minX\":1330.8453369140625,\"aabb_minY\":486.7181701660156,\"circle_posX\":1331.3453369140625,\"circle_posY\":487.2181701660156,\"circle_rad\":0.5,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"mask\":[\"Player\",\"Projectile\",\"Wall\"]}",
-                "Input": "{\"scheme\":1}",
-                "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
-                "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Ghoul_2048px.PNG\"}",
-                "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":1331.3453369140625,\"posY\":487.2181701660156,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Collider": "{\"aabb_dimX\":51.71876525878906,\"aabb_dimY\":1080.0,\"aabb_maxX\":687.119384765625,\"aabb_maxY\":951.8179931640625,\"aabb_minX\":635.400634765625,\"aabb_minY\":-128.1820068359375,\"circle_posX\":661.260009765625,\"circle_posY\":411.8179931640625,\"circle_rad\":540.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":661.260009765625,\"posY\":411.8179931640625,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
             },
-            "name": "ghoul"
+            "name": "Obstacle"
         }
     ],
     "sceneName": "level1_temp.json"

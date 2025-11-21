@@ -73,6 +73,9 @@ void CoreEngine::Initialize() {
     CollisionLayerManager::Get().RegisterLayer("Projectile");
     CollisionLayerManager::Get().RegisterLayer("Wall");
 
+    CollisionLayerManager::Get().LoadCollisionSettings();
+    //CollisionLayerManager::Get().SaveCollisionSettings();
+
     // --- SYSTEMS ---
     AddSystem(&LogicSystem::Get());
     AddSystem(new MovementSystem());

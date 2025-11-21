@@ -256,7 +256,7 @@ void Level2::Init()
 			Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
 
 			// Setup collision layers after creating entities from prefabs
-			CollisionManager::SetupCollisionLayers();
+			// CollisionManager::SetupCollisionLayers();
 		}
 		std::cout << "==============================\n" << std::endl;
 		});

@@ -149,7 +149,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             ColliderComponent collider(aabb, circle, true);
             collider.SetLayer("Player");
-            collider.SetMask({"Enemy", "Projectile", "Wall"});
+            //collider.SetMask({"Enemy", "Projectile", "Wall"});
             Registry::Get().Add_Component<ColliderComponent>(player, collider);
 
             Registry::Get().Add_Component<InputComponent>(player, InputComponent{ CS_WASD });
@@ -218,7 +218,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             ColliderComponent waffleCollider(aabb, circle, true);
             waffleCollider.SetLayer("Player");
-            waffleCollider.SetMask({"Enemy", "Projectile", "Wall"});
+            //waffleCollider.SetMask({"Enemy", "Projectile", "Wall"});
             Registry::Get().Add_Component<ColliderComponent>(waffle, waffleCollider);
 
             Registry::Get().Add_Component<InputComponent>(waffle, InputComponent{ CS_IJKL });
@@ -271,7 +271,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             ColliderComponent rectCollider(aabb, circle, true);
             rectCollider.SetLayer("Player");
-            rectCollider.SetMask({"Enemy", "Projectile", "Wall"});
+            //rectCollider.SetMask({"Enemy", "Projectile", "Wall"});
             Registry::Get().Add_Component<ColliderComponent>(rect, rectCollider);
 
             Registry::Get().Add_Component<ShapeComponent>(rect, ShapeComponent{ SHAPE_RECTANGLE, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
@@ -312,7 +312,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             ColliderComponent circleCollider(aabb, circle, true);
             circleCollider.SetLayer("Player");
-            circleCollider.SetMask({"Enemy", "Projectile", "Wall"});
+            //circleCollider.SetMask({"Enemy", "Projectile", "Wall"});
             Registry::Get().Add_Component<ColliderComponent>(circle_ent, circleCollider);
 
             Registry::Get().Add_Component<ShapeComponent>(circle_ent, ShapeComponent{ SHAPE_CIRCLE, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} });
