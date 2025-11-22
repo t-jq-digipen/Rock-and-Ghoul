@@ -2,7 +2,8 @@
  * @file		Component.h
  * @author		Tan Jun Quan		| t.junquan@digipen.edu
  * @co-author	Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
- * @date		26 OCT 2025
+ * @co-author	Yasmin Tazi			| yasmin.t@digipen.edu
+ * @date		19 NOV 2025
  *
  * @brief	Declaration of ECS component type IDs and minor
  *			components found within
@@ -30,7 +31,7 @@
  * - Shape			|  Basic shape component (for primitive shapes without sprites)
  *
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright Â© 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -265,6 +266,91 @@ struct TagComponent {
 
 		ret.Add_Data("Tag",  dropdown );
 
+		return ret;
+	}
+};
+
+/**
+ * @brief Collider component for collision detection and layer filtering
+ *
+ * Separated from PhysicsComponent to allow:
+ * - Collision without physics (triggers, static objects)
+ * - Physics without collision (ghost particles, visual effects)
+ */
+struct ColliderComponent {
+	// Collision geometry
+	AABB aabbhitbox;
+	Circle circlehitbox;
+
+	// Collision filtering (names for serialization, bits for runtime)
+	//std::string layerName = "";                  // Layer name (for save/load)
+	//std::vector<std::string> maskNames = {};     // Mask names (for save/load)
+	uint32_t layerBit = 0;                       // Runtime layer bit
+	// uint32_t maskBit = 0;                        // Runtime mask bit
+	bool isTrigger = false;                      // If true, generate event but skip physics response
+
+	// Collision state
+	bool isActive = true;    // If false, skip collision checks entirely
+
+	ColliderComponent()
+		: aabbhitbox{{0.f, 0.f}, {0.f, 0.f}, {0.f, 0.f}}
+		, circlehitbox{{0.f, 0.f}, 0.f}
+		, layerBit(0)
+//		, maskBit(0)
+		, isTrigger(false)
+		, isActive(true)
+	{}
+
+	ColliderComponent(AABB const& aabb, Circle const& circle, bool active = true)
+		: aabbhitbox(aabb)
+		, circlehitbox(circle)
+		, layerBit(0)
+//		, maskBit(0)
+		, isTrigger(false)
+		, isActive(active)
+	{}
+
+	// Hitbox updates
+	void UpdateHitboxes(Vec2 const& pos) {
+		Update_AABB(aabbhitbox, pos);
+		circlehitbox.pos = pos;
+	}
+
+	// Layer management (implementations in Component.cpp or inline)
+	void SetLayer(uint32_t bit) { layerBit = bit; }
+	void SetTrigger(bool trigger) { isTrigger = trigger; }
+	void SetActive(bool active) { isActive = active; }
+
+	uint32_t GetLayer() const { return layerBit; }
+	//uint32_t GetMask() const { return maskBit; }
+	bool IsTrigger() const { return isTrigger; }
+	bool IsActive() const { return isActive; }
+
+	const AABB& Get_AABB() const { return aabbhitbox; }
+	const Circle& Get_Circle() const { return circlehitbox; }
+	AABB& Get_AABB() { return aabbhitbox; }
+	Circle& Get_Circle() { return circlehitbox; }
+
+	void Set_AABB(AABB const& newAABB) { aabbhitbox = newAABB; }
+	void Set_Circle(Circle const& newCircle) { circlehitbox = newCircle; }
+
+	// String-based layer setters (need CollisionManager)
+	void SetLayer(const std::string& name);
+	//void SetMask(const std::vector<std::string>& names);
+	//void SetMask(uint32_t mask);  // Overload for editor to update both maskBit and maskNames
+
+	std::string Serialize() const;
+	static ColliderComponent DeSerialize(Entity eID, const std::string& data);
+
+	Editor::ComponentData EditorData() {
+		Editor::ComponentData ret("Collider");
+		ret.Add_Data("AABB Min X", Editor::Widget_Float{&aabbhitbox.min.x});
+		ret.Add_Data("AABB Min Y", Editor::Widget_Float{&aabbhitbox.min.y});
+		ret.Add_Data("AABB Dim X", Editor::Widget_Float{&aabbhitbox.dim.x});
+		ret.Add_Data("AABB Dim Y", Editor::Widget_Float{&aabbhitbox.dim.y});
+		ret.Add_Data("Circle Radius", Editor::Widget_Float{&circlehitbox.rad});
+		ret.Add_Data("Is Trigger", Editor::Widget_Checkmark{&isTrigger});
+		ret.Add_Data("Is Active", Editor::Widget_Checkmark{&isActive});
 		return ret;
 	}
 };

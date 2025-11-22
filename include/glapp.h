@@ -46,6 +46,8 @@ struct GLApp
   static void update_time(double fpsCalcInt = 1.0);
 
   static GLint width, height;
+  static GLint baseWidth, baseHeight;
+  static GLfloat VIRTUAL_H, VIRTUAL_W;
   static GLdouble fps;
   static GLdouble delta_time; // time taken to complete most recent game loop
   static std::string title;

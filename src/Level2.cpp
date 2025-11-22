@@ -9,7 +9,7 @@
  * used by the Level 2. While in Level 2, the game is in
  * its playing state.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -28,6 +28,7 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include "GuiSystem.h"
+#include "CollisionManager.h"
 
 #include "CrashHandler.h"
 #include <PlayerSystem.h>
@@ -253,6 +254,9 @@ void Level2::Init()
 
 			// Right wall
 			Create_Wall(LEVEL_WIDTH - WALL_THICKNESS / 2, LEVEL_HEIGHT / 2, WALL_THICKNESS, LEVEL_HEIGHT);
+
+			// Setup collision layers after creating entities from prefabs
+			// CollisionManager::SetupCollisionLayers();
 		}
 		std::cout << "==============================\n" << std::endl;
 		});

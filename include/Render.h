@@ -127,6 +127,13 @@ struct InstanceData {
     float rotation; //in radians
 };
 
+//Virtual always used a fixed sized defined in GLApp::VIRTUAL_H, GLApp::VIRTUAL_W
+//Window uses GLApp::Height, GLApp::Width
+//Default to virtual, for main menu/UI use Window
+enum class ResolutionMode {
+    Virtual,
+    Window
+};
 
 
 
@@ -729,9 +736,15 @@ public:
     //camera to see which uses camera and which doesnt etc in main menu dont need
     bool useCamera = true;
 
-    static Vec2 PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImVec2& panelSize);
+    ResolutionMode resMode = ResolutionMode::Virtual;
 
-    static ImVec2 WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImVec2& panelSize);
+    Vec2 PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImVec2& panelSize);
+
+    ImVec2 WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImVec2& panelSize);
+
+    void UseVirtualWindow(bool enable);
+
+    void DrawLetterboxedTexture(GLuint texture);
 
 private:
     glm::vec2 uiScale = { 1.0f, 1.0f };
@@ -879,7 +892,8 @@ private:
 
     // converts normalized device coordinates (-1,1) to world-space
    
-
+    // wnidow scale values
+    Vec2 m_WindowScale = { 1.f,1.f };
 public:
 
     /**
@@ -963,4 +977,14 @@ public:
     *       or aligning objects based on screen-space input.
     */
     Vec2 ScreenToWorld(float ndcX, float ndcY) const;
+
+    void SetWindowScale(float scaleX, float scaleY);
+
+    float GetWindowScale() const { return m_WindowScale.x < m_WindowScale.y ? m_WindowScale.x : m_WindowScale.y; }
+
+    //void DrawScreenQuad(GLuint texture, float x, float y, float w, float h);
+
+    void PresentScene();
+
+    void ApplyLetterboxViewport();
 };

@@ -49,6 +49,9 @@
 #include "PlayerSystem.h"
 #include "EnemySystem.h"
 #include "PhysicsSystem.h"
+
+#include "CollisionManager.h"
+
 #include "BehaviourComponent.h"
 #include "GameScripts.h"
 #include "AudioComponent.h"
@@ -139,6 +142,9 @@ void CoreEngine::Initialize()
 
     registry.Register_Component<Physics::PhysicsComponent>("Physics", { "Transform" });
     std::cout << "REGISTRY | REGISTERED PHYSICS COMPONENT\n";
+
+    registry.Register_Component<ColliderComponent>("Collider", { "Transform" });
+    std::cout << "REGISTRY | REGISTERED COLLIDER COMPONENT\n";
 
     registry.Register_Component<AudioComponent>("Audio");
     std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";

@@ -121,7 +121,8 @@ int main() {
             std::cout << "GETS PAST ENGINE INIT\n";
 
             //MonoManager& mono = MonoManager::Get();
-            //mono.Initialize("../Assets/Scripts/GameScripts.dll");
+            //mono.Initialize("../Assets/Scripts/
+            // s.dll");
 
             //// Register the MonoScript component with the ECS registry
             //Registry::Get().Register_Component<MonoScriptComponent>("MonoScriptComponent");

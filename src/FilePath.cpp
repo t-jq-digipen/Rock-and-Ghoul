@@ -34,12 +34,16 @@ std::string getExeDir() {
 }
 
 const std::string FilePath::SAVES_FOLDER = getExeDir() + "/../../Assets/saves/";
-const std::string FilePath::SETTINGS_FILE = FilePath::SAVES_FOLDER + "settings.json";
+const std::string FilePath::SETTINGS_FILE = getExeDir() + "/../../Assets/others/settings.json";
+const std::string FilePath::COLLISIONSETTINGS_FILE = getExeDir() + "/../../Assets/others/CollisionSettings.json";
 const std::string FilePath::LEVEL1_SCENE = FilePath::SAVES_FOLDER + "level1.json";
 const std::string FilePath::LEVEL2_SCENE = FilePath::SAVES_FOLDER + "level2.json";
 const std::string FilePath::LEVEL1_TEMP_SCENE = FilePath::SAVES_FOLDER + "level1_temp.json";
 const std::string FilePath::LEVEL2_TEMP_SCENE = FilePath::SAVES_FOLDER + "level2_temp.json";
-const std::string FilePath::SCENES_LIST = FilePath::SAVES_FOLDER + "ScenesList.json";
+const std::string FilePath::SCENES_LIST = getExeDir() + "/../../Assets/others/ScenesList.json";
+
+
+
 
 // save prefabs into assets folder
 const std::string FilePath::ASSETS_FOLDER = getExeDir() + "/../../Assets/";

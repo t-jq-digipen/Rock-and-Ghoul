@@ -716,6 +716,13 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
 
                 SavedEntity saved = Registry::Get().Save_Entity(e);
 
+                // Debug: show what was actually saved
+                std::cout << "  - Saved components: ";
+                for (const auto& [compName, compData] : saved.componentData) {
+                    std::cout << compName << " ";
+                }
+                std::cout << std::endl;
+
                 // Skip entities with no components (prevents crashes on load)
                 if (!saved.componentData.empty()) {
                     scene.entities.push_back(saved);
@@ -767,9 +774,22 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         // Create all entities
         for (const auto& savedEntity : scene.entities) {
-            Registry::Get().Load_Entity(savedEntity);
-            //Entity e = SavedToEntity(savedEntity);
-            // std::cout << "Created entity ID: " << e << " (was: " << savedEntity.id << ")" << std::endl;
+            std::cout << "Loading entity: " << savedEntity.name << std::endl;
+            std::cout << "  - Has components in JSON: ";
+            for (const auto& [compName, compData] : savedEntity.componentData) {
+                std::cout << compName << " ";
+            }
+            std::cout << std::endl;
+
+            Entity e = Registry::Get().Load_Entity(savedEntity);
+
+            // Verify what components were actually added
+            std::cout << "  - Components after load: ";
+            if (Registry::Get().Has_Component<TransformComponent>(e)) std::cout << "Transform ";
+            if (Registry::Get().Has_Component<ColliderComponent>(e)) std::cout << "Collider ";
+            if (Registry::Get().Has_Component<Physics::PhysicsComponent>(e)) std::cout << "Physics ";
+            if (Registry::Get().Has_Component<TagComponent>(e)) std::cout << "Tag ";
+            std::cout << std::endl;
         }
         RenderSystem::ClearBackgroundTextures();
         for (auto& path : scene.backgroundTextures) {
@@ -929,9 +949,9 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
             auto& transform = Registry::Get().Get_Component<TransformComponent>(e);
             transform.pos = { x, y };
 
-            if (Registry::Get().Has_Component<Physics::PhysicsComponent>(e)) {
-                auto& phys = Registry::Get().Get_Component<Physics::PhysicsComponent>(e);
-                phys.UpdateHitboxes({ x, y });
+            if (Registry::Get().Has_Component<ColliderComponent>(e)) {
+                auto& collider = Registry::Get().Get_Component<ColliderComponent>(e);
+                collider.UpdateHitboxes({ x, y });
             }
         }
 

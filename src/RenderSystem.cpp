@@ -155,6 +155,7 @@ void RenderSystem::Initialize() {
 
 void RenderSystem::Update(float dt) {
     
+    //Camera::GetInstance().UpdateMatrices();
 
     Camera::GetInstance().UpdateCamera();
 
@@ -168,6 +169,7 @@ void RenderSystem::Update(float dt) {
     else {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, GLApp::width, GLApp::height);
+        //renderer.ApplyLetterboxViewport();
         renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f }); // clear main framebuffer
     }
 
@@ -194,10 +196,34 @@ void RenderSystem::Update(float dt) {
    // renderer.ClearBackground({ 0.05f, 0.0f, 0.1f, 1.0f });
     // ===== DRAW BACKGROUND IF SET =====
 
-    renderer.useCamera = false;   // disable camera for bg
-    for (GLuint tex : s_backgroundTextures)
-        renderer.DrawFullscreenTexture(tex, true);
-    renderer.useCamera = camcheck; // restore camera state
+    /*for (GLuint tex : s_backgroundTextures)
+        renderer.DrawFullscreenTexture(tex, true);*/
+
+        // ===== DRAW BACKGROUND IF SET =====
+
+    // figure out current game state 
+    GameState currState = GSM_CurrentState();  
+
+    if (currState == GameState::GS_MAIN_MENU)
+    {
+        // Main Menu: draw backgrounds letterboxed in screen space,
+        // NOT using the camera.
+        // Clear to black first so we get bars.
+        renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
+
+        for (GLuint tex : s_backgroundTextures)
+        {
+            renderer.DrawLetterboxedTexture(tex);
+        }
+    }
+    else
+    {
+        // keep existing behaviour (camera + world)
+        for (GLuint tex : s_backgroundTextures)
+        {
+            renderer.DrawFullscreenTexture(tex, true); 
+        }
+    }
    
 
 
@@ -646,28 +672,31 @@ void RenderSystem::Update(float dt) {
     }
     }
 
-    // Debug drawing for physics colliders / velocities
-    if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {
-        for (auto& [entID, physics] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
-
+    // Debug drawing for colliders
+    if (ImGuiSystem::showColliders) {
+        for (auto& [entID, collider] : m_registry.Get_ComponentMap<ColliderComponent>()) {
             if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
             auto& t = m_registry.Get_Component<TransformComponent>(entID);
 
-            if (ImGuiSystem::showVelocity) {
-                DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
-            }
+            DebugDraw::DrawAABB(collider.Get_AABB(), renderInstance);
 
-            if (ImGuiSystem::showColliders) {
-                DebugDraw::DrawAABB(physics.Get_AABB(), renderInstance);
+            //if (m_registry.Has_Component<ShapeComponent>(entID)) {
+            //    auto& shape = m_registry.Get_Component<ShapeComponent>(entID);
+            //    if (shape.shape == SHAPE_CIRCLE)
+            //        DebugDraw::DrawCircleCollider(collider.Get_Circle(), renderInstance);
+            //}
 
-                //if (m_registry.Has_Component<ShapeComponent>(entID)) {
-                //    auto& shape = m_registry.Get_Component<ShapeComponent>(entID);
-                //    if (shape.shape == SHAPE_CIRCLE)
-                //        DebugDraw::DrawCircleCollider(physics.Get_Circle(), renderInstance);
-                //}
+            DebugDraw::DrawHotspot(t.pos, renderInstance);
+        }
+    }
 
-                DebugDraw::DrawHotspot(t.pos, renderInstance);
-            }
+    // Debug drawing for velocities
+    if (ImGuiSystem::showVelocity) {
+        for (auto& [entID, physics] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
+            if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
+            auto& t = m_registry.Get_Component<TransformComponent>(entID);
+
+            DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
         }
     }
 
@@ -679,6 +708,8 @@ void RenderSystem::Update(float dt) {
     if (ImGuiSystem::guiEnabled) {
         renderer.EndSceneCapture();
     }
+    //renderer.EndSceneCapture();
+    //renderer.PresentScene();
 }
 
 void RenderSystem::Shutdown() {
