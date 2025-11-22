@@ -2,20 +2,19 @@
     "entities": [
         {
             "components": {
-                "Animator": "{\"animDuration\":1.0,\"currentState\":3,\"frameColEnd\":8,\"frameColStart\":0,\"frameRow\":8,\"states\":{\"0\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":6},\"1\":{\"col_end\":7,\"col_start\":0,\"duration\":1.0,\"row\":0},\"2\":{\"col_end\":3,\"col_start\":0,\"duration\":1.0,\"row\":4},\"3\":{\"col_end\":8,\"col_start\":0,\"duration\":1.0,\"row\":8}},\"totalCols\":10,\"totalRows\":10}",
-                "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
                 "Audio": "{\"autoPlay\":false,\"autoPlayLooping\":false,\"loopingSoundName\":\"\",\"maxDistance\":100.0,\"minDistance\":10.0,\"soundName\":\"player_die\",\"spatial\":true,\"volume\":0.800000011920929}",
-                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":200.0,\"aabb_maxX\":100.0,\"aabb_maxY\":100.0,\"aabb_minX\":-100.0,\"aabb_minY\":-100.0,\"circle_posX\":0.0,\"circle_posY\":0.0,\"circle_rad\":200.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"mask\":[\"Enemy\",\"Projectile\",\"Wall\"]}",
+                "Behaviour": "{\"scripts\":[\"RockScript\",\"CamTarget\"]}",
+                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":200.0,\"aabb_maxX\":683.199951171875,\"aabb_maxY\":500.8999938964844,\"aabb_minX\":483.199951171875,\"aabb_minY\":300.8999938964844,\"circle_posX\":583.199951171875,\"circle_posY\":400.8999938964844,\"circle_rad\":200.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\"}",
                 "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                 "Input": "{\"scheme\":0}",
                 "Movement": "{\"moveSpeed\":500.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Rock_FightingPose_2048px.png\"}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"animated\\\":false,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"scaleX\\\":200.0,\\\"scaleY\\\":200.0,\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":9},\\\"2\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5},\\\"3\\\":{\\\"col_end\\\":8,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1}},\\\"texturePath\\\":\\\"../Assets/rockspritesheet4.11.png\\\",\\\"totalCols\\\":10,\\\"totalRows\\\":10}\",\"renderLayer\":1,\"renderType\":2}",
                 "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":0.0,\"posY\":0.0,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+                "Transform": "{\"posX\":583.199951171875,\"posY\":400.8999938964844,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
-            "name": "Player"
+            "name": "Rock"
         }
     ],
-    "sceneName": "Player"
+    "sceneName": "Rock"
 }

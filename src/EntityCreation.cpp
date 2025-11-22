@@ -368,7 +368,11 @@ Entity Create_InstancedSquare(float x, float y, float size, Vec3 color)
     s.shape = SHAPE_RECTANGLE;
     s.dimensions = { size, size };
     s.color = color;
-    Registry::Get().Add_Component<ShapeComponent>(instance, s);
+    Registry::Get().Add_Component<RenderComponent>(instance);
+    RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(instance);
+    renderComp.SetRenderType(RT_SHAPE);
+    renderComp.GetShape() = s;
+    //Registry::Get().Add_Component<ShapeComponent>(instance, s);
     Registry::Get().Add_Component<TagComponent>(instance, TagComponent{ T_INSTANCING });
     return instance;
 }

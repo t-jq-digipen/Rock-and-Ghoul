@@ -3,13 +3,13 @@
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
-                "Collider": "{\"aabb_dimX\":1.0,\"aabb_dimY\":1.0,\"aabb_maxX\":131.74258422851563,\"aabb_maxY\":425.7131042480469,\"aabb_minX\":131.74258422851563,\"aabb_minY\":425.7131042480469,\"circle_posX\":131.74258422851563,\"circle_posY\":425.7131042480469,\"circle_rad\":0.5,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"mask\":[\"Player\",\"Projectile\",\"Wall\"]}",
-                "Input": "{\"scheme\":0}",
+                "Collider": "{\"aabb_dimX\":1.0,\"aabb_dimY\":1.0,\"aabb_maxX\":1331.8453369140625,\"aabb_maxY\":487.7181701660156,\"aabb_minX\":1330.8453369140625,\"aabb_minY\":486.7181701660156,\"circle_posX\":1331.3453369140625,\"circle_posY\":487.2181701660156,\"circle_rad\":0.5,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\"}",
+                "Input": "{\"scheme\":1}",
                 "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
-                "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Ghoul_2048px.PNG\"}",
+                "Render": "{\"renderData\":\"{\\\"animated\\\":false,\\\"scaleX\\\":0.10000000149011612,\\\"scaleY\\\":0.10000000149011612,\\\"texturePath\\\":\\\"../Assets/Ghoul_2048px.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
                 "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":131.74258422851563,\"posY\":425.7131042480469,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":1331.3453369140625,\"posY\":487.2181701660156,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "ghoul"
         }

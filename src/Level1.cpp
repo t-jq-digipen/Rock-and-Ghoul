@@ -432,7 +432,6 @@ void Level1::Update()
 	//======================= stress test demon end ===============================
 
 	static bool spawnedInst = false;
-	std::vector<Entity> toRemoveInst;
 	// Toggle with B key
 	if (Input::IsKeyPressed(GLFW_KEY_B))
 	{
@@ -465,6 +464,7 @@ void Level1::Update()
 		else
 		{
 			// === Clear all ===
+			std::vector<Entity> toRemoveInst;
 			for (auto& [e, tag] : registry.Get_ComponentMap<TagComponent>()) {
 				if (tag.tag == T_INSTANCING && EntityManager::get().isAlive(e)) {
 					toRemoveInst.push_back(e);
