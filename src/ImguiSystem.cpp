@@ -865,7 +865,9 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
             naiveChecks,
             (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
     }
-
+    ImGui::Separator();
+    ShowLayerCollisionMatrix();
+    ImGui::Separator();
     if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
     ImGui::Text("Scene Management:");
     ShowSceneBrowser();
@@ -2782,6 +2784,149 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     //COLORS
     ImGui::TextColored( isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f), isPlaying ? "PLAYING" : "EDITING");
 }
+
+void ImGuiSystem::ShowLayerCollisionMatrix()
+{
+    auto& clm = CollisionLayerManager::Get();
+    const auto& nameMap = clm.GetLayerNameMap();
+
+    if (nameMap.empty()) {
+        ImGui::TextDisabled("No collision layers registered.");
+        return;
+    }
+
+    // Collect + sort layers alphabetically
+    struct Layer { uint32_t bit; std::string name; };
+    std::vector<Layer> layers;
+
+    for (auto& [bit, name] : nameMap)
+        layers.push_back({ bit, name });
+
+    std::sort(layers.begin(), layers.end(),
+        [](auto& a, auto& b) { return a.name < b.name; });
+
+    // Buttons
+    if (ImGui::Button("Reload Collision Settings"))
+        clm.LoadCollisionSettings();
+    ImGui::SameLine();
+    if (ImGui::Button("Save Collision Settings"))
+        clm.SaveCollisionSettings();
+
+    ImGui::Separator();
+    ImGui::Text("Collision Layer Matrix");
+    ImGui::Separator();
+
+    // ------------------------------------------------
+    // 1) Compute column width from max label width
+    // ------------------------------------------------
+    float minColSpacing = 35.0f;  // minimum so boxes not too cramped
+    float colSpacing = minColSpacing;
+
+    for (const auto& l : layers)
+    {
+        float w = ImGui::CalcTextSize(l.name.c_str()).x + 10.0f; // + padding
+        if (w > colSpacing)
+            colSpacing = w;
+    }
+
+    float rowIndent = 120.0f; // space for row labels on the left
+
+    // ------------------------------------------------
+    // 2) Draw header row (top labels)
+    // ------------------------------------------------
+    ImVec2 headerStart = ImGui::GetCursorScreenPos();
+    float xStart = headerStart.x + rowIndent;
+    float headerHeight = ImGui::GetTextLineHeightWithSpacing();
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+
+    for (int i = 0; i < (int)layers.size(); i++)
+    {
+        float x = xStart + i * colSpacing;
+
+        // Reserve column cell so layout below doesn't collide
+        ImGui::SetCursorScreenPos(ImVec2(x, headerStart.y));
+        ImGui::InvisibleButton(("##col" + std::to_string(i)).c_str(),
+            ImVec2(colSpacing, headerHeight));
+
+        ImVec2 cellMin = ImGui::GetItemRectMin();
+        ImVec2 cellMax = ImGui::GetItemRectMax();
+
+        // Center horizontal text inside this cell
+        ImVec2 textSize = ImGui::CalcTextSize(layers[i].name.c_str());
+        float centerX = cellMin.x + (cellMax.x - cellMin.x) * 0.5f - textSize.x * 0.5f;
+        float centerY = cellMin.y + (cellMax.y - cellMin.y) * 0.5f - textSize.y * 0.5f;
+
+        dl->AddText(
+            ImVec2(centerX, centerY),
+            ImGui::GetColorU32(ImGuiCol_Text),
+            layers[i].name.c_str()
+        );
+    }
+
+    // Push cursor down below header
+    ImGui::Dummy(ImVec2(0, headerHeight + 5.0f));
+    ImGui::Separator();
+
+    // ------------------------------------------------
+    // 3) Draw lower-triangle checkbox matrix
+    // ------------------------------------------------
+    float rowHeight = ImGui::GetFrameHeightWithSpacing();
+
+    for (int row = 0; row < (int)layers.size(); ++row)
+    {
+        uint32_t rowBit = layers[row].bit;
+
+        // Starting position for this row
+        ImVec2 rowStart = ImGui::GetCursorScreenPos();
+
+        // Row label on the left
+        ImGui::Text("%s", layers[row].name.c_str());
+
+        // Now manually place checkboxes in this row
+        for (int col = 0; col <= row; ++col)
+        {
+            uint32_t colBit = layers[col].bit;
+
+            bool checked = (clm.GetLayerMask(rowBit) & colBit) != 0;
+
+            float x = rowStart.x + rowIndent + col * colSpacing;
+            float y = rowStart.y;
+
+            ImGui::SetCursorScreenPos(ImVec2(x, y));
+            ImGui::PushID(row * 100 + col);
+
+            if (ImGui::Checkbox("##box", &checked))
+            {
+                // Symmetric update (A with B == B with A)
+                uint32_t maskA = clm.GetLayerMask(rowBit);
+                uint32_t maskB = clm.GetLayerMask(colBit);
+
+                if (checked) {
+                    maskA |= colBit;
+                    maskB |= rowBit;
+                }
+                else {
+                    maskA &= ~colBit;
+                    maskB &= ~rowBit;
+                }
+
+                clm.SetLayerMask(rowBit, maskA);
+                clm.SetLayerMask(colBit, maskB);
+            }
+
+            ImGui::PopID();
+        }
+
+        // Move cursor to next row manually
+        ImGui::SetCursorScreenPos(ImVec2(rowStart.x, rowStart.y + rowHeight));
+    }
+}
+
+
+
+
+
 
 void ImGuiSystem::Shutdown() {
     ShutdownImGui();
