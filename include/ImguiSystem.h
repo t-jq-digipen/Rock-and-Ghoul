@@ -68,6 +68,7 @@ public:
     static void OnFileDropped(const std::string& path);
     static bool dragEditMode;
     static void ShowLayerCollisionMatrix();
+
 private:
     /**
      * @brief Draw the Engine Debug panel.

@@ -32,13 +32,13 @@
 #include "FileIO.h"
 #include "FilePath.h"
 
-// Spatial grid for broad-phase optimization
+ // Spatial grid for broad-phase optimization
 static SpatialGrid spatialGrid(150.0f); // Cell size tuned for typical entity size
 
 uint32_t CollisionLayerManager::RegisterLayer(const std::string& name) {
     if (layerBits.find(name) != layerBits.end()) { return layerBits[name]; }
 
-    if (nextBit >= 32) 
+    if (nextBit >= 32)
     {
         std::cout << "Cannot exceed 32 collision layers! Failed to register " << name << '\n';
         return 0;
@@ -75,7 +75,7 @@ void CollisionLayerManager::LoadCollisionSettings() {
         layerMasks[layerBit] |= GetLayerBit("Wall");
         return;
     }
-    
+
     json j = json::parse(settings);
 
     for (std::string layer : j["layers"])
@@ -154,10 +154,10 @@ uint32_t CollisionLayerManager::GetLayerMask(uint32_t layerBit) const {
 
 uint32_t CollisionLayerManager::GetLayerBit(const std::string& name) const {
     auto it = layerBits.find(name);
-    if (it == layerBits.end()) 
-    { 
+    if (it == layerBits.end())
+    {
         std::cerr << "Collision layer " << name << " not registered!\n";
-        return 0; 
+        return 0;
     }
 
     return it->second;
@@ -352,7 +352,7 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         static int missingPhysicsCount = 0;
         if (++missingPhysicsCount % 60 == 0) {
             std::cout << "[Collision] WARNING: Entity " << a << " or " << b
-                      << " missing PhysicsComponent, skipping response" << std::endl;
+                << " missing PhysicsComponent, skipping response" << std::endl;
         }
         return;
     }
@@ -376,7 +376,7 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         static int noOverlapDebug = 0;
         if (++noOverlapDebug % 60 == 0) {
             std::cout << "[Collision] No overlap detected in response: overlapX=" << overlapX
-                      << " overlapY=" << overlapY << std::endl;
+                << " overlapY=" << overlapY << std::endl;
         }
         return;
     }
@@ -401,7 +401,7 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
     static int staticDebug = 0;
     if (++staticDebug % 60 == 0) {
         std::cout << "[Collision] Entity " << a << " static=" << aStatic
-                  << " | Entity " << b << " static=" << bStatic << std::endl;
+            << " | Entity " << b << " static=" << bStatic << std::endl;
     }
 
     const float separationBuffer = 0.1f;  // minimal buffer to prevent sinking
@@ -427,63 +427,63 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         colliderB.UpdateHitboxes(transB.pos);
     }
 
-        // Calculate relative velocity
-        Vec2 velA = physA.Get_Vel();
-        Vec2 velB = physB.Get_Vel();
-        Vec2 relativeVel = RG_Subtract(velA, velB);
-        float velAlongNormal = RG_DotProduct(relativeVel, normal);
+    // Calculate relative velocity
+    Vec2 velA = physA.Get_Vel();
+    Vec2 velB = physB.Get_Vel();
+    Vec2 relativeVel = RG_Subtract(velA, velB);
+    float velAlongNormal = RG_DotProduct(relativeVel, normal);
 
-        // Don't resolve if separating
-        if (velAlongNormal > -0.1f) {
-            static int separatingDebug = 0;
-            if (++separatingDebug % 60 == 0) {
-                std::cout << "[Collision] Objects separating, velAlongNormal=" << velAlongNormal << std::endl;
-            }
-            return;
+    // Don't resolve if separating
+    if (velAlongNormal > -0.1f) {
+        static int separatingDebug = 0;
+        if (++separatingDebug % 60 == 0) {
+            std::cout << "[Collision] Objects separating, velAlongNormal=" << velAlongNormal << std::endl;
         }
+        return;
+    }
 
-        // Special handling for high-speed impacts (like dashing into walls)
-        const float highSpeedThreshold = 500.0f;
-        if ((aStatic || bStatic) && RG_Abs(velAlongNormal) > highSpeedThreshold) {
-            // For high-speed wall impacts, just stop velocity along normal
-            if (!aStatic) {
-                Vec2 normalComponent = RG_Scale(normal, velAlongNormal);
-                velA = RG_Subtract(velA, normalComponent);
-                physA.Set_Vel(velA);
-            }
-            if (!bStatic) {
-                Vec2 normalComponent = RG_Scale(normal, -velAlongNormal);
-                velB = RG_Add(velB, normalComponent);
-                physB.Set_Vel(velB);
-            }
-            return;  // Skip impulse calculation for high-speed wall impacts
-        }
-
-        float e = RG_Min(physA.GetRestitution(), physB.GetRestitution());
-
-        float invMassA = aStatic ? 0.0f : 1.0f / physA.GetMass();
-        float invMassB = bStatic ? 0.0f : 1.0f / physB.GetMass();
-
-        // Preventing division by zero
-        if (invMassA + invMassB < 0.0001f) return;
-
-        // Calculate impulse magnitude j = -(1+e)*v_rel / (1/m_a + 1/m_b)
-        float j = -(1.0f + e) * velAlongNormal / (invMassA + invMassB);
-        Vec2 impulse = RG_Scale(normal, j);
-
-        // Apply impulses, changes velocity, not position
-        static int impulseDebug = 0;
-        if (++impulseDebug % 60 == 0) {
-            std::cout << "[Collision] Applying impulse j=" << j
-                      << " | aStatic=" << aStatic << " bStatic=" << bStatic << std::endl;
-        }
-
+    // Special handling for high-speed impacts (like dashing into walls)
+    const float highSpeedThreshold = 500.0f;
+    if ((aStatic || bStatic) && RG_Abs(velAlongNormal) > highSpeedThreshold) {
+        // For high-speed wall impacts, just stop velocity along normal
         if (!aStatic) {
-            physA.ApplyLinearImpulse(impulse);
+            Vec2 normalComponent = RG_Scale(normal, velAlongNormal);
+            velA = RG_Subtract(velA, normalComponent);
+            physA.Set_Vel(velA);
         }
         if (!bStatic) {
-            physB.ApplyLinearImpulse(RG_Scale(impulse, -1.0f));
+            Vec2 normalComponent = RG_Scale(normal, -velAlongNormal);
+            velB = RG_Add(velB, normalComponent);
+            physB.Set_Vel(velB);
         }
+        return;  // Skip impulse calculation for high-speed wall impacts
+    }
+
+    float e = RG_Min(physA.GetRestitution(), physB.GetRestitution());
+
+    float invMassA = aStatic ? 0.0f : 1.0f / physA.GetMass();
+    float invMassB = bStatic ? 0.0f : 1.0f / physB.GetMass();
+
+    // Preventing division by zero
+    if (invMassA + invMassB < 0.0001f) return;
+
+    // Calculate impulse magnitude j = -(1+e)*v_rel / (1/m_a + 1/m_b)
+    float j = -(1.0f + e) * velAlongNormal / (invMassA + invMassB);
+    Vec2 impulse = RG_Scale(normal, j);
+
+    // Apply impulses, changes velocity, not position
+    static int impulseDebug = 0;
+    if (++impulseDebug % 60 == 0) {
+        std::cout << "[Collision] Applying impulse j=" << j
+            << " | aStatic=" << aStatic << " bStatic=" << bStatic << std::endl;
+    }
+
+    if (!aStatic) {
+        physA.ApplyLinearImpulse(impulse);
+    }
+    if (!bStatic) {
+        physB.ApplyLinearImpulse(RG_Scale(impulse, -1.0f));
+    }
 }
 
 // Replaced ActionStop with Impulse method
@@ -529,8 +529,8 @@ void CollisionManager::CheckCollisions() {
         if (!collider.IsActive() || !m_registry.Has_Component<TransformComponent>(entity)) {
             if (++broadPhaseDebug % 120 == 0 && entity == 6) {
                 std::cout << "[Collision] Entity 6 (PLAYER) SKIPPED in broad phase! Active="
-                          << collider.IsActive() << " HasTransform="
-                          << m_registry.Has_Component<TransformComponent>(entity) << std::endl;
+                    << collider.IsActive() << " HasTransform="
+                    << m_registry.Has_Component<TransformComponent>(entity) << std::endl;
             }
             continue;
         }
@@ -651,8 +651,8 @@ void CollisionManager::CheckCollisions() {
             static int hitCounter = 0;
             if (++hitCounter % 60 == 0) {
                 std::cout << "[Collision] HIT DETECTED: Entity " << a << " vs " << b
-                          << " | A.trigger=" << colliderA.IsTrigger()
-                          << " B.trigger=" << colliderB.IsTrigger() << std::endl;
+                    << " | A.trigger=" << colliderA.IsTrigger()
+                    << " B.trigger=" << colliderB.IsTrigger() << std::endl;
             }
 
             // Mark cells where collision occurred (intersection region only)
@@ -731,7 +731,7 @@ std::string ColliderComponent::Serialize() const {
         {"aabb_dimX", aabbhitbox.dim.x}, {"aabb_dimY", aabbhitbox.dim.y},
         {"circle_posX", circlehitbox.pos.x}, {"circle_posY", circlehitbox.pos.y},
         {"circle_rad", circlehitbox.rad},
-        {"layer", layerName}, 
+        {"layer", layerName},
         //{"mask", maskNames},
         {"isTrigger", isTrigger}, {"isActive", isActive}
     };
@@ -745,12 +745,12 @@ ColliderComponent ColliderComponent::DeSerialize(Entity eID, const std::string& 
     json j = json::parse(data);
 
     AABB aabb;
-    aabb.min = {j.value("aabb_minX", 0.f), j.value("aabb_minY", 0.f)};
-    aabb.max = {j.value("aabb_maxX", 0.f), j.value("aabb_maxY", 0.f)};
-    aabb.dim = {j.value("aabb_dimX", 0.f), j.value("aabb_dimY", 0.f)};
+    aabb.min = { j.value("aabb_minX", 0.f), j.value("aabb_minY", 0.f) };
+    aabb.max = { j.value("aabb_maxX", 0.f), j.value("aabb_maxY", 0.f) };
+    aabb.dim = { j.value("aabb_dimX", 0.f), j.value("aabb_dimY", 0.f) };
 
     Circle circle;
-    circle.pos = {j.value("circle_posX", 0.f), j.value("circle_posY", 0.f)};
+    circle.pos = { j.value("circle_posX", 0.f), j.value("circle_posY", 0.f) };
     circle.rad = j.value("circle_rad", 0.f);
 
     ColliderComponent comp(aabb, circle, j.value("isActive", true));
