@@ -58,6 +58,7 @@
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
 #include "ImGuizmo.h"
+#include "UndoSystem.h"
 
  // ========================================================
  // File-Local Static Variables (Editor State)
@@ -585,6 +586,14 @@ void ImGuiSystem::Update(float dt)
     if (Input::IsKeyPressed(GLFW_KEY_F1))
         guiEnabled = !guiEnabled;
 
+    ImGuiIO& io = ImGui::GetIO();
+    bool ctrl = io.KeyCtrl;
+
+    if (ctrl && ImGui::IsKeyPressed(ImGuiKey_Z, false))
+    {
+        UndoSystem::Get().Undo();
+    }
+
     if (!guiEnabled) {
         // Fullscreen mode when ImGui is off
         GameViewRect rect;
@@ -794,20 +803,19 @@ void ImGuiSystem::Update(float dt)
         ImGuizmo::SetDrawlist();
         ImGuizmo::SetRect(cursor.x, cursor.y, newWidth, newHeight);
 
-        static glm::vec3 lastScale(1.0f);    // tracks previous frame scale
-        static float lastRot = 0.0f;
-
+        static glm::vec3 lastScale(1.0f);
+        static bool wasGizmoUsing = false;
         Registry& reg = Registry::Get();
-
         if (selectedEntity != INVALID_ENTITY &&
             reg.Has_Component<TransformComponent>(selectedEntity))
         {
             TransformComponent& t = reg.Get_Component<TransformComponent>(selectedEntity);
 
             // -------------------------------------------------------
-            // 1. Compose model matrix from ECS transform
+            // 1. Compose model matrix
             // -------------------------------------------------------
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(t.pos.x, t.pos.y, 0.0f));
+            glm::mat4 model = glm::translate(glm::mat4(1.0f),
+                glm::vec3(t.pos.x, t.pos.y, 0.0f));
 
             model = glm::rotate(model, glm::radians(t.rot), glm::vec3(0, 0, 1));
             model = glm::scale(model, glm::vec3(t.scale.x, t.scale.y, 1.0f));
@@ -822,7 +830,7 @@ void ImGuiSystem::Update(float dt)
             ImGuizmo::SetOrthographic(true);
 
             // -------------------------------------------------------
-            // 3. Manipulate
+            // 3. Gizmo Manipulate
             // -------------------------------------------------------
             ImGuizmo::Manipulate(
                 glm::value_ptr(view),
@@ -832,10 +840,21 @@ void ImGuiSystem::Update(float dt)
                 glm::value_ptr(model)
             );
 
+            bool isUsingNow = ImGuizmo::IsUsing();
+
             // -------------------------------------------------------
-            // 4. Apply result
+            // 4. UNDO: BeginModify (first frame gizmo starts)
             // -------------------------------------------------------
-            if (ImGuizmo::IsUsing())
+            if (isUsingNow && !wasGizmoUsing)
+            {
+                UndoSystem::Get().BeginModify(selectedEntity, t);
+                lastScale = glm::vec3(1.0f);
+            }
+
+            // -------------------------------------------------------
+            // 5. Apply transform while gizmo active
+            // -------------------------------------------------------
+            if (isUsingNow)
             {
                 glm::vec3 translation, rotation3, scaleAbs;
                 ImGuizmo::DecomposeMatrixToComponents(
@@ -845,39 +864,28 @@ void ImGuiSystem::Update(float dt)
                     glm::value_ptr(scaleAbs)
                 );
 
-                // POSITION + ROTATION
+                // Position
                 t.pos.x = translation.x;
                 t.pos.y = translation.y;
-                // -------------------------
-                // Rotation follows mouse
-                // -------------------------
+
+                // Rotation (follow mouse)
                 if (gizmoOperation == ImGuizmo::ROTATE)
                 {
-                    // Get mouse in world space
                     ImVec2 mouseScreen = ImGui::GetMousePos();
 
-                    // Convert panel to NDC
                     float u = (mouseScreen.x - cursor.x) / newWidth;
                     float v = (mouseScreen.y - cursor.y) / newHeight;
 
                     float ndcX = u * 2.0f - 1.0f;
                     float ndcY = (1.0f - v) * 2.0f - 1.0f;
 
-                    Camera& cam = Camera::GetInstance();
                     Vec2 mouseWorld = cam.NDCToWorld({ ndcX, ndcY });
-
                     float targetRot = AngleToMouse(t.pos, mouseWorld);
-                    // smoothing factor: 0.0f = no movement, 1.0f = instant snap
-                    float smoothing = 0.18f;
-
-                    t.rot = SmoothDampAngle(t.rot, targetRot, smoothing);
+                    t.rot = SmoothDampAngle(t.rot, targetRot, 0.18f);
                 }
 
-
-                // ======================================================
-                // incremental scaling using per-frame delta
-                // ======================================================
-                glm::vec3 scaleDelta = scaleAbs / lastScale;  // element-wise
+                // Scale (incremental)
+                glm::vec3 scaleDelta = scaleAbs / lastScale;
                 lastScale = scaleAbs;
 
                 if (reg.Has_Component<RenderComponent>(selectedEntity))
@@ -904,19 +912,25 @@ void ImGuiSystem::Update(float dt)
                     }
                 }
 
-                // Update hitbox
+                // Collider sync
                 if (reg.Has_Component<ColliderComponent>(selectedEntity))
                 {
                     auto& col = reg.Get_Component<ColliderComponent>(selectedEntity);
                     col.UpdateHitboxes(t.pos);
                 }
             }
-            else
+
+            // -------------------------------------------------------
+            // 6. UNDO: EndModify (first frame gizmo stops)
+            // -------------------------------------------------------
+            if (!isUsingNow && wasGizmoUsing)
             {
-                // Reset delta when gizmo released
-                lastScale = glm::vec3(1.0f);
+                UndoSystem::Get().EndModify(selectedEntity, t);
             }
+
+            wasGizmoUsing = isUsingNow;
         }
+
 
 
         if (!isPlaying && ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
