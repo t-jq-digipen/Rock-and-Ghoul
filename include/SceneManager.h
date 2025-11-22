@@ -27,7 +27,7 @@ public:
     const std::string& GetCurrentScene() const { return currentScenePath; }
     const std::string& GetTempScenePath() const { return tempScenePath; }
     std::string GetCurrentSceneName() const;
-
+    void ApplySceneDefaults();
 private:
     SceneManager() = default;
 

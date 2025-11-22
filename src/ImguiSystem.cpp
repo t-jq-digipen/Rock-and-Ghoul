@@ -1386,7 +1386,7 @@ void ImGuiSystem::ShowSceneBrowser()
         SceneManager& sm = SceneManager::Get();
 
         // Always return to editor mode when loading scenes
-        sm.EnterEditMode();
+        //sm.EnterEditMode();
 
         // Load the selected scene (real file, not temp)
         sm.LoadScene(path);

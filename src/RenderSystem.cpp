@@ -204,38 +204,38 @@ void RenderSystem::Update(float dt) {
     // figure out current game state 
    // GameState currState = GSM_CurrentState();  
 
-    //if (currState == GameState::GS_MAIN_MENU)
-    //{
-    //    // Main Menu: draw backgrounds letterboxed in screen space,
-    //    // NOT using the camera.
-    //    // Clear to black first so we get bars.
-    //    renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
 
-    //    for (GLuint tex : s_backgroundTextures)
-    //    {
-    //        renderer.DrawLetterboxedTexture(tex);
-    //    }
-    //}
-    //else
-    //{
-    //    // keep existing behaviour (camera + world)
-    //    for (GLuint tex : s_backgroundTextures)
-    //    {
-    //        renderer.DrawFullscreenTexture(tex, true); 
-    //    }
-    //}
+    if (SceneManager::Get().GetCurrentSceneName() == "MainMenu")
+    {
+        // Letterboxed menu background
+        renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
+
+        for (GLuint tex : s_backgroundTextures)
+        {
+            renderer.DrawLetterboxedTexture(tex);
+        }
+    }
+    else
+    {
+        // Gameplay or editor: fullscreen world background
+        for (GLuint tex : s_backgroundTextures)
+        {
+            renderer.DrawFullscreenTexture(tex, true);
+        }
+    }
+
    
 
-    if (!SceneManager::Get().IsPlaying()) {
-        // main menu / editor mode
-        for (GLuint tex : s_backgroundTextures)
-            renderer.DrawLetterboxedTexture(tex); // OR letterbox version
-    }
-    else {
-        // gameplay
-        for (GLuint tex : s_backgroundTextures)
-            renderer.DrawLetterboxedTexture(tex);
-    }
+    //if (!SceneManager::Get().IsPlaying()) {
+    //    // main menu / editor mode
+    //    for (GLuint tex : s_backgroundTextures)
+    //        renderer.DrawLetterboxedTexture(tex); // OR letterbox version
+    //}
+    //else {
+    //    // gameplay
+    //    for (GLuint tex : s_backgroundTextures)
+    //        renderer.DrawLetterboxedTexture(tex);
+    //}
 
     // Use the camera for all subsequent draw calls (ok why this not workinGGGGGGGG AJBFEEUFBUJFBFDJSBJF)
     //mainCamera.UpdateMatrices();

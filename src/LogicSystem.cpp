@@ -39,8 +39,8 @@ void LogicSystem::Update(float dt)
         bc.FixID(entity);
     }
     SceneManager& sm = SceneManager::Get();
-    //skip if paused or editing
-    if (sm.isPaused || sm.inEditMode)
+   
+    if (!sm.IsPlaying())
         return;
 
     //each entity with a behaviour component

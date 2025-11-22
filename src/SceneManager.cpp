@@ -40,7 +40,8 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
 
             auto p = std::filesystem::path(path);
             tempScenePath = "../Assets/saves/temp.json";
-
+            ApplySceneDefaults();
+            EnterPlayMode();
             std::cout << "[SceneManager] Loaded scene: " << path << "\n";
         }
         else
@@ -105,4 +106,21 @@ std::string SceneManager::GetCurrentSceneName() const
         return "";
 
     return std::filesystem::path(currentScenePath).stem().string();
+}
+void SceneManager::ApplySceneDefaults()
+{
+    Render& renderer = Render::GetInstance();
+    Camera& cam = Camera::GetInstance();
+
+    // CAMERA DEFAULTS
+    cam.SetMode(Camera::Mode::EDITOR);
+    cam.SetZoom(1.0f);
+    cam.ResetToCenter();
+
+
+    cam.SetBounds(Vec2{ 0.0f, 0.0f }, Vec2{ 1920.0f, 1080.0f });
+
+    // RENDERER DEFAULTS
+    renderer.useCamera = true;
+    renderer.UseVirtualWindow(true);
 }

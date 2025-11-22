@@ -71,7 +71,7 @@
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":2462.9189453125,\"aabb_dimY\":100.98699951171875,\"aabb_maxX\":2181.34619140625,\"aabb_maxY\":784.376708984375,\"aabb_minX\":-281.57275390625,\"aabb_minY\":683.3896484375,\"circle_posX\":949.8865966796875,\"circle_posY\":733.8831787109375,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
+                "Collider": "{\"aabb_dimX\":2462.9189453125,\"aabb_dimY\":100.98699951171875,\"aabb_maxX\":2181.34619140625,\"aabb_maxY\":784.376708984375,\"aabb_minX\":-281.5728759765625,\"aabb_minY\":683.3896484375,\"circle_posX\":949.8865966796875,\"circle_posY\":733.8831787109375,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
                 "Transform": "{\"posX\":949.8865966796875,\"posY\":733.8831787109375,\"rot\":0.0,\"scaleX\":1986.0001220703125,\"scaleY\":50.0}"
