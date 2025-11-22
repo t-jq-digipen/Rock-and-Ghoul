@@ -2,7 +2,7 @@
  * @file        CollisionManager.cpp
  * @author      Yasmin Tazi        | yasmin.t@digipen.edu
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        06 NOV 2025
+ * @date        19 NOV 2025
  *
  * @brief
  *
@@ -25,7 +25,12 @@
 #include "CollisionManager.h"
 #include "SpatialGrid.h"
 #include "Remath.h"
+#include "Component.h"
+#include "EntityManager.h"
 #include <algorithm>
+#include "JsonLoad.h"
+#include "FileIO.h"
+#include "FilePath.h"
 
 // Spatial grid for broad-phase optimization
 static SpatialGrid spatialGrid(150.0f); // Cell size tuned for typical entity size
@@ -42,8 +47,109 @@ uint32_t CollisionLayerManager::RegisterLayer(const std::string& name) {
     uint32_t bit = 1 << nextBit++;
     layerBits[name] = bit;
     layerNames[bit] = name;
+    layerMasks[bit] = 0;
 
     return bit;
+}
+
+void CollisionLayerManager::LoadCollisionSettings() {
+
+    std::string settings = FileIO::ReadFile(FilePath::COLLISIONSETTINGS_FILE);
+
+    if (settings.empty())
+    {
+        uint32_t layerBit;
+        layerBit = GetLayerBit("Player");
+        layerMasks[layerBit] |= GetLayerBit("Enemy");
+        layerMasks[layerBit] |= GetLayerBit("Wall");
+        layerBit = GetLayerBit("Enemy");
+        layerMasks[layerBit] |= GetLayerBit("Player");
+        layerMasks[layerBit] |= GetLayerBit("Enemy");
+        layerMasks[layerBit] |= GetLayerBit("Projectile");
+        layerMasks[layerBit] |= GetLayerBit("Wall");
+        layerBit = GetLayerBit("Projectile");
+        layerBit = GetLayerBit("Wall");
+        layerMasks[layerBit] |= GetLayerBit("Player");
+        layerMasks[layerBit] |= GetLayerBit("Enemy");
+        layerMasks[layerBit] |= GetLayerBit("Projectile");
+        layerMasks[layerBit] |= GetLayerBit("Wall");
+        return;
+    }
+    
+    json j = json::parse(settings);
+
+    for (std::string layer : j["layers"])
+    {
+        RegisterLayer(layer);
+    }
+
+    for (auto& [layerBit, layerName] : layerNames)
+    {
+        if (j.contains(layerName + "mask"))
+        {
+            for (std::string mask : j[layerName + "mask"])
+            {
+                layerMasks[layerBit] |= GetLayerBit(mask);
+            }
+        }
+    }
+
+    std::cout << "Collision settings loaded c:\n";
+
+}
+
+void CollisionLayerManager::SaveCollisionSettings() {
+
+    json j;
+
+    std::vector<std::string> collisionLayerList{};
+    for (auto& [layerBit, layerName] : layerNames)
+    {
+        collisionLayerList.push_back(layerName);
+    }
+
+    j["layers"] = collisionLayerList;
+
+    for (std::string& name : collisionLayerList) {
+        std::vector<std::string> maskNames{};
+        uint32_t maskBit = GetLayerMask(GetLayerBit(name));
+        for (uint32_t i = 0; i < 32; ++i) {
+            uint32_t bit = 1 << i;
+            if (maskBit & bit) {
+                std::string name = CollisionLayerManager::Get().GetLayerName(bit);
+                if (!name.empty()) {
+                    maskNames.push_back(name);
+                }
+            }
+        }
+
+        j[name + "mask"] = maskNames;
+    }
+
+    FileIO::WriteFile(FilePath::COLLISIONSETTINGS_FILE, j.dump());
+
+}
+
+void CollisionLayerManager::SetLayerMask(uint32_t layerBit, uint32_t maskBit) {
+    auto it = layerNames.find(layerBit);
+    if (it == layerNames.end())
+    {
+        std::cerr << "Failed to set layer mask, Collision layer bit " << layerBit << " not registered!\n";
+        return;
+    }
+
+    layerMasks[layerBit] = maskBit;
+}
+
+uint32_t CollisionLayerManager::GetLayerMask(uint32_t layerBit) const {
+    auto it = layerMasks.find(layerBit);
+    if (it == layerMasks.end())
+    {
+        std::cerr << "Failed to get layer mask, Collision layer bit " << layerBit << " not registered!\n";
+        return 0;
+    }
+
+    return it->second;
 }
 
 uint32_t CollisionLayerManager::GetLayerBit(const std::string& name) const {
@@ -69,7 +175,43 @@ std::string CollisionLayerManager::GetLayerName(uint32_t bit) const {
 }
 
 bool CollisionLayerManager::ShouldCollide(uint32_t layerA, uint32_t maskA, uint32_t layerB, uint32_t maskB) const {
-    return (maskA & layerB) || (maskB & layerA);
+    // If either entity has no layer set (0), don't collide
+    // This prevents entities without proper collision setup from affecting the system
+    if (layerA == 0 || layerB == 0) {
+        return false;
+    }
+
+    // Both have layers set, use mask filtering
+    // A collides with B if: (A's mask contains B's layer) AND (B's mask contains A's layer)
+    // This means BOTH entities must want to collide for collision to happen
+    bool result = (maskA & layerB) && (maskB & layerA);
+
+    // Debug: Uncomment to see collision filtering decisions
+    // static int debugCounter = 0;
+    // if (++debugCounter % 100 == 0) {  // Print every 100th check to avoid spam
+    //     std::cout << "[Collision] layerA:0x" << std::hex << layerA << " maskA:0x" << maskA
+    //               << " vs layerB:0x" << layerB << " maskB:0x" << maskB
+    //               << " -> " << (result ? "COLLIDE" : "SKIP") << std::dec << std::endl;
+    // }
+
+    return result;
+}
+
+bool CollisionLayerManager::ShouldCollide(uint32_t layerA, uint32_t layerB) const {
+    // If either entity has no layer set (0), don't collide
+    // This prevents entities without proper collision setup from affecting the system
+    if (layerA == 0 || layerB == 0) {
+        return false;
+    }
+
+    // Both have layers set, use mask filtering
+    // A collides with B if: (A's mask contains B's layer) AND (B's mask contains A's layer)
+    // This means BOTH entities must want to collide for collision to happen
+    uint32_t maskA = GetLayerMask(layerA);
+    uint32_t maskB = GetLayerMask(layerB);
+
+    return (maskA & layerB) && (maskB & layerA);
+
 }
 
 void CollisionLayerManager::Clear() {
@@ -204,20 +346,40 @@ void CollisionManager::ProcessEvents() {
 
 // IMPULSE-BASED COLLISION (LINEAR PHYSICS SYSTEM)
 void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
+    // Safety check: both entities must have all required components
+    if (!m_registry.Has_Component<Physics::PhysicsComponent>(a) ||
+        !m_registry.Has_Component<Physics::PhysicsComponent>(b)) {
+        static int missingPhysicsCount = 0;
+        if (++missingPhysicsCount % 60 == 0) {
+            std::cout << "[Collision] WARNING: Entity " << a << " or " << b
+                      << " missing PhysicsComponent, skipping response" << std::endl;
+        }
+        return;
+    }
+
     auto& transA = m_registry.Get_Component<TransformComponent>(a);
     auto& physA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
+    auto& colliderA = m_registry.Get_Component<ColliderComponent>(a);
     auto& transB = m_registry.Get_Component<TransformComponent>(b);
     auto& physB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
+    auto& colliderB = m_registry.Get_Component<ColliderComponent>(b);
 
-    const AABB& aabbA = physA.Get_AABB();
-    const AABB& aabbB = physB.Get_AABB();
+    const AABB& aabbA = colliderA.Get_AABB();
+    const AABB& aabbB = colliderB.Get_AABB();
 
     // Calculate collision normal
     Vec2 diff = RG_Subtract(transB.pos, transA.pos);
     float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - RG_Abs(diff.x);
     float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - RG_Abs(diff.y);
 
-    if (overlapX <= 0 || overlapY <= 0) return;
+    if (overlapX <= 0 || overlapY <= 0) {
+        static int noOverlapDebug = 0;
+        if (++noOverlapDebug % 60 == 0) {
+            std::cout << "[Collision] No overlap detected in response: overlapX=" << overlapX
+                      << " overlapY=" << overlapY << std::endl;
+        }
+        return;
+    }
 
     // Find collision normal
     Vec2 normal;
@@ -236,6 +398,12 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
     bool aStatic = physA.IsStatic();
     bool bStatic = physB.IsStatic();
 
+    static int staticDebug = 0;
+    if (++staticDebug % 60 == 0) {
+        std::cout << "[Collision] Entity " << a << " static=" << aStatic
+                  << " | Entity " << b << " static=" << bStatic << std::endl;
+    }
+
     const float separationBuffer = 0.1f;  // minimal buffer to prevent sinking
 
     float correctionAmount = penetrationDepth + separationBuffer;
@@ -245,18 +413,18 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         Vec2 correction = RG_Scale(normal, half);
         transA.pos = RG_Subtract(transA.pos, correction);
         transB.pos = RG_Add(transB.pos, correction);
-        physA.UpdateHitboxes(transA.pos);
-        physB.UpdateHitboxes(transB.pos);
+        colliderA.UpdateHitboxes(transA.pos);
+        colliderB.UpdateHitboxes(transB.pos);
     }
     else if (!aStatic) {
         Vec2 correction = RG_Scale(normal, -correctionAmount);
         transA.pos = RG_Add(transA.pos, correction);
-        physA.UpdateHitboxes(transA.pos);
+        colliderA.UpdateHitboxes(transA.pos);
     }
     else if (!bStatic) {
         Vec2 correction = RG_Scale(normal, correctionAmount);
         transB.pos = RG_Add(transB.pos, correction);
-        physB.UpdateHitboxes(transB.pos);
+        colliderB.UpdateHitboxes(transB.pos);
     }
 
         // Calculate relative velocity
@@ -266,7 +434,13 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         float velAlongNormal = RG_DotProduct(relativeVel, normal);
 
         // Don't resolve if separating
-        if (velAlongNormal > -0.1f) return;
+        if (velAlongNormal > -0.1f) {
+            static int separatingDebug = 0;
+            if (++separatingDebug % 60 == 0) {
+                std::cout << "[Collision] Objects separating, velAlongNormal=" << velAlongNormal << std::endl;
+            }
+            return;
+        }
 
         // Special handling for high-speed impacts (like dashing into walls)
         const float highSpeedThreshold = 500.0f;
@@ -298,6 +472,12 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         Vec2 impulse = RG_Scale(normal, j);
 
         // Apply impulses, changes velocity, not position
+        static int impulseDebug = 0;
+        if (++impulseDebug % 60 == 0) {
+            std::cout << "[Collision] Applying impulse j=" << j
+                      << " | aStatic=" << aStatic << " bStatic=" << bStatic << std::endl;
+        }
+
         if (!aStatic) {
             physA.ApplyLinearImpulse(impulse);
         }
@@ -307,12 +487,29 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
 }
 
 // Replaced ActionStop with Impulse method
-void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected)
+void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected, bool isTrigger)
 {
     if (!intersected) return;
 
+    // Always generate collision event
     AddEvent(a, b);
 
+    // If it's a trigger, skip physics response (no impulse resolution)
+    if (isTrigger) {
+        // TODO: Publish trigger event to EventBus for game logic
+        // Example: EventBus::Get().Publish<TriggerEvent>(a, b);
+        // Debug: uncomment to see trigger collisions
+        // std::cout << "[Collision] Trigger collision: Entity " << a << " <-> " << b << std::endl;
+        return;
+    }
+
+    // Debug: see physics collisions
+    static int collisionCount = 0;
+    if (++collisionCount % 60 == 0) {  // Print every 60th collision
+        std::cout << "[Collision] Physics response: Entity " << a << " <-> " << b << std::endl;
+    }
+
+    // Apply physics-based collision response
     ActionResolve_ImpulseBased(a, b);
 }
 
@@ -320,22 +517,34 @@ void CollisionManager::CheckCollisions() {
     // Clear collision markers from previous frame FIRST (before clearing grid)
     spatialGrid.ClearCollisionMarkers();
 
-    auto& physicsComps = m_registry.Get_ComponentMap<Physics::PhysicsComponent>();
+    auto& colliders = m_registry.Get_ComponentMap<ColliderComponent>();
 
     // Clear and rebuild spatial grid
     spatialGrid.Clear();
 
     // BROAD PHASE: Build spatial grid
-    for (auto& [entity, phyComp] : physicsComps) {
-        if (!phyComp.CollisionActive() || !m_registry.Has_Component<TransformComponent>(entity)) {
+    static int broadPhaseDebug = 0;
+    int insertCount = 0;
+    for (auto& [entity, collider] : colliders) {
+        if (!collider.IsActive() || !m_registry.Has_Component<TransformComponent>(entity)) {
+            if (++broadPhaseDebug % 120 == 0 && entity == 6) {
+                std::cout << "[Collision] Entity 6 (PLAYER) SKIPPED in broad phase! Active="
+                          << collider.IsActive() << " HasTransform="
+                          << m_registry.Has_Component<TransformComponent>(entity) << std::endl;
+            }
             continue;
         }
 
         auto& trans = m_registry.Get_Component<TransformComponent>(entity);
-        phyComp.UpdateHitboxes(trans.pos);
+        collider.UpdateHitboxes(trans.pos);
 
         // Insert into spatial grid
-        spatialGrid.Insert(entity, phyComp.Get_AABB());
+        spatialGrid.Insert(entity, collider.Get_AABB());
+        insertCount++;
+    }
+
+    if (++broadPhaseDebug % 120 == 0) {
+        std::cout << "[Collision] Broad phase: Inserted " << insertCount << " entities into spatial grid" << std::endl;
     }
 
     // NARROW PHASE: Get potential pairs from spatial grid and check them
@@ -348,16 +557,50 @@ void CollisionManager::CheckCollisions() {
         }
 
         // Validate both entities still exist and have required components
-        if (!m_registry.Has_Component<Physics::PhysicsComponent>(a) ||
-            !m_registry.Has_Component<Physics::PhysicsComponent>(b)) {
+        if (!m_registry.Has_Component<ColliderComponent>(a) ||
+            !m_registry.Has_Component<ColliderComponent>(b)) {
             continue;
         }
 
-        auto& compA = m_registry.Get_Component<Physics::PhysicsComponent>(a);
-        auto& compB = m_registry.Get_Component<Physics::PhysicsComponent>(b);
+        auto& colliderA = m_registry.Get_Component<ColliderComponent>(a);
+        auto& colliderB = m_registry.Get_Component<ColliderComponent>(b);
 
-        if (!compA.CollisionActive() || !compB.CollisionActive()) {
+        if (!colliderA.IsActive() || !colliderB.IsActive()) {
             continue;
+        }
+
+        // COLLISION LAYER FILTERING
+        uint32_t layerA = colliderA.GetLayer();
+        //uint32_t maskA = colliderA.GetMask();
+        uint32_t layerB = colliderB.GetLayer();
+        //uint32_t maskB = colliderB.GetMask();
+
+        // Check if layers should collide using bitmask
+        // A should collide with B if: (A's mask & B's layer) OR (B's mask & A's layer)
+        //if (!CollisionLayerManager::Get().ShouldCollide(layerA, maskA, layerB, maskB)) {
+        //    static int filterCount = 0;
+        //    if (++filterCount % 60 == 0) {
+        //        std::cout << "[Collision] FILTERED: Entity " << a << " (layer=0x" << std::hex << layerA
+        //                  << " mask=0x" << maskA << ") vs Entity " << b << " (layer=0x" << layerB
+        //                  << " mask=0x" << maskB << ")" << std::dec << std::endl;
+        //    }
+        //    continue;
+        //}
+        if (!CollisionLayerManager::Get().ShouldCollide(layerA, layerB)) {
+            static int filterCount = 0;
+            if (++filterCount % 60 == 0) {
+                std::cout << "[Collision] FILTERED: Entity " << a << " (layer=0x" << std::hex << layerA
+                    //<< " mask=0x" << maskA 
+                    << ") vs Entity " << b << " (layer=0x" << layerB
+                    //<< " mask=0x" << maskB 
+                    << ")" << std::dec << std::endl;
+            }
+            continue;
+        }
+
+        static int passedFilterCount = 0;
+        if (++passedFilterCount % 60 == 0) {
+            std::cout << "[Collision] PASSED FILTER: Entity " << a << " vs Entity " << b << std::endl;
         }
 
         // Skip wall-wall collisions obviously
@@ -386,24 +629,46 @@ void CollisionManager::CheckCollisions() {
 
         if (!aIsCircle && !bIsCircle) {
             // Rect-Rect
-            hit = CollisionIntersection_RectRect_Static(compA.Get_AABB(), compB.Get_AABB());
+            hit = CollisionIntersection_RectRect_Static(colliderA.Get_AABB(), colliderB.Get_AABB());
         }
         else if (aIsCircle && bIsCircle) {
             // Circle-Circle
-            hit = CollisionIntersection_CC_Static(compA.Get_Circle(), compB.Get_Circle());
+            hit = CollisionIntersection_CC_Static(colliderA.Get_Circle(), colliderB.Get_Circle());
         }
         else {
             // Circle-Rect
             hit = aIsCircle ?
-                CollisionIntersection_CA_Static(compA.Get_Circle(), compB.Get_AABB()) :
-                CollisionIntersection_CA_Static(compB.Get_Circle(), compA.Get_AABB());
+                CollisionIntersection_CA_Static(colliderA.Get_Circle(), colliderB.Get_AABB()) :
+                CollisionIntersection_CA_Static(colliderB.Get_Circle(), colliderA.Get_AABB());
+        }
+
+        static int hitDebug = 0;
+        if (++hitDebug % 60 == 0 && (a == 5 || b == 5)) {
+            std::cout << "[Collision] Entity " << a << " vs " << b << " HIT=" << hit << std::endl;
         }
 
         if (hit) {
-            // Mark cells where collision occurred (intersection region only)
-            spatialGrid.MarkCollisionBetween(compA.Get_AABB(), compB.Get_AABB());
+            static int hitCounter = 0;
+            if (++hitCounter % 60 == 0) {
+                std::cout << "[Collision] HIT DETECTED: Entity " << a << " vs " << b
+                          << " | A.trigger=" << colliderA.IsTrigger()
+                          << " B.trigger=" << colliderB.IsTrigger() << std::endl;
+            }
 
-            CollisionActions(a, b, true);
+            // Mark cells where collision occurred (intersection region only)
+            spatialGrid.MarkCollisionBetween(colliderA.Get_AABB(), colliderB.Get_AABB());
+
+            // Check if either entity is a trigger
+            bool isTrigger = colliderA.IsTrigger() || colliderB.IsTrigger();
+
+            if (isTrigger && hitCounter % 60 == 0) {
+                std::cout << "[Collision] TRIGGER collision, skipping physics response" << std::endl;
+            }
+            else if (hitCounter % 60 == 0) {
+                std::cout << "[Collision] NON-TRIGGER collision, applying physics response" << std::endl;
+            }
+
+            CollisionActions(a, b, true, isTrigger);
         }
     }
 }
@@ -411,3 +676,213 @@ void CollisionManager::CheckCollisions() {
 SpatialGrid* CollisionManager::GetSpatialGrid() {
     return &spatialGrid;
 }
+
+// ============================================================================
+// ColliderComponent string-based layer methods
+// ============================================================================
+
+void ColliderComponent::SetLayer(const std::string& name) {
+    //layerName = name;
+    layerBit = CollisionLayerManager::Get().GetLayerBit(name);
+}
+
+//void ColliderComponent::SetMask(const std::vector<std::string>& names) {
+//    //maskNames = names;
+//    maskBit = 0;
+//    for (const auto& name : names) {
+//        maskBit |= CollisionLayerManager::Get().GetLayerBit(name);
+//    }
+//}
+//
+//void ColliderComponent::SetMask(uint32_t mask) {
+//    maskBit = mask;
+//    //maskNames.clear();
+//
+//    // Convert bits back to names by checking each registered layer
+//    // We need to iterate through all possible bit positions (0-31)
+//    //for (uint32_t i = 0; i < 32; ++i) {
+//    //    uint32_t bit = 1 << i;
+//    //    if (mask & bit) {
+//    //        std::string name = CollisionLayerManager::Get().GetLayerName(bit);
+//    //        if (!name.empty()) {
+//    //            maskNames.push_back(name);
+//    //        }
+//    //    }
+//    //}
+//}
+
+std::string ColliderComponent::Serialize() const {
+    std::string layerName = CollisionLayerManager::Get().GetLayerName(layerBit);
+    //std::vector<std::string> maskNames;
+
+    //for (uint32_t i = 0; i < 32; ++i) {
+    //    uint32_t bit = 1 << i;
+    //    if (maskBit & bit) {
+    //        std::string name = CollisionLayerManager::Get().GetLayerName(bit);
+    //        if (!name.empty()) {
+    //            maskNames.push_back(name);
+    //        }
+    //    }
+    //}
+
+    json j = {
+        {"aabb_minX", aabbhitbox.min.x}, {"aabb_minY", aabbhitbox.min.y},
+        {"aabb_maxX", aabbhitbox.max.x}, {"aabb_maxY", aabbhitbox.max.y},
+        {"aabb_dimX", aabbhitbox.dim.x}, {"aabb_dimY", aabbhitbox.dim.y},
+        {"circle_posX", circlehitbox.pos.x}, {"circle_posY", circlehitbox.pos.y},
+        {"circle_rad", circlehitbox.rad},
+        {"layer", layerName}, 
+        //{"mask", maskNames},
+        {"isTrigger", isTrigger}, {"isActive", isActive}
+    };
+    return j.dump();
+}
+
+ColliderComponent ColliderComponent::DeSerialize(Entity eID, const std::string& data) {
+    (void)eID;
+    if (data.empty()) return ColliderComponent();
+
+    json j = json::parse(data);
+
+    AABB aabb;
+    aabb.min = {j.value("aabb_minX", 0.f), j.value("aabb_minY", 0.f)};
+    aabb.max = {j.value("aabb_maxX", 0.f), j.value("aabb_maxY", 0.f)};
+    aabb.dim = {j.value("aabb_dimX", 0.f), j.value("aabb_dimY", 0.f)};
+
+    Circle circle;
+    circle.pos = {j.value("circle_posX", 0.f), j.value("circle_posY", 0.f)};
+    circle.rad = j.value("circle_rad", 0.f);
+
+    ColliderComponent comp(aabb, circle, j.value("isActive", true));
+    comp.isTrigger = j.value("isTrigger", false);
+
+    // Load layer/mask names and convert to bits
+    if (j.contains("layer")) {
+        comp.SetLayer(j["layer"].get<std::string>());
+    }
+    //if (j.contains("mask")) {
+    //    comp.SetMask(j["mask"].get<std::vector<std::string>>());
+    //}
+
+    return comp;
+}
+
+// ============================================================================
+// Setup collision layers based on TagComponent
+// ============================================================================
+
+//void CollisionManager::SetupCollisionLayers() {
+//    Registry& reg = Registry::Get();
+//    EntityManager& em = EntityManager::get();
+//
+//    int setupCount = 0;
+//
+//    // Setup collision layers for all entities with both TagComponent and ColliderComponent
+//    // Note: Migration from old Physics format is handled in PhysicsComponent::DeSerialize
+//    for (Entity entity = 0; entity < em.maxEntities(); ++entity) {
+//        if (!em.isAlive(entity)) continue;
+//        if (!reg.Has_Component<TagComponent>(entity)) continue;
+//        if (!reg.Has_Component<ColliderComponent>(entity)) continue;
+//
+//        auto& tag = reg.Get_Component<TagComponent>(entity);
+//        auto& collider = reg.Get_Component<ColliderComponent>(entity);
+//
+//        // Preserve custom collision values that were set in the editor
+//        // But ALWAYS fix isTrigger and isStatic to ensure collision works
+//        bool hasCustomLayers = (collider.GetLayer() != 0 && collider.GetMask() != 0);
+//
+//        if (hasCustomLayers) {
+//            // Entity has custom layer/mask set in editor, preserve them
+//            // But still fix trigger and static flags
+//            collider.SetTrigger(false);
+//            if (reg.Has_Component<Physics::PhysicsComponent>(entity)) {
+//                auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
+//                if (tag.tag == T_PLAYER || tag.tag == T_ENEMY) {
+//                    phys.SetStatic(false);  // Players and enemies must move
+//                }
+//            }
+//            continue;  // Skip resetting layer/mask
+//        }
+//
+//        setupCount++;
+//
+//        // Set layer and mask based on tag (only for entities with no layer/mask set)
+//        switch (tag.tag) {
+//            case T_PLAYER:
+//                collider.SetLayer("Player");
+//                collider.SetMask({"Enemy", "Projectile", "Wall"});
+//                collider.SetTrigger(false);  // Player needs physics response
+//                // Also fix physics component if it exists
+//                if (reg.Has_Component<Physics::PhysicsComponent>(entity)) {
+//                    auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
+//                    phys.SetStatic(false);  // Player must NOT be static
+//                }
+//                break;
+//
+//            case T_ENEMY:
+//                collider.SetLayer("Enemy");
+//                collider.SetMask({"Player", "Projectile", "Wall"});
+//                collider.SetTrigger(false);  // Enemy needs physics response
+//                // Also fix physics component if it exists
+//                if (reg.Has_Component<Physics::PhysicsComponent>(entity)) {
+//                    auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
+//                    phys.SetStatic(false);  // Enemy must NOT be static
+//                }
+//                break;
+//
+//            case T_PROJECTILE:
+//                collider.SetLayer("Projectile");
+//                // I think we can change this later on so that we have player projectiles and enemy projectiles?
+//                collider.SetMask({"Player", "Enemy", "Wall"});
+//                collider.SetTrigger(false);  // Projectile needs physics response
+//                break;
+//
+//            case T_WALL:
+//                collider.SetLayer("Wall");
+//                collider.SetMask({"Player", "Enemy", "Projectile"});
+//                collider.SetTrigger(false);  // Wall needs physics response
+//                break;
+//
+//            case T_OBJECT:
+//                // Regular objects collide with everything
+//                collider.SetLayer("Player");
+//                collider.SetMask({"Player", "Enemy", "Projectile", "Wall"});
+//                break;
+//
+//            default:
+//                // Collide with everything by default
+//                collider.SetLayer("Player");
+//                collider.SetMask({"Player", "Enemy", "Projectile", "Wall"});
+//                break;
+//        }
+//    }
+//
+//    std::cout << "[Collision] Setup layers for " << setupCount << " entities" << std::endl;
+//
+//    // Debug: Print all entity collision layers after setup
+//    std::cout << "\n[Collision] Final entity collision layers:\n";
+//    for (Entity entity = 0; entity < em.maxEntities(); ++entity) {
+//        if (!em.isAlive(entity)) continue;
+//        if (!reg.Has_Component<ColliderComponent>(entity)) continue;
+//
+//        auto& collider = reg.Get_Component<ColliderComponent>(entity);
+//        std::string tagName = "UNKNOWN";
+//        if (reg.Has_Component<TagComponent>(entity)) {
+//            auto& tag = reg.Get_Component<TagComponent>(entity);
+//            switch(tag.tag) {
+//                case T_PLAYER: tagName = "PLAYER"; break;
+//                case T_ENEMY: tagName = "ENEMY"; break;
+//                case T_WALL: tagName = "WALL"; break;
+//                case T_PROJECTILE: tagName = "PROJECTILE"; break;
+//                case T_OBJECT: tagName = "OBJECT"; break;
+//                default: tagName = "OTHER"; break;
+//            }
+//        }
+//
+//        std::cout << "  Entity " << entity << " (" << tagName << "): layer=0x"
+//                  << std::hex << collider.GetLayer() << " mask=0x" << collider.GetMask()
+//                  << std::dec << " active=" << (collider.IsActive() ? "YES" : "NO")
+//                  << " trigger=" << (collider.IsTrigger() ? "YES" : "NO") << "\n";
+//    }
+//    std::cout << std::endl;
+//}

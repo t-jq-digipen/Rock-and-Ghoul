@@ -47,6 +47,7 @@
 #include "EnemySystem.h"
 #include "PhysicsSystem.h"
 #include "MonoSystem.h"
+#include "CollisionManager.h"
 
 #include "BehaviourComponent.h"
 #include "GameScripts.h"
@@ -65,8 +66,17 @@ void CoreEngine::AddSystem(ISystem* sys) {
 }
 
 void CoreEngine::Initialize() {
-    // --- SYSTEMS ---
 
+    // --- COLILI LAYERS ---
+    CollisionLayerManager::Get().RegisterLayer("Player");
+    CollisionLayerManager::Get().RegisterLayer("Enemy");
+    CollisionLayerManager::Get().RegisterLayer("Projectile");
+    CollisionLayerManager::Get().RegisterLayer("Wall");
+
+    CollisionLayerManager::Get().LoadCollisionSettings();
+    //CollisionLayerManager::Get().SaveCollisionSettings();
+
+    // --- SYSTEMS ---
     AddSystem(&LogicSystem::Get());
     AddSystem(new MovementSystem());
     AddSystem(new PlayerSystem());
@@ -105,6 +115,9 @@ void CoreEngine::Initialize() {
     registry.Register_Component<Physics::PhysicsComponent>("Physics", { "Transform" });
     std::cout << "REGISTRY | REGISTERED PHYSICS COMPONENT\n";
 
+    registry.Register_Component<ColliderComponent>("Collider", { "Transform" });
+    std::cout << "REGISTRY | REGISTERED COLLIDER COMPONENT\n";
+
     registry.Register_Component<AudioComponent>("Audio");
     std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";
 
@@ -132,7 +145,6 @@ void CoreEngine::Initialize() {
     registry.Register_Component<MonoScriptComponent>("MonoScriptComponent");
 
     registry.Register_Component<RenderLayerComponent>("RenderLayer");
-    std::cout << "REGISTRY | REGISTERED RENDERLAYER COMPONENT\n";
     // --- COMPONENTS END ---
 
     for (auto s : systems) s->Initialize();

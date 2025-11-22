@@ -38,6 +38,7 @@ public:
      * This constant holds the full path to the settings.json file.
      */
     static const std::string SETTINGS_FILE;
+    static const std::string COLLISIONSETTINGS_FILE;
 
     /**
      * @brief The absolute path to the Level 1 scene data file.

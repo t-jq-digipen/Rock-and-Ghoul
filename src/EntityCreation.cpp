@@ -58,20 +58,8 @@ Entity LoadEntity(const std::string& entityName, float x, float y) {
 //    return LoadEntity("Player", x, y);
 //}
 Entity Create_Player(float const& x, float const& y) {
-    Entity patrol = LoadEntity("Player",x, y);
-    BehaviourComponent bc;
-    //bc.scriptName = "PatrolEnemy";
-    //bc.started = false;
-
-    //bc.scriptName = "GhoulScript";
-    //bc.started = false;
-
-    bc.AddScript("GhoulScript");
-    /*bc.scriptIDs = { ScriptID::PATROL_ENEMY, ScriptID::GHOUL };
-    bc.startedStates = { false, false };*/
-    Registry::Get().Add_Component<BehaviourComponent>(patrol, bc);
-    
-    return patrol;
+    // Load from Rock.json instead of Player.json (Rock is the actual player entity)
+    return LoadEntity("Rock", x, y);
 }
 Entity Create_Waffle(float const& x, float const& y) {
     return LoadEntity("Waffle", x, y);
@@ -79,11 +67,9 @@ Entity Create_Waffle(float const& x, float const& y) {
 Entity Create_Ghoul(float const& x, float const& y) {
     Entity ghoul = LoadEntity("ghoul", x, y);
 
-    // Add behaviour component
+    // Add behaviour component with the ManfredEnemy script
     BehaviourComponent bc;
-    bc.scriptName = "ManfredEnemy";
-    bc.started = false;
-
+    bc.AddScript("ManfredEnemy");
     Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
 
     return ghoul;
@@ -149,8 +135,8 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
     int skippedCount = 0;
 
     // ========== Player ==========
-    if (shouldGenerate("Player.json")) {
-        std::cout << "Generating Player.json..." << std::endl;
+    if (shouldGenerate("Rock.json")) {
+        std::cout << "Generating Rock.json..." << std::endl;
 
         try {
             Entity player = Registry::Get().Create_Entity();
@@ -159,8 +145,12 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
             Circle circle = { {0, 0}, 200.f };
-            Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-            Registry::Get().Add_Component<Physics::PhysicsComponent>(player, temp);
+            Registry::Get().Add_Component<Physics::PhysicsComponent>(player, Physics::PhysicsComponent(0.015f, 500.f, false));
+
+            ColliderComponent collider(aabb, circle, true);
+            collider.SetLayer("Player");
+            //collider.SetMask({"Enemy", "Projectile", "Wall"});
+            Registry::Get().Add_Component<ColliderComponent>(player, collider);
 
             Registry::Get().Add_Component<InputComponent>(player, InputComponent{ CS_WASD });
             Registry::Get().Add_Component<TagComponent>(player, TagComponent{ T_PLAYER });
@@ -195,12 +185,12 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             playerAudio.maxDistance = 100.0f;
             Registry::Get().Add_Component<AudioComponent>(player, playerAudio);
 
-            if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Player.json", player)) {
-                std::cout << "Player.json saved successfully" << std::endl;
+            if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Rock.json", player)) {
+                std::cout << "Rock.json saved successfully" << std::endl;
                 generatedCount++;
             }
             else {
-                std::cerr << "Failed to save Player.json" << std::endl;
+                std::cerr << "Failed to save Rock.json" << std::endl;
             }
 
             Registry::Get().Remove_Entity(player);
@@ -224,8 +214,12 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
             Circle circle = { {0, 0}, 200.f };
-            Physics::PhysicsComponent temp(0.015f, true, aabb, circle);
-            Registry::Get().Add_Component<Physics::PhysicsComponent>(waffle, temp);
+            Registry::Get().Add_Component<Physics::PhysicsComponent>(waffle, Physics::PhysicsComponent(0.015f, 500.f, false));
+
+            ColliderComponent waffleCollider(aabb, circle, true);
+            waffleCollider.SetLayer("Player");
+            //waffleCollider.SetMask({"Enemy", "Projectile", "Wall"});
+            Registry::Get().Add_Component<ColliderComponent>(waffle, waffleCollider);
 
             Registry::Get().Add_Component<InputComponent>(waffle, InputComponent{ CS_IJKL });
             Registry::Get().Add_Component<TagComponent>(waffle, TagComponent{ T_OBJECT });
@@ -273,8 +267,12 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
             Circle circle = { {0, 0}, 200.f };
-            Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
-            Registry::Get().Add_Component<Physics::PhysicsComponent>(rect, phys);
+            Registry::Get().Add_Component<Physics::PhysicsComponent>(rect, Physics::PhysicsComponent(0.015f, 500.f, false));
+
+            ColliderComponent rectCollider(aabb, circle, true);
+            rectCollider.SetLayer("Player");
+            //rectCollider.SetMask({"Enemy", "Projectile", "Wall"});
+            Registry::Get().Add_Component<ColliderComponent>(rect, rectCollider);
 
             // Registry::Get().Add_Component<ShapeComponent>(rect, ShapeComponent{ SHAPE_RECTANGLE, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
             Registry::Get().Add_Component<InputComponent>(rect, InputComponent{ CS_WASD });
@@ -310,8 +308,12 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
             Circle circle = { {0, 0}, 100.f };
-            Physics::PhysicsComponent phys(0.015f, true, aabb, circle);
-            Registry::Get().Add_Component<Physics::PhysicsComponent>(circle_ent, phys);
+            Registry::Get().Add_Component<Physics::PhysicsComponent>(circle_ent, Physics::PhysicsComponent(0.015f, 500.f, false));
+
+            ColliderComponent circleCollider(aabb, circle, true);
+            circleCollider.SetLayer("Player");
+            //circleCollider.SetMask({"Enemy", "Projectile", "Wall"});
+            Registry::Get().Add_Component<ColliderComponent>(circle_ent, circleCollider);
 
             //Registry::Get().Add_Component<ShapeComponent>(circle_ent, ShapeComponent{ SHAPE_CIRCLE, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} });
             Registry::Get().Add_Component<InputComponent>(circle_ent, InputComponent{ CS_ARROWS });
@@ -348,8 +350,8 @@ Entity Create_Wall(float x, float y, float width, float height) {
     Registry::Get().Add_Component<TransformComponent>(wall, TransformComponent{ {x, y}, {width, height} });
     AABB aabb = Create_AABB({ x, y }, { width, height });
     Circle circle = { {x, y}, 0.0f }; // zero radius
-    Physics::PhysicsComponent phys(0.0f, true, aabb, circle, true);
-    Registry::Get().Add_Component<Physics::PhysicsComponent>(wall, phys);
+    Registry::Get().Add_Component<Physics::PhysicsComponent>(wall, Physics::PhysicsComponent(0.0f, 500.f, true));
+    Registry::Get().Add_Component<ColliderComponent>(wall, ColliderComponent(aabb, circle, true));
 
     Registry::Get().Add_Component<TagComponent>(wall, TagComponent{ T_WALL });
     return wall;

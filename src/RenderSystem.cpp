@@ -653,28 +653,31 @@ void RenderSystem::Update(float dt) {
     }
     }
 
-    // Debug drawing for physics colliders / velocities
-    if (ImGuiSystem::showColliders || ImGuiSystem::showVelocity) {
-        for (auto& [entID, physics] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
-
+    // Debug drawing for colliders
+    if (ImGuiSystem::showColliders) {
+        for (auto& [entID, collider] : m_registry.Get_ComponentMap<ColliderComponent>()) {
             if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
             auto& t = m_registry.Get_Component<TransformComponent>(entID);
 
-            if (ImGuiSystem::showVelocity) {
-                DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
-            }
+            DebugDraw::DrawAABB(collider.Get_AABB(), renderInstance);
 
-            if (ImGuiSystem::showColliders) {
-                DebugDraw::DrawAABB(physics.Get_AABB(), renderInstance);
+            //if (m_registry.Has_Component<ShapeComponent>(entID)) {
+            //    auto& shape = m_registry.Get_Component<ShapeComponent>(entID);
+            //    if (shape.shape == SHAPE_CIRCLE)
+            //        DebugDraw::DrawCircleCollider(collider.Get_Circle(), renderInstance);
+            //}
 
-                //if (m_registry.Has_Component<ShapeComponent>(entID)) {
-                //    auto& shape = m_registry.Get_Component<ShapeComponent>(entID);
-                //    if (shape.shape == SHAPE_CIRCLE)
-                //        DebugDraw::DrawCircleCollider(physics.Get_Circle(), renderInstance);
-                //}
+            DebugDraw::DrawHotspot(t.pos, renderInstance);
+        }
+    }
 
-                DebugDraw::DrawHotspot(t.pos, renderInstance);
-            }
+    // Debug drawing for velocities
+    if (ImGuiSystem::showVelocity) {
+        for (auto& [entID, physics] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>()) {
+            if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
+            auto& t = m_registry.Get_Component<TransformComponent>(entID);
+
+            DebugDraw::DrawVelocity(entID, t, renderInstance, dt);
         }
     }
 

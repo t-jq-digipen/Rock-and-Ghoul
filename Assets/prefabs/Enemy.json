@@ -2,11 +2,12 @@
     "entities": [
         {
             "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":0.0,\"aabb_maxY\":0.0,\"aabb_minX\":0.0,\"aabb_minY\":0.0,\"circle_posX\":0.0,\"circle_posY\":0.0,\"circle_rad\":50.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"mask\":[\"Player\",\"Projectile\",\"Wall\"]}",
                 "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                 "Input": "{\"scheme\":1}",
-                "Physics": "{\"aabb\":{\"centerX\":0.0,\"centerY\":0.0,\"dimX\":200.0,\"dimY\":200.0},\"circle\":{\"posX\":0.0,\"posY\":0.0,\"rad\":200.0},\"decay\":0.014999999664723873,\"isStatic\":false,\"mass\":1.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0,\"willCollide\":true}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
                 "Sprite": "{\"animated\":false,\"scaleX\":0.10000000149011612,\"scaleY\":0.10000000149011612,\"texturePath\":\"../Assets/Ghoul_2048px.png\"}",
-                "Tag": "{\"tagID\":0}",
+                "Tag": "{\"tagID\":1}",
                 "Transform": "{\"posX\":0.0,\"posY\":0.0,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
             },
             "name": "Enemy"

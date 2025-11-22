@@ -2,7 +2,7 @@
  * @file		Physics.h
  * @author		Tan Jun Quan | t.junquan@digipen.edu
  * @co-author	Yasmin Tazi	 | yasmin.t@digipen.edu
- * @date		30 OCT 2025
+ * @date		19 NOV 2025
  *
  * @brief	Physics component for ECS
  *
@@ -58,12 +58,13 @@ namespace Physics {
 	/**
 	 * @brief Physics component for an entity.
 	 *
-	 * Stores velocity, hitboxes, and applied forces. Responsible for:
+	 * Stores velocity and applied forces. Responsible for:
 	 * - Updating velocity with damping and applied forces.
-	 * - Managing collision state.
-	 * - Synchronizing hitboxes with entity position.
+	 * - Managing physical properties (mass, friction, restitution).
 	 *
-	 * ForceList is now PhysicsComponent
+	 * NOTE: Collision geometry and layer filtering moved to ColliderComponent.
+	 * This allows entities to have physics without collision (ghost particles)
+	 * or collision without physics (static triggers).
 	 */
 	class PhysicsComponent {
 		// Movement
@@ -71,12 +72,6 @@ namespace Physics {
 		Vec2 acceleration;
 		float decay;
 		float maxSpeed;
-
-		// Collision properties
-		bool isStatic;
-		bool willCollide;
-		AABB aabbhitbox;
-		Circle circlehitbox;
 
 		// Force management (taken from ForceList)
 		std::vector<ForceComp> forces;
@@ -86,14 +81,12 @@ namespace Physics {
 		float restitution;
 		float friction;
 
-		// Collision tracking
+		// Static/dynamic
+		bool isStatic;
+
+		// Collision tracking (for ground detection, etc.)
 		bool onGround;
 		int collisionFrameCount; // prevents jitter effect
-
-		// Filters
-		uint32_t layerBit;	// Which layer entity belongs to
-		uint32_t maskBit;	// Which layers it can collide with
-		bool isTrigger;		// If true, ONLY generate event but skip physics response
 
 		void UpdateForces(float dt);
 		void ApplyDamping(float dt);
@@ -101,7 +94,7 @@ namespace Physics {
 
 	public:
 		PhysicsComponent();
-		PhysicsComponent(float decayval, bool solid, AABB& aabbref, Circle& circleref, bool makeStatic = false);
+		PhysicsComponent(float decayval, float maxSpd = 500.f, bool makeStatic = false);
 		PhysicsComponent(const PhysicsComponent& other) = default;
 
 		// Force management
@@ -112,28 +105,7 @@ namespace Physics {
 
 		// Update methods
 		void Update(float dt);
-		void UpdateHitboxes(Vec2 const& pos);
 		void IntegrateVelocity(Vec2& position, float dt); // Proper time-based integration
-
-		// Collision setters/getters
-		void Set_Collision(bool set);
-		const bool& CollisionActive() const;
-
-		// Hitbox setters/getters
-		void Set_AABB(AABB const& newAABB);
-		void Set_Circle(Circle const& newCircle);
-		const AABB& Get_AABB() const;
-		const Circle& Get_Circle() const;
-
-		// Filter setters/getters
-		void SetLayer(uint32_t bit);
-		void SetLayer(const std::string& name);
-		void SetMask(uint32_t bitmask);
-		void SetMask(const std::vector<std::string>& names);
-		void SetTrigger(bool trigger);
-		uint32_t GetLayer();
-		uint32_t GetMask();
-		bool IsTrigger();
 
 		// Velocity control
 		const Vec2& Get_Vel() const;
@@ -172,7 +144,5 @@ namespace Physics {
 
 		// Editor
 		Editor::ComponentData EditorData();
-		AABB& Get_AABB() { return aabbhitbox; }
-		Circle& Get_Circle() { return circlehitbox; }
 	};
 }
