@@ -33,6 +33,8 @@ static CollisionManager collisionManager;
 //ComponentManager<PhysicsComponent>& physicsManager;
 void PhysicsSystem::Initialize() {
     std::cout << "PhysicsSystem Initialized!\n";
+
+    CollisionLayerManager::Get().LoadCollisionSettings();
 }
 void PhysicsSystem::Update(float dt) {
     // dt is now fixedDt that is passed from CoreEngine
