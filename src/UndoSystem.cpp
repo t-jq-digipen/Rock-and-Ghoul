@@ -16,7 +16,6 @@
 #include "Registry.h"
 #include "Physics.h"
 #include <iostream>
-
 UndoSystem& UndoSystem::Get()
 {
     static UndoSystem instance;
@@ -193,11 +192,11 @@ void UndoSystem::Undo()
         t.scale.x = a.before.scaleX;
         t.scale.y = a.before.scaleY;
 
-        // Keep physics hitboxes in sync
-        if (reg.Has_Component<Physics::PhysicsComponent>(e))
+        // Keep collider hitboxes in sync
+        if (reg.Has_Component<ColliderComponent>(e))
         {
-            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(e);
-            phys.UpdateHitboxes(t.pos);
+            auto& col = reg.Get_Component<ColliderComponent>(e);
+            col.UpdateHitboxes(t.pos);
         }
 
         std::cout << "[Undo] Undo MODIFY -> restored transform for entity " << e << "\n";

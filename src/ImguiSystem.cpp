@@ -58,11 +58,10 @@
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
 #include "ImGuizmo.h"
-#include "UndoSystem.h"
 
-// ========================================================
-// File-Local Static Variables (Editor State)
-// ========================================================
+ // ========================================================
+ // File-Local Static Variables (Editor State)
+ // ========================================================
 
 static bool isPlacingPrefab = false; //the mouse prefab spawner
 static bool isDraggingEntity = false; //drag handles
@@ -94,7 +93,6 @@ Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 
 static ImGuizmo::OPERATION gizmoOperation = ImGuizmo::TRANSLATE;
 static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
-static bool s_gizmoWasUsing = false;
 // ========================================================
 // Anonymous Namespace
 // ========================================================
@@ -120,7 +118,7 @@ namespace
         //loops through all files and folders in the asset directory subdirectories
         for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
         {
-            if (!entry.is_regular_file()) 
+            if (!entry.is_regular_file())
                 continue; //skips folder 
             //extension string
             std::string ext = entry.path().extension().string();
@@ -238,18 +236,18 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
         }
     }
     // Physics fallback
-    else if (reg.Has_Component<Physics::PhysicsComponent>(e))
+    else if (reg.Has_Component<ColliderComponent>(e))
     {
-        auto& phys = reg.Get_Component<Physics::PhysicsComponent>(e);
-        AABB a = phys.Get_AABB();
+        auto& col = reg.Get_Component<ColliderComponent>(e);
+        AABB a = col.Get_AABB();
         minW = a.min;
         maxW = a.max;
     }
     else return;
 
-    // Convert world → panel (using your existing Render helper)
-    ImVec2 tl = Render::WorldToPanel(minW, cursor, { w, h });
-    ImVec2 br = Render::WorldToPanel(maxW, cursor, { w, h });
+    // Convert world to panel (using your existing Render helper)
+    ImVec2 tl = Render::GetInstance().WorldToPanel(minW, cursor, { w, h });
+    ImVec2 br = Render::GetInstance().WorldToPanel(maxW, cursor, { w, h });
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
@@ -304,10 +302,10 @@ Entity PickEntityAtWorldPos(const Vec2& world)
                 world.y >= min.y && world.y <= max.y);
         }
 
-        if (!hit && reg.Has_Component<Physics::PhysicsComponent>(e))
+        if (reg.Has_Component<ColliderComponent>(e))
         {
-            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(e);
-            auto a = phys.Get_AABB();
+            auto& col = reg.Get_Component<ColliderComponent>(e);
+            AABB a = col.Get_AABB();
             hit = (world.x >= a.min.x && world.x <= a.max.x &&
                 world.y >= a.min.y && world.y <= a.max.y);
         }
@@ -459,7 +457,7 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         // loop through asset directory to find same basename
         for (auto& entry : fs::directory_iterator(destDir))
         {
-            if (!entry.is_regular_file()) 
+            if (!entry.is_regular_file())
                 continue;
 
             std::string existingName = entry.path().stem().string();
@@ -509,7 +507,6 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         if (ent != INVALID_ENTITY)
         {
             selectedEntity = ent;
-            UndoSystem::Get().RecordAdd(ent);
             std::cout << "[ImGui Drop] Spawned prefab entity " << ent << std::endl;
         }
         else
@@ -531,7 +528,7 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
 
     std::cout << "[ImGui Drop] Unsupported file type: " << ext << std::endl;
 
-   
+
 }
 
 
@@ -587,17 +584,7 @@ void ImGuiSystem::Update(float dt)
 
     if (Input::IsKeyPressed(GLFW_KEY_F1))
         guiEnabled = !guiEnabled;
-    if (guiEnabled && sm.inEditMode)   // must be in editor mode
-    {
-        ImGuiIO& io = ImGui::GetIO();
 
-        // Ctrl+Z
-        if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z))
-        {
-            UndoSystem::Get().Undo();
-            EnsureSelectionValid(); 
-        }
-    }
     if (!guiEnabled) {
         // Fullscreen mode when ImGui is off
         GameViewRect rect;
@@ -668,7 +655,7 @@ void ImGuiSystem::Update(float dt)
         ImGui::DockBuilderDockWindow("Game View", dockspaceID);
         ImGui::DockBuilderFinish(dockspaceID);
     }
-    
+
 
     if (ImGui::Begin("Editor Camera")) {
         if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
@@ -678,7 +665,7 @@ void ImGuiSystem::Update(float dt)
         // minimum size 
         if (size.x > 50 && size.y > 50) {
             ShowEntityCamera(cursor, size);
-            ImGui::Dummy(size); 
+            ImGui::Dummy(size);
         }
         else {
             ImGui::TextDisabled("Panel too small to display");
@@ -705,7 +692,7 @@ void ImGuiSystem::Update(float dt)
     }
     ImGui::End();
 
-    
+
     if (ImGui::Begin("Entity Editor + Prefabs")) {
         if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         // MakeNeaterNextTime
@@ -716,7 +703,6 @@ void ImGuiSystem::Update(float dt)
 
             // Store editor name
             m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
-            UndoSystem::Get().RecordAdd(newEntity);
 
         }
 
@@ -738,19 +724,12 @@ void ImGuiSystem::Update(float dt)
                     ++it;
             }
 
-            Entity newEntity = reg.Load_Entity(src);
-            if (newEntity != INVALID_ENTITY)
-            {
-                selectedEntity = newEntity;
-                UndoSystem::Get().RecordAdd(newEntity);
-            }
+            reg.Load_Entity(src);
         }
 
         ImGui::SameLine();
         if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
         {
-            SavedEntity snapshot = m_registry.Save_Entity(selectedEntity);
-            UndoSystem::Get().RecordRemove(snapshot);
             m_registry.Remove_Entity(selectedEntity);
             selectedEntity = INVALID_ENTITY;
         }
@@ -769,7 +748,7 @@ void ImGuiSystem::Update(float dt)
         ShowPrefabControls();      //prefabs
 
         if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
-        
+
     }
     ImGui::End();
 
@@ -778,10 +757,10 @@ void ImGuiSystem::Update(float dt)
         if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         ShowAssetPreviewWindow();
         if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
-       
+
     }
     ImGui::End();
-    
+
 
     // game view panel
     if (ImGui::Begin("Game View")) {
@@ -806,7 +785,7 @@ void ImGuiSystem::Update(float dt)
         GLuint texID = renderer.GetSceneTexture();
 
         // show it
-        ImGui::Image( (ImTextureID)(intptr_t)texID, ImVec2(newWidth, newHeight), ImVec2(0, 1), ImVec2(1, 0) );
+        ImGui::Image((ImTextureID)(intptr_t)texID, ImVec2(newWidth, newHeight), ImVec2(0, 1), ImVec2(1, 0));
 
         DrawSelectionOutline(selectedEntity, cursor, newWidth, newHeight);
 
@@ -828,7 +807,7 @@ void ImGuiSystem::Update(float dt)
             // -------------------------------------------------------
             // 1. Compose model matrix from ECS transform
             // -------------------------------------------------------
-            glm::mat4 model = glm::translate(glm::mat4(1.0f),glm::vec3(t.pos.x, t.pos.y, 0.0f));
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(t.pos.x, t.pos.y, 0.0f));
 
             model = glm::rotate(model, glm::radians(t.rot), glm::vec3(0, 0, 1));
             model = glm::scale(model, glm::vec3(t.scale.x, t.scale.y, 1.0f));
@@ -852,12 +831,7 @@ void ImGuiSystem::Update(float dt)
                 gizmoMode,
                 glm::value_ptr(model)
             );
-            bool usingGizmo = ImGuizmo::IsUsing();
 
-            if (usingGizmo && !s_gizmoWasUsing)
-            {
-                UndoSystem::Get().BeginModify(selectedEntity, t);
-            }
             // -------------------------------------------------------
             // 4. Apply result
             // -------------------------------------------------------
@@ -931,26 +905,20 @@ void ImGuiSystem::Update(float dt)
                 }
 
                 // Update hitbox
-                if (reg.Has_Component<Physics::PhysicsComponent>(selectedEntity))
+                if (reg.Has_Component<ColliderComponent>(selectedEntity))
                 {
-                    auto& phys = reg.Get_Component<Physics::PhysicsComponent>(selectedEntity);
-                    phys.UpdateHitboxes(t.pos);
+                    auto& col = reg.Get_Component<ColliderComponent>(selectedEntity);
+                    col.UpdateHitboxes(t.pos);
                 }
             }
             else
             {
-                if (s_gizmoWasUsing)
-                {
-                    UndoSystem::Get().EndModify(selectedEntity, t);
-                }
-
                 // Reset delta when gizmo released
                 lastScale = glm::vec3(1.0f);
             }
-            s_gizmoWasUsing = usingGizmo;
         }
 
-       
+
         if (!isPlaying && ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
             if (!ImGuizmo::IsUsing())
@@ -1036,30 +1004,33 @@ void ImGuiSystem::Update(float dt)
                 reg.Add_Component<RenderComponent>(e, rc);
                 // reg.Add_Component<Sprite::SpriteComponent>(e, sprite);
 
-                // Physics
-                Physics::PhysicsComponent phys;
-                phys.SetStatic(false);
-                reg.Add_Component<Physics::PhysicsComponent>(e, phys);
+                // Physics (AABB sized to sprite; SetStatic(false))
+                ColliderComponent col;
 
-                // Collider (AABB sized to sprite)
-                Vec2 size = sprite.Get_Scale();
+                // Build an AABB around current transform using sprite size
+                Vec2 size = sprite.Get_Scale();         // your Sprite API's "size"
                 Vec2 half = size * 0.5f;
                 AABB aabb;
                 aabb.min = t.pos - half;
                 aabb.max = t.pos + half;
-                aabb.dim = size;
 
-                Circle circle = {t.pos, 0.f};
-                ColliderComponent collider(aabb, circle, true);
-                collider.UpdateHitboxes(t.pos);
-                reg.Add_Component<ColliderComponent>(e, collider);
+                // Build AABB
+                col.Set_AABB(aabb);
+                col.SetActive(true);
+                col.SetTrigger(false);
+
+                reg.Add_Component<ColliderComponent>(e, col);
+
+                // Sync hitboxes
+                auto& cRef = reg.Get_Component<ColliderComponent>(e);
+                cRef.UpdateHitboxes(t.pos);
 
                 // Optional: give a friendly name
                 reg.Get_EntityNameMap()[e] = std::filesystem::path(texPath).stem().string();
 
                 // Select it
                 ImGuiSystem::selectedEntity = e;
-                UndoSystem::Get().RecordAdd(e);
+
                 std::cout << "[Editor] Spawned image entity at (" << world.x << ", " << world.y << ")\n";
             }
             ImGui::EndDragDropTarget();
@@ -1079,11 +1050,7 @@ void ImGuiSystem::Update(float dt)
         //}
         if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selectedEntity != INVALID_ENTITY)
         {
-            Registry& reg = Registry::Get();
-
-            SavedEntity snapshot = reg.Save_Entity(selectedEntity);
-            UndoSystem::Get().RecordRemove(snapshot);
-            reg.Remove_Entity(selectedEntity);
+            Registry::Get().Remove_Entity(selectedEntity);
             std::cout << "[Editor] Deleted entity " << selectedEntity << " via Delete key\n";
             selectedEntity = INVALID_ENTITY;
         }
@@ -1115,7 +1082,7 @@ void ImGuiSystem::Update(float dt)
 
                 //ndc to world
                 Camera& cam = Camera::GetInstance();
-                
+
                 Vec2 world = cam.NDCToWorld({ ndcX, ndcY });
                 float worldX = world.x;
                 float worldY = world.y;
@@ -1126,7 +1093,6 @@ void ImGuiSystem::Update(float dt)
                 if (newEnt != INVALID_ENTITY)
                 {
                     selectedEntity = newEnt;
-                    UndoSystem::Get().RecordAdd(newEnt);
                     std::cout << "[Editor] Spawned prefab at (" << worldX << ", " << worldY << ")\n";
                 }
                 else
@@ -1159,7 +1125,7 @@ void ImGuiSystem::Render() {
 }
 
 void ImGuiSystem::ShowEngineDebugWindow() {
-   
+
     CoreEngine& engine = CoreEngine::GetInstance();
 
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
@@ -1237,6 +1203,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
         }
     }
 
+
     ImGui::Text("AABB Colliders: %d / %d active", activeColliders, totalColliders);
     ImGui::Checkbox("Show Colliders", &showColliders);
     ImGui::Checkbox("Show Velocity", &showVelocity);
@@ -1267,10 +1234,8 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
             naiveChecks,
             (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
     }
-    ImGui::Separator();
-    ShowLayerCollisionMatrix();
-    ImGui::Separator();
-    if (!gsm.isPaused && !gsm.inEditMode) ImGui::BeginDisabled();
+
+
     ImGui::Text("Scene Management:");
     ShowSceneBrowser();
 
@@ -1352,7 +1317,7 @@ void ImGuiSystem::ShowSceneBrowser()
     }
     if (ImGui::BeginPopupModal("Delete Scene Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::Text("Are you sure you want to delete scene '%s'?",pendingDeleteScene.c_str());
+        ImGui::Text("Are you sure you want to delete scene '%s'?", pendingDeleteScene.c_str());
         ImGui::Separator();
 
         if (ImGui::Button("Yes, Delete", ImVec2(130, 0)))
@@ -1528,7 +1493,6 @@ void ImGuiSystem::ShowInspectorWindow()
         if (compName == "Render")
         {
             RenderComponent& rendercomp = m_registry.Get_Component<RenderComponent>(selectedEntity);
-
             if (ImGui::TreeNode(compName.c_str()))
             {
                 // For m_type and m_layer
@@ -1580,14 +1544,14 @@ void ImGuiSystem::ShowInspectorWindow()
                 {
                     ImGui::SeparatorText("Sprite");
 
-                    if (typeChanged) { 
+                    if (typeChanged) {
                         if (startRenderType == RT_SPRITESHEET) {
-                            Sprite::SpriteComponent temp = rendercomp.GetSpriteSheet().Sprite(); 
+                            Sprite::SpriteComponent temp = rendercomp.GetSpriteSheet().Sprite();
                             rendercomp.SetSprite(temp);
                         }
-                        else 
-                        { 
-                            rendercomp.SetRenderType(type); 
+                        else
+                        {
+                            rendercomp.SetRenderType(type);
                         }
                     }
                     Sprite::SpriteComponent& sprite = rendercomp.GetSprite();
@@ -1621,7 +1585,7 @@ void ImGuiSystem::ShowInspectorWindow()
                 {
                     ImGui::SeparatorText("SpriteSheet");
 
-                    if (typeChanged) { 
+                    if (typeChanged) {
                         if (startRenderType == RT_IMAGE) {
                             Sprite::SpriteComponent tempsprite = rendercomp.GetSprite();
                             rendercomp.SetRenderType(type);
@@ -1705,7 +1669,7 @@ void ImGuiSystem::ShowInspectorWindow()
                             grid->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
                         }
                     }
-                    
+
                     // Spritesheet stuff
                     Editor::ComponentData spritesheetdata = spritesheet.EditorData();
                     for (auto& [name, widgetVariant] : spritesheetdata.GetDataMap())
@@ -1825,7 +1789,7 @@ void ImGuiSystem::ShowInspectorWindow()
                 bool disable = behaviourComp.HasScript(selectedScript);
 
                 std::string AddLabel = "Add Script";
-                if (disable) 
+                if (disable)
                 {
                     AddLabel += " (Script already registered!)";
                     ImGui::BeginDisabled();
@@ -1854,88 +1818,6 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
-
-     else if (compName == "Mono Script")
-        {
-            MonoScriptComponent& monoComp =
-                m_registry.Get_Component<MonoScriptComponent>(selectedEntity);
-
-            if (ImGui::TreeNode(compName.c_str()))
-            {
-                MonoSystem& monoSys = MonoSystem::Get();
-
-                // ----------------------------------------------
-                // 1. Build list of available script names
-                // ----------------------------------------------
-                const auto& nameToID = monoSys.GetNameToIDMap();
-
-                if (nameToID.empty())
-                {
-                    ImGui::TextDisabled("No C# scripts registered.");
-                    ImGui::TreePop();
-                    return;
-                }
-
-                std::vector<const char*> items;
-                items.reserve(nameToID.size());
-                for (auto& [name, id] : nameToID)
-                    items.push_back(name.c_str());
-
-                static int currentIndex = 0;
-                std::string selectedScript = items[currentIndex];
-
-                // dropdown
-                if (ImGui::Combo("Select C# Script",
-                    &currentIndex, items.data(), (int)items.size()))
-                {
-                    selectedScript = items[currentIndex];
-                }
-
-                // ----------------------------------------------
-                // 2. Add Script button
-                // ----------------------------------------------
-                bool disableAdd = monoComp.HasScript(selectedScript);
-
-                std::string addLabel = "Add Script";
-                if (disableAdd)
-                {
-                    addLabel += " (already added)";
-                    ImGui::BeginDisabled();
-                }
-
-                if (ImGui::Button(addLabel.c_str()))
-                {
-                    monoComp.AddScript(selectedScript);
-                }
-
-                if (disableAdd) ImGui::EndDisabled();
-
-                ImGui::SeparatorText("Attached Scripts");
-
-                // ----------------------------------------------
-                // 3. Show list of attached scripts
-                // ----------------------------------------------
-                int id = 0;
-                for (MonoScriptID scriptID : monoComp.scriptIDList)
-                {
-                    ImGui::PushID(id++);
-
-                    const std::string& name = monoSys.GetScriptName(scriptID);
-                    ImGui::Text("%s", name.c_str());
-
-                    ImGui::SameLine();
-                    if (ImGui::SmallButton("Remove"))
-                    {
-                        monoComp.RemoveScript(scriptID);
-                    }
-
-                    ImGui::PopID();
-                }
-
-                ImGui::TreePop();
-            }
-        }
-
         // Custom data fields for collider component (collision layers)
         else if (compName == "Collider")
         {
@@ -1989,7 +1871,7 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TextColored(ImVec4(0.7f, 0.9f, 1.0f, 1.0f), "Collision Layers");
 
                 // Create checkboxes for each registered layer
-                std::vector<std::string> layers = {"Player", "Enemy", "Projectile", "Wall"};
+                std::vector<std::string> layers = { "Player", "Enemy", "Projectile", "Wall" };
 
                 ImGui::Text("Collides With:");
 
@@ -2038,7 +1920,8 @@ void ImGuiSystem::ShowInspectorWindow()
 
                         if (isSet) {
                             currentMask |= layerBit;
-                        } else {
+                        }
+                        else {
                             currentMask &= ~layerBit;
                         }
                         //freshCollider.SetMask(currentMask);
@@ -2050,19 +1933,18 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
-
         else
-        if (ImGui::TreeNode(compName.c_str()))
-        {
-            for (auto& [name, widgetVariant] : componentData.GetDataMap())
+            if (ImGui::TreeNode(compName.c_str()))
             {
-                ImGui::PushID(name.c_str());
-                std::visit([&](auto& widget)
-                    { MakeWidget(widget, name); }, widgetVariant);
-                ImGui::PopID();
+                for (auto& [name, widgetVariant] : componentData.GetDataMap())
+                {
+                    ImGui::PushID(name.c_str());
+                    std::visit([&](auto& widget)
+                        { MakeWidget(widget, name); }, widgetVariant);
+                    ImGui::PopID();
+                }
+                ImGui::TreePop();
             }
-            ImGui::TreePop();
-        }
 
         if (selectedEntity != INVALID_ENTITY &&
             m_registry.Has_Component<ColliderComponent>(selectedEntity) &&
@@ -2075,6 +1957,7 @@ void ImGuiSystem::ShowInspectorWindow()
     }
 
 }
+
 
 void ImGuiSystem::ShowAddRemoveComponents()
 {
@@ -2113,7 +1996,7 @@ void ImGuiSystem::ShowAddRemoveComponents()
                 }*/
 
                 m_registry.Remove_Component(eID, typeID);
-                std::cout << "[Editor] Removed component from entity "<< eID << "\n";
+                std::cout << "[Editor] Removed component from entity " << eID << "\n";
             }
         }
         else
@@ -2132,7 +2015,7 @@ void ImGuiSystem::ShowAddRemoveComponents()
 
 void ImGuiSystem::ShowAssetPreviewWindow()
 {
-    ImGui::Text( "Asset Preview Browser");
+    ImGui::Text("Asset Preview Browser");
     ImGui::Separator();
     if (ImGui::Button("Refresh"))
     {
@@ -2172,7 +2055,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 //same as earlier loop thru all
                 for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
                 {
-                    if (!entry.is_regular_file()) 
+                    if (!entry.is_regular_file())
                         continue;
                     std::string path = entry.path().string();
                     std::string ext = entry.path().extension().string();
@@ -2259,7 +2142,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         //remove all existing variants (by stem)
                         for (auto& entry : fs::directory_iterator(assetFolder))
                         {
-                            if (!entry.is_regular_file()) 
+                            if (!entry.is_regular_file())
                                 continue;
                             if (entry.path().stem().string() == newStem)
                             {
@@ -2284,7 +2167,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         g_imageNames.clear();
                         for (auto& entry : fs::recursive_directory_iterator(assetFolder))
                         {
-                            if (!entry.is_regular_file()) 
+                            if (!entry.is_regular_file())
                                 continue;
                             auto ext = entry.path().extension().string();
                             std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
@@ -2375,15 +2258,15 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                             ImGui::PushID(name.c_str());
 
                             //get val
-                            std::string path = data.value("path", "(none)");                           
-                            std::string group = data.value("group", "(none)");                        
+                            std::string path = data.value("path", "(none)");
+                            std::string group = data.value("group", "(none)");
 
                             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.6f, 1.0f));
                             ImGui::Text("%s", name.c_str());
                             ImGui::PopStyleColor();
 
                             ImGui::Indent();
-                            ImGui::Text("Path: %s", path.c_str());                           
+                            ImGui::Text("Path: %s", path.c_str());
                             ImGui::Text("Group: %s", group.c_str());
 
                             //buttons
@@ -2453,7 +2336,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
             const char* categories[] = { "music", "ui", "sfx" };
             ImGui::Combo("Category", &selectedCategory, categories, IM_ARRAYSIZE(categories));
 
-           
+
             ImGui::Separator();
 
             if (pendingAudioImports.empty())
@@ -2559,7 +2442,7 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     const float scale = 0.2f;  // 20% of the real world size (mini-map view)
 
     // --- Center world inside the viewport ---
-    Vec2 offset{0.0f,0.0f};
+    Vec2 offset{ 0.0f,0.0f };
 
     // --- Draw background rectangle for visual clarity ---
     dl->AddRectFilled(
@@ -2581,11 +2464,15 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     {
         float camZoom = cam.GetZoom();
         if (camZoom != 0.f)
-        { camZoom = 1/camZoom; }
+        {
+            camZoom = 1 / camZoom;
+        }
         else
-        { camZoom = 0; }
+        {
+            camZoom = 0;
+        }
         camZoom *= scale;
-        
+
 
         ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (worldWidth * camZoom) / 2,
                        viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - (worldHeight * camZoom) / 2 };
@@ -2598,7 +2485,7 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 
         ImU32 color = inside ? IM_COL32(255, 192, 203, 255) : IM_COL32(255, 0, 255, 255);
 
-        dl->AddRect( min, max, color );
+        dl->AddRect(min, max, color);
         if (inside) { camHover = true; }
     }
 
@@ -2940,7 +2827,7 @@ void ImGuiSystem::ShowPrefabControls()
     static bool triggerPopup = false;
     static std::string pendingDeletePrefab;
     static bool DeletePopup = false;
-    
+
     if (selectedEntity != INVALID_ENTITY)
     {
         static char prefabNameBuf[64] = "";
@@ -3106,7 +2993,7 @@ void ImGuiSystem::ShowPrefabControls()
 
     if (ImGui::BeginPopupModal("Delete Prefab Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::Text("Are you sure you want to delete prefab '%s'?\nThis action cannot be undone.",pendingDeletePrefab.c_str());
+        ImGui::Text("Are you sure you want to delete prefab '%s'?\nThis action cannot be undone.", pendingDeletePrefab.c_str());
         ImGui::Separator();
 
         if (ImGui::Button("Yes, Delete", ImVec2(130, 0)))
@@ -3169,43 +3056,13 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         // Switch to play mode
         sm.EnterPlayMode();
 
-        // Don't call SetupCollisionLayers here - it would reset custom editor values
-        // Instead, just fix any broken static/trigger flags
-        Registry& reg = Registry::Get();
-        EntityManager& em = EntityManager::get();
-        for (Entity entity = 0; entity < em.maxEntities(); ++entity) {
-            if (!em.isAlive(entity)) continue;
-            if (!reg.Has_Component<TagComponent>(entity)) continue;
-
-            auto& tag = reg.Get_Component<TagComponent>(entity);
-
-            // Fix trigger flags for all collision entities
-            if (reg.Has_Component<ColliderComponent>(entity)) {
-                auto& collider = reg.Get_Component<ColliderComponent>(entity);
-                collider.SetTrigger(false);
-            }
-
-            // Fix static flags for players and enemies
-            if (reg.Has_Component<Physics::PhysicsComponent>(entity)) {
-                auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
-                if (tag.tag == T_PLAYER || tag.tag == T_ENEMY) {
-                    phys.SetStatic(false);
-                }
-            }
-        }
-
-        gsm.isPaused = false;
-        gsm.inEditMode = false;
+        // Disable drag handles
         dragEditMode = false;
-        Camera& cam = Camera::GetInstance();
-        cam.SetMode(Camera::Mode::GAME);
-        cam.ResetToCenter();
-        cam.SetZoom(1.15f);
 
         std::cout << "[Editor] Gameplay started.\n";
         isPlaying = true;
     }
-   
+
     if (!inEdit) { ImGui::EndDisabled(); }
 
     ImGui::SameLine(0, spacing);
@@ -3219,50 +3076,9 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         // Switch to editor mode
         sm.EnterEditMode();
 
-        Camera& cam = Camera::GetInstance();
-        cam.SetMode(Camera::Mode::EDITOR);
-        cam.ResetToCenter();
-
-
-        std::cout << "[Camera] Switched to EDITOR mode\n";
-        isPlaying = false;
-        //FILLTHISSHITYASM
-        if (gsm.GetCurrentState() == GameState::GS_LEVEL1)
-        {
-               
-            JsonLoad::ClearAllEntities();
-
-            if (JsonLoad::LoadScene(FilePath::LEVEL1_TEMP_SCENE))
-            {
-                std::cout << "[Editor] Saved level scene, restored temp edits.\n";
-            }
-            else
-            {
-                std::cout << "[Editor] Failed to load temp scene! Falling back to Level1.\n";
-                JsonLoad::LoadScene(FilePath::LEVEL1_SCENE);
-                // Only call SetupCollisionLayers for fallback (old scene without Collider component)
-                // CollisionManager::SetupCollisionLayers();
-                std::cout << "[Collision] Setup collision layers after fallback\n";
-            }
-        }
-        else if (gsm.GetCurrentState() == GameState::GS_LEVEL2)
-        {
-
-            JsonLoad::ClearAllEntities();
-
-            if (JsonLoad::LoadScene(FilePath::LEVEL2_TEMP_SCENE))
-            {
-                std::cout << "[Editor] Saved level scene, restored temp edits.\n";
-            }
-            else
-            {
-                std::cout << "[Editor] Failed to load temp scene! Falling back to Level2.\n";
-                JsonLoad::LoadScene(FilePath::LEVEL2_SCENE);
-                // Only call SetupCollisionLayers for fallback (old scene without Collider component)
-                // CollisionManager::SetupCollisionLayers();
-                std::cout << "[Collision] Setup collision layers after fallback\n";
-            }
-        }
+        // Reload TEMP version of scene
+        JsonLoad::ClearAllEntities();
+        JsonLoad::LoadScene(sm.GetTempScenePath());
 
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
 
@@ -3279,149 +3095,6 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     );
 }
 
-void ImGuiSystem::ShowLayerCollisionMatrix()
-{
-    auto& clm = CollisionLayerManager::Get();
-    const auto& nameMap = clm.GetLayerNameMap();
-
-    if (nameMap.empty()) {
-        ImGui::TextDisabled("No collision layers registered.");
-        return;
-    }
-
-    // Collect + sort layers alphabetically
-    struct Layer { uint32_t bit; std::string name; };
-    std::vector<Layer> layers;
-
-    for (auto& [bit, name] : nameMap)
-        layers.push_back({ bit, name });
-
-    std::sort(layers.begin(), layers.end(),
-        [](auto& a, auto& b) { return a.name < b.name; });
-
-    // Buttons
-    if (ImGui::Button("Reload Collision Settings"))
-        clm.LoadCollisionSettings();
-    ImGui::SameLine();
-    if (ImGui::Button("Save Collision Settings"))
-        clm.SaveCollisionSettings();
-
-    ImGui::Separator();
-    ImGui::Text("Collision Layer Matrix");
-    ImGui::Separator();
-
-    // ------------------------------------------------
-    // 1) Compute column width from max label width
-    // ------------------------------------------------
-    float minColSpacing = 35.0f;  // minimum so boxes not too cramped
-    float colSpacing = minColSpacing;
-
-    for (const auto& l : layers)
-    {
-        float w = ImGui::CalcTextSize(l.name.c_str()).x + 10.0f; // + padding
-        if (w > colSpacing)
-            colSpacing = w;
-    }
-
-    float rowIndent = 120.0f; // space for row labels on the left
-
-    // ------------------------------------------------
-    // 2) Draw header row (top labels)
-    // ------------------------------------------------
-    ImVec2 headerStart = ImGui::GetCursorScreenPos();
-    float xStart = headerStart.x + rowIndent;
-    float headerHeight = ImGui::GetTextLineHeightWithSpacing();
-
-    ImDrawList* dl = ImGui::GetWindowDrawList();
-
-    for (int i = 0; i < (int)layers.size(); i++)
-    {
-        float x = xStart + i * colSpacing;
-
-        // Reserve column cell so layout below doesn't collide
-        ImGui::SetCursorScreenPos(ImVec2(x, headerStart.y));
-        ImGui::InvisibleButton(("##col" + std::to_string(i)).c_str(),
-            ImVec2(colSpacing, headerHeight));
-
-        ImVec2 cellMin = ImGui::GetItemRectMin();
-        ImVec2 cellMax = ImGui::GetItemRectMax();
-
-        // Center horizontal text inside this cell
-        ImVec2 textSize = ImGui::CalcTextSize(layers[i].name.c_str());
-        float centerX = cellMin.x + (cellMax.x - cellMin.x) * 0.5f - textSize.x * 0.5f;
-        float centerY = cellMin.y + (cellMax.y - cellMin.y) * 0.5f - textSize.y * 0.5f;
-
-        dl->AddText(
-            ImVec2(centerX, centerY),
-            ImGui::GetColorU32(ImGuiCol_Text),
-            layers[i].name.c_str()
-        );
-    }
-
-    // Push cursor down below header
-    ImGui::Dummy(ImVec2(0, headerHeight + 5.0f));
-    ImGui::Separator();
-
-    // ------------------------------------------------
-    // 3) Draw lower-triangle checkbox matrix
-    // ------------------------------------------------
-    float rowHeight = ImGui::GetFrameHeightWithSpacing();
-
-    for (int row = 0; row < (int)layers.size(); ++row)
-    {
-        uint32_t rowBit = layers[row].bit;
-
-        // Starting position for this row
-        ImVec2 rowStart = ImGui::GetCursorScreenPos();
-
-        // Row label on the left
-        ImGui::Text("%s", layers[row].name.c_str());
-
-        // Now manually place checkboxes in this row
-        for (int col = 0; col <= row; ++col)
-        {
-            uint32_t colBit = layers[col].bit;
-
-            bool checked = (clm.GetLayerMask(rowBit) & colBit) != 0;
-
-            float x = rowStart.x + rowIndent + col * colSpacing;
-            float y = rowStart.y;
-
-            ImGui::SetCursorScreenPos(ImVec2(x, y));
-            ImGui::PushID(row * 100 + col);
-
-            if (ImGui::Checkbox("##box", &checked))
-            {
-                // Symmetric update (A with B == B with A)
-                uint32_t maskA = clm.GetLayerMask(rowBit);
-                uint32_t maskB = clm.GetLayerMask(colBit);
-
-                if (checked) {
-                    maskA |= colBit;
-                    maskB |= rowBit;
-                }
-                else {
-                    maskA &= ~colBit;
-                    maskB &= ~rowBit;
-                }
-
-                clm.SetLayerMask(rowBit, maskA);
-                clm.SetLayerMask(colBit, maskB);
-            }
-
-            ImGui::PopID();
-        }
-
-        // Move cursor to next row manually
-        ImGui::SetCursorScreenPos(ImVec2(rowStart.x, rowStart.y + rowHeight));
-    }
-}
-
-
-
-
-
-
 void ImGuiSystem::Shutdown() {
     ShutdownImGui();
 }
@@ -3431,5 +3104,3 @@ void ImGuiSystem::ShutdownImGui() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
-
-
