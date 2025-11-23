@@ -41,7 +41,10 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
             auto p = std::filesystem::path(path);
             tempScenePath = "../Assets/saves/temp.json";
             ApplySceneDefaults();
-            EnterPlayMode();
+            if (isPlaying)
+                EnterPlayMode();
+            else
+                EnterEditMode();
             std::cout << "[SceneManager] Loaded scene: " << path << "\n";
         }
         else
