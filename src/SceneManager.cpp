@@ -55,12 +55,13 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
 }
 
 
-void SceneManager::SaveScene(const std::string& path, const SavedScene::SavedCamera& camSettings)
+void SceneManager::SaveScene(const std::string& path,
+    const SavedScene::SavedCamera& camSettings,
+    const std::string& sceneName)
 {
-    std::string sceneName = std::filesystem::path(path).stem().string();
     JsonLoad::SaveCurrentScene(path, sceneName, camSettings);
-    std::cout << "[SceneManager] Saved scene: " << path << "\n";
 }
+
 
 void SceneManager::ReloadScene()
 {

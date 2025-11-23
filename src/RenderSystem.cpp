@@ -205,27 +205,41 @@ void RenderSystem::Update(float dt) {
    // GameState currState = GSM_CurrentState();  
 
    
-    std::string path = sm.GetCurrentScene();
-    if (path.find("MainMenu") != std::string::npos)
-    {
-        // Letterboxed menu background
-        renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
+    //std::string path = sm.GetCurrentScene();
+    //if (path.find("MainMenu") != std::string::npos)
+    //{
+    //    // Letterboxed menu background
+    //    renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
 
+    //    for (GLuint tex : s_backgroundTextures)
+    //    {
+    //        renderer.DrawLetterboxedTexture(tex);
+    //    }
+    //}
+    //else
+    //{
+    //    // Gameplay or editor: fullscreen world background
+    //    for (GLuint tex : s_backgroundTextures)
+    //    {
+    //        renderer.DrawFullscreenTexture(tex, true);
+    //    }
+    //}
+
+    std::string sceneName = SceneManager::Get().GetCurrentSceneName();
+
+    if (sceneName == "MainMenu")
+    {
+        // Letterbox UI scene
         for (GLuint tex : s_backgroundTextures)
-        {
             renderer.DrawLetterboxedTexture(tex);
-        }
     }
     else
     {
-        // Gameplay or editor: fullscreen world background
+        // Normal gameplay
         for (GLuint tex : s_backgroundTextures)
-        {
             renderer.DrawFullscreenTexture(tex, true);
-        }
     }
 
-   
 
     //if (!SceneManager::Get().IsPlaying()) {
     //    // main menu / editor mode

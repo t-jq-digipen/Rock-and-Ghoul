@@ -21,7 +21,7 @@ public:
 
     void LoadScene(const std::string& path);
     void ReloadScene();
-    void SaveScene(const std::string& path, const SavedScene::SavedCamera& camSettings = {});
+    void SaveScene(const std::string& path, const SavedScene::SavedCamera& camSettings, const std::string& sceneName);
     void Update(float dt, float fixedDt, int numSteps);
     void Draw();
     void QueueLoadScene(const std::string& path);
