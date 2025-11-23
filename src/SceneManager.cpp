@@ -40,7 +40,7 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
 
             auto p = std::filesystem::path(path);
             tempScenePath = "../Assets/saves/temp.json";
-            ApplySceneDefaults();
+           // ApplySceneDefaults();
             EnterPlayMode();
             std::cout << "[SceneManager] Loaded scene: " << path << "\n";
         }
@@ -79,8 +79,7 @@ void SceneManager::EnterPlayMode()
 
     Camera& cam = Camera::GetInstance();
     cam.SetMode(Camera::Mode::GAME);
-    cam.SetZoom(1.0f);
-    cam.ResetToCenter();
+   
 
     LogicSystem::Get().Initialize();
 
@@ -95,7 +94,7 @@ void SceneManager::EnterEditMode()
 
     Camera& cam = Camera::GetInstance();
     cam.SetMode(Camera::Mode::EDITOR);
-    cam.ResetToCenter();
+    //cam.ResetToCenter();
 
     std::cout << "[SceneManager] Entered EDIT MODE.\n";
 }

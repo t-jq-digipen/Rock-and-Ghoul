@@ -3083,30 +3083,26 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (!inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
+        // 1) Switch to PLAY first so camera becomes gameplay camera
+        sm.EnterPlayMode();
+
         Camera& cam = Camera::GetInstance();
         cam.SetBounds(sceneMin, sceneMax);
 
-        // Save TEMP version of scene
+        // 2) NOW camera is GAME camera — save it
         SavedScene::SavedCamera camSet;
-        camSet.pos = camSpawnPos;
-        camSet.zoom = camSpawnZoom;
+        camSet.pos = cam.GetPosition();
+        camSet.zoom = cam.GetZoom();
         camSet.worldMin = cam.GetWorldMin();
         camSet.worldMax = cam.GetWorldMax();
 
         sm.SaveScene(sm.GetTempScenePath(), camSet);
 
-        // Switch to play mode
-        sm.EnterPlayMode();
-
-        cam.SetPosition(camSpawnPos);
-        cam.SetZoom(camSpawnZoom);
-
-        // Disable drag handles
-        dragEditMode = false;
-
         std::cout << "[Editor] Gameplay started.\n";
         isPlaying = true;
+
     }
+
 
     if (!inEdit) { ImGui::EndDisabled(); }
 
@@ -3118,15 +3114,20 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
     {
-        // Switch to editor mode
+        // 1) Exit play mode → go back to editor rule set
         sm.EnterEditMode();
 
-        // Reload TEMP version of scene
+        // 2) Reload gameplay entities from temp
         JsonLoad::ClearAllEntities();
         JsonLoad::LoadScene(sm.GetTempScenePath());
 
+        // 3) Restore EDITOR camera only (we do NOT use temp camera)
+        Camera& cam = Camera::GetInstance();
+        cam.SetMode(Camera::Mode::EDITOR);
+
+
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
-        Camera::GetInstance().ResetToCenter();
+
         std::cout << "[Editor] Gameplay stopped.\n";
         isPlaying = false;
     }

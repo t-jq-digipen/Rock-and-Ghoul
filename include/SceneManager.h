@@ -7,9 +7,9 @@ class SceneManager
 public:
     static SceneManager& Get();
     // --- Simulation State ---
-    bool isPlaying = true;    // True = gameplay
+    bool isPlaying = false;    // True = gameplay
     bool isPaused = false;    // Optional pause
-    bool inEditMode = false;     // True = editor mode
+    bool inEditMode = true;     // True = editor mode
 
     // Optional helper functions
     inline bool IsPlaying() const { return isPlaying; }
