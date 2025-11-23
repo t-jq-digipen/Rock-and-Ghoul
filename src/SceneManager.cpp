@@ -82,7 +82,8 @@ void SceneManager::EnterPlayMode()
 
     Camera& cam = Camera::GetInstance();
     cam.SetMode(Camera::Mode::GAME);
-
+    cam.SetZoom(1.0f);
+    cam.ResetToCenter();
 
     LogicSystem::Get().Initialize();
 
@@ -112,15 +113,15 @@ std::string SceneManager::GetCurrentSceneName() const
 void SceneManager::ApplySceneDefaults()
 {
     Render& renderer = Render::GetInstance();
-   // Camera& cam = Camera::GetInstance();
+    Camera& cam = Camera::GetInstance();
 
     // CAMERA DEFAULTS
-    //cam.SetMode(Camera::Mode::EDITOR);
-    //cam.SetZoom(1.0f);
-    //cam.ResetToCenter();
+    cam.SetMode(Camera::Mode::EDITOR);
+    cam.SetZoom(1.0f);
+    cam.ResetToCenter();
 
 
-    //cam.SetBounds(Vec2{ 0.0f, 0.0f }, Vec2{ 1920.0f, 1080.0f });
+    cam.SetBounds(Vec2{ 0.0f, 0.0f }, Vec2{ 1920.0f, 1080.0f });
 
     // RENDERER DEFAULTS
     renderer.useCamera = true;

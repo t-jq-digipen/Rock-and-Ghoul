@@ -3092,19 +3092,21 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         camSet.zoom = camSpawnZoom;
         camSet.worldMin = cam.GetWorldMin();
         camSet.worldMax = cam.GetWorldMax();
+
         sm.SaveScene(sm.GetTempScenePath(), camSet);
 
-        // >>> FIX: RELOAD temp scene so JSON applies cameraSpawn
-        sm.LoadScene(sm.GetCurrentScene());
-
-
+        // Switch to play mode
         sm.EnterPlayMode();
+
+        cam.SetPosition(camSpawnPos);
+        cam.SetZoom(camSpawnZoom);
+
+        // Disable drag handles
+        dragEditMode = false;
 
         std::cout << "[Editor] Gameplay started.\n";
         isPlaying = true;
     }
-
-
 
     if (!inEdit) { ImGui::EndDisabled(); }
 

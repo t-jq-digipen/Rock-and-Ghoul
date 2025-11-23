@@ -617,11 +617,11 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
         j["entities"].push_back(entityJson);
     }
 
-    //j["cameraSpawn"] = { s.camSettings.pos.x, s.camSettings.pos.y };
-    //j["cameraZoom"] = s.camSettings.zoom;
-    //j["worldMin"] = { s.camSettings.worldMin.x, s.camSettings.worldMin.y };
-    //j["worldMax"] = { s.camSettings.worldMax.x, s.camSettings.worldMax.y };
 
+    j["cameraSpawn"] = { s.camSettings.pos.x, s.camSettings.pos.y };
+    j["cameraZoom"] = s.camSettings.zoom;
+    j["worldMin"] = { s.camSettings.worldMin.x, s.camSettings.worldMin.y };
+    j["worldMax"] = { s.camSettings.worldMax.x,s.camSettings.worldMax.y };
 
 }
 
@@ -656,57 +656,10 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
         from_json(entityJson, entity);
         s.entities.push_back(entity);
     }
-    // ----------------------------------------------------
-   // SAFE CAMERA LOADING (handles missing JSON fields)
-   // ----------------------------------------------------
-    Camera& cam = Camera::GetInstance();
-
-    // 1. Load cameraSpawn (only override if JSON includes it)
-    if (j.contains("cameraSpawn") && j["cameraSpawn"].is_array() && j["cameraSpawn"].size() == 2) {
-        s.camSettings.pos.x = j["cameraSpawn"][0];
-        s.camSettings.pos.y = j["cameraSpawn"][1];
-        cam.SetPosition(s.camSettings.pos);   // APPLY only if JSON had it
-    }
-    else {
-        // Keep whatever camera was already set (do NOT override)
-        s.camSettings.pos = cam.GetPosition();
-    }
-
-    // 2. Load cameraZoom (only override if JSON includes it)
-    if (j.contains("cameraZoom")) {
-        s.camSettings.zoom = j["cameraZoom"];
-        cam.SetZoom(s.camSettings.zoom);      // APPLY only if JSON had it
-    }
-    else {
-        s.camSettings.zoom = cam.GetZoom();
-    }
-
-    // 3. Load worldMin
-    if (j.contains("worldMin") && j["worldMin"].is_array() && j["worldMin"].size() == 2) {
-        s.camSettings.worldMin.x = j["worldMin"][0];
-        s.camSettings.worldMin.y = j["worldMin"][1];
-    }
-    else {
-        // your world bounds fallback is fine
-        s.camSettings.worldMin = { 0.f, 0.f };
-    }
-
-    // 4. Load worldMax
-    if (j.contains("worldMax") && j["worldMax"].is_array() && j["worldMax"].size() == 2) {
-        s.camSettings.worldMax.x = j["worldMax"][0];
-        s.camSettings.worldMax.y = j["worldMax"][1];
-    }
-    else {
-        s.camSettings.worldMax = { 1920.f, 1080.f };
-    }
-
-    // Only apply bounds if JSON had both
-    if (j.contains("worldMin") && j.contains("worldMax")) {
-        cam.SetBounds(s.camSettings.worldMin, s.camSettings.worldMax);
-    }
-
-
-
+    //s.camSettings.pos = { j["cameraSpawn"][0], j["cameraSpawn"][1] };
+    //s.camSettings.zoom = j["cameraZoom"];
+    //s.camSettings.worldMin = { j["worldMin"][0],j["worldMin"][1] };
+    //s.camSettings.worldMax = { j["worldMax"][0],j["worldMax"][1] };
 }
 
 /**
