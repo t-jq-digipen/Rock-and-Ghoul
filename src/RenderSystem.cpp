@@ -229,16 +229,16 @@ void RenderSystem::Update(float dt) {
 
     if (sceneName == "MainMenu")
     {
-        renderer.ClearBackground({ 0,0,0,1 });
+        // Letterbox UI scene
         for (GLuint tex : s_backgroundTextures)
             renderer.DrawLetterboxedTexture(tex);
     }
     else
     {
+        // Normal gameplay
         for (GLuint tex : s_backgroundTextures)
             renderer.DrawFullscreenTexture(tex, true);
     }
-
 
 
     //if (!SceneManager::Get().IsPlaying()) {
