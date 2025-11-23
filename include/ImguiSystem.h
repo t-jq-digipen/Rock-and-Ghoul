@@ -69,6 +69,14 @@ public:
     static bool dragEditMode;
     static void ShowLayerCollisionMatrix();
 
+    static Vec2 camSpawnPos;
+    static float camSpawnZoom;
+
+    static Vec2 sceneMin;
+    static Vec2 sceneMax;
+
+    static Vec2 sceneSize;
+
 private:
     /**
      * @brief Draw the Engine Debug panel.

@@ -28,6 +28,7 @@
 #include "CoreEngine.h"
 #include "SceneManager.h"
 #include "UndoSystem.h"
+#include "Camera.h"
 #pragma region ComponentSavers
 
  /**
@@ -615,6 +616,13 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
         to_json(entityJson, entity);
         j["entities"].push_back(entityJson);
     }
+
+
+    j["cameraSpawn"] = { s.camSettings.pos.x, s.camSettings.pos.y };
+    j["cameraZoom"] = s.camSettings.zoom;
+    j["worldMin"] = { s.camSettings.worldMin.x, s.camSettings.worldMin.y };
+    j["worldMax"] = { s.camSettings.worldMax.x,s.camSettings.worldMax.y };
+
 }
 
 /**
@@ -648,6 +656,10 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
         from_json(entityJson, entity);
         s.entities.push_back(entity);
     }
+    //s.camSettings.pos = { j["cameraSpawn"][0], j["cameraSpawn"][1] };
+    //s.camSettings.zoom = j["cameraZoom"];
+    //s.camSettings.worldMin = { j["worldMin"][0],j["worldMin"][1] };
+    //s.camSettings.worldMax = { j["worldMax"][0],j["worldMax"][1] };
 }
 
 /**
@@ -689,7 +701,7 @@ void JsonLoad::from_json(const json& j, GameSettings& s) {
  * @return bool True if the scene was successfully saved, false if an error
  *         occurred during serialization or file writing.
  */
-bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& sceneName) {
+bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& sceneName, const SavedScene::SavedCamera& camSettings) {
 
     try {
         SavedScene scene;
@@ -735,6 +747,8 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         }
 
         std::cout << "Total entities saved: " << entityCount << std::endl;
+
+        scene.camSettings = camSettings;
 
         json j;
         to_json(j, scene);

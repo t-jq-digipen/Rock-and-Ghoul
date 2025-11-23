@@ -92,6 +92,14 @@ bool   ImGuiSystem::dragEditMode = false; //drag handle
 bool   ImGuiSystem::guiEnabled = false; //f1 
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 
+Vec2   ImGuiSystem::camSpawnPos = { 1920.f / 2.0f, 1080.f / 2.0f };
+float  ImGuiSystem::camSpawnZoom = 1.f;
+
+Vec2   ImGuiSystem::sceneMin = { 0.f,0.f };
+Vec2   ImGuiSystem::sceneMax = { 1980.f,1080.f };
+
+Vec2   ImGuiSystem::sceneSize = { 1980.f, 1080.f };
+
 static ImGuizmo::OPERATION gizmoOperation = ImGuizmo::TRANSLATE;
 static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
 // ========================================================
@@ -669,7 +677,8 @@ void ImGuiSystem::Update(float dt)
     }
 
 
-    if (ImGui::Begin("Editor Camera")) {
+    if (ImGui::Begin("Editor Camera", nullptr,
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
         if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         ImVec2 cursor = ImGui::GetCursorScreenPos();
         ImVec2 size = ImGui::GetContentRegionAvail();
@@ -998,7 +1007,6 @@ void ImGuiSystem::Update(float dt)
                 Vec2 world = cam.NDCToWorld({ ndcX, ndcY });
 
                 // --- Create entity + components ---
-                Registry& reg = Registry::Get();
                 Entity e = reg.Create_Entity();
 
                 // Transform
@@ -1073,8 +1081,6 @@ void ImGuiSystem::Update(float dt)
         //}
         if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selectedEntity != INVALID_ENTITY)
         {
-            Registry& reg = Registry::Get();
-
             SavedEntity snapshot = reg.Save_Entity(selectedEntity);
             UndoSystem::Get().RecordRemove(snapshot);
             reg.Remove_Entity(selectedEntity);
@@ -1383,7 +1389,6 @@ void ImGuiSystem::ShowSceneBrowser()
         std::string sceneName = sceneFiles[selectedScene];        // "Level2"
         std::string path = sceneFolder + sceneName + ".json";     //  "../Assets/saves/Level2.json"
 
-        SceneManager& sm = SceneManager::Get();
 
         // Always return to editor mode when loading scenes
         //sm.EnterEditMode();
@@ -1746,52 +1751,6 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
-        //else if (compName == "Animator")
-        //{
-        //    Animator::AnimatorComponent& animcomp = m_registry.Get_Component<Animator::AnimatorComponent>(selectedEntity);
-        //    if (ImGui::TreeNode(compName.c_str()))
-        //    {
-        //        // --- show component fields ---
-        //        for (auto& [name, widgetVariant] : componentData.GetDataMap())
-        //        {
-        //            ImGui::PushID(name.c_str());
-        //            std::visit([&](auto& widget) {
-        //                MakeWidget(widget, name);
-        //                }, widgetVariant);
-        //            ImGui::PopID();
-        //        }
-
-        //        // need to figure out how to add state...
-        //        animcomp.UpdateUV();
-        //        ActiveFrames temp = animcomp.GetFrames();
-
-        //        Editor::Widget_Int widgetrow(&temp.row, true, 0, animcomp.GetTotalRows());
-        //        Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, animcomp.GetTotalCols());
-        //        Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, animcomp.GetTotalCols());
-        //        Editor::Widget_Float widgetduration(&temp.duration);
-        //        ImGui::PushItemWidth(50);
-        //        MakeWidget(widgetrow, "row");
-        //        ImGui::SameLine();
-        //        MakeWidget(widgetcolstart, "first col");
-        //        ImGui::SameLine();
-        //        MakeWidget(widgetcolend, "last col");
-        //        ImGui::PopItemWidth();
-        //        MakeWidget(widgetduration, "duration");
-
-        //        ImGui::Separator();
-        //        if (ImGui::SmallButton("Add State"))
-        //        {
-        //            animcomp.AddState(static_cast<int>(animcomp.GetStateFrames().size()), { 0,0,0 });
-        //        }
-
-        //        animcomp.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);
-        //        
-
-        //        ImGui::TreePop();
-        //    }
-
-        //}
-        // Custom data fields for behaviour component
         else if (compName == "Behaviour")
         {
             BehaviourComponent& behaviourComp = m_registry.Get_Component<BehaviourComponent>(selectedEntity);
@@ -1932,34 +1891,34 @@ void ImGuiSystem::ShowInspectorWindow()
                 //    ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "No TagComponent!");
                 //}
 
-                int layerIndex = 0;
-                for (const std::string& layerName : layers)
-                {
-                    ImGui::PushID(layerIndex++);
+                //int layerIndex = 0;
+                //for (const std::string& layerName : layers)
+                //{
+                //    ImGui::PushID(layerIndex++);
 
-                    uint32_t layerBit = CollisionLayerManager::Get().GetLayerBit(layerName);
-                    bool isSet = (currentMask & layerBit) != 0;
-                    bool previousState = isSet;
+                //    uint32_t layerBit = CollisionLayerManager::Get().GetLayerBit(layerName);
+                //    bool isSet = (currentMask & layerBit) != 0;
+                //    bool previousState = isSet;
 
-                    ImGui::Checkbox(layerName.c_str(), &isSet);
+                //    ImGui::Checkbox(layerName.c_str(), &isSet);
 
-                    // Only update if the state actually changed
-                    if (isSet != previousState)
-                    {
-                        // Get fresh reference BEFORE making any changes
-                        auto& freshCollider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
+                //    // Only update if the state actually changed
+                //    if (isSet != previousState)
+                //    {
+                //        // Get fresh reference BEFORE making any changes
+                //        auto& freshCollider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
 
-                        if (isSet) {
-                            currentMask |= layerBit;
-                        }
-                        else {
-                            currentMask &= ~layerBit;
-                        }
-                        //freshCollider.SetMask(currentMask);
-                    }
+                //        if (isSet) {
+                //            currentMask |= layerBit;
+                //        }
+                //        else {
+                //            currentMask &= ~layerBit;
+                //        }
+                //        //freshCollider.SetMask(currentMask);
+                //    }
 
-                    ImGui::PopID();
-                }
+                //    ImGui::PopID();
+                //}
 
                 ImGui::TreePop();
             }
@@ -2456,7 +2415,6 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
-    (void)viewportSize;
     bool isPlaying = !sm.isPaused && !sm.inEditMode;
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
@@ -2466,50 +2424,71 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     Vec2 mouse(mousePos.x - viewportPos.x, mousePos.y - viewportPos.y);
 
     // --- Define your full world dimensions ---
-    const float worldWidth = 1920.f;
-    const float worldHeight = 1080.f;
+    //const float worldWidth = 1920.f;
+    //const float worldHeight = 1080.f;
+    const float worldWidth = sceneMax.x - sceneMin.x;
+    const float worldHeight = sceneMax.y - sceneMin.y;
 
     // --- Fixed mini-scale factor (smaller = more zoomed out) ---
-    const float scale = 0.2f;  // 20% of the real world size (mini-map view)
+    //const float scale = 0.2f;  // 20% of the real world size (mini-map view)
+
+    float scale = (worldWidth != 0) ? viewportSize.x / worldWidth : 0.f;
+    ImVec2 displaySize(worldWidth * scale, worldHeight * scale);
 
     // --- Center world inside the viewport ---
     Vec2 offset{ 0.0f,0.0f };
 
     // --- Draw background rectangle for visual clarity ---
+    //dl->AddRectFilled(
+    //    { viewportPos.x + offset.x, viewportPos.y + offset.y },
+    //    { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
+    //    IM_COL32(40, 40, 40, 255)
+    //);
+    //dl->AddRect(
+    //    { viewportPos.x + offset.x, viewportPos.y + offset.y },
+    //    { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
+    //    IM_COL32(100, 100, 100, 255)
+    //);
+    ImGui::BeginChild("MinimapRegion", displaySize);
+
     dl->AddRectFilled(
         { viewportPos.x + offset.x, viewportPos.y + offset.y },
-        { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
+        { viewportPos.x + offset.x + displaySize.x, viewportPos.y + offset.y + displaySize.y },
         IM_COL32(40, 40, 40, 255)
     );
     dl->AddRect(
         { viewportPos.x + offset.x, viewportPos.y + offset.y },
-        { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
+        { viewportPos.x + offset.x + displaySize.x, viewportPos.y + offset.y + displaySize.y },
         IM_COL32(100, 100, 100, 255)
     );
+    ImGui::EndChild();
+
 
     // --- Draw Camera zone ---
 
     Camera& cam = Camera::GetInstance();
     bool camHover = false;
-    Vec2 camOffset = cam.GetPosition();
+    Vec2 camOffset = cam.GetPosition() - sceneMin;
     {
         float camZoom = cam.GetZoom();
-        if (camZoom != 0.f)
-        {
-            camZoom = 1 / camZoom;
-        }
-        else
-        {
-            camZoom = 0;
-        }
+        camZoom = (camZoom != 0) ? 1 / camZoom : 0.f;
         camZoom *= scale;
 
+        Vec2 camMin = cam.GetWorldMin();
 
-        ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (worldWidth * camZoom) / 2,
-                       viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - (worldHeight * camZoom) / 2 };
+        Vec2 camMax = cam.GetWorldMax();
 
-        ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (worldWidth * camZoom) / 2,
-                       viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + (worldHeight * camZoom) / 2 };
+        //ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (worldWidth * camZoom) / 2,
+        //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - (worldHeight * camZoom) / 2 };
+
+        //ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (worldWidth * camZoom) / 2,
+        //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + (worldHeight * camZoom) / 2 };
+
+        ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (GLApp::VIRTUAL_W * camZoom) / 2,
+                       viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) - (GLApp::VIRTUAL_H * camZoom) / 2 };
+
+        ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (GLApp::VIRTUAL_W * camZoom) / 2,
+                       viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) + (GLApp::VIRTUAL_H * camZoom) / 2 };
 
         bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
             mousePos.y >= min.y && mousePos.y <= max.y);
@@ -2532,12 +2511,12 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     // === Draw all entities ===
     for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
     {
-        Vec2 pos = transform.pos;
+        Vec2 entPos = transform.pos;
 
         // Convert world → viewport (flip Y to top-left origin)
         Vec2 screenPos;
-        screenPos.x = offset.x + pos.x * scale;
-        screenPos.y = offset.y + (worldHeight - pos.y) * scale;
+        screenPos.x = offset.x + entPos.x * scale;
+        screenPos.y = offset.y + (worldHeight - entPos.y) * scale;
 
         Vec2 half{ 25.f * scale, 25.f * scale };
 
@@ -2577,9 +2556,32 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
         if (mouseReleased)
             isDragging = false;
     }
+    ImGui::SeparatorText("World settings");
+    ImGui::InputFloat2("Size", &sceneSize.x);
+    if (ImGui::Button("Set size"))
+    {
+        if (sceneSize.x != 0 && sceneSize.y != 0)
+        {
+            sceneMin.x = 990 - sceneSize.x / 2;
+            sceneMax.x = 990 + sceneSize.x / 2;
+            sceneMin.y = 540 - sceneSize.y / 2;
+            sceneMax.y = 540 + sceneSize.y / 2;
+        }
+        cam.SetBounds(sceneMin, sceneMax);
+    }
 
+    ImGui::SeparatorText("Camera spawn settings");
+    // Spawn position
+    ImGui::InputFloat2("Position", &camSpawnPos.x);
+    // Zoom value
+    ImGui::InputFloat("Zoom", &camSpawnZoom);
 
-    ImGui::Dummy(ImVec2(10.0f, 220.0f));
+    if (ImGui::Button("Set spawn to current setting"))
+    {
+        camSpawnZoom = cam.GetZoom();
+        camSpawnPos = cam.GetPosition();
+    }
+
     if (ImGui::Button("Reset", ImVec2(80, 0)))
     {
         cam.SetZoom(1.0f);
@@ -3073,7 +3075,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     float totalWidth = buttonWidth * 2 + spacing;
     float startX = (panelWidth - totalWidth) * 0.5f;
     ImGui::SetCursorPosX(startX);
-    SceneManager& sm = SceneManager::Get();
+
     bool inEdit = sm.inEditMode;
     // ───────────────────────────────
      // PLAY BUTTON
@@ -3081,11 +3083,23 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (!inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
+        Camera& cam = Camera::GetInstance();
+        cam.SetBounds(sceneMin, sceneMax);
+
         // Save TEMP version of scene
-        sm.SaveScene(sm.GetTempScenePath());
+        SavedScene::SavedCamera camSet;
+        camSet.pos = camSpawnPos;
+        camSet.zoom = camSpawnZoom;
+        camSet.worldMin = cam.GetWorldMin();
+        camSet.worldMax = cam.GetWorldMax();
+
+        sm.SaveScene(sm.GetTempScenePath(), camSet);
 
         // Switch to play mode
         sm.EnterPlayMode();
+
+        cam.SetPosition(camSpawnPos);
+        cam.SetZoom(camSpawnZoom);
 
         // Disable drag handles
         dragEditMode = false;
@@ -3112,7 +3126,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         JsonLoad::LoadScene(sm.GetTempScenePath());
 
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
-
+        Camera::GetInstance().ResetToCenter();
         std::cout << "[Editor] Gameplay stopped.\n";
         isPlaying = false;
     }

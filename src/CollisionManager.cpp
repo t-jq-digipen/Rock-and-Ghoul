@@ -588,13 +588,13 @@ void CollisionManager::CheckCollisions() {
         //}
         if (!CollisionLayerManager::Get().ShouldCollide(layerA, layerB)) {
             static int filterCount = 0;
-            if (++filterCount % 60 == 0) {
-                std::cout << "[Collision] FILTERED: Entity " << a << " (layer=0x" << std::hex << layerA
-                    //<< " mask=0x" << maskA 
-                    << ") vs Entity " << b << " (layer=0x" << layerB
-                    //<< " mask=0x" << maskB 
-                    << ")" << std::dec << std::endl;
-            }
+            //if (++filterCount % 60 == 0) {
+            //    std::cout << "[Collision] FILTERED: Entity " << a << " (layer=0x" << std::hex << layerA
+            //        //<< " mask=0x" << maskA 
+            //        << ") vs Entity " << b << " (layer=0x" << layerB
+            //        //<< " mask=0x" << maskB 
+            //        << ")" << std::dec << std::endl;
+            //}
             continue;
         }
 

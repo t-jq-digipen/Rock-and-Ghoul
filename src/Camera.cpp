@@ -36,7 +36,12 @@ Copyright ? 2025 DigiPen, All rights reserved.
 /*static constexpr float VIRTUAL_W = 1920.0f;
 static constexpr float VIRTUAL_H = 1080.0f;*/
 
-
+SavedScene::SavedCamera::SavedCamera() {
+    pos = Camera::GetInstance().GetPosition();
+    zoom = Camera::GetInstance().GetZoom();
+    worldMin = Camera::GetInstance().GetWorldMin();
+    worldMax = Camera::GetInstance().GetWorldMax();
+}
 
 Camera::Camera()
     : position(static_cast<float>(GLApp::width) / 2.0f, static_cast<float>(GLApp::height) / 2.0f),

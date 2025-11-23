@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "DataDefs.h"
 
 class SceneManager
 {
@@ -20,7 +21,7 @@ public:
 
     void LoadScene(const std::string& path);
     void ReloadScene();
-    void SaveScene(const std::string& path);
+    void SaveScene(const std::string& path, const SavedScene::SavedCamera& camSettings = {});
     void Update(float dt, float fixedDt, int numSteps);
     void Draw();
     void QueueLoadScene(const std::string& path);

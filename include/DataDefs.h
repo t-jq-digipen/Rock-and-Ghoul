@@ -84,6 +84,18 @@ struct SavedScene {
         std::string action;
     };
     std::vector<SavedButton> guiButtons;
+
+    struct SavedCamera {
+        Vec2 pos;
+        float zoom;
+        Vec2 worldMin;
+        Vec2 worldMax;
+
+        SavedCamera();
+    };
+
+    SavedCamera camSettings;
+
     /**
      * @brief Default constructor with no name.
      */

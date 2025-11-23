@@ -44,7 +44,7 @@ public:
  * @param sceneName The name identifier for the scene.
  * @return bool True if save successful, false otherwise.
  */
-    static bool SaveCurrentScene(const std::string& filepath, const std::string& sceneName);
+    static bool SaveCurrentScene(const std::string& filepath, const std::string& sceneName, const SavedScene::SavedCamera& camSettings = {});
     
  /**
  * @brief Saves a single entity to a JSON file.
