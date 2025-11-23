@@ -36,7 +36,7 @@ void MovementSystem::Update(float dt)
 		const Vec2 dir = moveComp.GetMovementDirection();
 		if (!moveComp.GetIsMoving() || (dir.x == 0.f && dir.y == 0.f))
 		{
-			moveComp.ResetFrameIntent();
+			//moveComp.ResetFrameIntent();
 			continue;
 		}
 
@@ -71,7 +71,7 @@ void MovementSystem::Update(float dt)
 		}
 
 		// Reset move component to 0 after each frame
-		moveComp.ResetFrameIntent();
+		//moveComp.ResetFrameIntent();
 	}
 }
 

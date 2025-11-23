@@ -322,20 +322,13 @@ namespace RockScript {
 
 	void Dash(Entity eID) {
 		if (stunnedtimer < 1.f || atktimer < 1.f) { return; }
-		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
+
+
+		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID) || !Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
+		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
 
-		// Vec2 dashDir = moveComp.GetMovementDirection();
-		int hor = 0;
-		int ver = 0;
-		if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
-		if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
-		if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
-		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
-		float fx = static_cast<float>(hor);
-		float fy = static_cast<float>(ver);
-
-		Vec2 dashDir{ fx, fy };
+		Vec2 dashDir = moveComp.GetMovementDirection();
 
 		NormalizeDiagonalMovement(dashDir.x, dashDir.y);
 
@@ -347,6 +340,22 @@ namespace RockScript {
 
 	}
 
+	void Attack(Entity eID) {
+		if ((stunnedtimer < 1.f || atktimer < 1.f)) { return; }
+
+		atktimer = 0.f;
+		shot = false;
+	}
+
+	void Knockback(Entity eID) {
+		if ((stunnedtimer < 1.f || atktimer < 1.f)) { return; }
+
+		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) { return; }
+		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
+		stunnedtimer = 0.f;
+		physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
+	}
+
 	inline void Start(Entity eID)
 	{
 		std::cout << "Rock script started" << std::endl;
@@ -356,6 +365,14 @@ namespace RockScript {
 			if (e.key == GLFW_KEY_LEFT_SHIFT)
 			{
 				Dash(eID);
+			}
+			else if (e.key == GLFW_KEY_E)
+			{
+				Attack(eID);
+			}
+			else if (e.key == GLFW_KEY_G)
+			{
+				Knockback(eID);
 			}
 			});
 	}
@@ -391,7 +408,9 @@ namespace RockScript {
 			moveComp.SetInputDirection(VelToDir(fx, fy));
 			moveComp.SetMovementDirection({ fx, fy });
 
-			if (moving) { animstate = 1; }
+			if (moving) { 
+				animstate = 1; 
+			}
 
 			// Reset timer when not moving
 			if (!moving) {
@@ -416,27 +435,29 @@ namespace RockScript {
 				}
 			}
 
-			if (Input::IsKeyPressed(GLFW_KEY_G))
-			{
-				stunnedtimer = 0.f;
-				animstate = 2;
-				physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
-			}
+			//if (Input::IsKeyPressed(GLFW_KEY_G))
+			//{
+			//	stunnedtimer = 0.f;
+			//	animstate = 2;
+			//	physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
+			//}
 
-			if (Input::IsKeyPressed(GLFW_KEY_E))
+			/*if (Input::IsKeyPressed(GLFW_KEY_E))
 			{
 				atktimer = 0.f;
 				animstate = 3;
 				shot = false;
-			}
+			}*/
 		}
 		else if (stunnedtimer < 1.f)
 		{
+			moveComp.ResetFrameIntent();
 			stunnedtimer += dt;
 			animstate = 2;
 		}
 		else if (atktimer < 1.f)
 		{
+			moveComp.ResetFrameIntent();
 			atktimer += dt;
 			animstate = 3;
 
@@ -495,18 +516,18 @@ void PlayerSystem::Update(float dt)
 		return;  // Don't update player movement or footsteps when paused
 	}
 
-	for (auto& [entity, comp] : m_registry.Get_ComponentMap<TagComponent>())
-	{
-		if (!m_registry.Has_Component<TransformComponent>(entity))
-			continue;
-		if (comp.tag == T_PLAYER)
-		{
-			// THIS IS A PLAYER, DO PLAYER THINGS
-			WASD_Movement(entity, dt);
-			UpdateFootsteps(entity, dt);
-		}
+	//for (auto& [entity, comp] : m_registry.Get_ComponentMap<TagComponent>())
+	//{
+	//	if (!m_registry.Has_Component<TransformComponent>(entity))
+	//		continue;
+	//	if (comp.tag == T_PLAYER)
+	//	{
+	//		// THIS IS A PLAYER, DO PLAYER THINGS
+	//		WASD_Movement(entity, dt);
+	//		UpdateFootsteps(entity, dt);
+	//	}
 
-	}
+	//}
 }
 // ============================================================================
 // FOOTSTEP IMPLEMENTATION

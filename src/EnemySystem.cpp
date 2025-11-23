@@ -342,9 +342,9 @@ void EnemySystem::Update(float dt)
 		if (comp.tag == T_ENEMY)
 		{
 			// THIS IS AN ENEMY, DO ENEMY THINGS
-			ChasePlayer(entity, EnemyAI::FindPlayer(), dt);
-			RoamAround(entity, dt);
-			ReturnToBase(entity, dt);
+			//ChasePlayer(entity, EnemyAI::FindPlayer(), dt);
+			//RoamAround(entity, dt);
+			//ReturnToBase(entity, dt);
 		}
 	}
 }
