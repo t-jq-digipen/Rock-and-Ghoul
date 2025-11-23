@@ -204,8 +204,9 @@ void RenderSystem::Update(float dt) {
     // figure out current game state 
    // GameState currState = GSM_CurrentState();  
 
-
-    if (SceneManager::Get().GetCurrentSceneName() == "MainMenu")
+   
+    std::string path = sm.GetCurrentScene();
+    if (path.find("MainMenu") != std::string::npos)
     {
         // Letterboxed menu background
         renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
