@@ -3,110 +3,26 @@
         "../Assets/Env02_NormalWorld.PNG"
     ],
     "cameraSpawn": [
-        960.0,
-        540.0
+        448.147216796875,
+        385.7142639160156
     ],
-    "cameraZoom": 1.0,
+    "cameraZoom": 1.4000000953674316,
     "entities": [
         {
             "components": {
-                "RenderLayer": "{\"layer\":3}",
-                "Transform": "{\"posX\":379.0559997558594,\"posY\":50.98699951171875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "New Entity 15"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"circle_posX\":-246.58392333984375,\"circle_posY\":180.63711547851563,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
+                "Collider": "{\"aabb_dimX\":270.3009948730469,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":1640.35400390625,\"aabb_maxY\":819.3413696289063,\"aabb_minX\":1370.052978515625,\"aabb_minY\":627.6674194335938,\"circle_posX\":1505.2034912109375,\"circle_posY\":723.50439453125,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
-            },
-            "name": "Entity_8"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-61.66816711425781,\"aabb_maxY\":759.197509765625,\"aabb_minX\":-228.8801727294922,\"aabb_minY\":351.386474609375,\"circle_posX\":-145.274169921875,\"circle_posY\":555.2919921875,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
-            },
-            "name": "Entity_8"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":308.79901123046875,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":579.60302734375,\"aabb_maxY\":807.872314453125,\"aabb_minX\":270.8039855957031,\"aabb_minY\":616.1983642578125,\"circle_posX\":425.2034912109375,\"circle_posY\":712.0353393554688,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":425.2034912109375,\"posY\":712.0353393554688,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+                "Transform": "{\"posX\":1505.2034912109375,\"posY\":723.50439453125,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":466.52398681640625,\"aabb_dimY\":210.6439971923828,\"aabb_maxX\":1135.899169921875,\"aabb_maxY\":745.6759643554688,\"aabb_minX\":669.3751220703125,\"aabb_minY\":535.0319213867188,\"circle_posX\":902.6371459960938,\"circle_posY\":640.3539428710938,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\"}",
+                "Collider": "{\"aabb_dimX\":136.69700622558594,\"aabb_dimY\":1000.0,\"aabb_maxX\":2073.5166015625,\"aabb_maxY\":1008.4601440429688,\"aabb_minX\":1936.8197021484375,\"aabb_minY\":8.46014404296875,\"circle_posX\":2005.168212890625,\"circle_posY\":508.46014404296875,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":902.6371459960938,\"posY\":640.3539428710938,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
-                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":1198.1488037109375,\"aabb_maxY\":500.0,\"aabb_minX\":1198.1488037109375,\"aabb_minY\":500.0,\"circle_posX\":1198.1488037109375,\"circle_posY\":500.0,\"circle_rad\":0.0,\"isActive\":false,\"isTrigger\":false,\"layer\":\"\"}",
-                "Input": "{\"scheme\":0}",
-                "Movement": "{\"moveSpeed\":38.923988342285156,\"moveType\":0}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animated\\\":false,\\\"scaleX\\\":0.10000000149011612,\\\"scaleY\\\":0.10000000149011612,\\\"texturePath\\\":\\\"../Assets/Ghoul_2048px.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
-                "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":1198.1488037109375,\"posY\":596.736572265625,\"rot\":0.0,\"scaleX\":1.0343751907348633,\"scaleY\":1.0}"
-            },
-            "name": "ghoul"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":1009.8153076171875,\"aabb_maxY\":400.0,\"aabb_minX\":1009.8153076171875,\"aabb_minY\":400.0,\"circle_posX\":1009.8153076171875,\"circle_posY\":400.0,\"circle_rad\":0.0,\"isActive\":false,\"isTrigger\":false,\"layer\":\"\"}",
-                "Physics": "{\"decay\":0.949999988079071,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":20.428415298461914,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"colorX\\\":1.0,\\\"colorY\\\":0.0,\\\"colorZ\\\":1.0,\\\"dimX\\\":49.926998138427734,\\\"dimY\\\":49.926998138427734,\\\"shapeType\\\":0}\",\"renderLayer\":1,\"renderType\":0}",
-                "Tag": "{\"tagID\":6}",
-                "Transform": "{\"posX\":1009.8153076171875,\"posY\":400.0,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":50.0}"
-            },
-            "name": "FixedDT_Test"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":2462.9189453125,\"aabb_dimY\":100.98699951171875,\"aabb_maxX\":2181.34619140625,\"aabb_maxY\":784.376708984375,\"aabb_minX\":-281.5728759765625,\"aabb_minY\":683.3896484375,\"circle_posX\":949.8865966796875,\"circle_posY\":733.8831787109375,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":949.8865966796875,\"posY\":733.8831787109375,\"rot\":0.0,\"scaleX\":1986.0001220703125,\"scaleY\":50.0}"
-            },
-            "name": "Entity_6"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":2435.14208984375,\"aabb_dimY\":50.0,\"aabb_maxX\":2210.571044921875,\"aabb_maxY\":50.0,\"aabb_minX\":-224.57098388671875,\"aabb_minY\":0.0,\"circle_posX\":993.0000610351563,\"circle_posY\":25.0,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":993.0000610351563,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1986.0001220703125,\"scaleY\":50.0}"
-            },
-            "name": "Entity_7"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":45.37608337402344,\"aabb_maxY\":961.81689453125,\"aabb_minX\":-121.83592224121094,\"aabb_minY\":554.005859375,\"circle_posX\":-38.22991943359375,\"circle_posY\":757.911376953125,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-38.22991943359375,\"posY\":757.911376953125,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
-            },
-            "name": "Entity_8"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":180.4720001220703,\"aabb_dimY\":166.00900268554688,\"aabb_maxX\":1947.15625,\"aabb_maxY\":709.0221557617188,\"aabb_minX\":1766.684326171875,\"aabb_minY\":543.0131225585938,\"circle_posX\":1856.9202880859375,\"circle_posY\":626.0176391601563,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":1856.9202880859375,\"posY\":626.0176391601563,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+                "Transform": "{\"posX\":2005.168212890625,\"posY\":508.46014404296875,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
             },
             "name": "Obstacle"
         },
@@ -125,21 +41,105 @@
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":136.69700622558594,\"aabb_dimY\":1000.0,\"aabb_maxX\":2073.5166015625,\"aabb_maxY\":1008.4601440429688,\"aabb_minX\":1936.8197021484375,\"aabb_minY\":8.46014404296875,\"circle_posX\":2005.168212890625,\"circle_posY\":508.46014404296875,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
+                "Collider": "{\"aabb_dimX\":180.4720001220703,\"aabb_dimY\":166.00900268554688,\"aabb_maxX\":1947.15625,\"aabb_maxY\":709.0221557617188,\"aabb_minX\":1766.684326171875,\"aabb_minY\":543.0131225585938,\"circle_posX\":1856.9202880859375,\"circle_posY\":626.0176391601563,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":2005.168212890625,\"posY\":508.46014404296875,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+                "Transform": "{\"posX\":1856.9202880859375,\"posY\":626.0176391601563,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":270.3009948730469,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":1640.35400390625,\"aabb_maxY\":819.3413696289063,\"aabb_minX\":1370.052978515625,\"aabb_minY\":627.6674194335938,\"circle_posX\":1505.2034912109375,\"circle_posY\":723.50439453125,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":45.37608337402344,\"aabb_maxY\":961.81689453125,\"aabb_minX\":-121.83592224121094,\"aabb_minY\":554.005859375,\"circle_posX\":-38.22991943359375,\"circle_posY\":757.911376953125,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":1505.2034912109375,\"posY\":723.50439453125,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+                "Transform": "{\"posX\":-38.22991943359375,\"posY\":757.911376953125,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+            },
+            "name": "Entity_8"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":2435.14208984375,\"aabb_dimY\":50.0,\"aabb_maxX\":2210.571044921875,\"aabb_maxY\":50.0,\"aabb_minX\":-224.571044921875,\"aabb_minY\":0.0,\"circle_posX\":993.0000610351563,\"circle_posY\":25.0,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":993.0000610351563,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1986.0001220703125,\"scaleY\":50.0}"
+            },
+            "name": "Entity_7"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":2462.9189453125,\"aabb_dimY\":100.98699951171875,\"aabb_maxX\":2181.34619140625,\"aabb_maxY\":784.376708984375,\"aabb_minX\":-281.5728759765625,\"aabb_minY\":683.3896484375,\"circle_posX\":949.8865966796875,\"circle_posY\":733.8831787109375,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":949.8865966796875,\"posY\":733.8831787109375,\"rot\":0.0,\"scaleX\":1986.0001220703125,\"scaleY\":50.0}"
+            },
+            "name": "Entity_6"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":1009.8153076171875,\"aabb_maxY\":400.0,\"aabb_minX\":1009.8153076171875,\"aabb_minY\":400.0,\"circle_posX\":1009.8153076171875,\"circle_posY\":400.0,\"circle_rad\":0.0,\"isActive\":false,\"isTrigger\":false,\"layer\":\"\"}",
+                "Physics": "{\"decay\":0.949999988079071,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":20.428415298461914,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"colorX\\\":1.0,\\\"colorY\\\":0.0,\\\"colorZ\\\":1.0,\\\"dimX\\\":49.926998138427734,\\\"dimY\\\":49.926998138427734,\\\"shapeType\\\":0}\",\"renderLayer\":1,\"renderType\":0}",
+                "Tag": "{\"tagID\":6}",
+                "Transform": "{\"posX\":1009.8153076171875,\"posY\":400.0,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":50.0}"
+            },
+            "name": "FixedDT_Test"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
+                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":1198.1488037109375,\"aabb_maxY\":500.0,\"aabb_minX\":1198.1488037109375,\"aabb_minY\":500.0,\"circle_posX\":1198.1488037109375,\"circle_posY\":500.0,\"circle_rad\":0.0,\"isActive\":false,\"isTrigger\":false,\"layer\":\"\"}",
+                "Input": "{\"scheme\":0}",
+                "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animated\\\":false,\\\"scaleX\\\":0.10000000149011612,\\\"scaleY\\\":0.10000000149011612,\\\"texturePath\\\":\\\"../Assets/Ghoul_2048px.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
+                "Tag": "{\"tagID\":1}",
+                "Transform": "{\"posX\":1198.1488037109375,\"posY\":500.0,\"rot\":0.0,\"scaleX\":1.0343751907348633,\"scaleY\":1.0}"
+            },
+            "name": "ghoul"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":466.52398681640625,\"aabb_dimY\":210.6439971923828,\"aabb_maxX\":1135.899169921875,\"aabb_maxY\":745.6759643554688,\"aabb_minX\":669.3751220703125,\"aabb_minY\":535.0319213867188,\"circle_posX\":902.6371459960938,\"circle_posY\":640.3539428710938,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":902.6371459960938,\"posY\":640.3539428710938,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
             },
             "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":308.79901123046875,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":579.60302734375,\"aabb_maxY\":807.872314453125,\"aabb_minX\":270.8039855957031,\"aabb_minY\":616.1983642578125,\"circle_posX\":425.2034912109375,\"circle_posY\":712.0353393554688,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":425.2034912109375,\"posY\":712.0353393554688,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-61.66816711425781,\"aabb_maxY\":759.197509765625,\"aabb_minX\":-228.8801727294922,\"aabb_minY\":351.386474609375,\"circle_posX\":-145.274169921875,\"circle_posY\":555.2919921875,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+            },
+            "name": "Entity_8"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"circle_posX\":-246.58392333984375,\"circle_posY\":180.63711547851563,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
+            },
+            "name": "Entity_8"
+        },
+        {
+            "components": {
+                "RenderLayer": "{\"layer\":3}",
+                "Transform": "{\"posX\":379.0559997558594,\"posY\":50.98699951171875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "New Entity 15"
         }
     ],
     "fontConfig": "../Assets/fontAssets.json",
@@ -148,11 +148,11 @@
     },
     "sceneName": "temp",
     "worldMax": [
-        1980.0,
+        2240.0,
         1080.0
     ],
     "worldMin": [
-        0.0,
+        -260.0,
         0.0
     ]
 }

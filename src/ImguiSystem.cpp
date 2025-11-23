@@ -3118,31 +3118,18 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
     {
-        // Back to editor mode
+        // Switch to editor mode
         sm.EnterEditMode();
 
-        // SAVE CURRENT SCENE → temp.json (overwrite)
-        SavedScene::SavedCamera camSet;
-        Camera& cam = Camera::GetInstance();
-        camSet.pos = cam.GetPosition();
-        camSet.zoom = cam.GetZoom();
-        camSet.worldMin = cam.GetWorldMin();
-        camSet.worldMax = cam.GetWorldMax();
-
-        sm.SaveScene(sm.GetTempScenePath(), camSet);
-
-        // RELOAD the updated temp.json
+        // Reload TEMP version of scene
         JsonLoad::ClearAllEntities();
         JsonLoad::LoadScene(sm.GetTempScenePath());
 
-        // Editor reset
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
         Camera::GetInstance().ResetToCenter();
-
         std::cout << "[Editor] Gameplay stopped.\n";
         isPlaying = false;
     }
-
     if (inEdit) { ImGui::EndDisabled(); }
 
     // Status text
