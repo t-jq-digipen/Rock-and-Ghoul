@@ -107,7 +107,6 @@ public:
     // Save game settings
     static bool SaveSettings(const std::string& filepath, GameSettings& settings);
     static std::optional<GameSettings> LoadSettings(const std::string& filepath);
-    static SavedScene LoadSavedScene(const std::string& filepath);
 
 private:
     /**

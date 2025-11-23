@@ -1407,22 +1407,9 @@ void ImGuiSystem::ShowSceneBrowser()
     ImGui::SameLine();
     if (ImGui::Button("Save Current Scene") && selectedScene >= 0)
     {
-        //std::string path = sceneFolder + sceneFiles[selectedScene] + ".json";
-        //SavedScene tempScene = JsonLoad::LoadSavedScene(sm.GetTempScenePath());
-
-        //sm.SaveScene(path, tempScene.camSettings);
-        //std::cout << "[Editor] Saved scene: " << path << "\n";
-
         std::string path = sceneFolder + sceneFiles[selectedScene] + ".json";
-
-        // Load camera + scene data from temp.json (gameplay values)
-        SavedScene temp = JsonLoad::LoadSavedScene(sm.GetTempScenePath());
-
-        // The NEW sceneName becomes the ORIGINAL sceneName (e.g., Level1)
-        sm.SaveScene(path, temp.camSettings, temp.sceneName);
-
-        std::cout << "[Editor] Saved scene: " << path << " using source scene: "
-            << temp.sceneName << "\n";
+        JsonLoad::SaveCurrentScene(path, sceneFiles[selectedScene]);
+        std::cout << "[Editor] Saved scene: " << path << "\n";
     }
 
     //new scene
@@ -3105,10 +3092,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         camSet.zoom = camSpawnZoom;
         camSet.worldMin = cam.GetWorldMin();
         camSet.worldMax = cam.GetWorldMax();
-        std::string srcName = sm.GetCurrentSceneName();
-
-        // 3. Save temp.json with correct sceneName and camera settings
-        sm.SaveScene(sm.GetTempScenePath(), camSet, srcName);
+        sm.SaveScene(sm.GetTempScenePath(), camSet);
 
         // >>> FIX: RELOAD temp scene so JSON applies cameraSpawn
         sm.LoadScene(sm.GetCurrentScene());
@@ -3132,44 +3116,30 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
     {
-        // 1. Capture GAMEPLAY camera BEFORE switching to editor
-        Camera& cam = Camera::GetInstance();
+        // Back to editor mode
+        sm.EnterEditMode();
 
+        // SAVE CURRENT SCENE → temp.json (overwrite)
         SavedScene::SavedCamera camSet;
+        Camera& cam = Camera::GetInstance();
         camSet.pos = cam.GetPosition();
         camSet.zoom = cam.GetZoom();
         camSet.worldMin = cam.GetWorldMin();
         camSet.worldMax = cam.GetWorldMax();
 
-        // 2. Switch to editor
-        sm.EnterEditMode();
+        sm.SaveScene(sm.GetTempScenePath(), camSet);
 
-        // 3. Save scene USING gameplay camera
-        // Preserve the source scene name (e.g. "level1")
-        std::string srcName = sm.GetCurrentSceneName();
-
-        // Save temp.json using source sceneName
-        sm.SaveScene(sm.GetTempScenePath(), camSet, srcName);
-
-
-        // 4. Reload updated temp.json (loads gameplay camera)
+        // RELOAD the updated temp.json
         JsonLoad::ClearAllEntities();
         JsonLoad::LoadScene(sm.GetTempScenePath());
 
-        // 5. 🔥 NOW reset editor camera, BUT DO NOT TOUCH gameplay camera
-        Camera& editorCam = Camera::GetInstance();
-        editorCam.SetMode(Camera::Mode::EDITOR);
-
-        // Reset WITHOUT overwriting spawn positions
-        editorCam.ResetToCenter();
-
+        // Editor reset
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
-        std::cout << "[Editor] Gameplay stopped.\n";
+        Camera::GetInstance().ResetToCenter();
 
+        std::cout << "[Editor] Gameplay stopped.\n";
         isPlaying = false;
     }
-
-
 
     if (inEdit) { ImGui::EndDisabled(); }
 

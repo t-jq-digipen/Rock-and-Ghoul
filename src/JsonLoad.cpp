@@ -621,10 +621,6 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
     //j["cameraZoom"] = s.camSettings.zoom;
     //j["worldMin"] = { s.camSettings.worldMin.x, s.camSettings.worldMin.y };
     //j["worldMax"] = { s.camSettings.worldMax.x, s.camSettings.worldMax.y };
-    j["cameraSpawn"] = { s.camSettings.pos.x, s.camSettings.pos.y };
-    j["cameraZoom"] = s.camSettings.zoom;
-    j["worldMin"] = { s.camSettings.worldMin.x, s.camSettings.worldMin.y };
-    j["worldMax"] = { s.camSettings.worldMax.x, s.camSettings.worldMax.y };
 
 
 }
@@ -1230,52 +1226,3 @@ void JsonLoad::ClearAllEntities() {
         return false;
     }
 }*/
-
-SavedScene JsonLoad::LoadSavedScene(const std::string& path)
-{
-    SavedScene s;
-
-    if (!std::filesystem::exists(path)) {
-        std::cerr << "[JsonLoad] LoadSavedScene: File not found: " << path << "\n";
-        return s;
-    }
-
-    try {
-        std::ifstream ifs(path);
-        json j;
-        ifs >> j;
-
-        // Scene name
-        if (j.contains("sceneName"))
-            s.sceneName = j["sceneName"].get<std::string>();
-
-        // Camera spawn
-        if (j.contains("cameraSpawn") && j["cameraSpawn"].is_array()) {
-            s.camSettings.pos.x = j["cameraSpawn"][0].get<float>();
-            s.camSettings.pos.y = j["cameraSpawn"][1].get<float>();
-        }
-
-        // Camera zoom
-        if (j.contains("cameraZoom"))
-            s.camSettings.zoom = j["cameraZoom"].get<float>();
-
-        // World min
-        if (j.contains("worldMin") && j["worldMin"].is_array()) {
-            s.camSettings.worldMin.x = j["worldMin"][0].get<float>();
-            s.camSettings.worldMin.y = j["worldMin"][1].get<float>();
-        }
-
-        // World max
-        if (j.contains("worldMax") && j["worldMax"].is_array()) {
-            s.camSettings.worldMax.x = j["worldMax"][0].get<float>();
-            s.camSettings.worldMax.y = j["worldMax"][1].get<float>();
-        }
-    }
-    catch (const std::exception& e) {
-        std::cerr << "[JsonLoad] LoadSavedScene ERROR: " << e.what() << "\n";
-    }
-
-    return s;
-}
-
-
