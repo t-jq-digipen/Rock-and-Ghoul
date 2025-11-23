@@ -44,47 +44,41 @@ void PhysicsSystem::Update(float dt) {
         std::cout << "[PhysicsSystem] Update called, dt=" << dt << std::endl;
     }
 
-    // getting number of fixed timesteps to execute this frame
-    int numSteps = frameRate.GetCurrentNumberOfSteps();
-    
-    // loop for each fixed timestep that needs to be simulated
-    for (int step = 0; step < numSteps; ++step)
+    // Step 1: Move entities with physics
+    for (auto& [entID, phyComp] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>())
     {
-        // Step 1: Move entities with physics
-        for (auto& [entID, phyComp] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>())
-        {
-            // Get transform component to multiply by fixed dt
+        // Get transform component to multiply by fixed dt
+        TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
+        // Update physics component using fixed dt
+        phyComp.Update(dt);
+        // Update transform positions
+        Vec2 deltaPos = RG_Scale(phyComp.Get_Vel(), dt);
+        transComp.pos = RG_Add(transComp.pos, deltaPos);
+    }
+
+    // Step 2: Update collider hitboxes after all transforms moved
+    for (auto& [entID, collider] : m_registry.Get_ComponentMap<ColliderComponent>())
+    {
+        if (m_registry.Has_Component<TransformComponent>(entID)) {
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
-            // Update physics component using fixed dt
-            phyComp.Update(dt);
-            // Update transform positions
-            Vec2 deltaPos = RG_Scale(phyComp.Get_Vel(), dt);
-            transComp.pos = RG_Add(transComp.pos, deltaPos);
-        }
-
-        // Step 2: Update collider hitboxes after all transforms moved
-        for (auto& [entID, collider] : m_registry.Get_ComponentMap<ColliderComponent>())
-        {
-            if (m_registry.Has_Component<TransformComponent>(entID)) {
-                TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
-                collider.UpdateHitboxes(transComp.pos);
-            }
-        }
-
-        std::vector<Entity> expired{};
-        for (auto& [entID, lifeComp] : m_registry.Get_ComponentMap<LifetimeComponent>())
-        {
-            lifeComp.age += dt;
-            if (lifeComp.age >= lifeComp.lifetime)
-            {
-                expired.push_back(entID);
-            }
-        }
-        for (Entity eID : expired)
-        {
-            m_registry.Remove_Entity(eID);
+            collider.UpdateHitboxes(transComp.pos);
         }
     }
+
+    std::vector<Entity> expired{};
+    for (auto& [entID, lifeComp] : m_registry.Get_ComponentMap<LifetimeComponent>())
+    {
+        lifeComp.age += dt;
+        if (lifeComp.age >= lifeComp.lifetime)
+        {
+            expired.push_back(entID);
+        }
+    }
+    for (Entity eID : expired)
+    {
+        m_registry.Remove_Entity(eID);
+    }
+
     // Collili checks!!(or different place?)
     // Collili reaction!!!
     collisionManager.Clear();
