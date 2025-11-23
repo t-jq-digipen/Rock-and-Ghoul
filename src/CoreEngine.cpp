@@ -82,7 +82,7 @@ FrameRateController frameRate(60);
 // Legacy globals (still used in some systems like LogicSystem / scripts)
 //GSM   gsm;
 float g_dt;           // Global fixed dt
-bool  g_gamePaused = false;
+bool  g_gamePaused = true;
 
 void CoreEngine::AddSystem(ISystem* sys)
 {
@@ -234,6 +234,11 @@ void CoreEngine::Run()
 
      
         using clock = std::chrono::high_resolution_clock;
+
+        if (sm.IsPaused() || sm.IsEditor())
+        {
+            fixedDt = 0.f;
+        }
 
         if (sm.IsPlaying() && !sm.IsPaused())
         {

@@ -623,6 +623,7 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
     j["worldMin"] = { s.camSettings.worldMin.x, s.camSettings.worldMin.y };
     j["worldMax"] = { s.camSettings.worldMax.x,s.camSettings.worldMax.y };
 
+    j["sceneType"] = static_cast<int>(s.sceneType);
 }
 
 /**
@@ -703,6 +704,13 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
     // Only apply bounds if JSON had both
     if (j.contains("worldMin") && j.contains("worldMax")) {
         cam.SetBounds(s.camSettings.worldMin, s.camSettings.worldMax);
+    }
+
+    if (j.contains("sceneType")) {
+        s.sceneType = static_cast<SceneType>(j["sceneType"]);
+    }
+    else {
+        s.sceneType = ST_MENU;
     }
 
 
@@ -796,6 +804,8 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
 
         scene.camSettings = camSettings;
 
+        scene.sceneType = SceneManager::Get().GetSceneType();
+
         json j;
         to_json(j, scene);
         return FileIO::WriteFile(filepath, j.dump(4));
@@ -831,6 +841,8 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         std::cout << "Loading scene: " << scene.sceneName << std::endl;
         std::cout << "Number of entities: " << scene.entities.size() << std::endl;
+
+        SceneManager::Get().SetSceneType(scene.sceneType);
 
         // Create all entities
         for (const auto& savedEntity : scene.entities) {
@@ -873,6 +885,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.size = b.size;
             cfg.color = b.color;
             cfg.shape = StringToButtonShape(b.shape);
+            cfg.action = b.action;
             if (b.action == "LoadLevel1") {
                 cfg.onClick = []() {
                     SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json");
@@ -895,6 +908,15 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
             GuiSystem::Get().AddButton(cfg);
         }
+
+        SavedScene::SavedCamera& camSet = scene.camSettings;
+
+        Camera& cam = Camera::GetInstance();
+
+        cam.SetPosition(camSet.pos);
+        cam.SetZoom(camSet.zoom);
+
+        cam.SetBounds(camSet.worldMin, camSet.worldMax);
 
         return true;
     }

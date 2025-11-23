@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "LogicSystem.h"
 #include <filesystem>
+#include "ImguiSystem.h"
 
 SceneManager& SceneManager::Get()
 {
@@ -37,11 +38,12 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
         if (JsonLoad::LoadScene(path))
         {
             currentScenePath = path;
+            ImGuiSystem::UpdateSpawnCamera();
 
             auto p = std::filesystem::path(path);
             tempScenePath = "../Assets/saves/temp.json";
-           // ApplySceneDefaults();
-            EnterPlayMode();
+            // ApplySceneDefaults();
+            // EnterPlayMode();
             std::cout << "[SceneManager] Loaded scene: " << path << "\n";
         }
         else

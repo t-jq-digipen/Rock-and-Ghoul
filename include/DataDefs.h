@@ -66,6 +66,15 @@ struct SavedPhysics {
 };
 
 /**
+ * @enum SceneType
+ * @brief Determines if a scene is a menu or game type.
+ */
+enum SceneType {
+    ST_MENU,
+    ST_GAME
+};
+
+/**
  * @struct SavedScene
  * @brief Serializable scene structure with all entities.
  */
@@ -95,6 +104,8 @@ struct SavedScene {
     };
 
     SavedCamera camSettings;
+
+    SceneType sceneType;
 
     /**
      * @brief Default constructor with no name.

@@ -89,7 +89,7 @@ bool   ImGuiSystem::showColliders = false; //rendering system aabb boxes
 bool   ImGuiSystem::showVelocity = false;
 bool   ImGuiSystem::showSpatialGrid = false;
 bool   ImGuiSystem::dragEditMode = false; //drag handle
-bool   ImGuiSystem::guiEnabled = false; //f1 
+bool   ImGuiSystem::guiEnabled = true; //f1 
 Entity ImGuiSystem::selectedEntity = INVALID_ENTITY;
 
 Vec2   ImGuiSystem::camSpawnPos = { 1920.f / 2.0f, 1080.f / 2.0f };
@@ -586,6 +586,7 @@ void ImGuiSystem::Initialize() {
 
 void ImGuiSystem::Update(float dt)
 {
+    Render::GetInstance().EndSceneCapture();
     (void)dt;
     if (ImGui::IsKeyPressed(ImGuiKey_W)) gizmoOperation = ImGuizmo::TRANSLATE;
     if (ImGui::IsKeyPressed(ImGuiKey_E)) gizmoOperation = ImGuizmo::ROTATE;
@@ -662,7 +663,7 @@ void ImGuiSystem::Update(float dt)
         ImGuiID dock_left = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left, 0.20f, nullptr, &dockspaceID);
         ImGuiID dock_right = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, nullptr, &dockspaceID);
         ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Down, 0.4f, nullptr, &dockspaceID);
-        ImGuiID dock_left_top = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.4f, nullptr, &dock_left);
+        ImGuiID dock_left_top = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.5f, nullptr, &dock_left);
         //wtv left
         ImGuiID dock_left_bottom = dock_left;
 
@@ -758,6 +759,7 @@ void ImGuiSystem::Update(float dt)
         {
             SavedEntity snapshot = m_registry.Save_Entity(selectedEntity);
             UndoSystem::Get().RecordRemove(snapshot);
+            m_registry.Remove_Entity(selectedEntity);
             selectedEntity = INVALID_ENTITY;
         }
 
@@ -1408,7 +1410,12 @@ void ImGuiSystem::ShowSceneBrowser()
     if (ImGui::Button("Save Current Scene") && selectedScene >= 0)
     {
         std::string path = sceneFolder + sceneFiles[selectedScene] + ".json";
-        JsonLoad::SaveCurrentScene(path, sceneFiles[selectedScene]);
+        SavedScene::SavedCamera camSet;
+        camSet.pos = camSpawnPos;
+        camSet.zoom = camSpawnZoom;
+        camSet.worldMin = sceneMin;
+        camSet.worldMax = sceneMax;
+        JsonLoad::SaveCurrentScene(path, sceneFiles[selectedScene], camSet);
         std::cout << "[Editor] Saved scene: " << path << "\n";
     }
 
@@ -2557,6 +2564,15 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
             isDragging = false;
     }
     ImGui::SeparatorText("World settings");
+
+    static const char* sceneTypes[] = { "Menu", "Game" };
+    int currType = static_cast<int>(SceneManager::Get().GetSceneType());
+    if (ImGui::Combo("Scene Type", &currType, sceneTypes, IM_ARRAYSIZE(sceneTypes)))
+    {
+        SceneManager::Get().SetSceneType(static_cast<SceneType>(currType));
+    }
+
+    if (currType == ST_MENU) { ImGui::BeginDisabled(); }
     ImGui::InputFloat2("Size", &sceneSize.x);
     if (ImGui::Button("Set size"))
     {
@@ -2569,6 +2585,8 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
         }
         cam.SetBounds(sceneMin, sceneMax);
     }
+    if (currType == ST_MENU) { ImGui::EndDisabled(); }
+
 
     ImGui::SeparatorText("Camera spawn settings");
     // Spawn position
@@ -3088,6 +3106,8 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 
         Camera& cam = Camera::GetInstance();
         cam.SetBounds(sceneMin, sceneMax);
+        cam.SetPosition(camSpawnPos);
+        cam.SetZoom(camSpawnZoom);
 
         // 2) NOW camera is GAME camera — save it
         SavedScene::SavedCamera camSet;
@@ -3123,8 +3143,14 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 
         // 3) Restore EDITOR camera only (we do NOT use temp camera)
         Camera& cam = Camera::GetInstance();
-        cam.SetMode(Camera::Mode::EDITOR);
+        camSpawnPos = cam.GetPosition();
+        camSpawnZoom = cam.GetZoom();
+        sceneMin = cam.GetWorldMin();
+        sceneMax = cam.GetWorldMax();
+        sceneSize = sceneMax - sceneMin;
 
+        cam.SetMode(Camera::Mode::EDITOR);
+        cam.ResetToCenter();
 
         ImGuiSystem::selectedEntity = INVALID_ENTITY;
 
@@ -3279,6 +3305,14 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
     }
 }
 
+void ImGuiSystem::UpdateSpawnCamera() {
+    Camera& cam = Camera::GetInstance();
+    camSpawnPos = cam.GetPosition();
+    camSpawnZoom = cam.GetZoom();
+    sceneMin = cam.GetWorldMin();
+    sceneMax = cam.GetWorldMax();
+    sceneSize = sceneMax - sceneMin;
+}
 
 
 void ImGuiSystem::Shutdown() {

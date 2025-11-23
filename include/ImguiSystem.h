@@ -69,6 +69,8 @@ public:
     static bool dragEditMode;
     static void ShowLayerCollisionMatrix();
 
+    static void UpdateSpawnCamera();
+
     static Vec2 camSpawnPos;
     static float camSpawnZoom;
 

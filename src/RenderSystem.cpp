@@ -205,7 +205,26 @@ void RenderSystem::Update(float dt) {
    // GameState currState = GSM_CurrentState();  
 
 
-    if (SceneManager::Get().GetCurrentSceneName() == "MainMenu")
+    //if (SceneManager::Get().GetCurrentSceneName() == "MainMenu")
+    //{
+    //    // Letterboxed menu background
+    //    renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
+
+    //    for (GLuint tex : s_backgroundTextures)
+    //    {
+    //        renderer.DrawLetterboxedTexture(tex);
+    //    }
+    //}
+    //else
+    //{
+    //    // Gameplay or editor: fullscreen world background
+    //    for (GLuint tex : s_backgroundTextures)
+    //    {
+    //        renderer.DrawFullscreenTexture(tex, true);
+    //    }
+    //}
+
+    if (SceneManager::Get().GetSceneType() == ST_MENU)
     {
         // Letterboxed menu background
         renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
@@ -215,7 +234,7 @@ void RenderSystem::Update(float dt) {
             renderer.DrawLetterboxedTexture(tex);
         }
     }
-    else
+    else // ST_GAME
     {
         // Gameplay or editor: fullscreen world background
         for (GLuint tex : s_backgroundTextures)
@@ -716,7 +735,7 @@ void RenderSystem::Update(float dt) {
         batch.clear();
     }
     if (ImGuiSystem::guiEnabled) {
-        renderer.EndSceneCapture();
+        // renderer.EndSceneCapture();
     }
     //renderer.EndSceneCapture();
     //renderer.PresentScene();

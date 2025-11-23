@@ -2,13 +2,14 @@
 #include <string>
 #include "DataDefs.h"
 
+
 class SceneManager
 {
 public:
     static SceneManager& Get();
     // --- Simulation State ---
     bool isPlaying = false;    // True = gameplay
-    bool isPaused = false;    // Optional pause
+    bool isPaused = true;    // Optional pause
     bool inEditMode = true;     // True = editor mode
 
     // Optional helper functions
@@ -29,10 +30,14 @@ public:
     const std::string& GetTempScenePath() const { return tempScenePath; }
     std::string GetCurrentSceneName() const;
     void ApplySceneDefaults();
+    SceneType GetSceneType() { return sceneType; }
+    void SetSceneType(SceneType type) { sceneType = type; }
+
 private:
     SceneManager() = default;
 
     std::string currentScenePath;      // Which .json is currently loaded
     std::string tempScenePath = "../Assets/saves/temp.json";         // Auto-generated temp version
     std::string pendingScene = "";
+    SceneType sceneType = ST_MENU;
 };

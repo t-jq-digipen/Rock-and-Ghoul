@@ -3,10 +3,13 @@
         "../Assets/MainMenu_Background.JPG",
         "../Assets/MainMenu_Rock&Ghoul.PNG"
     ],
-
-    "fonts": "../Assets/fontAssets.json", 
-    
+    "cameraSpawn": [
+        0.0,
+        0.0
+    ],
+    "cameraZoom": 1.0,
     "entities": [],
+    "fontConfig": "../Assets/fontAssets.json",
     "gui": {
         "buttons": [
             {
@@ -47,5 +50,14 @@
             }
         ]
     },
-    "sceneName": "MainMenu"
+    "sceneName": "MainMenu",
+    "sceneType": 0,
+    "worldMax": [
+        1920.0,
+        1080.0
+    ],
+    "worldMin": [
+        0.0,
+        0.0
+    ]
 }
