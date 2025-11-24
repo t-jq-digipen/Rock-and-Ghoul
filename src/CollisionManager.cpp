@@ -2,21 +2,27 @@
  * @file        CollisionManager.cpp
  * @author      Yasmin Tazi        | yasmin.t@digipen.edu
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        19 NOV 2025
+ * @date        24 NOV 2025
  *
  * @brief
  *
- * This system iterates over all entities that have both Physics and Transform
- * components and performs collision detection between their collision.
+ * This system iterates over all entities that have Collider and Transform
+ * components and performs collision detection using a spatial grid for
+ * broad-phase optimization and collision layers for filtering.
  *
  * When an overlap is detected, a CollisionEvent is created and stored for
  * later processing.
  *
- *   - Position correction: computes the penetration depth and displaces the dynamic obj
- *      along the collision normal so shapes no longer overlap.
- *   - Velocity correction: projects the obj velocity onto the normal and removes any inward component, preventing continued motion into
- *     the static object.
- *
+ *   - Collision layers: entities are filtered by layer/mask to determine
+ *     which pairs should collide (e.g. Projectile vs Enemy).
+ *   - Position correction: computes the penetration depth and displaces the
+ *     dynamic obj along the collision normal so shapes no longer overlap.
+ *   - Velocity correction: projects the obj velocity onto the normal and
+ *     removes any inward component, preventing continued motion into the
+ *     static object.
+ *   - Trigger collisions: when a trigger collider with a triggerEvent set
+ *     collides with another entity, publishes a TriggerEvent to the EventBus
+ *     and removes the trigger's collider so it only fires once (projectiles).
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -468,29 +474,33 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected, bo
     // Always generate collision event
     AddEvent(a, b);
 
-    // Check for projectile enemy collision and print to console
-    if (m_registry.Has_Component<ColliderComponent>(a) && m_registry.Has_Component<ColliderComponent>(b)) {
-        auto& colliderA = m_registry.Get_Component<ColliderComponent>(a);
-        auto& colliderB = m_registry.Get_Component<ColliderComponent>(b);
-
-        uint32_t projectileLayer = CollisionLayerManager::Get().GetLayerBit("Projectile");
-        uint32_t enemyLayer = CollisionLayerManager::Get().GetLayerBit("Enemy");
-
-        // Check if one is projectile and other is enemy
-        bool projectileHitEnemy = (colliderA.GetLayer() == projectileLayer && colliderB.GetLayer() == enemyLayer) ||
-                                   (colliderA.GetLayer() == enemyLayer && colliderB.GetLayer() == projectileLayer);
-
-        if (projectileHitEnemy) {
-            std::cout << "[COLLISION] Projectile hit Enemy! YIPPEE!" << std::endl;
-        }
-    }
-
-    // If it's a trigger, skip physics response (no impulse resolution)
+    // If it's a trigger, publish event and skip physics response
     if (isTrigger) {
-        // TODO: Publish trigger event to EventBus for game logic
-        // Example: EventBus::Get().Publish<TriggerEvent>(a, b);
-        // Debug: uncomment to see trigger collisions
-        // std::cout << "[Collision] Trigger collision: Entity " << a << " <-> " << b << std::endl;
+        // Get trigger event names from colliders
+        if (m_registry.Has_Component<ColliderComponent>(a) && m_registry.Has_Component<ColliderComponent>(b)) {
+            auto& colliderA = m_registry.Get_Component<ColliderComponent>(a);
+            auto& colliderB = m_registry.Get_Component<ColliderComponent>(b);
+
+            // Publish event if either collider has a triggerEvent set
+            if (!colliderA.triggerEvent.empty()) {
+                TriggerEvent event;
+                event.a = a;
+                event.b = b;
+                event.eventName = colliderA.triggerEvent;
+                EventBus::Get().PushEvent<TriggerEvent>(event);
+                // Remove collider from trigger entity so it only fires once
+                m_registry.Remove_Component<ColliderComponent>(a);
+            }
+            if (!colliderB.triggerEvent.empty()) {
+                TriggerEvent event;
+                event.a = a;
+                event.b = b;
+                event.eventName = colliderB.triggerEvent;
+                EventBus::Get().PushEvent<TriggerEvent>(event);
+                // Remove collider from trigger entity so it only fires once
+                m_registry.Remove_Component<ColliderComponent>(b);
+            }
+        }
         return;
     }
 
@@ -674,7 +684,8 @@ std::string ColliderComponent::Serialize() const {
         {"circle_rad", circlehitbox.rad},
         {"layer", layerName},
         //{"mask", maskNames},
-        {"isTrigger", isTrigger}, {"isActive", isActive}
+        {"isTrigger", isTrigger}, {"isActive", isActive},
+        {"triggerEvent", triggerEvent}
     };
     return j.dump();
 }
@@ -696,6 +707,7 @@ ColliderComponent ColliderComponent::DeSerialize(Entity eID, const std::string& 
 
     ColliderComponent comp(aabb, circle, j.value("isActive", true));
     comp.isTrigger = j.value("isTrigger", false);
+    comp.triggerEvent = j.value("triggerEvent", "");
 
     // Load layer/mask names and convert to bits
     if (j.contains("layer")) {

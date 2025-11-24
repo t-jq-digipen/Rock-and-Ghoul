@@ -1,7 +1,8 @@
 /* ========================================================
  * @file	    EnemySystem.cpp
  * @author	    Manfred Sim         | manfred.sim@digipen.edu
- * @date	    01 NOV 2025
+ * @co-author	Yasmin Tazi			| yasmin.t@digipen.edu
+ * @date	    24 NOV 2025
  *
  * @brief	Enemy System for handling enemy behaviour.
  *
@@ -21,8 +22,10 @@
  * once it reaches its starting position. Otherwise if player
  * enters the enemy's detection radius, enemy will return to
  * E_CHASING state again and continue to chase after the player.
+ * - Enemy subscribes to ProjectileHitEnemy trigger event, which
+  * fires when a projectile collides with an enemy.
  *
- * Copyright ? 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -38,6 +41,7 @@
 #include "GameScripts.h"
 #include "CoreEngine.h"
 #include "SceneManager.h"
+#include "CollisionManager.h"
 
 // Temporary const values
 static constexpr float DETECT_RADIUS = 300.f; // detection radius
@@ -324,6 +328,13 @@ void EnemySystem::Initialize()
 		enemy.End = [](Entity e) { EnemyAI::End(e); };
 		LogicSystem::Get().RegisterScript("ManfredEnemy", enemy, ScriptID::GHOUL);
 	}
+
+	// Subscribe to ProjectileHitEnemy event (just prints for now as placeholder)
+	EventBus::Get().Subscribe<TriggerEvent>([](const TriggerEvent& e) {
+		if (e.eventName == "ProjectileHitEnemy") {
+			std::cout << "[COLLISION] Projectile hit Enemy! YIPPEE!" << std::endl;
+		}
+	});
 }
 
 void EnemySystem::Update(float dt)

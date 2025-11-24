@@ -2,7 +2,7 @@
     "entities": [
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":50.0,\"aabb_dimY\":50.0,\"aabb_maxX\":0.0,\"aabb_maxY\":0.0,\"aabb_minX\":0.0,\"aabb_minY\":0.0,\"circle_posX\":0.0,\"circle_posY\":0.0,\"circle_rad\":25.0,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Projectile\",\"mask\":[\"Player\",\"Enemy\",\"Wall\"]}",
+                "Collider": "{\"aabb_dimX\":50.0,\"aabb_dimY\":50.0,\"aabb_maxX\":0.0,\"aabb_maxY\":0.0,\"aabb_minX\":0.0,\"aabb_minY\":0.0,\"circle_posX\":0.0,\"circle_posY\":0.0,\"circle_rad\":25.0,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Projectile\",\"mask\":[\"Player\",\"Enemy\",\"Wall\"],\"triggerEvent\":\"ProjectileHitEnemy\"}",
                 "Lifetime": "{\"age\":0.0,\"lifetime\":3.005000114440918}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.0,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":500.0,\"velY\":0.0}",
                 "Render": "{\"renderData\":\"{\\\"animated\\\":false,\\\"scaleX\\\":0.5,\\\"scaleY\\\":0.5,\\\"texturePath\\\":\\\"../Assets/right.png\\\"}\",\"renderLayer\":1,\"renderType\":1}",

@@ -10,6 +10,9 @@
  * such as managing forces, calculating net velocities and
  * updating an entity based on the forces applied.
  *
+ * Includes backward compatibility migration that converts old Physics
+ * collision data to ColliderComponent (skipped if Collider already exists).
+ *
  * The bulk of the updates happen in PhysicsSystem.cpp
  *
  * Copyright © 2025 DigiPen, All rights reserved.

@@ -7,8 +7,13 @@
  * @brief
  *
  * This header defines the CollisionManager class, which is responsible
- * for detecting overlaps between entities based on their Physics and
- * Shape components, storing collision events, and resolving them.
+ * for detecting overlaps between entities based on their Collider
+ * components, storing collision events, and resolving them.
+ *
+ * Also defines:
+ *   - CollisionLayerManager: manages collision layers and masks
+ *   - CollisionEvent: stores collision pairs for processing
+ *   - TriggerEvent: event published when trigger colliders overlap
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -24,6 +29,12 @@
 struct CollisionEvent {
     Entity a;
     Entity b;
+};
+
+struct TriggerEvent : public IEvent {
+    Entity a;
+    Entity b;
+    std::string eventName; // Change in JSON file
 };
 
 // convert a tag enum to a readable string

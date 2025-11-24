@@ -288,6 +288,7 @@ struct ColliderComponent {
 	uint32_t layerBit = 0;                       // Runtime layer bit
 	// uint32_t maskBit = 0;                        // Runtime mask bit
 	bool isTrigger = false;                      // If true, generate event but skip physics response
+	std::string triggerEvent = "";               // Event name to publish on trigger collision
 
 	// Collision state
 	bool isActive = true;    // If false, skip collision checks entirely
