@@ -349,11 +349,6 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
     // Safety check: both entities must have all required components
     if (!m_registry.Has_Component<Physics::PhysicsComponent>(a) ||
         !m_registry.Has_Component<Physics::PhysicsComponent>(b)) {
-        static int missingPhysicsCount = 0;
-        if (++missingPhysicsCount % 60 == 0) {
-            std::cout << "[Collision] WARNING: Entity " << a << " or " << b
-                << " missing PhysicsComponent, skipping response" << std::endl;
-        }
         return;
     }
 
@@ -373,11 +368,6 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
     float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - RG_Abs(diff.y);
 
     if (overlapX <= 0 || overlapY <= 0) {
-        static int noOverlapDebug = 0;
-        if (++noOverlapDebug % 60 == 0) {
-            std::cout << "[Collision] No overlap detected in response: overlapX=" << overlapX
-                << " overlapY=" << overlapY << std::endl;
-        }
         return;
     }
 
@@ -397,12 +387,6 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
     // minimal position correction to prevent sinking
     bool aStatic = physA.IsStatic();
     bool bStatic = physB.IsStatic();
-
-    static int staticDebug = 0;
-    if (++staticDebug % 60 == 0) {
-        std::cout << "[Collision] Entity " << a << " static=" << aStatic
-            << " | Entity " << b << " static=" << bStatic << std::endl;
-    }
 
     const float separationBuffer = 0.1f;  // minimal buffer to prevent sinking
 
@@ -435,10 +419,6 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
 
     // Don't resolve if separating
     if (velAlongNormal > -0.1f) {
-        static int separatingDebug = 0;
-        if (++separatingDebug % 60 == 0) {
-            std::cout << "[Collision] Objects separating, velAlongNormal=" << velAlongNormal << std::endl;
-        }
         return;
     }
 
@@ -472,12 +452,6 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
     Vec2 impulse = RG_Scale(normal, j);
 
     // Apply impulses, changes velocity, not position
-    static int impulseDebug = 0;
-    if (++impulseDebug % 60 == 0) {
-        std::cout << "[Collision] Applying impulse j=" << j
-            << " | aStatic=" << aStatic << " bStatic=" << bStatic << std::endl;
-    }
-
     if (!aStatic) {
         physA.ApplyLinearImpulse(impulse);
     }
@@ -494,6 +468,23 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected, bo
     // Always generate collision event
     AddEvent(a, b);
 
+    // Check for projectile enemy collision and print to console
+    if (m_registry.Has_Component<ColliderComponent>(a) && m_registry.Has_Component<ColliderComponent>(b)) {
+        auto& colliderA = m_registry.Get_Component<ColliderComponent>(a);
+        auto& colliderB = m_registry.Get_Component<ColliderComponent>(b);
+
+        uint32_t projectileLayer = CollisionLayerManager::Get().GetLayerBit("Projectile");
+        uint32_t enemyLayer = CollisionLayerManager::Get().GetLayerBit("Enemy");
+
+        // Check if one is projectile and other is enemy
+        bool projectileHitEnemy = (colliderA.GetLayer() == projectileLayer && colliderB.GetLayer() == enemyLayer) ||
+                                   (colliderA.GetLayer() == enemyLayer && colliderB.GetLayer() == projectileLayer);
+
+        if (projectileHitEnemy) {
+            std::cout << "[COLLISION] Projectile hit Enemy! YIPPEE!" << std::endl;
+        }
+    }
+
     // If it's a trigger, skip physics response (no impulse resolution)
     if (isTrigger) {
         // TODO: Publish trigger event to EventBus for game logic
@@ -501,12 +492,6 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected, bo
         // Debug: uncomment to see trigger collisions
         // std::cout << "[Collision] Trigger collision: Entity " << a << " <-> " << b << std::endl;
         return;
-    }
-
-    // Debug: see physics collisions
-    static int collisionCount = 0;
-    if (++collisionCount % 60 == 0) {  // Print every 60th collision
-        std::cout << "[Collision] Physics response: Entity " << a << " <-> " << b << std::endl;
     }
 
     // Apply physics-based collision response
@@ -523,15 +508,8 @@ void CollisionManager::CheckCollisions() {
     spatialGrid.Clear();
 
     // BROAD PHASE: Build spatial grid
-    static int broadPhaseDebug = 0;
-    int insertCount = 0;
     for (auto& [entity, collider] : colliders) {
         if (!collider.IsActive() || !m_registry.Has_Component<TransformComponent>(entity)) {
-            if (++broadPhaseDebug % 120 == 0 && entity == 6) {
-                std::cout << "[Collision] Entity 6 (PLAYER) SKIPPED in broad phase! Active="
-                    << collider.IsActive() << " HasTransform="
-                    << m_registry.Has_Component<TransformComponent>(entity) << std::endl;
-            }
             continue;
         }
 
@@ -540,11 +518,6 @@ void CollisionManager::CheckCollisions() {
 
         // Insert into spatial grid
         spatialGrid.Insert(entity, collider.Get_AABB());
-        insertCount++;
-    }
-
-    if (++broadPhaseDebug % 120 == 0) {
-        std::cout << "[Collision] Broad phase: Inserted " << insertCount << " entities into spatial grid" << std::endl;
     }
 
     // NARROW PHASE: Get potential pairs from spatial grid and check them
@@ -587,20 +560,7 @@ void CollisionManager::CheckCollisions() {
         //    continue;
         //}
         if (!CollisionLayerManager::Get().ShouldCollide(layerA, layerB)) {
-            static int filterCount = 0;
-            //if (++filterCount % 60 == 0) {
-            //    std::cout << "[Collision] FILTERED: Entity " << a << " (layer=0x" << std::hex << layerA
-            //        //<< " mask=0x" << maskA 
-            //        << ") vs Entity " << b << " (layer=0x" << layerB
-            //        //<< " mask=0x" << maskB 
-            //        << ")" << std::dec << std::endl;
-            //}
             continue;
-        }
-
-        static int passedFilterCount = 0;
-        if (++passedFilterCount % 60 == 0) {
-            std::cout << "[Collision] PASSED FILTER: Entity " << a << " vs Entity " << b << std::endl;
         }
 
         // Skip wall-wall collisions obviously
@@ -642,31 +602,12 @@ void CollisionManager::CheckCollisions() {
                 CollisionIntersection_CA_Static(colliderB.Get_Circle(), colliderA.Get_AABB());
         }
 
-        static int hitDebug = 0;
-        if (++hitDebug % 60 == 0 && (a == 5 || b == 5)) {
-            std::cout << "[Collision] Entity " << a << " vs " << b << " HIT=" << hit << std::endl;
-        }
-
         if (hit) {
-            static int hitCounter = 0;
-            if (++hitCounter % 60 == 0) {
-                std::cout << "[Collision] HIT DETECTED: Entity " << a << " vs " << b
-                    << " | A.trigger=" << colliderA.IsTrigger()
-                    << " B.trigger=" << colliderB.IsTrigger() << std::endl;
-            }
-
             // Mark cells where collision occurred (intersection region only)
             spatialGrid.MarkCollisionBetween(colliderA.Get_AABB(), colliderB.Get_AABB());
 
             // Check if either entity is a trigger
             bool isTrigger = colliderA.IsTrigger() || colliderB.IsTrigger();
-
-            if (isTrigger && hitCounter % 60 == 0) {
-                std::cout << "[Collision] TRIGGER collision, skipping physics response" << std::endl;
-            }
-            else if (hitCounter % 60 == 0) {
-                std::cout << "[Collision] NON-TRIGGER collision, applying physics response" << std::endl;
-            }
 
             CollisionActions(a, b, true, isTrigger);
         }

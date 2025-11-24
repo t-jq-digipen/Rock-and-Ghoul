@@ -1,6 +1,6 @@
 /* ========================================================
  * @file		Fretboard.cpp
- * @author		? | ?@digipen.edu
+ * @author		Yasmin Tazi | yasmin.t@digipen.edu
  * @date		01 OCT 2025
  *
  * @brief	FIXTHISSHIT

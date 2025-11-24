@@ -417,8 +417,10 @@ namespace Physics {
 		phys.friction = j.value("friction", 0.1f);
 
 		// BACKWARD COMPATIBILITY: If old JSON has collision data, create ColliderComponent automatically
-		if (j.contains("aabb") || j.contains("circle") || j.contains("willCollide")) {
-			Registry& reg = Registry::Get();
+		// Skip if entity already has a ColliderComponent (loaded from JSON)
+		Registry& reg = Registry::Get();
+		if ((j.contains("aabb") || j.contains("circle") || j.contains("willCollide")) &&
+			!reg.Has_Component<ColliderComponent>(eID)) {
 
 			// Create AABB from old data
 			AABB aabb;

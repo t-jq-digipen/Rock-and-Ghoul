@@ -1,1 +1,1 @@
-{"Enemymask":["Player","Enemy","Projectile","Wall"],"Playermask":["Enemy","Wall"],"Projectilemask":[],"Wallmask":["Player","Enemy","Projectile","Wall"],"layers":["Player","Enemy","Projectile","Wall"]}
+{"Enemymask":["Player","Enemy","Projectile","Wall"],"Playermask":["Enemy","Wall"],"Projectilemask":["Enemy"],"Wallmask":["Player","Enemy","Projectile","Wall"],"layers":["Player","Enemy","Projectile","Wall"]}
