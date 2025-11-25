@@ -79,7 +79,7 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
 
    GLApp::baseWidth = w;
     GLApp::baseHeight = h;
-  is_fullscreen = false;
+  //is_fullscreen = false;
   if (!glfwInit()) {
     std::cout << "GLFW init has failed - abort program!!!" << std::endl;
     return false;
@@ -134,10 +134,9 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
 
   GLApp::width = w;
   GLApp::height = h;
-
-  GLApp::baseWidth = w;  // Keep original requested size as base
+  GLApp::baseWidth = w;
   GLApp::baseHeight = h;
-
+  is_fullscreen = false;
   // make the previously created OpenGL context current ...
   glfwMakeContextCurrent(GLApp::ptr_window);
   //glViewport(0, 0, mode->width, mode->height);
