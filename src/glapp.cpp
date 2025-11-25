@@ -96,7 +96,7 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
   // default behavior: colorbuffer is 32-bit RGBA, depthbuffer is 24-bits
   // don't change size of window
-  glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); //Make Window non-resizable (im assuming we using 1920x1080 for it?)
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); //Make Window non-resizable (im assuming we using 1920x1080 for it?)
 
   // size of viewport: width x height
   //GLApp::ptr_window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
