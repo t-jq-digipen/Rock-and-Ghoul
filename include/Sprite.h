@@ -37,8 +37,11 @@ namespace Sprite {
 		Image	m_image;	// Image struct
 		GLuint  m_oldtexID;	// old texID to check updates
 		Vec2	m_scale;	// Independant image scaling
-		bool	m_anim;		// Bool if sprite is animated or static
 		float	m_rot;		// Rotation value of image in degrees
+
+		bool flipX = false;
+		bool flipY = false;
+
 		Colour3 tint;
 	public:
 		/**
@@ -55,7 +58,7 @@ namespace Sprite {
 		 * @param scale_offset Scaling factor applied to the sprite.
 		 * @param anim Whether the sprite should be treated as animated (default = false).
 		 */
-		SpriteComponent(std::string const& path, Vec2 scale_offset, bool anim = false);
+		SpriteComponent(std::string const& path, Vec2 scale_offset);
 		/**
 		 * @brief Construct a sprite from an existing image with width/height scale.
 		 *
@@ -64,7 +67,7 @@ namespace Sprite {
 		 * @param height Height scaling factor.
 		 * @param anim Whether the sprite should be treated as animated (default = false).
 		 */
-		SpriteComponent(Image const& image, float const& width, float const& height, bool anim = false);
+		SpriteComponent(Image const& image, float const& width, float const& height);
 		/**
 		 * @brief Construct a sprite from an existing image with a 2D scale vector.
 		 *
@@ -72,7 +75,7 @@ namespace Sprite {
 		 * @param dimensions Scaling factor as a 2D vector.
 		 * @param anim Whether the sprite should be treated as animated (default = false).
 		 */
-		SpriteComponent(Image const& image, Vec2 const& dimensions, bool anim = false);
+		SpriteComponent(Image const& image, Vec2 const& dimensions);
 
 		/**
 		 * @brief Set the sprite's image.
@@ -106,11 +109,6 @@ namespace Sprite {
 		 * @return Constant reference to the scaling vector.
 		 */
 		const Vec2& Get_Scale() const;
-		/**
-		 * @brief Check if the sprite is animated. (A spritesheet)
-		 * @return True if animated, false otherwise.
-		 */
-		bool IsAnimated() const;
 
 		/**
 		 * @brief Get the file path of the texture associated with this sprite.
@@ -133,6 +131,13 @@ namespace Sprite {
 
 		void Update_ImageSize();
 
+		void SetFlipX(bool flip) { flipX = flip; }
+
+		void SetFlipY(bool flip) { flipY = flip; }
+
+		const bool GetFlipX() const { return flipX; }
+
+		const bool GetFlipY() const { return flipY; }
 
 		void Set_Tint(const Colour3& color) { tint = color; }
 		const Colour3& Get_Tint() const { return tint; }

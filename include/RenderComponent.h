@@ -82,7 +82,7 @@ private:
 	// Type for serialization/editing
 	//RenderType m_type;
 	// For rendering layers
-	RenderLayer m_layer;	
+	RenderLayer m_layer;
 
 public:
 	// Actual render data

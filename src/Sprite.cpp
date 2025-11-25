@@ -20,26 +20,24 @@ namespace Sprite {
 
 	// Sprite Component
 
-	SpriteComponent::SpriteComponent() : m_image(), m_oldtexID{}, m_scale { 0.f, 0.f }, m_anim{ false }, m_rot{ 0.f }, tint{ 0.0f, 0.0f, 0.0f } {}
+	SpriteComponent::SpriteComponent() : m_image(), m_oldtexID{}, m_scale { 0.f, 0.f }, m_rot{ 0.f }, tint{ 0.0f, 0.0f, 0.0f } {}
 
-	SpriteComponent::SpriteComponent(std::string const& path, Vec2 scale_offset, bool anim) : m_scale{ scale_offset }, m_anim{ anim }, m_rot{ 0.f } {
+	SpriteComponent::SpriteComponent(std::string const& path, Vec2 scale_offset) : m_scale{ scale_offset }, m_rot{ 0.f } {
 		m_image = CreateImage(path);
 		m_oldtexID = m_image.textureID;
 	}
 
-	SpriteComponent::SpriteComponent(Image const& image, float const& width, float const& height, bool anim) :
+	SpriteComponent::SpriteComponent(Image const& image, float const& width, float const& height) :
 		m_image(image),
 		m_oldtexID(m_image.textureID),
 		m_scale(width, height),
-		m_anim(anim),
 		m_rot{ 0.f }
 	{}
 
-	SpriteComponent::SpriteComponent(Image const& image, Vec2 const& dimensions, bool anim) :
+	SpriteComponent::SpriteComponent(Image const& image, Vec2 const& dimensions) :
 		m_image(image),
 		m_oldtexID(m_image.textureID),
 		m_scale(dimensions),
-		m_anim(anim),
 		m_rot{ 0.f }
 	{}
 
@@ -58,11 +56,6 @@ namespace Sprite {
 		m_scale = dimensions;
 	}
 
-	void SpriteComponent::Set_Animated(bool set)
-	{
-		m_anim = set;
-	}
-
 	const Image& SpriteComponent::Get_Image() const
 	{
 		return m_image;
@@ -72,9 +65,6 @@ namespace Sprite {
 	{
 		return m_scale;
 	}
-
-	bool SpriteComponent::IsAnimated() const
-	{ return m_anim; }
 
 	std::string SpriteComponent::Get_TexturePath() const
 	{ return Render::GetInstance().Get_TexturePath(m_image.textureID); }
@@ -114,9 +104,12 @@ namespace Sprite {
 			{"texturePath", Get_TexturePath()},
 			{"scaleX", m_scale.x},
 			{"scaleY", m_scale.y},
-			{"animated", m_anim}
+			{"rot", m_rot},
+			{"flipX", flipX},
+			{"flipY", flipY}
 
 		};
+
 		return j.dump();
 	}
 
@@ -127,7 +120,11 @@ namespace Sprite {
 		}
 		json j = json::parse(data);
 
-		return SpriteComponent(j["texturePath"], { j["scaleX"], j["scaleY"] }, j["animated"]);
+		SpriteComponent temp(j["texturePath"], { j["scaleX"], j["scaleY"] });
+		if (j.contains("flipX")) { temp.SetFlipX(j["flipX"]); }
+		if (j.contains("flipY")) { temp.SetFlipY(j["flipY"]); }
+
+		return temp;
 	}
 
 	Editor::ComponentData SpriteComponent::EditorData() {
@@ -148,7 +145,8 @@ namespace Sprite {
 
 		ret.Add_Data("Rotation", Editor::Widget_Float{ &m_rot, true, -360.f, 360.f });
 
-		ret.Add_Data("Animated", Editor::Widget_Checkmark{ &m_anim });
+		ret.Add_Data("Flip X", Editor::Widget_Checkmark{ &flipX,false });
+		ret.Add_Data("Flip Y", Editor::Widget_Checkmark{ &flipY,false });
 
 		return ret;
 	}
@@ -341,10 +339,7 @@ namespace Sprite {
 		}
 
 		json j = {
-			{"texturePath", m_sprite.Get_TexturePath()},
-			{"scaleX", m_sprite.Get_Scale().x},
-			{"scaleY", m_sprite.Get_Scale().y},
-			{"animated", m_sprite.IsAnimated()},
+			{"sprite", m_sprite.Serialize()},
 
 			{"totalRows", m_total_rows},
 			{"totalCols", m_total_cols},
@@ -356,6 +351,8 @@ namespace Sprite {
 			{"states", statesJson}
 
 		};
+
+		j["sprite"] = m_sprite.Serialize();
 
 		return j.dump();
 
@@ -370,8 +367,9 @@ namespace Sprite {
 
 		SpriteSheet ret{};
 
-
-		ret.m_sprite = SpriteComponent(j["texturePath"], { j["scaleX"], j["scaleY"] }, j["animated"]);
+		if (j.contains("sprite")) {
+			ret.m_sprite = SpriteComponent::DeSerialize(eID,j["sprite"]);
+		}
 
 		ActiveFrames frames;
 		frames.row = j.value("frameRow", 0);

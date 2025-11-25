@@ -136,6 +136,7 @@ struct Vec2 {
 	Vec2(float _x, float _y);
 
 	Vec2 operator*(float scalar) const;
+	Vec2 operator*(const Vec2& rhs) const;
 	Vec2 operator+(const Vec2& rhs) const;
 	Vec2 operator-(const Vec2& rhs) const;
 	Vec2 operator/(float scalar) const;

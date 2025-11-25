@@ -432,7 +432,7 @@ Entity Create_BatchedSprite(float x, float y, float size, const std::string& tex
         instance, TransformComponent{ {x, y}, {size, size} });
 
     // Sprite (animated true)
-    Sprite::SpriteComponent sprite(texturePath, { size, size }, true);
+    Sprite::SpriteComponent sprite(texturePath, { size, size });
     
 
     Sprite::SpriteSheet spritesheet;
