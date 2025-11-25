@@ -168,8 +168,10 @@ void GuiSystem::Update(float dt) {
     const bool prevCam = renderer.useCamera;
     renderer.useCamera = false;
 
-    const float scaleX = GLApp::width / 1920.f;
-    const float scaleY = GLApp::height / 1080.f;
+    const float defaultWidth = 1920.f;
+    const float defaultHeight = 1080.f;
+    const float scaleX = GLApp::width / defaultWidth;
+    const float scaleY = GLApp::height / defaultHeight;
     const float uiScale = std::min(scaleX, scaleY);
    
 
