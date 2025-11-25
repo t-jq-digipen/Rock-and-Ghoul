@@ -79,7 +79,7 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
 
    GLApp::baseWidth = w;
     GLApp::baseHeight = h;
-  is_fullscreen = true;
+  is_fullscreen = false;
   if (!glfwInit()) {
     std::cout << "GLFW init has failed - abort program!!!" << std::endl;
     return false;
@@ -105,15 +105,22 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
   //  glfwTerminate();
   //  return false;
   //}
-  GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+  //GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+  //const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-  // Create window in fullscreen mode directly
+  //// Create window in fullscreen mode directly
+  //GLApp::ptr_window = glfwCreateWindow(
+  //    mode->width,
+  //    mode->height,
+  //    title.c_str(),
+  //    monitor,  // Pass monitor for fullscreen
+  //    NULL
+  //);
   GLApp::ptr_window = glfwCreateWindow(
-      mode->width,
-      mode->height,
+      w,           // Use requested width
+      h,           // Use requested height
       title.c_str(),
-      monitor,  // Pass monitor for fullscreen
+      NULL,        // NULL = windowed mode
       NULL
   );
   if (!GLApp::ptr_window) {
@@ -122,14 +129,19 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
       return false;
   }
 
-  GLApp::width = mode->width;
-  GLApp::height = mode->height;
+  //GLApp::width = mode->width;
+  //GLApp::height = mode->height;
+
+  GLApp::width = w;
+  GLApp::height = h;
+
   GLApp::baseWidth = w;  // Keep original requested size as base
   GLApp::baseHeight = h;
-  is_fullscreen = true;
+
   // make the previously created OpenGL context current ...
   glfwMakeContextCurrent(GLApp::ptr_window);
-  glViewport(0, 0, mode->width, mode->height);
+  //glViewport(0, 0, mode->width, mode->height);
+   glViewport(0, 0, w, h);
   // set callback for events associated with window size changes; keyboard;
  // mouse buttons, cursor position, and scroller
   glfwSetFramebufferSizeCallback(GLApp::ptr_window, GLApp::fbsize_cb);
@@ -273,12 +285,12 @@ void GLApp::key_cb(GLFWwindow *pwin, int key, int scancode, int action, int mod)
     glfwSetWindowShouldClose(pwin, GLFW_TRUE);
   }
 
-  if (key == GLFW_KEY_ENTER && action == GLFW_PRESS &&
-      (mod & GLFW_MOD_ALT))
-  {
-      ToggleFullscreen();
-      return;
-  }
+  //if (key == GLFW_KEY_ENTER && action == GLFW_PRESS &&
+  //    (mod & GLFW_MOD_ALT))
+  //{
+  //    ToggleFullscreen();
+  //    return;
+  //}
 }
 
 /*  _________________________________________________________________________*/
