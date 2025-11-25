@@ -121,8 +121,6 @@ void AudioSystem::PlayButtonSound(ButtonType type) {
  * @param soundPath The file path to the sound file
  */
 void AudioSystem::RegisterButtonSound(ButtonType type, const std::string& soundPath) {
-    //RegisterButtonSound(ButtonType::PLAY, "../Assets/music/playclick.mp3");
-    //RegisterButtonSound(ButtonType::QUIT, "../Assets/music/quitclick.mp3");
     FMOD::Sound* sound = LoadSound(soundPath, false);
     if (sound) {
         buttonSounds[type] = sound;
@@ -365,6 +363,10 @@ void AudioManager::UpdateCrossfade(float dt) {
     float t = crossfadeTime / crossfadeDuration;
     if (t > 1.0f) t = 1.0f;
 
+    if (static_cast<int>(crossfadeTime * 10) % 10 == 0) {  // Print every ~0.1 seconds
+        std::cout << "[AudioManager] Crossfade progress: " << (t * 100) << "%" << std::endl;
+    }
+
     if (currentChannel)
         currentChannel->setVolume(musicVol * (1.0f - t));
     if (nextChannel)
@@ -420,6 +422,10 @@ void AudioManager::HandleMusicForScene(const std::string& currentScene, const st
     // ==============================
     if (currentScene == "level1" && previousScene != "level1")
     {
+        std::cout << "[AudioManager] Loading level1 bank..." << std::endl;
+        AudioCache::LoadBank("level1");
+        level1Music = AudioCache::GetSound("level_1"); // getting the music
+
         if (level1Music)
         {
             std::cout << "[AudioManager] Crossfade -> Level1 Music\n";
@@ -672,6 +678,11 @@ void AudioManager::Update(float dt) {
     //SceneManager& sm = SceneManager::Get();
 
     std::string scene = sm.GetCurrentSceneName();
+
+    if (scene != lastScene) {
+        std::cout << "[AudioManager] Scene transition: '" << lastScene << "' -> '" << scene << "'\n";
+    }
+
     HandleMusicForScene(scene, lastScene);
 
     lastScene = scene;

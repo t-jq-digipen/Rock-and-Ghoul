@@ -608,7 +608,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"size", {btn.size.x, btn.size.y}},
             {"color", {btn.color.r, btn.color.g, btn.color.b}},
             {"shape", btn.shape},
-            {"action", btn.action}
+            {"action", btn.action},
+            {"soundType", btn.soundType }
             });
     }
     for (const auto& entity : s.entities) {
@@ -649,6 +650,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
             b.color = { btn["color"][0], btn["color"][1], btn["color"][2] };
             b.shape = btn["shape"];
             b.action = btn.value("action", "");
+            b.soundType = btn.value("soundType", 0);
             s.guiButtons.push_back(b);
         }
     }
@@ -770,7 +772,8 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sb.size = b.size;
             sb.color = b.color;
             sb.shape = ButtonShapeToString(b.shape);
-            sb.action = b.action; 
+            sb.action = b.action;
+            sb.soundType = static_cast<int>(b.soundType);
             scene.guiButtons.push_back(sb);
         }
         // Get all alive entities
@@ -886,6 +889,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.color = b.color;
             cfg.shape = StringToButtonShape(b.shape);
             cfg.action = b.action;
+            cfg.soundType = static_cast<AudioSystem::ButtonType>(b.soundType);
             if (b.action == "LoadLevel1") {
                 cfg.onClick = []() {
                     SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json");
@@ -893,6 +897,12 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             }
             else if (b.action == "Quit") {
                 cfg.onClick = []() {
+                    // WAIT FOR QUIT BUTTON SOUND TO PLAY BEFORE QUITTING!
+                    double startTime = glfwGetTime();
+                    while (glfwGetTime() - startTime < 0.5) {  // 500ms delay
+                        AudioSystem::Update();
+                        glfwPollEvents();
+                    }
                     CoreEngine::GetInstance().Quit();
                     };
             }

@@ -107,7 +107,7 @@ void CoreEngine::Initialize()
 
     AddUpdateSystem(&LogicSystem::Get());
     AddUpdateSystem(&MonoSystem::Get());
-    AddUpdateSystem(&AudioManager::Get());
+    // AddUpdateSystem(&AudioManager::Get());
     AddUpdateSystem(new MovementSystem());
     AddUpdateSystem(new PlayerSystem());
     AddUpdateSystem(new EnemySystem());
@@ -117,6 +117,7 @@ void CoreEngine::Initialize()
     AddRenderSystem(new RenderSystem());
     AddRenderSystem(&GuiSystem::Get());
     AddRenderSystem(new ImGuiSystem());
+    AddRenderSystem(&AudioManager::Get()); // audio updates in both editor and play mode
     
     std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
         << " at " << (void*)&GLApp::ptr_window << std::endl;

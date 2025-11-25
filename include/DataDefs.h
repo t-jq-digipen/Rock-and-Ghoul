@@ -91,6 +91,7 @@ struct SavedScene {
         Colour3 color;
         std::string shape;
         std::string action;
+        int soundType = 0; // default to PLAY(0)
     };
     std::vector<SavedButton> guiButtons;
 
