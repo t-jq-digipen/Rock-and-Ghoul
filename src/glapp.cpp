@@ -129,7 +129,7 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
   is_fullscreen = true;
   // make the previously created OpenGL context current ...
   glfwMakeContextCurrent(GLApp::ptr_window);
-
+  glViewport(0, 0, mode->width, mode->height);
   // set callback for events associated with window size changes; keyboard;
  // mouse buttons, cursor position, and scroller
   glfwSetFramebufferSizeCallback(GLApp::ptr_window, GLApp::fbsize_cb);
