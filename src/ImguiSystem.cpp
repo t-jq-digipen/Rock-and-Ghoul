@@ -75,7 +75,7 @@ static std::string pendingDestPath; //store dest path of existing img
 // runtime thumbnail cache
 static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
-auto& sm = SceneManager::Get();
+//auto& sm = SceneManager::Get();
 //g_loadedThumbnails[0] = Image(texture for "player.png")
 //g_imageNames[0] = "player.png"
 
@@ -96,9 +96,8 @@ Vec2   ImGuiSystem::camSpawnPos = { 1920.f / 2.0f, 1080.f / 2.0f };
 float  ImGuiSystem::camSpawnZoom = 1.f;
 
 Vec2   ImGuiSystem::sceneMin = { 0.f,0.f };
-Vec2   ImGuiSystem::sceneMax = { 1980.f,1080.f };
-
-Vec2   ImGuiSystem::sceneSize = { 1980.f, 1080.f };
+Vec2 ImGuiSystem::sceneMax = { GLApp::VIRTUAL_W, GLApp::VIRTUAL_H }; 
+Vec2 ImGuiSystem::sceneSize = { GLApp::VIRTUAL_W, GLApp::VIRTUAL_H };
 
 static ImGuizmo::OPERATION gizmoOperation = ImGuizmo::TRANSLATE;
 static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
@@ -594,7 +593,7 @@ void ImGuiSystem::Update(float dt)
 
     if (Input::IsKeyPressed(GLFW_KEY_F1))
         guiEnabled = !guiEnabled;
-
+    SceneManager& sm = SceneManager::Get();
     if (guiEnabled && sm.inEditMode)   // must be in editor mode
     {
         ImGuiIO& io = ImGui::GetIO();
@@ -1070,13 +1069,14 @@ void ImGuiSystem::Update(float dt)
         }
 
         //GUISYSTEM STUFF SCALE FOR MOUSE
-        GameViewRect rect;
-        rect.x = cursor.x;
-        rect.y = cursor.y;
-        rect.width = newWidth;
-        rect.height = newHeight;
-
-        GuiSystem::Get().SetGameViewRect(rect);
+        if (!isPlaying) {
+            GameViewRect rect;
+            rect.x = cursor.x;
+            rect.y = cursor.y;
+            rect.width = newWidth;
+            rect.height = newHeight;
+            GuiSystem::Get().SetGameViewRect(rect);
+        }
 
         //if (dragEditMode) {
         //    DrawEntityDragHandles(cursor, ImVec2(newWidth, newHeight));
@@ -1224,7 +1224,16 @@ void ImGuiSystem::ShowEngineDebugWindow() {
 
     /*ImGui::Separator();
     ImGui::Checkbox("Enable Drag Handles", &dragEditMode);*/
+    ImGui::Separator();
+    ImGui::SeparatorText("Window Mode");
 
+    bool isFullscreen = GLApp::IsFullscreen();
+    if (ImGui::Checkbox("Fullscreen (Alt+Enter)", &isFullscreen))
+    {
+        GLApp::ToggleFullscreen();
+    }
+
+    ImGui::Separator();
 }
 
 //collili
@@ -1394,7 +1403,7 @@ void ImGuiSystem::ShowSceneBrowser()
 
         // Always return to editor mode when loading scenes
         //sm.EnterEditMode();
-
+        SceneManager& sm = SceneManager::Get();
         // Load the selected scene (real file, not temp)
         sm.LoadScene(path);
 
@@ -2422,6 +2431,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
+    SceneManager& sm = SceneManager::Get();
     bool isPlaying = !sm.isPaused && !sm.inEditMode;
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
@@ -3093,7 +3103,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     float totalWidth = buttonWidth * 2 + spacing;
     float startX = (panelWidth - totalWidth) * 0.5f;
     ImGui::SetCursorPosX(startX);
-
+    SceneManager& sm = SceneManager::Get();
     bool inEdit = sm.inEditMode;
     // ───────────────────────────────
      // PLAY BUTTON
@@ -3101,6 +3111,13 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (!inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
+        // Set GameViewRect FIRST before mode switch
+        GameViewRect rect;
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.width = static_cast<float>(GLApp::width);
+        rect.height = static_cast<float>(GLApp::height);
+        GuiSystem::Get().SetGameViewRect(rect);
         // 1) Switch to PLAY first so camera becomes gameplay camera
         sm.EnterPlayMode();
 
@@ -3117,7 +3134,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         camSet.worldMax = cam.GetWorldMax();
 
         sm.SaveScene(sm.GetTempScenePath(), camSet);
-
+      
         std::cout << "[Editor] Gameplay started.\n";
         isPlaying = true;
 
@@ -3134,6 +3151,13 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
     {
+        // Set GameViewRect FIRST before mode switch
+        GameViewRect rect;
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.width = static_cast<float>(GLApp::width);
+        rect.height = static_cast<float>(GLApp::height);
+        GuiSystem::Get().SetGameViewRect(rect);
         // 1) Exit play mode → go back to editor rule set
         sm.EnterEditMode();
 

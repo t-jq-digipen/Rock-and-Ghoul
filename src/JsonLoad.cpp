@@ -766,8 +766,8 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         for (auto& b : gui.GetButtons()) {
             SavedScene::SavedButton sb;
             sb.label = b.label;
-            sb.pos = b.pos;
-            sb.size = b.size;
+            sb.pos = b.basePos;
+            sb.size = b.baseSize;
             sb.color = b.color;
             sb.shape = ButtonShapeToString(b.shape);
             sb.action = b.action; 
@@ -882,7 +882,9 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             ButtonConfig cfg;
             cfg.label = b.label;
             cfg.pos = b.pos;
+            cfg.basePos = b.pos;
             cfg.size = b.size;
+            cfg.baseSize = b.size;
             cfg.color = b.color;
             cfg.shape = StringToButtonShape(b.shape);
             cfg.action = b.action;
