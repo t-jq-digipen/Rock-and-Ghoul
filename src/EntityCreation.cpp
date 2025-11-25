@@ -83,10 +83,7 @@ Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeTyp
         return LoadEntity("Circle", spawnx, spawny);
     }
 
-    if (shape != 0) {
-        Registry::Get().Add_Component<InputComponent>(shape, InputComponent{ scheme });
-        // Add_Component(shape, InputComponent{ scheme }); // <--- use scheme here
-    }
+
 
     return 0;
 }
@@ -152,7 +149,6 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             //collider.SetMask({"Enemy", "Projectile", "Wall"});
             Registry::Get().Add_Component<ColliderComponent>(player, collider);
 
-            Registry::Get().Add_Component<InputComponent>(player, InputComponent{ CS_WASD });
             Registry::Get().Add_Component<TagComponent>(player, TagComponent{ T_PLAYER });
             
 
@@ -221,7 +217,6 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             //waffleCollider.SetMask({"Enemy", "Projectile", "Wall"});
             Registry::Get().Add_Component<ColliderComponent>(waffle, waffleCollider);
 
-            Registry::Get().Add_Component<InputComponent>(waffle, InputComponent{ CS_IJKL });
             Registry::Get().Add_Component<TagComponent>(waffle, TagComponent{ T_OBJECT });
 
             Image imgtemp = CreateImage("../Assets/Waffle_Sprites.png");
@@ -275,7 +270,6 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<ColliderComponent>(rect, rectCollider);
 
             // Registry::Get().Add_Component<ShapeComponent>(rect, ShapeComponent{ SHAPE_RECTANGLE, {200.f, 200.f}, {1.0f, 0.0f, 0.0f} });
-            Registry::Get().Add_Component<InputComponent>(rect, InputComponent{ CS_WASD });
             Registry::Get().Add_Component<TagComponent>(rect, TagComponent{ T_OBJECT });
             Registry::Get().Add_Component<HealthComponent>(rect, HealthComponent{ 100.f, 100.f });
 
@@ -316,7 +310,6 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<ColliderComponent>(circle_ent, circleCollider);
 
             //Registry::Get().Add_Component<ShapeComponent>(circle_ent, ShapeComponent{ SHAPE_CIRCLE, {200.f, 200.f}, {0.0f, 1.0f, 0.0f} });
-            Registry::Get().Add_Component<InputComponent>(circle_ent, InputComponent{ CS_ARROWS });
             Registry::Get().Add_Component<TagComponent>(circle_ent, TagComponent{ T_OBJECT });
             Registry::Get().Add_Component<HealthComponent>(circle_ent, HealthComponent{ 100.f, 100.f });
 
