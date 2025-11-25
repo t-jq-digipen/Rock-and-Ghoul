@@ -28,6 +28,7 @@
 #include "GameStateManager.h"
 #include <iostream>
 #include "SceneManager.h"
+#include "GuiSystem.h"
  // Static members
 FMOD::System* AudioSystem::mSystem = nullptr;
 
@@ -341,6 +342,9 @@ void AudioManager::Initialize() {
         PlayMusic(mainMenuMusic);
         std::cout << "[AudioManager] Main menu music started\n";
     }
+
+    GuiSystem::SetAudioManager(this);
+    std::cout << "[AudioManager] GuiSystem audio manager set\n";
 
 }
 
