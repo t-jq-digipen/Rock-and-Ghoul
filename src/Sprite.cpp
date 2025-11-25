@@ -65,6 +65,11 @@ namespace Sprite {
 	{
 		return m_scale;
 	}
+	
+	Vec2 SpriteComponent::Get_ImageSize() const
+	{
+		return { static_cast<float>(m_image.widthPixels), static_cast<float>(m_image.heightPixels) };
+	}
 
 	std::string SpriteComponent::Get_TexturePath() const
 	{ return Render::GetInstance().Get_TexturePath(m_image.textureID); }

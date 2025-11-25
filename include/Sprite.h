@@ -116,6 +116,8 @@ namespace Sprite {
 		 */
 		std::string Get_TexturePath() const;
 
+		Vec2 Get_ImageSize() const;
+
 		/**
 		 * @brief Set the rotation value of the sprite.
 		 * @param rot Rotation amount in degrees.

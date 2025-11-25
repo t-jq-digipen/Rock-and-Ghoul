@@ -49,8 +49,8 @@ static std::vector<GLuint> s_backgroundTextures;
 static std::vector<std::string> s_backgroundTexturePaths;
 
 // Pixels to units conversion, assigned values on initialization of rendersystem
-static float pixelsPerUnit;
-static float unitsPerPixel;
+float RenderSystem::pixelsPerUnit;
+float RenderSystem::unitsPerPixel;
 
 void RenderSystem::AddBackgroundTexture(GLuint tex, const std::string& path) {
     s_backgroundTextures.push_back(tex);
@@ -73,7 +73,7 @@ void RenderSystem::ClearBackgroundTextures() {
 void DrawItem(const Sprite::SpriteComponent& spriteComp, const TransformComponent& transComp) {
     Image img = spriteComp.Get_Image();
 
-    Vec2 worldSize = { img.widthPixels * unitsPerPixel, img.heightPixels * unitsPerPixel };
+    Vec2 worldSize = { img.widthPixels * RenderSystem::unitsPerPixel, img.heightPixels * RenderSystem::unitsPerPixel };
 
     Vec2 scale = worldSize * spriteComp.Get_Scale() * transComp.scale;
     //Vec2 scaledSize = { img.widthPixels * spriteComp.Get_Scale().x, img.heightPixels * spriteComp.Get_Scale().y };
@@ -103,7 +103,7 @@ void DrawItem(const Sprite::SpriteSheet& spriteSheet, const TransformComponent& 
     Image img = spriteSheet.Sprite().Get_Image();
 
     Vec2 frameSize = { spriteSheet.u1 - spriteSheet.u0, spriteSheet.v1 - spriteSheet.v0 };
-    Vec2 worldSize = frameSize * unitsPerPixel;
+    Vec2 worldSize = frameSize * RenderSystem::unitsPerPixel;
 
     Vec2 scale = worldSize * spriteSheet.Sprite().Get_Scale() * transComp.scale;
 

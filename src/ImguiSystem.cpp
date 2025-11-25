@@ -903,33 +903,37 @@ void ImGuiSystem::Update(float dt)
                     t.rot = SmoothDampAngle(t.rot, targetRot, 0.18f);
                 }
 
-                // Scale (incremental)
-                glm::vec3 scaleDelta = scaleAbs / lastScale;
-                lastScale = scaleAbs;
+                //// Scale (incremental)
+                //glm::vec3 scaleDelta = scaleAbs / lastScale;
+                //lastScale = scaleAbs;
 
-                if (reg.Has_Component<RenderComponent>(selectedEntity))
-                {
-                    auto& r = reg.Get_Component<RenderComponent>(selectedEntity);
+                // scaleAbs = { t.scale.x,t.scale.y,1.f };
+                //if (reg.Has_Component<RenderComponent>(selectedEntity))
+                //{
+                //    auto& r = reg.Get_Component<RenderComponent>(selectedEntity);
 
-                    if (r.GetRenderType() == RT_IMAGE)
-                    {
-                        auto& sprite = r.GetSprite();
-                        Vec2 cur = sprite.Get_Scale();
-                        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
-                    }
-                    else if (r.GetRenderType() == RT_SPRITESHEET)
-                    {
-                        auto& sprite = r.GetSpriteSheet().Sprite();
-                        Vec2 cur = sprite.Get_Scale();
-                        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
-                    }
-                    else if (r.GetRenderType() == RT_SHAPE)
-                    {
-                        auto& shape = r.GetShape();
-                        shape.dimensions.x *= scaleDelta.x;
-                        shape.dimensions.y *= scaleDelta.y;
-                    }
-                }
+                //    if (r.GetRenderType() == RT_IMAGE)
+                //    {
+                //        auto& sprite = r.GetSprite();
+                //        Vec2 cur = sprite.Get_Scale();
+                //        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
+                //    }
+                //    else if (r.GetRenderType() == RT_SPRITESHEET)
+                //    {
+                //        auto& sprite = r.GetSpriteSheet().Sprite();
+                //        Vec2 cur = sprite.Get_Scale();
+                //        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
+                //    }
+                //    else if (r.GetRenderType() == RT_SHAPE)
+                //    {
+                //        auto& shape = r.GetShape();
+                //        shape.dimensions.x *= scaleDelta.x;
+                //        shape.dimensions.y *= scaleDelta.y;
+                //    }
+                //}
+
+                t.scale.x = scaleAbs.x;
+                t.scale.y = scaleAbs.y;
 
                 // Collider sync
                 if (reg.Has_Component<ColliderComponent>(selectedEntity))
