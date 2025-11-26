@@ -796,7 +796,71 @@ void ImGuiSystem::Update(float dt)
 
     if (ImGui::Begin("UI Editor", nullptr)) {
         if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
-        ImGui::TextDisabled("test");
+
+        
+        if (ImGui::Button("Add UI Element"))
+        {
+            // ADD UI ELEMENT
+            //Entity newEntity = m_registry.Create_Entity();
+            //selectedEntity = newEntity;
+
+            //// Store editor name
+            //m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
+            //UndoSystem::Get().RecordAdd(newEntity);
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Clone UI Element") && selectedEntity != INVALID_ENTITY)
+        {
+            // CLONE UI ELEMLENT
+            //Registry& reg = Registry::Get();
+            //SavedEntity src = reg.Save_Entity(selectedEntity);
+
+            ////filter out empty json data
+            //for (auto it = src.componentData.begin(); it != src.componentData.end();)
+            //{
+            //    if (it->second.empty() || it->second == "{}" || it->second == "null")
+            //    {
+            //        std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
+            //        it = src.componentData.erase(it);
+            //    }
+            //    else
+            //        ++it;
+            //}
+
+            //Entity newEntity = reg.Load_Entity(src);
+            //if (newEntity != INVALID_ENTITY)
+            //{
+            //    selectedEntity = newEntity;
+            //    UndoSystem::Get().RecordAdd(newEntity);
+            //}
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Delete UI Element") && selectedEntity != INVALID_ENTITY)
+        {
+            // DELETE UI ELEMENT
+            /*SavedEntity snapshot = m_registry.Save_Entity(selectedEntity);
+            UndoSystem::Get().RecordRemove(snapshot);
+            m_registry.Remove_Entity(selectedEntity);
+            selectedEntity = INVALID_ENTITY;*/
+        }
+
+        ImGui::Separator();
+        ImGui::Columns(2, "EntityColumns", true);
+        //ShowHierarchyWindow();     // left: list
+        // UI HIERARCHY
+        ImGui::NextColumn();
+        //ShowAddRemoveComponents(); // right: add/remove comp
+        // UI COMPONENTS?
+        ImGui::Columns(1);
+
+        ImGui::Separator();
+        //ShowInspectorWindow();     //edit
+        // UI EDITOR
+
+        ImGui::Separator();
+        //ShowPrefabControls();      //prefabs
         if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
