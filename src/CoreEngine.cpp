@@ -58,7 +58,7 @@
 #include "MonoSystem.h"
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
-#include <rectpack2D/rectpack2D.hpp>
+#include "../src/rectpack2D/finders_interface.h"
 CoreEngine::CoreEngine()
     : systems{}
     , timings{}
