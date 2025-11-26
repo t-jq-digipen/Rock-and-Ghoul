@@ -299,17 +299,32 @@ Entity PickEntityAtWorldPos(const Vec2& world)
 
             if (rt == RT_IMAGE)
             {
-                Vec2 s = r.GetSprite().Get_Scale();
-                Vec2 h = s * 0.5f;
-                min = t.pos - h;
-                max = t.pos + h;
+                Sprite::SpriteComponent& sprite = r.GetSprite();
+                const Image& img = sprite.Get_Image();
+
+                Vec2 worldSize = { img.widthPixels * RenderSystem::unitsPerPixel, img.heightPixels * RenderSystem::unitsPerPixel };
+                Vec2 size = worldSize * r.GetSprite().Get_Scale() * t.scale;
+                Vec2 half = size * 0.5f;
+
+                min = t.pos - half;
+                max = t.pos + half;
             }
             else if (rt == RT_SPRITESHEET)
             {
-                Vec2 s = r.GetSpriteSheet().Sprite().Get_Scale();
-                Vec2 h = s * 0.5f;
-                min = t.pos - h;
-                max = t.pos + h;
+                Sprite::SpriteSheet& spritesheet = r.GetSpriteSheet();
+                Sprite::SpriteComponent& sprite = spritesheet.Sprite();
+                const Image& img = sprite.Get_Image();
+
+                float frameW = spritesheet.u1 - spritesheet.u0;
+                float frameH = spritesheet.v1 - spritesheet.v0;
+
+                Vec2 worldSize = { frameW * RenderSystem::unitsPerPixel, frameH * RenderSystem::unitsPerPixel };
+
+                Vec2 size = worldSize * sprite.Get_Scale();
+
+                Vec2 half = size * 0.5f;
+                min = t.pos - half;
+                max = t.pos + half;
             }
             else if (rt == RT_SHAPE)
             {
@@ -323,7 +338,7 @@ Entity PickEntityAtWorldPos(const Vec2& world)
                 world.y >= min.y && world.y <= max.y);
         }
 
-        if (reg.Has_Component<ColliderComponent>(e))
+        else if (reg.Has_Component<ColliderComponent>(e))
         {
             auto& col = reg.Get_Component<ColliderComponent>(e);
             AABB a = col.Get_AABB();
