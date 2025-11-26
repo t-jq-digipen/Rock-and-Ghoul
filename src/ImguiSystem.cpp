@@ -39,7 +39,7 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include "Audio.h"
-#include "Render.h" 
+#include "RenderSystem.h" 
 #include "Camera.h"
 #include "LogicSystem.h"
 #include "GuiSystem.h"
@@ -75,7 +75,7 @@ static std::string pendingDestPath; //store dest path of existing img
 // runtime thumbnail cache
 static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
-auto& sm = SceneManager::Get();
+//auto& sm = SceneManager::Get();
 //g_loadedThumbnails[0] = Image(texture for "player.png")
 //g_imageNames[0] = "player.png"
 
@@ -96,9 +96,8 @@ Vec2   ImGuiSystem::camSpawnPos = { 1920.f / 2.0f, 1080.f / 2.0f };
 float  ImGuiSystem::camSpawnZoom = 1.f;
 
 Vec2   ImGuiSystem::sceneMin = { 0.f,0.f };
-Vec2   ImGuiSystem::sceneMax = { 1980.f,1080.f };
-
-Vec2   ImGuiSystem::sceneSize = { 1980.f, 1080.f };
+Vec2   ImGuiSystem::sceneMax = { GLApp::VIRTUAL_W, GLApp::VIRTUAL_H }; 
+Vec2   ImGuiSystem::sceneSize = { GLApp::VIRTUAL_W, GLApp::VIRTUAL_H };
 
 static ImGuizmo::OPERATION gizmoOperation = ImGuizmo::TRANSLATE;
 static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
@@ -217,7 +216,11 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
         {
         case RT_IMAGE:
         {
-            Vec2 size = r.GetSprite().Get_Scale();
+            Sprite::SpriteComponent& sprite = r.GetSprite();
+            const Image& img = sprite.Get_Image();
+
+            Vec2 worldSize = { img.widthPixels * RenderSystem::unitsPerPixel, img.heightPixels * RenderSystem::unitsPerPixel };
+            Vec2 size = worldSize * r.GetSprite().Get_Scale() * t.scale;
             Vec2 half = size * 0.5f;
             minW = t.pos - half;
             maxW = t.pos + half;
@@ -226,8 +229,17 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
 
         case RT_SPRITESHEET:
         {
-            auto& spr = r.GetSpriteSheet().Sprite();
-            Vec2 size = spr.Get_Scale();
+            Sprite::SpriteSheet& spritesheet    = r.GetSpriteSheet();
+            Sprite::SpriteComponent& sprite     = spritesheet.Sprite();
+            const Image& img = sprite.Get_Image();
+
+            float frameW = spritesheet.u1 - spritesheet.u0;
+            float frameH = spritesheet.v1 - spritesheet.v0;
+
+            Vec2 worldSize = { frameW * RenderSystem::unitsPerPixel, frameH * RenderSystem::unitsPerPixel };
+
+            Vec2 size = worldSize * sprite.Get_Scale();
+
             Vec2 half = size * 0.5f;
             minW = t.pos - half;
             maxW = t.pos + half;
@@ -254,7 +266,7 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
     }
     else return;
 
-    // Convert world to panel (using your existing Render helper)
+    // Convert world to panel
     ImVec2 tl = Render::GetInstance().WorldToPanel(minW, cursor, { w, h });
     ImVec2 br = Render::GetInstance().WorldToPanel(maxW, cursor, { w, h });
 
@@ -594,7 +606,7 @@ void ImGuiSystem::Update(float dt)
 
     if (Input::IsKeyPressed(GLFW_KEY_F1))
         guiEnabled = !guiEnabled;
-
+    SceneManager& sm = SceneManager::Get();
     if (guiEnabled && sm.inEditMode)   // must be in editor mode
     {
         ImGuiIO& io = ImGui::GetIO();
@@ -671,6 +683,7 @@ void ImGuiSystem::Update(float dt)
         ImGui::DockBuilderDockWindow("Editor Camera", dock_left_top);
         ImGui::DockBuilderDockWindow("Engine Info", dock_left_bottom);
         ImGui::DockBuilderDockWindow("Entity Editor + Prefabs", dock_right);
+        ImGui::DockBuilderDockWindow("UI Editor", dock_right);
         ImGui::DockBuilderDockWindow("Collision + Scene", dock_bottom);
         ImGui::DockBuilderDockWindow("Assets", dock_bottom);
         ImGui::DockBuilderDockWindow("Game View", dockspaceID);
@@ -781,6 +794,76 @@ void ImGuiSystem::Update(float dt)
     }
     ImGui::End();
 
+    if (ImGui::Begin("UI Editor", nullptr)) {
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
+
+        
+        if (ImGui::Button("Add UI Element"))
+        {
+            // ADD UI ELEMENT
+            //Entity newEntity = m_registry.Create_Entity();
+            //selectedEntity = newEntity;
+
+            //// Store editor name
+            //m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
+            //UndoSystem::Get().RecordAdd(newEntity);
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Clone UI Element") && selectedEntity != INVALID_ENTITY)
+        {
+            // CLONE UI ELEMLENT
+            //Registry& reg = Registry::Get();
+            //SavedEntity src = reg.Save_Entity(selectedEntity);
+
+            ////filter out empty json data
+            //for (auto it = src.componentData.begin(); it != src.componentData.end();)
+            //{
+            //    if (it->second.empty() || it->second == "{}" || it->second == "null")
+            //    {
+            //        std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
+            //        it = src.componentData.erase(it);
+            //    }
+            //    else
+            //        ++it;
+            //}
+
+            //Entity newEntity = reg.Load_Entity(src);
+            //if (newEntity != INVALID_ENTITY)
+            //{
+            //    selectedEntity = newEntity;
+            //    UndoSystem::Get().RecordAdd(newEntity);
+            //}
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Delete UI Element") && selectedEntity != INVALID_ENTITY)
+        {
+            // DELETE UI ELEMENT
+            /*SavedEntity snapshot = m_registry.Save_Entity(selectedEntity);
+            UndoSystem::Get().RecordRemove(snapshot);
+            m_registry.Remove_Entity(selectedEntity);
+            selectedEntity = INVALID_ENTITY;*/
+        }
+
+        ImGui::Separator();
+        ImGui::Columns(2, "EntityColumns", true);
+        //ShowHierarchyWindow();     // left: list
+        // UI HIERARCHY
+        ImGui::NextColumn();
+        //ShowAddRemoveComponents(); // right: add/remove comp
+        // UI COMPONENTS?
+        ImGui::Columns(1);
+
+        ImGui::Separator();
+        //ShowInspectorWindow();     //edit
+        // UI EDITOR
+
+        ImGui::Separator();
+        //ShowPrefabControls();      //prefabs
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
+    }
+    ImGui::End();
 
     if (ImGui::Begin("Assets")) {
         if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
@@ -904,33 +987,37 @@ void ImGuiSystem::Update(float dt)
                     t.rot = SmoothDampAngle(t.rot, targetRot, 0.18f);
                 }
 
-                // Scale (incremental)
-                glm::vec3 scaleDelta = scaleAbs / lastScale;
-                lastScale = scaleAbs;
+                //// Scale (incremental)
+                //glm::vec3 scaleDelta = scaleAbs / lastScale;
+                //lastScale = scaleAbs;
 
-                if (reg.Has_Component<RenderComponent>(selectedEntity))
-                {
-                    auto& r = reg.Get_Component<RenderComponent>(selectedEntity);
+                // scaleAbs = { t.scale.x,t.scale.y,1.f };
+                //if (reg.Has_Component<RenderComponent>(selectedEntity))
+                //{
+                //    auto& r = reg.Get_Component<RenderComponent>(selectedEntity);
 
-                    if (r.GetRenderType() == RT_IMAGE)
-                    {
-                        auto& sprite = r.GetSprite();
-                        Vec2 cur = sprite.Get_Scale();
-                        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
-                    }
-                    else if (r.GetRenderType() == RT_SPRITESHEET)
-                    {
-                        auto& sprite = r.GetSpriteSheet().Sprite();
-                        Vec2 cur = sprite.Get_Scale();
-                        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
-                    }
-                    else if (r.GetRenderType() == RT_SHAPE)
-                    {
-                        auto& shape = r.GetShape();
-                        shape.dimensions.x *= scaleDelta.x;
-                        shape.dimensions.y *= scaleDelta.y;
-                    }
-                }
+                //    if (r.GetRenderType() == RT_IMAGE)
+                //    {
+                //        auto& sprite = r.GetSprite();
+                //        Vec2 cur = sprite.Get_Scale();
+                //        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
+                //    }
+                //    else if (r.GetRenderType() == RT_SPRITESHEET)
+                //    {
+                //        auto& sprite = r.GetSpriteSheet().Sprite();
+                //        Vec2 cur = sprite.Get_Scale();
+                //        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
+                //    }
+                //    else if (r.GetRenderType() == RT_SHAPE)
+                //    {
+                //        auto& shape = r.GetShape();
+                //        shape.dimensions.x *= scaleDelta.x;
+                //        shape.dimensions.y *= scaleDelta.y;
+                //    }
+                //}
+
+                t.scale.x = scaleAbs.x;
+                t.scale.y = scaleAbs.y;
 
                 // Collider sync
                 if (reg.Has_Component<ColliderComponent>(selectedEntity))
@@ -1070,13 +1157,14 @@ void ImGuiSystem::Update(float dt)
         }
 
         //GUISYSTEM STUFF SCALE FOR MOUSE
-        GameViewRect rect;
-        rect.x = cursor.x;
-        rect.y = cursor.y;
-        rect.width = newWidth;
-        rect.height = newHeight;
-
-        GuiSystem::Get().SetGameViewRect(rect);
+        if (!isPlaying) {
+            GameViewRect rect;
+            rect.x = cursor.x;
+            rect.y = cursor.y;
+            rect.width = newWidth;
+            rect.height = newHeight;
+            GuiSystem::Get().SetGameViewRect(rect);
+        }
 
         //if (dragEditMode) {
         //    DrawEntityDragHandles(cursor, ImVec2(newWidth, newHeight));
@@ -1224,7 +1312,16 @@ void ImGuiSystem::ShowEngineDebugWindow() {
 
     /*ImGui::Separator();
     ImGui::Checkbox("Enable Drag Handles", &dragEditMode);*/
+    ImGui::Separator();
+    ImGui::SeparatorText("Window Mode");
 
+    bool isFullscreen = GLApp::IsFullscreen();
+    if (ImGui::Checkbox("Fullscreen (Alt+Enter)", &isFullscreen))
+    {
+        GLApp::ToggleFullscreen();
+    }
+
+    ImGui::Separator();
 }
 
 //collili
@@ -1394,7 +1491,7 @@ void ImGuiSystem::ShowSceneBrowser()
 
         // Always return to editor mode when loading scenes
         //sm.EnterEditMode();
-
+        SceneManager& sm = SceneManager::Get();
         // Load the selected scene (real file, not temp)
         sm.LoadScene(path);
 
@@ -1452,46 +1549,7 @@ void ImGuiSystem::ShowHierarchyWindow() {
 
     EnsureSelectionValid();
 
-    //if (ImGui::Button("Add Entity"))
-    //{
-    //    Entity newEntity = m_registry.Create_Entity();
-    //    selectedEntity = newEntity;
-
-    //    // Store editor name
-    //    m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
-
-    //}
-
-    //ImGui::SameLine();
-    //if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
-    //{
-    //    Registry& reg = Registry::Get();
-    //    SavedEntity src = reg.Save_Entity(selectedEntity);
-
-    //    //filter out empty json data
-    //    for (auto it = src.componentData.begin(); it != src.componentData.end();)
-    //    {
-    //        if (it->second.empty() || it->second == "{}" || it->second == "null")
-    //        {
-    //            std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
-    //            it = src.componentData.erase(it);
-    //        }
-    //        else
-    //        ++it;
-    //    }
-
-    //   reg.Load_Entity(src);
-    //}
-
-    //ImGui::SameLine();
-    //if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
-    //{
-    //    m_registry.Remove_Entity(selectedEntity);
-    //    selectedEntity = INVALID_ENTITY;
-    //}
-    //
-    //ImGui::Separator();
-
+    ImGui::Text("Entities");
 
     // show all known entities
     auto& nameMap = m_registry.Get_EntityNameMap();
@@ -2422,6 +2480,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
+    SceneManager& sm = SceneManager::Get();
     bool isPlaying = !sm.isPaused && !sm.inEditMode;
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
@@ -3093,7 +3152,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     float totalWidth = buttonWidth * 2 + spacing;
     float startX = (panelWidth - totalWidth) * 0.5f;
     ImGui::SetCursorPosX(startX);
-
+    SceneManager& sm = SceneManager::Get();
     bool inEdit = sm.inEditMode;
     // ───────────────────────────────
      // PLAY BUTTON
@@ -3101,6 +3160,13 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (!inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
+        // Set GameViewRect FIRST before mode switch
+        GameViewRect rect;
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.width = static_cast<float>(GLApp::width);
+        rect.height = static_cast<float>(GLApp::height);
+        GuiSystem::Get().SetGameViewRect(rect);
         // 1) Switch to PLAY first so camera becomes gameplay camera
         sm.EnterPlayMode();
 
@@ -3117,7 +3183,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         camSet.worldMax = cam.GetWorldMax();
 
         sm.SaveScene(sm.GetTempScenePath(), camSet);
-
+      
         std::cout << "[Editor] Gameplay started.\n";
         isPlaying = true;
 
@@ -3134,6 +3200,13 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
     {
+        // Set GameViewRect FIRST before mode switch
+        GameViewRect rect;
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.width = static_cast<float>(GLApp::width);
+        rect.height = static_cast<float>(GLApp::height);
+        GuiSystem::Get().SetGameViewRect(rect);
         // 1) Exit play mode → go back to editor rule set
         sm.EnterEditMode();
 

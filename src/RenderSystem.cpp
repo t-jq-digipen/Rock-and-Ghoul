@@ -48,6 +48,10 @@ std::vector<InstanceData> batch; //added for instancing
 static std::vector<GLuint> s_backgroundTextures;
 static std::vector<std::string> s_backgroundTexturePaths;
 
+// Pixels to units conversion, assigned values on initialization of rendersystem
+float RenderSystem::pixelsPerUnit;
+float RenderSystem::unitsPerPixel;
+
 void RenderSystem::AddBackgroundTexture(GLuint tex, const std::string& path) {
     s_backgroundTextures.push_back(tex);
     s_backgroundTexturePaths.push_back(path);
@@ -67,26 +71,50 @@ void RenderSystem::ClearBackgroundTextures() {
 
 // NEW RENDERCOMPONENT draw overloads
 void DrawItem(const Sprite::SpriteComponent& spriteComp, const TransformComponent& transComp) {
-    Image img = spriteComp.Get_Image();
-    Vec2 scaledSize = { img.widthPixels * spriteComp.Get_Scale().x, img.heightPixels * spriteComp.Get_Scale().y };
+    const Image& img = spriteComp.Get_Image();
 
-    renderInstance.SubmitSpriteBatch(
+    Vec2 worldSize = { img.widthPixels * RenderSystem::unitsPerPixel, img.heightPixels * RenderSystem::unitsPerPixel };
+
+    Vec2 scale = worldSize * spriteComp.Get_Scale() * transComp.scale;
+    //Vec2 scaledSize = { img.widthPixels * spriteComp.Get_Scale().x, img.heightPixels * spriteComp.Get_Scale().y };
+
+    glm::vec4 uv = { 0.f, 1.f, 1.f, 0.f };
+
+    if (spriteComp.GetFlipX()) { std::swap(uv.x, uv.z); }
+    if (spriteComp.GetFlipY()) { std::swap(uv.y, uv.w); }
+
+    renderInstance.SubmitSpriteBatchUV(
         img,
         transComp.pos,
-        scaledSize,
+        scale,
+        uv,
         transComp.rot + spriteComp.Get_Rotation()
     );
+
+    //renderInstance.SubmitSpriteBatch(
+    //    img,
+    //    transComp.pos,
+    //    scale,
+    //    transComp.rot + spriteComp.Get_Rotation()
+    //);
 }
 
 void DrawItem(const Sprite::SpriteSheet& spriteSheet, const TransformComponent& transComp) {
-    Image img = spriteSheet.Sprite().Get_Image();
-    Vec2 scale = spriteSheet.Sprite().Get_Scale();
+    const Image& img = spriteSheet.Sprite().Get_Image();
+
+    Vec2 frameSize = { spriteSheet.u1 - spriteSheet.u0, spriteSheet.v1 - spriteSheet.v0 };
+    Vec2 worldSize = frameSize * RenderSystem::unitsPerPixel;
+
+    Vec2 scale = worldSize * spriteSheet.Sprite().Get_Scale() * transComp.scale;
 
     glm::vec4 uv(spriteSheet.u0 / img.widthPixels,
         spriteSheet.v1 / img.heightPixels,
         spriteSheet.u1 / img.widthPixels,
         spriteSheet.v0 / img.heightPixels
     );
+
+    if (spriteSheet.Sprite().GetFlipX()) { std::swap(uv.x, uv.z); }
+    if (spriteSheet.Sprite().GetFlipY()) { std::swap(uv.y, uv.w); }
 
     renderInstance.SubmitSpriteBatchUV(
         img,
@@ -106,8 +134,8 @@ void DrawItem(const ShapeComponent& shapeComp, const TransformComponent& transCo
     {
         renderInstance.DrawRect(
             transComp.pos,
-            shapeComp.dimensions.x,
-            shapeComp.dimensions.y,
+            shapeComp.dimensions.x * transComp.scale.x,
+            shapeComp.dimensions.y * transComp.scale.y,
             color,
             transComp.rot
         );
@@ -119,7 +147,7 @@ void DrawItem(const ShapeComponent& shapeComp, const TransformComponent& transCo
         float radius = (shapeComp.dimensions.x + shapeComp.dimensions.y) / 4.0f;
         renderInstance.DrawCircle(
             transComp.pos,
-            radius,
+            radius * transComp.scale.x,
             color,
             32
         );
@@ -150,6 +178,9 @@ void RenderSystem::Initialize() {
     camFollow.Update = [](Entity e, float dt) { CamFollowScript::Update(e, dt); };
     camFollow.End = [](Entity e) {CamFollowScript::End(e); };
     LogicSystem::Get().RegisterScript("CamTarget", camFollow, ScriptID::CAMERA_TRACK);
+
+    pixelsPerUnit = 100.f;
+    unitsPerPixel = 1.f / pixelsPerUnit;
 
 }
 
@@ -401,7 +432,7 @@ void RenderSystem::Update(float dt) {
             return ta.pos.y > tb.pos.y; // Higher Y = further back (drawn first)
         });
 
-    auto drawLayerNEWJQ = [&](const std::vector<std::pair<Entity, RenderComponent>>& renderList)
+    auto drawLayer = [&](const std::vector<std::pair<Entity, RenderComponent>>& renderList)
         {
             for (const auto& [entID, renderComp] : renderList)
             {
@@ -553,21 +584,21 @@ void RenderSystem::Update(float dt) {
     // Background (rendered behind game objects)
     renderInstance.BeginBatch();
     // DrawLayer(backgroundEntities);
-    drawLayerNEWJQ(bg_list);
+    drawLayer(bg_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
 
     // Game objects
     renderInstance.BeginBatch();
     // DrawLayer(gameEntities);
-    drawLayerNEWJQ(go_list);
+    drawLayer(go_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
 
     // Foreground (rendered above game objects)
     renderInstance.BeginBatch();
     // DrawLayer(foregroundEntities);
-    drawLayerNEWJQ(fg_list);
+    drawLayer(fg_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
 
@@ -575,7 +606,7 @@ void RenderSystem::Update(float dt) {
     renderer.useCamera = false;
     renderInstance.BeginBatch();
     // DrawLayer(uiEntities);
-    drawLayerNEWJQ(ui_list);
+    drawLayer(ui_list);
     renderInstance.EndBatch();
     renderInstance.FlushBatch();
     renderer.useCamera = camcheck;

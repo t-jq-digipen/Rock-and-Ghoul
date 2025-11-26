@@ -20,8 +20,10 @@
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
+#include "glapp.h"
 #include "input.h"
 #include <iostream>
+
 //check if a key/button is pressed/held/released
 //keys = all keyboard states.
 //mouseButtons = all mouse button states.
@@ -115,6 +117,10 @@ void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
     }
     if (key == GLFW_KEY_ESCAPE) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+    if (key == GLFW_KEY_ENTER && action == GLFW_PRESS && (mods & GLFW_MOD_ALT)) {
+        GLApp::ToggleFullscreen();
+        return;
     }
 }
 

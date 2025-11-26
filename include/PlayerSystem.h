@@ -39,7 +39,7 @@ namespace PlayerMove {
 
 class PlayerSystem : public ISystem {
 private:
-    void WASD_Movement(Entity eID, float& dt);
+    //void WASD_Movement(Entity eID, float& dt);
 
     void UpdateFootsteps(Entity eID, float dt);
     void PlayFootstep(Entity eID);
