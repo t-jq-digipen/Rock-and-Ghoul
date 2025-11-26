@@ -12,6 +12,7 @@ set(ALL_LIBS
     imguizmo
     freetype
     nlohmann_json::nlohmann_json
+    rectpack2d
 )
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)

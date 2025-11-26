@@ -58,7 +58,7 @@
 #include "MonoSystem.h"
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
-
+#include <rectpack2D/rectpack2D.hpp>
 CoreEngine::CoreEngine()
     : systems{}
     , timings{}
