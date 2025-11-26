@@ -770,7 +770,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sb.size = b.size;
             sb.color = b.color;
             sb.shape = ButtonShapeToString(b.shape);
-            sb.action = b.action; 
+            sb.action = ButtonActionToString(b.action); 
             scene.guiButtons.push_back(sb);
         }
         // Get all alive entities
@@ -885,7 +885,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.size = b.size;
             cfg.color = b.color;
             cfg.shape = StringToButtonShape(b.shape);
-            cfg.action = b.action;
+            cfg.action = StringToButtonAction(b.action);
             if (b.action == "LoadLevel1") {
                 cfg.onClick = []() {
                     SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json");

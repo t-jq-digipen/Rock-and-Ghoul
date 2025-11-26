@@ -27,6 +27,7 @@
 #include "CoreEngine.h"
 #include "glapp.h"
 #include "ImGuiSystem.h"
+#include "SceneManager.h"
 AudioManager* GuiSystem::audio = nullptr;
 
 void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
@@ -36,6 +37,7 @@ void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
 void GuiSystem::Initialize() {
     buttons.clear();
     textboxes.clear();
+    dialogues.clear();
 }
 
 void GuiSystem::AddButton(const ButtonConfig& cfg)
@@ -44,6 +46,8 @@ void GuiSystem::AddButton(const ButtonConfig& cfg)
     copy.basePos = cfg.pos;
     copy.baseSize = cfg.size;
     copy.baseTextScale = cfg.textScale;
+    copy.onClick = nullptr;
+    BindButtonAction(copy);
     buttons.push_back(copy);
 }
 
@@ -930,6 +934,11 @@ void GuiSystem::Update(float dt) {
                 selectedIndex = (int)buttons.size() + (int)textboxes.size() + idx;
             }
         }
+
+        // Draw state window if active
+        if (stateWindowActive) {
+            DrawStateWindow(render);
+        }
     }
 
     // restore camera back to world
@@ -945,19 +954,144 @@ void GuiSystem::Shutdown() {
 
 std::string ButtonShapeToString(ButtonShape shape) {
     switch (shape) {
-    case ButtonShape::Rounded: return "Rounded";
-    case ButtonShape::Rectangle:  return "Rectangle";
-    default:                   return "Rectangle";
+    case ButtonShape::Rounded:      return "Rounded";
+    case ButtonShape::Rectangle:    return "Rectangle";
+    case ButtonShape::Circle:       return "Circle";
+    default:                        return "Rectangle";
     }
 }
 
 ButtonShape StringToButtonShape(const std::string& s) {
     if (s == "Rounded") return ButtonShape::Rounded;
+    if (s == "Circle") return ButtonShape::Circle;
     return ButtonShape::Rectangle;
+}
+
+std::string ButtonActionToString(ButtonAction action)
+{
+    switch (action)
+    {
+    case ButtonAction::None:                return "None";
+    case ButtonAction::GoToLevel1:          return "GoToLevel1";
+    case ButtonAction::GoToLevel2:          return "GoToLevel2";
+    case ButtonAction::GoToMainMenu:        return "GoToMainMenu";
+    case ButtonAction::GoToQuit:            return "GoToQuit";
+    case ButtonAction::OpenStateWindow:     return "OpenStateWindow";
+    case ButtonAction::ToggleAllTextboxes:  return "ToggleAllTextboxes";
+    case ButtonAction::ToggleAllDialogues:  return "ToggleAllDialogues";
+    default:                                return "None";
+    }
+}
+
+ButtonAction StringToButtonAction(const std::string& s)
+{
+    if (s == "GoToLevel1") return ButtonAction::GoToLevel1;
+    if (s == "GoToLevel2") return ButtonAction::GoToLevel2;
+    if (s == "GoToMainMenu") return ButtonAction::GoToMainMenu;
+    if (s == "GoToQuit") return ButtonAction::GoToQuit;
+    if (s == "OpenStateWindow") return ButtonAction::OpenStateWindow;
+    if (s == "ToggleAllTextboxes") return ButtonAction::ToggleAllTextboxes;
+    if (s == "ToggleAllDialogues") return ButtonAction::ToggleAllDialogues;
+    return ButtonAction::None;
 }
 
 void GuiSystem::Clear() {
     buttons.clear();
     textboxes.clear();
     dialogues.clear();
+}
+
+void GuiSystem::BindButtonAction(ButtonConfig& btn)
+{
+    switch (btn.action)
+    {
+    case ButtonAction::OpenStateWindow:
+        btn.onClick = [this]() { stateWindowActive = true; };
+        break;
+    case ButtonAction::ToggleAllTextboxes:
+        btn.onClick = [this]() { ToggleAllTextboxes(); };
+        break;
+    case ButtonAction::ToggleAllDialogues:
+        btn.onClick = [this]() { ToggleAllDialogues(); };
+        break;
+    case ButtonAction::GoToLevel1:
+        btn.onClick = [this]() { SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); };
+        break;
+    case ButtonAction::GoToMainMenu:
+        btn.onClick = [this]() { SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json"); };
+        break;
+    case ButtonAction::GoToQuit:
+        btn.onClick = [this]() { CoreEngine::GetInstance().Quit(); };
+        break;
+    default:
+        btn.onClick = nullptr;
+        break;
+    }
+}
+
+void GuiSystem::ToggleAllTextboxes()
+{
+    if (textboxes.empty()) return;
+    bool anyVisible = false;
+    for (auto& t : textboxes) if (t.isVisible) { anyVisible = true; break; }
+    for (auto& t : textboxes) t.isVisible = !anyVisible;
+}
+
+void GuiSystem::ToggleAllDialogues()
+{
+    if (dialogues.empty()) return;
+    bool anyVisible = false;
+    for (auto& d : dialogues) if (d.isVisible) { anyVisible = true; break; }
+    for (auto& d : dialogues) d.isVisible = !anyVisible;
+}
+
+void GuiSystem::DrawStateWindow(Render& render)
+{
+    // panel
+    render.DrawRect({ 960, 600 }, 700, 500, { 0.1f, 0.1f, 0.1f });
+    render.DrawText("STATE WINDOW", 740, 780, 1.0f, { 1,1,1 }, "Marker");
+
+    struct Item { const char* label; ButtonAction action; };
+    const Item items[] = {
+        {"Main Menu", ButtonAction::GoToMainMenu},
+        {"Level 1", ButtonAction::GoToLevel1},
+        {"Quit", ButtonAction::GoToQuit},
+    };
+
+    auto ClickFunction = [this](ButtonAction action)
+    {
+        ButtonConfig tmp;
+        tmp.action = action;
+        BindButtonAction(tmp);
+        if (tmp.onClick) tmp.onClick();
+    };
+
+    Vec2 mouse = Input::GetMousePosition();
+
+    float y = 720.f;
+    for (auto& it : items)
+    {
+        Vec2 pos{ 960, y };
+        render.DrawRect(pos, 500, 60, { 0.25f,0.25f,0.25f });
+        render.DrawText(it.label, pos.x - 230.f, y - 10.f, 0.7f, { 1,1,1 }, "Marker");
+
+        if (render.IsAreaTouched(mouse, pos, 500, 60) &&
+            Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            ClickFunction(it.action);
+            stateWindowActive = false; // close after click
+            return;
+        }
+
+        y -= 80.f;
+    }
+
+    // Close button
+    render.DrawRect({ 960, y }, 200, 50, { 0.7f, 0.f, 0.f });
+    render.DrawText("Close", 900, y - 10.f, 0.7f, { 1,1,1 }, "Marker");
+    if (render.IsAreaTouched(mouse, { 960, y }, 200, 50) &&
+        Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+    {
+        stateWindowActive = false;
+    }
 }
