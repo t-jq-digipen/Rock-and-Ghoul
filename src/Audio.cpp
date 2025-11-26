@@ -384,9 +384,9 @@ void AudioManager::UpdateCrossfade(float dt) {
     float t = crossfadeTime / crossfadeDuration;
     if (t > 1.0f) t = 1.0f;
 
-    if (static_cast<int>(crossfadeTime * 10) % 10 == 0) {  // Print every ~0.1 seconds
-        std::cout << "[AudioManager] Crossfade progress: " << (t * 100) << "%" << std::endl;
-    }
+    //if (static_cast<int>(crossfadeTime * 10) % 10 == 0) {  // Print every ~0.1 seconds
+    //    std::cout << "[AudioManager] Crossfade progress: " << (t * 100) << "%" << std::endl;
+    //}
 
     if (currentChannel)
         currentChannel->setVolume(musicVol * (1.0f - t));
@@ -642,6 +642,7 @@ void AudioManager::Update(float dt) {
     // HANDLE EDIT/PLAY MODE TRANSITIONS
     // ============================================================
     static bool wasInEditMode = true;  // Start in edit mode
+    static std::string lastBGM = "";   // ← ADD THIS: Track BGM changes instead of scene names
 
     // ENTERING PLAY MODE (edit → play)
     if (!sm.IsInEditMode() && wasInEditMode) {
@@ -653,8 +654,7 @@ void AudioManager::Update(float dt) {
         if (!bgmAssetName.empty()) {
             FMOD::Sound* bgm = AudioCache::GetSound(bgmAssetName);
             if (bgm) {
-                // FORCE PLAY THE MUSIC (don't use PlayMusic, use direct play + channel setup)
-                currentChannel = PlayGetChannel(bgm, false);  // ← Changed from PlayMusic()
+                currentChannel = PlayGetChannel(bgm, false);
                 if (currentChannel) {
                     currentChannel->setVolume(musicVol);
                 }
@@ -668,6 +668,10 @@ void AudioManager::Update(float dt) {
             std::cout << "[AudioManager] No BGM for this scene\n";
         }
 
+        // Track the BGM we just started
+        lastBGM = bgmAssetName;
+        std::cout << "[AudioManager] lastBGM initialized to: '" << lastBGM << "'\n";
+
         // Initialize lastScene to the current scene
         lastScene = sm.GetCurrentSceneName();
     }
@@ -675,7 +679,9 @@ void AudioManager::Update(float dt) {
     // ENTERING EDIT MODE (play → edit)
     if (sm.IsInEditMode() && !wasInEditMode) {
         std::cout << "[AudioManager] Entering EDIT MODE - music stopped\n";
-        // Music is already stopped by StopAll() in SceneManager::EnterEditMode()
+        lastScene = "";
+        lastBGM = "";  // ← RESET BGM TRACKING TOO
+        std::cout << "[AudioManager] lastScene and lastBGM reset to empty\n";
     }
 
     wasInEditMode = sm.IsInEditMode();
@@ -692,15 +698,25 @@ void AudioManager::Update(float dt) {
     UpdateCrossfade(dt);
 
     // ============================================================
-    // HANDLE SCENE TRANSITIONS (ONLY IN PLAY MODE)
-    // ============================================================
+        // HANDLE SCENE TRANSITIONS (ONLY IN PLAY MODE)
+        // ============================================================
     if (!sm.IsInEditMode()) {
-        std::string scene = sm.GetCurrentSceneName();
+        // USE BGM CHANGES TO DETECT TRANSITIONS:
+        std::string currentBGM = sm.GetCurrentSceneBGM();
+        std::string currentScene = sm.GetCurrentSceneName();
 
-        if (scene != lastScene) {
-            std::cout << "[AudioManager] Scene transition: '" << lastScene << "' -> '" << scene << "'\n";
-            HandleMusicForScene(scene, lastScene);
-            lastScene = scene;
+        // Detect BGM change (more reliable than scene name)
+        if (currentBGM != lastBGM && !currentBGM.empty() && !lastBGM.empty()) {
+            std::cout << "[AudioManager] Music transition: '" << lastBGM << "' -> '" << currentBGM << "'\n";  // ← Simplified
+
+            // Crossfade to new BGM
+            FMOD::Sound* newBGM = AudioCache::GetSound(currentBGM);
+            if (newBGM) {
+                CrossfadeTo(newBGM, 4.0f);
+            }
+
+            lastBGM = currentBGM;
+            lastScene = currentScene;
         }
     }
 }

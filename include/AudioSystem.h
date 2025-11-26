@@ -224,6 +224,7 @@ private:
 
     // State tracking
     std::string lastScene = "";
+    bool forceCheckTransition = false; // btwn edit and play mode
 
     /**
      * @brief Updates the active crossfade between music tracks.
