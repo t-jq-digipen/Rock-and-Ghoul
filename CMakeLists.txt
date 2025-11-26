@@ -395,6 +395,9 @@ source_group("BaseEngine\\Libraries\\Math" FILES
 source_group("BaseEngine\\Libraries\\Render" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/SimpleAtlas.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/SimpleAtlas.h
+
 
 )
 source_group("BaseEngine\\Libraries\\Collision" FILES 

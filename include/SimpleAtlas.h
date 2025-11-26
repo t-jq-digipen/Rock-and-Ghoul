@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <GL/glew.h> // or glad
+#include <GL/glew.h> 
 
 #include "rectpack2D/finders_interface.h"
 #include "stb_image.h"
