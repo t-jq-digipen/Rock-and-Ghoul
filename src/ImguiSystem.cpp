@@ -39,7 +39,7 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include "Audio.h"
-#include "Render.h" 
+#include "RenderSystem.h" 
 #include "Camera.h"
 #include "LogicSystem.h"
 #include "GuiSystem.h"
@@ -96,8 +96,8 @@ Vec2   ImGuiSystem::camSpawnPos = { 1920.f / 2.0f, 1080.f / 2.0f };
 float  ImGuiSystem::camSpawnZoom = 1.f;
 
 Vec2   ImGuiSystem::sceneMin = { 0.f,0.f };
-Vec2 ImGuiSystem::sceneMax = { GLApp::VIRTUAL_W, GLApp::VIRTUAL_H }; 
-Vec2 ImGuiSystem::sceneSize = { GLApp::VIRTUAL_W, GLApp::VIRTUAL_H };
+Vec2   ImGuiSystem::sceneMax = { GLApp::VIRTUAL_W, GLApp::VIRTUAL_H }; 
+Vec2   ImGuiSystem::sceneSize = { GLApp::VIRTUAL_W, GLApp::VIRTUAL_H };
 
 static ImGuizmo::OPERATION gizmoOperation = ImGuizmo::TRANSLATE;
 static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
@@ -216,7 +216,11 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
         {
         case RT_IMAGE:
         {
-            Vec2 size = r.GetSprite().Get_Scale();
+            Sprite::SpriteComponent& sprite = r.GetSprite();
+            const Image& img = sprite.Get_Image();
+
+            Vec2 worldSize = { img.widthPixels * RenderSystem::unitsPerPixel, img.heightPixels * RenderSystem::unitsPerPixel };
+            Vec2 size = worldSize * r.GetSprite().Get_Scale() * t.scale;
             Vec2 half = size * 0.5f;
             minW = t.pos - half;
             maxW = t.pos + half;
@@ -225,8 +229,17 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
 
         case RT_SPRITESHEET:
         {
-            auto& spr = r.GetSpriteSheet().Sprite();
-            Vec2 size = spr.Get_Scale();
+            Sprite::SpriteSheet& spritesheet    = r.GetSpriteSheet();
+            Sprite::SpriteComponent& sprite     = spritesheet.Sprite();
+            const Image& img = sprite.Get_Image();
+
+            float frameW = spritesheet.u1 - spritesheet.u0;
+            float frameH = spritesheet.v1 - spritesheet.v0;
+
+            Vec2 worldSize = { frameW * RenderSystem::unitsPerPixel, frameH * RenderSystem::unitsPerPixel };
+
+            Vec2 size = worldSize * sprite.Get_Scale();
+
             Vec2 half = size * 0.5f;
             minW = t.pos - half;
             maxW = t.pos + half;
@@ -253,7 +266,7 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
     }
     else return;
 
-    // Convert world to panel (using your existing Render helper)
+    // Convert world to panel
     ImVec2 tl = Render::GetInstance().WorldToPanel(minW, cursor, { w, h });
     ImVec2 br = Render::GetInstance().WorldToPanel(maxW, cursor, { w, h });
 
@@ -670,6 +683,7 @@ void ImGuiSystem::Update(float dt)
         ImGui::DockBuilderDockWindow("Editor Camera", dock_left_top);
         ImGui::DockBuilderDockWindow("Engine Info", dock_left_bottom);
         ImGui::DockBuilderDockWindow("Entity Editor + Prefabs", dock_right);
+        ImGui::DockBuilderDockWindow("UI Editor", dock_right);
         ImGui::DockBuilderDockWindow("Collision + Scene", dock_bottom);
         ImGui::DockBuilderDockWindow("Assets", dock_bottom);
         ImGui::DockBuilderDockWindow("Game View", dockspaceID);
@@ -780,6 +794,12 @@ void ImGuiSystem::Update(float dt)
     }
     ImGui::End();
 
+    if (ImGui::Begin("UI Editor", nullptr)) {
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
+        ImGui::TextDisabled("test");
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
+    }
+    ImGui::End();
 
     if (ImGui::Begin("Assets")) {
         if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
@@ -1465,46 +1485,7 @@ void ImGuiSystem::ShowHierarchyWindow() {
 
     EnsureSelectionValid();
 
-    //if (ImGui::Button("Add Entity"))
-    //{
-    //    Entity newEntity = m_registry.Create_Entity();
-    //    selectedEntity = newEntity;
-
-    //    // Store editor name
-    //    m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
-
-    //}
-
-    //ImGui::SameLine();
-    //if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
-    //{
-    //    Registry& reg = Registry::Get();
-    //    SavedEntity src = reg.Save_Entity(selectedEntity);
-
-    //    //filter out empty json data
-    //    for (auto it = src.componentData.begin(); it != src.componentData.end();)
-    //    {
-    //        if (it->second.empty() || it->second == "{}" || it->second == "null")
-    //        {
-    //            std::cout << "[Clone] Skipping empty component: " << it->first << "\n";
-    //            it = src.componentData.erase(it);
-    //        }
-    //        else
-    //        ++it;
-    //    }
-
-    //   reg.Load_Entity(src);
-    //}
-
-    //ImGui::SameLine();
-    //if (ImGui::Button("Delete Entity") && selectedEntity != INVALID_ENTITY)
-    //{
-    //    m_registry.Remove_Entity(selectedEntity);
-    //    selectedEntity = INVALID_ENTITY;
-    //}
-    //
-    //ImGui::Separator();
-
+    ImGui::Text("Entities");
 
     // show all known entities
     auto& nameMap = m_registry.Get_EntityNameMap();

@@ -71,7 +71,7 @@ void RenderSystem::ClearBackgroundTextures() {
 
 // NEW RENDERCOMPONENT draw overloads
 void DrawItem(const Sprite::SpriteComponent& spriteComp, const TransformComponent& transComp) {
-    Image img = spriteComp.Get_Image();
+    const Image& img = spriteComp.Get_Image();
 
     Vec2 worldSize = { img.widthPixels * RenderSystem::unitsPerPixel, img.heightPixels * RenderSystem::unitsPerPixel };
 
@@ -100,7 +100,7 @@ void DrawItem(const Sprite::SpriteComponent& spriteComp, const TransformComponen
 }
 
 void DrawItem(const Sprite::SpriteSheet& spriteSheet, const TransformComponent& transComp) {
-    Image img = spriteSheet.Sprite().Get_Image();
+    const Image& img = spriteSheet.Sprite().Get_Image();
 
     Vec2 frameSize = { spriteSheet.u1 - spriteSheet.u0, spriteSheet.v1 - spriteSheet.v0 };
     Vec2 worldSize = frameSize * RenderSystem::unitsPerPixel;

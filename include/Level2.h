@@ -13,32 +13,32 @@
  * ========================================================
  */
 
-#pragma once
-#include <iostream>
-#ifndef LEVEL2_H
-#define LEVEL2_H
-
- // Class for Level 2
-class Level2
-{
-public:
-	// Loads Level 2
-	static void Load();
-
-	// Initializes Level 2
-	static void Init();
-
-	// Updates Level 2
-	static void Update();
-
-	// Draws Level 2
-	static void Draw();
-
-	// Frees Level 2
-	static void Free();
-
-	// Unloads Level 2
-	static void Unload();
-};
-
-#endif // LEVEL2_H
+//#pragma once
+//#include <iostream>
+//#ifndef LEVEL2_H
+//#define LEVEL2_H
+//
+// // Class for Level 2
+//class Level2
+//{
+//public:
+//	// Loads Level 2
+//	static void Load();
+//
+//	// Initializes Level 2
+//	static void Init();
+//
+//	// Updates Level 2
+//	static void Update();
+//
+//	// Draws Level 2
+//	static void Draw();
+//
+//	// Frees Level 2
+//	static void Free();
+//
+//	// Unloads Level 2
+//	static void Unload();
+//};
+//
+//#endif // LEVEL2_H
