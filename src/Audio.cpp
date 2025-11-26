@@ -29,6 +29,7 @@
 #include <iostream>
 #include "SceneManager.h"
 #include "GuiSystem.h"
+#include "Input.h"
  // Static members
 FMOD::System* AudioSystem::mSystem = nullptr;
 
@@ -368,65 +369,121 @@ void AudioManager::Initialize() {
 }
 
 /**
- * @brief Updates the active crossfade effect between music tracks.
- *
- * This function handles the transition between two music tracks
- * by gradually decreasing the volume of the current track while increasing
- * the volume of the next track. When crossfade completes, current
- * channel is stopped and the next channel becomes the current channel.
- *
- * @param dt Delta time in seconds.
+ * @brief Updates fade in/out effect
  */
-void AudioManager::UpdateCrossfade(float dt) {
-    if (!crossfadeActive) return;
+void AudioManager::UpdateFade(float dt) {
+    if (!fadeActive) return;
 
-    crossfadeTime += dt;
-    float t = crossfadeTime / crossfadeDuration;
+    fadeTime += dt;
+    float t = fadeTime / fadeDuration;
     if (t > 1.0f) t = 1.0f;
 
-    //if (static_cast<int>(crossfadeTime * 10) % 10 == 0) {  // Print every ~0.1 seconds
-    //    std::cout << "[AudioManager] Crossfade progress: " << (t * 100) << "%" << std::endl;
-    //}
+    if (fadingOut) {
+        // ============================================================
+        // FADING OUT
+        // ============================================================
+        if (currentChannel) {
+            currentChannel->setVolume(musicVol * (1.0f - t));
+        }
 
-    if (currentChannel)
-        currentChannel->setVolume(musicVol * (1.0f - t));
-    if (nextChannel)
-        nextChannel->setVolume(musicVol * t);
+        if (t >= 1.0f) {
+            // Fade out complete - stop old music
+            if (currentChannel) {
+                currentChannel->stop();
+                currentChannel = nullptr;
+            }
 
-    if (t >= 1.0f) {
-        if (currentChannel) currentChannel->stop();
-        currentChannel = nextChannel;
-        nextChannel = nullptr;
-        crossfadeActive = false;
-        std::cout << "[AudioManager] Crossfade completed\n";
+            // Start fading in new music
+            if (!pendingBGM.empty()) {
+                FMOD::Sound* newBGM = AudioCache::GetSound(pendingBGM);
+                if (newBGM) {
+                    currentChannel = PlayGetChannel(newBGM, false);
+                    if (currentChannel) {
+                        currentChannel->setVolume(0.0f);  // Start silent
+                    }
+                }
+                pendingBGM = "";
+
+                // Switch to fade in
+                fadingOut = false;
+                fadeTime = 0.0f;
+                std::cout << "[AudioManager] Fade out complete, starting fade in\n";
+            }
+            else {
+                // Just stopping - no new music
+                fadeActive = false;
+            }
+
+        }
+
+    }
+    else {
+        // ============================================================
+        // FADING IN
+        // ============================================================
+        if (currentChannel) {
+            currentChannel->setVolume(musicVol * t);
+        }
+
+        if (t >= 1.0f) {
+            // Fade in complete
+            fadeActive = false;
+            std::cout << "[AudioManager] Fade in complete\n";
+        }
     }
 }
+
 /**
- * @brief Handles music transitions based on scene changes.
+ * @brief Starts a fade transition to new BGM
  */
-void AudioManager::HandleMusicForScene(const std::string& currentScene, const std::string& previousScene)
-{
-    if (currentScene == previousScene) return;  // No transition
+void AudioManager::TransitionToBGM(const std::string& bgmAssetName, float duration) {
+    if (bgmAssetName.empty()) return;
 
-    // Get BGM from the scene
-    std::string bgmAssetName = SceneManager::Get().GetCurrentSceneBGM();
+    fadeDuration = duration;
+    fadeTime = 0.0f;
+    fadeActive = true;
+    fadingOut = true;
+    pendingBGM = bgmAssetName;
 
-    if (bgmAssetName.empty()) {
-        std::cout << "[AudioManager] No BGM for scene: " << currentScene << "\n";
-        return;
-    }
-
-    // Load BGM from AudioCache
-    FMOD::Sound* newBGM = AudioCache::GetSound(bgmAssetName);
-
-    if (!newBGM) {
-        std::cerr << "[AudioManager] Failed to load BGM: " << bgmAssetName << "\n";
-        return;
-    }
-
-    std::cout << "[AudioManager] Crossfading to BGM: " << bgmAssetName << "\n";
-    CrossfadeTo(newBGM, 4.0f);
+    std::cout << "[AudioManager] Starting fade transition to: " << bgmAssetName << " (" << duration << "s)\n";
 }
+
+/**
+ * @brief Fades in BGM (used when entering play mode)
+ */
+void AudioManager::FadeInBGM(const std::string& bgmAssetName, float duration) {
+    if (bgmAssetName.empty()) return;
+
+    FMOD::Sound* bgm = AudioCache::GetSound(bgmAssetName);
+    if (!bgm) return;
+
+    // Start playing at volume 0
+    currentChannel = PlayGetChannel(bgm, false);
+    if (currentChannel) {
+        currentChannel->setVolume(0.0f);
+    }
+
+    // Start fade in
+    fadeDuration = duration;
+    fadeTime = 0.0f;
+    fadeActive = true;
+    fadingOut = false;
+
+    std::cout << "[AudioManager] Fading in BGM: " << bgmAssetName << " (" << duration << "s)\n";
+}
+// FIXTHISSHIT DOCUMENTATION
+void AudioManager::FadeOutAndStop(float duration) {
+    if (!currentChannel) return;
+
+    fadeDuration = duration;
+    fadeTime = 0.0f;
+    fadeActive = true;
+    fadingOut = true;
+    pendingBGM = "";  // Empty means just stop, don't play new music
+
+    std::cout << "[AudioManager] Fading out music before stop (" << duration << "s)\n";
+}
+
 
 /**
  * @brief Pauses the currently playing music.
@@ -576,31 +633,7 @@ void AudioManager::PlayMusic(FMOD::Sound* track, bool paused) {
         currentChannel->setVolume(musicVol);
 }
 
-/**
- * @brief Initiates a smooth crossfade transition to a new music track.
- *
- * This function starts playing a new music track on a separate channel
- * and begins a gradual volume transition from the current track to the
- * new track over the specified duration.
- *
- * @param newTrack Pointer to the FMOD::Sound object for the new music track.
- * @param duration The duration of the crossfade effect in seconds.
- */
-void AudioManager::CrossfadeTo(FMOD::Sound* newTrack, float duration) {
-    if (!newTrack) return;
 
-    nextChannel = PlayGetChannel(newTrack, true);
-    if (!nextChannel) return;
-
-    nextChannel->setVolume(0.0f);
-    nextChannel->setPaused(false);
-
-    crossfadeTime = 0.0f;
-    crossfadeDuration = duration;
-    crossfadeActive = true;
-
-    std::cout << "[AudioManager] Starting crossfade (" << duration << "s)\n";
-}
 
 /**
  * @brief Updates the listener position to follow the game camera.
@@ -626,6 +659,7 @@ void AudioManager::UpdateListenerToCamera() {
  *
  * @param dt Delta time in seconds.
  */
+
 void AudioManager::Update(float dt) {
     // Update listener to follow camera every frame
     UpdateListenerToCamera();
@@ -634,54 +668,40 @@ void AudioManager::Update(float dt) {
     AudioSystem::Update();
 
     // update all audio components
-    Update_AudioComponents(dt);
+    //Update_AudioComponents(dt);
 
     SceneManager& sm = SceneManager::Get();
 
     // ============================================================
     // HANDLE EDIT/PLAY MODE TRANSITIONS
     // ============================================================
-    static bool wasInEditMode = true;  // Start in edit mode
-    static std::string lastBGM = "";   // ← ADD THIS: Track BGM changes instead of scene names
+    static bool wasInEditMode = true;
+    static std::string lastBGM = "";
 
     // ENTERING PLAY MODE (edit → play)
     if (!sm.IsInEditMode() && wasInEditMode) {
         std::cout << "[AudioManager] Entering PLAY MODE\n";
 
-        // Get BGM from the loaded scene
         std::string bgmAssetName = sm.GetCurrentSceneBGM();
 
         if (!bgmAssetName.empty()) {
-            FMOD::Sound* bgm = AudioCache::GetSound(bgmAssetName);
-            if (bgm) {
-                currentChannel = PlayGetChannel(bgm, false);
-                if (currentChannel) {
-                    currentChannel->setVolume(musicVol);
-                }
-                std::cout << "[AudioManager] Started BGM: " << bgmAssetName << "\n";
-            }
-            else {
-                std::cerr << "[AudioManager] Failed to load BGM: " << bgmAssetName << "\n";
-            }
+            // ← CHANGED: Fade in instead of instant play
+            FadeInBGM(bgmAssetName, 2.0f);  // 2 second fade in
         }
         else {
             std::cout << "[AudioManager] No BGM for this scene\n";
         }
 
-        // Track the BGM we just started
         lastBGM = bgmAssetName;
-        std::cout << "[AudioManager] lastBGM initialized to: '" << lastBGM << "'\n";
-
-        // Initialize lastScene to the current scene
         lastScene = sm.GetCurrentSceneName();
     }
 
-    // ENTERING EDIT MODE (play → edit)
+    // ENTERING EDIT MODE (play to edit)
     if (sm.IsInEditMode() && !wasInEditMode) {
-        std::cout << "[AudioManager] Entering EDIT MODE - music stopped\n";
+        std::cout << "[AudioManager] Entering EDIT MODE - music fadin out\n";
+        FadeOutAndStop(1.0f);  // 1 second fade out
         lastScene = "";
-        lastBGM = "";  // ← RESET BGM TRACKING TOO
-        std::cout << "[AudioManager] lastScene and lastBGM reset to empty\n";
+        lastBGM = "";
     }
 
     wasInEditMode = sm.IsInEditMode();
@@ -694,26 +714,22 @@ void AudioManager::Update(float dt) {
         std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
     }
 
-    // Music always updates (crossfade continues even when game is paused)
-    UpdateCrossfade(dt);
+    // ← CHANGED: Update fade instead of crossfade
+    UpdateFade(dt);
 
     // ============================================================
-        // HANDLE SCENE TRANSITIONS (ONLY IN PLAY MODE)
-        // ============================================================
+    // HANDLE SCENE TRANSITIONS (ONLY IN PLAY MODE)
+    // ============================================================
     if (!sm.IsInEditMode()) {
-        // USE BGM CHANGES TO DETECT TRANSITIONS:
         std::string currentBGM = sm.GetCurrentSceneBGM();
         std::string currentScene = sm.GetCurrentSceneName();
 
-        // Detect BGM change (more reliable than scene name)
+        // Detect BGM change
         if (currentBGM != lastBGM && !currentBGM.empty() && !lastBGM.empty()) {
-            std::cout << "[AudioManager] Music transition: '" << lastBGM << "' -> '" << currentBGM << "'\n";  // ← Simplified
+            std::cout << "[AudioManager] Music transition: '" << lastBGM << "' -> '" << currentBGM << "'\n";
 
-            // Crossfade to new BGM
-            FMOD::Sound* newBGM = AudioCache::GetSound(currentBGM);
-            if (newBGM) {
-                CrossfadeTo(newBGM, 4.0f);
-            }
+            // ← CHANGED: Fade out/in instead of crossfade
+            TransitionToBGM(currentBGM, 1.5f);  // 1.5 seconds fade out, then 1.5 fade in
 
             lastBGM = currentBGM;
             lastScene = currentScene;
