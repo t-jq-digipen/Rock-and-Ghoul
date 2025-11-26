@@ -88,9 +88,8 @@ bool GuiSystem::GetEditMode() const
 }
 
 void GuiSystem::Update(float dt) {
-    if (Input::IsKeyPressed(GLFW_KEY_F8))
-        editMode = !editMode;
-
+    //if (Input::IsKeyPressed(GLFW_KEY_F8))
+    //    editMode = !editMode;
 
     // --- Press SPACE to advance dialogues (while not editing the GUI) ---
     static bool spaceLatch = false;
@@ -138,33 +137,7 @@ void GuiSystem::Update(float dt) {
     spaceLatch = spaceHeld;
 
     Vec2 mouse = Input::GetMousePosition();
-   
-
-    // convert to Game View space
-    if (!ImGuiSystem::guiEnabled) {
-        // Fullscreen mouse coords are already correct, just use them directly
-        // No conversion needed!
-    }
-    else {
-        // ImGui is ON convert mouse from screen space to game view space
-        if (mouse.x < m_gameViewRect.x || mouse.x > m_gameViewRect.x + m_gameViewRect.width || mouse.y < m_gameViewRect.y ||  mouse.y > m_gameViewRect.y + m_gameViewRect.height) 
-        {
-            // Mouse is outside game view - invalidate mouse position
-            mouse.x = -9999.f;
-            mouse.y = -9999.f;
-        }
-        else {
-            // Mouse IS inside game view convert to local coordinates
-            mouse.x -= m_gameViewRect.x;
-            mouse.y -= m_gameViewRect.y;
-            //scale relative to the game view size to match window size
-            float mouseScaleX = GLApp::width / m_gameViewRect.width;
-            float mouseScaleY = GLApp::height / m_gameViewRect.height;
-
-            mouse.x *= mouseScaleX;
-            mouse.y *= mouseScaleY;
-        }
-    }
+    GuiSystem::GetMouseImgui(mouse);
 
     Render& renderer = Render::GetInstance();
 
@@ -290,6 +263,11 @@ void GuiSystem::Update(float dt) {
         // r.DrawRoundedRect({d.textBox.pos.x, d.textBox.pos.y}, textSize.x + 24, textSize.y + 16, 8.f, {0.f,0.f,0.f});
 
         render.DrawText(vis, drawX, drawY, d.textBox.scale, drawColor, "Marker");
+    }
+
+    // Draw state window if active
+    if (stateWindowActive) {
+        DrawStateWindow(render);
     }
 
     if (editMode) {
@@ -934,11 +912,6 @@ void GuiSystem::Update(float dt) {
                 selectedIndex = (int)buttons.size() + (int)textboxes.size() + idx;
             }
         }
-
-        // Draw state window if active
-        if (stateWindowActive) {
-            DrawStateWindow(render);
-        }
     }
 
     // restore camera back to world
@@ -972,10 +945,10 @@ std::string ButtonActionToString(ButtonAction action)
     switch (action)
     {
     case ButtonAction::None:                return "None";
-    case ButtonAction::GoToLevel1:          return "GoToLevel1";
-    case ButtonAction::GoToLevel2:          return "GoToLevel2";
-    case ButtonAction::GoToMainMenu:        return "GoToMainMenu";
-    case ButtonAction::GoToQuit:            return "GoToQuit";
+    case ButtonAction::LoadLevel1:          return "LoadLevel1";
+    case ButtonAction::LoadLevel2:          return "LoadLevel2";
+    case ButtonAction::LoadMainMenu:        return "LoadMainMenu";
+    case ButtonAction::Quit:                return "Quit";
     case ButtonAction::OpenStateWindow:     return "OpenStateWindow";
     case ButtonAction::ToggleAllTextboxes:  return "ToggleAllTextboxes";
     case ButtonAction::ToggleAllDialogues:  return "ToggleAllDialogues";
@@ -985,10 +958,10 @@ std::string ButtonActionToString(ButtonAction action)
 
 ButtonAction StringToButtonAction(const std::string& s)
 {
-    if (s == "GoToLevel1") return ButtonAction::GoToLevel1;
-    if (s == "GoToLevel2") return ButtonAction::GoToLevel2;
-    if (s == "GoToMainMenu") return ButtonAction::GoToMainMenu;
-    if (s == "GoToQuit") return ButtonAction::GoToQuit;
+    if (s == "LoadLevel1") return ButtonAction::LoadLevel1;
+    if (s == "LoadLevel2") return ButtonAction::LoadLevel2;
+    if (s == "LoadMainMenu") return ButtonAction::LoadMainMenu;
+    if (s == "Quit") return ButtonAction::Quit;
     if (s == "OpenStateWindow") return ButtonAction::OpenStateWindow;
     if (s == "ToggleAllTextboxes") return ButtonAction::ToggleAllTextboxes;
     if (s == "ToggleAllDialogues") return ButtonAction::ToggleAllDialogues;
@@ -1014,13 +987,13 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
     case ButtonAction::ToggleAllDialogues:
         btn.onClick = [this]() { ToggleAllDialogues(); };
         break;
-    case ButtonAction::GoToLevel1:
+    case ButtonAction::LoadLevel1:
         btn.onClick = [this]() { SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); };
         break;
-    case ButtonAction::GoToMainMenu:
+    case ButtonAction::LoadMainMenu:
         btn.onClick = [this]() { SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json"); };
         break;
-    case ButtonAction::GoToQuit:
+    case ButtonAction::Quit:
         btn.onClick = [this]() { CoreEngine::GetInstance().Quit(); };
         break;
     default:
@@ -1047,51 +1020,146 @@ void GuiSystem::ToggleAllDialogues()
 
 void GuiSystem::DrawStateWindow(Render& render)
 {
-    // panel
-    render.DrawRect({ 960, 600 }, 700, 500, { 0.1f, 0.1f, 0.1f });
-    render.DrawText("STATE WINDOW", 740, 780, 1.0f, { 1,1,1 }, "Marker");
+    if (!stateWindowActive) return;
+
+    Render& renderer = Render::GetInstance();
+    const bool prevCam = renderer.useCamera;
+    renderer.useCamera = false;
+
+    const float defaultW = 1920.f;
+    const float defaultH = 1080.f;
+    const float scaleX = GLApp::width / defaultW;
+    const float scaleY = GLApp::height / defaultH;
+    const float uiScale = std::min(scaleX, scaleY);
+
+    Vec2 mouse = Input::GetMousePosition();
+    GuiSystem::GetMouseImgui(mouse);
+
+    // -------- Window background (scaled like UI) --------
+    {
+        const Vec2 basePos = { 960.f, 600.f };  // virtual center
+        const Vec2 baseSize = { 700.f, 500.f };  // virtual size
+        Vec2 pos;   pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
+        Vec2 size;  size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
+        render.DrawRect(pos, size.x, size.y, { 0.1f, 0.1f, 0.1f });
+
+        // Title text (scaled like UI text)
+        const float baseTextScale = 1.0f;
+        const float textScale = baseTextScale * uiScale;
+
+        const Vec2 baseTitlePos = { 740.f, 780.f };
+        Vec2 titlePos; titlePos.x = baseTitlePos.x * scaleX; titlePos.y = baseTitlePos.y * scaleY;
+        render.DrawText("CHOOSE YOUR STATE", titlePos.x, titlePos.y, textScale, { 1,1,1 }, "Marker");
+    }
 
     struct Item { const char* label; ButtonAction action; };
     const Item items[] = {
-        {"Main Menu", ButtonAction::GoToMainMenu},
-        {"Level 1", ButtonAction::GoToLevel1},
-        {"Quit", ButtonAction::GoToQuit},
+        {"None",      ButtonAction::None},
+        {"Main Menu", ButtonAction::LoadMainMenu},
+        {"Level 1",   ButtonAction::LoadLevel1},
+        {"Quit",      ButtonAction::Quit},
     };
 
     auto ClickFunction = [this](ButtonAction action)
+        {
+            ButtonConfig tmp;
+            tmp.action = action;
+            BindButtonAction(tmp);
+            if (tmp.onClick) tmp.onClick();
+        };
+
+    // State Window Buttons
+    float yVirtual = 720.f;
+
+    for (const auto& it : items)
     {
-        ButtonConfig tmp;
-        tmp.action = action;
-        BindButtonAction(tmp);
-        if (tmp.onClick) tmp.onClick();
-    };
+        if (it.action == ButtonAction::None) { yVirtual -= 80.f; continue; }
 
-    Vec2 mouse = Input::GetMousePosition();
+        const Vec2 basePos = { 960.f, yVirtual };
+        const Vec2 baseSize = { 500.f,  60.f };
 
-    float y = 720.f;
-    for (auto& it : items)
-    {
-        Vec2 pos{ 960, y };
-        render.DrawRect(pos, 500, 60, { 0.25f,0.25f,0.25f });
-        render.DrawText(it.label, pos.x - 230.f, y - 10.f, 0.7f, { 1,1,1 }, "Marker");
+        Vec2 pos;  pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
+        Vec2 size; size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
 
-        if (render.IsAreaTouched(mouse, pos, 500, 60) &&
-            Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+        const bool hover = render.IsAreaTouched(mouse, pos, size.x, size.y);
+
+        Colour3 col = hover ? Colour3{ 0.25f + 0.2f, 0.25f + 0.2f, 0.25f + 0.2f }
+        : Colour3{ 0.25f, 0.25f, 0.25f };
+        render.DrawRect(pos, size.x, size.y, col);
+
+        const float baseTextScale = 0.7f;
+        const float textScale = baseTextScale * uiScale;
+        Vec2 textSize = render.CalculateTextSize(it.label, textScale, "Marker");
+
+        float textX = pos.x - textSize.x * 0.5f;
+        float textY = pos.y - textSize.y * 0.5f + textSize.y * 0.15f; // small vertical offset
+        render.DrawText(it.label, textX, textY, textScale, { 1,1,1 }, "Marker");
+
+        // Click action
+        if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             ClickFunction(it.action);
-            stateWindowActive = false; // close after click
+            stateWindowActive = false;
+            renderer.useCamera = prevCam;
             return;
         }
 
-        y -= 80.f;
+        yVirtual -= 80.f;
     }
 
-    // Close button
-    render.DrawRect({ 960, y }, 200, 50, { 0.7f, 0.f, 0.f });
-    render.DrawText("Close", 900, y - 10.f, 0.7f, { 1,1,1 }, "Marker");
-    if (render.IsAreaTouched(mouse, { 960, y }, 200, 50) &&
-        Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+    // Button to close state window
     {
-        stateWindowActive = false;
+        const Vec2 basePos = { 960.f, yVirtual };
+        const Vec2 baseSize = { 200.f,  50.f };
+
+        Vec2 pos;  pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
+        Vec2 size; size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
+
+        const bool hover = render.IsAreaTouched(mouse, pos, size.x, size.y);
+
+        render.DrawRect(pos, size.x, size.y, { 0.7f, 0.f, 0.f });
+
+        const char* label = "Close";
+        const float baseTextScale = 0.7f;
+        const float textScale = baseTextScale * uiScale;
+        Vec2 textSize = render.CalculateTextSize(label, textScale, "Marker");
+        float textX = pos.x - textSize.x * 0.5f;
+        float textY = pos.y - textSize.y * 0.5f + textSize.y * 0.15f;
+        render.DrawText(label, textX, textY, textScale, { 1,1,1 }, "Marker");
+
+        if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            stateWindowActive = false;
+        }
+    }
+    renderer.useCamera = prevCam;
+}
+
+void GuiSystem::GetMouseImgui(Vec2& mouse)
+{
+    // convert to Game View space
+    if (!ImGuiSystem::guiEnabled) {
+        // Fullscreen mouse coords are already correct, just use them directly
+        // No conversion needed!
+    }
+    else {
+        // ImGui is ON convert mouse from screen space to game view space
+        if (mouse.x < m_gameViewRect.x || mouse.x > m_gameViewRect.x + m_gameViewRect.width || mouse.y < m_gameViewRect.y || mouse.y > m_gameViewRect.y + m_gameViewRect.height)
+        {
+            // Mouse is outside game view - invalidate mouse position
+            mouse.x = -9999.f;
+            mouse.y = -9999.f;
+        }
+        else {
+            // Mouse IS inside game view convert to local coordinates
+            mouse.x -= m_gameViewRect.x;
+            mouse.y -= m_gameViewRect.y;
+            //scale relative to the game view size to match window size
+            float mouseScaleX = GLApp::width / m_gameViewRect.width;
+            float mouseScaleY = GLApp::height / m_gameViewRect.height;
+
+            mouse.x *= mouseScaleX;
+            mouse.y *= mouseScaleY;
+        }
     }
 }

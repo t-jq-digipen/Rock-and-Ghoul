@@ -41,14 +41,22 @@ enum class ButtonShape
 enum class ButtonAction
 {
     None,
-    GoToLevel1,
-    GoToLevel2,
-    GoToMainMenu,
-    GoToQuit,
+    LoadLevel1,
+    LoadLevel2,
+    LoadMainMenu,
+    Quit,
     OpenStateWindow,
     ToggleAllTextboxes,
     ToggleAllDialogues,
     GetActionCount
+};
+
+enum class SelectedType
+{
+    None,
+    Button,
+    TextBox,
+    Dialogue
 };
 
 struct ButtonConfig {
@@ -126,12 +134,28 @@ public:
 
     void SetGameViewRect(const GameViewRect& rect) { m_gameViewRect = rect; }
 
+    // Non-Const Getters
+    std::vector<ButtonConfig>& Buttons() { return buttons; }
+    std::vector<TextBoxConfig>& TextBoxes() { return textboxes; }
+    std::vector<DialogueConfig>& Dialogues() { return dialogues; }
+
+    // Const Getters
     const std::vector<ButtonConfig>& GetButtons() const { return buttons; }
     const std::vector<TextBoxConfig>& GetTextBoxes() const { return textboxes; }
     const std::vector<DialogueConfig>& GetDialogues() const { return dialogues; }
+    const SelectedType& GetSelectedType() const { return selectedType; }
+    const int& GetSelectedIndex() const { return selectedIndex; }
+
     void Clear();
 
-
+    // Button functions
+    void BindButtonAction(ButtonConfig& btn);
+    void ToggleAllTextboxes();
+    void ToggleAllDialogues();
+    void DrawStateWindow(Render& render);
+    
+    // Helper to get mouse position if ImGui editor is open
+    void GetMouseImgui(Vec2& pos);
 private:
 
     std::vector<ButtonConfig> buttons;
@@ -144,18 +168,12 @@ private:
 
     bool editMode{ false };
     int selectedIndex = -1;
-    enum class SelectedType { None, Button, TextBox, Dialogue } selectedType = SelectedType::None;
+    enum class SelectedType selectedType = SelectedType::None;
 
     GameViewRect m_gameViewRect;
 
     // state window overlay
-    bool stateWindowActive = true;
-
-    void BindButtonAction(ButtonConfig& btn);
-    void ToggleAllTextboxes();
-    void ToggleAllDialogues();
-
-    void DrawStateWindow(Render& render);
+    bool stateWindowActive = false;
 };
 
 // inline GuiSystem guiSystem;

@@ -58,5 +58,6 @@ public:
     static const std::string ASSETS_FOLDER;
     static const std::string PREFABS_FOLDER;
     static const std::string SCENES_LIST;
+    static const std::string DIALOGUE;
 
 };
