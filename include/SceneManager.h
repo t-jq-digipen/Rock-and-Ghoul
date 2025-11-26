@@ -33,11 +33,16 @@ public:
     SceneType GetSceneType() { return sceneType; }
     void SetSceneType(SceneType type) { sceneType = type; }
 
+    bool IsInEditMode() const { return inEditMode; } // to stop music in edit mode
+    void SetCurrentSceneBGM(const std::string& bgmAssetName) { currentSceneBGM = bgmAssetName; }
+    std::string GetCurrentSceneBGM() const { return currentSceneBGM; }
+
 private:
     SceneManager() = default;
 
     std::string currentScenePath;      // Which .json is currently loaded
     std::string tempScenePath = "../Assets/saves/temp.json";         // Auto-generated temp version
+    std::string currentSceneBGM;  // BGM asset name for current scene
     std::string pendingScene = "";
     SceneType sceneType = ST_MENU;
 };

@@ -216,6 +216,13 @@ FMOD::Sound* AudioSystem::LoadSound(const std::string& filename, FMOD_MODE mode)
  */
 void AudioSystem::PlaySound(FMOD::Sound* sound) {
     if (!mSystem || !sound) return;
+
+    // DON'T PLAY AUDIO IN EDIT MODE
+    if (SceneManager::Get().IsInEditMode()) {
+        std::cout << "[AudioSystem] Blocked sound playback (in edit mode)\n";
+        return;
+    }
+
     FMOD::Channel* channel = nullptr;
     mSystem->playSound(sound, nullptr, false, &channel);
 }
@@ -230,8 +237,19 @@ void AudioSystem::PlaySound(FMOD::Sound* sound) {
  */
 void AudioSystem::StopAll() {
     if (!mSystem) return;
-    mSystem->close();
-    mSystem->init(32, FMOD_INIT_NORMAL, nullptr);
+
+    // OLD CODE (destroys everything):
+    // mSystem->close();
+    // mSystem->init(32, FMOD_INIT_NORMAL, nullptr);
+
+    // STOPS CHANNELS BUT KEEPS SOUNDS LAODED
+    FMOD::ChannelGroup* masterGroup = nullptr;
+    FMOD_RESULT result = mSystem->getMasterChannelGroup(&masterGroup);
+
+    if (result == FMOD_OK && masterGroup) {
+        masterGroup->stop();
+        std::cout << "[AudioSystem] Stopped all channels\n";
+    }
 }
 
 /**
@@ -247,6 +265,13 @@ void AudioSystem::StopAll() {
  */
 FMOD::Channel* AudioSystem::PlaySoundGetChannel(FMOD::Sound* sound, bool paused) {
     if (!mSystem || !sound) return nullptr;
+
+    // DON'T PLAY AUDIO IN EDIT MODE
+    if (SceneManager::Get().IsInEditMode()) {
+        std::cout << "[AudioSystem] Blocked sound playback (in edit mode)\n";
+        return nullptr;
+    }
+
     FMOD::Channel* channel = nullptr;
     FMOD_RESULT result = mSystem->playSound(sound, nullptr, paused, &channel);
     if (result != FMOD_OK) {
@@ -331,19 +356,15 @@ void AudioManager::Initialize() {
     std::cout << "\n[AudioManager] Loading init bank..." << std::endl;
     AudioCache::LoadBank("init");
 
-    // preload music tracks
+    // preload music tracks (but DON'T play yet - wait for play mode)
     mainMenuMusic = AudioCache::GetSound("main_menu");
     level1Music = AudioCache::GetSound("level_1");
 
-    // start main menu music
-    if (mainMenuMusic) {
-        PlayMusic(mainMenuMusic);
-        std::cout << "[AudioManager] Main menu music started\n";
-    }
+    // DON'T start music here - it will start when entering play mode
+    std::cout << "[AudioManager] Main menu music preloaded (will play when entering play mode)\n";
 
     GuiSystem::SetAudioManager(this);
     std::cout << "[AudioManager] GuiSystem audio manager set\n";
-
 }
 
 /**
@@ -380,80 +401,31 @@ void AudioManager::UpdateCrossfade(float dt) {
         std::cout << "[AudioManager] Crossfade completed\n";
     }
 }
-
 /**
- * @brief Handles music transitions based on game state changes.
- *
- * This function detects when the game state changes and triggers
- * appropriate music transitions.
- *
- * @param currentState Current game state.
- * @param previousState The game state from previous frame.
+ * @brief Handles music transitions based on scene changes.
  */
-//void AudioManager::HandleMusicForState(GameState currentState, GameState previousState) {
-//    // DETECT TRANSITION TO LEVEL 1!
-//    if (currentState == GameState::GS_LEVEL1 && previousState != GameState::GS_LEVEL1) {
-//        if (level1Music) {
-//            CrossfadeTo(level1Music, 4.0f);
-//        }
-//        else {
-//            std::cerr << "[AudioManager] ERROR: level1Music is NULL!" << std::endl;
-//        }
-//    }
-//
-//    // DETECT TRANSITION BACK TO MAIN MENU FROM LEVEL 1!
-//    if (currentState == GameState::GS_MAIN_MENU && previousState == GameState::GS_LEVEL1) {
-//        // Play button sound
-//        AudioSystem::PlayButtonSound(AudioSystem::ButtonType::PLAY);
-//
-//        // Crossfade back to main menu music
-//        if (mainMenuMusic) {
-//            CrossfadeTo(mainMenuMusic, 4.0f);
-//        }
-//        else {
-//            std::cerr << "[AudioManager] ERROR: mainMenuMusic is NULL!" << std::endl;
-//        }
-//    }
-//}
 void AudioManager::HandleMusicForScene(const std::string& currentScene, const std::string& previousScene)
 {
-    // ==============================
-    // ENTERING LEVEL 1
-    // ==============================
-    if (currentScene == "level1" && previousScene != "level1")
-    {
-        std::cout << "[AudioManager] Loading level1 bank..." << std::endl;
-        AudioCache::LoadBank("level1");
-        level1Music = AudioCache::GetSound("level_1"); // getting the music
+    if (currentScene == previousScene) return;  // No transition
 
-        if (level1Music)
-        {
-            std::cout << "[AudioManager] Crossfade -> Level1 Music\n";
-            CrossfadeTo(level1Music, 4.0f);
-        }
-        else
-        {
-            std::cerr << "[AudioManager] ERROR: level1Music is NULL!\n";
-        }
+    // Get BGM from the scene
+    std::string bgmAssetName = SceneManager::Get().GetCurrentSceneBGM();
+
+    if (bgmAssetName.empty()) {
+        std::cout << "[AudioManager] No BGM for scene: " << currentScene << "\n";
+        return;
     }
 
-    // ==============================
-    // GOING BACK TO MAIN MENU
-    // ==============================
-    if (currentScene == "MainMenu" && previousScene == "level1")
-    {
-        AudioSystem::PlayButtonSound(AudioSystem::ButtonType::PLAY);
+    // Load BGM from AudioCache
+    FMOD::Sound* newBGM = AudioCache::GetSound(bgmAssetName);
 
-        if (mainMenuMusic)
-        {
-            std::cout << "[AudioManager] Crossfade -> MainMenu Music\n";
-            CrossfadeTo(mainMenuMusic, 4.0f);
-        }
-        else
-        {
-            std::cerr << "[AudioManager] ERROR: mainMenuMusic is NULL!\n";
-        }
+    if (!newBGM) {
+        std::cerr << "[AudioManager] Failed to load BGM: " << bgmAssetName << "\n";
+        return;
     }
+
+    std::cout << "[AudioManager] Crossfading to BGM: " << bgmAssetName << "\n";
+    CrossfadeTo(newBGM, 4.0f);
 }
 
 /**
@@ -664,10 +636,53 @@ void AudioManager::Update(float dt) {
     // update all audio components
     Update_AudioComponents(dt);
 
-    // Get current game state
-   // GameState currentState = GSM_CurrentState();
     SceneManager& sm = SceneManager::Get();
-    // Handle P key for game pause (music continues)
+
+    // ============================================================
+    // HANDLE EDIT/PLAY MODE TRANSITIONS
+    // ============================================================
+    static bool wasInEditMode = true;  // Start in edit mode
+
+    // ENTERING PLAY MODE (edit → play)
+    if (!sm.IsInEditMode() && wasInEditMode) {
+        std::cout << "[AudioManager] Entering PLAY MODE\n";
+
+        // Get BGM from the loaded scene
+        std::string bgmAssetName = sm.GetCurrentSceneBGM();
+
+        if (!bgmAssetName.empty()) {
+            FMOD::Sound* bgm = AudioCache::GetSound(bgmAssetName);
+            if (bgm) {
+                // FORCE PLAY THE MUSIC (don't use PlayMusic, use direct play + channel setup)
+                currentChannel = PlayGetChannel(bgm, false);  // ← Changed from PlayMusic()
+                if (currentChannel) {
+                    currentChannel->setVolume(musicVol);
+                }
+                std::cout << "[AudioManager] Started BGM: " << bgmAssetName << "\n";
+            }
+            else {
+                std::cerr << "[AudioManager] Failed to load BGM: " << bgmAssetName << "\n";
+            }
+        }
+        else {
+            std::cout << "[AudioManager] No BGM for this scene\n";
+        }
+
+        // Initialize lastScene to the current scene
+        lastScene = sm.GetCurrentSceneName();
+    }
+
+    // ENTERING EDIT MODE (play → edit)
+    if (sm.IsInEditMode() && !wasInEditMode) {
+        std::cout << "[AudioManager] Entering EDIT MODE - music stopped\n";
+        // Music is already stopped by StopAll() in SceneManager::EnterEditMode()
+    }
+
+    wasInEditMode = sm.IsInEditMode();
+
+    // ============================================================
+    // HANDLE GAME PAUSE (P key)
+    // ============================================================
     if (Input::IsKeyPressed(GLFW_KEY_P) && sm.IsPlaying()) {
         sm.TogglePause();
         std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
@@ -675,17 +690,19 @@ void AudioManager::Update(float dt) {
 
     // Music always updates (crossfade continues even when game is paused)
     UpdateCrossfade(dt);
-    //SceneManager& sm = SceneManager::Get();
 
-    std::string scene = sm.GetCurrentSceneName();
+    // ============================================================
+    // HANDLE SCENE TRANSITIONS (ONLY IN PLAY MODE)
+    // ============================================================
+    if (!sm.IsInEditMode()) {
+        std::string scene = sm.GetCurrentSceneName();
 
-    if (scene != lastScene) {
-        std::cout << "[AudioManager] Scene transition: '" << lastScene << "' -> '" << scene << "'\n";
+        if (scene != lastScene) {
+            std::cout << "[AudioManager] Scene transition: '" << lastScene << "' -> '" << scene << "'\n";
+            HandleMusicForScene(scene, lastScene);
+            lastScene = scene;
+        }
     }
-
-    HandleMusicForScene(scene, lastScene);
-
-    lastScene = scene;
 }
 
 // ============================================================================
@@ -790,6 +807,12 @@ void AudioSystem::SetListenerPosition(float x, float y) {
  */
 FMOD::Channel* AudioSystem::PlaySoundAt(const std::string& assetName, float x, float y, float volume) {
     if (!mSystem) return nullptr;
+
+    // DON'T PLAY AUDIO IN EDIT MODE
+    if (SceneManager::Get().IsInEditMode()) {
+        std::cout << "[AudioSystem] Blocked spatial sound playback (in edit mode)\n";
+        return nullptr;
+    }
 
     // check if spatial is true and find distance
     AudioAsset* asset = AudioCache::GetAsset(assetName);
