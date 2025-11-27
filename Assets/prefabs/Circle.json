@@ -1,17 +1,11 @@
 {
-    "entities": [
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":200.0,\"aabb_maxX\":100.0,\"aabb_maxY\":100.0,\"aabb_minX\":-100.0,\"aabb_minY\":-100.0,\"circle_posX\":0.0,\"circle_posY\":0.0,\"circle_rad\":100.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"mask\":[\"Enemy\",\"Projectile\",\"Wall\"]}",
-                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
-                "Input": "{\"scheme\":2}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Shape": "{\"colorX\":0.0,\"colorY\":1.0,\"colorZ\":0.0,\"dimX\":200.0,\"dimY\":200.0,\"shapeType\":1}",
-                "Tag": "{\"tagID\":7}",
-                "Transform": "{\"posX\":0.0,\"posY\":0.0,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
-            },
-            "name": "Circle"
-        }
-    ],
-    "sceneName": "Circle"
+    "components": {
+        "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":200.0,\"aabb_maxX\":1952.2335205078125,\"aabb_maxY\":397.52996826171875,\"aabb_minX\":1752.2335205078125,\"aabb_minY\":197.52996826171875,\"circle_posX\":1852.2335205078125,\"circle_posY\":297.52996826171875,\"circle_rad\":100.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"triggerEvent\":\"\"}",
+        "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+        "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+        "Render": "{\"renderData\":\"{\\\"colorX\\\":1.0,\\\"colorY\\\":1.0,\\\"colorZ\\\":1.0,\\\"dimX\\\":1.0,\\\"dimY\\\":1.0,\\\"shapeType\\\":1}\",\"renderLayer\":1,\"renderType\":0}",
+        "Tag": "{\"tagID\":7}",
+        "Transform": "{\"posX\":1852.2335205078125,\"posY\":297.52996826171875,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
+    },
+    "name": "Circle"
 }

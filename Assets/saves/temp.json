@@ -33,7 +33,7 @@
                 "Health": "{\"currentHP\":0.0,\"maxHP\":0.0}",
                 "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"scaleX\\\":20.0,\\\"scaleY\\\":20.0,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":20.0,\\\\\\\"scaleY\\\\\\\":20.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/rockspritesheet4.11.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":9},\\\"2\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5},\\\"3\\\":{\\\"col_end\\\":8,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1}},\\\"texturePath\\\":\\\"../Assets/rockspritesheet4.11.png\\\",\\\"totalCols\\\":10,\\\"totalRows\\\":10}\",\"renderLayer\":1,\"renderType\":2}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":20.0,\\\\\\\"scaleY\\\\\\\":20.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/rockspritesheet4.11.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":9},\\\"2\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5},\\\"3\\\":{\\\"col_end\\\":8,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1}},\\\"totalCols\\\":10,\\\"totalRows\\\":10}\",\"renderLayer\":1,\"renderType\":2}",
                 "Tag": "{\"tagID\":0}",
                 "Transform": "{\"posX\":510.9010009765625,\"posY\":268.84100341796875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
@@ -79,7 +79,6 @@
             "components": {
                 "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
                 "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":200.0,\"aabb_maxX\":1248.1488037109375,\"aabb_maxY\":600.0,\"aabb_minX\":1148.1488037109375,\"aabb_minY\":400.0,\"circle_posX\":1198.1488037109375,\"circle_posY\":500.0,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Input": "{\"scheme\":0}",
                 "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
                 "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":10.0,\\\"scaleY\\\":10.0,\\\"texturePath\\\":\\\"../Assets/Ghoul_2048px.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
@@ -123,13 +122,6 @@
                 "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
             },
             "name": "Entity_8"
-        },
-        {
-            "components": {
-                "RenderLayer": "{\"layer\":3}",
-                "Transform": "{\"posX\":379.0559997558594,\"posY\":50.98699951171875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "New Entity 15"
         }
     ],
     "fontConfig": "../Assets/fontAssets.json",

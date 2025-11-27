@@ -977,14 +977,16 @@ bool JsonLoad::SaveEntity(const std::string& filepath, Entity eID) {
         // Save entity data
         SavedEntity saved = Registry::Get().Save_Entity(eID);
 
-        // Wrap in a SavedScene structure so LoadEntityFromFile can read it
-        SavedScene scene;
-        scene.sceneName = saved.name;  // Use entity name as scene name
-        scene.entities.push_back(saved);  // Add entity to entities array
+        //// Wrap in a SavedScene structure so LoadEntityFromFile can read it
+        //SavedScene scene;
+        //scene.sceneName = saved.name;  // Use entity name as scene name
+        //scene.entities.push_back(saved);  // Add entity to entities array
 
-        // Serialize the scene (not just the entity)
+        //// Serialize the scene (not just the entity)
+        //json j;
+        //to_json(j, scene);
         json j;
-        to_json(j, scene);
+        to_json(j, saved);
 
         // Write to file
         return FileIO::WriteFile(filepath, j.dump(4));
@@ -1017,15 +1019,12 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
 
     try {
         json j = json::parse(content);
-        SavedScene scene;
-        from_json(j, scene);  // Can call private function from within the class
 
-        if (scene.entities.empty()) {
-            std::cerr << "No entities in file: " << filepath << std::endl;
-            return 0;
-        }
+        SavedEntity enty;
+        from_json(j, enty);
 
-        Entity e = Registry::Get().Load_Entity(scene.entities[0]);
+        //Entity e = Registry::Get().Load_Entity(scene.entities[0]);
+        Entity e = Registry::Get().Load_Entity(enty);
         //Entity e = SavedToEntity(scene.entities[0]);  // Can call private function
 
         // Override position
@@ -1042,7 +1041,7 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
         return e;
     }
     catch (const std::exception& ex) {
-        std::cerr << "Error loading entity: " << ex.what() << std::endl;
+        std::cerr << "Error loading entity from file: " << filepath << std::endl;
         return 0;
     }
 }
