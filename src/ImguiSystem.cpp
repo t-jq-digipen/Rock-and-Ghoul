@@ -291,35 +291,6 @@ namespace
 
         return true;
     }
-
-    // play / stop preview audio
-    static void PlayAudioPreview(const std::string& assetName)
-    {
-        if (assetName.empty())
-            return;
-
-        // stop any existing preview
-        if (previewChannel)
-        {
-            previewChannel->stop();
-            previewChannel = nullptr;
-        }
-
-        FMOD::Sound* sound = AudioCache::GetSound(assetName);
-        if (!sound)
-        {
-            std::cerr << "[AudioEditor] GetSound failed for '"
-                << assetName << "'\n";
-            return;
-        }
-
-        if (!previewChannel)
-        {
-            std::cerr << "[AudioEditor] Failed to play preview for '"
-                << assetName << "'\n";
-        }
-    }
-
     static void StopAudioPreview()
     {
         if (previewChannel)
