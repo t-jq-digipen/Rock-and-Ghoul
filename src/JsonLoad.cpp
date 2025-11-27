@@ -594,6 +594,7 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
         {"sceneName", s.sceneName},
         {"backgrounds", s.backgroundTextures},
         {"fontConfig", s.fontConfigPath},
+        {"bgmAssetName", s.bgmAssetName}, // for audio to stop during edit mode
 
          {"gui", {
              {"buttons", json::array()},
@@ -612,8 +613,9 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"size", {btn.size.x, btn.size.y}},
             {"color", {btn.color.r, btn.color.g, btn.color.b}},
             {"shape", btn.shape},
-            {"action", btn.action}
-        });
+            {"action", btn.action},
+            {"soundType", btn.soundType }
+            });
     }
 
     // UI Textboxes
@@ -667,6 +669,12 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
 void JsonLoad::from_json(const json& j, SavedScene& s) {
     s.sceneName = j["sceneName"];
     s.entities.clear();
+    if (j.contains("bgmAssetName")) {
+        s.bgmAssetName = j["bgmAssetName"];
+    }
+    else {
+        s.bgmAssetName = "";  // NO BGM FOR THIS SCENE
+    }
     if (j.contains("backgrounds")) {
         s.backgroundTextures = j["backgrounds"].get<std::vector<std::string>>();
     }
@@ -681,6 +689,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
             b.color = { btn["color"][0], btn["color"][1], btn["color"][2] };
             b.shape = btn["shape"];
             b.action = btn.value("action", "");
+            b.soundType = btn.value("soundType", 0);
             s.guiButtons.push_back(b);
         }
     }
@@ -817,12 +826,17 @@ void JsonLoad::from_json(const json& j, GameSettings& s) {
  *         occurred during serialization or file writing.
  */
 bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& sceneName, const SavedScene::SavedCamera& camSettings) {
-
     try {
         SavedScene scene;
         scene.sceneName = sceneName;
         scene.backgroundTextures = RenderSystem::GetBackgroundTexturePaths();
         scene.fontConfigPath = "../Assets/fontAssets.json";
+
+        // PRESERVE BGM PLEASE
+        scene.bgmAssetName = SceneManager::Get().GetCurrentSceneBGM();
+        std::cout << "[SaveCurrentScene] Saving BGM: '" << scene.bgmAssetName << "'\n";
+
+        // GUI buttons
         auto& gui = GuiSystem::Get();
         for (auto& b : gui.GetButtons()) {
             SavedScene::SavedButton sb;
@@ -832,6 +846,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sb.color = b.color;
             sb.shape = ButtonShapeToString(b.shape);
             sb.action = ButtonActionToString(b.action); 
+            sb.soundType = static_cast<int>(b.soundType);
             scene.guiButtons.push_back(sb);
         }
         for (auto& t : gui.GetTextBoxes())
@@ -866,24 +881,10 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         int entityCount = 0;
         for (Entity e = 0; e < em.maxEntities(); ++e) {
             if (em.isAlive(e)) {
-                std::cout << "Saving entity ID: " << e << std::endl;
-
                 SavedEntity saved = Registry::Get().Save_Entity(e);
-
-                // Debug: show what was actually saved
-                std::cout << "  - Saved components: ";
-                for (const auto& [compName, compData] : saved.componentData) {
-                    std::cout << compName << " ";
-                }
-                std::cout << std::endl;
-
-                // Skip entities with no components (prevents crashes on load)
                 if (!saved.componentData.empty()) {
                     scene.entities.push_back(saved);
                     entityCount++;
-                }
-                else {
-                    std::cout << "  - Skipped (no components)" << std::endl;
                 }
             }
         }
@@ -891,7 +892,6 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         std::cout << "Total entities saved: " << entityCount << std::endl;
 
         scene.camSettings = camSettings;
-
         scene.sceneType = SceneManager::Get().GetSceneType();
 
         json j;
@@ -920,7 +920,6 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             return false;
         }
 
-        // Clear existing entities before loading scene
         ClearAllEntities();
 
         json j = json::parse(content);
@@ -928,43 +927,27 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         from_json(j, scene);
 
         std::cout << "Loading scene: " << scene.sceneName << std::endl;
-        std::cout << "Number of entities: " << scene.entities.size() << std::endl;
 
         SceneManager::Get().SetSceneType(scene.sceneType);
 
-        // Create all entities
+        // Load entities
         for (const auto& savedEntity : scene.entities) {
-            std::cout << "Loading entity: " << savedEntity.name << std::endl;
-            std::cout << "  - Has components in JSON: ";
-            for (const auto& [compName, compData] : savedEntity.componentData) {
-                std::cout << compName << " ";
-            }
-            std::cout << std::endl;
-
             Entity e = Registry::Get().Load_Entity(savedEntity);
-
-            // Verify what components were actually added
-            std::cout << "  - Components after load: ";
-            if (Registry::Get().Has_Component<TransformComponent>(e)) std::cout << "Transform ";
-            if (Registry::Get().Has_Component<ColliderComponent>(e)) std::cout << "Collider ";
-            if (Registry::Get().Has_Component<Physics::PhysicsComponent>(e)) std::cout << "Physics ";
-            if (Registry::Get().Has_Component<TagComponent>(e)) std::cout << "Tag ";
-            std::cout << std::endl;
         }
+
+        // Load backgrounds
         RenderSystem::ClearBackgroundTextures();
         for (auto& path : scene.backgroundTextures) {
             GLuint tex = Render::GetInstance().LoadTexture(path);
-
-            if (!tex) {
-                std::cout << "[ERROR] Failed to load background: " << path << "\n";
+            if (tex) {
+                RenderSystem::AddBackgroundTexture(tex, path);
             }
-            RenderSystem::AddBackgroundTexture(tex, path);
-            std::cout << "Loading background: " << std::filesystem::absolute(path) << "\n";
         }
 
-        Render& renderer = Render::GetInstance();
-        renderer.LoadFontAssetsFromJSON("../Assets/fontAssets.json");
-        // RESTORE GUI BUTTONS
+        // Load fonts
+        Render::GetInstance().LoadFontAssetsFromJSON("../Assets/fontAssets.json");
+
+        // Restore GUI buttons
         GuiSystem::Get().Clear();
         for (auto& b : scene.guiButtons) {
             ButtonConfig cfg;
@@ -976,13 +959,29 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.color = b.color;
             cfg.shape = StringToButtonShape(b.shape);
             cfg.action = StringToButtonAction(b.action);
+            cfg.soundType = static_cast<AudioSystem::ButtonType>(b.soundType);
+
             if (b.action == "LoadLevel1") {
-                cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json");
-                    };
+                cfg.onClick = []() { SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); };
             }
             else if (b.action == "Quit") {
                 cfg.onClick = []() {
+                    // let quit sound play
+                    double startTime = glfwGetTime();
+                    while (glfwGetTime() - startTime < 0.5) {
+                        AudioSystem::Update();
+                        glfwPollEvents();
+                    }
+
+                    // stop all audio BEFORE shutdown
+                    AudioSystem::StopAll();
+                    // give FMOD time to cleanup by updating several times lol
+                    for (int i = 0; i < 10; ++i) {
+                        AudioSystem::Update();
+                        glfwPollEvents();
+                    }
+
+                    // QUIT NOW!!!
                     CoreEngine::GetInstance().Quit();
                     };
             }
@@ -999,7 +998,6 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             else {
                 cfg.onClick = nullptr;
             }
-
 
             GuiSystem::Get().AddButton(cfg);
         }
@@ -1047,12 +1045,15 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         SavedScene::SavedCamera& camSet = scene.camSettings;
 
+        // Camera settings
         Camera& cam = Camera::GetInstance();
+        cam.SetPosition(scene.camSettings.pos);
+        cam.SetZoom(scene.camSettings.zoom);
+        cam.SetBounds(scene.camSettings.worldMin, scene.camSettings.worldMax);
 
-        cam.SetPosition(camSet.pos);
-        cam.SetZoom(camSet.zoom);
-
-        cam.SetBounds(camSet.worldMin, camSet.worldMax);
+        // set bgm before entering...
+        SceneManager::Get().SetCurrentSceneBGM(scene.bgmAssetName);
+        std::cout << "[LoadScene] Scene BGM set to: '" << scene.bgmAssetName << "'\n";
 
         return true;
     }

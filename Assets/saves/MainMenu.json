@@ -55,6 +55,7 @@
         ]
     },
     "sceneName": "MainMenu",
+    "bgmAssetName": "main_menu",
     "sceneType": 0,
     "worldMax": [
         1920.0,

@@ -3,6 +3,7 @@
         "../Assets/MainMenu_Background.JPG",
         "../Assets/MainMenu_Rock&Ghoul.PNG"
     ],
+    "bgmAssetName": "main_menu",
     "cameraSpawn": [
         0.0,
         0.0
@@ -28,7 +29,8 @@
                 "size": [
                     300.0,
                     100.0
-                ]
+                ],
+                "soundType": 0
             },
             {
                 "action": "Quit",
@@ -46,29 +48,10 @@
                 "size": [
                     300.0,
                     100.0
-                ]
+                ],
+                "soundType": 1
             }
-        ],
-        "dialogues": [
-            {
-                "jsonPath": "C:\\Users\\manfr\\OneDrive\\Documents\\GitHub\\csd2401s25_team_aviddivas(1)\\csd2401f25_team_aviddivas\\build\\Debug/../../Assets/Dialogue.json",
-                "sceneID": "0",
-                "textBox": {
-                    "color": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "pos": [
-                        510.0,
-                        300.0
-                    ],
-                    "scale": 0.8999999761581421,
-                    "text": ""
-                }
-            }
-        ],
-        "textboxes": []
+        ]
     },
     "sceneName": "temp",
     "sceneType": 0,

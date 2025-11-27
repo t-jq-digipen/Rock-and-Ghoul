@@ -1691,9 +1691,10 @@ void ImGuiSystem::Update(float dt)
             }
             ImGui::EndDragDropTarget();
         }
-
+        
         //GUISYSTEM STUFF SCALE FOR MOUSE
-        if (!isPlaying) {
+        //if (!isPlaying) {
+        if (guiEnabled) {
             GameViewRect rect;
             rect.x = cursor.x;
             rect.y = cursor.y;

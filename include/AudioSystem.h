@@ -8,7 +8,7 @@
  * This header file contains the declaration of the AudioManager
  * class. The AudioManager provides functionality
  * for loading and playing sounds, managing background music
- * with crossfade transitions, controlling playback
+ * with fade transitions, controlling playback
  * through channels, and handling state-based music changes. It acts
  * as a wrapper around the lower-level AudioSystem while adding
  * game-specific audio management features such as automatic music
@@ -20,14 +20,13 @@
 #pragma once
 #include "System.h"
 #include "Audio.h"
-//#include "GameStateManager.h"
 
  /**
   * @class AudioManager
   * @brief High-level audio management system for the game.
   *
   * The AudioManager class handles music playback, sound effects,
-  * crossfading between music tracks, and transitions based on game state changes.
+  * fade-in/fade-out transitions between music tracks, and transitions based on game state changes.
   */
 class AudioManager : public ISystem {
 public:
@@ -35,6 +34,8 @@ public:
         static AudioManager instance;
         return instance;
     }
+
+    void FadeOutAndStop(float duration); // FIXTHISSHIT DOCUMENTATION
 
     /**
      * @brief Initializes the FMOD audio system and preloads music tracks.
@@ -49,7 +50,7 @@ public:
     /**
      * @brief Updates FMOD system and processes audio transitions.
      *
-     * Updates the FMOD system, processes crossfade transitions, and handles
+     * Updates the FMOD system, processes fade transitions, and handles
      * music changes based on game state.
      *
      * @param dt Delta time in seconds.
@@ -70,6 +71,35 @@ public:
      * correctly positions sounds relative to the camera.
      */
     void UpdateListenerToCamera();
+
+    /**
+     * @brief Updates fade-in/fade-out effects.
+     *
+     * Handles volume transitions for smooth music fading.
+     *
+     * @param dt Delta time in seconds since last frame.
+     */
+    void UpdateFade(float dt);
+
+    /**
+     * @brief Starts a fade transition to new background music.
+     *
+     * Fades out current music, then fades in the specified BGM.
+     *
+     * @param bgmAssetName The name of the BGM asset in AudioCache.
+     * @param duration Duration in seconds for each fade (out and in).
+     */
+    void TransitionToBGM(const std::string& bgmAssetName, float duration);
+
+    /**
+     * @brief Fades in background music from silence.
+     *
+     * Used when entering play mode or starting a scene.
+     *
+     * @param bgmAssetName The name of the BGM asset in AudioCache.
+     * @param duration Duration in seconds for the fade-in.
+     */
+    void FadeInBGM(const std::string& bgmAssetName, float duration);
 
     /**
      * @brief Pauses the currently playing music.
@@ -174,17 +204,6 @@ public:
     void PlayMusic(FMOD::Sound* track, bool paused = false);
 
     /**
-     * @brief Crossfades to a new music track over a specified duration.
-     *
-     * Gradually transitions from current track to new track. The crossfade is
-     * processed automatically during Update() calls.
-     *
-     * @param newTrack Pointer to the FMOD::Sound object for the new music track.
-     * @param duration The duration of the crossfade effect in seconds.
-     */
-    void CrossfadeTo(FMOD::Sound* newTrack, float duration);
-
-    /**
      * @brief Plays the sound effect for a specific button type.
      *
      * Convenience wrapper that plays button sounds through AudioSystem. Looks up
@@ -197,9 +216,12 @@ public:
         AudioSystem::PlayButtonSound(type);
     }
 
-    // AudioManager.h
+    /**
+     * @brief Gets the current music channel.
+     *
+     * @return FMOD::Channel* Pointer to the current music channel, or nullptr if no music is playing.
+     */
     FMOD::Channel* GetCurrentMusicChannel() const { return currentChannel; }
-    FMOD::Channel* GetNextMusicChannel() const { return nextChannel; }
 
 private:
     // Volume control
@@ -207,12 +229,17 @@ private:
 
     // Channel management
     FMOD::Channel* currentChannel = nullptr;
-    FMOD::Channel* nextChannel = nullptr;
 
-    // Crossfade state
-    float crossfadeTime = 0.0f;
-    float crossfadeDuration = 0.0f;
-    bool crossfadeActive = false;
+    // ? REMOVED: nextChannel (no longer needed with fade system)
+
+    // Fade system variables (REPLACED crossfade)
+    bool fadeActive = false;       ///< Whether a fade is currently active
+    bool fadingOut = false;        ///< true = fading out, false = fading in
+    float fadeTime = 0.0f;         ///< Current time in fade transition
+    float fadeDuration = 2.0f;     ///< Duration of fade effect in seconds
+    std::string pendingBGM = "";   ///< BGM to play after fade out completes
+
+    // ? REMOVED: crossfadeTime, crossfadeDuration, crossfadeActive
 
     // Pause state
     bool musicPaused = false;
@@ -225,24 +252,6 @@ private:
     // State tracking
     std::string lastScene = "";
 
-    /**
-     * @brief Updates the active crossfade between music tracks.
-     *
-     * Adjusts volume of both channels based on elapsed time. When complete,
-     * stops the current channel and makes the next channel current.
-     *
-     * @param dt Delta time in seconds.
-     */
-    void UpdateCrossfade(float dt);
-
-    /**
-     * @brief Handles music transitions based on game state changes.
-     *
-     * Detects game state changes and triggers appropriate music transitions. Initiates
-     * crossfades when entering new levels or game states.
-     *
-     * @param currentState Current game state.
-     * @param previousState The game state from the previous frame.
-     */
-    void HandleMusicForScene(const std::string& currentScene, const std::string& previousScene);
+    // ? REMOVED: UpdateCrossfade(float dt)
+    // ? REMOVED: HandleMusicForScene(...)
 };

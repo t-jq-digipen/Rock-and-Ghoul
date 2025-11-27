@@ -152,13 +152,9 @@ bool AudioCache::ParseManifest(const std::string& manifestPath) {
  * @brief Shuts down the AudioCache and releases all loaded audio resources.
  */
 void AudioCache::Shutdown() {
-    // Loop through all assets we have registered
+    // DON'T call release() bc FMOD system close handles cleanup
     for (auto& [name, asset] : assetsByName) {
-        // If have a loaded sound, release it from FMOD
-        if (asset.sound) {
-            asset.sound->release();  // FMOD free the memory
-            asset.sound = nullptr;   // Clear our pointer
-        }
+        asset.sound = nullptr;  // clear ptr but don't release
     }
 
     assetsByName.clear();
