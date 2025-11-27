@@ -167,12 +167,12 @@ if (EXISTS "${GAMESCRIPTS_SLN}")
     # Optional: auto-detect MSBuild path
 find_program(MSBUILD_EXE MSBuild.exe
     HINTS
-        "$ENV{ProgramFiles}/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
-        "$ENV{ProgramFiles}/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin"
-        "$ENV{ProgramW6432}/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
-        "$ENV{ProgramW6432}/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin"
-        "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
-        "C:/Program Files (x86)/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin"
+        "$ENV{ProgramFiles}/Microsoft Visual Studio/*/Community/MSBuild/Current/Bin"
+        "$ENV{ProgramFiles}/Microsoft Visual Studio/*/BuildTools/MSBuild/Current/Bin"
+        "$ENV{ProgramW6432}/Microsoft Visual Studio/*/Community/MSBuild/Current/Bin"
+        "$ENV{ProgramW6432}/Microsoft Visual Studio/*/BuildTools/MSBuild/Current/Bin"
+        "C:/Program Files/Microsoft Visual Studio/*/Community/MSBuild/Current/Bin"
+        "C:/Program Files (x86)/Microsoft Visual Studio/*/Community/MSBuild/Current/Bin"
 )
     if (NOT MSBUILD_EXE)
         message(WARNING "MSBuild.exe not found — skipping GameScripts build.")

@@ -1,35 +1,11 @@
 {
-    "backgrounds": [],
-    "cameraSpawn": [
-        499.073486328125,
-        385.7142639160156
-    ],
-    "cameraZoom": 1.4000000953674316,
-    "entities": [
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":50.0,\"aabb_dimY\":50.0,\"aabb_maxX\":910.1669921875,\"aabb_maxY\":416.8583984375,\"aabb_minX\":860.1669921875,\"aabb_minY\":366.8583984375,\"circle_posX\":885.1669921875,\"circle_posY\":391.8583984375,\"circle_rad\":25.0,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Projectile\",\"triggerEvent\":\"ProjectileHitEnemy\"}",
-                "Lifetime": "{\"age\":0.0,\"lifetime\":3.005000114440918}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.0,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":500.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/right.png\\\"}\",\"renderLayer\":1,\"renderType\":1}",
-                "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":885.1669921875,\"posY\":391.8583984375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "projectile"
-        }
-    ],
-    "fontConfig": "",
-    "gui": {
-        "buttons": []
+    "components": {
+        "Collider": "{\"aabb_dimX\":50.0,\"aabb_dimY\":50.0,\"aabb_maxX\":1628.7379150390625,\"aabb_maxY\":273.3770446777344,\"aabb_minX\":1578.7379150390625,\"aabb_minY\":223.37704467773438,\"circle_posX\":1603.7379150390625,\"circle_posY\":248.37704467773438,\"circle_rad\":25.0,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Projectile\",\"triggerEvent\":\"ProjectileHitEnemy\"}",
+        "Lifetime": "{\"age\":0.0,\"lifetime\":3.005000114440918}",
+        "Physics": "{\"decay\":0.0,\"friction\":0.0,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":500.0,\"velY\":0.0}",
+        "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/right.png\\\"}\",\"renderLayer\":1,\"renderType\":1}",
+        "Tag": "{\"tagID\":2}",
+        "Transform": "{\"posX\":1603.7379150390625,\"posY\":248.37704467773438,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
     },
-    "sceneName": "projectile",
-    "sceneType": -858993460,
-    "worldMax": [
-        2240.0,
-        1080.0
-    ],
-    "worldMin": [
-        -260.0,
-        0.0
-    ]
+    "name": "projectile"
 }
