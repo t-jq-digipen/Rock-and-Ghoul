@@ -43,7 +43,7 @@ cd %BUILD_DIR%
 REM ==========================================
 REM 4. Run CMake configure step
 REM ==========================================
-cmake -G "Visual Studio 17 2022" -A x64 ..
+cmake -A x64 ..
 
 REM ==========================================
 REM 5. Build
