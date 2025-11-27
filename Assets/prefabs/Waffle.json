@@ -1,35 +1,11 @@
 {
-    "backgrounds": [],
-    "cameraSpawn": [
-        499.073486328125,
-        385.7142639160156
-    ],
-    "cameraZoom": 1.4000000953674316,
-    "entities": [
-        {
-            "components": {
-                "Behaviour": "{\"scripts\":[\"PlayerMovement\"]}",
-                "Collider": "{\"aabb_dimX\":74.16300201416016,\"aabb_dimY\":86.99600219726563,\"aabb_maxX\":848.5191040039063,\"aabb_maxY\":253.7634735107422,\"aabb_minX\":774.3561401367188,\"aabb_minY\":166.76747131347656,\"circle_posX\":811.4376220703125,\"circle_posY\":210.26547241210938,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\",\"triggerEvent\":\"\"}",
-                "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":1,\\\"scaleX\\\":1000.0,\\\"scaleY\\\":1000.0,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":1000.0,\\\\\\\"scaleY\\\\\\\":1000.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Waffle_Sprites.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1},\\\"1\\\":{\\\"col_end\\\":3,\\\"col_start\\\":2,\\\"duration\\\":0.5,\\\"row\\\":1}},\\\"texturePath\\\":\\\"../Assets/Waffle_Sprites.png\\\",\\\"totalCols\\\":6,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
-                "Transform": "{\"posX\":811.4376220703125,\"posY\":210.26547241210938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Waffle"
-        }
-    ],
-    "fontConfig": "",
-    "gui": {
-        "buttons": []
+    "components": {
+        "Behaviour": "{\"scripts\":[\"PlayerMovement\"]}",
+        "Collider": "{\"aabb_dimX\":74.16300201416016,\"aabb_dimY\":86.99600219726563,\"aabb_maxX\":817.84814453125,\"aabb_maxY\":282.5693359375,\"aabb_minX\":743.6851806640625,\"aabb_minY\":195.5733184814453,\"circle_posX\":780.7666625976563,\"circle_posY\":239.07131958007813,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\",\"triggerEvent\":\"\"}",
+        "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
+        "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+        "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":1,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":1000.0,\\\\\\\"scaleY\\\\\\\":1000.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Waffle_Sprites.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1},\\\"1\\\":{\\\"col_end\\\":3,\\\"col_start\\\":2,\\\"duration\\\":0.5,\\\"row\\\":1}},\\\"totalCols\\\":6,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
+        "Transform": "{\"posX\":780.7666625976563,\"posY\":239.07131958007813,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
     },
-    "sceneName": "Waffle",
-    "sceneType": -858993460,
-    "worldMax": [
-        2240.0,
-        1080.0
-    ],
-    "worldMin": [
-        -260.0,
-        0.0
-    ]
+    "name": "Waffle"
 }
