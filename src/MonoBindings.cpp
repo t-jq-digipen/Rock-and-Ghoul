@@ -137,16 +137,16 @@ extern "C" {
         render.GetSpriteSheet().SetState(state);
     }
 
-
+    // if rendercomp is not of type sprite or spritesheet it will just return false
     __declspec(dllexport) bool CS_GetRenderFlipX(unsigned int entity)
     {
         Registry& reg = Registry::Get();
-        if (!reg.Has_Component<RenderComponent>(entity)) return;
+        if (!reg.Has_Component<RenderComponent>(entity)) return false;
 
         RenderComponent& render = reg.Get_Component<RenderComponent>(entity);
 
         RenderType renderType = render.GetRenderType();
-        if (renderType != RT_SPRITESHEET || renderType != RT_IMAGE) return;
+        if (renderType != RT_SPRITESHEET || renderType != RT_IMAGE) return false;
 
         Sprite::SpriteComponent& sprite = (renderType == RT_SPRITESHEET) ? render.GetSpriteSheet().Sprite() : render.GetSprite();
 
@@ -169,16 +169,16 @@ extern "C" {
         sprite.SetFlipX(flip);
     }
 
-
+    // if rendercomp is not of type sprite or spritesheet it will just return false
     __declspec(dllexport) bool CS_GetRenderFlipY(unsigned int entity)
     {
         Registry& reg = Registry::Get();
-        if (!reg.Has_Component<RenderComponent>(entity)) return;
+        if (!reg.Has_Component<RenderComponent>(entity)) return false;
 
         RenderComponent& render = reg.Get_Component<RenderComponent>(entity);
 
         RenderType renderType = render.GetRenderType();
-        if (renderType != RT_SPRITESHEET || renderType != RT_IMAGE) return;
+        if (renderType != RT_SPRITESHEET || renderType != RT_IMAGE) return false;
 
         Sprite::SpriteComponent& sprite = (renderType == RT_SPRITESHEET) ? render.GetSpriteSheet().Sprite() : render.GetSprite();
 
@@ -238,6 +238,6 @@ extern "C" {
     // filename to be in "xxx.json" format, will spawn from prefabs folder
     __declspec(dllexport) unsigned int CS_SpawnPrefab(const std::string& filename, float spawnX, float spawnY) 
     {
-        JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + filename, spawnX, spawnY);
+        return JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + filename, spawnX, spawnY);
     }
 }
