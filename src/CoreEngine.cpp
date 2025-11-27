@@ -316,8 +316,7 @@ void CoreEngine::Shutdown()
 
         if (s != &GuiSystem::Get() &&
             s != &LogicSystem::Get() &&
-            s != &MonoSystem::Get() &&
-            s != &AudioManager::Get())
+            s != &MonoSystem::Get())
         {
             delete s;
         }
@@ -329,7 +328,8 @@ void CoreEngine::Shutdown()
         ISystem* s = renderSystems[i];
         s->Shutdown();
 
-        if (s != &GuiSystem::Get())   // only delete heap ones
+        if (s != &GuiSystem::Get() &&
+            s != &AudioManager::Get()) // only delete heap ones
         {
             delete s;
         }

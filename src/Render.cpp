@@ -2030,7 +2030,7 @@ void Render::Shutdown() {
     // Clear cached textures
     ClearAllTextures();
 
-    std::cout << "[Render] Shutdown complete — all GPU resources freed.\n";
+    std::cout << "[Render] Shutdown complete, all GPU resources freed.\n";
 }
 
 Vec2 Render::ScreenToWorld(float ndcX, float ndcY) const {

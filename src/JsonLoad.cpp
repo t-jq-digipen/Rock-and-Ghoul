@@ -877,11 +877,22 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             }
             else if (b.action == "Quit") {
                 cfg.onClick = []() {
+                    // let quit sound play
                     double startTime = glfwGetTime();
                     while (glfwGetTime() - startTime < 0.5) {
                         AudioSystem::Update();
                         glfwPollEvents();
                     }
+
+                    // stop all audio BEFORE shutdown
+                    AudioSystem::StopAll();
+                    // give FMOD time to cleanup by updating several times lol
+                    for (int i = 0; i < 10; ++i) {
+                        AudioSystem::Update();
+                        glfwPollEvents();
+                    }
+
+                    // QUIT NOW!!!
                     CoreEngine::GetInstance().Quit();
                     };
             }

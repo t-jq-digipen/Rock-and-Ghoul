@@ -155,18 +155,27 @@ void AudioSystem::RegisterButtonSound(ButtonType type, FMOD::Sound* sound) {
  * and frees all associated resources.
  */
 void AudioSystem::Close() {
-    for (auto& pair : buttonSounds) { // cleaning up button sounds
-        if (pair.second) {
-            pair.second->release(); // free FMOD sound memory
-        }
+    if (!mSystem) return;  // ALREADY closed
+
+
+    // stop all channels first
+    FMOD::ChannelGroup* masterGroup = nullptr;
+    FMOD_RESULT result = mSystem->getMasterChannelGroup(&masterGroup);
+    if (result == FMOD_OK && masterGroup) {
+        masterGroup->stop();
     }
+
+    // update fmod until the process is over
+    for (int i = 0; i < 5; ++i) {
+        mSystem->update();
+    }
+
+    // clear button sounds from cache
     buttonSounds.clear();
 
-    if (mSystem) { // Shut down and release the FMOD system itself
-        mSystem->close();
-        mSystem->release();
-        mSystem = nullptr;
-    }
+    mSystem->close();
+    mSystem->release();
+    mSystem = nullptr;
 }
 
 /**
@@ -525,6 +534,19 @@ void AudioManager::ResumeMusic() {
  * @brief Shuts down the AudioManager and releases all audio resources.
  */
 void AudioManager::Shutdown() {
+    // stop all active channels first
+    if (currentChannel) {
+        currentChannel->stop();
+        currentChannel = nullptr;
+        std::cout << "[AudioManager] Current channel stopped\n";
+    }
+
+    // clear references to sounds in cache
+    mainMenuMusic = nullptr;
+    level1Music = nullptr;
+
+    // unload ALL sounds from AudioCache & close
+    AudioCache::Shutdown();
     AudioSystem::Close();
 }
 
