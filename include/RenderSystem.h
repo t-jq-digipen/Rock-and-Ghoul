@@ -24,7 +24,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Debug.h"
 #include "Input.h"
+#ifndef NO_IMGUI
 #include "ImguiSystem.h"
+#endif
 class RenderSystem : public ISystem {
 public:
     RenderSystem() {}

@@ -6,30 +6,41 @@ using namespace rectpack2D;
 
 bool SimpleAtlasBuilder::addImage(const std::string& key, const std::string& file)
 {
+    //loads the image file, make it into RGBA 4 channel, return raw pixel data
     int w = 0, h = 0, channels = 0;
     unsigned char* data = stbi_load(file.c_str(), &w, &h, &channels, 4);
-    if (!data)
-        return false;
 
+    //check if successful
+    if (!data) {
+        return false;
+    }
+
+
+    //copy the data into the temporary storage
     ImageData img;
     img.key = key;
     img.w = w;
     img.h = h;
     img.pixels.assign(data, data + (w * h * 4));
 
+    //free the original data
     stbi_image_free(data);
 
+    //push into the image list
     images.push_back(img);
+
     return true;
 }
 
 bool SimpleAtlasBuilder::build(SimpleAtlas& atlas, int maxSide)
 {
-    if (images.empty())
+    //means u never call the addimage function or smth, cus the image list empty, nothing to pack
+    if (images.empty()) {
         return false;
+    }
 
-    using spaces_type = empty_spaces<true, default_empty_spaces>;
-    using rect_type = output_rect_t<spaces_type>;
+    using spaces_type = empty_spaces<true, default_empty_spaces>; 
+    using rect_type = output_rect_t<spaces_type>; //start with one big rectangle
 
     std::vector<rect_type> rects;
     rects.reserve(images.size());

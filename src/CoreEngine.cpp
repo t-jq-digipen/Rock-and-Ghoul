@@ -38,8 +38,9 @@
 #include <chrono>
 #include <typeinfo>
 
-
+#ifndef NO_IMGUI
 #include "ImguiSystem.h"
+#endif
 #include "FrameRateController.h"
 #include "DataDefs.h"
 #include "MovementSystem.h"
@@ -116,7 +117,9 @@ void CoreEngine::Initialize()
 
     AddRenderSystem(new RenderSystem());
     AddRenderSystem(&GuiSystem::Get());
+#ifndef NO_IMGUI
     AddRenderSystem(new ImGuiSystem());
+#endif
     
     std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
         << " at " << (void*)&GLApp::ptr_window << std::endl;
@@ -274,8 +277,10 @@ void CoreEngine::Run()
             std::string name = typeid(*s).name();
             renderTimings[name] += ms;
 
+#ifndef NO_IMGUI
             if (auto* imgui = dynamic_cast<ImGuiSystem*>(s))
                 imgui->Render();
+#endif
         }
 
 

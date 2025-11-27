@@ -26,7 +26,9 @@
 #include "GameStateManager.h"
 #include "CoreEngine.h"
 #include "glapp.h"
+#ifndef NO_IMGUI
 #include "ImGuiSystem.h"
+#endif
 AudioManager* GuiSystem::audio = nullptr;
 
 void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
@@ -135,7 +137,7 @@ void GuiSystem::Update(float dt) {
 
     Vec2 mouse = Input::GetMousePosition();
    
-
+#ifndef NO_IMGUI
     // convert to Game View space
     if (!ImGuiSystem::guiEnabled) {
         // Fullscreen mouse coords are already correct, just use them directly
@@ -161,6 +163,7 @@ void GuiSystem::Update(float dt) {
             mouse.y *= mouseScaleY;
         }
     }
+#endif
 
     Render& renderer = Render::GetInstance();
 

@@ -38,7 +38,10 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
         if (JsonLoad::LoadScene(path))
         {
             currentScenePath = path;
+
+#ifndef NO_IMGUI
             ImGuiSystem::UpdateSpawnCamera();
+#endif
 
             auto p = std::filesystem::path(path);
             tempScenePath = "../Assets/saves/temp.json";

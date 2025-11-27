@@ -21,6 +21,7 @@
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
+#ifndef NO_IMGUI
 #pragma once
 #include "System.h"
 #include "Debug.h"
@@ -173,3 +174,4 @@ private:
     void ShowAddRemoveComponents();
 };
 
+#endif
