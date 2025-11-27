@@ -96,6 +96,7 @@ struct DialogueConfig {
     TextBoxConfig textBox;
     std::shared_ptr<TextSystem::TextComponent> owned;
     std::string jsonPath;
+    std::string sceneID = "0";
     bool isVisible = true;
 };
 
@@ -126,7 +127,7 @@ public:
     static void SetAudioManager(AudioManager* audioMgr);
 
     void AddDialogue(const DialogueConfig& cfg);
-    int AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox);
+    int AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox, const std::string& sceneID = "0");
 
     void SetEditMode(bool isEditing);
     bool GetEditMode() const;

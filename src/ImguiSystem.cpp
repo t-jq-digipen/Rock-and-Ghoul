@@ -921,7 +921,7 @@ void ImGuiSystem::Update(float dt)
                     newDialogue.color = { 0,0,0 };
                     newDialogue.centered = true;
 
-                    int idx = gui.AddDialogueFromJson(FilePath::DIALOGUE, newDialogue);
+                    int idx = gui.AddDialogueFromJson(FilePath::DIALOGUE, newDialogue, "0");
                     if (idx >= 0)
                     {
                         uiSelectedType = SelectedType::Dialogue;

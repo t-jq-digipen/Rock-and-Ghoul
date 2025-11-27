@@ -1,13 +1,58 @@
 {
-  "lines": [
-    "Hey Ghoul, are you excited for the Jam Out SG?",
-    "You betcha! I'll go poo first!",
-    "Be back quick!",
-    "What's taking her so long? I should find her."
-  ],
-  "textSpeed": 30.0,
-  "speakerID": 0,
-  "fontPath": "../Assets/fonts/Marker.ttf",
-  "fontSize": 1.0,
-  "color": [1.0, 1.0, 1.0]
+    "scenes": [
+        {
+            "script": [
+                {
+                    "speakerID": 0,
+                    "line": "Jam Out SG! We made it! We're gonna rock their socks off. Or whatever they say."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Record deal, here we come."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Crazy bummer that so many acts forfeited! I wouldn't be surprised if they pit US against each other for content."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "I'd like to see them try. (SMIRK)"
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Spooky..."
+                },
+                {
+                    "speakerID": 2,
+                    "line": "Groooowl..."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "MEGA SPOOKY!"
+                },
+                {
+                    "speakerID": 0,
+                    "line": "I gotta find Ghoul, and fast!"
+                }
+            ],
+            "textSpeed": 30.0,
+            "speakers": [
+                "Rock",
+                "Ghoul",
+                "Spirit"
+            ],
+            "fontPath": "../Assets/fonts/Marker.ttf",
+            "fontSize": 1.0,
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "sceneID": "0"
+        }
+    ]
 }

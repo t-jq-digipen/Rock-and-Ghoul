@@ -637,13 +637,9 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
         };
         json jd = {
             {"textBox", std::move(jtb)},
-            {"jsonPath", dlg.jsonPath}
+            {"jsonPath", dlg.jsonPath},
+            {"sceneID", dlg.sceneID.empty() ? "0" : dlg.sceneID}
         };
-        if (!dlg.lines.empty())
-        {
-            jd["lines"] = dlg.lines;
-            jd["currentLineIndex"] = dlg.currentLineIndex;
-        }
         j["gui"]["dialogues"].push_back(std::move(jd));
     }
 
@@ -702,14 +698,19 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
     {
         for (auto& dlg : j["gui"]["dialogues"]) {
             SavedScene::SavedDialogue d;
+            // carry visual/textbox look
             d.textBox.text = dlg["textBox"]["text"];
             d.textBox.pos = { dlg["textBox"]["pos"][0], dlg["textBox"]["pos"][1] };
             d.textBox.scale = dlg["textBox"]["scale"];
             d.textBox.color = { dlg["textBox"]["color"][0], dlg["textBox"]["color"][1], dlg["textBox"]["color"][2] };
+
             d.jsonPath = dlg["jsonPath"];
-            d.lines = dlg["lines"].get<std::vector<std::string>>();
+            d.sceneID = dlg.value("sceneID", "0");
+
+            // (Optionally remember line index snapshot)
             d.currentLineIndex = dlg.value("currentLineIndex", 0);
-            s.guiDialogues.push_back(d);
+
+            s.guiDialogues.push_back(std::move(d));
         }
     }
     for (const auto& entityJson : j["entities"]) {
@@ -1017,36 +1018,31 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         for (auto& d : scene.guiDialogues)
         {
-            DialogueConfig cfg;
-            cfg.textBox.text = d.textBox.text;
-            cfg.textBox.basePos = d.textBox.pos;
-            cfg.textBox.baseScale = d.textBox.scale;
-            cfg.textBox.color = d.textBox.color;
+            TextBoxConfig tb{};
+            tb.text = d.textBox.text;
+            tb.pos = d.textBox.pos;
+            tb.basePos = tb.pos;
+            tb.scale = d.textBox.scale;
+            tb.baseScale = tb.scale;
+            tb.color = Colour3 { d.textBox.color.r, d.textBox.color.g, d.textBox.color.b };
+            tb.fontKey = "Marker";
+            tb.centered = true;
+            tb.isVisible = true;
 
-            // set runtime from baseline
-            cfg.textBox.pos = cfg.textBox.basePos;
-            cfg.textBox.scale = cfg.textBox.baseScale;
-            cfg.jsonPath = d.jsonPath;
+            const std::string sceneID = d.sceneID.empty() ? "0" : d.sceneID;
+            int idx = GuiSystem::Get().AddDialogueFromJson(d.jsonPath, tb, d.sceneID);
 
-            if (!d.lines.empty())
+            if (idx >= 0 && d.currentLineIndex > 0) 
             {
-                cfg.owned = std::make_shared<TextSystem::TextComponent>();
-                cfg.owned->SetLines(d.lines);
-
-                int maxIdx = static_cast<int>(d.lines.size()) - 1;
-                int idx = d.currentLineIndex;
-                if (idx < 0) idx = 0;
-                if (idx > maxIdx) idx = maxIdx;
-
-                cfg.owned->SetCurrentLineIndex(idx);
-                cfg.textComp = cfg.owned.get();
+                auto& dlg = GuiSystem::Get().GetDialogues()[idx];
+                auto* comp = dlg.textComp ? dlg.textComp : dlg.owned.get();
+                if (comp) 
+                {
+                    const int n = static_cast<int>(comp->GetLines().size());
+                    comp->SetCurrentLineIndex(std::clamp(d.currentLineIndex, 0, std::max(0, n - 1)));
+                    comp->SetIsTyping(false);
+                }
             }
-            else
-            {
-                cfg.textComp = nullptr;
-            }
-
-            GuiSystem::Get().AddDialogue(cfg);
         }
 
         SavedScene::SavedCamera& camSet = scene.camSettings;

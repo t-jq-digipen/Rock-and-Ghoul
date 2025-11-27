@@ -54,7 +54,7 @@ void GuiSystem::AddDialogue(const DialogueConfig& cfg)
     dialogues.push_back(cfg);
 }
 
-int GuiSystem::AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox)
+int GuiSystem::AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox, const std::string& sceneID)
 {
     auto owned = std::make_shared<TextSystem::TextComponent>();
     if (!TextSystem::LoadDialogueFromJson(jsonPath, *owned)) return -1;

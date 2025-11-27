@@ -105,6 +105,7 @@ struct SavedScene {
     struct SavedDialogue {
         SavedTextBox textBox;
         std::string jsonPath;
+        std::string sceneID;
         std::vector<std::string> lines;
         int currentLineIndex = 0;
     };

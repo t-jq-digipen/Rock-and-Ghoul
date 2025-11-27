@@ -78,44 +78,86 @@ namespace TextSystem
 
 	bool LoadDialogueFromJson(const std::string& filepath, TextComponent& textComp)
 	{
+		// Default values
+		std::vector<std::string> lines;
+		float textSpeed = 30.f;
+		Vec3 color = { 1.f, 1.f, 1.f };
+		std::string fontPath = "../Assets/fonts/Marker.ttf";
+		float fontSize = 1.f;
+		int speakerID = 0;
+
+		// Read file
 		const std::string content = FileIO::ReadFile(filepath);
-		if (content.empty()) {
+		if (content.empty()) 
+		{
 			std::cerr << "Failed to load dialogue from: " << filepath << '\n';
 			return false;
 		}
 
-		try {
-			nlohmann::json j = nlohmann::json::parse(content);
-
-			// Fields with defaults
-			std::vector<std::string> lines = j.value("lines", std::vector<std::string>{""});
-			if (lines.empty()) lines.push_back("");
-
-			const float textSpeed = j.value("textSpeed", 1.f);
-			const int speakerID = j.value("speakerID", 0);
-			const std::string fontPath = j.value("fontPath", std::string{});
-			const float fontSize = j.value("fontSize", 1.f);
-
-			Vec3 color{ 0.f, 0.f, 0.f };
-			color.x = j.contains("colorR") ? j["colorR"].get<float>() : 1.f;
-			color.y = j.contains("colorG") ? j["colorG"].get<float>() : 1.f;
-			color.z = j.contains("colorB") ? j["colorB"].get<float>() : 1.f;
-
-			// Apply to component
-			textComp.SetLines(lines);
-			textComp.SetCurrentLineIndex(0);
-			textComp.SetTextSpeed(textSpeed);
-			textComp.SetSpeakerID(speakerID);
-			textComp.SetFontPath(fontPath);
-			textComp.SetFontSize(fontSize);
-			textComp.SetColor(color);
-			textComp.StartTyping(); // begin typewriter effect
-
-			return true;
+		json j;
+		try 
+		{
+			j = json::parse(content);
 		}
-		catch (const std::exception& e) {
-			std::cerr << "Dialogue json parse error (" << filepath << "): " << e.what() << '\n';
+		catch (const std::exception& e) 
+		{
+			std::cerr << "JSON parse error in " << filepath << ": " << e.what() << "\n";
 			return false;
 		}
+
+		if (!j.contains("scenes") || !j["scenes"].is_array() || j["scenes"].empty()) 
+		{
+			std::cerr << "Missing scene in " << filepath << "\n";
+			return false;
+		}
+
+		const json& scene = j["scenes"][0];
+
+		if (scene.contains("script") && scene["script"].is_array()) 
+		{
+			for (const auto& entry : scene["script"]) 
+			{
+				if (entry.contains("line") && entry["line"].is_string()) 
+				{
+					lines.push_back(entry["line"].get<std::string>());
+				}
+			}
+		}
+
+		if (scene.contains("textSpeed") && scene["textSpeed"].is_number()) 
+		{
+			textSpeed = scene["textSpeed"].get<float>();
+		}
+		if (scene.contains("color") && scene["color"].is_array() && scene["color"].size() == 3) 
+		{
+			color = 
+			{
+				scene["color"][0].get<float>(),
+				scene["color"][1].get<float>(),
+				scene["color"][2].get<float>()
+			};
+		}
+		if (scene.contains("fontPath") && scene["fontPath"].is_string()) 
+		{
+			fontPath = scene["fontPath"].get<std::string>();
+		}
+		if (scene.contains("fontSize") && scene["fontSize"].is_number()) 
+		{
+			fontSize = scene["fontSize"].get<float>();
+		}
+
+		// Apply to TextComponent
+		textComp.SetLines(lines);
+		textComp.SetCurrentLineIndex(0);
+		textComp.SetTextSpeed(textSpeed);
+		textComp.SetSpeakerID(speakerID);
+		textComp.SetFontPath(fontPath);
+		textComp.SetFontSize(fontSize);
+		textComp.SetColor(color);
+
+		// Reset typewriter state
+		textComp.SetIsTyping(false);
+
+		return true;
 	}
 }
