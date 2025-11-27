@@ -6,17 +6,7 @@
  * @brief
  *
  * Implements the GuiSystem, which provides a in-game editor 
- * for UI elements (separate from ImGuiSystem). The system
- * toggles with F8 and displays a single "GUI Editor" window 
- * containing multiple features:
- *
- * Features:
- * - Toggles on/off with a key press (F8).
- * - Renders a single "GUI Editor" window onto the game screen
- * with selectable panels for each active UI element.
- * - Scales with the game screen, including when ImGui Editor
- * is active.
- * - Configurations for each UI element type.
+ * for UI elements (inside the ImGui editor).
  *
  * Copyright � 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -27,6 +17,7 @@
 #include "CoreEngine.h"
 #include "glapp.h"
 #include "ImGuiSystem.h"
+#include "SceneManager.h"
 AudioManager* GuiSystem::audio = nullptr;
 
 void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
@@ -36,6 +27,7 @@ void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
 void GuiSystem::Initialize() {
     buttons.clear();
     textboxes.clear();
+    dialogues.clear();
 }
 
 void GuiSystem::AddButton(const ButtonConfig& cfg)
@@ -44,6 +36,8 @@ void GuiSystem::AddButton(const ButtonConfig& cfg)
     copy.basePos = cfg.pos;
     copy.baseSize = cfg.size;
     copy.baseTextScale = cfg.textScale;
+    copy.onClick = nullptr;
+    BindButtonAction(copy);
     buttons.push_back(copy);
 }
 
@@ -84,83 +78,31 @@ bool GuiSystem::GetEditMode() const
 }
 
 void GuiSystem::Update(float dt) {
-    if (Input::IsKeyPressed(GLFW_KEY_F8))
-        editMode = !editMode;
-
+    //if (Input::IsKeyPressed(GLFW_KEY_F8))
+    //    editMode = !editMode;
 
     // --- Press SPACE to advance dialogues (while not editing the GUI) ---
-    static bool spaceLatch = false;
-    const bool spaceHeld = Input::IsKeyHeld(GLFW_KEY_SPACE);
-    const bool spaceEdge = !spaceLatch && spaceHeld; // rising edge (manual)
+    static bool spaceHandled = false;
+    bool spacePressed = Input::IsKeyPressed(GLFW_KEY_SPACE);
+    bool spaceHeld = Input::IsKeyHeld(GLFW_KEY_SPACE);
 
-    if (!editMode && spaceEdge) {
-        bool revealedAny = false;
-        std::vector<TextSystem::TextComponent*> processed;
-
-        for (auto& d : dialogues) {
-            auto* comp = d.textComp ? d.textComp : d.owned.get();
-            if (!comp) continue;
-            if (std::find(processed.begin(), processed.end(), comp) != processed.end()) continue;
-            processed.push_back(comp);
-
-            if (comp->CheckIfTyping()) {
-                comp->StopTyping();   // reveal full current line
-                revealedAny = true;
-            }
+    if (!editMode && spacePressed && !spaceHandled) 
+    {
+        for (auto& d : dialogues)
+        {
+            if (!d.isVisible) continue;
+            AdvanceDialogue(d);
+            break;
         }
-
-        if (!revealedAny) {
-            processed.clear();
-            for (auto& d : dialogues) {
-                auto* comp = d.textComp ? d.textComp : d.owned.get();
-                if (!comp) continue;
-                if (std::find(processed.begin(), processed.end(), comp) != processed.end()) continue;
-                processed.push_back(comp);
-
-                const auto& lines = comp->GetLines();
-                const int idx = comp->GetCurrentLineIndex();
-                if (idx + 1 < static_cast<int>(lines.size())) {
-                    comp->SetCurrentLineIndex(idx + 1);
-                    comp->StartTyping();   // reset typewriter for the new line
-                }
-                else {
-                    comp->SetIsTyping(false); // stay fully shown at last line
-                }
-            }
-        }
+        spaceHandled = true;
     }
-
-    // update latch
-    spaceLatch = spaceHeld;
+    if (!spaceHeld)
+    {
+        spaceHandled = false;
+    }
 
     Vec2 mouse = Input::GetMousePosition();
-   
-
-    // convert to Game View space
-    if (!ImGuiSystem::guiEnabled) {
-        // Fullscreen mouse coords are already correct, just use them directly
-        // No conversion needed!
-    }
-    else {
-        // ImGui is ON convert mouse from screen space to game view space
-        if (mouse.x < m_gameViewRect.x || mouse.x > m_gameViewRect.x + m_gameViewRect.width || mouse.y < m_gameViewRect.y ||  mouse.y > m_gameViewRect.y + m_gameViewRect.height) 
-        {
-            // Mouse is outside game view - invalidate mouse position
-            mouse.x = -9999.f;
-            mouse.y = -9999.f;
-        }
-        else {
-            // Mouse IS inside game view convert to local coordinates
-            mouse.x -= m_gameViewRect.x;
-            mouse.y -= m_gameViewRect.y;
-            //scale relative to the game view size to match window size
-            float mouseScaleX = GLApp::width / m_gameViewRect.width;
-            float mouseScaleY = GLApp::height / m_gameViewRect.height;
-
-            mouse.x *= mouseScaleX;
-            mouse.y *= mouseScaleY;
-        }
-    }
+    GuiSystem::GetMouseImgui(mouse);
 
     Render& renderer = Render::GetInstance();
 
@@ -168,8 +110,10 @@ void GuiSystem::Update(float dt) {
     const bool prevCam = renderer.useCamera;
     renderer.useCamera = false;
 
-    const float scaleX = GLApp::width / 1920.f;
-    const float scaleY = GLApp::height / 1080.f;
+    const float defaultWidth = 1920.f;
+    const float defaultHeight = 1080.f;
+    const float scaleX = GLApp::width / defaultWidth;
+    const float scaleY = GLApp::height / defaultHeight;
     const float uiScale = std::min(scaleX, scaleY);
    
 
@@ -257,8 +201,11 @@ void GuiSystem::Update(float dt) {
         render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, tb.fontKey);
     }
 
+    SceneManager& sm = SceneManager::Get();
     for (auto& d : dialogues)
     {
+        if (!d.isVisible) continue;
+
         TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
         if (!comp) continue;
 
@@ -267,11 +214,34 @@ void GuiSystem::Update(float dt) {
         d.textBox.pos.y = d.textBox.basePos.y * scaleY;
         d.textBox.scale = d.textBox.baseScale * uiScale;
 
-        // advance typewriter
-        TextSystem::UpdateTyping(*comp, dt, 1.f);
+        std::string vis;
 
-        // line & visible substring
-        const std::string vis = TextSystem::GetVisibleText(*comp);
+        if (sm.inEditMode)
+        {
+            // In edit mode: Show full current line (no typing)
+            if (comp->CheckIfTyping()) comp->StopTyping();
+
+            const auto& lines = comp->GetLines();
+            if (lines.empty()) continue;
+
+            int idx = comp->GetCurrentLineIndex();
+            if (idx < 0) idx = 0;
+            if (idx >= (int)lines.size()) idx = (int)lines.size() - 1;
+            vis = lines[idx];
+        }
+        else
+        {
+            // In play mode: Advance with the typewriter
+            TextSystem::UpdateTyping(*comp, dt, 1.f);
+
+            const auto& lines = comp->GetLines();
+            if (lines.empty()) continue;
+
+            int idx = comp->GetCurrentLineIndex();
+            if (idx < 0) idx = 0;
+            if (idx >= (int)lines.size()) idx = (int)lines.size() - 1;
+            vis = comp->CheckIfTyping() ? TextSystem::GetVisibleText(*comp) : lines[idx];
+        }
 
         // text color
         Colour3 drawColor = d.textBox.color;
@@ -284,6 +254,11 @@ void GuiSystem::Update(float dt) {
         // r.DrawRoundedRect({d.textBox.pos.x, d.textBox.pos.y}, textSize.x + 24, textSize.y + 16, 8.f, {0.f,0.f,0.f});
 
         render.DrawText(vis, drawX, drawY, d.textBox.scale, drawColor, "Marker");
+    }
+
+    // Draw state window if active
+    if (stateWindowActive) {
+        DrawStateWindow(render);
     }
 
     if (editMode) {
@@ -943,19 +918,287 @@ void GuiSystem::Shutdown() {
 
 std::string ButtonShapeToString(ButtonShape shape) {
     switch (shape) {
-    case ButtonShape::Rounded: return "Rounded";
-    case ButtonShape::Rectangle:  return "Rectangle";
-    default:                   return "Rectangle";
+    case ButtonShape::Rounded:      return "Rounded";
+    case ButtonShape::Rectangle:    return "Rectangle";
+    case ButtonShape::Circle:       return "Circle";
+    default:                        return "Rectangle";
     }
 }
 
 ButtonShape StringToButtonShape(const std::string& s) {
     if (s == "Rounded") return ButtonShape::Rounded;
+    if (s == "Circle") return ButtonShape::Circle;
     return ButtonShape::Rectangle;
+}
+
+std::string ButtonActionToString(ButtonAction action)
+{
+    switch (action)
+    {
+    case ButtonAction::None:                return "None";
+    case ButtonAction::LoadLevel1:          return "LoadLevel1";
+    case ButtonAction::LoadLevel2:          return "LoadLevel2";
+    case ButtonAction::LoadMainMenu:        return "LoadMainMenu";
+    case ButtonAction::Quit:                return "Quit";
+    case ButtonAction::OpenStateWindow:     return "OpenStateWindow";
+    case ButtonAction::ToggleAllTextboxes:  return "ToggleAllTextboxes";
+    case ButtonAction::ToggleAllDialogues:  return "ToggleAllDialogues";
+    default:                                return "None";
+    }
+}
+
+ButtonAction StringToButtonAction(const std::string& s)
+{
+    if (s == "LoadLevel1") return ButtonAction::LoadLevel1;
+    if (s == "LoadLevel2") return ButtonAction::LoadLevel2;
+    if (s == "LoadMainMenu") return ButtonAction::LoadMainMenu;
+    if (s == "Quit") return ButtonAction::Quit;
+    if (s == "OpenStateWindow") return ButtonAction::OpenStateWindow;
+    if (s == "ToggleAllTextboxes") return ButtonAction::ToggleAllTextboxes;
+    if (s == "ToggleAllDialogues") return ButtonAction::ToggleAllDialogues;
+    return ButtonAction::None;
 }
 
 void GuiSystem::Clear() {
     buttons.clear();
     textboxes.clear();
     dialogues.clear();
+}
+
+void GuiSystem::BindButtonAction(ButtonConfig& btn)
+{
+    switch (btn.action)
+    {
+    case ButtonAction::OpenStateWindow:
+        btn.onClick = [this]() { stateWindowActive = true; };
+        break;
+    case ButtonAction::ToggleAllTextboxes:
+        btn.onClick = [this]() { ToggleAllTextboxes(); };
+        break;
+    case ButtonAction::ToggleAllDialogues:
+        btn.onClick = [this]() { ToggleAllDialogues(); };
+        break;
+    case ButtonAction::LoadLevel1:
+        btn.onClick = [this]() { SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); };
+        break;
+    case ButtonAction::LoadMainMenu:
+        btn.onClick = [this]() { SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json"); };
+        break;
+    case ButtonAction::Quit:
+        btn.onClick = [this]() { CoreEngine::GetInstance().Quit(); };
+        break;
+    default:
+        btn.onClick = nullptr;
+        break;
+    }
+}
+
+void GuiSystem::ToggleAllTextboxes()
+{
+    if (textboxes.empty()) return;
+    bool anyVisible = false;
+    for (auto& t : textboxes) if (t.isVisible) { anyVisible = true; break; }
+    for (auto& t : textboxes) t.isVisible = !anyVisible;
+}
+
+void GuiSystem::ToggleAllDialogues()
+{
+    if (dialogues.empty()) return;
+    bool anyVisible = false;
+    for (auto& d : dialogues) if (d.isVisible) { anyVisible = true; break; }
+    for (auto& d : dialogues) d.isVisible = !anyVisible;
+}
+
+void GuiSystem::DrawStateWindow(Render& render)
+{
+    if (!stateWindowActive) return;
+
+    Render& renderer = Render::GetInstance();
+    const bool prevCam = renderer.useCamera;
+    renderer.useCamera = false;
+
+    const float defaultW = 1920.f;
+    const float defaultH = 1080.f;
+    const float scaleX = GLApp::width / defaultW;
+    const float scaleY = GLApp::height / defaultH;
+    const float uiScale = std::min(scaleX, scaleY);
+
+    Vec2 mouse = Input::GetMousePosition();
+    GuiSystem::GetMouseImgui(mouse);
+
+    // -------- Window background (scaled like UI) --------
+    {
+        const Vec2 basePos = { 960.f, 600.f };  // virtual center
+        const Vec2 baseSize = { 700.f, 500.f };  // virtual size
+        Vec2 pos;   pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
+        Vec2 size;  size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
+        render.DrawRect(pos, size.x, size.y, { 0.1f, 0.1f, 0.1f });
+
+        // Title text (scaled like UI text)
+        const float baseTextScale = 1.0f;
+        const float textScale = baseTextScale * uiScale;
+
+        const Vec2 baseTitlePos = { 740.f, 780.f };
+        Vec2 titlePos; titlePos.x = baseTitlePos.x * scaleX; titlePos.y = baseTitlePos.y * scaleY;
+        render.DrawText("CHOOSE YOUR STATE", titlePos.x, titlePos.y, textScale, { 1,1,1 }, "Marker");
+    }
+
+    struct Item { const char* label; ButtonAction action; };
+    const Item items[] = {
+        {"None",      ButtonAction::None},
+        {"Main Menu", ButtonAction::LoadMainMenu},
+        {"Level 1",   ButtonAction::LoadLevel1},
+        {"Quit",      ButtonAction::Quit},
+    };
+
+    auto ClickFunction = [this](ButtonAction action)
+        {
+            ButtonConfig tmp;
+            tmp.action = action;
+            BindButtonAction(tmp);
+            if (tmp.onClick) tmp.onClick();
+        };
+
+    // State Window Buttons
+    float yVirtual = 720.f;
+
+    for (const auto& it : items)
+    {
+        if (it.action == ButtonAction::None) { yVirtual -= 80.f; continue; }
+
+        const Vec2 basePos = { 960.f, yVirtual };
+        const Vec2 baseSize = { 500.f,  60.f };
+
+        Vec2 pos;  pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
+        Vec2 size; size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
+
+        const bool hover = render.IsAreaTouched(mouse, pos, size.x, size.y);
+
+        Colour3 col = hover ? Colour3{ 0.25f + 0.2f, 0.25f + 0.2f, 0.25f + 0.2f }
+        : Colour3{ 0.25f, 0.25f, 0.25f };
+        render.DrawRect(pos, size.x, size.y, col);
+
+        const float baseTextScale = 0.7f;
+        const float textScale = baseTextScale * uiScale;
+        Vec2 textSize = render.CalculateTextSize(it.label, textScale, "Marker");
+
+        float textX = pos.x - textSize.x * 0.5f;
+        float textY = pos.y - textSize.y * 0.5f + textSize.y * 0.15f; // small vertical offset
+        render.DrawText(it.label, textX, textY, textScale, { 1,1,1 }, "Marker");
+
+        // Click action
+        if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            ClickFunction(it.action);
+            stateWindowActive = false;
+            renderer.useCamera = prevCam;
+            return;
+        }
+
+        yVirtual -= 80.f;
+    }
+
+    // Button to close state window
+    {
+        const Vec2 basePos = { 960.f, yVirtual };
+        const Vec2 baseSize = { 200.f,  50.f };
+
+        Vec2 pos;  pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
+        Vec2 size; size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
+
+        const bool hover = render.IsAreaTouched(mouse, pos, size.x, size.y);
+
+        render.DrawRect(pos, size.x, size.y, { 0.7f, 0.f, 0.f });
+
+        const char* label = "Close";
+        const float baseTextScale = 0.7f;
+        const float textScale = baseTextScale * uiScale;
+        Vec2 textSize = render.CalculateTextSize(label, textScale, "Marker");
+        float textX = pos.x - textSize.x * 0.5f;
+        float textY = pos.y - textSize.y * 0.5f + textSize.y * 0.15f;
+        render.DrawText(label, textX, textY, textScale, { 1,1,1 }, "Marker");
+
+        if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            stateWindowActive = false;
+        }
+    }
+    renderer.useCamera = prevCam;
+}
+
+void GuiSystem::GetMouseImgui(Vec2& mouse)
+{
+    // convert to Game View space
+    if (!ImGuiSystem::guiEnabled) {
+        // Fullscreen mouse coords are already correct, just use them directly
+        // No conversion needed!
+    }
+    else {
+        // ImGui is ON convert mouse from screen space to game view space
+        if (mouse.x < m_gameViewRect.x || mouse.x > m_gameViewRect.x + m_gameViewRect.width || mouse.y < m_gameViewRect.y || mouse.y > m_gameViewRect.y + m_gameViewRect.height)
+        {
+            // Mouse is outside game view - invalidate mouse position
+            mouse.x = -9999.f;
+            mouse.y = -9999.f;
+        }
+        else {
+            // Mouse IS inside game view convert to local coordinates
+            mouse.x -= m_gameViewRect.x;
+            mouse.y -= m_gameViewRect.y;
+            //scale relative to the game view size to match window size
+            float mouseScaleX = GLApp::width / m_gameViewRect.width;
+            float mouseScaleY = GLApp::height / m_gameViewRect.height;
+
+            mouse.x *= mouseScaleX;
+            mouse.y *= mouseScaleY;
+        }
+    }
+}
+
+void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartTyping)
+{
+    TextSystem::TextComponent* comp = dlg.textComp ? dlg.textComp : dlg.owned.get();
+    if (!comp) return;
+
+    const auto& lines = comp->GetLines();
+    if (lines.empty()) return;
+
+    if (newIndex < 0) newIndex = 0;
+    if (newIndex >= (int)lines.size()) newIndex = (int)lines.size() - 1;
+    if (comp->CheckIfTyping()) comp->StopTyping();
+    comp->SetCurrentLineIndex(newIndex);
+    if (restartTyping) comp->StartTyping();
+}
+
+void GuiSystem::AdvanceDialogue(DialogueConfig& dlg)
+{
+    TextSystem::TextComponent* comp = dlg.textComp ? dlg.textComp : dlg.owned.get();
+    if (!comp) return;
+
+    // If we’re in the editor, ignore advance requests entirely.
+    if (SceneManager::Get().inEditMode) return;
+
+    const auto& lines = comp->GetLines();
+    if (lines.empty()) return;
+
+    // If currently typing, finish the current line first.
+    if (comp->CheckIfTyping()) 
+    {
+        comp->StopTyping();
+        return;
+    }
+
+    // Advance to next line
+    int idx = comp->GetCurrentLineIndex();
+    ++idx;
+
+    if (idx < (int)lines.size()) 
+    {
+        comp->SetCurrentLineIndex(idx);
+        comp->StartTyping();
+    }
+    else 
+    {
+        comp->StopTyping();
+    }
 }

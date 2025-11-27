@@ -10,48 +10,50 @@
     "cameraZoom": 1.0,
     "entities": [],
     "fontConfig": "../Assets/fontAssets.json",
-"gui": {
-    "buttons": [
-        {
-            "action": "LoadLevel1",
-            "color": [
-                0.0784313753247261,
-                0.7137255072593689,
-                0.7490196228027344
-            ],
-            "label": "PLAY",
-            "pos": [
-                1650.0,
-                550.0
-            ],
-            "shape": "Rounded",
-            "size": [
-                300.0,
-                100.0
-            ],
-            "soundType": 0
-        },
-        {
-            "action": "Quit",
-            "color": [
-                0.0784313753247261,
-                0.7137255072593689,
-                0.7490196228027344
-            ],
-            "label": "QUIT",
-            "pos": [
-                1650.0,
-                150.0
-            ],
-            "shape": "Rounded",
-            "size": [
-                300.0,
-                100.0
-            ],
-            "soundType": 1
-        }
-    ]
-},
+    "gui": {
+        "buttons": [
+            {
+                "action": "LoadLevel1",
+                "color": [
+                    0.0784313753247261,
+                    0.7137255072593689,
+                    0.7490196228027344
+                ],
+                "label": "PLAY",
+                "pos": [
+                    1650.0,
+                    550.0
+                ],
+                "shape": "Rounded",
+                "size": [
+                    300.0,
+                    100.0
+                ]
+            },
+            {
+                "action": "Quit",
+                "color": [
+                    0.0784313753247261,
+                    0.7137255072593689,
+                    0.7490196228027344
+                ],
+                "label": "QUIT",
+                "pos": [
+                    1650.0,
+                    150.0
+                ],
+                "shape": "Rounded",
+                "size": [
+                    300.0,
+                    100.0
+                ]
+            }
+        ],
+        "textboxes": [
+        ],
+        "dialogues": [
+        ]
+    },
     "sceneName": "MainMenu",
     "bgmAssetName": "main_menu",
     "sceneType": 0,

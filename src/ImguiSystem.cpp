@@ -812,8 +812,53 @@ void ImGuiSystem::Update(float dt)
     if (ImGui::Begin("UI Editor", nullptr)) {
         if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
 
+        auto& gui = GuiSystem::Get();
+
+        // UI Element Vectors
+        auto& buttons = gui.Buttons();
+        auto& textboxes = gui.TextBoxes();
+        auto& dialogues = gui.Dialogues();
+
+        // Selection
+        static SelectedType uiSelectedType = SelectedType::None;
+        static int uiSelectedIndex = -1;
+
+        // UI element counts
+        int numBtn = (int)buttons.size();
+        int numTxt = (int)textboxes.size();
+        int numDlg = (int)dialogues.size();
+        int total = numBtn + numTxt + numDlg;
+
+        auto totalCount = [&]() 
+        {
+            return (int)buttons.size() + (int)textboxes.size() + (int)dialogues.size();
+        };
+
+        auto globalToLocal = [&](int gIdx, SelectedType& outType, int& outLocal)
+        {
+            const int numBtn = (int)buttons.size();
+            const int numTxt = (int)textboxes.size();
+            if (gIdx < 0) { outType = SelectedType::None; outLocal = -1; return; }
+            if (gIdx < numBtn) { outType = SelectedType::Button;  outLocal = gIdx; return; }
+            if (gIdx < numBtn + numTxt) { outType = SelectedType::TextBox; outLocal = gIdx - numBtn; return; }
+            outType = SelectedType::Dialogue; outLocal = gIdx - numBtn - numTxt;
+        };
+
+        auto localToGlobal = [&](SelectedType type, int lIdx)
+        {
+            const int numBtn = (int)buttons.size();
+            const int numTxt = (int)textboxes.size();
+            if (type == SelectedType::Button)   return lIdx;
+            if (type == SelectedType::TextBox)  return numBtn + lIdx;
+            if (type == SelectedType::Dialogue) return numBtn + numTxt + lIdx;
+            return -1;
+        };
+
+        static bool openAddPopup = false;
+        static int addTypeIdx = 0;
+        const char* addTypeNames[] = { "Button", "TextBox", "Dialogue" };
         
-        if (ImGui::Button("Add UI Element"))
+        if (ImGui::Button("Add UI"))
         {
             // ADD UI ELEMENT
             //Entity newEntity = m_registry.Create_Entity();
@@ -822,10 +867,81 @@ void ImGuiSystem::Update(float dt)
             //// Store editor name
             //m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
             //UndoSystem::Get().RecordAdd(newEntity);
+            openAddPopup = true;
+            ImGui::OpenPopup("Add UI Type");
+        }
+
+        // Additional popup to choose which UI element type to add
+        if (ImGui::BeginPopupModal("Add UI Type", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Choose UI element type to add:");
+            ImGui::Separator();
+            ImGui::Combo("Type", &addTypeIdx, addTypeNames, IM_ARRAYSIZE(addTypeNames));
+            ImGui::Separator();
+            if (ImGui::Button("Create", ImVec2(100, 0)))
+            {
+                if (addTypeIdx == 0) // Button
+                {
+                    ButtonConfig b;
+                    b.label = "New Button " + std::to_string((int)buttons.size() + 1);
+                    b.pos = { 960, 540 };
+                    b.size = { 200, 100 };
+                    b.color = { 0.4f, 0.7f, 0.9f };
+                    b.textScale = 1.0f;
+                    b.basePos = b.pos; b.baseSize = b.size; b.baseTextScale = b.textScale;
+                    b.action = ButtonAction::None;
+                    gui.BindButtonAction(b);
+                    buttons.push_back(b);
+
+                    // select the new one
+                    uiSelectedType = SelectedType::Button;
+                    uiSelectedIndex = localToGlobal(SelectedType::Button, (int)buttons.size() - 1);
+                }
+                else if (addTypeIdx == 1) // TextBox
+                {
+                    TextBoxConfig t;
+                    t.text = "New Text " + std::to_string((int)textboxes.size() + 1);
+                    t.pos = { 960, 600 };
+                    t.scale = 1.2f;
+                    t.color = { 0,0,0 };
+                    t.basePos = t.pos; t.baseScale = t.scale;
+                    textboxes.push_back(t);
+
+                    uiSelectedType = SelectedType::TextBox;
+                    uiSelectedIndex = localToGlobal(SelectedType::TextBox, (int)textboxes.size() - 1);
+                }
+                else // Dialogue
+                {
+                    TextBoxConfig newDialogue;
+                    newDialogue.text = "";
+                    newDialogue.basePos = { 510, 300 };
+                    newDialogue.baseScale = 0.9f;
+                    newDialogue.pos = newDialogue.basePos;
+                    newDialogue.scale = newDialogue.baseScale;
+                    newDialogue.color = { 0,0,0 };
+                    newDialogue.centered = true;
+
+                    int idx = gui.AddDialogueFromJson(FilePath::DIALOGUE, newDialogue);
+                    if (idx >= 0)
+                    {
+                        uiSelectedType = SelectedType::Dialogue;
+                        uiSelectedIndex = localToGlobal(SelectedType::Dialogue, idx);
+                    }
+                }
+                ImGui::CloseCurrentPopup();
+                openAddPopup = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(100, 0)))
+            {
+                ImGui::CloseCurrentPopup();
+                openAddPopup = false;
+            }
+            ImGui::EndPopup();
         }
 
         ImGui::SameLine();
-        if (ImGui::Button("Clone UI Element") && selectedEntity != INVALID_ENTITY)
+        if (ImGui::Button("Clone UI") && uiSelectedIndex >= 0)
         {
             // CLONE UI ELEMLENT
             //Registry& reg = Registry::Get();
@@ -849,22 +965,427 @@ void ImGuiSystem::Update(float dt)
             //    selectedEntity = newEntity;
             //    UndoSystem::Get().RecordAdd(newEntity);
             //}
+            SelectedType type; int lIdx;
+            globalToLocal(uiSelectedIndex, type, lIdx);
+            if (type == SelectedType::Button && lIdx >= 0 && lIdx < (int)buttons.size())
+            {
+                ButtonConfig src = buttons[lIdx];
+                // Minor tweak for uniqueness
+                src.label += " (Copy)";
+                buttons.push_back(src);
+                uiSelectedType = SelectedType::Button;
+                uiSelectedIndex = localToGlobal(SelectedType::Button, (int)buttons.size() - 1);
+            }
+            else if (type == SelectedType::TextBox && lIdx >= 0 && lIdx < (int)textboxes.size())
+            {
+                TextBoxConfig src = textboxes[lIdx];
+                src.text += " (Copy)";
+                textboxes.push_back(src);
+                uiSelectedType = SelectedType::TextBox;
+                uiSelectedIndex = localToGlobal(SelectedType::TextBox, (int)textboxes.size() - 1);
+            }
+            else if (type == SelectedType::Dialogue && lIdx >= 0 && lIdx < (int)dialogues.size())
+            {
+                const auto& src = dialogues[lIdx];
+                DialogueConfig dst;
+
+                dst.textBox = src.textBox;
+                dst.isVisible = src.isVisible;
+                dst.jsonPath = src.jsonPath;
+
+                const TextSystem::TextComponent* sc = src.textComp ? src.textComp : src.owned.get();
+                if (sc)
+                {
+                    dst.owned = std::make_shared<TextSystem::TextComponent>();
+                    dst.owned->SetLines(sc->GetLines());
+                    dst.owned->SetCurrentLineIndex(sc->GetCurrentLineIndex());
+                    dst.textComp = dst.owned.get();
+                }
+                else
+                {
+                    dst.textComp = nullptr;
+                }
+
+                dialogues.push_back(std::move(dst));
+                uiSelectedType = SelectedType::Dialogue;
+                uiSelectedIndex = localToGlobal(SelectedType::Dialogue, (int)dialogues.size() - 1);
+            }
         }
 
         ImGui::SameLine();
-        if (ImGui::Button("Delete UI Element") && selectedEntity != INVALID_ENTITY)
+        if (ImGui::Button("Delete UI") && uiSelectedIndex >= 0)
         {
             // DELETE UI ELEMENT
             /*SavedEntity snapshot = m_registry.Save_Entity(selectedEntity);
             UndoSystem::Get().RecordRemove(snapshot);
             m_registry.Remove_Entity(selectedEntity);
             selectedEntity = INVALID_ENTITY;*/
+            SelectedType type; int lIdx;
+            globalToLocal(uiSelectedIndex, type, lIdx);
+            if (type == SelectedType::Button)
+            {
+                if (lIdx >= 0 && lIdx < (int)buttons.size())
+                {
+                    buttons.erase(buttons.begin() + lIdx);
+                }
+            }
+            else if (type == SelectedType::TextBox)
+            {
+                if (lIdx >= 0 && lIdx < (int)textboxes.size())
+                {
+                    textboxes.erase(textboxes.begin() + lIdx);
+                }
+            }
+            else if (type == SelectedType::Dialogue)
+            {
+                if (lIdx >= 0 && lIdx < (int)dialogues.size())
+                {
+                    dialogues.erase(dialogues.begin() + lIdx);
+                }
+            }
+            // Reset selection
+            uiSelectedType = SelectedType::None;
+            uiSelectedIndex = -1;
         }
 
         ImGui::Separator();
-        ImGui::Columns(2, "EntityColumns", true);
         //ShowHierarchyWindow();     // left: list
+
+        // Refresh UI element counts
+        numBtn = (int)buttons.size();
+        numTxt = (int)textboxes.size();
+        numDlg = (int)dialogues.size();
+        total = numBtn + numTxt + numDlg;
+
         // UI HIERARCHY
+        ImGui::SeparatorText("UI Elements");
+        ImGui::BeginChild("List", ImVec2(0, 220), true, ImGuiWindowFlags_HorizontalScrollbar);
+
+        for (int g = 0; g < total; ++g)
+        {
+            SelectedType type; int lIdx;
+            globalToLocal(g, type, lIdx);
+
+            // Build label per type
+            std::string label;
+            if (type == SelectedType::Button) {
+                const auto& b = buttons[lIdx];
+                label = "Button: " + b.label;
+            }
+            else if (type == SelectedType::TextBox) {
+                const auto& tb = textboxes[lIdx];
+                label = "Text: " + tb.text;
+            }
+            else { // Dialogue
+                const auto& d = dialogues[lIdx];
+                TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+                label = "Dialogue";
+                if (comp && !comp->GetLines().empty()) {
+                    const std::string& ln = comp->GetLines()[comp->GetCurrentLineIndex()];
+                    label += ": " + (ln.size() > 24 ? (ln.substr(0, 24) + "...") : ln);
+                }
+            }
+
+            bool selected = (uiSelectedIndex == g);
+            if (ImGui::Selectable(label.c_str(), selected)) {
+                uiSelectedIndex = g;
+                uiSelectedType = type;
+                if (type == SelectedType::Dialogue)
+                {
+                    auto& d = dialogues[lIdx];
+                    GuiSystem::Get().SetDialogueLine(d, (d.textComp ? d.textComp : d.owned.get())->GetCurrentLineIndex(), true);
+                }
+            }
+        }
+        ImGui::EndChild();
+
+        int selectedLocal = -1;
+        if (uiSelectedIndex >= 0) {
+            globalToLocal(uiSelectedIndex, uiSelectedType, selectedLocal);
+        }
+
+        // UI PROPER
+        ImGui::SeparatorText("UI Properties");
+        ImGui::BeginChild("Properties", ImVec2(0, 0), true);
+
+        if (uiSelectedIndex < 0 || uiSelectedType == SelectedType::None) {
+            ImGui::TextDisabled("No UI element selected.");
+        }
+        else {
+            auto clampSelectionAfterErase = [&]() {
+                int nB = (int)buttons.size();
+                int nT = (int)textboxes.size();
+                int nD = (int)dialogues.size();
+                int totalNow = nB + nT + nD;
+                if (totalNow == 0) { uiSelectedIndex = -1; uiSelectedType = SelectedType::None; return; }
+                if (uiSelectedIndex >= totalNow) uiSelectedIndex = totalNow - 1;
+                SelectedType t2; int li2;
+                if (uiSelectedIndex < nB) { t2 = SelectedType::Button; li2 = uiSelectedIndex; }
+                else if (uiSelectedIndex < nB + nT) { t2 = SelectedType::TextBox; li2 = uiSelectedIndex - nB; }
+                else { t2 = SelectedType::Dialogue; li2 = uiSelectedIndex - nB - nT; }
+                uiSelectedType = t2;
+                selectedLocal = li2;
+                };
+
+            if (uiSelectedType == SelectedType::Button) {
+                // ---- BUTTON PROPERTIES ----
+                if (selectedLocal >= 0 && selectedLocal < (int)buttons.size()) {
+                    auto& b = buttons[selectedLocal];
+
+                    // Label
+                    {
+                        char buf[128];
+                        std::snprintf(buf, sizeof(buf), "%s", b.label.c_str());
+                        if (ImGui::InputText("Label", buf, IM_ARRAYSIZE(buf))) {
+                            b.label = buf;
+                        }
+                    }
+
+                    // Action
+                    {
+                        const char* actionNames[] = {
+                            "None",
+                            "Load Level 1",
+                            "Load Level 2",
+                            "Load Main Menu",
+                            "Quit",
+                            "Open State Window",
+                            "Toggle All Textboxes",
+                            "Toggle All Dialogues"
+                        };
+                        int actionCount = (int)(sizeof(actionNames) / sizeof(actionNames[0]));
+                        int curr = (int)b.action;
+                        curr = (curr >= 0 && curr < actionCount) ? curr : 0;
+                        if (ImGui::Combo("Action", &curr, actionNames, actionCount)) {
+                            b.action = (ButtonAction)curr;
+                            GuiSystem::Get().BindButtonAction(b);
+                        }
+                    }
+
+                    // Shape
+                    {
+                        // Keep order consistent with your ButtonShape enum
+                        const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
+                        int currShape = (int)b.shape;
+                        if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
+                            b.shape = (ButtonShape)currShape;
+                        }
+                    }
+
+                    // Position / Size / Text scale
+                    ImGui::Separator();
+                    ImGui::Text("Transform");
+                    ImGui::SliderFloat("posX", &b.basePos.x, 0.f, 1920.f);
+                    ImGui::SliderFloat("posY", &b.basePos.y, 0.f, 1080.f);
+                    ImGui::SliderFloat("sizeX", &b.baseSize.x, 0.1f, 1920.f);
+                    ImGui::SliderFloat("sizeY", &b.baseSize.y, 0.1f, 1080.f);
+                    ImGui::SliderFloat("textScale", &b.baseTextScale, 0.1f, 3.0f);
+
+                    // Color
+                    ImGui::Separator();
+                    ImGui::Text("Color");
+                    float col[3] = { b.color.r, b.color.g, b.color.b };
+                    if (ImGui::ColorEdit3("Button Color", col)) {
+                        b.color.r = col[0]; b.color.g = col[1]; b.color.b = col[2];
+                    }
+
+                    ImGui::Separator();
+                    // Delete from inside properties
+                    if (ImGui::Button("Delete This Button")) {
+                        buttons.erase(buttons.begin() + selectedLocal);
+                        uiSelectedIndex = -1;
+                        uiSelectedType = SelectedType::None;
+                        clampSelectionAfterErase();
+                        // Early out to avoid using invalid reference after erase
+                        goto _UI_PROPS_END_;
+                    }
+                }
+            }
+            else if (uiSelectedType == SelectedType::TextBox) {
+                // ---- TEXTBOX PROPERTIES ----
+                if (selectedLocal >= 0 && selectedLocal < (int)textboxes.size()) {
+                    auto& t = textboxes[selectedLocal];
+
+                    // Text
+                    {
+                        char buf[256];
+                        std::snprintf(buf, sizeof(buf), "%s", t.text.c_str());
+                        if (ImGui::InputText("Text", buf, IM_ARRAYSIZE(buf))) {
+                            t.text = buf;
+                        }
+                    }
+
+                    // Transform
+                    ImGui::Separator();
+                    ImGui::Text("Transform");
+                    ImGui::SliderFloat("posX", &t.basePos.x, 0.f, 1920.f);
+                    ImGui::SliderFloat("posY", &t.basePos.y, 0.f, 1080.f);
+                    ImGui::SliderFloat("scale", &t.baseScale, 0.1f, 100.f);
+
+                    // Color
+                    ImGui::Separator();
+                    ImGui::Text("Color");
+                    float col[3] = { t.color.r, t.color.g, t.color.b };
+                    if (ImGui::ColorEdit3("Text Color", col)) {
+                        t.color.r = col[0]; t.color.g = col[1]; t.color.b = col[2];
+                    }
+
+                    ImGui::Separator();
+                    if (ImGui::Button("Delete This Text")) {
+                        textboxes.erase(textboxes.begin() + selectedLocal);
+                        uiSelectedIndex = -1;
+                        uiSelectedType = SelectedType::None;
+                        clampSelectionAfterErase();
+                        goto _UI_PROPS_END_;
+                    }
+                }
+            }
+            else if (uiSelectedType == SelectedType::Dialogue) {
+                // ---- DIALOGUE PROPERTIES ----
+                if (selectedLocal >= 0 && selectedLocal < (int)dialogues.size()) {
+                    auto& d = dialogues[selectedLocal];
+
+                    // Text box visual settings
+                    ImGui::SeparatorText("Dialogue Text Box");
+                    ImGui::InputFloat2("Base Pos (x,y)", &d.textBox.basePos.x);
+                    ImGui::SliderFloat("Base Scale", &d.textBox.baseScale, 0.2f, 3.0f, "%.2f");
+
+                    float col[3] = { d.textBox.color.r, d.textBox.color.g, d.textBox.color.b };
+                    if (ImGui::ColorEdit3("Text Color", col)) {
+                        d.textBox.color.r = col[0]; d.textBox.color.g = col[1]; d.textBox.color.b = col[2];
+                    }
+
+                    // Dialogue lines (if text component is present)
+                    ImGui::SeparatorText("Lines");
+                    TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+                    if (comp) {
+                        auto& lines = comp->GetLines();
+                        int idx = comp->GetCurrentLineIndex();
+                        int lineCount = (int)lines.size();
+
+                        ImGui::Text("Current Line: %d / %d", lineCount ? (idx + 1) : 0, lineCount);
+
+                        ImGui::BeginDisabled(lineCount == 0);
+                        if (ImGui::Button("< Prev")) 
+                        {
+                            GuiSystem::Get().SetDialogueLine(d, idx - 1, true);
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Next >")) 
+                        {
+                            GuiSystem::Get().SetDialogueLine(d, idx + 1, true);
+                        }
+                        ImGui::EndDisabled();
+
+                        // Edit current line text
+                        if (lineCount > 0) {
+                            std::string curr = lines[idx];
+                            char buf[512];
+                            std::snprintf(buf, sizeof(buf), "%s", curr.c_str());
+                            if (ImGui::InputTextMultiline("Line Text", buf, IM_ARRAYSIZE(buf), ImVec2(-1, 100))) 
+                            {
+                                auto newLines = lines;
+                                newLines[idx] = buf;
+                                comp->SetLines(newLines);
+                                GuiSystem::Get().SetDialogueLine(d, idx, true);
+                            }
+                        }
+                    }
+                    else {
+                        ImGui::TextDisabled("(No TextComponent attached)");
+                    }
+
+                    ImGui::Separator();
+                    if (ImGui::Button("Delete This Dialogue")) {
+                        dialogues.erase(dialogues.begin() + selectedLocal);
+                        uiSelectedIndex = -1;
+                        uiSelectedType = SelectedType::None;
+                        clampSelectionAfterErase();
+                        goto _UI_PROPS_END_;
+                    }
+                }
+            }
+        }
+
+    _UI_PROPS_END_:
+        ImGui::EndChild();
+
+        // Refresh UI element counts
+        numBtn = (int)buttons.size();
+        numTxt = (int)textboxes.size();
+        numDlg = (int)dialogues.size();
+        total = numBtn + numTxt + numDlg;
+
+        {
+            // Build a flat list of all UI elements for the dropdown
+            static int comboIndex = -1;
+            const int total = totalCount();
+
+            // We assemble labels in a temporary vector so their c_str() stays valid during Combo call.
+            static std::vector<std::string> labels;
+            labels.clear();
+            labels.reserve(total);
+
+            // Buttons
+            for (int i = 0; i < (int)buttons.size(); ++i)
+            {
+                std::string name = "Button: " + buttons[i].label;
+                labels.push_back(std::move(name));
+            }
+            // TextBoxes
+            for (int i = 0; i < (int)textboxes.size(); ++i)
+            {
+                std::string name = "Text: " + textboxes[i].text;
+                labels.push_back(std::move(name));
+            }
+            // Dialogues
+            for (int i = 0; i < (int)dialogues.size(); ++i)
+            {
+                std::string label = "Dialogue";
+                auto* comp = dialogues[i].textComp ? dialogues[i].textComp : dialogues[i].owned.get();
+                if (comp && !comp->GetLines().empty())
+                {
+                    const auto& ln = comp->GetLines()[comp->GetCurrentLineIndex()];
+                    label += ": " + (ln.size() > 12 ? (ln.substr(0, 12) + "...") : ln);
+                }
+                labels.push_back(std::move(label));
+            }
+
+            // Prepare char* array for ImGui::Combo
+            std::vector<const char*> items;
+            items.reserve(labels.size());
+            for (auto& s : labels) items.push_back(s.c_str());
+
+            // Keep comboIndex in sync with selectedIndex (global)
+            if (uiSelectedIndex >= 0 && uiSelectedIndex < (int)items.size())
+                comboIndex = uiSelectedIndex;
+            else if (total == 0)
+                comboIndex = -1;
+
+            if (ImGui::Combo("UI Elements", &comboIndex,
+                items.data(), (int)items.size()))
+            {
+                // When user picks from the list, update selection
+                if (comboIndex >= 0 && comboIndex < total)
+                {
+                    uiSelectedIndex = comboIndex;
+                    SelectedType type; int lIdx;
+                    globalToLocal(uiSelectedIndex, type, lIdx);
+                    uiSelectedType = type;
+                }
+                else
+                {
+                    uiSelectedType = SelectedType::None;
+                    uiSelectedIndex = -1;
+                }
+            }
+        }
+        // Refresh UI element counts
+        numBtn = (int)buttons.size();
+        numTxt = (int)textboxes.size();
+        numDlg = (int)dialogues.size();
+        total = numBtn + numTxt + numDlg;
+
         ImGui::NextColumn();
         //ShowAddRemoveComponents(); // right: add/remove comp
         // UI COMPONENTS?

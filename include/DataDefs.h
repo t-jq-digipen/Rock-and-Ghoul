@@ -96,6 +96,22 @@ struct SavedScene {
     };
     std::vector<SavedButton> guiButtons;
 
+    struct SavedTextBox {
+        std::string text;
+        Vec2 pos;
+        float scale;
+        Colour3 color;
+    };
+    std::vector<SavedTextBox> guiTextboxes;
+
+    struct SavedDialogue {
+        SavedTextBox textBox;
+        std::string jsonPath;
+        std::vector<std::string> lines;
+        int currentLineIndex = 0;
+    };
+    std::vector<SavedDialogue> guiDialogues;
+
     struct SavedCamera {
         Vec2 pos;
         float zoom;
