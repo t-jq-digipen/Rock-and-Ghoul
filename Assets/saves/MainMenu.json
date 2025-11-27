@@ -48,6 +48,10 @@
                     100.0
                 ]
             }
+        ],
+        "textboxes": [
+        ],
+        "dialogues": [
         ]
     },
     "sceneName": "MainMenu",

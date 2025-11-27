@@ -156,6 +156,10 @@ public:
     
     // Helper to get mouse position if ImGui editor is open
     void GetMouseImgui(Vec2& pos);
+
+    // Dialogue helpers
+    void SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartTyping);
+    void AdvanceDialogue(DialogueConfig& dlg);
 private:
 
     std::vector<ButtonConfig> buttons;

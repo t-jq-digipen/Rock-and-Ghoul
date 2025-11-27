@@ -843,7 +843,7 @@ void ImGuiSystem::Update(float dt)
         static int addTypeIdx = 0;
         const char* addTypeNames[] = { "Button", "TextBox", "Dialogue" };
         
-        if (ImGui::Button("Add UI Element"))
+        if (ImGui::Button("Add UI"))
         {
             // ADD UI ELEMENT
             //Entity newEntity = m_registry.Create_Entity();
@@ -853,11 +853,11 @@ void ImGuiSystem::Update(float dt)
             //m_registry.Get_EntityNameMap()[newEntity] = "New Entity " + std::to_string(newEntity);
             //UndoSystem::Get().RecordAdd(newEntity);
             openAddPopup = true;
-            ImGui::OpenPopup("Add UI Element Type");
+            ImGui::OpenPopup("Add UI Type");
         }
 
         // Additional popup to choose which UI element type to add
-        if (ImGui::BeginPopupModal("Add UI Element Type", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        if (ImGui::BeginPopupModal("Add UI Type", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("Choose UI element type to add:");
             ImGui::Separator();
@@ -926,7 +926,7 @@ void ImGuiSystem::Update(float dt)
         }
 
         ImGui::SameLine();
-        if (ImGui::Button("Clone UI Element") && uiSelectedIndex >= 0)
+        if (ImGui::Button("Clone UI") && uiSelectedIndex >= 0)
         {
             // CLONE UI ELEMLENT
             //Registry& reg = Registry::Get();
@@ -964,24 +964,41 @@ void ImGuiSystem::Update(float dt)
             else if (type == SelectedType::TextBox && lIdx >= 0 && lIdx < (int)textboxes.size())
             {
                 TextBoxConfig src = textboxes[lIdx];
+                src.text += " (Copy)";
                 textboxes.push_back(src);
                 uiSelectedType = SelectedType::TextBox;
                 uiSelectedIndex = localToGlobal(SelectedType::TextBox, (int)textboxes.size() - 1);
             }
             else if (type == SelectedType::Dialogue && lIdx >= 0 && lIdx < (int)dialogues.size())
             {
-                // Duplicate dialogue entry:
-                // We copy the wrapper; if you require a deep copy of owned textComp,
-                // make sure your Dialogue struct supports it. Here we do a simple copy.
-                auto src = dialogues[lIdx];
-                dialogues.push_back(src);
+                const auto& src = dialogues[lIdx];
+                DialogueConfig dst;
+
+                dst.textBox = src.textBox;
+                dst.isVisible = src.isVisible;
+                dst.jsonPath = src.jsonPath;
+
+                const TextSystem::TextComponent* sc = src.textComp ? src.textComp : src.owned.get();
+                if (sc)
+                {
+                    dst.owned = std::make_shared<TextSystem::TextComponent>();
+                    dst.owned->SetLines(sc->GetLines());
+                    dst.owned->SetCurrentLineIndex(sc->GetCurrentLineIndex());
+                    dst.textComp = dst.owned.get();
+                }
+                else
+                {
+                    dst.textComp = nullptr;
+                }
+
+                dialogues.push_back(std::move(dst));
                 uiSelectedType = SelectedType::Dialogue;
                 uiSelectedIndex = localToGlobal(SelectedType::Dialogue, (int)dialogues.size() - 1);
             }
         }
 
         ImGui::SameLine();
-        if (ImGui::Button("Delete UI Element") && uiSelectedIndex >= 0)
+        if (ImGui::Button("Delete UI") && uiSelectedIndex >= 0)
         {
             // DELETE UI ELEMENT
             /*SavedEntity snapshot = m_registry.Save_Entity(selectedEntity);
@@ -1017,7 +1034,6 @@ void ImGuiSystem::Update(float dt)
         }
 
         ImGui::Separator();
-        ImGui::Columns(2, "EntityColumns", true);
         //ShowHierarchyWindow();     // left: list
 
         // Refresh UI element counts
@@ -1059,6 +1075,11 @@ void ImGuiSystem::Update(float dt)
             if (ImGui::Selectable(label.c_str(), selected)) {
                 uiSelectedIndex = g;
                 uiSelectedType = type;
+                if (type == SelectedType::Dialogue)
+                {
+                    auto& d = dialogues[lIdx];
+                    GuiSystem::Get().SetDialogueLine(d, (d.textComp ? d.textComp : d.owned.get())->GetCurrentLineIndex(), true);
+                }
             }
         }
         ImGui::EndChild();
@@ -1107,7 +1128,6 @@ void ImGuiSystem::Update(float dt)
 
                     // Action
                     {
-                        // Keep order consistent with your enum ButtonAction
                         const char* actionNames[] = {
                             "None",
                             "Load Level 1",
@@ -1183,8 +1203,9 @@ void ImGuiSystem::Update(float dt)
                     // Transform
                     ImGui::Separator();
                     ImGui::Text("Transform");
-                    ImGui::InputFloat2("Base Pos (x,y)", &t.basePos.x);
-                    ImGui::SliderFloat("Base Scale", &t.baseScale, 0.2f, 3.0f, "%.2f");
+                    ImGui::SliderFloat("posX", &t.basePos.x, 0.f, 1920.f);
+                    ImGui::SliderFloat("posY", &t.basePos.y, 0.f, 1080.f);
+                    ImGui::SliderFloat("scale", &t.baseScale, 0.1f, 100.f);
 
                     // Color
                     ImGui::Separator();
@@ -1228,15 +1249,16 @@ void ImGuiSystem::Update(float dt)
                         int lineCount = (int)lines.size();
 
                         ImGui::Text("Current Line: %d / %d", lineCount ? (idx + 1) : 0, lineCount);
+
                         ImGui::BeginDisabled(lineCount == 0);
-                        if (ImGui::Button("< Prev")) {
-                            if (comp->CheckIfTyping()) comp->StopTyping();
-                            if (idx > 0) { comp->SetCurrentLineIndex(idx - 1); comp->StartTyping(); }
+                        if (ImGui::Button("< Prev")) 
+                        {
+                            GuiSystem::Get().SetDialogueLine(d, idx - 1, true);
                         }
                         ImGui::SameLine();
-                        if (ImGui::Button("Next >")) {
-                            if (comp->CheckIfTyping()) comp->StopTyping();
-                            if (idx + 1 < lineCount) { comp->SetCurrentLineIndex(idx + 1); comp->StartTyping(); }
+                        if (ImGui::Button("Next >")) 
+                        {
+                            GuiSystem::Get().SetDialogueLine(d, idx + 1, true);
                         }
                         ImGui::EndDisabled();
 
@@ -1245,8 +1267,12 @@ void ImGuiSystem::Update(float dt)
                             std::string curr = lines[idx];
                             char buf[512];
                             std::snprintf(buf, sizeof(buf), "%s", curr.c_str());
-                            if (ImGui::InputTextMultiline("Line Text", buf, IM_ARRAYSIZE(buf), ImVec2(-1, 100))) {
-                                comp->SetCurrentLineIndex(idx);
+                            if (ImGui::InputTextMultiline("Line Text", buf, IM_ARRAYSIZE(buf), ImVec2(-1, 100))) 
+                            {
+                                auto newLines = lines;
+                                newLines[idx] = buf;
+                                comp->SetLines(newLines);
+                                GuiSystem::Get().SetDialogueLine(d, idx, true);
                             }
                         }
                     }

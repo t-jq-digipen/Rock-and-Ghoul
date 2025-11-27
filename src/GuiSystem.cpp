@@ -6,17 +6,7 @@
  * @brief
  *
  * Implements the GuiSystem, which provides a in-game editor 
- * for UI elements (separate from ImGuiSystem). The system
- * toggles with F8 and displays a single "GUI Editor" window 
- * containing multiple features:
- *
- * Features:
- * - Toggles on/off with a key press (F8).
- * - Renders a single "GUI Editor" window onto the game screen
- * with selectable panels for each active UI element.
- * - Scales with the game screen, including when ImGui Editor
- * is active.
- * - Configurations for each UI element type.
+ * for UI elements (inside the ImGui editor).
  *
  * Copyright � 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -92,49 +82,24 @@ void GuiSystem::Update(float dt) {
     //    editMode = !editMode;
 
     // --- Press SPACE to advance dialogues (while not editing the GUI) ---
-    static bool spaceLatch = false;
-    const bool spaceHeld = Input::IsKeyHeld(GLFW_KEY_SPACE);
-    const bool spaceEdge = !spaceLatch && spaceHeld; // rising edge (manual)
+    static bool spaceHandled = false;
+    bool spacePressed = Input::IsKeyPressed(GLFW_KEY_SPACE);
+    bool spaceHeld = Input::IsKeyHeld(GLFW_KEY_SPACE);
 
-    if (!editMode && spaceEdge) {
-        bool revealedAny = false;
-        std::vector<TextSystem::TextComponent*> processed;
-
-        for (auto& d : dialogues) {
-            auto* comp = d.textComp ? d.textComp : d.owned.get();
-            if (!comp) continue;
-            if (std::find(processed.begin(), processed.end(), comp) != processed.end()) continue;
-            processed.push_back(comp);
-
-            if (comp->CheckIfTyping()) {
-                comp->StopTyping();   // reveal full current line
-                revealedAny = true;
-            }
+    if (!editMode && spacePressed && !spaceHandled) 
+    {
+        for (auto& d : dialogues)
+        {
+            if (!d.isVisible) continue;
+            AdvanceDialogue(d);
+            break;
         }
-
-        if (!revealedAny) {
-            processed.clear();
-            for (auto& d : dialogues) {
-                auto* comp = d.textComp ? d.textComp : d.owned.get();
-                if (!comp) continue;
-                if (std::find(processed.begin(), processed.end(), comp) != processed.end()) continue;
-                processed.push_back(comp);
-
-                const auto& lines = comp->GetLines();
-                const int idx = comp->GetCurrentLineIndex();
-                if (idx + 1 < static_cast<int>(lines.size())) {
-                    comp->SetCurrentLineIndex(idx + 1);
-                    comp->StartTyping();   // reset typewriter for the new line
-                }
-                else {
-                    comp->SetIsTyping(false); // stay fully shown at last line
-                }
-            }
-        }
+        spaceHandled = true;
     }
-
-    // update latch
-    spaceLatch = spaceHeld;
+    if (!spaceHeld)
+    {
+        spaceHandled = false;
+    }
 
     Vec2 mouse = Input::GetMousePosition();
     GuiSystem::GetMouseImgui(mouse);
@@ -236,8 +201,11 @@ void GuiSystem::Update(float dt) {
         render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, tb.fontKey);
     }
 
+    SceneManager& sm = SceneManager::Get();
     for (auto& d : dialogues)
     {
+        if (!d.isVisible) continue;
+
         TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
         if (!comp) continue;
 
@@ -246,11 +214,34 @@ void GuiSystem::Update(float dt) {
         d.textBox.pos.y = d.textBox.basePos.y * scaleY;
         d.textBox.scale = d.textBox.baseScale * uiScale;
 
-        // advance typewriter
-        TextSystem::UpdateTyping(*comp, dt, 1.f);
+        std::string vis;
 
-        // line & visible substring
-        const std::string vis = TextSystem::GetVisibleText(*comp);
+        if (sm.inEditMode)
+        {
+            // In edit mode: Show full current line (no typing)
+            if (comp->CheckIfTyping()) comp->StopTyping();
+
+            const auto& lines = comp->GetLines();
+            if (lines.empty()) continue;
+
+            int idx = comp->GetCurrentLineIndex();
+            if (idx < 0) idx = 0;
+            if (idx >= (int)lines.size()) idx = (int)lines.size() - 1;
+            vis = lines[idx];
+        }
+        else
+        {
+            // In play mode: Advance with the typewriter
+            TextSystem::UpdateTyping(*comp, dt, 1.f);
+
+            const auto& lines = comp->GetLines();
+            if (lines.empty()) continue;
+
+            int idx = comp->GetCurrentLineIndex();
+            if (idx < 0) idx = 0;
+            if (idx >= (int)lines.size()) idx = (int)lines.size() - 1;
+            vis = comp->CheckIfTyping() ? TextSystem::GetVisibleText(*comp) : lines[idx];
+        }
 
         // text color
         Colour3 drawColor = d.textBox.color;
@@ -1161,5 +1152,53 @@ void GuiSystem::GetMouseImgui(Vec2& mouse)
             mouse.x *= mouseScaleX;
             mouse.y *= mouseScaleY;
         }
+    }
+}
+
+void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartTyping)
+{
+    TextSystem::TextComponent* comp = dlg.textComp ? dlg.textComp : dlg.owned.get();
+    if (!comp) return;
+
+    const auto& lines = comp->GetLines();
+    if (lines.empty()) return;
+
+    if (newIndex < 0) newIndex = 0;
+    if (newIndex >= (int)lines.size()) newIndex = (int)lines.size() - 1;
+    if (comp->CheckIfTyping()) comp->StopTyping();
+    comp->SetCurrentLineIndex(newIndex);
+    if (restartTyping) comp->StartTyping();
+}
+
+void GuiSystem::AdvanceDialogue(DialogueConfig& dlg)
+{
+    TextSystem::TextComponent* comp = dlg.textComp ? dlg.textComp : dlg.owned.get();
+    if (!comp) return;
+
+    // If we’re in the editor, ignore advance requests entirely.
+    if (SceneManager::Get().inEditMode) return;
+
+    const auto& lines = comp->GetLines();
+    if (lines.empty()) return;
+
+    // If currently typing, finish the current line first.
+    if (comp->CheckIfTyping()) 
+    {
+        comp->StopTyping();
+        return;
+    }
+
+    // Advance to next line
+    int idx = comp->GetCurrentLineIndex();
+    ++idx;
+
+    if (idx < (int)lines.size()) 
+    {
+        comp->SetCurrentLineIndex(idx);
+        comp->StartTyping();
+    }
+    else 
+    {
+        comp->StopTyping();
     }
 }
