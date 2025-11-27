@@ -129,6 +129,7 @@
         "buttons": []
     },
     "sceneName": "level1",
+    "bgmAssetName": "level_1",
     "sceneType": 1,
     "worldMax": [
         2240.0,

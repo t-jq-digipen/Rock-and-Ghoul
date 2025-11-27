@@ -83,6 +83,7 @@ struct SavedScene {
     std::vector<SavedEntity> entities; 
     std::vector<std::string> backgroundTextures;
     std::string fontConfigPath;
+    std::string bgmAssetName;  // name of BGM asset from AudioCache i.e. "main_menu", "level_1"
 
     struct SavedButton {
         std::string label;
@@ -91,6 +92,7 @@ struct SavedScene {
         Colour3 color;
         std::string shape;
         std::string action;
+        int soundType = 0; // default to PLAY(0)
     };
     std::vector<SavedButton> guiButtons;
 

@@ -8,6 +8,7 @@
 #include "LogicSystem.h"
 #include <filesystem>
 #include "ImguiSystem.h"
+#include "Audio.h"
 
 SceneManager& SceneManager::Get()
 {
@@ -93,6 +94,9 @@ void SceneManager::EnterEditMode()
     isPlaying = false;
     isPaused = true;
     inEditMode = true;
+
+    // STOP ALL AUDIO WHEN ENTERING EDIT MODE
+    AudioSystem::StopAll();
 
     Camera& cam = Camera::GetInstance();
     cam.SetMode(Camera::Mode::EDITOR);

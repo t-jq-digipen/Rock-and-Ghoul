@@ -107,7 +107,7 @@ void CoreEngine::Initialize()
 
     AddUpdateSystem(&LogicSystem::Get());
     AddUpdateSystem(&MonoSystem::Get());
-    AddUpdateSystem(&AudioManager::Get());
+    // AddUpdateSystem(&AudioManager::Get());
     AddUpdateSystem(new MovementSystem());
     AddUpdateSystem(new PlayerSystem());
     AddUpdateSystem(new EnemySystem());
@@ -117,6 +117,7 @@ void CoreEngine::Initialize()
     AddRenderSystem(new RenderSystem());
     AddRenderSystem(&GuiSystem::Get());
     AddRenderSystem(new ImGuiSystem());
+    AddRenderSystem(&AudioManager::Get()); // audio updates in both editor and play mode
     
     std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
         << " at " << (void*)&GLApp::ptr_window << std::endl;
@@ -315,8 +316,7 @@ void CoreEngine::Shutdown()
 
         if (s != &GuiSystem::Get() &&
             s != &LogicSystem::Get() &&
-            s != &MonoSystem::Get() &&
-            s != &AudioManager::Get())
+            s != &MonoSystem::Get())
         {
             delete s;
         }
@@ -328,7 +328,8 @@ void CoreEngine::Shutdown()
         ISystem* s = renderSystems[i];
         s->Shutdown();
 
-        if (s != &GuiSystem::Get())   // only delete heap ones
+        if (s != &GuiSystem::Get() &&
+            s != &AudioManager::Get()) // only delete heap ones
         {
             delete s;
         }
