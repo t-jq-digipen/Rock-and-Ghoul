@@ -73,6 +73,9 @@ static std::string pendingPrefabPath; //prefab mouse thing
 static std::string pendingImportPath; //holds new image replace
 static std::string pendingDestPath; //store dest path of existing img
 
+static bool g_showAudioErrorPopup = false;
+static std::string g_audioErrorMessage;
+
 // runtime thumbnail cache
 static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
@@ -774,6 +777,14 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         g_pendingAudioSourcePath = path;
         g_pendingAudioCategory = 0;         // default to Music
         g_showAudioImportPopup = true;      // popup handled in Assets window
+        return;
+    }
+
+    if (ext == ".mp3" || ext == ".ogg" || ext == ".aac" || ext == ".flac")
+    {
+        g_audioErrorMessage = "Unsupported audio format: " + filename +
+            "\n\nOnly .wav files are allowed for import.";
+        g_showAudioErrorPopup = true;
         return;
     }
 
@@ -2706,6 +2717,25 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
 
         ImGui::EndTabBar();
+        if (g_showAudioErrorPopup)
+        {
+            ImGui::OpenPopup("Invalid Audio File");
+            g_showAudioErrorPopup = false;
+        }
+
+        if (ImGui::BeginPopupModal("Invalid Audio File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::TextWrapped("%s", g_audioErrorMessage.c_str());
+            ImGui::Separator();
+
+            if (ImGui::Button("OK", ImVec2(120, 0)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
     }
 
     // ------------------------------
