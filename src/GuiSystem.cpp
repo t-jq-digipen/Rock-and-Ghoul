@@ -18,6 +18,7 @@
 #include "glapp.h"
 #include "ImGuiSystem.h"
 #include "SceneManager.h"
+#include <FilePath.h>
 AudioManager* GuiSystem::audio = nullptr;
 
 void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
@@ -91,8 +92,23 @@ void GuiSystem::Update(float dt) {
         for (auto& d : dialogues)
         {
             if (!d.isVisible) continue;
-            AdvanceDialogue(d);
-            break;
+            TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+            if (!comp) continue;
+
+            if (comp->CheckIfTyping())
+            {
+                comp->StopTyping();
+            }
+            else
+            {
+                const auto& lines = comp->GetLines();
+                int idx = comp->GetCurrentLineIndex();
+                if (idx + 1 < static_cast<int>(lines.size()))
+                {
+                    comp->SetCurrentLineIndex(idx + 1);
+                    comp->StartTyping();
+                }
+            }
         }
         spaceHandled = true;
     }
@@ -205,7 +221,6 @@ void GuiSystem::Update(float dt) {
     for (auto& d : dialogues)
     {
         if (!d.isVisible) continue;
-
         TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
         if (!comp) continue;
 
@@ -215,6 +230,7 @@ void GuiSystem::Update(float dt) {
         d.textBox.scale = d.textBox.baseScale * uiScale;
 
         std::string vis;
+        const std::string& fullLine = comp->GetCurrentLine(comp->GetCurrentLineIndex());
 
         if (sm.inEditMode)
         {
@@ -243,21 +259,161 @@ void GuiSystem::Update(float dt) {
             vis = comp->CheckIfTyping() ? TextSystem::GetVisibleText(*comp) : lines[idx];
         }
 
-        // text color
         Colour3 drawColor = d.textBox.color;
+        Vec2 textSize = render.CalculateTextSize(fullLine, d.textBox.scale, "Marker");
+        float drawX = d.textBox.pos.x;
+        float drawY = d.textBox.pos.y;
+        if (d.textBox.centered) 
+        { 
+            drawX -= textSize.x * 0.5f; 
+            drawY -= textSize.y * 0.5f; 
+        }
 
-        Vec2 textSize = render.CalculateTextSize(vis, d.textBox.scale, "Marker");
-        float drawX = d.textBox.pos.x, drawY = d.textBox.pos.y;
-        if (d.textBox.centered) { drawX -= textSize.x * 0.5f; drawY -= textSize.y * 0.5f; }
+        // Get speaker name to display above line
+        auto getSpeakerName = [&](const json& doc, int sceneIdx, int lineIdx) -> std::string
+            {
+                if (!doc.contains("scenes") || !doc["scenes"].is_array()) return {};
+                if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return {};
 
-        // Optional background panel (simple) – maybe next time
-        // r.DrawRoundedRect({d.textBox.pos.x, d.textBox.pos.y}, textSize.x + 24, textSize.y + 16, 8.f, {0.f,0.f,0.f});
+                const auto& sc = doc["scenes"][sceneIdx];
+                if (!sc.contains("script") || !sc["script"].is_array()) return {};
 
-        render.DrawText(vis, drawX, drawY, d.textBox.scale, drawColor, "Marker");
+                const auto& script = sc["script"];
+                if (lineIdx < 0 || lineIdx >= (int)script.size()) return {};
+
+                int speakerID = -1;
+                if (script[lineIdx].contains("speakerID") && script[lineIdx]["speakerID"].is_number_integer())
+                    speakerID = script[lineIdx]["speakerID"].get<int>();
+
+                if (speakerID < 0) return {};
+
+                if (!sc.contains("speakers") || !sc["speakers"].is_array()) return {};
+                const auto& speakers = sc["speakers"];
+
+                if (speakerID >= 0 && speakerID < (int)speakers.size() && speakers[speakerID].is_string())
+                    return speakers[speakerID].get<std::string>();
+
+                return {};
+            };
+
+
+        static json sDlgDoc;
+        static bool sDlgLoaded = false;
+        if (!sDlgLoaded)
+        {
+            try 
+            {
+                std::ifstream ifs(FilePath::DIALOGUE);
+                if (ifs) { ifs >> sDlgDoc; sDlgLoaded = true; }
+            }
+            catch (...) { /* leave sDlgLoaded = false */ }
+        }
+
+        std::string sceneIdStr = d.sceneID;
+        int sceneIdxInt;
+        try { sceneIdxInt = std::stoi(sceneIdStr); }
+        catch (...) { sceneIdxInt = 0; }
+
+        int lineIdx = comp->GetCurrentLineIndex();
+
+        std::string speakerName;
+        if (sDlgLoaded) 
+        {
+            if (sDlgDoc.contains("scenes") && sDlgDoc["scenes"].is_array()) 
+            {
+                int maxScene = (int)sDlgDoc["scenes"].size() - 1;
+                if (maxScene >= 0) 
+                {
+                    sceneIdxInt = std::max(0, std::min(sceneIdxInt, maxScene));
+                    speakerName = getSpeakerName(sDlgDoc, sceneIdxInt, lineIdx);
+                }
+            }
+        }
+
+        // Draw speaker name
+        const float nameScale = d.textBox.scale * 0.9f;
+        const float lineH = render.CalculateTextSize("A", d.textBox.scale, "Marker").y;
+        render.DrawText(speakerName, drawX, drawY + (lineH * 1.5f), nameScale, drawColor, "Marker");
+
+        // Word wrapping
+        const float maxWidth = (defaultWidth / 2) * uiScale;
+        std::vector<std::string> wrappedLines;
+        wrappedLines.reserve(8);
+
+        std::string current;
+        size_t i = 0;
+        while (i < vis.size())
+        {
+            while (i < vis.size() && vis[i] == ' ')
+                ++i;
+
+            size_t start = i;
+            while (i < vis.size() && vis[i] != ' ')
+                ++i;
+
+            std::string word = vis.substr(start, i - start);
+            if (word.empty())
+            {
+                if (i < vis.size() && vis[i] == ' ') ++i;
+                continue;
+            }
+
+            std::string trial = current.empty() ? word : (current + " " + word);
+            if (render.CalculateTextSize(trial, d.textBox.scale, "Marker").x <= maxWidth)
+            {
+                current = std::move(trial);
+            }
+            else
+            {
+                if (!current.empty())
+                {
+                    wrappedLines.push_back(current);
+                    current.clear();
+                }
+
+                if (render.CalculateTextSize(word, d.textBox.scale, "Marker").x > maxWidth)
+                {
+                    std::string chunk;
+                    for (char c : word)
+                    {
+                        std::string attempt = chunk;
+                        attempt.push_back(c);
+                        if (render.CalculateTextSize(attempt, d.textBox.scale, "Marker").x <= maxWidth)
+                        {
+                            chunk.push_back(c);
+                        }
+                        else
+                        {
+                            if (!chunk.empty()) wrappedLines.push_back(chunk);
+                            chunk.clear();
+                            chunk.push_back(c);
+                        }
+                    }
+                    current = chunk;
+                }
+                else
+                {
+                    current = word;
+                }
+            }
+            if (i < vis.size() && vis[i] == ' ') ++i;
+        }
+
+        // push last line
+        if (!current.empty()) wrappedLines.push_back(current);
+
+        // render wrapped lines starting at drawY (body text)
+        float yCursor = drawY;
+        for (const auto& ln : wrappedLines)
+        {
+            render.DrawText(ln, drawX, yCursor, d.textBox.scale, drawColor, "Marker");
+            yCursor -= lineH;
+        }
     }
 
     // Draw state window if active
-    if (stateWindowActive) {
+    if (stateWindowActive) 
+    {
         DrawStateWindow(render);
     }
 
@@ -893,7 +1049,7 @@ void GuiSystem::Update(float dt) {
             newDialogue.pos = newDialogue.basePos;
             newDialogue.scale = newDialogue.baseScale;
             newDialogue.color = { 0,0,0 };
-            newDialogue.centered = true;
+            newDialogue.centered = false;
 
             // default path; user can later edit in UI to reload a different JSON
             const std::string path = "../Assets/Dialogue.json";
@@ -1168,37 +1324,4 @@ void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartT
     if (comp->CheckIfTyping()) comp->StopTyping();
     comp->SetCurrentLineIndex(newIndex);
     if (restartTyping) comp->StartTyping();
-}
-
-void GuiSystem::AdvanceDialogue(DialogueConfig& dlg)
-{
-    TextSystem::TextComponent* comp = dlg.textComp ? dlg.textComp : dlg.owned.get();
-    if (!comp) return;
-
-    // If we’re in the editor, ignore advance requests entirely.
-    if (SceneManager::Get().inEditMode) return;
-
-    const auto& lines = comp->GetLines();
-    if (lines.empty()) return;
-
-    // If currently typing, finish the current line first.
-    if (comp->CheckIfTyping()) 
-    {
-        comp->StopTyping();
-        return;
-    }
-
-    // Advance to next line
-    int idx = comp->GetCurrentLineIndex();
-    ++idx;
-
-    if (idx < (int)lines.size()) 
-    {
-        comp->SetCurrentLineIndex(idx);
-        comp->StartTyping();
-    }
-    else 
-    {
-        comp->StopTyping();
-    }
 }

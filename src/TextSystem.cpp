@@ -51,7 +51,6 @@ namespace TextSystem
 	void UpdateTyping(TextComponent& txt, float dt, float speedMul)
 	{
 		if (!txt.isTyping) return;
-		txt.timeElapsed = 0.f;
 		const std::string& fullLine = txt.GetCurrentLine(txt.GetCurrentLineIndex());
 		if (fullLine.empty()) { txt.isTyping = false; txt.visibleChars = 0; return; }
 

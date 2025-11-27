@@ -160,7 +160,6 @@ public:
 
     // Dialogue helpers
     void SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartTyping);
-    void AdvanceDialogue(DialogueConfig& dlg);
 private:
 
     std::vector<ButtonConfig> buttons;

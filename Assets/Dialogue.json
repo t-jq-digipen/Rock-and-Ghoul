@@ -48,11 +48,181 @@
             "fontPath": "../Assets/fonts/Marker.ttf",
             "fontSize": 1.0,
             "color": [
-                1.0,
-                1.0,
-                1.0
+                0.0,
+                0.0,
+                0.0
             ],
             "sceneID": "0"
+        },
+        {
+          "script": [
+                {
+                    "speakerID": 0,
+                    "line": "Phew! That took a while to get through."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Ghoul said she went to the toilet, so it should be this way."
+                },
+                {
+                    "speakerID": 2,
+                    "line": "Grooooooowl... Hissssss..."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "WOW!"
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Wait a minute, something seems off about these spirits?"
+                },
+                {
+                    "speakerID": 2,
+                    "line": "Ziiing..."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "They have elemental barriers now?!?!"
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Ugh great, just as I thought everything was going a little too easy."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Alright spirit, game on!"
+                }
+          ],
+            "textSpeed": 30.0,
+            "speakers": [
+                "Rock",
+                "Ghoul",
+                "Spirit"
+            ],
+            "fontPath": "../Assets/fonts/Marker.ttf",
+            "fontSize": 1.0,
+            "color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "sceneID": "1"
+        },
+        {
+          "script": [
+                {
+                    "speakerID": 1,
+                    "line": "Hey, Rock-Star."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Uh... What-"
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Yeah, I realised I prefer flying solo. And I want that record deal."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "So, surrender or meet your doom. Or whatever they say."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "What's going on, Ghoul? I thought we were in this together?"
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Look, if you wanna hear it so bad: You're the best guitarist I've ever had."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "But I'm so sick of being your little bassist."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "I've got something to prove and YOU are the last person I want in my way."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "W-wait, hold o-."
+                }
+          ],
+            "textSpeed": 30.0,
+            "speakers": [
+                "Rock",
+                "Ghoul",
+                "Spirit"
+            ],
+            "fontPath": "../Assets/fonts/Marker.ttf",
+            "fontSize": 1.0,
+            "color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "sceneID": "2"
+        },
+        {
+          "script": [
+                {
+                    "speakerID": 0,
+                    "line": "Ghoul... It's over. We don't need to fight anymore. Just... come back. We made music that mattered, remember?"
+                },
+                {
+                    "speakerID": 1,
+                    "line": "You really think a few chords fix everything? You took the spotlight, Rock. You always did."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "I never wanted to take it from you. I just wanted us to shine together."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "[Ghoul hesitates, her spectral form glitching softer, the anger draining into something sad.]"
+                },
+                {
+                    "speakerID": 1,
+                    "line": "...You always were terrible at rhythm. (weak laugh) But maybe... maybe we did sound kinda good."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "The best there ever was."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Guess this is my final solo, huh?"
+                },
+                {
+                    "speakerID": 0,
+                    "line": "No solos. Just... a long fade-out."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "[Ghoul smiles faintly before disappearing in a shimmer of light. The lights dim, leaving Rock alone in the spotlight.]"
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Guess it's just me now... But the show goes on."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "[She strums a single melancholic note.]"
+                }                
+          ],
+            "textSpeed": 30.0,
+            "speakers": [
+                "Rock",
+                "Ghoul",
+                "Spirit"
+            ],
+            "fontPath": "../Assets/fonts/Marker.ttf",
+            "fontSize": 1.0,
+            "color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "sceneID": "3"
         }
     ]
 }

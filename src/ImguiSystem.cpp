@@ -912,21 +912,27 @@ void ImGuiSystem::Update(float dt)
                 }
                 else // Dialogue
                 {
-                    TextBoxConfig newDialogue;
-                    newDialogue.text = "";
-                    newDialogue.basePos = { 510, 300 };
-                    newDialogue.baseScale = 0.9f;
-                    newDialogue.pos = newDialogue.basePos;
-                    newDialogue.scale = newDialogue.baseScale;
-                    newDialogue.color = { 0,0,0 };
-                    newDialogue.centered = true;
+                    DialogueConfig cfg;
+                    cfg.textBox.text = "";
+                    cfg.textBox.basePos = { 510, 300 };
+                    cfg.textBox.baseScale = 0.9f;
+                    cfg.textBox.pos = cfg.textBox.basePos;
+                    cfg.textBox.scale = cfg.textBox.baseScale;
+                    cfg.textBox.color = { 0, 0, 0 };
+                    cfg.textBox.centered = false;
+                    cfg.isVisible = true;
 
-                    int idx = gui.AddDialogueFromJson(FilePath::DIALOGUE, newDialogue, "0");
-                    if (idx >= 0)
+                    cfg.jsonPath = FilePath::DIALOGUE;
+
+                    cfg.owned = std::make_shared<TextSystem::TextComponent>();
+                    if (cfg.owned) 
                     {
-                        uiSelectedType = SelectedType::Dialogue;
-                        uiSelectedIndex = localToGlobal(SelectedType::Dialogue, idx);
+                        GuiSystem::Get().AddDialogueFromJson(cfg.jsonPath, cfg.textBox, "0");
+                        cfg.owned->StartTyping();
                     }
+
+                    uiSelectedType = SelectedType::Dialogue;
+                    uiSelectedIndex = localToGlobal(SelectedType::Dialogue, (int)dialogues.size() - 1);
                 }
                 ImGui::CloseCurrentPopup();
                 openAddPopup = false;
@@ -1068,26 +1074,31 @@ void ImGuiSystem::Update(float dt)
 
             // Build label per type
             std::string label;
-            if (type == SelectedType::Button) {
+            if (type == SelectedType::Button) 
+            {
                 const auto& b = buttons[lIdx];
                 label = "Button: " + b.label;
             }
-            else if (type == SelectedType::TextBox) {
+            else if (type == SelectedType::TextBox) 
+            {
                 const auto& tb = textboxes[lIdx];
                 label = "Text: " + tb.text;
             }
-            else { // Dialogue
+            else  // Dialogue
+            {
                 const auto& d = dialogues[lIdx];
                 TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
                 label = "Dialogue";
-                if (comp && !comp->GetLines().empty()) {
+                if (comp && !comp->GetLines().empty())
+                {
                     const std::string& ln = comp->GetLines()[comp->GetCurrentLineIndex()];
                     label += ": " + (ln.size() > 24 ? (ln.substr(0, 24) + "...") : ln);
                 }
             }
 
             bool selected = (uiSelectedIndex == g);
-            if (ImGui::Selectable(label.c_str(), selected)) {
+            if (ImGui::Selectable(label.c_str(), selected)) 
+            {
                 uiSelectedIndex = g;
                 uiSelectedType = type;
                 if (type == SelectedType::Dialogue)
@@ -1100,7 +1111,8 @@ void ImGuiSystem::Update(float dt)
         ImGui::EndChild();
 
         int selectedLocal = -1;
-        if (uiSelectedIndex >= 0) {
+        if (uiSelectedIndex >= 0) 
+        {
             globalToLocal(uiSelectedIndex, uiSelectedType, selectedLocal);
         }
 
@@ -1108,11 +1120,14 @@ void ImGuiSystem::Update(float dt)
         ImGui::SeparatorText("UI Properties");
         ImGui::BeginChild("Properties", ImVec2(0, 0), true);
 
-        if (uiSelectedIndex < 0 || uiSelectedType == SelectedType::None) {
+        if (uiSelectedIndex < 0 || uiSelectedType == SelectedType::None) 
+        {
             ImGui::TextDisabled("No UI element selected.");
         }
-        else {
-            auto clampSelectionAfterErase = [&]() {
+        else 
+        {
+            auto clampSelectionAfterErase = [&]() 
+                {
                 int nB = (int)buttons.size();
                 int nT = (int)textboxes.size();
                 int nD = (int)dialogues.size();
@@ -1127,23 +1142,27 @@ void ImGuiSystem::Update(float dt)
                 selectedLocal = li2;
                 };
 
-            if (uiSelectedType == SelectedType::Button) {
+            if (uiSelectedType == SelectedType::Button) 
+            {
                 // ---- BUTTON PROPERTIES ----
-                if (selectedLocal >= 0 && selectedLocal < (int)buttons.size()) {
+                if (selectedLocal >= 0 && selectedLocal < (int)buttons.size()) 
+                {
                     auto& b = buttons[selectedLocal];
 
                     // Label
                     {
                         char buf[128];
                         std::snprintf(buf, sizeof(buf), "%s", b.label.c_str());
-                        if (ImGui::InputText("Label", buf, IM_ARRAYSIZE(buf))) {
+                        if (ImGui::InputText("Label", buf, IM_ARRAYSIZE(buf))) 
+                        {
                             b.label = buf;
                         }
                     }
 
                     // Action
                     {
-                        const char* actionNames[] = {
+                        const char* actionNames[] = 
+                        {
                             "None",
                             "Load Level 1",
                             "Load Level 2",
@@ -1156,7 +1175,8 @@ void ImGuiSystem::Update(float dt)
                         int actionCount = (int)(sizeof(actionNames) / sizeof(actionNames[0]));
                         int curr = (int)b.action;
                         curr = (curr >= 0 && curr < actionCount) ? curr : 0;
-                        if (ImGui::Combo("Action", &curr, actionNames, actionCount)) {
+                        if (ImGui::Combo("Action", &curr, actionNames, actionCount)) 
+                        {
                             b.action = (ButtonAction)curr;
                             GuiSystem::Get().BindButtonAction(b);
                         }
@@ -1167,7 +1187,8 @@ void ImGuiSystem::Update(float dt)
                         // Keep order consistent with your ButtonShape enum
                         const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
                         int currShape = (int)b.shape;
-                        if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames))) {
+                        if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames))) 
+                        {
                             b.shape = (ButtonShape)currShape;
                         }
                     }
@@ -1185,13 +1206,15 @@ void ImGuiSystem::Update(float dt)
                     ImGui::Separator();
                     ImGui::Text("Color");
                     float col[3] = { b.color.r, b.color.g, b.color.b };
-                    if (ImGui::ColorEdit3("Button Color", col)) {
+                    if (ImGui::ColorEdit3("Button Color", col)) 
+                    {
                         b.color.r = col[0]; b.color.g = col[1]; b.color.b = col[2];
                     }
 
                     ImGui::Separator();
                     // Delete from inside properties
-                    if (ImGui::Button("Delete This Button")) {
+                    if (ImGui::Button("Delete This Button")) 
+                    {
                         buttons.erase(buttons.begin() + selectedLocal);
                         uiSelectedIndex = -1;
                         uiSelectedType = SelectedType::None;
@@ -1201,9 +1224,11 @@ void ImGuiSystem::Update(float dt)
                     }
                 }
             }
-            else if (uiSelectedType == SelectedType::TextBox) {
+            else if (uiSelectedType == SelectedType::TextBox) 
+            {
                 // ---- TEXTBOX PROPERTIES ----
-                if (selectedLocal >= 0 && selectedLocal < (int)textboxes.size()) {
+                if (selectedLocal >= 0 && selectedLocal < (int)textboxes.size()) 
+                {
                     auto& t = textboxes[selectedLocal];
 
                     // Text
@@ -1240,63 +1265,231 @@ void ImGuiSystem::Update(float dt)
                     }
                 }
             }
-            else if (uiSelectedType == SelectedType::Dialogue) {
+            else if (uiSelectedType == SelectedType::Dialogue)
+            {
                 // ---- DIALOGUE PROPERTIES ----
-                if (selectedLocal >= 0 && selectedLocal < (int)dialogues.size()) {
+                if (selectedLocal >= 0 && selectedLocal < (int)dialogues.size())
+                {
                     auto& d = dialogues[selectedLocal];
 
-                    // Text box visual settings
-                    ImGui::SeparatorText("Dialogue Text Box");
-                    ImGui::InputFloat2("Base Pos (x,y)", &d.textBox.basePos.x);
-                    ImGui::SliderFloat("Base Scale", &d.textBox.baseScale, 0.2f, 3.0f, "%.2f");
-
-                    float col[3] = { d.textBox.color.r, d.textBox.color.g, d.textBox.color.b };
-                    if (ImGui::ColorEdit3("Text Color", col)) {
-                        d.textBox.color.r = col[0]; d.textBox.color.g = col[1]; d.textBox.color.b = col[2];
+                    // Ensure we have a TextComponent to work with
+                    TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+                    if (!comp)
+                    {
+                        if (!d.owned) d.owned = std::make_shared<TextSystem::TextComponent>();
+                        comp = d.owned.get();
                     }
 
-                    // Dialogue lines (if text component is present)
+                    // Load Dialogue.json once, cache sceneIDs
+                    static json dlgDoc;
+                    static bool dlgLoaded = false;
+                    static std::vector<std::string> sceneIDs;
+                    if (!dlgLoaded) 
+                    {
+                        try 
+                        {
+                            std::ifstream ifs(FilePath::DIALOGUE);
+                            if (ifs) 
+                            {
+                                try { ifs >> dlgDoc; }
+                                catch (...) 
+                                {
+                                    ifs.clear();
+                                    ifs.seekg(0);
+                                    std::string raw((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+                                    std::string cleaned; cleaned.reserve(raw.size());
+                                    for (size_t i = 0; i < raw.size(); ++i) 
+                                    {
+                                        if (raw[i] == ',' && i + 1 < raw.size() && (raw[i + 1] == '\n' || raw[i + 1] == '\r')) continue;
+                                        cleaned.push_back(raw[i]);
+                                    }
+                                    dlgDoc = json::parse(cleaned);
+                                }
+                            }
+                            if (dlgDoc.contains("scenes") && dlgDoc["scenes"].is_array()) 
+                            {
+                                sceneIDs.clear();
+                                for (auto& sc : dlgDoc["scenes"]) 
+                                {
+                                    sceneIDs.push_back(sc.value("sceneID", std::string("0")));
+                                }
+                                dlgLoaded = true;
+                            }
+                        }
+                        catch (...) 
+                        {
+                            dlgLoaded = true;
+                        }
+                        if (sceneIDs.empty()) sceneIDs.push_back("0");
+                    }
+
+                    // ---- One persistent selection map (no shadowing!) ----
+                    static std::unordered_map<int, int> perDlgSceneIdx;
+                    if (d.sceneID.empty()) d.sceneID = "0";
+
+                    // Initialize per-dialogue selection once
+                    if (!perDlgSceneIdx.count(selectedLocal)) 
+                    {
+                        int initIdx = 0;
+                        for (int i = 0; i < (int)sceneIDs.size(); ++i)
+                            if (sceneIDs[i] == d.sceneID) { initIdx = i; break; }
+                        perDlgSceneIdx[selectedLocal] = initIdx;
+                    }
+
+                    int& activeSceneIdx = perDlgSceneIdx[selectedLocal];
+                    if (!sceneIDs.empty()) 
+                    {
+                        if (activeSceneIdx < 0) activeSceneIdx = 0;
+                        if (activeSceneIdx >= (int)sceneIDs.size()) activeSceneIdx = (int)sceneIDs.size() - 1;
+                    }
+                    else 
+                    {
+                        activeSceneIdx = 0;
+                    }
+
+                    // Helper: apply selected scene to TextComponent
+                    auto applySceneToComp = [&](int sceneIdx)
+                        {
+                            if (!dlgDoc.contains("scenes") || !dlgDoc["scenes"].is_array()) return;
+                            if (sceneIdx < 0 || sceneIdx >= (int)dlgDoc["scenes"].size()) return;
+
+                            const auto& sc = dlgDoc["scenes"][sceneIdx];
+
+                            std::vector<std::string> lines;
+                            if (sc.contains("script") && sc["script"].is_array()) 
+                            {
+                                for (const auto& node : sc["script"])
+                                {
+                                    std::string txt = node.value("line", std::string(""));
+                                    lines.push_back(txt);
+                                }
+                            }
+                            if (lines.empty()) lines.push_back("");
+
+                            comp->SetLines(lines);
+                            comp->SetCurrentLineIndex(0);
+                            comp->SetIsTyping(false);
+
+                            comp->SetTextSpeed(sc.value("textSpeed", 30.0f));
+                            comp->SetFontPath(sc.value("fontPath", std::string("../Assets/fonts/Marker.ttf")));
+                            comp->SetFontSize(sc.value("fontSize", 1.0f));
+
+                            if (sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3) 
+                            {
+                                Vec3 c{ sc["color"][0].get<float>(), sc["color"][1].get<float>(), sc["color"][2].get<float>() };
+                                comp->SetColor(c);
+                                d.textBox.color = { c.x, c.y, c.z };
+                            }
+
+                            comp->StartTyping();
+                        };
+
+                    // If no lines yet (first time), apply the current scene (from sceneID)
+                    if (comp->GetLines().empty()) 
+                    {
+                        // derive the intended index from d.sceneID
+                        int wantIdx = 0;
+                        for (int i = 0; i < (int)sceneIDs.size(); ++i)
+                            if (sceneIDs[i] == d.sceneID) { wantIdx = i; break; }
+                        activeSceneIdx = wantIdx;
+                        // clamp again for safety
+                        if (activeSceneIdx < 0) activeSceneIdx = 0;
+                        if (activeSceneIdx >= (int)sceneIDs.size()) activeSceneIdx = (int)sceneIDs.size() - 1;
+                        applySceneToComp(activeSceneIdx);
+                    }
+
+                    // ---- Text box visual settings ----
+                    ImGui::SeparatorText("Dialogue Text Box");
+                    ImGui::SliderFloat("posX", &d.textBox.basePos.x, 0.f, 1920.f, "%.3f");
+                    ImGui::SliderFloat("posY", &d.textBox.basePos.y, 0.f, 1080.f, "%.3f");
+                    ImGui::SliderFloat("scale", &d.textBox.baseScale, 0.1f, 10.f, "%.3f");
+
+                    float col[3] = { d.textBox.color.r, d.textBox.color.g, d.textBox.color.b };
+                    if (ImGui::ColorEdit3("Text Color", col))
+                    {
+                        d.textBox.color = { col[0], col[1], col[2] };
+                        comp->SetColor({ col[0], col[1], col[2] });
+                    }
+
+                    // ---- Scene selector ----
+                    ImGui::SeparatorText("Scene");
+                    {
+                        std::vector<const char*> sceneItems;
+                        sceneItems.reserve(sceneIDs.size());
+                        for (auto& s : sceneIDs) sceneItems.push_back(s.c_str());
+
+                        int prevScene = activeSceneIdx;
+                        // Clamp before showing combo (size could be 1)
+                        if (activeSceneIdx < 0) activeSceneIdx = 0;
+                        if (!sceneItems.empty() && activeSceneIdx >= (int)sceneItems.size())
+                            activeSceneIdx = (int)sceneItems.size() - 1;
+
+                        ImGui::Combo("Scene ID", &activeSceneIdx, sceneItems.data(), (int)sceneItems.size());
+
+                        if (!sceneItems.empty()) 
+                        {
+                            if (activeSceneIdx < 0) activeSceneIdx = 0;
+                            if (activeSceneIdx >= (int)sceneItems.size()) activeSceneIdx = (int)sceneItems.size() - 1;
+                        }
+                        else 
+                        {
+                            activeSceneIdx = 0;
+                        }
+
+                        if (activeSceneIdx != prevScene) 
+                        {
+                            applySceneToComp(activeSceneIdx);
+                            if (!sceneIDs.empty()) d.sceneID = sceneIDs[activeSceneIdx];
+                            else d.sceneID = "0";
+                        }
+                    }
+
                     ImGui::SeparatorText("Lines");
-                    TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
-                    if (comp) {
-                        auto& lines = comp->GetLines();
+                    if (comp)
+                    {
+                        const auto& lines = comp->GetLines();
                         int idx = comp->GetCurrentLineIndex();
                         int lineCount = (int)lines.size();
 
                         ImGui::Text("Current Line: %d / %d", lineCount ? (idx + 1) : 0, lineCount);
 
-                        ImGui::BeginDisabled(lineCount == 0);
-                        if (ImGui::Button("< Prev")) 
+                        if (lineCount > 0)
                         {
-                            GuiSystem::Get().SetDialogueLine(d, idx - 1, true);
-                        }
-                        ImGui::SameLine();
-                        if (ImGui::Button("Next >")) 
-                        {
-                            GuiSystem::Get().SetDialogueLine(d, idx + 1, true);
-                        }
-                        ImGui::EndDisabled();
-
-                        // Edit current line text
-                        if (lineCount > 0) {
-                            std::string curr = lines[idx];
-                            char buf[512];
-                            std::snprintf(buf, sizeof(buf), "%s", curr.c_str());
-                            if (ImGui::InputTextMultiline("Line Text", buf, IM_ARRAYSIZE(buf), ImVec2(-1, 100))) 
+                            static std::vector<std::string> lbls;
+                            lbls.clear();
+                            lbls.reserve(lines.size());
+                            for (const auto& s : lines) 
                             {
-                                auto newLines = lines;
-                                newLines[idx] = buf;
-                                comp->SetLines(newLines);
-                                GuiSystem::Get().SetDialogueLine(d, idx, true);
+                                if (s.size() > 96) lbls.push_back(s.substr(0, 96) + "...");
+                                else               lbls.push_back(s);
+                            }
+                            std::vector<const char*> citems;
+                            citems.reserve(lbls.size());
+                            for (auto& s : lbls) citems.push_back(s.c_str());
+
+                            int prevIdx = idx;
+                            ImGui::Combo("Current Line", &idx, citems.data(), (int)citems.size());
+                            if (idx != prevIdx) 
+                            {
+                                if (idx < 0) idx = 0;
+                                if (idx >= lineCount) idx = lineCount - 1;
+                                comp->SetCurrentLineIndex(idx);
+                                comp->StartTyping();
                             }
                         }
+                        else 
+                        {
+                            ImGui::TextDisabled("No lines in this scene!");
+                        }
                     }
-                    else {
-                        ImGui::TextDisabled("(No TextComponent attached)");
+                    else
+                    {
+                        ImGui::TextDisabled("No TextComponent attached!");
                     }
 
                     ImGui::Separator();
-                    if (ImGui::Button("Delete This Dialogue")) {
+                    if (ImGui::Button("Delete This Dialogue"))
+                    {
                         dialogues.erase(dialogues.begin() + selectedLocal);
                         uiSelectedIndex = -1;
                         uiSelectedType = SelectedType::None;
