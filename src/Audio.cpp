@@ -790,9 +790,6 @@ void AudioManager::Update(float dt) {
         wasInEditMode = sm.IsInEditMode();
     }
 
-    // Update fade (fade out only)
-    UpdateFade(dt);
-
     // ============================================================
     // HANDLE SCENE TRANSITIONS (ONLY IN PLAY MODE)
     // ============================================================
@@ -800,15 +797,51 @@ void AudioManager::Update(float dt) {
         std::string currentBGM = sm.GetCurrentSceneBGM();
         std::string currentScene = sm.GetCurrentSceneName();
 
-        // Detect BGM change
-        if (currentBGM != lastBGM && !currentBGM.empty() && !lastBGM.empty()) {
-            std::cout << "[AudioManager] Music transition: '" << lastBGM << "' -> '" << currentBGM << "'\n";
+        // Get transition progress (0.0 = start of fade, 1.0 = fully faded)
+        float transitionProgress = sm.GetTransitionProgress();
 
-            // Fade out current, then start new at full volume
-            TransitionToBGM(currentBGM, 1.5f);  // 1.5 seconds fade out
+        // Track if we just finished transitioning
+        static bool wasTransitioning = false;
+        static bool waitingForSceneLoad = false;
+        bool isTransitioning = (transitionProgress > 0.0f && transitionProgress < 1.0f);
+
+        // If we're in a transition (progress > 0 and < 1), fade out BGM volume
+        if (isTransitioning) {
+            if (currentChannel) {
+                // Fade volume from full (1.0) to silent (0.0)
+                float fadeOutVolume = musicVol * (1.0f - transitionProgress);
+                currentChannel->setVolume(fadeOutVolume);
+            }
+            wasTransitioning = true;
+        }
+
+        // Transition just completed - stop music and wait for scene to load
+        if (wasTransitioning && !isTransitioning && transitionProgress >= 1.0f && !waitingForSceneLoad) {
+            // Stop old music
+            if (currentChannel) {
+                currentChannel->stop();
+                currentChannel = nullptr;
+            }
+
+            wasTransitioning = false;
+            waitingForSceneLoad = true;
+        }
+
+        // Scene has loaded (BGM changed) - start new music
+        if (waitingForSceneLoad && currentBGM != lastBGM) {
+            // Start new BGM immediately at full volume (no fade in)
+            if (!currentBGM.empty()) {
+                StartBGM(currentBGM);
+
+                // Ensure volume is set to full after StartBGM
+                if (currentChannel) {
+                    currentChannel->setVolume(musicVol);
+                }
+            }
 
             lastBGM = currentBGM;
             lastScene = currentScene;
+            waitingForSceneLoad = false;
         }
     }
 }
