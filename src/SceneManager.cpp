@@ -86,6 +86,14 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
             std::cerr << "[SceneManager] FAILED to load scene: " << path << "\n";
         }
     }
+
+    // ============================================================
+    // HANDLE GAME PAUSE (P key) - ONLY IN PLAY MODE
+    // ============================================================
+    if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying() && !IsInEditMode()) {
+        TogglePause();
+        std::cout << (IsPaused() ? "[SceneManager] Game paused\n" : "[SceneManager] Game resumed\n");
+    }
 }
 
 

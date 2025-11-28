@@ -8,7 +8,7 @@
  * This header file contains the declaration of the AudioManager
  * class. The AudioManager provides functionality
  * for loading and playing sounds, managing background music
- * with fade transitions, controlling playback
+ * with fade-out transitions, controlling playback
  * through channels, and handling state-based music changes. It acts
  * as a wrapper around the lower-level AudioSystem while adding
  * game-specific audio management features such as automatic music
@@ -26,7 +26,8 @@
   * @brief High-level audio management system for the game.
   *
   * The AudioManager class handles music playback, sound effects,
-  * fade-in/fade-out transitions between music tracks, and transitions based on game state changes.
+  * fade-out transitions between music tracks, and transitions based on game state changes.
+  * New music starts instantly at full volume after the previous track fades out.
   */
 class AudioManager : public ISystem {
 public:
@@ -35,13 +36,20 @@ public:
         return instance;
     }
 
-    void FadeOutAndStop(float duration); // FIXTHISSHIT DOCUMENTATION
+    /**
+     * @brief Fades out and stops current music.
+     *
+     * Gradually reduces volume to zero over the specified duration, then stops playback.
+     *
+     * @param duration Duration in seconds for the fade-out effect.
+     */
+    void FadeOutAndStop(float duration);
 
     /**
      * @brief Initializes the FMOD audio system and preloads music tracks.
      *
-     * Sets up FMOD, loads music for different game states, and starts
-     * playing initial background music.
+     * Sets up FMOD, loads music for different game states, and prepares
+     * audio assets for playback.
      *
      * @param dt Delta time in seconds.
      */
@@ -50,8 +58,8 @@ public:
     /**
      * @brief Updates FMOD system and processes audio transitions.
      *
-     * Updates the FMOD system, processes fade transitions, and handles
-     * music changes based on game state.
+     * Updates the FMOD system, processes fade-out transitions, and handles
+     * music changes based on game state. New music starts instantly after fade-out.
      *
      * @param dt Delta time in seconds.
      */
@@ -73,33 +81,33 @@ public:
     void UpdateListenerToCamera();
 
     /**
-     * @brief Updates fade-in/fade-out effects.
+     * @brief Updates fade-out effects.
      *
-     * Handles volume transitions for smooth music fading.
+     * Handles volume transitions for smooth music fading out. When fade-out completes,
+     * new music (if any) starts instantly at full volume.
      *
      * @param dt Delta time in seconds since last frame.
      */
     void UpdateFade(float dt);
 
     /**
-     * @brief Starts a fade transition to new background music.
+     * @brief Starts a fade-out transition to new background music.
      *
-     * Fades out current music, then fades in the specified BGM.
+     * Fades out current music, then starts the specified BGM instantly at full volume.
      *
      * @param bgmAssetName The name of the BGM asset in AudioCache.
-     * @param duration Duration in seconds for each fade (out and in).
+     * @param duration Duration in seconds for the fade-out.
      */
     void TransitionToBGM(const std::string& bgmAssetName, float duration);
 
     /**
-     * @brief Fades in background music from silence.
+     * @brief Starts background music instantly at full volume.
      *
-     * Used when entering play mode or starting a scene.
+     * Used when entering play mode or starting a scene. No fade-in effect is applied.
      *
      * @param bgmAssetName The name of the BGM asset in AudioCache.
-     * @param duration Duration in seconds for the fade-in.
      */
-    void FadeInBGM(const std::string& bgmAssetName, float duration);
+    void StartBGM(const std::string& bgmAssetName);
 
     /**
      * @brief Pauses the currently playing music.
@@ -230,16 +238,11 @@ private:
     // Channel management
     FMOD::Channel* currentChannel = nullptr;
 
-    // ? REMOVED: nextChannel (no longer needed with fade system)
-
-    // Fade system variables (REPLACED crossfade)
+    // Fade system variables (fade-out only)
     bool fadeActive = false;       ///< Whether a fade is currently active
-    bool fadingOut = false;        ///< true = fading out, false = fading in
     float fadeTime = 0.0f;         ///< Current time in fade transition
-    float fadeDuration = 2.0f;     ///< Duration of fade effect in seconds
-    std::string pendingBGM = "";   ///< BGM to play after fade out completes
-
-    // ? REMOVED: crossfadeTime, crossfadeDuration, crossfadeActive
+    float fadeDuration = 2.0f;     ///< Duration of fade-out effect in seconds
+    std::string pendingBGM = "";   ///< BGM to play instantly after fade out completes
 
     // Pause state
     bool musicPaused = false;
@@ -251,7 +254,4 @@ private:
 
     // State tracking
     std::string lastScene = "";
-
-    // ? REMOVED: UpdateCrossfade(float dt)
-    // ? REMOVED: HandleMusicForScene(...)
 };
