@@ -918,7 +918,7 @@ void GuiSystem::Update(float dt) {
     float t = SceneManager::Get().GetTransitionProgress();
     if ( t != 1.f)
     {
-        float alpha = 1.f - t;
+        float alpha = t;
         Vec2 pos = { GLApp::width * .5f,GLApp::height * .5f };
         //KERVINMAKETHISHAVEALPHA
         render.DrawRect(pos, GLApp::width, GLApp::height, { 0.f,0.f,0.f }, 0.0f, alpha);

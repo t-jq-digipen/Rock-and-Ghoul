@@ -83,6 +83,10 @@ int main() {
         JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
     }
 
+#ifndef NO_IMGUI
+    settings.fullscreen = false;
+#endif
+
     // USE the loaded settings to initialize window
     if (!GLApp::init(settings.resolutionWidth, settings.resolutionHeight, "Rock & Ghoul", settings.fullscreen)) {
         return -1;
