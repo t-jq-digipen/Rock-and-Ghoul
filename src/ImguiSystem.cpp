@@ -2273,8 +2273,8 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                                 FMOD::Sound* snd = AudioSystem::LoadSound(path, false);
                                 if (snd)
                                 {
-                                    if (previewChannel) previewChannel->stop();
-                                    previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
+                                    if (previewChannel) previewChannel->stop(); // stop previous sound
+                                    previewChannel = AudioSystem::PlaySoundPreview(snd); // store channel
 
                                 }
                             }
