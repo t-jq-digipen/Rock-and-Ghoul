@@ -91,18 +91,6 @@ public:
     static void StopAll();
 
     /**
-     * @brief Plays a sound for preview purposes in edit mode (bypasses edit mode check).
-     *
-     * This function is specifically for the asset browser in edit mode.
-     * It allows you to preview sounds without needing to enter play mode.
-     *
-     * @param sound Pointer to the FMOD::Sound object to play.
-     * @return FMOD::Channel* Pointer to the channel playing the sound, or
-     *         nullptr if playback failed or the audio system is not initialized.
-     */
-    static FMOD::Channel* PlaySoundPreview(FMOD::Sound* sound);
-
-    /**
      * @brief Plays a sound and returns the channel handle for playback control.
      *
      * This function plays a sound and returns a pointer to the channel.

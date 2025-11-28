@@ -106,12 +106,6 @@ void AudioSystem::LoadDefaultButtonSounds() {
  *             as defined in the ButtonType enum.
  */
 void AudioSystem::PlayButtonSound(ButtonType type) {
-    // Block in edit mode (editor has its own UI)
-    if (SceneManager::Get().IsInEditMode()) {
-        std::cout << "[AudioSystem] Blocked button sound (in edit mode)\n";
-        return;
-    }
-
     // Look up the button sound in the map
     auto it = buttonSounds.find(type);
     // If found and valid, play it
@@ -268,27 +262,6 @@ void AudioSystem::PlaySound(FMOD::Sound* sound) {
 
     FMOD::Channel* channel = nullptr;
     mSystem->playSound(sound, nullptr, false, &channel);
-}
-
-/**
- * @brief Plays a sound for preview purposes (bypasses edit mode check).
- *
- * This function is specifically for the asset browser in edit mode.
- * It allows you to preview sounds without needing to enter play mode.
- *
- * @param sound Pointer to the FMOD::Sound object to play.
- * @return FMOD::Channel* The channel playing the preview sound, or nullptr if failed.
- */
-FMOD::Channel* AudioSystem::PlaySoundPreview(FMOD::Sound* sound) {
-    if (!mSystem || !sound) return nullptr;
-
-    // PREVIEW MODE: Bypass edit mode check
-    // This is for editor asset browser previews only
-    FMOD::Channel* channel = nullptr;
-    mSystem->playSound(sound, nullptr, false, &channel);
-
-    std::cout << "[AudioSystem] Playing sound preview\n";
-    return channel;
 }
 
 /**
