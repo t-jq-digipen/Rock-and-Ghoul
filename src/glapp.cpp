@@ -68,7 +68,7 @@ compatible with OpenGL 4.5 and doesn't support "old" OpenGL, has 32-bit RGBA,
 double-buffered color buffer, 24-bit depth buffer and 8-bit stencil buffer
 with each buffer of size width x height pixels
 */
-bool GLApp::init(GLint w, GLint h, std::string t) {
+bool GLApp::init(GLint w, GLint h, std::string t, bool enable) {
  /* GLApp::width = w;
   GLApp::height = h;
   GLApp::baseWidth = w;
@@ -97,6 +97,8 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
   // default behavior: colorbuffer is 32-bit RGBA, depthbuffer is 24-bits
   // don't change size of window
   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); //Make Window non-resizable (im assuming we using 1920x1080 for it?)
+  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
 
   // size of viewport: width x height
   //GLApp::ptr_window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
@@ -154,6 +156,15 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
 
   // initialize OpenGL (and extension) function loading library
   GLenum err = glewInit();
+
+  // Start in fullscreen if enabled
+  if (enable) {
+      GLApp::SetFullscreenMode();
+  }
+
+  glfwShowWindow(ptr_window);
+  glfwFocusWindow(ptr_window);
+
   if (GLEW_OK != err) {
     std::cerr << "Unable to initialize GLEW - error: "
       << glewGetErrorString(err) << " abort program" << std::endl;
