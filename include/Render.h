@@ -190,7 +190,7 @@ public:
     * @param color The RGB color of the rectangle.
     * @param rotation Rotation angle in radians (default = 0.0f).
     */
-    void DrawRect(const Vec2& pos, float width, float height, const Colour3& color, float rotation = 0.0f);
+    void DrawRect(const Vec2& pos, float width, float height, const Colour3& color, float rotation = 0.0f, float alpha = 1.0f);
 
 
     /**

@@ -371,7 +371,7 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     glUseProgram(0);
 }  // <-- Make sure this closing brace is here!
 
-void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3& color, float rotation) {
+void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3& color, float rotation, float alpha) {
     glUseProgram(shaderProgram);
 
     // upload projection
@@ -391,6 +391,7 @@ void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3&
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
 
     //draw
@@ -400,6 +401,7 @@ void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3&
 
     // Reset color so next sprite draw isn't tinted
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 
     glUseProgram(0);
 }
