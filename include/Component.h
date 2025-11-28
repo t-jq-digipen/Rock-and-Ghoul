@@ -134,11 +134,11 @@ struct TransformComponent {
 	Editor::ComponentData EditorData() {
 
 		Editor::ComponentData ret("Transform");
-		ret.Add_Data("posX",		{ Editor::Widget_Float{ &pos.x , true, 0.f, 1920.f } });
-		ret.Add_Data("posY",		{ Editor::Widget_Float{ &pos.y , true, 0.f, 1080.f } });
-		ret.Add_Data("scaleX",		{ Editor::Widget_Float{ &scale.x , true, 0.1f, 50.f } });
-		ret.Add_Data("scaleY",		{ Editor::Widget_Float{ &scale.y , true, 0.1f, 50.f } });
-		ret.Add_Data("Rotation",	{ Editor::Widget_Float{ &rot , true, -360.f, 360.f } });
+		ret.Add_Data("posX",		{ Editor::Widget_Float{ &pos.x } });
+		ret.Add_Data("posY",		{ Editor::Widget_Float{ &pos.y } });
+		ret.Add_Data("scaleX",		{ Editor::Widget_Float{ &scale.x } });
+		ret.Add_Data("scaleY",		{ Editor::Widget_Float{ &scale.y } });
+		ret.Add_Data("Rotation",	{ Editor::Widget_Float{ &rot } });
 
 		return ret;
 	}
@@ -345,8 +345,8 @@ struct ColliderComponent {
 
 	Editor::ComponentData EditorData() {
 		Editor::ComponentData ret("Collider");
-		ret.Add_Data("AABB Min X", Editor::Widget_Float{&aabbhitbox.min.x});
-		ret.Add_Data("AABB Min Y", Editor::Widget_Float{&aabbhitbox.min.y});
+		//ret.Add_Data("AABB Min X", Editor::Widget_Float{&aabbhitbox.min.x});
+		//ret.Add_Data("AABB Min Y", Editor::Widget_Float{&aabbhitbox.min.y});
 		ret.Add_Data("AABB Dim X", Editor::Widget_Float{&aabbhitbox.dim.x});
 		ret.Add_Data("AABB Dim Y", Editor::Widget_Float{&aabbhitbox.dim.y});
 		ret.Add_Data("Is Trigger", Editor::Widget_Checkmark{&isTrigger});
