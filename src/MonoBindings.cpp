@@ -20,7 +20,7 @@
  * Each function automatically checks if the entity has a
  * TransformComponent before performing the operation.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ======================================================== 
  */
 
@@ -227,7 +227,6 @@ extern "C" {
         if (!reg.Has_Component<ColliderComponent>(entity)) return;
 
         ColliderComponent& collider = reg.Get_Component<ColliderComponent>(entity);
-
 
         collider.aabbhitbox.dim.x = width;
         collider.aabbhitbox.dim.y = height;
