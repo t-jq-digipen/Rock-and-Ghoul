@@ -28,6 +28,7 @@
 #include <variant>
 #include <iostream>
 #include "Entity.h"
+#include "TextSystem.h"
 
 // First string would be the data type name, second string would hold the value
 using SerializedComponent = std::unordered_map<std::string, std::string>;
@@ -101,13 +102,14 @@ struct SavedScene {
         Vec2 pos;
         float scale;
         Colour3 color;
+        bool centered;
     };
     std::vector<SavedTextBox> guiTextboxes;
 
     struct SavedDialogue {
         SavedTextBox textBox;
         std::string jsonPath;
-        std::string sceneID;
+        std::string sceneID = "0";
         std::vector<std::string> lines;
         int currentLineIndex = 0;
     };

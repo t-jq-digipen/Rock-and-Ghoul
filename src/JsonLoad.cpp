@@ -624,7 +624,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"text", txt.text},
             {"pos", {txt.pos.x, txt.pos.y}},
             {"scale", txt.scale},
-            {"color", {txt.color.r, txt.color.g, txt.color.b}}
+            {"color", {txt.color.r, txt.color.g, txt.color.b}},
+            {"centered", txt.centered}
         });
     }
 
@@ -636,6 +637,7 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"pos", {tb.pos.x, tb.pos.y}},
             {"scale", tb.scale},
             {"color", {tb.color.r, tb.color.g, tb.color.b}},
+            {"centered", tb.centered}
         };
         json jd = {
             {"textBox", std::move(jtb)},
@@ -700,6 +702,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
             t.pos = { txt["pos"][0], txt["pos"][1] };
             t.scale = txt["scale"];
             t.color = { txt["color"][0], txt["color"][1], txt["color"][2] };
+            t.centered = { txt["centered"] };
             s.guiTextboxes.push_back(t);
         }
     }
@@ -712,11 +715,17 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
             d.textBox.pos = { dlg["textBox"]["pos"][0], dlg["textBox"]["pos"][1] };
             d.textBox.scale = dlg["textBox"]["scale"];
             d.textBox.color = { dlg["textBox"]["color"][0], dlg["textBox"]["color"][1], dlg["textBox"]["color"][2] };
+            d.textBox.centered = dlg["textBox"]["centered"];
 
             d.jsonPath = dlg["jsonPath"];
-            d.sceneID = dlg.value("sceneID", "0");
+            d.sceneID = dlg["sceneID"];
+            if (d.sceneID.empty()) d.sceneID = "0";
 
-            // (Optionally remember line index snapshot)
+            if (dlg.contains("lines") && dlg["lines"].is_array()) 
+            {
+                d.lines.clear();
+                for (const auto& ln : dlg["lines"]) d.lines.push_back(ln.get<std::string>());
+            }
             d.currentLineIndex = dlg.value("currentLineIndex", 0);
 
             s.guiDialogues.push_back(std::move(d));
@@ -856,6 +865,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             st.pos = t.basePos;
             st.scale = t.baseScale;
             st.color = t.color;
+            st.centered = t.centered;
             scene.guiTextboxes.push_back(st);
         }
         for (auto& d : gui.GetDialogues())
@@ -865,7 +875,9 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.textBox.pos = d.textBox.basePos;
             sd.textBox.scale = d.textBox.baseScale;
             sd.textBox.color = d.textBox.color;
+            sd.textBox.centered = d.textBox.centered;
             sd.jsonPath = d.jsonPath;
+            sd.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
 
             const TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
             if (comp)
@@ -1011,36 +1023,120 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.scale = t.scale;
             cfg.baseScale = t.scale;
             cfg.color = t.color;
+            cfg.centered = t.centered;
             GuiSystem::Get().AddTextBox(cfg);
         }
 
         for (auto& d : scene.guiDialogues)
         {
-            TextBoxConfig tb{};
-            tb.text = d.textBox.text;
-            tb.pos = d.textBox.pos;
-            tb.basePos = tb.pos;
-            tb.scale = d.textBox.scale;
-            tb.baseScale = tb.scale;
-            tb.color = Colour3 { d.textBox.color.r, d.textBox.color.g, d.textBox.color.b };
-            tb.fontKey = "Marker";
-            tb.centered = true;
-            tb.isVisible = true;
+            DialogueConfig cfg{};
+            cfg.textBox.text = d.textBox.text;
+            cfg.textBox.pos = d.textBox.pos;
+            cfg.textBox.basePos = d.textBox.pos;
+            cfg.textBox.scale = d.textBox.scale;
+            cfg.textBox.baseScale = d.textBox.scale;
+            cfg.textBox.color = Colour3 { d.textBox.color.r, d.textBox.color.g, d.textBox.color.b };
+            cfg.textBox.fontKey = "Marker";
+            cfg.textBox.centered = d.textBox.centered;
+            cfg.textBox.isVisible = true;
 
-            const std::string sceneID = d.sceneID.empty() ? "0" : d.sceneID;
-            int idx = GuiSystem::Get().AddDialogueFromJson(d.jsonPath, tb, d.sceneID);
+            cfg.jsonPath = d.jsonPath;
+            cfg.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
 
-            if (idx >= 0 && d.currentLineIndex > 0) 
-            {
-                auto& dlg = GuiSystem::Get().GetDialogues()[idx];
-                auto* comp = dlg.textComp ? dlg.textComp : dlg.owned.get();
-                if (comp) 
+            // Always create a runtime TextComponent we can hydrate
+            cfg.owned = std::make_shared<TextSystem::TextComponent>();
+            auto* comp = cfg.owned.get();
+
+            // Helper: load a scene's script from Dialogue.json by sceneID (used as fallback)
+            auto loadLinesFromDialogueJson = [&](const std::string& sceneID,
+                std::vector<std::string>& outLines,
+                float& textSpeed, std::string& fontPath,
+                float& fontSize, Vec3& color)
                 {
-                    const int n = static_cast<int>(comp->GetLines().size());
-                    comp->SetCurrentLineIndex(std::clamp(d.currentLineIndex, 0, std::max(0, n - 1)));
-                    comp->SetIsTyping(false);
-                }
+                    outLines.clear();
+                    textSpeed = 30.0f;
+                    fontPath = "../Assets/fonts/Marker.ttf";
+                    fontSize = 1.0f;
+                    color = { 1.f, 1.f, 1.f };
+
+                    try {
+                        std::ifstream ifs(cfg.jsonPath);
+                        if (!ifs) return;
+                        json doc; ifs >> doc;
+                        if (!doc.contains("scenes") || !doc["scenes"].is_array()) return;
+
+                        // find scene by sceneID string
+                        const auto& arr = doc["scenes"];
+                        int found = -1;
+                        for (int i = 0; i < (int)arr.size(); ++i)
+                        {
+                            const auto& sc = arr[i];
+                            if (sc.contains("sceneID") && sc["sceneID"].is_string()
+                                && sc["sceneID"].get<std::string>() == sceneID) {
+                                found = i; break;
+                            }
+                        }
+                        if (found < 0) return; // no match
+
+                        const auto& sc = arr[found];
+
+                        if (sc.contains("script") && sc["script"].is_array())
+                        {
+                            for (const auto& node : sc["script"])
+                            {
+                                if (node.contains("line") && node["line"].is_string())
+                                    outLines.push_back(node["line"].get<std::string>());
+                            }
+                        }
+                        if (outLines.empty()) outLines.push_back("");
+
+                        textSpeed = sc.value("textSpeed", 30.0f);
+                        fontPath = sc.value("fontPath", std::string("../Assets/fonts/Marker.ttf"));
+                        fontSize = sc.value("fontSize", 1.0f);
+
+                        if (sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3)
+                        {
+                            color = {
+                                sc["color"][0].get<float>(),
+                                sc["color"][1].get<float>(),
+                                sc["color"][2].get<float>()
+                            };
+                        }
+                    }
+                    catch (...) {
+                        // leave defaults
+                    }
+                };
+
+            // Prefer saved snapshot; otherwise fallback to JSON by sceneID
+            if (!d.lines.empty())
+            {
+                comp->SetLines(d.lines);
+                int clamped = std::clamp(d.currentLineIndex, 0, (int)d.lines.size() - 1);
+                comp->SetCurrentLineIndex(clamped);
+                comp->SetIsTyping(false);        // editor idle by default
+                // You may call comp->StopTyping() if you want the full line visible immediately.
             }
+            else
+            {
+                std::vector<std::string> lines;
+                float textSpeed = 30.f; std::string fontPath; float fontSize = 1.f; Vec3 color{};
+                loadLinesFromDialogueJson(cfg.sceneID, lines, textSpeed, fontPath, fontSize, color);
+
+                comp->SetLines(lines);
+                comp->SetCurrentLineIndex(0);
+                comp->SetIsTyping(false);
+
+                comp->SetTextSpeed(textSpeed);
+                comp->SetFontPath(fontPath);
+                comp->SetFontSize(fontSize);
+                comp->SetColor(color);
+
+                // keep text color in sync with scene default
+                cfg.textBox.color = { color.x, color.y, color.z };
+            }
+
+            GuiSystem::Get().AddDialogue(cfg);
         }
 
         SavedScene::SavedCamera& camSet = scene.camSettings;

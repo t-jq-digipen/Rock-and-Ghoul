@@ -20,7 +20,7 @@
 #include "ImGuiSystem.h"
 #endif
 #include "SceneManager.h"
-
+#include <FilePath.h>
 AudioManager* GuiSystem::audio = nullptr;
 
 void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
@@ -94,8 +94,23 @@ void GuiSystem::Update(float dt) {
         for (auto& d : dialogues)
         {
             if (!d.isVisible) continue;
-            AdvanceDialogue(d);
-            break;
+            TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+            if (!comp) continue;
+
+            if (comp->CheckIfTyping())
+            {
+                comp->StopTyping();
+            }
+            else
+            {
+                const auto& lines = comp->GetLines();
+                int idx = comp->GetCurrentLineIndex();
+                if (idx + 1 < static_cast<int>(lines.size()))
+                {
+                    comp->SetCurrentLineIndex(idx + 1);
+                    comp->StartTyping();
+                }
+            }
         }
         spaceHandled = true;
     }
@@ -120,7 +135,9 @@ void GuiSystem::Update(float dt) {
     const float uiScale = std::min(scaleX, scaleY);
    
 
-    for (auto& cfg : buttons) {
+    for (auto& cfg : buttons) 
+    {
+        if (!cfg.isVisible) continue;
         cfg.size = cfg.baseSize * uiScale;
         cfg.textScale = cfg.baseTextScale * uiScale;
 
@@ -130,17 +147,14 @@ void GuiSystem::Update(float dt) {
 
 
         bool hover = false;
-        if (cfg.shape == ButtonShape::Circle) {
-
+        if (cfg.shape == ButtonShape::Circle) 
+        {
             float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
-
-            // convert mouse into render-space (bottom-left origin)
-          //  Vec2 mouseRender = { mouse.x, static_cast<float>(GLApp::height) - mouse.y };
-
             float dist = RG_Distance(mouse, cfg.pos);
             hover = dist <= radius;
         }
-        else {
+        else 
+        {
             hover = render.IsAreaTouched(mouse, cfg.pos, cfg.size.x, cfg.size.y);
         }
 
@@ -148,16 +162,19 @@ void GuiSystem::Update(float dt) {
             ? Colour3{ cfg.color.r + 0.2f, cfg.color.g + 0.2f, cfg.color.b + 0.2f }
         : cfg.color;
 
-        switch (cfg.shape) {
+        switch (cfg.shape) 
+        {
         case ButtonShape::Rectangle:
             render.DrawRect(cfg.pos, cfg.size.x, cfg.size.y, drawColor);
             break;
-        case ButtonShape::Circle: {
+        case ButtonShape::Circle: 
+        {
             float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
             render.DrawCircle(cfg.pos, radius, drawColor, 48);
             break;
         }
-        case ButtonShape::Rounded: {
+        case ButtonShape::Rounded: 
+        {
             float corner = std::min(cfg.size.x, cfg.size.y) * 0.5f;
             render.DrawRoundedRect(cfg.pos, cfg.size.x, cfg.size.y, corner, drawColor);
             break;
@@ -191,6 +208,7 @@ void GuiSystem::Update(float dt) {
 
     for (auto& tb : textboxes)
     {
+        if (!tb.isVisible) continue;
         tb.pos.x = tb.basePos.x * scaleX;
         tb.pos.y = tb.basePos.y * scaleY;
         tb.scale = tb.baseScale * uiScale;
@@ -214,7 +232,6 @@ void GuiSystem::Update(float dt) {
     for (auto& d : dialogues)
     {
         if (!d.isVisible) continue;
-
         TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
         if (!comp) continue;
 
@@ -224,6 +241,7 @@ void GuiSystem::Update(float dt) {
         d.textBox.scale = d.textBox.baseScale * uiScale;
 
         std::string vis;
+        const std::string& fullLine = comp->GetCurrentLine(comp->GetCurrentLineIndex());
 
         if (sm.inEditMode)
         {
@@ -252,21 +270,161 @@ void GuiSystem::Update(float dt) {
             vis = comp->CheckIfTyping() ? TextSystem::GetVisibleText(*comp) : lines[idx];
         }
 
-        // text color
         Colour3 drawColor = d.textBox.color;
+        Vec2 textSize = render.CalculateTextSize(fullLine, d.textBox.scale, "Marker");
+        float drawX = d.textBox.pos.x;
+        float drawY = d.textBox.pos.y;
+        if (d.textBox.centered) 
+        { 
+            drawX -= textSize.x * 0.5f; 
+            drawY -= textSize.y * 0.5f; 
+        }
 
-        Vec2 textSize = render.CalculateTextSize(vis, d.textBox.scale, "Marker");
-        float drawX = d.textBox.pos.x, drawY = d.textBox.pos.y;
-        if (d.textBox.centered) { drawX -= textSize.x * 0.5f; drawY -= textSize.y * 0.5f; }
+        // Get speaker name to display above line
+        auto getSpeakerName = [&](const json& doc, int sceneIdx, int lineIdx) -> std::string
+            {
+                if (!doc.contains("scenes") || !doc["scenes"].is_array()) return {};
+                if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return {};
 
-        // Optional background panel (simple) – maybe next time
-        // r.DrawRoundedRect({d.textBox.pos.x, d.textBox.pos.y}, textSize.x + 24, textSize.y + 16, 8.f, {0.f,0.f,0.f});
+                const auto& sc = doc["scenes"][sceneIdx];
+                if (!sc.contains("script") || !sc["script"].is_array()) return {};
 
-        render.DrawText(vis, drawX, drawY, d.textBox.scale, drawColor, "Marker");
+                const auto& script = sc["script"];
+                if (lineIdx < 0 || lineIdx >= (int)script.size()) return {};
+
+                int speakerID = -1;
+                if (script[lineIdx].contains("speakerID") && script[lineIdx]["speakerID"].is_number_integer())
+                    speakerID = script[lineIdx]["speakerID"].get<int>();
+
+                if (speakerID < 0) return {};
+
+                if (!sc.contains("speakers") || !sc["speakers"].is_array()) return {};
+                const auto& speakers = sc["speakers"];
+
+                if (speakerID >= 0 && speakerID < (int)speakers.size() && speakers[speakerID].is_string())
+                    return speakers[speakerID].get<std::string>();
+
+                return {};
+            };
+
+
+        static json sDlgDoc;
+        static bool sDlgLoaded = false;
+        if (!sDlgLoaded)
+        {
+            try 
+            {
+                std::ifstream ifs(FilePath::DIALOGUE);
+                if (ifs) { ifs >> sDlgDoc; sDlgLoaded = true; }
+            }
+            catch (...) { /* leave sDlgLoaded = false */ }
+        }
+
+        std::string sceneIdStr = d.sceneID;
+        int sceneIdxInt;
+        try { sceneIdxInt = std::stoi(sceneIdStr); }
+        catch (...) { sceneIdxInt = 0; }
+
+        int lineIdx = comp->GetCurrentLineIndex();
+
+        std::string speakerName;
+        if (sDlgLoaded) 
+        {
+            if (sDlgDoc.contains("scenes") && sDlgDoc["scenes"].is_array()) 
+            {
+                int maxScene = (int)sDlgDoc["scenes"].size() - 1;
+                if (maxScene >= 0) 
+                {
+                    sceneIdxInt = std::max(0, std::min(sceneIdxInt, maxScene));
+                    speakerName = getSpeakerName(sDlgDoc, sceneIdxInt, lineIdx);
+                }
+            }
+        }
+
+        // Draw speaker name
+        const float nameScale = d.textBox.scale * 0.9f;
+        const float lineH = render.CalculateTextSize("A", d.textBox.scale, "Marker").y;
+        render.DrawText(speakerName, drawX, drawY + (lineH * 1.5f), nameScale, drawColor, "Marker");
+
+        // Word wrapping
+        const float maxWidth = (defaultWidth / 2) * uiScale;
+        std::vector<std::string> wrappedLines;
+        wrappedLines.reserve(8);
+
+        std::string current;
+        size_t i = 0;
+        while (i < vis.size())
+        {
+            while (i < vis.size() && vis[i] == ' ')
+                ++i;
+
+            size_t start = i;
+            while (i < vis.size() && vis[i] != ' ')
+                ++i;
+
+            std::string word = vis.substr(start, i - start);
+            if (word.empty())
+            {
+                if (i < vis.size() && vis[i] == ' ') ++i;
+                continue;
+            }
+
+            std::string trial = current.empty() ? word : (current + " " + word);
+            if (render.CalculateTextSize(trial, d.textBox.scale, "Marker").x <= maxWidth)
+            {
+                current = std::move(trial);
+            }
+            else
+            {
+                if (!current.empty())
+                {
+                    wrappedLines.push_back(current);
+                    current.clear();
+                }
+
+                if (render.CalculateTextSize(word, d.textBox.scale, "Marker").x > maxWidth)
+                {
+                    std::string chunk;
+                    for (char c : word)
+                    {
+                        std::string attempt = chunk;
+                        attempt.push_back(c);
+                        if (render.CalculateTextSize(attempt, d.textBox.scale, "Marker").x <= maxWidth)
+                        {
+                            chunk.push_back(c);
+                        }
+                        else
+                        {
+                            if (!chunk.empty()) wrappedLines.push_back(chunk);
+                            chunk.clear();
+                            chunk.push_back(c);
+                        }
+                    }
+                    current = chunk;
+                }
+                else
+                {
+                    current = word;
+                }
+            }
+            if (i < vis.size() && vis[i] == ' ') ++i;
+        }
+
+        // push last line
+        if (!current.empty()) wrappedLines.push_back(current);
+
+        // render wrapped lines starting at drawY (body text)
+        float yCursor = drawY;
+        for (const auto& ln : wrappedLines)
+        {
+            render.DrawText(ln, drawX, yCursor, d.textBox.scale, drawColor, "Marker");
+            yCursor -= lineH;
+        }
     }
 
     // Draw state window if active
-    if (stateWindowActive) {
+    if (stateWindowActive) 
+    {
         DrawStateWindow(render);
     }
     /*
@@ -902,7 +1060,7 @@ void GuiSystem::Update(float dt) {
             newDialogue.pos = newDialogue.basePos;
             newDialogue.scale = newDialogue.baseScale;
             newDialogue.color = { 0,0,0 };
-            newDialogue.centered = true;
+            newDialogue.centered = false;
 
             // default path; user can later edit in UI to reload a different JSON
             const std::string path = "../Assets/Dialogue.json";
@@ -960,6 +1118,7 @@ std::string ButtonActionToString(ButtonAction action)
     case ButtonAction::LoadMainMenu:        return "LoadMainMenu";
     case ButtonAction::Quit:                return "Quit";
     case ButtonAction::OpenStateWindow:     return "OpenStateWindow";
+    case ButtonAction::ToggleAllButtons:    return "ToggleAllButtons";
     case ButtonAction::ToggleAllTextboxes:  return "ToggleAllTextboxes";
     case ButtonAction::ToggleAllDialogues:  return "ToggleAllDialogues";
     default:                                return "None";
@@ -973,12 +1132,14 @@ ButtonAction StringToButtonAction(const std::string& s)
     if (s == "LoadMainMenu") return ButtonAction::LoadMainMenu;
     if (s == "Quit") return ButtonAction::Quit;
     if (s == "OpenStateWindow") return ButtonAction::OpenStateWindow;
+    if (s == "ToggleAllButtons") return ButtonAction::ToggleAllButtons;
     if (s == "ToggleAllTextboxes") return ButtonAction::ToggleAllTextboxes;
     if (s == "ToggleAllDialogues") return ButtonAction::ToggleAllDialogues;
     return ButtonAction::None;
 }
 
-void GuiSystem::Clear() {
+void GuiSystem::Clear() 
+{
     buttons.clear();
     textboxes.clear();
     dialogues.clear();
@@ -990,6 +1151,9 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
     {
     case ButtonAction::OpenStateWindow:
         btn.onClick = [this]() { stateWindowActive = true; };
+        break;
+    case ButtonAction::ToggleAllButtons:
+        btn.onClick = [this, &btn]() { ToggleAllButtons(&btn); };
         break;
     case ButtonAction::ToggleAllTextboxes:
         btn.onClick = [this]() { ToggleAllTextboxes(); };
@@ -1015,6 +1179,30 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
     default:
         btn.onClick = nullptr;
         break;
+    }
+}
+
+void GuiSystem::ToggleAllButtons(const ButtonConfig* exclude)
+{
+    auto& btns = Buttons();
+    if (btns.empty()) return;
+    bool allVisible = true;
+    bool anyConsidered = false;
+
+    for (const auto& b : btns) 
+    {
+        if (&b == exclude) continue;
+        anyConsidered = true;
+        if (!b.isVisible) { allVisible = false; break; }
+    }
+
+    if (!anyConsidered) return;
+
+    const bool newState = !allVisible;
+
+    for (auto& b : btns) {
+        if (&b == exclude) continue;
+        b.isVisible = newState;
     }
 }
 
@@ -1053,8 +1241,8 @@ void GuiSystem::DrawStateWindow(Render& render)
 
     // -------- Window background (scaled like UI) --------
     {
-        const Vec2 basePos = { 960.f, 600.f };  // virtual center
-        const Vec2 baseSize = { 700.f, 500.f };  // virtual size
+        const Vec2 basePos = { 960.f, 560.f };  // virtual center
+        const Vec2 baseSize = { 700.f, 550.f };  // virtual size
         Vec2 pos;   pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
         Vec2 size;  size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
         render.DrawRect(pos, size.x, size.y, { 0.1f, 0.1f, 0.1f });
@@ -1063,17 +1251,21 @@ void GuiSystem::DrawStateWindow(Render& render)
         const float baseTextScale = 1.0f;
         const float textScale = baseTextScale * uiScale;
 
-        const Vec2 baseTitlePos = { 740.f, 780.f };
-        Vec2 titlePos; titlePos.x = baseTitlePos.x * scaleX; titlePos.y = baseTitlePos.y * scaleY;
-        render.DrawText("CHOOSE YOUR STATE", titlePos.x, titlePos.y, textScale, { 1,1,1 }, "Marker");
+        const Vec2 baseTitlePos = { 960.f, 780.f };
+        const std::string title = "CHOOSE YOUR STATE";
+        Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+        float textX = baseTitlePos.x - textSize.x * 0.5f;
+        float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
+        render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
     }
 
     struct Item { const char* label; ButtonAction action; };
     const Item items[] = {
-        {"None",      ButtonAction::None},
-        {"Main Menu", ButtonAction::LoadMainMenu},
-        {"Level 1",   ButtonAction::LoadLevel1},
-        {"Quit",      ButtonAction::Quit},
+        {"None",            ButtonAction::None},
+        {"Main Menu",       ButtonAction::LoadMainMenu},
+        {"Level 1",         ButtonAction::LoadLevel1},
+        {"Quit",            ButtonAction::Quit},
+        {"Toggle Buttons",  ButtonAction::ToggleAllButtons} // test toggling of buttons
     };
 
     auto ClickFunction = [this](ButtonAction action)
@@ -1089,7 +1281,7 @@ void GuiSystem::DrawStateWindow(Render& render)
 
     for (const auto& it : items)
     {
-        if (it.action == ButtonAction::None) { yVirtual -= 80.f; continue; }
+        if (it.action == ButtonAction::None) { yVirtual -= 40.f; continue; }
 
         const Vec2 basePos = { 960.f, yVirtual };
         const Vec2 baseSize = { 500.f,  60.f };
@@ -1108,14 +1300,13 @@ void GuiSystem::DrawStateWindow(Render& render)
         Vec2 textSize = render.CalculateTextSize(it.label, textScale, "Marker");
 
         float textX = pos.x - textSize.x * 0.5f;
-        float textY = pos.y - textSize.y * 0.5f + textSize.y * 0.15f; // small vertical offset
+        float textY = pos.y - textSize.y * 0.5f + textSize.y * 0.15f;
         render.DrawText(it.label, textX, textY, textScale, { 1,1,1 }, "Marker");
 
         // Click action
         if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             ClickFunction(it.action);
-            stateWindowActive = false;
             renderer.useCamera = prevCam;
             return;
         }
@@ -1195,37 +1386,4 @@ void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartT
     if (comp->CheckIfTyping()) comp->StopTyping();
     comp->SetCurrentLineIndex(newIndex);
     if (restartTyping) comp->StartTyping();
-}
-
-void GuiSystem::AdvanceDialogue(DialogueConfig& dlg)
-{
-    TextSystem::TextComponent* comp = dlg.textComp ? dlg.textComp : dlg.owned.get();
-    if (!comp) return;
-
-    // If we’re in the editor, ignore advance requests entirely.
-    if (SceneManager::Get().inEditMode) return;
-
-    const auto& lines = comp->GetLines();
-    if (lines.empty()) return;
-
-    // If currently typing, finish the current line first.
-    if (comp->CheckIfTyping()) 
-    {
-        comp->StopTyping();
-        return;
-    }
-
-    // Advance to next line
-    int idx = comp->GetCurrentLineIndex();
-    ++idx;
-
-    if (idx < (int)lines.size()) 
-    {
-        comp->SetCurrentLineIndex(idx);
-        comp->StartTyping();
-    }
-    else 
-    {
-        comp->StopTyping();
-    }
 }
