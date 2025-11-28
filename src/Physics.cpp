@@ -440,18 +440,9 @@ namespace Physics {
 				aabb = Create_AABB(center, dimensions);
 			}
 
-			// Create Circle from old data
-			Circle circle;
-			if (j.contains("circle")) {
-				const auto& circleJson = j["circle"];
-				circle.pos.x = circleJson.value("posX", 0.0f);
-				circle.pos.y = circleJson.value("posY", 0.0f);
-				circle.rad = circleJson.value("rad", 0.0f);
-			}
-
 			// Create and add ColliderComponent
 			bool willCollide = j.value("willCollide", true);
-			ColliderComponent collider(aabb, circle, willCollide);
+			ColliderComponent collider(aabb, willCollide);
 			reg.Add_Component<ColliderComponent>(eID, collider);
 
 			std::cout << "[Migration] Converted old Physics collision data to ColliderComponent for entity " << eID << "\n";
