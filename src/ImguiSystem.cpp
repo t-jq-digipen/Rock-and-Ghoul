@@ -457,7 +457,7 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
 
             Vec2 worldSize = { frameW * RenderSystem::unitsPerPixel, frameH * RenderSystem::unitsPerPixel };
 
-            Vec2 size = worldSize * sprite.Get_Scale();
+            Vec2 size = worldSize * sprite.Get_Scale() * t.scale;
 
             Vec2 half = size * 0.5f;
             minW = t.pos - half;
@@ -467,7 +467,7 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
 
         case RT_SHAPE:
         {
-            Vec2 size = r.GetShape().dimensions;
+            Vec2 size = r.GetShape().dimensions * t.scale;
             Vec2 half = size * 0.5f;
             minW = t.pos - half;
             maxW = t.pos + half;
@@ -492,9 +492,9 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
     // Outer glow
-    dl->AddRect(tl, br, IM_COL32(0, 255, 0, 60), 0.0f, 0, 6.0f);
+    dl->AddRect(tl, br, IM_COL32(0, 255, 255, 60), 0.0f, 0, 6.0f);
     // Main outline
-    dl->AddRect(tl, br, IM_COL32(0, 255, 0, 255), 0.0f, 0, 3.0f);
+    dl->AddRect(tl, br, IM_COL32(0, 255, 255, 255), 0.0f, 0, 2.0f);
 
 }
 Entity PickEntityAtWorldPos(const Vec2& world)
