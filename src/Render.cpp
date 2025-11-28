@@ -45,7 +45,12 @@
 Camera& mainCamera = Camera::GetInstance();
 
 //Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0) {}
-Render::Render() : vao(0), vbo(0), shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), textVAO(0), textVBO(0), batchVAO(0), batchVBO(0), batchEBO(0), batchShader(0) {}
+Render::Render() : 
+    vao(0), vbo(0), 
+    shaderProgram(0), InstanceShaderProgram(0), InstanceVBO(0), projection(0), 
+    textVAO(0), textVBO(0), 
+    batchVAO(0), batchVBO(0), batchEBO(0), batchShader(0),
+    vertVAO(0), vertVBO(0) {}
 
 Render::~Render() {
     // Clean up OpenGL resourcess
@@ -91,6 +96,24 @@ void Render::Init() {
     // Texcoord attrib
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+
+    //============ Allocate and setup buffers for custom verts ===============
+    glGenVertexArrays(1, &vertVAO);
+    glGenBuffers(1, &vertVBO);
+
+    glBindVertexArray(vertVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, vertVBO);
+
+    // Allocate buffer for 4 vertices (cause use dynamic draw for this)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vec2) * 4, nullptr, GL_DYNAMIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2), (void*)0);
+
+    glBindVertexArray(0);
+
+
 
     //====== Instancing render ==========
 
@@ -402,6 +425,66 @@ void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3&
     // Reset color so next sprite draw isn't tinted
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
     glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
+
+    glUseProgram(0);
+}
+
+
+void Render::DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3, const Colour3& color)
+{
+    glUseProgram(shaderProgram);
+
+    // Upload matrix like usual
+    glm::mat4 projMatrix = useCamera
+        ? mainCamera.GetViewProjection()
+        : projection;
+
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE, &projMatrix[0][0]);
+
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"),
+        color.r, color.g, color.b);
+
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseCustomVerts"), GL_TRUE);
+
+    // Upload custom quad vertices
+    Vec2 vertices[4] = { v0, v1, v2, v3 };
+
+    /*GLuint tempVBO, tempVAO;
+    glGenVertexArrays(1, &tempVAO);
+    glGenBuffers(1, &tempVBO);
+
+    glBindVertexArray(tempVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, tempVBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2), (void*)0);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    //glFlush();
+
+    glBindVertexArray(0);
+    glDeleteBuffers(1, &tempVBO);
+    glDeleteVertexArrays(1, &tempVAO);*/
+
+    //upload v ertices to VBO
+    glBindBuffer(GL_ARRAY_BUFFER, vertVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
+    //bind VAO
+    glBindVertexArray(vertVAO);
+
+    //Draw
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    //Cleanup
+    glBindVertexArray(0);
+
+    //reset for future draw calls 
+    glUniform1i(glGetUniformLocation(shaderProgram, "uUseCustomVerts"), GL_FALSE);
 
     glUseProgram(0);
 }
