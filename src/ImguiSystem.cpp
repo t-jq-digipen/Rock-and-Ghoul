@@ -1792,7 +1792,7 @@ void ImGuiSystem::Update(float dt)
                 if (reg.Has_Component<ColliderComponent>(selectedEntity))
                 {
                     auto& col = reg.Get_Component<ColliderComponent>(selectedEntity);
-                    col.UpdateHitboxes(t.pos);
+                    col.UpdateHitboxes(t.pos, t.scale);
                 }
             }
 
@@ -1912,7 +1912,7 @@ void ImGuiSystem::Update(float dt)
 
                 // Sync hitboxes
                 auto& cRef = reg.Get_Component<ColliderComponent>(e);
-                cRef.UpdateHitboxes(t.pos);
+                cRef.UpdateHitboxes(t.pos, t.scale);
 
                 // Optional: give a friendly name
                 reg.Get_EntityNameMap()[e] = std::filesystem::path(texPath).stem().string();
@@ -2955,7 +2955,7 @@ void ImGuiSystem::ShowInspectorWindow()
         {
             auto& collider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
             auto& t = m_registry.Get_Component<TransformComponent>(selectedEntity);
-            collider.UpdateHitboxes(t.pos);
+            collider.UpdateHitboxes(t.pos, t.scale);
         }
     }
 
