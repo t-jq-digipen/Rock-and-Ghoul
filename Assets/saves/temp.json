@@ -49,9 +49,11 @@
                     300.0,
                     100.0
                 ],
-                "soundType": 1
+                "soundType": 0
             }
-        ]
+        ],
+        "dialogues": [],
+        "textboxes": []
     },
     "sceneName": "temp",
     "sceneType": 0,

@@ -174,10 +174,16 @@ void GuiSystem::Update(float dt) {
         // UPDATED: Added font parameter to DrawText
         render.DrawText(cfg.label, textX, textY, textScale, { 1, 1, 1 }, "Marker");
 
-        if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
-            if (audio) audio->PlayButtonSound(cfg.soundType);
-            if (cfg.onClick) cfg.onClick();
+#if 1 //EDITORMACRO
+        if (!SceneManager::Get().inEditMode) {
+#endif
+            if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+                if (audio) audio->PlayButtonSound(cfg.soundType);
+                if (cfg.onClick) cfg.onClick();
+            }
+#if 1 //EDITORMACRO
         }
+#endif
     }
 
     for (auto& tb : textboxes)
@@ -260,7 +266,7 @@ void GuiSystem::Update(float dt) {
     if (stateWindowActive) {
         DrawStateWindow(render);
     }
-
+    /*
     if (editMode) {
         // Background panel
         render.DrawRect({ 250, 540 }, 500, 1000, { 0.15f, 0.15f, 0.15f });
@@ -904,6 +910,15 @@ void GuiSystem::Update(float dt) {
             }
         }
     }
+    */
+
+    if (float t = SceneManager::Get().GetTransitionProgress() != 1.f)
+    {
+        float alpha = 1.f - t;
+        Vec2 pos = { GLApp::VIRTUAL_W * .5f,GLApp::VIRTUAL_H * .5f };
+        //KERVINMAKETHISHAVEALPHA
+        render.DrawRect(pos, GLApp::VIRTUAL_W, GLApp::VIRTUAL_H, { 0.f,0.f,0.f });
+    }
 
     // restore camera back to world
     render.useCamera = prevCam;
@@ -979,10 +994,16 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
         btn.onClick = [this]() { ToggleAllDialogues(); };
         break;
     case ButtonAction::LoadLevel1:
-        btn.onClick = [this]() { SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); };
+        btn.onClick = [this]() { 
+            SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); 
+            SceneManager::Get().SetTransitionTime(2.f);
+            };
         break;
     case ButtonAction::LoadMainMenu:
-        btn.onClick = [this]() { SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json"); };
+        btn.onClick = [this]() { 
+            SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
+            SceneManager::Get().SetTransitionTime(2.f);
+            };
         break;
     case ButtonAction::Quit:
         btn.onClick = [this]() { CoreEngine::GetInstance().Quit(); };

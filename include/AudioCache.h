@@ -97,6 +97,8 @@ public:
  */
     static AudioAsset* GetAsset(const std::string& name);
 
+    static std::string GetAssetName(int id);
+
     /**
      * @brief Retrieves a loaded FMOD::Sound pointer by asset name.
      * If the asset exists but hasn't been loaded yet, this function automatically

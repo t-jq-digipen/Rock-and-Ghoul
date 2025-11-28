@@ -9,6 +9,8 @@
 #include <filesystem>
 #include "ImguiSystem.h"
 #include "Audio.h"
+#include "FrameRateController.h"
+#include <chrono>
 
 SceneManager& SceneManager::Get()
 {
@@ -27,9 +29,34 @@ void SceneManager::QueueLoadScene(const std::string& path)
 }
 void SceneManager::Update(float dt, float fixedDt, int numSteps)
 {
+    
+    if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying()) {
+        TogglePause();
+        //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+    }
+
+    if (Input::IsKeyPressed(GLFW_KEY_H) && IsPlaying()) {
+        sceneTransitionTime = 0.f;
+        sceneFadeDuration = 2.f;
+        QueueLoadScene("../Assets/saves/level1.json");
+        //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+    }
+
     // Only load scenes at SAFE time (start of frame)
     if (!pendingScene.empty())
     {
+        if (GetTransitionProgress() < 1.f) {
+
+            std::cout << "fadeprog " << GetTransitionProgress() << '\n';
+            
+
+            sceneTransitionTime += dt;
+            return; 
+        }
+        sceneFadeDuration = 0.f;
+        sceneTransitionTime = 0.f;
+
+
         std::string path = pendingScene;
         pendingScene.clear();
 

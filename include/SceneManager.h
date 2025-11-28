@@ -37,6 +37,9 @@ public:
     void SetCurrentSceneBGM(const std::string& bgmAssetName) { currentSceneBGM = bgmAssetName; }
     std::string GetCurrentSceneBGM() const { return currentSceneBGM; }
 
+    void SetTransitionTime(float duration) { sceneFadeDuration = duration; }
+    float GetTransitionProgress() const { return (sceneFadeDuration == 0.f) ? 1.f : sceneTransitionTime / sceneFadeDuration; }
+
 private:
     SceneManager() = default;
 
@@ -44,5 +47,7 @@ private:
     std::string tempScenePath = "../Assets/saves/temp.json";         // Auto-generated temp version
     std::string currentSceneBGM;  // BGM asset name for current scene
     std::string pendingScene = "";
+    float sceneTransitionTime = 0.f; // goes from 1.f to 0.f
+    float sceneFadeDuration = 0.f;
     SceneType sceneType = ST_MENU;
 };

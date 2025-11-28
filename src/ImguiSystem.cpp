@@ -923,7 +923,8 @@ void ImGuiSystem::Update(float dt)
         ImGui::DockBuilderDockWindow("Engine Info", dock_left_bottom);
         ImGui::DockBuilderDockWindow("Entity Editor + Prefabs", dock_right);
         ImGui::DockBuilderDockWindow("UI Editor", dock_right);
-        ImGui::DockBuilderDockWindow("Collision + Scene", dock_bottom);
+        ImGui::DockBuilderDockWindow("Collision", dock_bottom);
+        ImGui::DockBuilderDockWindow("Scene Manager", dock_bottom);
         ImGui::DockBuilderDockWindow("Assets", dock_bottom);
         ImGui::DockBuilderDockWindow("Game View", dockspaceID);
         ImGui::DockBuilderFinish(dockspaceID);
@@ -932,7 +933,7 @@ void ImGuiSystem::Update(float dt)
 
     if (ImGui::Begin("Editor Camera", nullptr,
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
-        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
+        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
         ImVec2 cursor = ImGui::GetCursorScreenPos();
         ImVec2 size = ImGui::GetContentRegionAvail();
 
@@ -944,31 +945,39 @@ void ImGuiSystem::Update(float dt)
         else {
             ImGui::TextDisabled("Panel too small to display");
         }
-        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
+        if (/* */!sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
 
 
     if (ImGui::Begin("Engine Info")) {
-        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
+        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
         ShowEngineDebugWindow();
-        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
+        if (/* */!sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
 
 
-    if (ImGui::Begin("Collision + Scene")) {
-        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
+    if (ImGui::Begin("Collision")) {
+        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
         ShowCollisionDebugWindow();
-        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
+        if (/* */!sm.inEditMode) ImGui::EndDisabled();
+    }
+    ImGui::End();
+
+    if (ImGui::Begin("Scene Manager")) {
+        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
+        //ShowCollisionDebugWindow();
+        ShowSceneBrowser();
+        if (/* */!sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
 
     if (ImGui::Begin("Entity Editor + Prefabs")) {
-        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
+        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
         // MakeNeaterNextTime
         if (ImGui::Button("Add Entity"))
         {
@@ -1028,13 +1037,13 @@ void ImGuiSystem::Update(float dt)
         ImGui::Separator();
         ShowPrefabControls();      //prefabs
 
-        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
+        if (/* */!sm.inEditMode) ImGui::EndDisabled();
 
     }
     ImGui::End();
 
     if (ImGui::Begin("UI Editor", nullptr)) {
-        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
+        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
 
         auto& gui = GuiSystem::Get();
 
@@ -1621,14 +1630,14 @@ void ImGuiSystem::Update(float dt)
 
         ImGui::Separator();
         //ShowPrefabControls();      //prefabs
-        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
+        if ( !sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
     if (ImGui::Begin("Assets")) {
-        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
+        if ( !sm.inEditMode) ImGui::BeginDisabled();
         ShowAssetPreviewWindow();
-        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
+        if ( !sm.inEditMode) ImGui::EndDisabled();
 
     }
     ImGui::End();
@@ -1636,9 +1645,9 @@ void ImGuiSystem::Update(float dt)
 
     // game view panel
     if (ImGui::Begin("Game View")) {
-        bool isPlaying = !sm.isPaused && !sm.inEditMode;
+        bool isPlaying =  !sm.inEditMode;
         ShowSimulationControls(isPlaying);
-        isPlaying = !sm.isPaused && !sm.inEditMode;
+        isPlaying =  !sm.inEditMode;
         ImVec2 avail = ImGui::GetContentRegionAvail();
 
         //16:9 ratio
@@ -2098,6 +2107,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
         }
     }
 
+    ImGui::Columns(2);
 
     ImGui::Text("AABB Colliders: %d / %d active", activeColliders, totalColliders);
     ImGui::Checkbox("Show Colliders", &showColliders);
@@ -2105,7 +2115,8 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::Checkbox("Show Spatial Grid", &showSpatialGrid);
 
     // Spatial Grid Statistics
-    ImGui::Separator();
+    // ImGui::Separator();
+    ImGui::NextColumn();
     ImGui::Text("Spatial Grid (Broad Phase):");
     SpatialGrid* grid = CollisionManager::GetSpatialGrid();
     if (grid) {
@@ -2129,17 +2140,19 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
             naiveChecks,
             (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
     }
-
-    ImGui::Separator(); 
+    ImGui::Columns(1);
+    //ImGui::Separator(); 
     ShowLayerCollisionMatrix(); 
     ImGui::Separator();
-    ImGui::Text("Scene Management:");
-    ShowSceneBrowser();
+    //ImGui::Text("Scene Management:");
+    //ShowSceneBrowser();
 
 }
 
 void ImGuiSystem::ShowSceneBrowser()
 {
+    ImGui::Columns(2);
+    ImGui::SeparatorText("Scene Management");
     //same as earlier thing
     namespace fs = std::filesystem;
     const std::string sceneFolder = "../Assets/saves/";
@@ -2156,7 +2169,7 @@ void ImGuiSystem::ShowSceneBrowser()
         needRefresh = true;
     }
 
-    ImGui::Separator();
+    //ImGui::Separator();
 
     if (needRefresh)
     {
@@ -2182,6 +2195,7 @@ void ImGuiSystem::ShowSceneBrowser()
     for (int i = 0; i < static_cast<int>(sceneFiles.size()); ++i)
     {
         const std::string& sceneName = sceneFiles[i];
+        if (sceneName == "temp") continue;
         bool selected = (selectedScene == i);
 
         ImGui::PushID(sceneName.c_str());
@@ -2304,6 +2318,96 @@ void ImGuiSystem::ShowSceneBrowser()
             }
         }
     }
+
+    ImGui::NextColumn();
+
+    // Scene settings
+    Camera& cam = Camera::GetInstance();
+    SceneManager& sm = SceneManager::Get();
+    std::string sceneSetLabel = "Scene Settings : [" + sm.GetCurrentSceneName() + "]";
+    ImGui::SeparatorText(sceneSetLabel.c_str());
+
+    ImGui::Indent(20.f);
+    // WORLD SETTINGS
+    // - Scene type
+    // - World size
+    // ------------------------------------------------------------
+    ImGui::SeparatorText("World settings");
+
+    static const char* sceneTypes[] = { "Menu", "Game" };
+    int currType = static_cast<int>(SceneManager::Get().GetSceneType());
+    if (ImGui::Combo("Scene Type", &currType, sceneTypes, IM_ARRAYSIZE(sceneTypes)))
+    {
+        SceneManager::Get().SetSceneType(static_cast<SceneType>(currType));
+    }
+
+    if (currType == ST_MENU) { ImGui::BeginDisabled(); }
+    ImGui::InputFloat2("Size", &sceneSize.x);
+    if (ImGui::Button("Set size"))
+    {
+        if (sceneSize.x != 0 && sceneSize.y != 0)
+        {
+            sceneMin.x = 990 - sceneSize.x / 2;
+            sceneMax.x = 990 + sceneSize.x / 2;
+            sceneMin.y = 540 - sceneSize.y / 2;
+            sceneMax.y = 540 + sceneSize.y / 2;
+        }
+        cam.SetBounds(sceneMin, sceneMax);
+    }
+    // ------------------------------------------------------------
+
+    // CAMERA SETTINGS
+    // - Camera spawn position and zoom
+    // - Reset to cente
+    // ------------------------------------------------------------
+    ImGui::SeparatorText("Camera spawn settings");
+    // Spawn position
+    ImGui::InputFloat2("Position", &camSpawnPos.x);
+    // Zoom value
+    ImGui::InputFloat("Zoom", &camSpawnZoom);
+
+    if (ImGui::Button("Set spawn to current setting"))
+    {
+        camSpawnZoom = cam.GetZoom();
+        camSpawnPos = cam.GetPosition();
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Go to spawn camera"))
+    {
+        cam.SetZoom(camSpawnZoom);
+        cam.SetPosition(camSpawnPos);
+    }
+
+    if (currType == ST_MENU) { ImGui::EndDisabled(); }
+    // ------------------------------------------------------------
+
+    // BACKGROUND MUSIC
+    // - Music bound
+    // - Fade out timing
+    ImGui::SeparatorText("Background Music");
+    std::string bgmName = sm.GetCurrentSceneBGM();
+    static int selectedTrack = 0;
+
+    std::vector<const char*> musicTrackList;
+
+    for (const auto& [name, asset] : AudioCache::GetAllAssets())
+    {
+        if (asset.group == "Music")
+        {
+            musicTrackList.push_back(asset.name.c_str());
+            if (asset.name == bgmName)
+            { selectedTrack = musicTrackList.size()-1; }
+        }
+    }
+
+    if (ImGui::Combo("BGM Track", &selectedTrack, musicTrackList.data(), musicTrackList.size()))
+    {
+        //std::string trackName = AudioCache::GetAssetName(selectedTrack);
+        std::string trackName = musicTrackList[selectedTrack];
+        sm.SetCurrentSceneBGM(trackName);
+    }
+    ImGui::Columns(1);
 }
 
 void ImGuiSystem::ShowHierarchyWindow() {
@@ -2351,7 +2455,7 @@ void ImGuiSystem::ShowInspectorWindow()
     {
         const std::string& compName = componentData.GetComponentName();
 
-        // Custom data fields for animator component
+        // Custom data fields for render component
         if (compName == "Render")
         {
             RenderComponent& rendercomp = m_registry.Get_Component<RenderComponent>(selectedEntity);
@@ -2577,6 +2681,7 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
+        // Custom data fields for Behaviour component (C++ scripts)
         else if (compName == "Behaviour")
         {
             BehaviourComponent& behaviourComp = m_registry.Get_Component<BehaviourComponent>(selectedEntity);
@@ -2628,6 +2733,87 @@ void ImGuiSystem::ShowInspectorWindow()
                     {
                         behaviourComp.RemoveScript(sID);
                     }
+                    ImGui::PopID();
+                }
+
+                ImGui::TreePop();
+            }
+        }
+        // Custom data fields for Monoscript component (C# scripts)
+        else if (compName == "Mono Script")
+        {
+            MonoScriptComponent& monoComp =
+                m_registry.Get_Component<MonoScriptComponent>(selectedEntity);
+
+            if (ImGui::TreeNode(compName.c_str()))
+            {
+                MonoSystem& monoSys = MonoSystem::Get();
+
+                // ----------------------------------------------
+                // 1. Build list of available script names
+                // ----------------------------------------------
+                const auto& nameToID = monoSys.GetNameToIDMap();
+
+                if (nameToID.empty())
+                {
+                    ImGui::TextDisabled("No C# scripts registered.");
+                    ImGui::TreePop();
+                    return;
+                }
+
+                std::vector<const char*> items;
+                items.reserve(nameToID.size());
+                for (auto& [name, id] : nameToID)
+                    items.push_back(name.c_str());
+
+                static int currentIndex = 0;
+                std::string selectedScript = items[currentIndex];
+
+                // dropdown
+                if (ImGui::Combo("Select C# Script",
+                    &currentIndex, items.data(), (int)items.size()))
+                {
+                    selectedScript = items[currentIndex];
+                }
+
+                // ----------------------------------------------
+                // 2. Add Script button
+                // ----------------------------------------------
+                bool disableAdd = monoComp.HasScript(selectedScript);
+
+                std::string addLabel = "Add Script";
+                if (disableAdd)
+                {
+                    addLabel += " (already added)";
+                    ImGui::BeginDisabled();
+                }
+
+                if (ImGui::Button(addLabel.c_str()))
+                {
+                    monoComp.AddScript(selectedScript);
+                }
+
+                if (disableAdd) ImGui::EndDisabled();
+
+                ImGui::SeparatorText("Attached Scripts");
+
+                // ----------------------------------------------
+                // 3. Show list of attached scripts
+                // ----------------------------------------------
+                int id = 0;
+                for (MonoScriptID scriptID : monoComp.scriptIDList)
+                {
+                    ImGui::PushID(id++);
+
+                    const std::string& name = monoSys.GetScriptName(scriptID);
+                    ImGui::Text("%s", name.c_str());
+
+                    ImGui::SameLine();
+                    if (ImGui::SmallButton("Remove"))
+                    {
+                        monoComp.RemoveScript(scriptID);
+                    }
+
                     ImGui::PopID();
                 }
 
@@ -2749,7 +2935,8 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
-        else
+        // Default data fields for other components
+        else 
             if (ImGui::TreeNode(compName.c_str()))
             {
                 for (auto& [name, widgetVariant] : componentData.GetDataMap())
@@ -3392,7 +3579,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
     SceneManager& sm = SceneManager::Get();
-    bool isPlaying = !sm.isPaused && !sm.inEditMode;
+    bool isPlaying = /**/ !sm.inEditMode;
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
@@ -3416,16 +3603,6 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     Vec2 offset{ 0.0f,0.0f };
 
     // --- Draw background rectangle for visual clarity ---
-    //dl->AddRectFilled(
-    //    { viewportPos.x + offset.x, viewportPos.y + offset.y },
-    //    { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
-    //    IM_COL32(40, 40, 40, 255)
-    //);
-    //dl->AddRect(
-    //    { viewportPos.x + offset.x, viewportPos.y + offset.y },
-    //    { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
-    //    IM_COL32(100, 100, 100, 255)
-    //);
     ImGui::BeginChild("MinimapRegion", displaySize);
 
     dl->AddRectFilled(
@@ -3441,41 +3618,6 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     ImGui::EndChild();
 
 
-    // --- Draw Camera zone ---
-
-    Camera& cam = Camera::GetInstance();
-    bool camHover = false;
-    Vec2 camOffset = cam.GetPosition() - sceneMin;
-    {
-        float camZoom = cam.GetZoom();
-        camZoom = (camZoom != 0) ? 1 / camZoom : 0.f;
-        camZoom *= scale;
-
-        Vec2 camMin = cam.GetWorldMin();
-
-        Vec2 camMax = cam.GetWorldMax();
-
-        //ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (worldWidth * camZoom) / 2,
-        //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - (worldHeight * camZoom) / 2 };
-
-        //ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (worldWidth * camZoom) / 2,
-        //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + (worldHeight * camZoom) / 2 };
-
-        ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (GLApp::VIRTUAL_W * camZoom) / 2,
-                       viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) - (GLApp::VIRTUAL_H * camZoom) / 2 };
-
-        ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (GLApp::VIRTUAL_W * camZoom) / 2,
-                       viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) + (GLApp::VIRTUAL_H * camZoom) / 2 };
-
-        bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
-            mousePos.y >= min.y && mousePos.y <= max.y);
-
-        ImU32 color = inside ? IM_COL32(255, 192, 203, 255) : IM_COL32(255, 0, 255, 255);
-
-        dl->AddRect(min, max, color);
-        if (inside) { camHover = true; }
-    }
-
     // --- Mouse state ---
     bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
     bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
@@ -3483,6 +3625,43 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 
     static Vec2 dragOffset{ 0.f, 0.f };
     static bool isDragging = false;
+
+    // --- Draw Camera zone ---
+    Camera& cam = Camera::GetInstance();
+    bool camHover = false;
+    Vec2 camOffset = cam.GetPosition() - sceneMin;
+    if (sm.GetSceneType() == ST_GAME)
+    {
+        {
+            float camZoom = cam.GetZoom();
+            camZoom = (camZoom != 0) ? 1 / camZoom : 0.f;
+            camZoom *= scale;
+
+            Vec2 camMin = cam.GetWorldMin();
+
+            Vec2 camMax = cam.GetWorldMax();
+
+            //ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (worldWidth * camZoom) / 2,
+            //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - (worldHeight * camZoom) / 2 };
+
+            //ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (worldWidth * camZoom) / 2,
+            //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + (worldHeight * camZoom) / 2 };
+
+            ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (GLApp::VIRTUAL_W * camZoom) / 2,
+                           viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) - (GLApp::VIRTUAL_H * camZoom) / 2 };
+
+            ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (GLApp::VIRTUAL_W * camZoom) / 2,
+                           viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) + (GLApp::VIRTUAL_H * camZoom) / 2 };
+
+            bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
+                mousePos.y >= min.y && mousePos.y <= max.y);
+
+            ImU32 color = inside ? IM_COL32(255, 192, 203, 255) : IM_COL32(255, 0, 255, 255);
+
+            dl->AddRect(min, max, color);
+            if (inside) { camHover = true; }
+        }
+    }
 
 
     // === Draw all entities ===
@@ -3505,7 +3684,8 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
         dl->AddRect(min, max, color, 0.f, 0, 2.f);
     }
 
-    if (!isPlaying)
+    // Drag camera around
+    if (!isPlaying && sm.GetSceneType() == ST_GAME)
     {
         if (mouseClicked && camHover)
         {
@@ -3533,49 +3713,59 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
         if (mouseReleased)
             isDragging = false;
     }
-    ImGui::SeparatorText("World settings");
-
-    static const char* sceneTypes[] = { "Menu", "Game" };
-    int currType = static_cast<int>(SceneManager::Get().GetSceneType());
-    if (ImGui::Combo("Scene Type", &currType, sceneTypes, IM_ARRAYSIZE(sceneTypes)))
-    {
-        SceneManager::Get().SetSceneType(static_cast<SceneType>(currType));
-    }
-
-    if (currType == ST_MENU) { ImGui::BeginDisabled(); }
-    ImGui::InputFloat2("Size", &sceneSize.x);
-    if (ImGui::Button("Set size"))
-    {
-        if (sceneSize.x != 0 && sceneSize.y != 0)
-        {
-            sceneMin.x = 990 - sceneSize.x / 2;
-            sceneMax.x = 990 + sceneSize.x / 2;
-            sceneMin.y = 540 - sceneSize.y / 2;
-            sceneMax.y = 540 + sceneSize.y / 2;
-        }
-        cam.SetBounds(sceneMin, sceneMax);
-    }
-    if (currType == ST_MENU) { ImGui::EndDisabled(); }
 
 
-    ImGui::SeparatorText("Camera spawn settings");
-    // Spawn position
-    ImGui::InputFloat2("Position", &camSpawnPos.x);
-    // Zoom value
-    ImGui::InputFloat("Zoom", &camSpawnZoom);
-
-    if (ImGui::Button("Set spawn to current setting"))
-    {
-        camSpawnZoom = cam.GetZoom();
-        camSpawnPos = cam.GetPosition();
-    }
-
-    if (ImGui::Button("Reset", ImVec2(80, 0)))
+    if (sm.GetSceneType() == ST_MENU) ImGui::BeginDisabled(); 
+    if (ImGui::Button("Reset"))
     {
         cam.SetZoom(1.0f);
         cam.ResetToCenter();
         std::cout << "[Editor] Camera reset.\n";
     }
+    if (sm.GetSceneType() == ST_MENU) ImGui::EndDisabled();
+    //ImGui::SeparatorText("World settings");
+
+    //static const char* sceneTypes[] = { "Menu", "Game" };
+    //int currType = static_cast<int>(SceneManager::Get().GetSceneType());
+    //if (ImGui::Combo("Scene Type", &currType, sceneTypes, IM_ARRAYSIZE(sceneTypes)))
+    //{
+    //    SceneManager::Get().SetSceneType(static_cast<SceneType>(currType));
+    //}
+
+    //if (currType == ST_MENU) { ImGui::BeginDisabled(); }
+    //ImGui::InputFloat2("Size", &sceneSize.x);
+    //if (ImGui::Button("Set size"))
+    //{
+    //    if (sceneSize.x != 0 && sceneSize.y != 0)
+    //    {
+    //        sceneMin.x = 990 - sceneSize.x / 2;
+    //        sceneMax.x = 990 + sceneSize.x / 2;
+    //        sceneMin.y = 540 - sceneSize.y / 2;
+    //        sceneMax.y = 540 + sceneSize.y / 2;
+    //    }
+    //    cam.SetBounds(sceneMin, sceneMax);
+    //}
+    //if (currType == ST_MENU) { ImGui::EndDisabled(); }
+
+
+    //ImGui::SeparatorText("Camera spawn settings");
+    //// Spawn position
+    //ImGui::InputFloat2("Position", &camSpawnPos.x);
+    //// Zoom value
+    //ImGui::InputFloat("Zoom", &camSpawnZoom);
+
+    //if (ImGui::Button("Set spawn to current setting"))
+    //{
+    //    camSpawnZoom = cam.GetZoom();
+    //    camSpawnPos = cam.GetPosition();
+    //}
+
+    //if (ImGui::Button("Reset", ImVec2(80, 0)))
+    //{
+    //    cam.SetZoom(1.0f);
+    //    cam.ResetToCenter();
+    //    std::cout << "[Editor] Camera reset.\n";
+    //}
 
 }
 
@@ -3921,7 +4111,7 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
     //    clm.SaveCollisionSettings();
 
     ImGui::Separator();
-    ImGui::Text("Collision Layer Matrix");
+    ImGui::SeparatorText("Collision Layer Matrix");
     ImGui::Separator();
 
     // ------------------------------------------------

@@ -291,6 +291,8 @@ FMOD::Channel* AudioSystem::PlaySoundGetChannel(FMOD::Sound* sound, bool paused)
     return channel;
 }
 
+
+
 /**
  * @brief Sets the playback position of a channel.
  *
@@ -728,13 +730,13 @@ void AudioManager::Update(float dt) {
 
     wasInEditMode = sm.IsInEditMode();
 
-    // ============================================================
-    // HANDLE GAME PAUSE (P key)
-    // ============================================================
-    if (Input::IsKeyPressed(GLFW_KEY_P) && sm.IsPlaying()) {
-        sm.TogglePause();
-        std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
-    }
+    //// ============================================================
+    //// HANDLE GAME PAUSE (P key)
+    //// ============================================================
+    //if (Input::IsKeyPressed(GLFW_KEY_P) && sm.IsPlaying()) {
+    //    sm.TogglePause();
+    //    std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+    //}
 
     // ← CHANGED: Update fade instead of crossfade
     UpdateFade(dt);
