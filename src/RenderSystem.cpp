@@ -32,6 +32,7 @@
 #include "CoreEngine.h"
 #include "RenderComponent.h"
 #include "SceneManager.h"
+#include "SimpleAtlas.h"
  // ---------------------------------------------
  // @brief Temporary struct for per-frame draw queue
  // ---------------------------------------------
@@ -182,6 +183,27 @@ void RenderSystem::Initialize() {
     pixelsPerUnit = 100.f;
     unitsPerPixel = 1.f / pixelsPerUnit;
 
+    //atlas testing below 
+    /*SimpleAtlas atlas;
+    SimpleAtlasBuilder builder;
+
+    builder.addImage("rock", "../Assets/Rock_2048px.png");
+    builder.addImage("rock_fight", "../Assets/Rock_FightingPose_2048px.png");
+    builder.addImage("ghoul", "../Assets/Ghoul_2048px.png");
+    builder.build(atlas, 4000);
+
+    std::cout << "\n=== ATLAS BUILD RESULT ===\n";
+    std::cout << "Atlas Texture ID: " << atlas.textureID << "\n";
+    std::cout << "Atlas Size: " << atlas.width << " x " << atlas.height << "\n";
+
+    for (auto& [key, sp] : atlas.sprites)
+    {
+        std::cout << "Sprite: " << key << "\n";
+        std::cout << "  UV: (" << sp.u0 << "," << sp.v0
+            << ") -> (" << sp.u1 << "," << sp.v1 << ")\n";
+        std::cout << "  Size: " << sp.width << "x" << sp.height << "\n";
+    }*/
+
 }
 
 void RenderSystem::Update(float dt) {
@@ -193,11 +215,15 @@ void RenderSystem::Update(float dt) {
     Render& renderer = Render::GetInstance();
     
     bool camcheck = renderer.useCamera;
+
+#ifndef NO_IMGUI
     if (ImGuiSystem::guiEnabled) {
         renderer.BeginSceneCapture(); 
         renderer.ClearBackground({ 0.1f, 0.1f, 0.1f, 1.0f });
     }
-    else {
+    else 
+#endif
+    {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, GLApp::width, GLApp::height);
         //renderer.ApplyLetterboxViewport();
@@ -722,9 +748,11 @@ void RenderSystem::Update(float dt) {
     renderInstance.FlushBatch();*/
 
 
+#ifndef NO_IMGUI
     // Debug drawing for spatial grid
     {
     SpatialGrid* grid = CollisionManager::GetSpatialGrid();
+
     if (ImGuiSystem::showSpatialGrid) {
         if (grid) {
             DebugDraw::DrawSpatialGrid(grid, renderInstance);
@@ -768,6 +796,7 @@ void RenderSystem::Update(float dt) {
     if (ImGuiSystem::guiEnabled) {
         // renderer.EndSceneCapture();
     }
+#endif
     //renderer.EndSceneCapture();
     //renderer.PresentScene();
 }

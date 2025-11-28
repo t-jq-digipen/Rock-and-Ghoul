@@ -11,7 +11,7 @@
  * determines the executable directory and constructs paths for
  * save files, settings, and level scenes.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include <windows.h>
@@ -33,6 +33,27 @@ std::string getExeDir() {
     return std::filesystem::path(buffer).parent_path().string();
 }
 
+#ifdef NO_IMGUI
+
+//this one to work for installer, use the commented out for debug/release
+const std::string FilePath::SAVES_FOLDER = getExeDir() + "/../Assets/saves/";
+const std::string FilePath::SETTINGS_FILE = getExeDir() + "/../Assets/others/settings.json";
+const std::string FilePath::COLLISIONSETTINGS_FILE = getExeDir() + "/../Assets/others/CollisionSettings.json";
+
+const std::string FilePath::LEVEL1_SCENE = FilePath::SAVES_FOLDER + "level1.json";
+const std::string FilePath::LEVEL2_SCENE = FilePath::SAVES_FOLDER + "level2.json";
+
+const std::string FilePath::LEVEL1_TEMP_SCENE = FilePath::SAVES_FOLDER + "level1_temp.json";
+const std::string FilePath::LEVEL2_TEMP_SCENE = FilePath::SAVES_FOLDER + "level2_temp.json";
+
+const std::string FilePath::SCENES_LIST = getExeDir() + "/../Assets/others/ScenesList.json";
+
+// assets
+const std::string FilePath::ASSETS_FOLDER = getExeDir() + "/../Assets/";
+const std::string FilePath::PREFABS_FOLDER = FilePath::ASSETS_FOLDER + "prefabs/";
+
+#else
+
 const std::string FilePath::SAVES_FOLDER = getExeDir() + "/../../Assets/saves/";
 const std::string FilePath::SETTINGS_FILE = getExeDir() + "/../../Assets/others/settings.json";
 const std::string FilePath::COLLISIONSETTINGS_FILE = getExeDir() + "/../../Assets/others/CollisionSettings.json";
@@ -50,3 +71,4 @@ const std::string FilePath::ASSETS_FOLDER = getExeDir() + "/../../Assets/";
 const std::string FilePath::PREFABS_FOLDER = FilePath::ASSETS_FOLDER + "prefabs/";
 
 const std::string FilePath::DIALOGUE = FilePath::ASSETS_FOLDER + "Dialogue.json";
+#endif

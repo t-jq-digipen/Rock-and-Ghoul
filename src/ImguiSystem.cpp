@@ -22,7 +22,7 @@
  * ========================================================
  */
 
-
+#ifndef NO_IMGUI
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>          // for glm::value_ptr
@@ -4240,3 +4240,5 @@ void ImGuiSystem::ShutdownImGui() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
+
+#endif

@@ -8,9 +8,15 @@ class SceneManager
 public:
     static SceneManager& Get();
     // --- Simulation State ---
-    bool isPlaying = false;    // True = gameplay
-    bool isPaused = true;    // Optional pause
+#ifdef NO_IMGUI
+    bool isPlaying  = true;    // True = gameplay
+    bool isPaused   = false;    // Optional pause
+    bool inEditMode = false;     // True = editor mode
+#else
+    bool isPlaying  = false;    // True = gameplay
+    bool isPaused   = true;    // Optional pause
     bool inEditMode = true;     // True = editor mode
+#endif
 
     // Optional helper functions
     inline bool IsPlaying() const { return isPlaying; }

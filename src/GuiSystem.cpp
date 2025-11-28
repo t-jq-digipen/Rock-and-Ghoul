@@ -16,8 +16,11 @@
 #include "GameStateManager.h"
 #include "CoreEngine.h"
 #include "glapp.h"
+#ifndef NO_IMGUI
 #include "ImGuiSystem.h"
+#endif
 #include "SceneManager.h"
+
 AudioManager* GuiSystem::audio = nullptr;
 
 void GuiSystem::SetAudioManager(AudioManager* audioMgr) {

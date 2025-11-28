@@ -1,5 +1,5 @@
 {
-    "fullscreen": false,
+    "fullscreen": true,
     "resolutionHeight": 1080,
     "resolutionWidth": 1920,
     "volume": 100.0
