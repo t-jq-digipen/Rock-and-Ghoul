@@ -933,7 +933,7 @@ void ImGuiSystem::Update(float dt)
                     if (d.owned) 
                     {
                         TextSystem::LoadDialogueFromJson(d.jsonPath, *d.owned);
-                        d.textComp = nullptr;
+                        d.owned->StartTyping();
                     }
                     dialogues.push_back(std::move(d));
 
@@ -1471,27 +1471,28 @@ void ImGuiSystem::Update(float dt)
                         for (auto& s : sceneIDs) sceneItems.push_back(s.c_str());
 
                         int prevScene = activeSceneIdx;
-                        if (activeSceneIdx < 0) activeSceneIdx = 0;
-                        if (!sceneItems.empty() && activeSceneIdx >= (int)sceneItems.size())
-                            activeSceneIdx = (int)sceneItems.size() - 1;
-
                         ImGui::Combo("Scene ID", &activeSceneIdx, sceneItems.data(), (int)sceneItems.size());
 
-                        if (!sceneItems.empty())
+                        // Clamp if needed
+                        if (!sceneItems.empty()) 
                         {
                             if (activeSceneIdx < 0) activeSceneIdx = 0;
                             if (activeSceneIdx >= (int)sceneItems.size()) activeSceneIdx = (int)sceneItems.size() - 1;
                         }
-                        else
+                        else 
                         {
                             activeSceneIdx = 0;
                         }
 
-                        if (activeSceneIdx != prevScene)
+                        bool needApply = false;
+                        if (comp->GetLines().empty()) needApply = true;     // first-time populate
+                        if (activeSceneIdx != prevScene) needApply = true;  // user changed scene
+                        if (sm.inEditMode) needApply = true;
+
+                        if (needApply) 
                         {
-                            applySceneToComp(activeSceneIdx);
-                            if (!sceneIDs.empty()) d.sceneID = sceneIDs[activeSceneIdx];
-                            else d.sceneID = "0";
+                            applySceneToComp(activeSceneIdx);               // resets lines and (re)starts typing
+                            d.sceneID = sceneIDs.empty() ? "0" : sceneIDs[activeSceneIdx];
                         }
                     }
 
