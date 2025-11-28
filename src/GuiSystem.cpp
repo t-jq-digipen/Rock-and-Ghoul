@@ -436,6 +436,7 @@ void GuiSystem::Update(float dt)
         DrawStateWindow(render);
     }
 
+    /*
     // =========================
     // EDITOR OVERLAY (unchanged)
     // =========================
@@ -950,10 +951,9 @@ void GuiSystem::Update(float dt)
     float t = SceneManager::Get().GetTransitionProgress();
     if ( t != 1.f)
     {
-        float alpha = t;
         Vec2 pos = { GLApp::width * .5f,GLApp::height * .5f };
         //KERVINMAKETHISHAVEALPHA
-        render.DrawRect(pos, GLApp::width, GLApp::height, { 0.f,0.f,0.f }, 0.0f, alpha);
+        render.DrawRect(pos, GLApp::width, GLApp::height, { 0.f,0.f,0.f }, 0.0f, t);
     }
    
     // restore camera back to world
