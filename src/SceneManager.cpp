@@ -70,7 +70,7 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
 #ifndef NO_IMGUI
             ImGuiSystem::UpdateSpawnCamera();
 #else
-            EnterPlayMode();
+            EnterPlayMode(); //this works but can someone factcheck if this is the right way to do
 #endif
             /*Camera& cam = Camera::GetInstance();
             cam.SetMode(Camera::Mode::GAME);*/

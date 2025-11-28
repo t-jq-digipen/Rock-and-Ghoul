@@ -52,6 +52,8 @@ const std::string FilePath::SCENES_LIST = getExeDir() + "/../Assets/others/Scene
 const std::string FilePath::ASSETS_FOLDER = getExeDir() + "/../Assets/";
 const std::string FilePath::PREFABS_FOLDER = FilePath::ASSETS_FOLDER + "prefabs/";
 
+const std::string FilePath::DIALOGUE = FilePath::ASSETS_FOLDER + "Dialogue.json";
+
 #else
 
 const std::string FilePath::SAVES_FOLDER = getExeDir() + "/../../Assets/saves/";

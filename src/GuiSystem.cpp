@@ -1154,6 +1154,7 @@ void GuiSystem::DrawStateWindow(Render& render)
 void GuiSystem::GetMouseImgui(Vec2& mouse)
 {
     // convert to Game View space
+#ifndef NO_IMGUI
     if (!ImGuiSystem::guiEnabled) {
         // Fullscreen mouse coords are already correct, just use them directly
         // No conversion needed!
@@ -1178,6 +1179,7 @@ void GuiSystem::GetMouseImgui(Vec2& mouse)
             mouse.y *= mouseScaleY;
         }
     }
+#endif
 }
 
 void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartTyping)
