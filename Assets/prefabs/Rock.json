@@ -1,20 +1,13 @@
 {
-    "entities": [
-        {
-            "components": {
-                "Audio": "{\"autoPlay\":false,\"autoPlayLooping\":false,\"loopingSoundName\":\"\",\"maxDistance\":100.0,\"minDistance\":10.0,\"soundName\":\"player_die\",\"spatial\":true,\"volume\":0.800000011920929}",
-                "Behaviour": "{\"scripts\":[\"RockScript\",\"CamTarget\"]}",
-                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":200.0,\"aabb_maxX\":683.199951171875,\"aabb_maxY\":500.8999938964844,\"aabb_minX\":483.199951171875,\"aabb_minY\":300.8999938964844,\"circle_posX\":583.199951171875,\"circle_posY\":400.8999938964844,\"circle_rad\":200.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\"}",
-                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
-                "Input": "{\"scheme\":0}",
-                "Movement": "{\"moveSpeed\":500.0,\"moveType\":0}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"animated\\\":false,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"scaleX\\\":200.0,\\\"scaleY\\\":200.0,\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":9},\\\"2\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5},\\\"3\\\":{\\\"col_end\\\":8,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1}},\\\"texturePath\\\":\\\"../Assets/rockspritesheet4.11.png\\\",\\\"totalCols\\\":10,\\\"totalRows\\\":10}\",\"renderLayer\":1,\"renderType\":2}",
-                "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":583.199951171875,\"posY\":400.8999938964844,\"rot\":0.0,\"scaleX\":100.0,\"scaleY\":100.0}"
-            },
-            "name": "Rock"
-        }
-    ],
-    "sceneName": "Rock"
+    "components": {
+        "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
+        "Collider": "{\"aabb_dimX\":150.04299926757813,\"aabb_dimY\":201.20199584960938,\"aabb_maxX\":585.9224853515625,\"aabb_maxY\":369.4420166015625,\"aabb_minX\":435.8795166015625,\"aabb_minY\":168.24000549316406,\"circle_posX\":510.9010009765625,\"circle_posY\":268.84100341796875,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"triggerEvent\":\"\"}",
+        "Health": "{\"currentHP\":0.0,\"maxHP\":0.0}",
+        "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
+        "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+        "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":20.0,\\\\\\\"scaleY\\\\\\\":20.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/rockspritesheet4.11.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":9},\\\"2\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5},\\\"3\\\":{\\\"col_end\\\":8,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1}},\\\"totalCols\\\":10,\\\"totalRows\\\":10}\",\"renderLayer\":1,\"renderType\":2}",
+        "Tag": "{\"tagID\":0}",
+        "Transform": "{\"posX\":510.9010009765625,\"posY\":268.84100341796875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+    },
+    "name": "Rock"
 }

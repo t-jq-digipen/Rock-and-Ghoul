@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glapp.h>
 #include <iostream>
+#include "SceneManager.h"
 
 /**************************************************************************/
 /*!
@@ -105,18 +106,19 @@ void Camera::UpdateCamera()
     float halfW = (GLApp::VIRTUAL_W * 0.5f) / GetZoom();
     float halfH = (GLApp::VIRTUAL_H * 0.5f) / GetZoom();
 
+//#ifdef _EDITOR
+    if (!SceneManager::Get().inEditMode)
+    {
+//#endif
+        // World boundary limits
+        Vec2 min = GetWorldMin();
+        Vec2 max = GetWorldMax();
 
-    Vec2 min = GetWorldMin();
-    Vec2 max = GetWorldMax();
-
-    /*std::cout << "Camera pos: " << newPos.x
-        << "  halfW: " << halfW
-        << "  Bounds: [" << min.x << ", " << max.x << "]"
-        << "  Clamped range: [" << min.x + halfW << ", " << max.x - halfW << "]"
-        << std::endl;*/
-
-    newPos.x = std::max(min.x + halfW, std::min(newPos.x, max.x - halfW));
-    newPos.y = std::max(min.y + halfH, std::min(newPos.y, max.y - halfH));
+        newPos.x = std::max(min.x + halfW, std::min(newPos.x, max.x - halfW));
+        newPos.y = std::max(min.y + halfH, std::min(newPos.y, max.y - halfH));
+//#ifdef _EDITOR
+    }
+//#endif
 
     SetPosition(newPos);
     UpdateMatrices();

@@ -393,40 +393,40 @@ enum ControlScheme {
 	CS_ARROWS
 };
 
-struct InputComponent {
-	ControlScheme scheme = CS_WASD;
-
-	std::string Serialize() const {
-		json j = {
-			{"scheme", static_cast<int>(scheme)}
-		};
-		return j.dump();
-	}
-
-	static InputComponent DeSerialize(Entity eID, const std::string& data) {
-		(void)eID;
-		if (data.empty()) {
-			return InputComponent();
-		}
-		json j = json::parse(data);
-		InputComponent temp;
-		temp.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
-		return temp;
-	}
-
-	Editor::ComponentData EditorData() {
-		Editor::ComponentData ret("Input");
-		Editor::Widget_Dropdown dropdown;
-		dropdown.ref = reinterpret_cast<unsigned int*>(&scheme);
-		dropdown.Add_Option("WASD", static_cast<unsigned int>(CS_WASD));
-		dropdown.Add_Option("IJKL", static_cast<unsigned int>(CS_IJKL));
-		dropdown.Add_Option("Arrows", static_cast<unsigned int>(CS_ARROWS));
-
-		ret.Add_Data("Scheme",  dropdown );
-
-		return ret;
-	}
-};
+//struct InputComponent {
+//	ControlScheme scheme = CS_WASD;
+//
+//	std::string Serialize() const {
+//		json j = {
+//			{"scheme", static_cast<int>(scheme)}
+//		};
+//		return j.dump();
+//	}
+//
+//	static InputComponent DeSerialize(Entity eID, const std::string& data) {
+//		(void)eID;
+//		if (data.empty()) {
+//			return InputComponent();
+//		}
+//		json j = json::parse(data);
+//		InputComponent temp;
+//		temp.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
+//		return temp;
+//	}
+//
+//	Editor::ComponentData EditorData() {
+//		Editor::ComponentData ret("Input");
+//		Editor::Widget_Dropdown dropdown;
+//		dropdown.ref = reinterpret_cast<unsigned int*>(&scheme);
+//		dropdown.Add_Option("WASD", static_cast<unsigned int>(CS_WASD));
+//		dropdown.Add_Option("IJKL", static_cast<unsigned int>(CS_IJKL));
+//		dropdown.Add_Option("Arrows", static_cast<unsigned int>(CS_ARROWS));
+//
+//		ret.Add_Data("Scheme",  dropdown );
+//
+//		return ret;
+//	}
+//};
 
 
 //enum Element {

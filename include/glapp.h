@@ -54,6 +54,17 @@ struct GLApp
   static GLFWwindow *ptr_window;
   static GLfloat clear_color[4]; // rgba normalize components in range 0.0f to 1.0f
   static bool gameInitialized;
+
+
+  static void ToggleFullscreen();
+  static void SetWindowedMode(int width, int height);
+  static void SetFullscreenMode();
+  static bool IsFullscreen();
+
+
+  static bool is_fullscreen;
+  static int windowed_width, windowed_height;
+  static int windowed_pos_x, windowed_pos_y;
 };
 
 #endif /* GLAPP_H */

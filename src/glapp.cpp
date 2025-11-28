@@ -69,12 +69,17 @@ double-buffered color buffer, 24-bit depth buffer and 8-bit stencil buffer
 with each buffer of size width x height pixels
 */
 bool GLApp::init(GLint w, GLint h, std::string t) {
-  GLApp::width = w;
+ /* GLApp::width = w;
   GLApp::height = h;
   GLApp::baseWidth = w;
-  GLApp::baseHeight = h;
+  GLApp::baseHeight = h;*/
   GLApp::title = t;
+  windowed_width = w;
+  windowed_height = h;
 
+   GLApp::baseWidth = w;
+    GLApp::baseHeight = h;
+  //is_fullscreen = false;
   if (!glfwInit()) {
     std::cout << "GLFW init has failed - abort program!!!" << std::endl;
     return false;
@@ -91,19 +96,51 @@ bool GLApp::init(GLint w, GLint h, std::string t) {
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
   // default behavior: colorbuffer is 32-bit RGBA, depthbuffer is 24-bits
   // don't change size of window
-  glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); //Make Window non-resizable (im assuming we using 1920x1080 for it?)
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); //Make Window non-resizable (im assuming we using 1920x1080 for it?)
 
   // size of viewport: width x height
-  GLApp::ptr_window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+  //GLApp::ptr_window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+  //if (!GLApp::ptr_window) {
+  //  std::cerr << "GLFW unable to create OpenGL context - abort program\n";
+  //  glfwTerminate();
+  //  return false;
+  //}
+  //GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+  //const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+  //// Create window in fullscreen mode directly
+  //GLApp::ptr_window = glfwCreateWindow(
+  //    mode->width,
+  //    mode->height,
+  //    title.c_str(),
+  //    monitor,  // Pass monitor for fullscreen
+  //    NULL
+  //);
+  GLApp::ptr_window = glfwCreateWindow(
+      w,           // Use requested width
+      h,           // Use requested height
+      title.c_str(),
+      NULL,        // NULL = windowed mode
+      NULL
+  );
   if (!GLApp::ptr_window) {
-    std::cerr << "GLFW unable to create OpenGL context - abort program\n";
-    glfwTerminate();
-    return false;
+      std::cerr << "GLFW unable to create OpenGL context - abort program\n";
+      glfwTerminate();
+      return false;
   }
 
+  //GLApp::width = mode->width;
+  //GLApp::height = mode->height;
+
+  GLApp::width = w;
+  GLApp::height = h;
+  GLApp::baseWidth = w;
+  GLApp::baseHeight = h;
+  is_fullscreen = false;
   // make the previously created OpenGL context current ...
   glfwMakeContextCurrent(GLApp::ptr_window);
-
+  //glViewport(0, 0, mode->width, mode->height);
+   glViewport(0, 0, w, h);
   // set callback for events associated with window size changes; keyboard;
  // mouse buttons, cursor position, and scroller
   glfwSetFramebufferSizeCallback(GLApp::ptr_window, GLApp::fbsize_cb);
@@ -246,6 +283,13 @@ void GLApp::key_cb(GLFWwindow *pwin, int key, int scancode, int action, int mod)
   if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action) {
     glfwSetWindowShouldClose(pwin, GLFW_TRUE);
   }
+
+  //if (key == GLFW_KEY_ENTER && action == GLFW_PRESS &&
+  //    (mod & GLFW_MOD_ALT))
+  //{
+  //    ToggleFullscreen();
+  //    return;
+  //}
 }
 
 /*  _________________________________________________________________________*/
@@ -492,4 +536,131 @@ void GLApp::update_time(double fps_calc_interval) {
     start_time = curr_time;
     count = 0.0;
   }
+}
+
+// Add to file scope variables section
+bool GLApp::is_fullscreen = false;
+int GLApp::windowed_width = 1920;
+int GLApp::windowed_height = 1080;
+int GLApp::windowed_pos_x = 100;
+int GLApp::windowed_pos_y = 100;
+
+/*  _________________________________________________________________________ */
+/*! ToggleFullscreen
+
+@return none
+
+Switches between fullscreen and windowed mode.
+Saves windowed position/size when going fullscreen.
+Restores windowed position/size when exiting fullscreen.
+*/
+void GLApp::ToggleFullscreen()
+{
+    if (!ptr_window) return;
+
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    if (is_fullscreen)
+    {
+        // Switch to Windowed
+        std::cout << "[GLApp] Switching to Windowed mode ("
+            << windowed_width << "x" << windowed_height << ")\n";
+
+        glfwSetWindowMonitor(ptr_window, nullptr,
+            windowed_pos_x, windowed_pos_y,
+            windowed_width, windowed_height,
+            GLFW_DONT_CARE);
+        GLApp::width = windowed_width;
+        GLApp::height = windowed_height;
+        is_fullscreen = false;
+    }
+    else
+    {
+        // Save current windowed position and size before going fullscreen
+        glfwGetWindowPos(ptr_window, &windowed_pos_x, &windowed_pos_y);
+        glfwGetWindowSize(ptr_window, &windowed_width, &windowed_height);
+
+        // Switch to Fullscreen
+        std::cout << "[GLApp] Switching to Fullscreen mode ("
+            << mode->width << "x" << mode->height << ")\n";
+
+        glfwSetWindowMonitor(ptr_window, monitor,
+            0, 0,
+            mode->width, mode->height,
+            mode->refreshRate);
+        GLApp::width = mode->width;
+        GLApp::height = mode->height;
+        is_fullscreen = true;
+    }
+
+    // Trigger framebuffer size callback to update viewport
+    int newWidth, newHeight;
+    glfwGetFramebufferSize(ptr_window, &newWidth, &newHeight);
+    fbsize_cb(ptr_window, newWidth, newHeight);
+}
+
+/*  _________________________________________________________________________ */
+/*! SetWindowedMode
+
+@param width - desired window width in pixels
+@param height - desired window height in pixels
+
+@return none
+
+Sets the window to windowed mode with specified dimensions.
+*/
+void GLApp::SetWindowedMode(int width, int height)
+{
+    if (!ptr_window) return;
+
+    if (is_fullscreen)
+    {
+        // Exit fullscreen first
+        ToggleFullscreen();
+    }
+
+    windowed_width = width;
+    windowed_height = height;
+
+    std::cout << "[GLApp] Setting windowed resolution: "
+        << width << "x" << height << "\n";
+
+    glfwSetWindowSize(ptr_window, width, height);
+
+    // Center window on screen
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    windowed_pos_x = (mode->width - width) / 2;
+    windowed_pos_y = (mode->height - height) / 2;
+    glfwSetWindowPos(ptr_window, windowed_pos_x, windowed_pos_y);
+
+    // Update viewport
+    int newWidth, newHeight;
+    glfwGetFramebufferSize(ptr_window, &newWidth, &newHeight);
+    fbsize_cb(ptr_window, newWidth, newHeight);
+}
+
+/*  _________________________________________________________________________ */
+/*! SetFullscreenMode
+
+@return none
+
+Sets the window to fullscreen mode using primary monitor's resolution.
+*/
+void GLApp::SetFullscreenMode()
+{
+    if (!ptr_window || is_fullscreen) return;
+
+    ToggleFullscreen();
+}
+
+/*  _________________________________________________________________________ */
+/*! IsFullscreen
+
+@return bool - true if window is in fullscreen mode, false otherwise
+*/
+bool GLApp::IsFullscreen()
+{
+    return is_fullscreen;
 }

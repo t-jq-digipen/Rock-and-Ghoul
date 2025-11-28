@@ -597,11 +597,15 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
         {"bgmAssetName", s.bgmAssetName}, // for audio to stop during edit mode
 
          {"gui", {
-             {"buttons", json::array()}
+             {"buttons", json::array()},
+             {"textboxes", json::array()},
+             {"dialogues", json::array()}
          }},
         {"entities", json::array()}
 
     };
+
+    // UI Buttons
     for (const auto& btn : s.guiButtons) {
         j["gui"]["buttons"].push_back({
             {"label", btn.label},
@@ -613,6 +617,34 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"soundType", btn.soundType }
             });
     }
+
+    // UI Textboxes
+    for (const auto& txt : s.guiTextboxes) {
+        j["gui"]["textboxes"].push_back({
+            {"text", txt.text},
+            {"pos", {txt.pos.x, txt.pos.y}},
+            {"scale", txt.scale},
+            {"color", {txt.color.r, txt.color.g, txt.color.b}}
+        });
+    }
+
+    // UI Dialogues
+    for (const auto& dlg : s.guiDialogues) {
+        const auto& tb = dlg.textBox;
+        json jtb = {
+            {"text", tb.text},
+            {"pos", {tb.pos.x, tb.pos.y}},
+            {"scale", tb.scale},
+            {"color", {tb.color.r, tb.color.g, tb.color.b}},
+        };
+        json jd = {
+            {"textBox", std::move(jtb)},
+            {"jsonPath", dlg.jsonPath},
+            {"sceneID", dlg.sceneID.empty() ? "0" : dlg.sceneID}
+        };
+        j["gui"]["dialogues"].push_back(std::move(jd));
+    }
+
     for (const auto& entity : s.entities) {
         json entityJson;
         to_json(entityJson, entity);
@@ -659,6 +691,35 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
             b.action = btn.value("action", "");
             b.soundType = btn.value("soundType", 0);
             s.guiButtons.push_back(b);
+        }
+    }
+    if (j.contains("gui") && j["gui"].contains("textboxes")) {
+        for (auto& txt : j["gui"]["textboxes"]) {
+            SavedScene::SavedTextBox t;
+            t.text = txt["text"];
+            t.pos = { txt["pos"][0], txt["pos"][1] };
+            t.scale = txt["scale"];
+            t.color = { txt["color"][0], txt["color"][1], txt["color"][2] };
+            s.guiTextboxes.push_back(t);
+        }
+    }
+    if (j.contains("gui") && j["gui"].contains("dialogues"))
+    {
+        for (auto& dlg : j["gui"]["dialogues"]) {
+            SavedScene::SavedDialogue d;
+            // carry visual/textbox look
+            d.textBox.text = dlg["textBox"]["text"];
+            d.textBox.pos = { dlg["textBox"]["pos"][0], dlg["textBox"]["pos"][1] };
+            d.textBox.scale = dlg["textBox"]["scale"];
+            d.textBox.color = { dlg["textBox"]["color"][0], dlg["textBox"]["color"][1], dlg["textBox"]["color"][2] };
+
+            d.jsonPath = dlg["jsonPath"];
+            d.sceneID = dlg.value("sceneID", "0");
+
+            // (Optionally remember line index snapshot)
+            d.currentLineIndex = dlg.value("currentLineIndex", 0);
+
+            s.guiDialogues.push_back(std::move(d));
         }
     }
     for (const auto& entityJson : j["entities"]) {
@@ -780,15 +841,41 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         for (auto& b : gui.GetButtons()) {
             SavedScene::SavedButton sb;
             sb.label = b.label;
-            sb.pos = b.pos;
-            sb.size = b.size;
+            sb.pos = b.basePos;
+            sb.size = b.baseSize;
             sb.color = b.color;
             sb.shape = ButtonShapeToString(b.shape);
-            sb.action = b.action;
+            sb.action = ButtonActionToString(b.action); 
             sb.soundType = static_cast<int>(b.soundType);
             scene.guiButtons.push_back(sb);
         }
+        for (auto& t : gui.GetTextBoxes())
+        {
+            SavedScene::SavedTextBox st;
+            st.text = t.text;
+            st.pos = t.basePos;
+            st.scale = t.baseScale;
+            st.color = t.color;
+            scene.guiTextboxes.push_back(st);
+        }
+        for (auto& d : gui.GetDialogues())
+        {
+            SavedScene::SavedDialogue sd;
+            sd.textBox.text = d.textBox.text;
+            sd.textBox.pos = d.textBox.basePos;
+            sd.textBox.scale = d.textBox.baseScale;
+            sd.textBox.color = d.textBox.color;
+            sd.jsonPath = d.jsonPath;
 
+            const TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+            if (comp)
+            {
+                sd.lines = comp->GetLines();
+                sd.currentLineIndex = comp->GetCurrentLineIndex();
+            }
+
+            scene.guiDialogues.push_back(std::move(sd));
+        }
         // Get all alive entities
         EntityManager& em = EntityManager::get();
         int entityCount = 0;
@@ -866,10 +953,12 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             ButtonConfig cfg;
             cfg.label = b.label;
             cfg.pos = b.pos;
+            cfg.basePos = b.pos;
             cfg.size = b.size;
+            cfg.baseSize = b.size;
             cfg.color = b.color;
             cfg.shape = StringToButtonShape(b.shape);
-            cfg.action = b.action;
+            cfg.action = StringToButtonAction(b.action);
             cfg.soundType = static_cast<AudioSystem::ButtonType>(b.soundType);
 
             if (b.action == "LoadLevel1") {
@@ -897,11 +986,64 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                     };
             }
             else if (b.action == "LoadMainMenu") {
-                cfg.onClick = []() { SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json"); };
+                cfg.onClick = []() {
+                    SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
+                    };
+            }
+            else if (b.action == "OpenStateWindow") {
+                cfg.onClick = []() {
+                    GuiSystem::Get().DrawStateWindow(Render::GetInstance());
+                    };
+            }
+            else {
+                cfg.onClick = nullptr;
             }
 
             GuiSystem::Get().AddButton(cfg);
         }
+
+        for (auto& t : scene.guiTextboxes)
+        {
+            TextBoxConfig cfg;
+            cfg.text = t.text;
+            cfg.pos = t.pos;
+            cfg.basePos = t.pos;
+            cfg.scale = t.scale;
+            cfg.baseScale = t.scale;
+            cfg.color = t.color;
+            GuiSystem::Get().AddTextBox(cfg);
+        }
+
+        for (auto& d : scene.guiDialogues)
+        {
+            TextBoxConfig tb{};
+            tb.text = d.textBox.text;
+            tb.pos = d.textBox.pos;
+            tb.basePos = tb.pos;
+            tb.scale = d.textBox.scale;
+            tb.baseScale = tb.scale;
+            tb.color = Colour3 { d.textBox.color.r, d.textBox.color.g, d.textBox.color.b };
+            tb.fontKey = "Marker";
+            tb.centered = true;
+            tb.isVisible = true;
+
+            const std::string sceneID = d.sceneID.empty() ? "0" : d.sceneID;
+            int idx = GuiSystem::Get().AddDialogueFromJson(d.jsonPath, tb, d.sceneID);
+
+            if (idx >= 0 && d.currentLineIndex > 0) 
+            {
+                auto& dlg = GuiSystem::Get().GetDialogues()[idx];
+                auto* comp = dlg.textComp ? dlg.textComp : dlg.owned.get();
+                if (comp) 
+                {
+                    const int n = static_cast<int>(comp->GetLines().size());
+                    comp->SetCurrentLineIndex(std::clamp(d.currentLineIndex, 0, std::max(0, n - 1)));
+                    comp->SetIsTyping(false);
+                }
+            }
+        }
+
+        SavedScene::SavedCamera& camSet = scene.camSettings;
 
         // Camera settings
         Camera& cam = Camera::GetInstance();
@@ -970,14 +1112,16 @@ bool JsonLoad::SaveEntity(const std::string& filepath, Entity eID) {
         // Save entity data
         SavedEntity saved = Registry::Get().Save_Entity(eID);
 
-        // Wrap in a SavedScene structure so LoadEntityFromFile can read it
-        SavedScene scene;
-        scene.sceneName = saved.name;  // Use entity name as scene name
-        scene.entities.push_back(saved);  // Add entity to entities array
+        //// Wrap in a SavedScene structure so LoadEntityFromFile can read it
+        //SavedScene scene;
+        //scene.sceneName = saved.name;  // Use entity name as scene name
+        //scene.entities.push_back(saved);  // Add entity to entities array
 
-        // Serialize the scene (not just the entity)
+        //// Serialize the scene (not just the entity)
+        //json j;
+        //to_json(j, scene);
         json j;
-        to_json(j, scene);
+        to_json(j, saved);
 
         // Write to file
         return FileIO::WriteFile(filepath, j.dump(4));
@@ -1010,15 +1154,12 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
 
     try {
         json j = json::parse(content);
-        SavedScene scene;
-        from_json(j, scene);  // Can call private function from within the class
 
-        if (scene.entities.empty()) {
-            std::cerr << "No entities in file: " << filepath << std::endl;
-            return 0;
-        }
+        SavedEntity enty;
+        from_json(j, enty);
 
-        Entity e = Registry::Get().Load_Entity(scene.entities[0]);
+        //Entity e = Registry::Get().Load_Entity(scene.entities[0]);
+        Entity e = Registry::Get().Load_Entity(enty);
         //Entity e = SavedToEntity(scene.entities[0]);  // Can call private function
 
         // Override position
@@ -1035,7 +1176,7 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
         return e;
     }
     catch (const std::exception& ex) {
-        std::cerr << "Error loading entity: " << ex.what() << std::endl;
+        std::cerr << "Error loading entity from file: " << filepath << std::endl;
         return 0;
     }
 }

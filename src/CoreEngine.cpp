@@ -153,8 +153,8 @@ void CoreEngine::Initialize()
     registry.Register_Component<HealthComponent>("Health");
     std::cout << "REGISTRY | REGISTERED HEALTH COMPONENT\n";
 
-    registry.Register_Component<InputComponent>("Input");
-    std::cout << "REGISTRY | REGISTERED INPUT COMPONENT\n";
+    //registry.Register_Component<InputComponent>("Input");
+    //std::cout << "REGISTRY | REGISTERED INPUT COMPONENT\n";
 
     registry.Register_Component<Movement::MovementComponent>("Movement", { "Transform", "Physics" });
     std::cout << "REGISTRY | REGISTERED MOVEMENT COMPONENT\n";

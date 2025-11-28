@@ -35,6 +35,9 @@ public:
     static void AddBackgroundTexture(GLuint texID, const std::string& path);
     static std::vector<std::string> GetBackgroundTexturePaths();
     static void ClearBackgroundTextures();
+
+    static float pixelsPerUnit;
+    static float unitsPerPixel;
 private:
     Registry& m_registry = Registry::Get();
     static GLuint s_backgroundTexture; // Static background texture
