@@ -608,6 +608,7 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
     // UI Buttons
     for (const auto& btn : s.guiButtons) {
         j["gui"]["buttons"].push_back({
+            {"ID", btn.ID},
             {"label", btn.label},
             {"pos", {btn.pos.x, btn.pos.y}},
             {"size", {btn.size.x, btn.size.y}},
@@ -621,6 +622,7 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
     // UI Textboxes
     for (const auto& txt : s.guiTextboxes) {
         j["gui"]["textboxes"].push_back({
+            {"ID", txt.ID},
             {"text", txt.text},
             {"pos", {txt.pos.x, txt.pos.y}},
             {"scale", txt.scale},
@@ -640,9 +642,12 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"centered", tb.centered}
         };
         json jd = {
+            {"ID", dlg.ID},
             {"textBox", std::move(jtb)},
             {"jsonPath", dlg.jsonPath},
-            {"sceneID", dlg.sceneID.empty() ? "0" : dlg.sceneID}
+            {"sceneID", dlg.sceneID.empty() ? "0" : dlg.sceneID},
+            {"lines", dlg.lines},
+            {"currentLineIndex", dlg.currentLineIndex}
         };
         j["gui"]["dialogues"].push_back(std::move(jd));
     }
@@ -682,9 +687,13 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
     }
     if (j.contains("fontConfig"))
         s.fontConfigPath = j["fontConfig"];
+
+    int fallbackID = 0; // running global order if missing
+
     if (j.contains("gui") && j["gui"].contains("buttons")) {
         for (auto& btn : j["gui"]["buttons"]) {
             SavedScene::SavedButton b;
+            b.ID = btn.value("ID", fallbackID++);
             b.label = btn["label"];
             b.pos = { btn["pos"][0], btn["pos"][1] };
             b.size = { btn["size"][0], btn["size"][1] };
@@ -698,6 +707,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
     if (j.contains("gui") && j["gui"].contains("textboxes")) {
         for (auto& txt : j["gui"]["textboxes"]) {
             SavedScene::SavedTextBox t;
+            t.ID = txt.value("ID", fallbackID++);
             t.text = txt["text"];
             t.pos = { txt["pos"][0], txt["pos"][1] };
             t.scale = txt["scale"];
@@ -710,6 +720,8 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
     {
         for (auto& dlg : j["gui"]["dialogues"]) {
             SavedScene::SavedDialogue d;
+            d.ID = dlg.value("ID", fallbackID++);
+
             // carry visual/textbox look
             d.textBox.text = dlg["textBox"]["text"];
             d.textBox.pos = { dlg["textBox"]["pos"][0], dlg["textBox"]["pos"][1] };
@@ -718,8 +730,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
             d.textBox.centered = dlg["textBox"]["centered"];
 
             d.jsonPath = dlg["jsonPath"];
-            d.sceneID = dlg["sceneID"];
-            if (d.sceneID.empty()) d.sceneID = "0";
+            d.sceneID = dlg.value("sceneID", std::string{"0"});
 
             if (dlg.contains("lines") && dlg["lines"].is_array()) 
             {
@@ -849,6 +860,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         auto& gui = GuiSystem::Get();
         for (auto& b : gui.GetButtons()) {
             SavedScene::SavedButton sb;
+            sb.ID = b.ID;
             sb.label = b.label;
             sb.pos = b.basePos;
             sb.size = b.baseSize;
@@ -861,6 +873,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         for (auto& t : gui.GetTextBoxes())
         {
             SavedScene::SavedTextBox st;
+            st.ID = t.ID;
             st.text = t.text;
             st.pos = t.basePos;
             st.scale = t.baseScale;
@@ -871,6 +884,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         for (auto& d : gui.GetDialogues())
         {
             SavedScene::SavedDialogue sd;
+            sd.ID = d.ID;
             sd.textBox.text = d.textBox.text;
             sd.textBox.pos = d.textBox.basePos;
             sd.textBox.scale = d.textBox.baseScale;
@@ -963,6 +977,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         GuiSystem::Get().Clear();
         for (auto& b : scene.guiButtons) {
             ButtonConfig cfg;
+            cfg.ID = b.ID;
             cfg.label = b.label;
             cfg.pos = b.pos;
             cfg.basePos = b.pos;
@@ -1017,6 +1032,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         for (auto& t : scene.guiTextboxes)
         {
             TextBoxConfig cfg;
+            cfg.ID = t.ID;
             cfg.text = t.text;
             cfg.pos = t.pos;
             cfg.basePos = t.pos;
@@ -1030,6 +1046,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         for (auto& d : scene.guiDialogues)
         {
             DialogueConfig cfg{};
+            cfg.ID = d.ID;
             cfg.textBox.text = d.textBox.text;
             cfg.textBox.pos = d.textBox.pos;
             cfg.textBox.basePos = d.textBox.pos;

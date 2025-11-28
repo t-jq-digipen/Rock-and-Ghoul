@@ -87,6 +87,7 @@ struct SavedScene {
     std::string bgmAssetName;  // name of BGM asset from AudioCache i.e. "main_menu", "level_1"
 
     struct SavedButton {
+        int ID = 0;
         std::string label;
         Vec2 pos;
         Vec2 size;
@@ -98,6 +99,7 @@ struct SavedScene {
     std::vector<SavedButton> guiButtons;
 
     struct SavedTextBox {
+        int ID = 0;
         std::string text;
         Vec2 pos;
         float scale;
@@ -107,6 +109,7 @@ struct SavedScene {
     std::vector<SavedTextBox> guiTextboxes;
 
     struct SavedDialogue {
+        int ID = 0;
         SavedTextBox textBox;
         std::string jsonPath;
         std::string sceneID = "0";

@@ -77,6 +77,7 @@ struct ButtonConfig {
     Vec2 baseSize;
     float baseTextScale{ 1.f };
     bool isVisible = true;
+    int ID;
 };
 
 struct TextBoxConfig {
@@ -91,6 +92,7 @@ struct TextBoxConfig {
     // baseline (screen-space anchors)
     Vec2 basePos;
     float baseScale{ 1.f };
+    int ID;
 };
 
 struct DialogueConfig {
@@ -100,6 +102,7 @@ struct DialogueConfig {
     std::string jsonPath;
     std::string sceneID = "0";
     bool isVisible = true;
+    int ID;
 };
 
 
@@ -163,11 +166,23 @@ public:
 
     // Dialogue helpers
     void SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartTyping);
+
 private:
 
     std::vector<ButtonConfig> buttons;
     std::vector<TextBoxConfig> textboxes;
     std::vector<DialogueConfig> dialogues;
+
+    struct DrawItem
+    {
+        SelectedType type;
+        int index;
+        int ID;
+    };
+    std::vector<DrawItem> BuildSortedDrawList() const;
+
+    // ID assignment for new elements (if ID not set)
+    int nextUIID = 1;
 
     static AudioManager* audio;
     Render& render = Render::GetInstance();
