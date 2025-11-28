@@ -13,6 +13,7 @@
     "gui": {
         "buttons": [
             {
+                "ID": 1,
                 "action": "LoadLevel1",
                 "color": [
                     0.0784313753247261,
@@ -31,6 +32,7 @@
                 ]
             },
             {
+                "ID": 2,
                 "action": "OpenStateWindow",
                 "color": [
                     0.0784313753247261,
@@ -49,6 +51,7 @@
                 ]
             },
             {
+                "ID": 3,
                 "action": "Quit",
                 "color": [
                     0.0784313753247261,
