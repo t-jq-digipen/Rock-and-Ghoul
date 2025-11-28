@@ -915,9 +915,9 @@ void GuiSystem::Update(float dt) {
     if (float t = SceneManager::Get().GetTransitionProgress() != 1.f)
     {
         float alpha = 1.f - t;
-        Vec2 pos = { GLApp::VIRTUAL_W * .5f,GLApp::VIRTUAL_H * .5f };
+        Vec2 pos = { GLApp::width * .5f,GLApp::height * .5f };
         //KERVINMAKETHISHAVEALPHA
-        render.DrawRect(pos, GLApp::VIRTUAL_W, GLApp::VIRTUAL_H, { 0.f,0.f,0.f });
+        render.DrawRect(pos, GLApp::width, GLApp::height, { 0.f,0.f,0.f });
     }
 
     // restore camera back to world
