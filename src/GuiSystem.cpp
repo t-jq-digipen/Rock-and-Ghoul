@@ -160,6 +160,10 @@ void GuiSystem::Update(float dt) {
         case ButtonShape::Rounded: {
             float corner = std::min(cfg.size.x, cfg.size.y) * 0.5f;
             render.DrawRoundedRect(cfg.pos, cfg.size.x, cfg.size.y, corner, drawColor);
+
+            //idk where to test LOL
+            //render.DrawCustomQuad({ 100 * scaleX,200 * scaleY }, { 300 * scaleX,200 * scaleY }, { 350 * scaleX,250 * scaleY }, { 150 * scaleX,250 * scaleY }, {1.f,0.f,0.f});
+      
             break;
         }
         }

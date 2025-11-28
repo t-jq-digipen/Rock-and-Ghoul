@@ -746,6 +746,44 @@ public:
 
     void DrawLetterboxedTexture(GLuint texture);
 
+
+    /**
+    * @brief Renders an four-vertex quad to the screen.
+    *
+    * Draws a custom quad defined by four world-space vertices,
+    * This includes trapeziums, parallelograms, UI elements
+    *
+    * The quad is rendered using the engine's active shader program with
+    * custom-vertex mode enabled. Vertex data is uploaded to the dedicated
+    * dynamic quad VBO before issuing the draw call. This function uses the
+    * custom quad VAO/VBO initialized during render init. Vertices must be 
+    * provided in counter-clockwise order.
+    *   v0 (top-left)
+    *   v1 (top-right)
+    *   v2 (bottom-right)
+    *   v3 (bottom-left)
+    *   v0 then v1 then v2 then v3 
+    *   DrawCustomQuad(v0, v1, v2, v3); to draw a parallelogram etc.
+    * 
+    * @param v0 The first vertex of the quad, in world-space coordinates.
+    * @param v1 The second vertex of the quad, in world-space coordinates.
+    * @param v2 The third vertex of the quad, in world-space coordinates.
+    * @param v3 The fourth vertex of the quad, in world-space coordinates.
+    *           
+    *
+    * @param color The RGB color applied to the entire quad.
+    *
+    *
+    * @note For standard or rotated rectangles, use DrawRect()
+    *  
+    *
+    * @note The four vertices must define a convex quad. Incorrect order may
+    * result in a bow weird shape or undefined rendering.
+    *          
+    */
+
+    void DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3, const Colour3& color);
+
 private:
     glm::vec2 uiScale = { 1.0f, 1.0f };
     /**
@@ -768,6 +806,7 @@ private:
 
     //vao/vbo and 4x4 projection matrix used for transforming screen-space coordinates
     GLuint vao, vbo, shaderProgram;
+    GLuint vertVBO, vertVAO;
     GLuint InstanceVBO, InstanceShaderProgram;
     GLuint textVAO, textVBO;
     GLuint batchVAO, batchVBO, batchEBO, batchShader;
