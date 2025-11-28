@@ -133,7 +133,9 @@ void GuiSystem::Update(float dt) {
     const float uiScale = std::min(scaleX, scaleY);
    
 
-    for (auto& cfg : buttons) {
+    for (auto& cfg : buttons) 
+    {
+        if (!cfg.isVisible) continue;
         cfg.size = cfg.baseSize * uiScale;
         cfg.textScale = cfg.baseTextScale * uiScale;
 
@@ -143,17 +145,14 @@ void GuiSystem::Update(float dt) {
 
 
         bool hover = false;
-        if (cfg.shape == ButtonShape::Circle) {
-
+        if (cfg.shape == ButtonShape::Circle) 
+        {
             float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
-
-            // convert mouse into render-space (bottom-left origin)
-          //  Vec2 mouseRender = { mouse.x, static_cast<float>(GLApp::height) - mouse.y };
-
             float dist = RG_Distance(mouse, cfg.pos);
             hover = dist <= radius;
         }
-        else {
+        else 
+        {
             hover = render.IsAreaTouched(mouse, cfg.pos, cfg.size.x, cfg.size.y);
         }
 
@@ -161,16 +160,19 @@ void GuiSystem::Update(float dt) {
             ? Colour3{ cfg.color.r + 0.2f, cfg.color.g + 0.2f, cfg.color.b + 0.2f }
         : cfg.color;
 
-        switch (cfg.shape) {
+        switch (cfg.shape) 
+        {
         case ButtonShape::Rectangle:
             render.DrawRect(cfg.pos, cfg.size.x, cfg.size.y, drawColor);
             break;
-        case ButtonShape::Circle: {
+        case ButtonShape::Circle: 
+        {
             float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
             render.DrawCircle(cfg.pos, radius, drawColor, 48);
             break;
         }
-        case ButtonShape::Rounded: {
+        case ButtonShape::Rounded: 
+        {
             float corner = std::min(cfg.size.x, cfg.size.y) * 0.5f;
             render.DrawRoundedRect(cfg.pos, cfg.size.x, cfg.size.y, corner, drawColor);
             break;
@@ -190,7 +192,8 @@ void GuiSystem::Update(float dt) {
         // UPDATED: Added font parameter to DrawText
         render.DrawText(cfg.label, textX, textY, textScale, { 1, 1, 1 }, "Marker");
 
-        if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
+        if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) 
+        {
             if (audio) audio->PlayButtonSound(cfg.soundType);
             if (cfg.onClick) cfg.onClick();
         }
@@ -198,6 +201,7 @@ void GuiSystem::Update(float dt) {
 
     for (auto& tb : textboxes)
     {
+        if (!tb.isVisible) continue;
         tb.pos.x = tb.basePos.x * scaleX;
         tb.pos.y = tb.basePos.y * scaleY;
         tb.scale = tb.baseScale * uiScale;
@@ -1097,6 +1101,7 @@ std::string ButtonActionToString(ButtonAction action)
     case ButtonAction::LoadMainMenu:        return "LoadMainMenu";
     case ButtonAction::Quit:                return "Quit";
     case ButtonAction::OpenStateWindow:     return "OpenStateWindow";
+    case ButtonAction::ToggleAllButtons:    return "ToggleAllButtons";
     case ButtonAction::ToggleAllTextboxes:  return "ToggleAllTextboxes";
     case ButtonAction::ToggleAllDialogues:  return "ToggleAllDialogues";
     default:                                return "None";
@@ -1110,12 +1115,14 @@ ButtonAction StringToButtonAction(const std::string& s)
     if (s == "LoadMainMenu") return ButtonAction::LoadMainMenu;
     if (s == "Quit") return ButtonAction::Quit;
     if (s == "OpenStateWindow") return ButtonAction::OpenStateWindow;
+    if (s == "ToggleAllButtons") return ButtonAction::ToggleAllButtons;
     if (s == "ToggleAllTextboxes") return ButtonAction::ToggleAllTextboxes;
     if (s == "ToggleAllDialogues") return ButtonAction::ToggleAllDialogues;
     return ButtonAction::None;
 }
 
-void GuiSystem::Clear() {
+void GuiSystem::Clear() 
+{
     buttons.clear();
     textboxes.clear();
     dialogues.clear();
@@ -1127,6 +1134,9 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
     {
     case ButtonAction::OpenStateWindow:
         btn.onClick = [this]() { stateWindowActive = true; };
+        break;
+    case ButtonAction::ToggleAllButtons:
+        btn.onClick = [this, &btn]() { ToggleAllButtons(&btn); };
         break;
     case ButtonAction::ToggleAllTextboxes:
         btn.onClick = [this]() { ToggleAllTextboxes(); };
@@ -1146,6 +1156,30 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
     default:
         btn.onClick = nullptr;
         break;
+    }
+}
+
+void GuiSystem::ToggleAllButtons(const ButtonConfig* exclude)
+{
+    auto& btns = Buttons();
+    if (btns.empty()) return;
+    bool allVisible = true;
+    bool anyConsidered = false;
+
+    for (const auto& b : btns) 
+    {
+        if (&b == exclude) continue;
+        anyConsidered = true;
+        if (!b.isVisible) { allVisible = false; break; }
+    }
+
+    if (!anyConsidered) return;
+
+    const bool newState = !allVisible;
+
+    for (auto& b : btns) {
+        if (&b == exclude) continue;
+        b.isVisible = newState;
     }
 }
 
@@ -1184,8 +1218,8 @@ void GuiSystem::DrawStateWindow(Render& render)
 
     // -------- Window background (scaled like UI) --------
     {
-        const Vec2 basePos = { 960.f, 600.f };  // virtual center
-        const Vec2 baseSize = { 700.f, 500.f };  // virtual size
+        const Vec2 basePos = { 960.f, 560.f };  // virtual center
+        const Vec2 baseSize = { 700.f, 550.f };  // virtual size
         Vec2 pos;   pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
         Vec2 size;  size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
         render.DrawRect(pos, size.x, size.y, { 0.1f, 0.1f, 0.1f });
@@ -1194,17 +1228,21 @@ void GuiSystem::DrawStateWindow(Render& render)
         const float baseTextScale = 1.0f;
         const float textScale = baseTextScale * uiScale;
 
-        const Vec2 baseTitlePos = { 740.f, 780.f };
-        Vec2 titlePos; titlePos.x = baseTitlePos.x * scaleX; titlePos.y = baseTitlePos.y * scaleY;
-        render.DrawText("CHOOSE YOUR STATE", titlePos.x, titlePos.y, textScale, { 1,1,1 }, "Marker");
+        const Vec2 baseTitlePos = { 960.f, 780.f };
+        const std::string title = "CHOOSE YOUR STATE";
+        Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+        float textX = baseTitlePos.x - textSize.x * 0.5f;
+        float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
+        render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
     }
 
     struct Item { const char* label; ButtonAction action; };
     const Item items[] = {
-        {"None",      ButtonAction::None},
-        {"Main Menu", ButtonAction::LoadMainMenu},
-        {"Level 1",   ButtonAction::LoadLevel1},
-        {"Quit",      ButtonAction::Quit},
+        {"None",            ButtonAction::None},
+        {"Main Menu",       ButtonAction::LoadMainMenu},
+        {"Level 1",         ButtonAction::LoadLevel1},
+        {"Quit",            ButtonAction::Quit},
+        {"Toggle Buttons",  ButtonAction::ToggleAllButtons} // test toggling of buttons
     };
 
     auto ClickFunction = [this](ButtonAction action)
@@ -1220,7 +1258,7 @@ void GuiSystem::DrawStateWindow(Render& render)
 
     for (const auto& it : items)
     {
-        if (it.action == ButtonAction::None) { yVirtual -= 80.f; continue; }
+        if (it.action == ButtonAction::None) { yVirtual -= 40.f; continue; }
 
         const Vec2 basePos = { 960.f, yVirtual };
         const Vec2 baseSize = { 500.f,  60.f };
@@ -1239,14 +1277,13 @@ void GuiSystem::DrawStateWindow(Render& render)
         Vec2 textSize = render.CalculateTextSize(it.label, textScale, "Marker");
 
         float textX = pos.x - textSize.x * 0.5f;
-        float textY = pos.y - textSize.y * 0.5f + textSize.y * 0.15f; // small vertical offset
+        float textY = pos.y - textSize.y * 0.5f + textSize.y * 0.15f;
         render.DrawText(it.label, textX, textY, textScale, { 1,1,1 }, "Marker");
 
         // Click action
         if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             ClickFunction(it.action);
-            stateWindowActive = false;
             renderer.useCamera = prevCam;
             return;
         }

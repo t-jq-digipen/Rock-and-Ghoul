@@ -1169,6 +1169,7 @@ void ImGuiSystem::Update(float dt)
                             "Load Main Menu",
                             "Quit",
                             "Open State Window",
+                            "Toggle All Buttons",
                             "Toggle All Textboxes",
                             "Toggle All Dialogues"
                         };

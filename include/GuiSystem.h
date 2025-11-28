@@ -46,6 +46,7 @@ enum class ButtonAction
     LoadMainMenu,
     Quit,
     OpenStateWindow,
+    ToggleAllButtons,
     ToggleAllTextboxes,
     ToggleAllDialogues,
     GetActionCount
@@ -75,6 +76,7 @@ struct ButtonConfig {
     Vec2 basePos;         // base position for scaling (1920x1080)
     Vec2 baseSize;
     float baseTextScale{ 1.f };
+    bool isVisible = true;
 };
 
 struct TextBoxConfig {
@@ -151,6 +153,7 @@ public:
 
     // Button functions
     void BindButtonAction(ButtonConfig& btn);
+    void ToggleAllButtons(const ButtonConfig* exclude = nullptr);
     void ToggleAllTextboxes();
     void ToggleAllDialogues();
     void DrawStateWindow(Render& render);
