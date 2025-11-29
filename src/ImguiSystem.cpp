@@ -1483,6 +1483,93 @@ void ImGuiSystem::Update(float dt)
                         }
                     }
                     ImGui::Separator();
+                    // Action new
+                    {
+
+
+                        std::vector<const char*> actionNames;
+                        int selected = -1;
+                        auto& map = GuiSystem::Get().GetActionMap();
+
+                        actionNames.reserve(map.size());
+                        for (auto& [name, func] : map)
+                        {
+                            actionNames.push_back(name.c_str());
+                        }
+                        for (size_t i = 0; i < actionNames.size(); i++)
+                        {
+                            if (b.actionName == actionNames[i]) {
+                                selected = i;
+                                break;
+                            }
+                        }
+
+                        if (ImGui::Combo("ClickAction", &selected, actionNames.data(), actionNames.size()))
+                        {
+                            b.actionName = actionNames[selected];
+                            b.actionParams.clear();
+                        }
+
+                        if (b.actionName == "LoadScene")
+                        {
+                            ImGui::Indent();
+                            // Check if params assigned
+                            if (!b.actionParams.contains("scene") || !b.actionParams.contains("duration"))
+                            {
+                                json j{
+                                    {"scene", "fakescenename"},
+                                    {"duration", 2.f}
+                                };
+                                b.actionParams = j;
+                            }
+
+
+                            // Scene param
+                            int selectedScene = -1;
+                            std::vector<std::string> sceneFiles;
+                            const std::string sceneFolder = "../Assets/saves/";
+
+                            sceneFiles.clear();
+
+                            for (auto& entry : fs::directory_iterator(sceneFolder))
+                            {
+                                if (entry.path().stem().string() == "temp") continue;
+
+                                if (entry.path().extension() == ".json")
+                                {
+                                    sceneFiles.push_back(entry.path().stem().string());
+                                }
+                            }
+
+                            std::vector<const char*> sceneFilePtr; //bruh cannnot const char at start else dangling pointer so i make new vector
+                            sceneFilePtr.reserve(sceneFiles.size());
+                            for (auto& file : sceneFiles)
+                            { sceneFilePtr.push_back(file.c_str()); }
+                            // check scene index for selected scene
+                            std::string currScene = b.actionParams["scene"];
+                            for (size_t i = 0; i < sceneFilePtr.size(); i++)
+                            {
+                                if (currScene == sceneFilePtr[i])
+                                {
+                                    selectedScene = i;
+                                    break;
+                                }
+                            }
+
+                            if (ImGui::Combo("Go scene", &selectedScene, sceneFilePtr.data(), sceneFilePtr.size()))
+                            {
+                                b.actionParams["scene"] = sceneFilePtr[selectedScene];
+                            }
+
+                            float currDuration = b.actionParams["duration"];
+                            if (ImGui::InputFloat("Fade duration", &currDuration))
+                            {
+                                b.actionParams["duration"] = currDuration;
+                            }
+                            ImGui::Unindent();
+                        }
+                    }
+                    ImGui::Separator();
                     // Render data
                     {
                         const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };

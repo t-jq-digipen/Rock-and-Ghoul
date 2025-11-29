@@ -21,10 +21,12 @@ SceneManager& SceneManager::Get()
 void SceneManager::LoadScene(const std::string& path)
 {
     // Queue the scene load (do NOT load now)
+    if (GetTransitionProgress() < 1.f) return;
     pendingScene = path;
 }
 void SceneManager::QueueLoadScene(const std::string& path)
 {
+    if (GetTransitionProgress() < 1.f) return;
     pendingScene = path;
 }
 void SceneManager::Update(float dt, float fixedDt, int numSteps)
@@ -35,12 +37,12 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
         //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
     }
 
-    if (Input::IsKeyPressed(GLFW_KEY_H) && IsPlaying()) {
-        sceneTransitionTime = 0.f;
-        sceneFadeDuration = 2.f;
-        QueueLoadScene("../Assets/saves/level1.json");
-        //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
-    }
+    //if (Input::IsKeyPressed(GLFW_KEY_H) && IsPlaying()) {
+    //    sceneTransitionTime = 0.f;
+    //    sceneFadeDuration = 2.f;
+    //    QueueLoadScene("../Assets/saves/level1.json");
+    //    //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+    //}
 
     // Only load scenes at SAFE time (start of frame)
     if (!pendingScene.empty())
