@@ -9,6 +9,8 @@
 #include <filesystem>
 #include "ImguiSystem.h"
 #include "Audio.h"
+#include "FrameRateController.h"
+#include <chrono>
 
 SceneManager& SceneManager::Get()
 {
@@ -27,9 +29,34 @@ void SceneManager::QueueLoadScene(const std::string& path)
 }
 void SceneManager::Update(float dt, float fixedDt, int numSteps)
 {
+    
+    if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying()) {
+        TogglePause();
+        //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+    }
+
+    if (Input::IsKeyPressed(GLFW_KEY_H) && IsPlaying()) {
+        sceneTransitionTime = 0.f;
+        sceneFadeDuration = 2.f;
+        QueueLoadScene("../Assets/saves/level1.json");
+        //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+    }
+
     // Only load scenes at SAFE time (start of frame)
     if (!pendingScene.empty())
     {
+        if (GetTransitionProgress() < 1.f) {
+
+            std::cout << "fadeprog " << GetTransitionProgress() << '\n';
+            
+
+            sceneTransitionTime += dt;
+            return; 
+        }
+        sceneFadeDuration = 0.f;
+        sceneTransitionTime = 0.f;
+
+
         std::string path = pendingScene;
         pendingScene.clear();
 
@@ -39,7 +66,14 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
         if (JsonLoad::LoadScene(path))
         {
             currentScenePath = path;
+
+#ifndef NO_IMGUI
             ImGuiSystem::UpdateSpawnCamera();
+#else
+            EnterPlayMode(); //this works but can someone factcheck if this is the right way to do
+#endif
+            /*Camera& cam = Camera::GetInstance();
+            cam.SetMode(Camera::Mode::GAME);*/
 
             auto p = std::filesystem::path(path);
             tempScenePath = "../Assets/saves/temp.json";
@@ -51,6 +85,14 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
         {
             std::cerr << "[SceneManager] FAILED to load scene: " << path << "\n";
         }
+    }
+
+    // ============================================================
+    // HANDLE GAME PAUSE (P key) - ONLY IN PLAY MODE
+    // ============================================================
+    if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying() && !IsInEditMode()) {
+        TogglePause();
+        std::cout << (IsPaused() ? "[SceneManager] Game paused\n" : "[SceneManager] Game resumed\n");
     }
 }
 

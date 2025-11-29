@@ -77,16 +77,24 @@ int main() {
         settings.volume = 100.0f;
         settings.resolutionWidth = 1920;
         settings.resolutionHeight = 1080;
-        settings.fullscreen = false;
+        settings.fullscreen = true;
 
         // Save defaults for next time
         JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
     }
 
+#ifndef NO_IMGUI
+    settings.fullscreen = false;
+#endif
+
     // USE the loaded settings to initialize window
-    if (!GLApp::init(settings.resolutionWidth, settings.resolutionHeight, "Rock & Ghoul")) {
+    if (!GLApp::init(settings.resolutionWidth, settings.resolutionHeight, "Rock & Ghoul", settings.fullscreen)) {
         return -1;
     }
+
+ 
+ 
+
     const char* LogPath = "rockandghoul_crash.log";
 
     // Truncate the file at startup (creates it if missing)

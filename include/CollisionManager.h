@@ -2,7 +2,7 @@
  * @file        CollisionManager.h
  * @author      Yasmin Tazi        | yasmin.t@digipen.edu
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        06 NOV 2025
+ * @date        28 NOV 2025
  *
  * @brief
  *
@@ -32,9 +32,9 @@ struct CollisionEvent {
 };
 
 struct TriggerEvent : public IEvent {
-    Entity a;
-    Entity b;
-    std::string eventName; // Change in JSON file
+    Entity trigger;      // The "trigger" entity
+    Entity other;        // The "victim" entity
+    std::string eventName; // triggerEvent
 };
 
 // convert a tag enum to a readable string

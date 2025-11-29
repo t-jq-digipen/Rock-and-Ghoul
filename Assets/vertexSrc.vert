@@ -20,21 +20,29 @@ uniform float uRotation;
 uniform vec4 uUVRect;
 uniform bool uUseSubImage;
 
+//use custom verts for quads
+uniform bool uUseCustomVerts;
+
 out vec2 TexCoord;
 
 void main() {
-    // Create rotation matrix
-    float c = cos(uRotation);
-    float s = sin(uRotation);
-    mat2 rot = mat2(c, -s,
-                    s,  c);
-
-    // Rotate first, then scale
-    vec2 rotated = rot * aPos;
-    vec2 scaled  = rotated * uScale;
 
     // Translate to world position
-    vec2 world = scaled + uPos;
+    vec2 world;
+    if (uUseCustomVerts){
+	world = aPos;
+    } else {
+	// Create rotation matrix
+    	float c = cos(uRotation);
+    	float s = sin(uRotation);
+    	mat2 rot = mat2(c, -s,
+                    s,  c);
+
+    	// Rotate first, then scale
+    	vec2 rotated = rot * aPos;
+    	vec2 scaled  = rotated * uScale;
+    	world = scaled + uPos;
+    }
 
     gl_Position = uProjection * vec4(world, 0.0, 1.0);
 
