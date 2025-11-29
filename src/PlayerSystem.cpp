@@ -332,7 +332,7 @@ namespace RockScript {
 
 	}
 
-	void Attack(Entity eID) {
+	void Attack(Entity) {
 		if ((stunnedtimer < 1.f || atktimer < 1.f)) { return; }
 
 		atktimer = 0.f;
@@ -376,7 +376,7 @@ namespace RockScript {
 		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
 		
 		auto& moveComp	= registry.Get_Component<Movement::MovementComponent>(eID);
-		auto& physics		= registry.Get_Component<Physics::PhysicsComponent>(eID);
+		//auto& physics		= registry.Get_Component<Physics::PhysicsComponent>(eID);
 		auto& transComp			= registry.Get_Component<TransformComponent>(eID);
 
 		int animstate = 0; //idle

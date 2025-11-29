@@ -27,7 +27,7 @@ void SceneManager::QueueLoadScene(const std::string& path)
 {
     pendingScene = path;
 }
-void SceneManager::Update(float dt, float fixedDt, int numSteps)
+void SceneManager::Update(float dt, float, int numSteps)
 {
     
     if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying()) {

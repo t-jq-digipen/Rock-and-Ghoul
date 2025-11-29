@@ -187,6 +187,7 @@ namespace
         }
         catch (const std::exception& e)
         {
+            std::cerr << e.what();
             return false;
         }
     }
@@ -206,6 +207,7 @@ namespace
         }
         catch (const std::exception& e)
         {
+            std::cerr << e.what();
             return false;
         }
     }
@@ -384,6 +386,7 @@ void ImportAudioFile(const std::string& srcPathStr)
     }
     catch (const fs::filesystem_error& e)
     {
+        std::cerr << e.what();
         return;
     }
 
@@ -450,7 +453,7 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
         {
             Sprite::SpriteSheet& spritesheet    = r.GetSpriteSheet();
             Sprite::SpriteComponent& sprite     = spritesheet.Sprite();
-            const Image& img = sprite.Get_Image();
+            //const Image& img = sprite.Get_Image();
 
             float frameW = spritesheet.u1 - spritesheet.u0;
             float frameH = spritesheet.v1 - spritesheet.v0;
@@ -532,7 +535,7 @@ Entity PickEntityAtWorldPos(const Vec2& world)
             {
                 Sprite::SpriteSheet& spritesheet = r.GetSpriteSheet();
                 Sprite::SpriteComponent& sprite = spritesheet.Sprite();
-                const Image& img = sprite.Get_Image();
+                //const Image& img = sprite.Get_Image();
 
                 float frameW = spritesheet.u1 - spritesheet.u0;
                 float frameH = spritesheet.v1 - spritesheet.v0;
@@ -1121,7 +1124,7 @@ void ImGuiSystem::Update(float dt)
                     b.label = "New Button " + std::to_string((int)buttons.size() + 1);
                     b.pos = { 960, 540 };
                     b.size = { 200, 100 };
-                    b.color = { 0.4f, 0.7f, 0.9f };
+                    //b.color = { 0.4f, 0.7f, 0.9f };
                     b.textScale = 1.0f;
                     b.basePos = b.pos; b.baseSize = b.size; b.baseTextScale = b.textScale;
                     b.action = ButtonAction::None;
@@ -1458,7 +1461,7 @@ void ImGuiSystem::Update(float dt)
                             b.label = buf;
                         }
                     }
-
+                    ImGui::Separator();
                     // Action
                     {
                         const char* actionNames[] =
@@ -1482,17 +1485,291 @@ void ImGuiSystem::Update(float dt)
                             GuiSystem::Get().BindButtonAction(b);
                         }
                     }
-
-                    // Shape
+                    ImGui::Separator();
+                    // Render data
                     {
-                        const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
-                        int currShape = (int)b.shape;
-                        if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames)))
+                        const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
+                        int currType = (int)b.m_renderData.GetRenderType();
+                        if (ImGui::Combo("RenderType", &currType, typeNames, IM_ARRAYSIZE(typeNames)))
                         {
-                            b.shape = (ButtonShape)currShape;
+                            b.m_renderData.SetRenderType((UIRenderType)currType);
+                        }
+
+                        switch (b.m_renderData.GetRenderType())
+                        {
+                        case UIRenderType::Shape:
+                        {
+                            auto& shape = b.m_renderData.GetShapeData();
+
+                            const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
+                            int currShape = (int)shape.shape;
+                            if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames)))
+                            {
+                                shape.shape = (ButtonShape)currShape;
+                            }
+
+                            float col[3] = { shape.color.r, shape.color.g, shape.color.b};
+                            if (ImGui::ColorEdit3("Color", col))
+                            {
+                                shape.color.r = col[0]; shape.color.g = col[1]; shape.color.b = col[2];
+                            }
+                        }
+                        break; //end case SHAPE
+
+                        case UIRenderType::CustomQuad:
+                        {
+                            auto& quad = b.m_renderData.GetQuadData();
+
+                            ImGui::InputFloat2("v0", &quad.v0.x);
+                            ImGui::InputFloat2("v1", &quad.v1.x);
+                            ImGui::InputFloat2("v2", &quad.v2.x);
+                            ImGui::InputFloat2("v3", &quad.v3.x);
+
+                            if (ImGui::Button("Automatic quad by size"))
+                            {
+                                quad.v0 = { b.basePos.x - (0.5f * b.baseSize.x), b.basePos.y - (0.5f * b.baseSize.y) };
+                                quad.v1 = { b.basePos.x + (0.5f * b.baseSize.x), b.basePos.y - (0.5f * b.baseSize.y) };
+                                quad.v2 = { b.basePos.x + (0.5f * b.baseSize.x), b.basePos.y + (0.5f * b.baseSize.y) };
+                                quad.v3 = { b.basePos.x - (0.5f * b.baseSize.x), b.basePos.y + (0.5f * b.baseSize.y) };
+                            }
+
+                            float col[3] = { quad.color.r, quad.color.g, quad.color.b };
+                            if (ImGui::ColorEdit3("Color", col))
+                            {
+                                quad.color.r = col[0]; quad.color.g = col[1]; quad.color.b = col[2];
+                            }
+                        }
+                        break; // end case CUSTOMQUAD
+
+                        case UIRenderType::Image:
+                        {
+                            auto& imgData = b.m_renderData.GetImageData();
+                            Image& img = imgData.m_image;
+
+                            // dropdown.enumMap = Render::GetInstance().Get_TextureCache();
+                            const auto& cache = Render::GetInstance().Get_TextureCache();
+
+                            static int selected = 0;
+                            std::vector<const char*> imgOptions;
+                            std::vector<GLuint> textureIDs;
+                            imgOptions.reserve(cache.size());
+                            for (auto const& [optname, optval] : cache)
+                            {
+                                imgOptions.push_back(optname.c_str());
+                                textureIDs.push_back(optval);
+                            }
+                            for (size_t i = 0; i < textureIDs.size(); i++) {
+                                if (textureIDs[i] == img.textureID) {
+                                    selected = i;
+                                    break;
+                                }
+                            }
+
+
+                            if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), imgOptions.size()))
+                            {
+                                img = CreateImage(imgOptions[selected]);
+                            }
+
+                            // display
+                            {
+                                GLuint texID = img.textureID;
+                                const float texW = (float)img.widthPixels;
+                                const float texH = (float)img.heightPixels;
+
+                                ImVec2 avail = ImGui::GetContentRegionAvail();
+
+                                float scale = (texW != 0) ? avail.x / texW : 0.f;
+                                scale *= 0.9f;
+
+                                ImVec2 displaySize(texW * scale, texH * scale);
+
+                                ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+
+                            }
+                            
+                            ImGui::Text("Resize to aspect ratio:");
+                            if (ImGui::Button("Width"))
+                            {
+                                b.baseSize.x = b.baseSize.y * ((float)img.widthPixels / (float)img.heightPixels);
+                            }
+                            ImGui::SameLine();
+                            if (ImGui::Button("Height"))
+                            {
+                                b.baseSize.y = b.baseSize.x * ((float)img.heightPixels / (float)img.widthPixels);
+                            }
+                        }
+                        break; // end case IMAGE
+
+                        case UIRenderType::ImageSheet:
+                        {
+                            auto& imgsheet = b.m_renderData.GetImageSheetData();
+
+                            Image& img = imgsheet.m_image;
+
+                            // dropdown.enumMap = Render::GetInstance().Get_TextureCache();
+                            const auto& cache = Render::GetInstance().Get_TextureCache();
+
+                            static int selected = 0;
+                            std::vector<const char*> imgOptions;
+                            std::vector<GLuint> textureIDs;
+                            imgOptions.reserve(cache.size());
+                            for (auto const& [optname, optval] : cache)
+                            {
+                                imgOptions.push_back(optname.c_str());
+                                textureIDs.push_back(optval);
+                            }
+                            for (size_t i = 0; i < textureIDs.size(); i++) {
+                                if (textureIDs[i] == img.textureID) {
+                                    selected = i;
+                                    break;
+                                }
+                            }
+
+                            if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), imgOptions.size()))
+                            {
+                                img = CreateImage(imgOptions[selected]);
+                            }
+
+                            // display
+                            {
+                                GLuint texID = img.textureID;
+                                const float texW = (float)img.widthPixels;
+                                const float texH = (float)img.heightPixels;
+
+                                ImVec2 avail = ImGui::GetContentRegionAvail();
+
+                                float scale = (texW != 0) ? avail.x / texW : 0.f;
+                                scale *= 0.9f;
+
+                                ImVec2 displaySize(texW * scale, texH * scale);
+                                ImVec2 imagePos = ImGui::GetCursorScreenPos();
+
+                                ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+
+                                ImDrawList* draw = ImGui::GetWindowDrawList();
+
+                                int rows = imgsheet.total_rows;
+                                int cols = imgsheet.total_cols;
+
+                                float cellW = displaySize.x / cols;
+                                float cellH = displaySize.y / rows;
+
+                                // vertical lines
+                                for (int c = 1; c < cols; ++c)
+                                {
+                                    float x = imagePos.x + c * cellW;
+                                    draw->AddLine(ImVec2(x, imagePos.y),
+                                        ImVec2(x, imagePos.y + displaySize.y),
+                                        IM_COL32(255, 255, 255, 128));
+                                }
+
+                                // horizontal lines
+                                for (int r = 1; r < rows; ++r)
+                                {
+                                    float y = imagePos.y + r * cellH;
+                                    draw->AddLine(ImVec2(imagePos.x, y),
+                                        ImVec2(imagePos.x + displaySize.x, y),
+                                        IM_COL32(255, 255, 255, 128));
+                                }
+
+                                // highlight
+                                int r = imgsheet.frame_index.curr_row;
+                                int c = imgsheet.frame_index.curr_col;
+
+                                ImVec2 p0(
+                                    imagePos.x + c * cellW,
+                                    imagePos.y + r * cellH
+                                );
+                                ImVec2 p1(
+                                    imagePos.x + (c + 1) * cellW,
+                                    imagePos.y + (r + 1) * cellH
+                                );
+
+                                // Filled highlight
+                                draw->AddRectFilled(p0, p1, IM_COL32(255, 255, 0, 80));
+
+                                // Outline
+                                draw->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
+                            }
+
+                            ImGui::InputInt("Rows", (int*)&imgsheet.total_rows);
+                            if (imgsheet.total_rows < 1) { imgsheet.total_rows = 1; }
+                            ImGui::InputInt("Columns", (int*)&imgsheet.total_cols);
+                            if (imgsheet.total_cols < 1) { imgsheet.total_cols = 1; }
+
+                            ImGui::Separator();
+
+                            ImGui::SliderInt("Current Row", (int*)&imgsheet.frame_index.curr_row, 0, (int)imgsheet.total_rows-1);
+                            ImGui::SliderInt("Current Col", (int*)&imgsheet.frame_index.curr_col, 0, (int)imgsheet.total_cols-1);
+
+
+                            imgsheet.total_cols = std::max(1u, imgsheet.total_cols);
+                            imgsheet.total_rows = std::max(1u, imgsheet.total_rows);
+
+                            if (ImGui::TreeNode("State Frames"))
+                            {
+                                for (auto& [state, idx] : imgsheet.frames)
+                                {
+                                    ImGui::PushID(state);
+
+                                    ImGui::Text("State %u", state);
+
+                                    ImGui::InputInt("Row", (int*)&idx.curr_row);
+                                    ImGui::InputInt("Col", (int*)&idx.curr_col);
+
+                                    idx.curr_row = std::clamp(idx.curr_row, 0u, imgsheet.total_rows - 1);
+                                    idx.curr_col = std::clamp(idx.curr_col, 0u, imgsheet.total_cols - 1);
+
+                                    if (ImGui::Button("Delete"))
+                                        imgsheet.frames.erase(state);
+
+                                    ImGui::Separator();
+                                    ImGui::PopID();
+                                }
+
+                                static int newStateID = 0;
+                                ImGui::InputInt("Add State", &newStateID);
+                                if (ImGui::Button("Add")) {
+                                    imgsheet.frames[newStateID] = { 0,0 };
+                                }
+
+                                ImGui::TreePop();
+                            }
+
+                            int frameW = img.widthPixels / imgsheet.total_cols;
+                            int frameH = img.heightPixels / imgsheet.total_rows;
+                            ImGui::Text("Resize to aspect ratio:");
+                            if (ImGui::Button("Width"))
+                            {
+                                b.baseSize.x = b.baseSize.y * (float(frameW) / float(frameH));
+                            }
+                            ImGui::SameLine();
+                            if (ImGui::Button("Height"))
+                            {
+                                b.baseSize.y = b.baseSize.x * (float(frameH) / float(frameW));
+                            }
+
+                        }
+                        break; // end case IMAGESHEET
+
+                        case UIRenderType::None:
+                            ImGui::Text("No render information");
+                        default:
+                            break;
                         }
                     }
-
+                    ImGui::Separator();
+                    //// Shape
+                    //{
+                    //    const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
+                    //    int currShape = (int)b.shape;
+                    //    if (ImGui::Combo("ButtonShape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames)))
+                    //    {
+                    //        b.shape = (ButtonShape)currShape;
+                    //    }
+                    //}
+                    ImGui::Separator();
                     // Position / Size / Text scale
                     ImGui::Separator();
                     ImGui::Text("Transform");
@@ -1502,14 +1779,14 @@ void ImGuiSystem::Update(float dt)
                     ImGui::SliderFloat("sizeY", &b.baseSize.y, 0.1f, 1080.f);
                     ImGui::SliderFloat("textScale", &b.baseTextScale, 0.1f, 3.0f);
 
-                    // Color
-                    ImGui::Separator();
-                    ImGui::Text("Color");
-                    float col[3] = { b.color.r, b.color.g, b.color.b };
-                    if (ImGui::ColorEdit3("Button Color", col))
-                    {
-                        b.color.r = col[0]; b.color.g = col[1]; b.color.b = col[2];
-                    }
+                    //// Color
+                    //ImGui::Separator();
+                    //ImGui::Text("Color");
+                    //float col[3] = { b.color.r, b.color.g, b.color.b };
+                    //if (ImGui::ColorEdit3("Button Color", col))
+                    //{
+                    //    b.color.r = col[0]; b.color.g = col[1]; b.color.b = col[2];
+                    //}
 
                     ImGui::Separator();
                     if (ImGui::Button("Delete This Button"))
@@ -1794,11 +2071,11 @@ void ImGuiSystem::Update(float dt)
         {
             // Build a flat list of all UI elements for the dropdown
             static int comboIndex = -1;
-            const int total = totalCount();
+            const int totalcnt = totalCount();
 
             static std::vector<std::string> labels;
             labels.clear();
-            labels.reserve(total);
+            labels.reserve(totalcnt);
 
             // Buttons
             for (int i = 0; i < (int)buttons.size(); ++i)
@@ -1833,13 +2110,13 @@ void ImGuiSystem::Update(float dt)
 
             if (uiSelectedIndex >= 0 && uiSelectedIndex < (int)items.size())
                 comboIndex = uiSelectedIndex;
-            else if (total == 0)
+            else if (totalcnt == 0)
                 comboIndex = -1;
 
             if (ImGui::Combo("UI Elements", &comboIndex,
                 items.data(), (int)items.size()))
             {
-                if (comboIndex >= 0 && comboIndex < total)
+                if (comboIndex >= 0 && comboIndex < totalcnt)
                 {
                     uiSelectedIndex = comboIndex;
                     SelectedType type; int lIdx;
@@ -2638,7 +2915,7 @@ void ImGuiSystem::ShowSceneBrowser()
         {
             musicTrackList.push_back(asset.name.c_str());
             if (asset.name == bgmName)
-            { selectedTrack = musicTrackList.size()-1; }
+            { selectedTrack = (int)musicTrackList.size()-1; }
         }
     }
 

@@ -23,6 +23,237 @@
 #include <FilePath.h>
 AudioManager* GuiSystem::audio = nullptr;
 
+void UI_RenderData::SetRenderType(UIRenderType type) {
+    switch (type)
+    {
+    case UIRenderType::Shape:
+    {
+        data = std::make_unique<UIShapeRender>();
+    }
+    break; //end case SHAPE
+
+    case UIRenderType::CustomQuad:
+    {
+        data = std::make_unique<UICustomQuadRender>();
+    }
+    break; // end case CUSTOMQUAD
+
+    case UIRenderType::Image:
+    {
+        data = std::make_unique<UIImageRender>();
+    }
+    break; // end case IMAGE
+
+    case UIRenderType::ImageSheet:
+    {
+        data = std::make_unique<UIImageSheetRender>();
+    }
+    break; // end case IMAGESHEET
+
+    default:
+        break;
+    }
+}
+
+UIRenderType UI_RenderData::GetRenderType() const {
+    if (!data) { return UIRenderType::None; }
+
+    return data->GetType();
+}
+
+UIShapeRender& UI_RenderData::GetShapeData() {
+    if (data->GetType() != UIRenderType::Shape) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
+    return *static_cast<UIShapeRender*>(data.get());
+}
+
+const UIShapeRender& UI_RenderData::GetShapeData() const {
+    if (data->GetType() != UIRenderType::Shape) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
+    return *static_cast<UIShapeRender*>(data.get());
+}
+
+UICustomQuadRender& UI_RenderData::GetQuadData() {
+    if (data->GetType() != UIRenderType::CustomQuad) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
+    return *static_cast<UICustomQuadRender*>(data.get());
+}
+
+const UICustomQuadRender& UI_RenderData::GetQuadData() const {
+    if (data->GetType() != UIRenderType::CustomQuad) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
+    return *static_cast<UICustomQuadRender*>(data.get());
+}
+
+UIImageRender& UI_RenderData::GetImageData() {
+    if (data->GetType() != UIRenderType::Image) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
+    return *static_cast<UIImageRender*>(data.get());
+}
+
+const UIImageRender& UI_RenderData::GetImageData() const {
+    if (data->GetType() != UIRenderType::Image) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
+    return *static_cast<UIImageRender*>(data.get());
+}
+
+UIImageSheetRender& UI_RenderData::GetImageSheetData() {
+    if (data->GetType() != UIRenderType::ImageSheet) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
+    return *static_cast<UIImageSheetRender*>(data.get());
+}
+
+const UIImageSheetRender& UI_RenderData::GetImageSheetData() const {
+    if (data->GetType() != UIRenderType::ImageSheet) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
+    return *static_cast<UIImageSheetRender*>(data.get());
+}
+
+std::string UI_RenderData::Serialize() const {
+    using json = nlohmann::json;
+
+    json j;
+    
+    switch (GetRenderType())
+    {
+    case UIRenderType::Shape:
+    {
+        j["type"] = "shape";
+    }
+    break; //end case SHAPE
+
+    case UIRenderType::CustomQuad:
+    {
+        j["type"] = "quad";
+    }
+    break; // end case CUSTOMQUAD
+
+    case UIRenderType::Image:
+    {
+        j["type"] = "image";
+    }
+    break; // end case IMAGE
+
+    case UIRenderType::ImageSheet:
+    {
+        j["type"] = "imagesheet";
+    }
+    break; // end case IMAGESHEET
+
+    case UIRenderType::None:
+    default:
+    {
+        return "{}";
+    }
+    break;
+    }
+    j["data"] = data->Serialize();
+    return j.dump();
+}
+
+UI_RenderData UI_RenderData::DeSerialize(const std::string& data) {
+    using json = nlohmann::json;
+    json j = json::parse(data);
+
+    UI_RenderData ret{};
+    if (j.contains("type"))
+    {
+        std::string type = j["type"];
+        if (type == "shape")
+        {
+            ret.data = std::make_unique<UIShapeRender>(UIShapeRender::DeSerialize(j["data"]));
+        } // end shape
+        else if (type == "quad")
+        {
+            ret.data = std::make_unique<UICustomQuadRender>(UICustomQuadRender::DeSerialize(j["data"]));
+        } // end quad
+        else if (type == "image")
+        {
+            ret.data = std::make_unique<UIImageRender>(UIImageRender::DeSerialize(j["data"]));
+        } // end image
+        else if (type == "imagesheet")
+        {
+            ret.data = std::make_unique<UIImageSheetRender>(UIImageSheetRender::DeSerialize(j["data"]));
+        }
+    }
+    
+    return ret;
+}
+
+void ButtonConfig::DrawButton(bool hovered) {
+
+    Render& render = Render::GetInstance();
+    switch (m_renderData.GetRenderType())
+    {
+    case UIRenderType::Shape:
+    {
+        UIShapeRender data = m_renderData.GetShapeData();
+
+        // lighten if hovered
+        Colour3 drawColor = hovered
+            ? Colour3{ data.color.r + 0.2f, data.color.g + 0.2f, data.color.b + 0.2f }
+        : data.color;
+
+        switch (data.shape) {
+        case ButtonShape::Rectangle:
+            render.DrawRect(pos, size.x, size.y, drawColor);
+            break;
+        case ButtonShape::Circle: {
+            float radius = std::min(size.x, size.y) * 0.5f;
+            render.DrawCircle(pos, radius, drawColor, 48);
+            break;
+        }
+        case ButtonShape::Rounded: {
+            float corner = std::min(size.x, size.y) * 0.5f;
+            render.DrawRoundedRect(pos, size.x, size.y, corner, drawColor);
+            break;
+        }
+        }
+    }
+    break; //end case SHAPE
+
+    case UIRenderType::CustomQuad:
+    {
+        UICustomQuadRender data = m_renderData.GetQuadData();
+        // lighten if hovered
+        Colour3 drawColor = hovered
+            ? Colour3{ data.color.r + 0.2f, data.color.g + 0.2f, data.color.b + 0.2f }
+        : data.color;
+
+        render.DrawCustomQuad(data.v0, data.v1, data.v2, data.v3, drawColor);
+
+    }
+    break; // end case CUSTOMQUAD
+
+    case UIRenderType::Image:
+    {
+        UIImageRender data = m_renderData.GetImageData();
+        float brightness = hovered ? .25f : 0.f;
+        render.DrawImageRotated(data.m_image, pos.x, pos.y, size.x, size.y, 0.f, brightness);
+    }
+    break; // end case IMAGE
+
+    case UIRenderType::ImageSheet:
+    {
+        UIImageSheetRender data = m_renderData.GetImageSheetData();
+
+        float brightness = hovered ? .25f : 0.f;
+
+        int tileW = data.m_image.widthPixels / data.total_cols;
+        int tileH = data.m_image.heightPixels / data.total_rows;
+
+        int col = data.frame_index.curr_col;
+        int row = data.frame_index.curr_row;
+        row = data.total_rows - 1 - row;
+
+        float u0 = static_cast<float>(col * tileW);
+        float v0 = static_cast<float>(row * tileH);
+
+        float u1 = static_cast<float>(u0 + tileW);
+        float v1 = static_cast<float>(v0 + tileH);
+
+        render.DrawImageSub(data.m_image, pos.x, pos.y, size.x, size.y, u0, v0, u1, v1, 0.f, brightness);
+    }
+    break; // end case IMAGESHEET
+
+    default:
+        break;
+    }
+}
+
+
 void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
     audio = audioMgr;
 }
@@ -132,10 +363,10 @@ void GuiSystem::Update(float dt)
     GuiSystem::GetMouseImgui(mouse);
 
     // Render setup (UI in screen space)
-    Render& renderer = Render::GetInstance();
-    Render& render = renderer; // keep legacy name used below
-    const bool prevCam = renderer.useCamera;
-    renderer.useCamera = false;
+    //Render& render = Render::GetInstance();
+    //Render& render = renderer; // keep legacy name used below
+    const bool prevCam = render.useCamera;
+    render.useCamera = false;
 
     // UI scaling against 1920x1080 virtual space
     const float defaultWidth = 1920.f;
@@ -160,7 +391,8 @@ void GuiSystem::Update(float dt)
             cfg.pos.y = cfg.basePos.y * scaleY;
 
             bool hover = false;
-            if (cfg.shape == ButtonShape::Circle) {
+            if (cfg.m_renderData.GetRenderType() == UIRenderType::Shape && cfg.m_renderData.GetShapeData().shape == ButtonShape::Circle)
+            {
                 float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
                 float dist = RG_Distance(mouse, cfg.pos);
                 hover = dist <= radius;
@@ -169,25 +401,28 @@ void GuiSystem::Update(float dt)
                 hover = render.IsAreaTouched(mouse, cfg.pos, cfg.size.x, cfg.size.y);
             }
 
-            Colour3 drawColor = hover
-                ? Colour3{ cfg.color.r + 0.2f, cfg.color.g + 0.2f, cfg.color.b + 0.2f }
-            : cfg.color;
+            //Colour3 drawColor = hover
+            //    ? Colour3{ cfg.color.r + 0.2f, cfg.color.g + 0.2f, cfg.color.b + 0.2f }
+            //: cfg.color;
 
-            switch (cfg.shape) {
-            case ButtonShape::Rectangle:
-                render.DrawRect(cfg.pos, cfg.size.x, cfg.size.y, drawColor);
-                break;
-            case ButtonShape::Circle: {
-                float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
-                render.DrawCircle(cfg.pos, radius, drawColor, 48);
-                break;
-            }
-            case ButtonShape::Rounded: {
-                float corner = std::min(cfg.size.x, cfg.size.y) * 0.5f;
-                render.DrawRoundedRect(cfg.pos, cfg.size.x, cfg.size.y, corner, drawColor);
-                break;
-            }
-            }
+
+            //switch (cfg.shape) {
+            //case ButtonShape::Rectangle:
+            //    render.DrawRect(cfg.pos, cfg.size.x, cfg.size.y, drawColor);
+            //    break;
+            //case ButtonShape::Circle: {
+            //    float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
+            //    render.DrawCircle(cfg.pos, radius, drawColor, 48);
+            //    break;
+            //}
+            //case ButtonShape::Rounded: {
+            //    float corner = std::min(cfg.size.x, cfg.size.y) * 0.5f;
+            //    render.DrawRoundedRect(cfg.pos, cfg.size.x, cfg.size.y, corner, drawColor);
+            //    break;
+            //}
+            //}
+
+            cfg.DrawButton(hover);
 
             const float textScale = cfg.textScale;
             Vec2 textSize = render.CalculateTextSize(cfg.label, textScale, "Marker");
@@ -953,11 +1188,11 @@ void GuiSystem::Update(float dt)
     {
         Vec2 pos = { GLApp::width * .5f,GLApp::height * .5f };
         //KERVINMAKETHISHAVEALPHA
-        render.DrawRect(pos, GLApp::width, GLApp::height, { 0.f,0.f,0.f }, 0.0f, t);
+        render.DrawRect(pos, (float)GLApp::width, (float)GLApp::height, { 0.f,0.f,0.f }, 0.0f, t);
     }
    
     // restore camera back to world
-    renderer.useCamera = prevCam;
+    render.useCamera = prevCam;
 }
 
 void GuiSystem::Shutdown() {
@@ -1098,13 +1333,13 @@ void GuiSystem::ToggleAllDialogues()
     for (auto& d : dialogues) d.isVisible = !anyVisible;
 }
 
-void GuiSystem::DrawStateWindow(Render& render)
+void GuiSystem::DrawStateWindow(Render& )
 {
     if (!stateWindowActive) return;
 
-    Render& renderer = Render::GetInstance();
-    const bool prevCam = renderer.useCamera;
-    renderer.useCamera = false;
+    //Render& renderer = Render::GetInstance();
+    const bool prevCam = render.useCamera;
+    render.useCamera = false;
 
     const float defaultW = 1920.f;
     const float defaultH = 1080.f;
@@ -1183,7 +1418,7 @@ void GuiSystem::DrawStateWindow(Render& render)
         if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             ClickFunction(it.action);
-            renderer.useCamera = prevCam;
+            render.useCamera = prevCam;
             return;
         }
 
@@ -1215,7 +1450,7 @@ void GuiSystem::DrawStateWindow(Render& render)
             stateWindowActive = false;
         }
     }
-    renderer.useCamera = prevCam;
+    render.useCamera = prevCam;
 }
 
 void GuiSystem::GetMouseImgui(Vec2& mouse)
