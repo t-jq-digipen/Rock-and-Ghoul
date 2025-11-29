@@ -165,7 +165,7 @@ void UpdateCamera(Camera& cam, const Vec2& targetPos, float dt)
 
 void Camera::ResetToCenter()
 {
-    position = { GLApp::width / 2.0f, GLApp::height / 2.0f };
+    position = { GLApp::baseWidth / 2.0f, GLApp::baseHeight / 2.0f };
     zoom = 1.0f;
     UpdateMatrices();
 }

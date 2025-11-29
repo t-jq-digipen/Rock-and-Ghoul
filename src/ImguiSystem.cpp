@@ -1860,11 +1860,11 @@ void ImGuiSystem::Update(float dt)
                     // Position / Size / Text scale
                     ImGui::Separator();
                     ImGui::Text("Transform");
-                    ImGui::SliderFloat("posX", &b.basePos.x, 0.f, 1920.f);
-                    ImGui::SliderFloat("posY", &b.basePos.y, 0.f, 1080.f);
-                    ImGui::SliderFloat("sizeX", &b.baseSize.x, 0.1f, 1920.f);
-                    ImGui::SliderFloat("sizeY", &b.baseSize.y, 0.1f, 1080.f);
-                    ImGui::SliderFloat("textScale", &b.baseTextScale, 0.1f, 3.0f);
+                    ImGui::InputFloat("posX", &b.basePos.x, 0.1f);
+                    ImGui::InputFloat("posY", &b.basePos.y, 0.1f);
+                    ImGui::InputFloat("sizeX", &b.baseSize.x, 0.1f);
+                    ImGui::InputFloat("sizeY", &b.baseSize.y, 0.1f);
+                    ImGui::InputFloat("textScale", &b.baseTextScale, 0.1f);
 
                     //// Color
                     //ImGui::Separator();
@@ -4266,6 +4266,10 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
             dl->AddRect(min, max, color);
             if (inside) { camHover = true; }
         }
+    }
+    else
+    {
+        cam.ResetToCenter();
     }
 
 
