@@ -223,6 +223,9 @@ struct UIImageSheetRender : public IUIRender
 
         j["texturePath"] = Render::GetInstance().Get_TexturePath(m_image.textureID);
 
+        j["totalRows"] = total_rows;
+        j["totalCols"] = total_cols;
+
         j["currFrame"] = current_frame;
 
         j["currRow"] = frame_index.curr_row;
@@ -257,6 +260,9 @@ struct UIImageSheetRender : public IUIRender
         ret.m_image = CreateImage(j["texturePath"]);
 
         ret.current_frame = j["currFrame"];
+
+        ret.total_rows = j["totalRows"];
+        ret.total_cols = j["totalCols"];
 
         ret.frame_index.curr_row = j["currRow"];
         ret.frame_index.curr_col = j["currCol"];
@@ -393,17 +399,11 @@ struct Button {
     bool pressed = false;
 };
 
-struct DisplayConfig {
-
-    Vec2 pos;
-    float size;
-
-    UI_RenderData m_renderData{};
-
-    Vec2 basePos;
-    Vec2 baseSize;
-    bool isVisible{ true };
-    int ID;
+struct UIGroup
+{
+    int groupID = 0;
+    std::string groupName;
+    std::vector<int> memberIDs;
 };
 
 std::string ButtonShapeToString(ButtonShape shape);
@@ -479,12 +479,18 @@ public:
     // For UI editor (ensure next UI ID is always unique)
     void ReseedNextUIID();
 
+    std::vector<UIGroup>& GetGroups() { return m_groups; }
+
+    void AddGroup(const UIGroup& group) { m_groups.push_back(group); }
+
 private:
 
     std::vector<ButtonConfig> buttons;
     std::vector<TextBoxConfig> textboxes;
     std::vector<DialogueConfig> dialogues;
     std::vector<DisplayConfig> displays;
+
+    std::vector<UIGroup> m_groups;
 
     // a registry to hold functions, keyed by function name
     std::unordered_map<std::string, ActionFunction> actionRegistry;

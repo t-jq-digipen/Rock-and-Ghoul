@@ -3,6 +3,7 @@
         "../Assets/MainMenu_Background.JPG",
         "../Assets/MainMenu_Rock&Ghoul.PNG"
     ],
+    "bgmAssetName": "main_menu",
     "cameraSpawn": [
         0.0,
         0.0
@@ -21,7 +22,6 @@
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":960.0,\"aabb_maxY\":540.0,\"aabb_minX\":960.0,\"aabb_minY\":540.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\",\"triggerEvent\":\"\"}",
                 "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
                 "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
@@ -86,12 +86,10 @@
                 "soundType": 0
             }
         ],
-        "textboxes": [],
         "dialogues": [],
-        "displays": []
+        "textboxes": []
     },
     "sceneName": "MainMenu",
-    "bgmAssetName": "main_menu",
     "sceneType": 0,
     "worldMax": [
         1920.0,

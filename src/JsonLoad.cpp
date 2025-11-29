@@ -666,6 +666,16 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
         });
     }
 
+    // GUI Groups
+    for (const auto& group : GuiSystem::Get().GetGroups())
+    {
+        j["gui"]["groups"].push_back({
+            {"ID", group.groupID},
+            {"name", group.groupName },
+            {"members", group.memberIDs}
+        });
+    }
+
     for (const auto& entity : s.entities) {
         json entityJson;
         to_json(entityJson, entity);
@@ -704,87 +714,113 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
 
     int fallbackID = 0; // running global order if missing
 
-    if (j.contains("gui") && j["gui"].contains("buttons")) {
-        for (auto& btn : j["gui"]["buttons"]) {
-            SavedScene::SavedButton b;
-            b.ID = btn.value("ID", fallbackID++);
-            b.label = btn["label"];
-            b.pos = { btn["pos"][0], btn["pos"][1] };
-            b.size = { btn["size"][0], btn["size"][1] };
-            //b.color = { btn["color"][0], btn["color"][1], btn["color"][2] };
-            if (btn.contains("renderData"))
-            {
-                b.renderData = btn["renderData"];
-            }
-            if (btn.contains("actionName")) {
-                b.actionName = btn["actionName"]; 
-            }
-            else { b.actionName = "{}"; }
-            if (btn.contains("actionParams")) {
-                b.actionParams = btn["actionParams"]; 
-            }
-            else { b.actionParams = "{}"; }
-            //b.shape = btn["shape"];
-            b.action = btn.value("action", "");
-            b.soundType = btn.value("soundType", 0);
-            s.guiButtons.push_back(b);
-        }
-    }
-    if (j.contains("gui") && j["gui"].contains("textboxes")) {
-        for (auto& txt : j["gui"]["textboxes"]) {
-            SavedScene::SavedTextBox t;
-            t.ID = txt.value("ID", fallbackID++);
-            t.text = txt["text"];
-            t.pos = { txt["pos"][0], txt["pos"][1] };
-            t.scale = txt["scale"];
-            t.color = { txt["color"][0], txt["color"][1], txt["color"][2] };
-            t.centered = { txt["centered"] };
-            s.guiTextboxes.push_back(t);
-        }
-    }
-    if (j.contains("gui") && j["gui"].contains("dialogues"))
+    // GUI stuff
+    GuiSystem::Get().Clear();
+    if (j.contains("gui"))
     {
-        for (auto& dlg : j["gui"]["dialogues"]) {
-            SavedScene::SavedDialogue d;
-            d.ID = dlg.value("ID", fallbackID++);
-
-            // carry visual/textbox look
-            d.textBox.text = dlg["textBox"]["text"];
-            d.textBox.pos = { dlg["textBox"]["pos"][0], dlg["textBox"]["pos"][1] };
-            d.textBox.scale = dlg["textBox"]["scale"];
-            d.textBox.color = { dlg["textBox"]["color"][0], dlg["textBox"]["color"][1], dlg["textBox"]["color"][2] };
-            d.textBox.centered = dlg["textBox"]["centered"];
-
-            d.jsonPath = dlg["jsonPath"];
-            d.sceneID = dlg.value("sceneID", std::string{"0"});
-
-            if (dlg.contains("lines") && dlg["lines"].is_array()) 
-            {
-                d.lines.clear();
-                for (const auto& ln : dlg["lines"]) d.lines.push_back(ln.get<std::string>());
+        // BUTTONS
+        if (j["gui"].contains("buttons")) {
+            for (auto& btn : j["gui"]["buttons"]) {
+                SavedScene::SavedButton b;
+                b.ID = btn.value("ID", fallbackID++);
+                b.label = btn["label"];
+                b.pos = { btn["pos"][0], btn["pos"][1] };
+                b.size = { btn["size"][0], btn["size"][1] };
+                //b.color = { btn["color"][0], btn["color"][1], btn["color"][2] };
+                if (btn.contains("renderData"))
+                {
+                    b.renderData = btn["renderData"];
+                }
+                if (btn.contains("actionName")) {
+                    b.actionName = btn["actionName"];
+                }
+                else { b.actionName = "{}"; }
+                if (btn.contains("actionParams")) {
+                    b.actionParams = btn["actionParams"];
+                }
+                else { b.actionParams = "{}"; }
+                //b.shape = btn["shape"];
+                b.action = btn.value("action", "");
+                b.soundType = btn.value("soundType", 0);
+                s.guiButtons.push_back(b);
             }
-            d.currentLineIndex = dlg.value("currentLineIndex", 0);
-
-            s.guiDialogues.push_back(std::move(d));
         }
-    }
-    if (j.contains("gui") && j["gui"].contains("displays"))
-    {
-        for (auto& dp : j["gui"]["displays"])
+        // TEXT BOXES
+        if (j["gui"].contains("textboxes")) {
+            for (auto& txt : j["gui"]["textboxes"]) {
+                SavedScene::SavedTextBox t;
+                t.ID = txt.value("ID", fallbackID++);
+                t.text = txt["text"];
+                t.pos = { txt["pos"][0], txt["pos"][1] };
+                t.scale = txt["scale"];
+                t.color = { txt["color"][0], txt["color"][1], txt["color"][2] };
+                t.centered = { txt["centered"] };
+                s.guiTextboxes.push_back(t);
+            }
+        }
+        // DIALOGUES
+        if (j["gui"].contains("dialogues"))
         {
-            SavedScene::SavedDisplay d;
-            d.ID = dp.value("ID", fallbackID++);
-            d.pos = { dp["pos"][0], dp["pos"][1] };
-            d.size = { dp["size"][0], dp["size"][1] };
-            if (dp.contains("renderData"))
-            {
-                d.renderData = dp["renderData"];
-            }
-            d.centered = { dp["centered"] };
+            for (auto& dlg : j["gui"]["dialogues"]) {
+                SavedScene::SavedDialogue d;
+                d.ID = dlg.value("ID", fallbackID++);
 
-            s.guiDisplays.push_back(std::move(d));
+                // carry visual/textbox look
+                d.textBox.text = dlg["textBox"]["text"];
+                d.textBox.pos = { dlg["textBox"]["pos"][0], dlg["textBox"]["pos"][1] };
+                d.textBox.scale = dlg["textBox"]["scale"];
+                d.textBox.color = { dlg["textBox"]["color"][0], dlg["textBox"]["color"][1], dlg["textBox"]["color"][2] };
+                d.textBox.centered = dlg["textBox"]["centered"];
+
+                d.jsonPath = dlg["jsonPath"];
+                d.sceneID = dlg.value("sceneID", std::string{ "0" });
+
+                if (dlg.contains("lines") && dlg["lines"].is_array())
+                {
+                    d.lines.clear();
+                    for (const auto& ln : dlg["lines"]) d.lines.push_back(ln.get<std::string>());
+                }
+                d.currentLineIndex = dlg.value("currentLineIndex", 0);
+
+                s.guiDialogues.push_back(std::move(d));
+            }
+        }
+        // DISPLAYS
+        if (j["gui"].contains("displays"))
+        {
+            for (auto& dp : j["gui"]["displays"])
+            {
+                SavedScene::SavedDisplay d;
+                d.ID = dp.value("ID", fallbackID++);
+                d.pos = { dp["pos"][0], dp["pos"][1] };
+                d.size = { dp["size"][0], dp["size"][1] };
+                if (dp.contains("renderData"))
+                {
+                    d.renderData = dp["renderData"];
+                }
+                d.centered = { dp["centered"] };
+
+                s.guiDisplays.push_back(std::move(d));
+            }
+        }
+        // GROUPS
+        if (j["gui"].contains("groups"))
+        {
+            for (auto& group : j["gui"]["groups"])
+            {
+                UIGroup temp;
+                temp.groupID = group["ID"];
+                temp.groupName = group["name"];
+                for (int member : group["members"])
+                {
+                    temp.memberIDs.push_back(member);
+                }
+                GuiSystem::Get().AddGroup(temp);
+            }
         }
     }
+    
+
     for (const auto& entityJson : j["entities"]) {
         SavedEntity entity;
         from_json(entityJson, entity);
@@ -1033,7 +1069,6 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         Render::GetInstance().LoadFontAssetsFromJSON("../Assets/fontAssets.json");
 
         // Restore GUI buttons
-        GuiSystem::Get().Clear();
         for (auto& b : scene.guiButtons) {
             ButtonConfig cfg;
             cfg.ID = b.ID;

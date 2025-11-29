@@ -798,6 +798,7 @@ void GuiSystem::Clear()
     textboxes.clear();
     dialogues.clear();
     displays.clear();
+    m_groups.clear();
     nextUIID = 1;
 }
 
