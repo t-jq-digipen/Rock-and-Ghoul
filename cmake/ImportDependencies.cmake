@@ -190,31 +190,6 @@ macro(import_imguizmo)
     endif()
 endmacro()
 
-macro(import_rectpack2d)
-    if (NOT TARGET rectpack2d)
-        include(FetchContent)
-
-        FetchContent_Declare(
-            rectpack2d
-            GIT_REPOSITORY https://github.com/TeamHypersomnia/rectpack2D.git
-            GIT_TAG master
-        )
-
-        FetchContent_GetProperties(rectpack2d)
-        if (NOT rectpack2d_POPULATED)
-            FetchContent_Populate(rectpack2d)
-        endif()
-
-        add_library(rectpack2d INTERFACE)
-
-        target_include_directories(rectpack2d INTERFACE
-            ${rectpack2d_SOURCE_DIR}/src
-        )
-    endif()
-endmacro()
-
-
-
 # Macro to import all dependencies
 macro(importDependencies)
     message(STATUS "Starting to import dependencies...")
@@ -242,7 +217,6 @@ macro(importDependencies)
     import_json()
     import_mono()
     import_imguizmo()
-    import_rectpack2d()
     message(STATUS "All dependencies have been imported successfully.")
 
 endmacro()

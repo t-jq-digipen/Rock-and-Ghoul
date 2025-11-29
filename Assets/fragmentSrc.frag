@@ -21,9 +21,6 @@ uniform vec3 uColor;
 uniform bool uUseText;       // true = font rendering
 uniform vec3 uTextColor;    // text color
 
-//faded
-uniform float uAlpha;
-
 in vec2 TexCoord;
 
 void main() {
@@ -38,6 +35,6 @@ void main() {
     	FragColor = vec4(texColor.rgb * (uColor * 0.5 + 0.5), texColor.a);
     }
     else{
-        FragColor = vec4(uColor, uAlpha);
+        FragColor = vec4(uColor, 1.0);
     }
 }

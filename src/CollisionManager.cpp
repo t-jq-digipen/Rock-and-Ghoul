@@ -2,7 +2,7 @@
  * @file        CollisionManager.cpp
  * @author      Yasmin Tazi        | yasmin.t@digipen.edu
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @date        28 NOV 2025
+ * @date        24 NOV 2025
  *
  * @brief
  *
@@ -368,16 +368,10 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
     const AABB& aabbA = colliderA.Get_AABB();
     const AABB& aabbB = colliderB.Get_AABB();
 
-    // Calculate actual AABB dimensions from min/max with scale
-    float widthA = aabbA.max.x - aabbA.min.x;
-    float heightA = aabbA.max.y - aabbA.min.y;
-    float widthB = aabbB.max.x - aabbB.min.x;
-    float heightB = aabbB.max.y - aabbB.min.y;
-
     // Calculate collision normal
     Vec2 diff = RG_Subtract(transB.pos, transA.pos);
-    float overlapX = (widthA + widthB) / 2.0f - RG_Abs(diff.x);
-    float overlapY = (heightA + heightB) / 2.0f - RG_Abs(diff.y);
+    float overlapX = (aabbA.dim.x + aabbB.dim.x) / 2.0f - RG_Abs(diff.x);
+    float overlapY = (aabbA.dim.y + aabbB.dim.y) / 2.0f - RG_Abs(diff.y);
 
     if (overlapX <= 0 || overlapY <= 0) {
         return;
@@ -409,18 +403,18 @@ void CollisionManager::ActionResolve_ImpulseBased(Entity a, Entity b) {
         Vec2 correction = RG_Scale(normal, half);
         transA.pos = RG_Subtract(transA.pos, correction);
         transB.pos = RG_Add(transB.pos, correction);
-        colliderA.UpdateHitboxes(transA.pos, transA.scale);
-        colliderB.UpdateHitboxes(transB.pos, transB.scale);
+        colliderA.UpdateHitboxes(transA.pos);
+        colliderB.UpdateHitboxes(transB.pos);
     }
     else if (!aStatic) {
         Vec2 correction = RG_Scale(normal, -correctionAmount);
         transA.pos = RG_Add(transA.pos, correction);
-        colliderA.UpdateHitboxes(transA.pos, transA.scale);
+        colliderA.UpdateHitboxes(transA.pos);
     }
     else if (!bStatic) {
         Vec2 correction = RG_Scale(normal, correctionAmount);
         transB.pos = RG_Add(transB.pos, correction);
-        colliderB.UpdateHitboxes(transB.pos, transB.scale);
+        colliderB.UpdateHitboxes(transB.pos);
     }
 
     // Calculate relative velocity
@@ -490,8 +484,8 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected, bo
             // Publish event if either collider has a triggerEvent set
             if (!colliderA.triggerEvent.empty()) {
                 TriggerEvent event;
-                event.trigger = a;      // Entity A is the trigger
-                event.other = b;        // Entity B collided with it
+                event.a = a;
+                event.b = b;
                 event.eventName = colliderA.triggerEvent;
                 EventBus::Get().PushEvent<TriggerEvent>(event);
                 // Remove collider from trigger entity so it only fires once
@@ -499,8 +493,8 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected, bo
             }
             if (!colliderB.triggerEvent.empty()) {
                 TriggerEvent event;
-                event.trigger = b;      // Entity B is the trigger
-                event.other = a;        // Entity A collided with it
+                event.a = a;
+                event.b = b;
                 event.eventName = colliderB.triggerEvent;
                 EventBus::Get().PushEvent<TriggerEvent>(event);
                 // Remove collider from trigger entity so it only fires once
@@ -530,7 +524,7 @@ void CollisionManager::CheckCollisions() {
         }
 
         auto& trans = m_registry.Get_Component<TransformComponent>(entity);
-        collider.UpdateHitboxes(trans.pos, trans.scale);
+        collider.UpdateHitboxes(trans.pos);
 
         // Insert into spatial grid
         spatialGrid.Insert(entity, collider.Get_AABB());
@@ -588,8 +582,35 @@ void CollisionManager::CheckCollisions() {
             }
         }
 
-        // NARROW PHASE: Precise collision detection (AABB only)
-        bool hit = CollisionIntersection_RectRect_Static(colliderA.Get_AABB(), colliderB.Get_AABB());
+        // Determine collision shapes
+        bool aIsCircle = false, bIsCircle = false;
+
+        //if (m_registry.Has_Component<ShapeComponent>(a)) {
+        //    auto& shapeA = m_registry.Get_Component<ShapeComponent>(a);
+        //    aIsCircle = (shapeA.shape == SHAPE_CIRCLE);
+        //}
+        //if (m_registry.Has_Component<ShapeComponent>(b)) {
+        //    auto& shapeB = m_registry.Get_Component<ShapeComponent>(b);
+        //    bIsCircle = (shapeB.shape == SHAPE_CIRCLE);
+        //}
+
+        // NARROW PHASE: Precise collision detection
+        bool hit = false;
+
+        if (!aIsCircle && !bIsCircle) {
+            // Rect-Rect
+            hit = CollisionIntersection_RectRect_Static(colliderA.Get_AABB(), colliderB.Get_AABB());
+        }
+        else if (aIsCircle && bIsCircle) {
+            // Circle-Circle
+            hit = CollisionIntersection_CC_Static(colliderA.Get_Circle(), colliderB.Get_Circle());
+        }
+        else {
+            // Circle-Rect
+            hit = aIsCircle ?
+                CollisionIntersection_CA_Static(colliderA.Get_Circle(), colliderB.Get_AABB()) :
+                CollisionIntersection_CA_Static(colliderB.Get_Circle(), colliderA.Get_AABB());
+        }
 
         if (hit) {
             // Mark cells where collision occurred (intersection region only)
@@ -659,6 +680,8 @@ std::string ColliderComponent::Serialize() const {
         {"aabb_minX", aabbhitbox.min.x}, {"aabb_minY", aabbhitbox.min.y},
         {"aabb_maxX", aabbhitbox.max.x}, {"aabb_maxY", aabbhitbox.max.y},
         {"aabb_dimX", aabbhitbox.dim.x}, {"aabb_dimY", aabbhitbox.dim.y},
+        {"circle_posX", circlehitbox.pos.x}, {"circle_posY", circlehitbox.pos.y},
+        {"circle_rad", circlehitbox.rad},
         {"layer", layerName},
         //{"mask", maskNames},
         {"isTrigger", isTrigger}, {"isActive", isActive},
@@ -678,7 +701,11 @@ ColliderComponent ColliderComponent::DeSerialize(Entity eID, const std::string& 
     aabb.max = { j.value("aabb_maxX", 0.f), j.value("aabb_maxY", 0.f) };
     aabb.dim = { j.value("aabb_dimX", 0.f), j.value("aabb_dimY", 0.f) };
 
-    ColliderComponent comp(aabb, j.value("isActive", true));
+    Circle circle;
+    circle.pos = { j.value("circle_posX", 0.f), j.value("circle_posY", 0.f) };
+    circle.rad = j.value("circle_rad", 0.f);
+
+    ColliderComponent comp(aabb, circle, j.value("isActive", true));
     comp.isTrigger = j.value("isTrigger", false);
     comp.triggerEvent = j.value("triggerEvent", "");
 

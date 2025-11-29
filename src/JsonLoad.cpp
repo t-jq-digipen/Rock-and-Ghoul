@@ -1282,7 +1282,7 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
 
             if (Registry::Get().Has_Component<ColliderComponent>(e)) {
                 auto& collider = Registry::Get().Get_Component<ColliderComponent>(e);
-                collider.UpdateHitboxes(transform.pos, transform.scale);
+                collider.UpdateHitboxes({ x, y });
             }
         }
 

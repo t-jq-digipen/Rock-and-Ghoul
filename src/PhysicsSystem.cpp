@@ -61,7 +61,7 @@ void PhysicsSystem::Update(float dt) {
     {
         if (m_registry.Has_Component<TransformComponent>(entID)) {
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
-            collider.UpdateHitboxes(transComp.pos, transComp.scale);
+            collider.UpdateHitboxes(transComp.pos);
         }
     }
 

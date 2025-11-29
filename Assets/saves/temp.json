@@ -1,144 +1,66 @@
 {
     "backgrounds": [
-        "../Assets/Env02_NormalWorld.PNG"
+        "../Assets/MainMenu_Background.JPG",
+        "../Assets/MainMenu_Rock&Ghoul.PNG"
     ],
-    "bgmAssetName": "level_1",
+    "bgmAssetName": "main_menu",
     "cameraSpawn": [
-        499.073486328125,
-        385.7142639160156
+        0.0,
+        0.0
     ],
-    "cameraZoom": 1.4000000953674316,
-    "entities": [
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":270.3009948730469,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":1640.35400390625,\"aabb_maxY\":819.3413696289063,\"aabb_minX\":1370.052978515625,\"aabb_minY\":627.6674194335938,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":1505.2034912109375,\"posY\":723.50439453125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":136.69700622558594,\"aabb_dimY\":1000.0,\"aabb_maxX\":2073.5166015625,\"aabb_maxY\":1008.4601440429688,\"aabb_minX\":1936.8197021484375,\"aabb_minY\":8.46014404296875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":2005.168212890625,\"posY\":508.46014404296875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
-                "Collider": "{\"aabb_dimX\":150.04299926757813,\"aabb_dimY\":201.20199584960938,\"aabb_maxX\":753.1441650390625,\"aabb_maxY\":444.2003173828125,\"aabb_minX\":268.6578369140625,\"aabb_minY\":93.481689453125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"triggerEvent\":\"\"}",
-                "Health": "{\"currentHP\":0.0,\"maxHP\":0.0}",
-                "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":20.0,\\\\\\\"scaleY\\\\\\\":20.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/rockspritesheet4.11.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":9},\\\"2\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5},\\\"3\\\":{\\\"col_end\\\":8,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1}},\\\"totalCols\\\":10,\\\"totalRows\\\":10}\",\"renderLayer\":1,\"renderType\":2}",
-                "Tag": "{\"tagID\":0}",
-                "Transform": "{\"posX\":510.9010009765625,\"posY\":268.84100341796875,\"rot\":0.0,\"scaleX\":3.2289834022521973,\"scaleY\":1.743117094039917}"
-            },
-            "name": "Rock"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":180.4720001220703,\"aabb_dimY\":166.00900268554688,\"aabb_maxX\":1947.15625,\"aabb_maxY\":709.0221557617188,\"aabb_minX\":1766.684326171875,\"aabb_minY\":543.0131225585938,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":1856.9202880859375,\"posY\":626.0176391601563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":45.37608337402344,\"aabb_maxY\":961.81689453125,\"aabb_minX\":-121.83592224121094,\"aabb_minY\":554.005859375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-38.22991943359375,\"posY\":757.911376953125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Entity_8"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":2435.14208984375,\"aabb_dimY\":50.0,\"aabb_maxX\":2210.571044921875,\"aabb_maxY\":50.0,\"aabb_minX\":-224.57098388671875,\"aabb_minY\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":993.0000610351563,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Entity_7"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":2462.9189453125,\"aabb_dimY\":100.98699951171875,\"aabb_maxX\":2181.34619140625,\"aabb_maxY\":784.376708984375,\"aabb_minX\":-281.5728759765625,\"aabb_minY\":683.3896484375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":949.8865966796875,\"posY\":733.8831787109375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Entity_6"
-        },
-        {
-            "components": {
-                "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":200.0,\"aabb_maxX\":1248.1488037109375,\"aabb_maxY\":600.0,\"aabb_minX\":1148.1488037109375,\"aabb_minY\":400.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":10.0,\\\"scaleY\\\":10.0,\\\"texturePath\\\":\\\"../Assets/Ghoul_2048px.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
-                "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":1198.1488037109375,\"posY\":500.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "ghoul"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":466.52398681640625,\"aabb_dimY\":210.6439971923828,\"aabb_maxX\":1135.899169921875,\"aabb_maxY\":745.6759643554688,\"aabb_minX\":669.3751220703125,\"aabb_minY\":535.0319213867188,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":902.6371459960938,\"posY\":640.3539428710938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":308.79901123046875,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":579.60302734375,\"aabb_maxY\":807.872314453125,\"aabb_minX\":270.8039855957031,\"aabb_minY\":616.1983642578125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":425.2034912109375,\"posY\":712.0353393554688,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-61.66816711425781,\"aabb_maxY\":759.197509765625,\"aabb_minX\":-228.8801727294922,\"aabb_minY\":351.386474609375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Entity_8"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Entity_8"
-        }
-    ],
+    "cameraZoom": 1.0,
+    "entities": [],
     "fontConfig": "../Assets/fontAssets.json",
     "gui": {
-        "buttons": [],
-        "dialogues": [],
-        "textboxes": []
+        "buttons": [
+            {
+                "action": "LoadLevel1",
+                "color": [
+                    0.0784313753247261,
+                    0.7137255072593689,
+                    0.7490196228027344
+                ],
+                "label": "PLAY",
+                "pos": [
+                    1650.0,
+                    550.0
+                ],
+                "shape": "Rounded",
+                "size": [
+                    300.0,
+                    100.0
+                ],
+                "soundType": 0
+            },
+            {
+                "action": "Quit",
+                "color": [
+                    0.0784313753247261,
+                    0.7137255072593689,
+                    0.7490196228027344
+                ],
+                "label": "QUIT",
+                "pos": [
+                    1650.0,
+                    150.0
+                ],
+                "shape": "Rounded",
+                "size": [
+                    300.0,
+                    100.0
+                ],
+                "soundType": 1
+            }
+        ]
     },
     "sceneName": "temp",
-    "sceneType": 1,
+    "sceneType": 0,
     "worldMax": [
-        2240.0,
+        1920.0,
         1080.0
     ],
     "worldMin": [
-        -260.0,
+        0.0,
         0.0
     ]
 }

@@ -186,12 +186,6 @@ AudioAsset* AudioCache::GetAsset(const std::string& name) {
     return nullptr;
 }
 
-std::string AudioCache::GetAssetName(int id) {
-    auto it = idToName.find(id);
-    if (it == idToName.end()) { return ""; }
-    return it->second;
-}
-
 /**
  * @brief Retrieves a loaded FMOD::Sound pointer by asset name.
  * If the asset exists but hasn't been loaded yet, this function automatically

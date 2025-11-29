@@ -8,14 +8,16 @@
  * Provides debug rendering utilities for visualizing physics and collision components.
  * 
  * The DebugDraw namespace contains helper functions for drawing
- * shapes and visual for AABBs and velocity vectors.
+ * shapes and visual for AABBs, velocity vectors, and
+ * circle colliders.
  *
  * Functions include:
  * - DrawAABB:           Renders an axis-aligned bounding box.
  * - DrawHotspot:        Marks a point of interest (e.g., collider center).
  * - DrawVelocity:       Renders a velocity vector for an entity.
+ * - DrawCircleCollider: Renders a circle collider outline.
  *
- * Copyright ï¿½ 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -49,6 +51,13 @@ namespace DebugDraw {
      * @param dt The delta time used to scale the velocity.
      */
     void DrawVelocity(Entity e, const TransformComponent& t, Render& renderer, float dt);
+
+    /**
+     * @brief Draw the circle collider.
+     * @param circle The circle collider to draw.
+     * @param renderer The renderer used to draw the circle.
+     */
+    void DrawCircleCollider(const Circle& circle, Render& renderer);
 
     void DrawSpatialGrid(SpatialGrid* grid, Render& renderer);
 

@@ -1,9 +1,9 @@
 {
     "components": {
-        "Collider": "{\"aabb_dimX\":150.0,\"aabb_dimY\":150.0,\"aabb_maxX\":358.4887390136719,\"aabb_maxY\":222.71067810058594,\"aabb_minX\":208.48873901367188,\"aabb_minY\":72.71067810058594,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-        "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":0.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+        "Collider": "{\"aabb_dimX\":180.4720001220703,\"aabb_dimY\":166.00900268554688,\"aabb_maxX\":1947.15625,\"aabb_maxY\":709.0221557617188,\"aabb_minX\":1766.684326171875,\"aabb_minY\":543.0131225585938,\"circle_posX\":1856.9202880859375,\"circle_posY\":626.0176391601563,\"circle_rad\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+        "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
         "Tag": "{\"tagID\":3}",
-        "Transform": "{\"posX\":283.4887390136719,\"posY\":147.71067810058594,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+        "Transform": "{\"posX\":1856.9202880859375,\"posY\":626.0176391601563,\"rot\":0.0,\"scaleX\":51.71876525878906,\"scaleY\":1080.0}"
     },
     "name": "Obstacle"
 }

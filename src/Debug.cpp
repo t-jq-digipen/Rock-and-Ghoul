@@ -81,6 +81,16 @@ void DebugDraw::DrawVelocity(Entity e, const TransformComponent& t, Render& rend
     renderer.DrawLine(pos, end, { 1.f, 0.f, 0.f });
 }
 
+void DebugDraw::DrawCircleCollider(const Circle& circle, Render& renderer) {
+    Colour3 color{ 0.f, 1.f, 1.f }; // cyan
+    // Scale line width
+    float windowScale = GLApp::width / 1920.0f;
+    float lineWidth = windowScale * 2.0f;
+    glLineWidth(std::max(1.0f, lineWidth));
+    renderer.DrawCircle({ circle.pos.x, circle.pos.y }, circle.rad, color, 32);
+    glLineWidth(1.0f);
+}
+
 void DebugDraw::DrawSpatialGrid(SpatialGrid* grid, Render& renderer) {
     if (!grid) return;
 

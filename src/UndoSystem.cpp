@@ -8,7 +8,7 @@
  *
  * See header for full description.
  *
- * Copyright ï¿½ 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -196,7 +196,7 @@ void UndoSystem::Undo()
         if (reg.Has_Component<ColliderComponent>(e))
         {
             auto& col = reg.Get_Component<ColliderComponent>(e);
-            col.UpdateHitboxes(t.pos, t.scale);
+            col.UpdateHitboxes(t.pos);
         }
 
         std::cout << "[Undo] Undo MODIFY -> restored transform for entity " << e << "\n";

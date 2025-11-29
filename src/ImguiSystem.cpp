@@ -22,7 +22,7 @@
  * ========================================================
  */
 
-#ifndef NO_IMGUI
+
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>          // for glm::value_ptr
@@ -39,7 +39,6 @@
 #include "JsonLoad.h"
 #include "FilePath.h"
 #include "Audio.h"
-#include "AudioCache.h"
 #include "RenderSystem.h" 
 #include "Camera.h"
 #include "LogicSystem.h"
@@ -73,9 +72,6 @@ static std::string pendingPrefabPath; //prefab mouse thing
 static std::string pendingImportPath; //holds new image replace
 static std::string pendingDestPath; //store dest path of existing img
 
-static bool g_showAudioErrorPopup = false;
-static std::string g_audioErrorMessage;
-
 // runtime thumbnail cache
 static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
@@ -84,11 +80,6 @@ static std::vector<std::string> g_imageNames;
 //g_imageNames[0] = "player.png"
 
 static FMOD::Channel* previewChannel = nullptr; //audio preview channel and tracking
-static const std::string AUDIO_MANIFEST_PATH = "../Assets/audio_manifest.json";
-// drag drop audio import
-static bool         g_showAudioImportPopup = false;
-static std::string  g_pendingAudioSourcePath;   // full path from drag drop
-static int          g_pendingAudioCategory = 0; // 0=Music, 1=SFX, 2=UI
 
 // ========================================================
 // Static Member Definitions
@@ -160,262 +151,52 @@ namespace
         std::cout << "[AssetBrowser] Refreshed image list.\n";
     }
 
-    static std::unordered_map<std::string, AudioAsset> RefreshAudioAssets()
-    {
-        // Reload AudioCache fully
-        AudioCache::Shutdown();
-        AudioCache::Initialize(AUDIO_MANIFEST_PATH);
+    // ---- Audio manifest helpers ----
+    nlohmann::json audioManifest; //settings per audio file
+    bool audioManifestLoaded = false; //load once
 
-        // return fresh copy for drawing
-        return AudioCache::GetAllAssets();
-    }
-    // -------------------------------
-    // Audio manifest helpers
-    // -------------------------------
-    static bool LoadAudioManifest(nlohmann::json& manifest)
+    bool showAudioImportPopup = false; //can choose da files
+    std::vector<std::string> pendingAudioImports; //Q of audio file paths 
+    float globalVolume = 0.8f;
+    std::unordered_map<std::string, FMOD::Channel*> activeAudioChannels;
+
+
+    bool LoadAudioManifest(const std::string& path)
     {
-        std::ifstream in(AUDIO_MANIFEST_PATH);
-        if (!in.is_open())
-        {
-            std::cerr << "[AudioEditor] Failed to open manifest: "<< AUDIO_MANIFEST_PATH << "\n";
+        namespace fs = std::filesystem;
+        if (!fs::exists(path)) {
+            audioManifest = { {"music", {}}, {"ui", {}}, {"sfx", {}} };
+            audioManifestLoaded = true;
             return false;
         }
-        try
-        {
-            in >> manifest;
-            return true;
-        }
-        catch (const std::exception& e)
-        {
-            return false;
-        }
-    }
 
-    static bool SaveAudioManifest(const nlohmann::json& manifest)
-    {
-        std::ofstream out(AUDIO_MANIFEST_PATH, std::ios::trunc);
-        if (!out.is_open())
-        {
-            std::cerr << "[AudioEditor] Failed to write manifest: " << AUDIO_MANIFEST_PATH << "\n";
-            return false;
-        }
-        try
-        {
-            out << manifest.dump(4);
-            return true;
-        }
-        catch (const std::exception& e)
-        {
-            return false;
-        }
-    }
-
-    // change to underscore
-    static std::string MakeAudioKeyFromFilename(const std::string& filename)
-    {
-        std::string key = std::filesystem::path(filename).stem().string();
-        for (char& c : key)
-        {
-            if (c == ' ' || c == '-' || c == '.')
-                c = '_';
-        }
-        return key;
-    }
-
-    // delete audio remove file, manifest entry, banks, unload from cache
-    static bool DeleteAudioAsset(const std::string& assetName)
-    {
-        using json = nlohmann::json;
-        json manifest;
-        if (!LoadAudioManifest(manifest))
-            return false;
-
-        std::string filePath;
-
-        // remove from categories
-        const char* categories[] = { "music", "sfx", "ui", "ambience" };
-        for (const char* cat : categories)
-        {
-            if (manifest.contains(cat) &&
-                manifest[cat].is_object() &&
-                manifest[cat].contains(assetName))
-            {
-                filePath = manifest[cat][assetName].value("path", "");
-                manifest[cat].erase(assetName);
-                std::cout << "[AudioEditor] Removed '" << assetName
-                    << "' from category '" << cat << "'\n";
-                break;
+        try {
+            std::ifstream ifs(path);
+            if (ifs.is_open()) {
+                ifs >> audioManifest;
+                ifs.close();
+                audioManifestLoaded = true;
+                return true;
             }
         }
-
-        // remove from banks
-        if (manifest.contains("banks") && manifest["banks"].is_object())
-        {
-            for (auto& [bankName, list] : manifest["banks"].items())
-            {
-                if (!list.is_array())
-                    continue;
-                auto& arr = list;
-                for (size_t i = 0; i < arr.size();)
-                {
-                    if (arr[i].is_string() && arr[i].get<std::string>() == assetName)
-                        arr.erase(arr.begin() + static_cast<long long>(i));
-                    else
-                        ++i;
-                }
-            }
+        catch (const std::exception& e) {
+            std::cerr << "[AudioManifest] Load failed: " << e.what() << "\n";
         }
-
-        if (!SaveAudioManifest(manifest))
-            return false;
-
-        // delete audio file (if exists)
-        if (!filePath.empty())
-        {
-            try
-            {
-                if (std::filesystem::exists(filePath))
-                {
-                    std::filesystem::remove(filePath);
-                    std::cout << "[AudioEditor] Deleted file: "
-                        << filePath << "\n";
-                }
-            }
-            catch (const std::exception& e)
-            {
-                std::cerr << "[AudioEditor] Failed to delete file '"
-                    << filePath << "': " << e.what() << "\n";
-            }
-        }
-
-        // unload + refresh cache
-        AudioCache::UnloadAsset(assetName);
-        AudioCache::Initialize(AUDIO_MANIFEST_PATH);
-
-        return true;
-    }
-    static void StopAudioPreview()
-    {
-        if (previewChannel)
-        {
-            previewChannel->stop();
-            previewChannel = nullptr;
-        }
-    }
-
-}
-
-
-// add in audio_manifest.json
-bool AddOrUpdateAudioInManifest(const std::string& key, const std::string& category, const std::string& relPath, const std::string& group,  bool loop = false, bool spatial = false)
-{
-    using json = nlohmann::json;
-
-    json manifest;
-
-    // read existing manifest (if it exists)
-    {
-        std::ifstream in(AUDIO_MANIFEST_PATH);
-        if (in.is_open())
-        {
-            try
-            {
-                in >> manifest;
-            }
-            catch (const std::exception& e)
-            {
-                std::cerr << "[ImGui Audio Import] Failed to parse manifest: " << e.what() << "\n";
-                return false;
-            }
-        }
-        else
-        {
-            // new manifest if file doesn't exist yet
-            manifest = json::object();
-        }
-    }
-
-    // ensure the category object exists
-    if (!manifest.contains(category) || !manifest[category].is_object())
-        manifest[category] = json::object();
-
-    json entry;
-    entry["path"] = relPath;
-    entry["loop"] = loop;
-    entry["group"] = group;
-    if (spatial)
-        entry["spatial"] = true; // optional field
-
-    manifest[category][key] = entry;
-
-    std::ofstream out(AUDIO_MANIFEST_PATH);
-    if (!out.is_open())
-    {
-        std::cerr << "[ImGui Audio Import] Failed to open manifest for writing: "<< AUDIO_MANIFEST_PATH << "\n";
         return false;
     }
 
-    out << manifest.dump(4);
-    return true;
-}
-
-// importing audio
-void ImportAudioFile(const std::string& srcPathStr)
-{
-    namespace fs = std::filesystem;
-
-    fs::path srcPath(srcPathStr);
-    if (!fs::exists(srcPath))
+    void SaveAudioManifest(const std::string& path)
     {
-        std::cerr << "[ImGui Audio Import] Source does not exist: " << srcPathStr << "\n";
-        return;
-    }
-
-    const std::string audioRoot = "../Assets/audio/";
-    if (!fs::exists(audioRoot))
-        fs::create_directories(audioRoot);
-
-    std::string filename = srcPath.filename().string();
-    fs::path destPath = fs::path(audioRoot) / filename;
-
-    try
-    {
-        fs::copy_file(srcPath, destPath, fs::copy_options::overwrite_existing);
-    }
-    catch (const fs::filesystem_error& e)
-    {
-        return;
-    }
-
-    // manifest key n path
-    std::string key = MakeAudioKeyFromFilename(filename);
-
-    // "../Assets/audio/<filename>"
-    std::string relPath = destPath.generic_string();
-
-    //default
-    std::string category = "sfx";
-    std::string group = "SFX";
-
-    if (!AddOrUpdateAudioInManifest(key, category, relPath, group))
-    {
-        std::cerr << "[ImGui Audio Import] Failed to update manifest for: "
-            << key << "\n";
-        return;
-    }
-
-    // refresh AudioCache so new asset appears in AudioComponent
-    AudioCache::Shutdown();
-    if (!AudioCache::Initialize(AUDIO_MANIFEST_PATH))
-    {
-        std::cerr << "[ImGui Audio Import] Failed to reinitialize AudioCache.\n";
-    }
-    else
-    {
-        std::cout << "[ImGui Audio Import] Imported audio '" << key  << "' at " << relPath << "\n";
+        try {
+            std::ofstream out(path);
+            out << std::setw(4) << audioManifest; //formatting
+            std::cout << "[AudioManifest] Saved to " << path << "\n";
+        }
+        catch (const std::exception& e) {
+            std::cerr << "[AudioManifest] Save failed: " << e.what() << "\n";
+        }
     }
 }
-
 void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
 {
     if (e == INVALID_ENTITY) return;
@@ -457,7 +238,7 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
 
             Vec2 worldSize = { frameW * RenderSystem::unitsPerPixel, frameH * RenderSystem::unitsPerPixel };
 
-            Vec2 size = worldSize * sprite.Get_Scale() * t.scale;
+            Vec2 size = worldSize * sprite.Get_Scale();
 
             Vec2 half = size * 0.5f;
             minW = t.pos - half;
@@ -467,7 +248,7 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
 
         case RT_SHAPE:
         {
-            Vec2 size = r.GetShape().dimensions * t.scale;
+            Vec2 size = r.GetShape().dimensions;
             Vec2 half = size * 0.5f;
             minW = t.pos - half;
             maxW = t.pos + half;
@@ -492,9 +273,9 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
     // Outer glow
-    dl->AddRect(tl, br, IM_COL32(0, 255, 255, 60), 0.0f, 0, 6.0f);
+    dl->AddRect(tl, br, IM_COL32(0, 255, 0, 60), 0.0f, 0, 6.0f);
     // Main outline
-    dl->AddRect(tl, br, IM_COL32(0, 255, 255, 255), 0.0f, 0, 2.0f);
+    dl->AddRect(tl, br, IM_COL32(0, 255, 0, 255), 0.0f, 0, 3.0f);
 
 }
 Entity PickEntityAtWorldPos(const Vec2& world)
@@ -772,21 +553,16 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
     }
 
     // audio
-    if (ext == ".wav")
+    if (ext == ".wav" || ext == ".mp3")
     {
-        g_pendingAudioSourcePath = path;
-        g_pendingAudioCategory = 0;         // default to Music
-        g_showAudioImportPopup = true;      // popup handled in Assets window
+        //popup for storing files
+        pendingAudioImports.push_back(path);
+        showAudioImportPopup = true;
+        std::cout << "[ImGui Drop] Queued audio import: " << path << std::endl;
         return;
     }
 
-    if (ext == ".mp3" || ext == ".ogg" || ext == ".aac" || ext == ".flac")
-    {
-        g_audioErrorMessage = "Unsupported audio format: " + filename +
-            "\n\nOnly .wav files are allowed for import.";
-        g_showAudioErrorPopup = true;
-        return;
-    }
+    std::cout << "[ImGui Drop] Unsupported file type: " << ext << std::endl;
 
 
 }
@@ -923,8 +699,7 @@ void ImGuiSystem::Update(float dt)
         ImGui::DockBuilderDockWindow("Engine Info", dock_left_bottom);
         ImGui::DockBuilderDockWindow("Entity Editor + Prefabs", dock_right);
         ImGui::DockBuilderDockWindow("UI Editor", dock_right);
-        ImGui::DockBuilderDockWindow("Collision", dock_bottom);
-        ImGui::DockBuilderDockWindow("Scene Manager", dock_bottom);
+        ImGui::DockBuilderDockWindow("Collision + Scene", dock_bottom);
         ImGui::DockBuilderDockWindow("Assets", dock_bottom);
         ImGui::DockBuilderDockWindow("Game View", dockspaceID);
         ImGui::DockBuilderFinish(dockspaceID);
@@ -933,7 +708,7 @@ void ImGuiSystem::Update(float dt)
 
     if (ImGui::Begin("Editor Camera", nullptr,
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
-        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         ImVec2 cursor = ImGui::GetCursorScreenPos();
         ImVec2 size = ImGui::GetContentRegionAvail();
 
@@ -945,39 +720,31 @@ void ImGuiSystem::Update(float dt)
         else {
             ImGui::TextDisabled("Panel too small to display");
         }
-        if (/* */!sm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
 
 
     if (ImGui::Begin("Engine Info")) {
-        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         ShowEngineDebugWindow();
-        if (/* */!sm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
 
 
-    if (ImGui::Begin("Collision")) {
-        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
+    if (ImGui::Begin("Collision + Scene")) {
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         ShowCollisionDebugWindow();
-        if (/* */!sm.inEditMode) ImGui::EndDisabled();
-    }
-    ImGui::End();
-
-    if (ImGui::Begin("Scene Manager")) {
-        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
-        //ShowCollisionDebugWindow();
-        ShowSceneBrowser();
-        if (/* */!sm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
     }
     ImGui::End();
 
 
     if (ImGui::Begin("Entity Editor + Prefabs")) {
-        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         // MakeNeaterNextTime
         if (ImGui::Button("Add Entity"))
         {
@@ -1037,13 +804,13 @@ void ImGuiSystem::Update(float dt)
         ImGui::Separator();
         ShowPrefabControls();      //prefabs
 
-        if (/* */!sm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
 
     }
     ImGui::End();
 
     if (ImGui::Begin("UI Editor", nullptr)) {
-        if (/* */!sm.inEditMode) ImGui::BeginDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
 
         auto& gui = GuiSystem::Get();
 
@@ -1871,15 +1638,15 @@ void ImGuiSystem::Update(float dt)
 
         ImGui::Separator();
         //ShowPrefabControls();      //prefabs
-        if ( !sm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
     }
 
     ImGui::End();
 
     if (ImGui::Begin("Assets")) {
-        if ( !sm.inEditMode) ImGui::BeginDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::BeginDisabled();
         ShowAssetPreviewWindow();
-        if ( !sm.inEditMode) ImGui::EndDisabled();
+        if (!sm.isPaused && !sm.inEditMode) ImGui::EndDisabled();
 
     }
     ImGui::End();
@@ -1887,9 +1654,9 @@ void ImGuiSystem::Update(float dt)
 
     // game view panel
     if (ImGui::Begin("Game View")) {
-        bool isPlaying =  !sm.inEditMode;
+        bool isPlaying = !sm.isPaused && !sm.inEditMode;
         ShowSimulationControls(isPlaying);
-        isPlaying =  !sm.inEditMode;
+        isPlaying = !sm.isPaused && !sm.inEditMode;
         ImVec2 avail = ImGui::GetContentRegionAvail();
 
         //16:9 ratio
@@ -2034,7 +1801,7 @@ void ImGuiSystem::Update(float dt)
                 if (reg.Has_Component<ColliderComponent>(selectedEntity))
                 {
                     auto& col = reg.Get_Component<ColliderComponent>(selectedEntity);
-                    col.UpdateHitboxes(t.pos, t.scale);
+                    col.UpdateHitboxes(t.pos);
                 }
             }
 
@@ -2154,7 +1921,7 @@ void ImGuiSystem::Update(float dt)
 
                 // Sync hitboxes
                 auto& cRef = reg.Get_Component<ColliderComponent>(e);
-                cRef.UpdateHitboxes(t.pos, t.scale);
+                cRef.UpdateHitboxes(t.pos);
 
                 // Optional: give a friendly name
                 reg.Get_EntityNameMap()[e] = std::filesystem::path(texPath).stem().string();
@@ -2349,7 +2116,6 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
         }
     }
 
-    ImGui::Columns(2);
 
     ImGui::Text("AABB Colliders: %d / %d active", activeColliders, totalColliders);
     ImGui::Checkbox("Show Colliders", &showColliders);
@@ -2357,8 +2123,7 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
     ImGui::Checkbox("Show Spatial Grid", &showSpatialGrid);
 
     // Spatial Grid Statistics
-    // ImGui::Separator();
-    ImGui::NextColumn();
+    ImGui::Separator();
     ImGui::Text("Spatial Grid (Broad Phase):");
     SpatialGrid* grid = CollisionManager::GetSpatialGrid();
     if (grid) {
@@ -2382,19 +2147,17 @@ void ImGuiSystem::ShowCollisionDebugWindow() {
             naiveChecks,
             (int)(stats.occupiedCells * stats.avgEntitiesPerCell * 9));
     }
-    ImGui::Columns(1);
-    //ImGui::Separator(); 
+
+    ImGui::Separator(); 
     ShowLayerCollisionMatrix(); 
     ImGui::Separator();
-    //ImGui::Text("Scene Management:");
-    //ShowSceneBrowser();
+    ImGui::Text("Scene Management:");
+    ShowSceneBrowser();
 
 }
 
 void ImGuiSystem::ShowSceneBrowser()
 {
-    ImGui::Columns(2);
-    ImGui::SeparatorText("Scene Management");
     //same as earlier thing
     namespace fs = std::filesystem;
     const std::string sceneFolder = "../Assets/saves/";
@@ -2411,7 +2174,7 @@ void ImGuiSystem::ShowSceneBrowser()
         needRefresh = true;
     }
 
-    //ImGui::Separator();
+    ImGui::Separator();
 
     if (needRefresh)
     {
@@ -2437,7 +2200,6 @@ void ImGuiSystem::ShowSceneBrowser()
     for (int i = 0; i < static_cast<int>(sceneFiles.size()); ++i)
     {
         const std::string& sceneName = sceneFiles[i];
-        if (sceneName == "temp") continue;
         bool selected = (selectedScene == i);
 
         ImGui::PushID(sceneName.c_str());
@@ -2560,96 +2322,6 @@ void ImGuiSystem::ShowSceneBrowser()
             }
         }
     }
-
-    ImGui::NextColumn();
-
-    // Scene settings
-    Camera& cam = Camera::GetInstance();
-    SceneManager& sm = SceneManager::Get();
-    std::string sceneSetLabel = "Scene Settings : [" + sm.GetCurrentSceneName() + "]";
-    ImGui::SeparatorText(sceneSetLabel.c_str());
-
-    ImGui::Indent(20.f);
-    // WORLD SETTINGS
-    // - Scene type
-    // - World size
-    // ------------------------------------------------------------
-    ImGui::SeparatorText("World settings");
-
-    static const char* sceneTypes[] = { "Menu", "Game" };
-    int currType = static_cast<int>(SceneManager::Get().GetSceneType());
-    if (ImGui::Combo("Scene Type", &currType, sceneTypes, IM_ARRAYSIZE(sceneTypes)))
-    {
-        SceneManager::Get().SetSceneType(static_cast<SceneType>(currType));
-    }
-
-    if (currType == ST_MENU) { ImGui::BeginDisabled(); }
-    ImGui::InputFloat2("Size", &sceneSize.x);
-    if (ImGui::Button("Set size"))
-    {
-        if (sceneSize.x != 0 && sceneSize.y != 0)
-        {
-            sceneMin.x = 990 - sceneSize.x / 2;
-            sceneMax.x = 990 + sceneSize.x / 2;
-            sceneMin.y = 540 - sceneSize.y / 2;
-            sceneMax.y = 540 + sceneSize.y / 2;
-        }
-        cam.SetBounds(sceneMin, sceneMax);
-    }
-    // ------------------------------------------------------------
-
-    // CAMERA SETTINGS
-    // - Camera spawn position and zoom
-    // - Reset to cente
-    // ------------------------------------------------------------
-    ImGui::SeparatorText("Camera spawn settings");
-    // Spawn position
-    ImGui::InputFloat2("Position", &camSpawnPos.x);
-    // Zoom value
-    ImGui::InputFloat("Zoom", &camSpawnZoom);
-
-    if (ImGui::Button("Set spawn to current setting"))
-    {
-        camSpawnZoom = cam.GetZoom();
-        camSpawnPos = cam.GetPosition();
-    }
-
-    ImGui::SameLine();
-    if (ImGui::Button("Go to spawn camera"))
-    {
-        cam.SetZoom(camSpawnZoom);
-        cam.SetPosition(camSpawnPos);
-    }
-
-    if (currType == ST_MENU) { ImGui::EndDisabled(); }
-    // ------------------------------------------------------------
-
-    // BACKGROUND MUSIC
-    // - Music bound
-    // - Fade out timing
-    ImGui::SeparatorText("Background Music");
-    std::string bgmName = sm.GetCurrentSceneBGM();
-    static int selectedTrack = 0;
-
-    std::vector<const char*> musicTrackList;
-
-    for (const auto& [name, asset] : AudioCache::GetAllAssets())
-    {
-        if (asset.group == "Music")
-        {
-            musicTrackList.push_back(asset.name.c_str());
-            if (asset.name == bgmName)
-            { selectedTrack = musicTrackList.size()-1; }
-        }
-    }
-
-    if (ImGui::Combo("BGM Track", &selectedTrack, musicTrackList.data(), musicTrackList.size()))
-    {
-        //std::string trackName = AudioCache::GetAssetName(selectedTrack);
-        std::string trackName = musicTrackList[selectedTrack];
-        sm.SetCurrentSceneBGM(trackName);
-    }
-    ImGui::Columns(1);
 }
 
 void ImGuiSystem::ShowHierarchyWindow() {
@@ -2697,7 +2369,7 @@ void ImGuiSystem::ShowInspectorWindow()
     {
         const std::string& compName = componentData.GetComponentName();
 
-        // Custom data fields for render component
+        // Custom data fields for animator component
         if (compName == "Render")
         {
             RenderComponent& rendercomp = m_registry.Get_Component<RenderComponent>(selectedEntity);
@@ -2923,7 +2595,6 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
-        // Custom data fields for Behaviour component (C++ scripts)
         else if (compName == "Behaviour")
         {
             BehaviourComponent& behaviourComp = m_registry.Get_Component<BehaviourComponent>(selectedEntity);
@@ -2975,87 +2646,6 @@ void ImGuiSystem::ShowInspectorWindow()
                     {
                         behaviourComp.RemoveScript(sID);
                     }
-                    ImGui::PopID();
-                }
-
-                ImGui::TreePop();
-            }
-        }
-        // Custom data fields for Monoscript component (C# scripts)
-        else if (compName == "Mono Script")
-        {
-            MonoScriptComponent& monoComp =
-                m_registry.Get_Component<MonoScriptComponent>(selectedEntity);
-
-            if (ImGui::TreeNode(compName.c_str()))
-            {
-                MonoSystem& monoSys = MonoSystem::Get();
-
-                // ----------------------------------------------
-                // 1. Build list of available script names
-                // ----------------------------------------------
-                const auto& nameToID = monoSys.GetNameToIDMap();
-
-                if (nameToID.empty())
-                {
-                    ImGui::TextDisabled("No C# scripts registered.");
-                    ImGui::TreePop();
-                    return;
-                }
-
-                std::vector<const char*> items;
-                items.reserve(nameToID.size());
-                for (auto& [name, id] : nameToID)
-                    items.push_back(name.c_str());
-
-                static int currentIndex = 0;
-                std::string selectedScript = items[currentIndex];
-
-                // dropdown
-                if (ImGui::Combo("Select C# Script",
-                    &currentIndex, items.data(), (int)items.size()))
-                {
-                    selectedScript = items[currentIndex];
-                }
-
-                // ----------------------------------------------
-                // 2. Add Script button
-                // ----------------------------------------------
-                bool disableAdd = monoComp.HasScript(selectedScript);
-
-                std::string addLabel = "Add Script";
-                if (disableAdd)
-                {
-                    addLabel += " (already added)";
-                    ImGui::BeginDisabled();
-                }
-
-                if (ImGui::Button(addLabel.c_str()))
-                {
-                    monoComp.AddScript(selectedScript);
-                }
-
-                if (disableAdd) ImGui::EndDisabled();
-
-                ImGui::SeparatorText("Attached Scripts");
-
-                // ----------------------------------------------
-                // 3. Show list of attached scripts
-                // ----------------------------------------------
-                int id = 0;
-                for (MonoScriptID scriptID : monoComp.scriptIDList)
-                {
-                    ImGui::PushID(id++);
-
-                    const std::string& name = monoSys.GetScriptName(scriptID);
-                    ImGui::Text("%s", name.c_str());
-
-                    ImGui::SameLine();
-                    if (ImGui::SmallButton("Remove"))
-                    {
-                        monoComp.RemoveScript(scriptID);
-                    }
-
                     ImGui::PopID();
                 }
 
@@ -3177,8 +2767,7 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
-        // Default data fields for other components
-        else 
+        else
             if (ImGui::TreeNode(compName.c_str()))
             {
                 for (auto& [name, widgetVariant] : componentData.GetDataMap())
@@ -3197,7 +2786,7 @@ void ImGuiSystem::ShowInspectorWindow()
         {
             auto& collider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
             auto& t = m_registry.Get_Component<TransformComponent>(selectedEntity);
-            collider.UpdateHitboxes(t.pos, t.scale);
+            collider.UpdateHitboxes(t.pos);
         }
     }
 
@@ -3266,7 +2855,17 @@ void ImGuiSystem::ShowAssetPreviewWindow()
     {
         RefreshImageAssets();
 
-    
+        const std::string manifestPath = "../Assets/audio_manifest.json";
+        audioManifest.clear();
+        audioManifestLoaded = false;
+        if (!LoadAudioManifest(manifestPath))
+        {
+            std::cout << "[ImGui Audio] Manifest missing or invalid. Creating new.\n";
+            audioManifest = json::object();
+            audioManifest["music"] = json::object();
+            audioManifest["ui"] = json::object();
+            audioManifest["sfx"] = json::object();
+        }
 
     }
     ImGui::SameLine();
@@ -3452,376 +3051,216 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
         if (ImGui::BeginTabItem("Audio"))
         {
-            static std::unordered_map<std::string, AudioAsset> audioList;
-            auto& all = audioList;
+            static bool manifestLoaded = false;
+            const std::string manifestPath = "../Assets/audio_manifest.json";
 
-
-            audioList = AudioCache::GetAllAssets();
-
-            // categories
-            std::vector<std::string> musicList;
-            std::vector<std::string> sfxList;
-            std::vector<std::string> uiList;
-
-            for (auto& [name, asset] : all)
+            if (!manifestLoaded)
             {
-                if (asset.group == "Music")      musicList.push_back(name);
-                else if (asset.group == "SFX")   sfxList.push_back(name);
-                else if (asset.group == "UI")    uiList.push_back(name);
+                if (!LoadAudioManifest(manifestPath))
+                {
+                    std::cout << "[ImGui Audio] Manifest missing or invalid. Creating new.\n";
+                    audioManifest = json::object();
+                    audioManifest["music"] = json::object();
+                    audioManifest["ui"] = json::object();
+                }
+                manifestLoaded = true;
             }
 
-            // ------------------------
-            // MUSIC DROPDOWN
-            // ------------------------
-            if (ImGui::CollapsingHeader("Music", ImGuiTreeNodeFlags_DefaultOpen))
+            //safety check
+            if (!audioManifest.is_object() || audioManifest.empty())
             {
-                for (auto& name : musicList)
+                ImGui::TextDisabled("No audio manifest data available.");
+                ImGui::EndTabItem();
+                return;
+            }
+            ImGui::Separator();
+
+
+            //existing
+            try
+            {
+                for (auto& [category, assets] : audioManifest.items())
                 {
-                    const AudioAsset& asset = all[name];
+                    if (!assets.is_object()) continue;
 
-                    ImGui::PushID(name.c_str());
-
-                    // Title
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 0.6f, 1));
-                    ImGui::Text("[%s]", name.c_str());
-                    ImGui::PopStyleColor();
-
-                    ImGui::Indent();
-
-                    ImGui::Text("Path: %s", asset.path.c_str());
-                    ImGui::Text("Group: %s", asset.group.c_str());
-
-                    // PLAY BUTTON
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1));
-                    if (ImGui::Button("Play"))
+                    if (ImGui::CollapsingHeader(category.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
                     {
-                        StopAudioPreview();
-                        FMOD::Sound* snd = AudioCache::GetSound(name);
-                        if (snd)
+                        for (auto& [name, data] : assets.items())
                         {
-                            SceneManager& sm = SceneManager::Get();
-                            bool wasEdit = sm.inEditMode;
-                            sm.inEditMode = false;
-                            previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
-                            sm.inEditMode = wasEdit;
+                            if (!data.is_object()) continue;
+
+                            ImGui::PushID(name.c_str());
+
+                            //get val
+                            std::string path = data.value("path", "(none)");
+                            std::string group = data.value("group", "(none)");
+
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.6f, 1.0f));
+                            ImGui::Text("%s", name.c_str());
+                            ImGui::PopStyleColor();
+
+                            ImGui::Indent();
+                            ImGui::Text("Path: %s", path.c_str());
+                            ImGui::Text("Group: %s", group.c_str());
+
+                            //buttons
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
+                            if (ImGui::Button("Play"))
+                            {
+                                FMOD::Sound* snd = AudioSystem::LoadSound(path, false);
+                                if (snd)
+                                {
+                                    if (previewChannel) previewChannel->stop();
+                                    previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
+
+                                }
+                            }
+                            ImGui::PopStyleColor();
+
+                            ImGui::SameLine();
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.2f, 0.2f, 1.0f));
+                            if (ImGui::Button("Stop"))
+                            {
+                                if (previewChannel) previewChannel->stop();
+                                previewChannel = nullptr;
+                            }
+                            ImGui::PopStyleColor();
+
+
+                            ImGui::SameLine();
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.1f, 1.0f));
+                            bool removeThis = false;
+                            if (ImGui::Button("Remove"))
+                                removeThis = true;
+                            ImGui::PopStyleColor();
+
+                            ImGui::Unindent();
+                            ImGui::Separator();
+                            ImGui::PopID();
+
+                            if (removeThis)
+                            {
+                                assets.erase(name);
+                                SaveAudioManifest(manifestPath);
+                                break;
+                            }
                         }
-                    }
-                    ImGui::PopStyleColor();
-
-                    ImGui::SameLine();
-
-                    // STOP BUTTON
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.4f, 0.6f, 1));
-                    if (ImGui::Button("Stop"))
-                        StopAudioPreview();
-                    ImGui::PopStyleColor();
-
-                    ImGui::SameLine();
-
-                    // REMOVE BUTTON
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.1f, 1));
-                    bool remove = false;
-                    if (ImGui::Button("Remove"))
-                        remove = true;
-                    ImGui::PopStyleColor();
-
-                    ImGui::Unindent();
-                    ImGui::Separator();
-                    ImGui::PopID();
-
-                    if (remove)
-                    {
-                        DeleteAudioAsset(name);
-                        audioList = RefreshAudioAssets();
-                        break;
                     }
                 }
             }
-
-            // ------------------------
-            // SFX DROPDOWN
-            // ------------------------
-            if (ImGui::CollapsingHeader("SFX", ImGuiTreeNodeFlags_DefaultOpen))
+            catch (const std::exception& e)
             {
-                for (auto& name : sfxList)
-                {
-                    const AudioAsset& asset = all[name];
-                    ImGui::PushID(name.c_str());
-
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 0.6f, 1));
-                    ImGui::Text("[%s]", name.c_str());
-                    ImGui::PopStyleColor();
-
-                    ImGui::Indent();
-                    ImGui::Text("Path: %s", asset.path.c_str());
-                    ImGui::Text("Group: %s", asset.group.c_str());
-
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1));
-                    if (ImGui::Button("Play"))
-                    {
-                        StopAudioPreview();
-                        FMOD::Sound* snd = AudioCache::GetSound(name);
-                        if (snd)
-                        {
-                            SceneManager& sm = SceneManager::Get();
-                            bool wasEdit = sm.inEditMode;
-                            sm.inEditMode = false;
-                            previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
-                            sm.inEditMode = wasEdit;
-                        }
-                    }
-                    ImGui::PopStyleColor();
-
-                    ImGui::SameLine();
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.4f, 0.6f, 1));
-                    if (ImGui::Button("Stop"))
-                        StopAudioPreview();
-                    ImGui::PopStyleColor();
-
-                    ImGui::SameLine();
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.1f, 1));
-                    bool remove = false;
-                    if (ImGui::Button("Remove"))
-                        remove = true;
-                    ImGui::PopStyleColor();
-
-                    ImGui::Unindent();
-                    ImGui::Separator();
-                    ImGui::PopID();
-
-                    if (remove)
-                    {
-                        DeleteAudioAsset(name);
-                        audioList = RefreshAudioAssets();
-                        break;
-                    }
-                }
+                std::cerr << "[ImGui AudioManifest] Exception: " << e.what() << std::endl;
             }
-
-            // ------------------------
-            // UI DROPDOWN
-            // ------------------------
-            if (ImGui::CollapsingHeader("UI", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                for (auto& name : uiList)
-                {
-                    const AudioAsset& asset = all[name];
-                    ImGui::PushID(name.c_str());
-
-                    // Title
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 0.6f, 1));
-                    ImGui::Text("[%s]", name.c_str());
-                    ImGui::PopStyleColor();
-
-                    ImGui::Indent();
-                    ImGui::Text("Path: %s", asset.path.c_str());
-                    ImGui::Text("Group: %s", asset.group.c_str());
-
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1));
-                    if (ImGui::Button("Play"))
-                    {
-                        StopAudioPreview();
-                        FMOD::Sound* snd = AudioCache::GetSound(name);
-                        if (snd)
-                        {
-                            SceneManager& sm = SceneManager::Get();
-                            bool wasEdit = sm.inEditMode;
-                            sm.inEditMode = false;
-                            previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
-                            sm.inEditMode = wasEdit;
-                        }
-                    }
-                    ImGui::PopStyleColor();
-
-                    ImGui::SameLine();
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.4f, 0.6f, 1));
-                    if (ImGui::Button("Stop"))
-                        StopAudioPreview();
-                    ImGui::PopStyleColor();
-
-                    ImGui::SameLine();
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.1f, 1));
-                    bool remove = false;
-                    if (ImGui::Button("Remove"))
-                        remove = true;
-                    ImGui::PopStyleColor();
-
-                    ImGui::Unindent();
-                    ImGui::Separator();
-                    ImGui::PopID();
-
-                    if (remove)
-                    {
-                        DeleteAudioAsset(name);
-                        audioList = RefreshAudioAssets();
-                        break;
-                    }
-                }
-            }
-
 
             ImGui::EndTabItem();
         }
 
+        // ========================================================
+        // Audio Import Popup
+        // ========================================================
+        if (showAudioImportPopup)
+            ImGui::OpenPopup("Import Audio Files");
 
-
-
-        ImGui::EndTabBar();
-        if (g_showAudioErrorPopup)
+        if (ImGui::BeginPopupModal("Import Audio Files", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            ImGui::OpenPopup("Invalid Audio File");
-            g_showAudioErrorPopup = false;
-        }
+            ImGui::Text("Select category and confirm import:");
 
-        if (ImGui::BeginPopupModal("Invalid Audio File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            ImGui::TextWrapped("%s", g_audioErrorMessage.c_str());
+            static int selectedCategory = 0;
+            const char* categories[] = { "music", "ui", "sfx" };
+            ImGui::Combo("Category", &selectedCategory, categories, IM_ARRAYSIZE(categories));
+
+
             ImGui::Separator();
 
-            if (ImGui::Button("OK", ImVec2(120, 0)))
+            if (pendingAudioImports.empty())
+                ImGui::TextDisabled("(No audio files pending)");
+            else
+                for (auto& file : pendingAudioImports)
+                    ImGui::BulletText("%s", file.c_str());
+
+            if (ImGui::Button("Import", ImVec2(120, 0)))
             {
+                namespace fs = std::filesystem;
+                const std::string manifestPath = "../Assets/audio_manifest.json";
+                if (!audioManifestLoaded) LoadAudioManifest(manifestPath);
+
+                for (auto& path : pendingAudioImports)
+                {
+                    std::string destDir = "../Assets/Audio/";
+                    if (!fs::exists(destDir)) fs::create_directories(destDir);
+                    std::string destPath = destDir + fs::path(path).filename().string();
+
+                    try { fs::copy_file(path, destPath, fs::copy_options::overwrite_existing); }
+                    catch (...) {}
+
+                    std::string baseName = fs::path(destPath).stem().string();
+                    audioManifest[categories[selectedCategory]][baseName] = {
+                         { "path", destPath },
+                         { "group", categories[selectedCategory] },
+                         { "loop", false },
+                         { "spatial", false },
+                         { "minDistance", 1.0f },
+                         { "maxDistance", 100.0f }
+                    };
+
+                    FMOD::Sound* snd = AudioSystem::LoadSound(destPath, false);
+                    if (snd)
+                    {
+                        FMOD::Channel* ch = AudioSystem::PlaySoundGetChannel(snd, false);
+                        if (ch) {
+                            ch->setVolume(globalVolume);
+                            activeAudioChannels[baseName] = ch;
+                        }
+                    }
+
+                    std::cout << "[ImGui AudioImport] Imported and playing: " << baseName << "\n";
+                }
+
+                SaveAudioManifest(manifestPath);
+                pendingAudioImports.clear();
+                showAudioImportPopup = false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0)))
+            {
+                pendingAudioImports.clear();
+                showAudioImportPopup = false;
                 ImGui::CloseCurrentPopup();
             }
 
             ImGui::EndPopup();
         }
+        ImGui::SeparatorText("Currently Playing");
 
-    }
-
-    // ------------------------------
-    // Audio Import Popup (drag n drop)
-    // ------------------------------
-    if (g_showAudioImportPopup)
-    {
-        ImGui::OpenPopup("Import Audio File");
-        g_showAudioImportPopup = false;
-    }
-
-    if (ImGui::BeginPopupModal("Import Audio File", nullptr,
-        ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        namespace fs = std::filesystem;
-
-        ImGui::TextWrapped("Import audio file:\n%s",
-            g_pendingAudioSourcePath.c_str());
-        ImGui::Separator();
-        const char* categories[] = { "Music", "SFX", "UI" };
-        ImGui::Text("Import into category:");
-        ImGui::Combo("##AudioCategory", &g_pendingAudioCategory,
-            categories, IM_ARRAYSIZE(categories));
-
-        static char nameBuf[64] = "";
-        // prefill name from filename if empty
-        if (nameBuf[0] == '\0' && !g_pendingAudioSourcePath.empty())
-        {
-            std::string key = MakeAudioKeyFromFilename(g_pendingAudioSourcePath);
-            strncpy(nameBuf, key.c_str(), sizeof(nameBuf));
-            nameBuf[sizeof(nameBuf) - 1] = '\0';
-        }
-
-        ImGui::InputText("Manifest Name", nameBuf, IM_ARRAYSIZE(nameBuf));
-        ImGui::TextDisabled("This is the name used in audio_manifest.json");
-
-        ImGui::Separator();
-        if (ImGui::Button("Import", ImVec2(120, 0)))
-        {
-            std::string assetKey = nameBuf;
-            if (assetKey.empty())
+        if (activeAudioChannels.empty())
+            ImGui::TextDisabled("(none)");
+        else {
+            for (auto& [name, ch] : activeAudioChannels)
             {
-                std::cout << "[AudioEditor] Name cannot be empty.\n";
-            }
-            else
-            {
-                try
+                bool playing = false;
+                if (ch) ch->isPlaying(&playing);
+                ImGui::Text("%s %s", name.c_str(), playing ? "(Playing)" : "(Stopped)");
+                ImGui::SameLine();
+                if (ImGui::Button(("Stop##" + name).c_str()))
                 {
-                    // determine folders
-                    std::string catKey;
-                    std::string groupStr;
-                    std::string subdir;
-
-                    switch (g_pendingAudioCategory)
-                    {
-                    default:
-                    case 0: {
-                        catKey = "music";
-                        groupStr = "Music";
-                        subdir = "music";
-                        break;
-                    }
-                    case 1: {
-                        catKey = "sfx";
-                        groupStr = "SFX";
-                        subdir = "sfx";
-                        break;
-                    }
-                    case 2: {
-                        catKey = "ui";
-                        groupStr = "UI";
-                        subdir = "ui";
-                        break;
-                        }
-                    }
-
-                    std::string destDir = "../Assets/audio/" + subdir + "/";
-                    if (!fs::exists(destDir))
-                        fs::create_directories(destDir);
-
-                    std::string destPath = destDir + fs::path(g_pendingAudioSourcePath).filename().string();
-
-                    fs::copy_file(g_pendingAudioSourcePath, destPath, fs::copy_options::overwrite_existing);
-
-                    std::cout << "[AudioEditor] Copied audio to: " << destPath << "\n";
-
-                    // update manifest
-                    nlohmann::json manifest;
-                    if (!LoadAudioManifest(manifest))
-                        manifest = nlohmann::json::object();
-
-                    if (!manifest.contains(catKey))
-                        manifest[catKey] = nlohmann::json::object();
-
-                    nlohmann::json& filecats = manifest[catKey];
-
-                    filecats[assetKey] = {
-                        { "path",  destPath },
-                        { "loop",  false },
-                        { "group", groupStr }
-                    };
-
-                    if (SaveAudioManifest(manifest))
-                    {
-                        // refresh cache so Audio tab sees it immediately
-                        AudioCache::Initialize(AUDIO_MANIFEST_PATH);
-                    }
+                    if (ch) ch->stop();
+                    activeAudioChannels.erase(name);
+                    break;
                 }
-                catch (const std::exception& e)
-                {
-                    std::cerr << "[AudioEditor] Import failed: "  << e.what() << "\n";
-                }
-
-                // reset state
-                g_pendingAudioSourcePath.clear();
-                nameBuf[0] = '\0';
-                ImGui::CloseCurrentPopup();
             }
         }
 
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0)))
-        {
-            g_pendingAudioSourcePath.clear();
-            nameBuf[0] = '\0';
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::EndPopup();
+        ImGui::EndTabBar();
     }
 }
 
 void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 {
     SceneManager& sm = SceneManager::Get();
-    bool isPlaying = /**/ !sm.inEditMode;
+    bool isPlaying = !sm.isPaused && !sm.inEditMode;
     Registry& reg = Registry::Get();
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
@@ -3845,6 +3284,16 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     Vec2 offset{ 0.0f,0.0f };
 
     // --- Draw background rectangle for visual clarity ---
+    //dl->AddRectFilled(
+    //    { viewportPos.x + offset.x, viewportPos.y + offset.y },
+    //    { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
+    //    IM_COL32(40, 40, 40, 255)
+    //);
+    //dl->AddRect(
+    //    { viewportPos.x + offset.x, viewportPos.y + offset.y },
+    //    { viewportPos.x + offset.x + worldWidth * scale, viewportPos.y + offset.y + worldHeight * scale },
+    //    IM_COL32(100, 100, 100, 255)
+    //);
     ImGui::BeginChild("MinimapRegion", displaySize);
 
     dl->AddRectFilled(
@@ -3860,6 +3309,41 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     ImGui::EndChild();
 
 
+    // --- Draw Camera zone ---
+
+    Camera& cam = Camera::GetInstance();
+    bool camHover = false;
+    Vec2 camOffset = cam.GetPosition() - sceneMin;
+    {
+        float camZoom = cam.GetZoom();
+        camZoom = (camZoom != 0) ? 1 / camZoom : 0.f;
+        camZoom *= scale;
+
+        Vec2 camMin = cam.GetWorldMin();
+
+        Vec2 camMax = cam.GetWorldMax();
+
+        //ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (worldWidth * camZoom) / 2,
+        //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - (worldHeight * camZoom) / 2 };
+
+        //ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (worldWidth * camZoom) / 2,
+        //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + (worldHeight * camZoom) / 2 };
+
+        ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (GLApp::VIRTUAL_W * camZoom) / 2,
+                       viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) - (GLApp::VIRTUAL_H * camZoom) / 2 };
+
+        ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (GLApp::VIRTUAL_W * camZoom) / 2,
+                       viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) + (GLApp::VIRTUAL_H * camZoom) / 2 };
+
+        bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
+            mousePos.y >= min.y && mousePos.y <= max.y);
+
+        ImU32 color = inside ? IM_COL32(255, 192, 203, 255) : IM_COL32(255, 0, 255, 255);
+
+        dl->AddRect(min, max, color);
+        if (inside) { camHover = true; }
+    }
+
     // --- Mouse state ---
     bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
     bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
@@ -3867,43 +3351,6 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
 
     static Vec2 dragOffset{ 0.f, 0.f };
     static bool isDragging = false;
-
-    // --- Draw Camera zone ---
-    Camera& cam = Camera::GetInstance();
-    bool camHover = false;
-    Vec2 camOffset = cam.GetPosition() - sceneMin;
-    if (sm.GetSceneType() == ST_GAME)
-    {
-        {
-            float camZoom = cam.GetZoom();
-            camZoom = (camZoom != 0) ? 1 / camZoom : 0.f;
-            camZoom *= scale;
-
-            Vec2 camMin = cam.GetWorldMin();
-
-            Vec2 camMax = cam.GetWorldMax();
-
-            //ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (worldWidth * camZoom) / 2,
-            //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - (worldHeight * camZoom) / 2 };
-
-            //ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (worldWidth * camZoom) / 2,
-            //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + (worldHeight * camZoom) / 2 };
-
-            ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (GLApp::VIRTUAL_W * camZoom) / 2,
-                           viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) - (GLApp::VIRTUAL_H * camZoom) / 2 };
-
-            ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (GLApp::VIRTUAL_W * camZoom) / 2,
-                           viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) + (GLApp::VIRTUAL_H * camZoom) / 2 };
-
-            bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
-                mousePos.y >= min.y && mousePos.y <= max.y);
-
-            ImU32 color = inside ? IM_COL32(255, 192, 203, 255) : IM_COL32(255, 0, 255, 255);
-
-            dl->AddRect(min, max, color);
-            if (inside) { camHover = true; }
-        }
-    }
 
 
     // === Draw all entities ===
@@ -3926,8 +3373,7 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
         dl->AddRect(min, max, color, 0.f, 0, 2.f);
     }
 
-    // Drag camera around
-    if (!isPlaying && sm.GetSceneType() == ST_GAME)
+    if (!isPlaying)
     {
         if (mouseClicked && camHover)
         {
@@ -3955,61 +3401,309 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
         if (mouseReleased)
             isDragging = false;
     }
+    ImGui::SeparatorText("World settings");
+
+    static const char* sceneTypes[] = { "Menu", "Game" };
+    int currType = static_cast<int>(SceneManager::Get().GetSceneType());
+    if (ImGui::Combo("Scene Type", &currType, sceneTypes, IM_ARRAYSIZE(sceneTypes)))
+    {
+        SceneManager::Get().SetSceneType(static_cast<SceneType>(currType));
+    }
+
+    if (currType == ST_MENU) { ImGui::BeginDisabled(); }
+    ImGui::InputFloat2("Size", &sceneSize.x);
+    if (ImGui::Button("Set size"))
+    {
+        if (sceneSize.x != 0 && sceneSize.y != 0)
+        {
+            sceneMin.x = 990 - sceneSize.x / 2;
+            sceneMax.x = 990 + sceneSize.x / 2;
+            sceneMin.y = 540 - sceneSize.y / 2;
+            sceneMax.y = 540 + sceneSize.y / 2;
+        }
+        cam.SetBounds(sceneMin, sceneMax);
+    }
+    if (currType == ST_MENU) { ImGui::EndDisabled(); }
 
 
-    if (sm.GetSceneType() == ST_MENU) ImGui::BeginDisabled(); 
-    if (ImGui::Button("Reset"))
+    ImGui::SeparatorText("Camera spawn settings");
+    // Spawn position
+    ImGui::InputFloat2("Position", &camSpawnPos.x);
+    // Zoom value
+    ImGui::InputFloat("Zoom", &camSpawnZoom);
+
+    if (ImGui::Button("Set spawn to current setting"))
+    {
+        camSpawnZoom = cam.GetZoom();
+        camSpawnPos = cam.GetPosition();
+    }
+
+    if (ImGui::Button("Reset", ImVec2(80, 0)))
     {
         cam.SetZoom(1.0f);
         cam.ResetToCenter();
         std::cout << "[Editor] Camera reset.\n";
     }
-    if (sm.GetSceneType() == ST_MENU) ImGui::EndDisabled();
-    //ImGui::SeparatorText("World settings");
-
-    //static const char* sceneTypes[] = { "Menu", "Game" };
-    //int currType = static_cast<int>(SceneManager::Get().GetSceneType());
-    //if (ImGui::Combo("Scene Type", &currType, sceneTypes, IM_ARRAYSIZE(sceneTypes)))
-    //{
-    //    SceneManager::Get().SetSceneType(static_cast<SceneType>(currType));
-    //}
-
-    //if (currType == ST_MENU) { ImGui::BeginDisabled(); }
-    //ImGui::InputFloat2("Size", &sceneSize.x);
-    //if (ImGui::Button("Set size"))
-    //{
-    //    if (sceneSize.x != 0 && sceneSize.y != 0)
-    //    {
-    //        sceneMin.x = 990 - sceneSize.x / 2;
-    //        sceneMax.x = 990 + sceneSize.x / 2;
-    //        sceneMin.y = 540 - sceneSize.y / 2;
-    //        sceneMax.y = 540 + sceneSize.y / 2;
-    //    }
-    //    cam.SetBounds(sceneMin, sceneMax);
-    //}
-    //if (currType == ST_MENU) { ImGui::EndDisabled(); }
-
-
-    //ImGui::SeparatorText("Camera spawn settings");
-    //// Spawn position
-    //ImGui::InputFloat2("Position", &camSpawnPos.x);
-    //// Zoom value
-    //ImGui::InputFloat("Zoom", &camSpawnZoom);
-
-    //if (ImGui::Button("Set spawn to current setting"))
-    //{
-    //    camSpawnZoom = cam.GetZoom();
-    //    camSpawnPos = cam.GetPosition();
-    //}
-
-    //if (ImGui::Button("Reset", ImVec2(80, 0)))
-    //{
-    //    cam.SetZoom(1.0f);
-    //    cam.ResetToCenter();
-    //    std::cout << "[Editor] Camera reset.\n";
-    //}
 
 }
+
+
+//void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
+//{
+//    Registry& reg = Registry::Get();
+//    ImDrawList* dl = ImGui::GetWindowDrawList();
+//   // Camera& cam = Camera::GetInstance();
+//    /* w (x'/w, y' / w) omg comp graph*/
+//    //moved into cam
+//    //glm::mat4 VP = cam.GetViewProjection();
+//    //glm::mat4 invVP = glm::inverse(VP);
+//
+//    // mouse n panel state
+//    ImVec2 mouseScreen = ImGui::GetMousePos();
+//    bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+//    bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+//    bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+//
+//    //drag only works if mouse in viewable area
+//    bool mouseInPanel =
+//        (mouseScreen.x >= panelPos.x && mouseScreen.x <= panelPos.x + panelSize.x) &&
+//        (mouseScreen.y >= panelPos.y && mouseScreen.y <= panelPos.y + panelSize.y);
+//
+//    static Entity draggedEntity = INVALID_ENTITY;
+//    static Vec2 dragOffset{ 0.f, 0.f };
+//    static bool isDragging = false;
+//    Entity hovered = INVALID_ENTITY;
+//
+//    const float handleRadius = 10.f; //circle rad
+//
+//    //draw the circles
+//    for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
+//    {
+//        if (!EntityManager::get().isAlive(entity))
+//            continue;
+//
+//        ImVec2 handleCenter = Render::WorldToPanel(transform.pos, panelPos, panelSize);//world pos to pixel coords
+//
+//        float dx = mouseScreen.x - handleCenter.x;
+//        float dy = mouseScreen.y - handleCenter.y;
+//        bool inside = mouseInPanel && (dx * dx + dy * dy <= handleRadius * handleRadius);
+//
+//        ImU32 color = (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) : //drag cyan
+//                      (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) : //select green
+//                       inside ? IM_COL32(255, 255, 0, 255) : IM_COL32(255, 255, 255, 180); //hover yellow else white
+//
+//        dl->AddCircleFilled(handleCenter, handleRadius, color, 24);
+//        dl->AddCircle(handleCenter, handleRadius, IM_COL32(0, 0, 0, 200), 24, 1.5f); //black outline
+//
+//        if (inside)
+//            hovered = entity;
+//    }
+//
+//    //mouse clicked
+//    if (mouseClicked && mouseInPanel && hovered != INVALID_ENTITY)
+//    {
+//        selectedEntity = hovered;
+//        draggedEntity = hovered;
+//        isDragging = true;
+//
+//        auto& t = reg.Get_Component<TransformComponent>(hovered);
+//        dragOffset = t.pos - Render::PanelToWorld(mouseScreen, panelPos, panelSize);
+//
+//        std::cout << "[Editor] Started dragging entity " << hovered << "\n";
+//    }
+//
+//    //mouse held
+//    if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown && mouseInPanel)
+//    {
+//        auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
+//        t.pos = Render::PanelToWorld(mouseScreen, panelPos, panelSize) + dragOffset;
+//
+//        //need update aabb cause editor physic dt = 0
+//        if (reg.Has_Component<Physics::PhysicsComponent>(draggedEntity)) {
+//            auto& p = reg.Get_Component<Physics::PhysicsComponent>(draggedEntity);
+//            p.UpdateHitboxes(t.pos);
+//        }
+//    }
+//
+//    //mouse release
+//    if (mouseReleased)
+//    {
+//        if (isDragging && draggedEntity != INVALID_ENTITY)
+//            std::cout << "[Editor] Released entity " << draggedEntity << "\n";
+//        isDragging = false;
+//        draggedEntity = INVALID_ENTITY;
+//    }
+//
+//    if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selectedEntity != INVALID_ENTITY)
+//    {
+//        Registry::Get().Remove_Entity(selectedEntity);
+//        std::cout << "[Editor] Deleted entity " << selectedEntity << " via Delete key\n";
+//        selectedEntity = INVALID_ENTITY;
+//    }
+//
+//
+//}
+
+
+//void ImGuiSystem::DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize)
+//{
+//    Registry& reg = Registry::Get();
+//    ImDrawList* dl = ImGui::GetWindowDrawList();
+//
+//    ImVec2 mouseScreen = ImGui::GetMousePos();
+//    bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+//    bool mouseClicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+//    bool mouseReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+//
+//    // Check if mouse inside viewport
+//    bool mouseInPanel =
+//        (mouseScreen.x >= panelPos.x && mouseScreen.x <= panelPos.x + panelSize.x) &&
+//        (mouseScreen.y >= panelPos.y && mouseScreen.y <= panelPos.y + panelSize.y);
+//
+//    static Entity draggedEntity = INVALID_ENTITY;
+//    static Vec2 dragOffset{ 0.f, 0.f };
+//    static bool isDragging = false;
+//    Entity hovered = INVALID_ENTITY;
+//
+//    // Convert mouse to world-space once
+//    Vec2 mouseWorld = Render::PanelToWorld(mouseScreen, panelPos, panelSize);
+//
+//    // ──────────────────────────────────────────────
+//    // Draw all entity boxes
+//    // ──────────────────────────────────────────────
+//    for (auto& [entity, transform] : reg.Get_ComponentMap<TransformComponent>())
+//    {
+//        if (!EntityManager::get().isAlive(entity))
+//            continue;
+//
+//        Vec2 worldPos = transform.pos;
+//        Vec2 minW, maxW;
+//        bool inside = false;
+//
+//        // Sprite bounds
+//        //if (reg.Has_Component<Sprite::SpriteComponent>(entity))
+//        //{
+//        //    auto& sprite = reg.Get_Component<Sprite::SpriteComponent>(entity);
+//        //    Vec2 half = sprite.Get_Scale() * 0.5f;
+//        //    minW = worldPos - half;
+//        //    maxW = worldPos + half;
+//
+//        //    inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
+//        //        mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
+//        //}
+//        //// Physics collider bounds
+//        //else if (reg.Has_Component<Physics::PhysicsComponent>(entity))
+//        //{
+//        //    auto& phys = reg.Get_Component<Physics::PhysicsComponent>(entity);
+//        //    const AABB& aabb = phys.Get_AABB();
+//        //    minW = aabb.min;
+//        //    maxW = aabb.max;
+//
+//        //    inside = (mouseWorld.x >= aabb.min.x && mouseWorld.x <= aabb.max.x &&
+//        //        mouseWorld.y >= aabb.min.y && mouseWorld.y <= aabb.max.y);
+//        //}
+//        //// Shape bounds
+//        //else if (reg.Has_Component<ShapeComponent>(entity))
+//        //{
+//        //    auto& shape = reg.Get_Component<ShapeComponent>(entity);
+//        //    Vec2 half = shape.dimensions * 0.5f;
+//        //    minW = worldPos - half;
+//        //    maxW = worldPos + half;
+//
+//        //    inside = (mouseWorld.x >= minW.x && mouseWorld.x <= maxW.x &&
+//        //        mouseWorld.y >= minW.y && mouseWorld.y <= maxW.y);
+//        //}
+//        //// Fallback — constant screen-size square (~40×40 px)
+//        //else
+//        {
+//            ImVec2 center = Render::WorldToPanel(worldPos, panelPos, panelSize);
+//            float boxSize = 40.f; // in pixels
+//            ImVec2 minPanel(center.x - boxSize * 0.5f, center.y - boxSize * 0.5f);
+//            ImVec2 maxPanel(center.x + boxSize * 0.5f, center.y + boxSize * 0.5f);
+//
+//            // Convert back to world to check click in same space
+//            Vec2 minWClick = Render::PanelToWorld(minPanel, panelPos, panelSize);
+//            Vec2 maxWClick = Render::PanelToWorld(maxPanel, panelPos, panelSize);
+//
+//            inside = (mouseWorld.x >= minWClick.x && mouseWorld.x <= maxWClick.x &&
+//                mouseWorld.y >= minWClick.y && mouseWorld.y <= maxWClick.y);
+//
+//            // override draw region directly in panel space (since constant size)
+//            dl->AddRectFilled(minPanel, maxPanel, IM_COL32(255, 255, 255, 25));
+//            ImU32 color =
+//                (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
+//                (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
+//                inside ? IM_COL32(255, 255, 0, 255) :
+//                IM_COL32(255, 255, 255, 180);
+//            dl->AddRect(minPanel, maxPanel, color, 0.f, 0, 2.f);
+//
+//            if (inside)
+//                hovered = entity;
+//
+//            continue; // skip rest (we already drew)
+//        }
+//
+//        // Convert to panel for draw (for sprite/physics/shape)
+//        /*ImVec2 min = Render::WorldToPanel(minW, panelPos, panelSize);
+//        ImVec2 max = Render::WorldToPanel(maxW, panelPos, panelSize);
+//
+//        ImU32 color =
+//            (entity == draggedEntity) ? IM_COL32(0, 180, 255, 255) :
+//            (entity == selectedEntity) ? IM_COL32(0, 255, 0, 255) :
+//            inside ? IM_COL32(255, 255, 0, 255) :
+//            IM_COL32(255, 255, 255, 180);
+//
+//        dl->AddRectFilled(min, max, IM_COL32(255, 255, 255, 25));
+//        dl->AddRect(min, max, color, 0.f, 0, 2.f);
+//
+//        if (inside)
+//            hovered = entity;*/
+//    }
+//
+//    // ──────────────────────────────────────────────
+//    // Click select / drag / delete logic
+//    // ──────────────────────────────────────────────
+//    if (mouseClicked && mouseInPanel && hovered != INVALID_ENTITY)
+//    {
+//        selectedEntity = hovered;
+//        draggedEntity = hovered;
+//        isDragging = true;
+//
+//        auto& t = reg.Get_Component<TransformComponent>(hovered);
+//        dragOffset = t.pos - Render::PanelToWorld(mouseScreen, panelPos, panelSize);
+//
+//        std::cout << "[Editor] Selected and started dragging entity " << hovered << "\n";
+//    }
+//
+//    if (isDragging && draggedEntity != INVALID_ENTITY && mouseDown && mouseInPanel)
+//    {
+//        auto& t = reg.Get_Component<TransformComponent>(draggedEntity);
+//        t.pos = Render::PanelToWorld(mouseScreen, panelPos, panelSize) + dragOffset;
+//
+//        if (reg.Has_Component<Physics::PhysicsComponent>(draggedEntity))
+//        {
+//            auto& p = reg.Get_Component<Physics::PhysicsComponent>(draggedEntity);
+//            p.UpdateHitboxes(t.pos);
+//        }
+//    }
+//
+//    if (mouseReleased)
+//    {
+//        if (isDragging && draggedEntity != INVALID_ENTITY)
+//            std::cout << "[Editor] Released entity " << draggedEntity << "\n";
+//
+//        isDragging = false;
+//        draggedEntity = INVALID_ENTITY;
+//    }
+//
+//    if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selectedEntity != INVALID_ENTITY)
+//    {
+//        reg.Remove_Entity(selectedEntity);
+//        std::cout << "[Editor] Deleted entity " << selectedEntity << " via Delete key\n";
+//        selectedEntity = INVALID_ENTITY;
+//    }
+//}
+
 
 
 
@@ -4353,7 +4047,7 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
     //    clm.SaveCollisionSettings();
 
     ImGui::Separator();
-    ImGui::SeparatorText("Collision Layer Matrix");
+    ImGui::Text("Collision Layer Matrix");
     ImGui::Separator();
 
     // ------------------------------------------------
@@ -4482,5 +4176,3 @@ void ImGuiSystem::ShutdownImGui() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
-
-#endif
