@@ -4667,6 +4667,7 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
 
     for (int row = 0; row < (int)layers.size(); ++row)
     {
+        // one bit representing row layer
         uint32_t rowBit = layers[row].bit;
 
         // start position for this row
@@ -4678,10 +4679,12 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
         //checkboxes in this row
         for (int col = 0; col <= row; ++col)
         {
+            //one bit representing column layer
             uint32_t colBit = layers[col].bit;
 
             // whether row-layer currently collides with col-layer
             //from colili manager
+            //returns 32-bit mask representing all layers this layer collides
             bool checked = (clm.GetLayerMask(rowBit) & colBit) != 0;
 
             float x = rowStart.x + rowIndent + col * colSpacing;
