@@ -4600,44 +4600,33 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
     }
 
     // Collect + sort layers alphabetically
+    //collision layer represented as a single bit inside a 32-bit mask
     struct Layer { uint32_t bit; std::string name; };
     std::vector<Layer> layers;
 
     for (auto& [bit, name] : nameMap)
         layers.push_back({ bit, name });
-
-    std::sort(layers.begin(), layers.end(),
-        [](auto& a, auto& b) { return a.name < b.name; });
-
-    //// Buttons
-    //if (ImGui::Button("Reload Collision Settings"))
-    //    clm.LoadCollisionSettings();
-    //ImGui::SameLine();
-    //if (ImGui::Button("Save Collision Settings"))
-    //    clm.SaveCollisionSettings();
+    // Sort alphabetically
+    std::sort(layers.begin(), layers.end(), [](auto& a, auto& b) { return a.name < b.name; });
 
     ImGui::Separator();
     ImGui::SeparatorText("Collision Layer Matrix");
     ImGui::Separator();
 
-    // ------------------------------------------------
-    // 1) Compute column width from max label width
-    // ------------------------------------------------
+
     float minColSpacing = 35.0f;  // minimum so boxes not too cramped
     float colSpacing = minColSpacing;
 
     for (const auto& l : layers)
     {
-        float w = ImGui::CalcTextSize(l.name.c_str()).x + 10.0f; // + padding
+        float w = ImGui::CalcTextSize(l.name.c_str()).x + 10.0f; // padding
         if (w > colSpacing)
             colSpacing = w;
     }
 
     float rowIndent = 120.0f; // space for row labels on the left
 
-    // ------------------------------------------------
-    // 2) Draw header row (top labels)
-    // ------------------------------------------------
+    //top header
     ImVec2 headerStart = ImGui::GetCursorScreenPos();
     float xStart = headerStart.x + rowIndent;
     float headerHeight = ImGui::GetTextLineHeightWithSpacing();
@@ -4648,19 +4637,20 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
     {
         float x = xStart + i * colSpacing;
 
-        // Reserve column cell so layout below doesn't collide
+        // invisible button reserves space so layout remains stable
         ImGui::SetCursorScreenPos(ImVec2(x, headerStart.y));
-        ImGui::InvisibleButton(("##col" + std::to_string(i)).c_str(),
-            ImVec2(colSpacing, headerHeight));
-
+        ImGui::InvisibleButton(("##col" + std::to_string(i)).c_str(), ImVec2(colSpacing, headerHeight));
+        
+        
         ImVec2 cellMin = ImGui::GetItemRectMin();
         ImVec2 cellMax = ImGui::GetItemRectMax();
 
-        // Center horizontal text inside this cell
+        // center horizontal text inside this cell
         ImVec2 textSize = ImGui::CalcTextSize(layers[i].name.c_str());
         float centerX = cellMin.x + (cellMax.x - cellMin.x) * 0.5f - textSize.x * 0.5f;
         float centerY = cellMin.y + (cellMax.y - cellMin.y) * 0.5f - textSize.y * 0.5f;
 
+        //label
         dl->AddText(
             ImVec2(centerX, centerY),
             ImGui::GetColorU32(ImGuiCol_Text),
@@ -4668,30 +4658,30 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
         );
     }
 
-    // Push cursor down below header
+    // push cursor down below header
     ImGui::Dummy(ImVec2(0, headerHeight + 5.0f));
     ImGui::Separator();
 
-    // ------------------------------------------------
-    // 3) Draw lower-triangle checkbox matrix
-    // ------------------------------------------------
+    //the triangle thing
     float rowHeight = ImGui::GetFrameHeightWithSpacing();
 
     for (int row = 0; row < (int)layers.size(); ++row)
     {
         uint32_t rowBit = layers[row].bit;
 
-        // Starting position for this row
+        // start position for this row
         ImVec2 rowStart = ImGui::GetCursorScreenPos();
 
-        // Row label on the left
+        // row label on the left
         ImGui::Text("%s", layers[row].name.c_str());
 
-        // Now manually place checkboxes in this row
+        //checkboxes in this row
         for (int col = 0; col <= row; ++col)
         {
             uint32_t colBit = layers[col].bit;
 
+            // whether row-layer currently collides with col-layer
+            //from colili manager
             bool checked = (clm.GetLayerMask(rowBit) & colBit) != 0;
 
             float x = rowStart.x + rowIndent + col * colSpacing;
@@ -4700,9 +4690,10 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
             ImGui::SetCursorScreenPos(ImVec2(x, y));
             ImGui::PushID(row * 100 + col);
 
+            //checkbox toggling
             if (ImGui::Checkbox("##box", &checked))
             {
-                // Symmetric update (A with B == B with A)
+                // symetry update
                 uint32_t maskA = clm.GetLayerMask(rowBit);
                 uint32_t maskB = clm.GetLayerMask(colBit);
 
@@ -4722,7 +4713,7 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
             ImGui::PopID();
         }
 
-        // Move cursor to next row manually
+        // cursor to next row
         ImGui::SetCursorScreenPos(ImVec2(rowStart.x, rowStart.y + rowHeight));
     }
 }
