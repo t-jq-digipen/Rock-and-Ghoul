@@ -9,7 +9,16 @@
         0.0
     ],
     "cameraZoom": 1.0,
-    "entities": [],
+    "entities": [
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":960.0,\"aabb_maxY\":540.0,\"aabb_minX\":960.0,\"aabb_minY\":540.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\",\"triggerEvent\":\"\"}",
+                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":3,\"renderType\":1}",
+                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "MainMenu_Rock&Ghoul"
+        }
+    ],
     "fontConfig": "../Assets/fontAssets.json",
     "gui": {
         "buttons": [
@@ -26,10 +35,10 @@
                     1650.0,
                     550.0
                 ],
-                "renderData": "{\"data\":\"{\\\"ButtonShape\\\":\\\"Rounded\\\",\\\"Color\\\":[0.0784313753247261,0.7137255072593689,0.7490196228027344]}\",\"type\":\"shape\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_NewGame_Button.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    300.0,
-                    100.0
+                    405.0,
+                    191.8421173095703
                 ],
                 "soundType": 0
             },
@@ -43,10 +52,10 @@
                     1650.0,
                     350.0
                 ],
-                "renderData": "{\"data\":\"{\\\"ButtonShape\\\":\\\"Rounded\\\",\\\"Color\\\":[0.0784313753247261,0.7137255072593689,0.7490196228027344]}\",\"type\":\"shape\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_SettingsButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    300.0,
-                    100.0
+                    405.0,
+                    191.8421173095703
                 ],
                 "soundType": 0
             },
@@ -60,10 +69,10 @@
                     1650.0,
                     150.0
                 ],
-                "renderData": "{\"data\":\"{\\\"ButtonShape\\\":\\\"Rounded\\\",\\\"Color\\\":[0.0784313753247261,0.7137255072593689,0.7490196228027344]}\",\"type\":\"shape\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_QuitButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    300.0,
-                    100.0
+                    405.0,
+                    191.8421173095703
                 ],
                 "soundType": 0
             }
