@@ -1051,6 +1051,7 @@ void ImGuiSystem::Update(float dt)
         auto& buttons = gui.Buttons();
         auto& textboxes = gui.TextBoxes();
         auto& dialogues = gui.Dialogues();
+        auto& displays = gui.Displays();
 
         // Next ID Helper
         auto nextID = [&]() {
@@ -1058,6 +1059,7 @@ void ImGuiSystem::Update(float dt)
             for (auto& b : buttons)   mx = std::max(mx, b.ID);
             for (auto& t : textboxes) mx = std::max(mx, t.ID);
             for (auto& d : dialogues) mx = std::max(mx, d.ID);
+            for (auto& dp : displays) mx = std::max(mx, dp.ID);
             return mx + 1;
             };
 
@@ -1069,36 +1071,41 @@ void ImGuiSystem::Update(float dt)
         int numBtn = (int)buttons.size();
         int numTxt = (int)textboxes.size();
         int numDlg = (int)dialogues.size();
-        int total = numBtn + numTxt + numDlg;
+        int numDisp = (int)displays.size();
+        int total = numBtn + numTxt + numDlg + numDisp;
 
         auto totalCount = [&]()
             {
-                return (int)buttons.size() + (int)textboxes.size() + (int)dialogues.size();
+                return (int)buttons.size() + (int)textboxes.size() + (int)dialogues.size() + (int)displays.size();
             };
 
         auto globalToLocal = [&](int gIdx, SelectedType& outType, int& outLocal)
             {
                 const int numBtn = (int)buttons.size();
                 const int numTxt = (int)textboxes.size();
+                const int numDlg = (int)dialogues.size();
                 if (gIdx < 0) { outType = SelectedType::None; outLocal = -1; return; }
                 if (gIdx < numBtn) { outType = SelectedType::Button;  outLocal = gIdx; return; }
                 if (gIdx < numBtn + numTxt) { outType = SelectedType::TextBox; outLocal = gIdx - numBtn; return; }
-                outType = SelectedType::Dialogue; outLocal = gIdx - numBtn - numTxt;
+                if (gIdx < numBtn + numTxt + numDlg) { outType = SelectedType::Dialogue; outLocal = gIdx - numBtn - numTxt; return; }
+                else { outType = SelectedType::Display; outLocal = gIdx - numBtn - numTxt - numDlg; return; }
             };
 
         auto localToGlobal = [&](SelectedType type, int lIdx)
             {
                 const int numBtn = (int)buttons.size();
                 const int numTxt = (int)textboxes.size();
+                const int numDlg = (int)dialogues.size();
                 if (type == SelectedType::Button)   return lIdx;
                 if (type == SelectedType::TextBox)  return numBtn + lIdx;
                 if (type == SelectedType::Dialogue) return numBtn + numTxt + lIdx;
+                if (type == SelectedType::Display)  return numBtn + numTxt + numDlg + lIdx;
                 return -1;
             };
 
         static bool openAddPopup = false;
         static int addTypeIdx = 0;
-        const char* addTypeNames[] = { "Button", "TextBox", "Dialogue" };
+        const char* addTypeNames[] = { "Button", "TextBox", "Dialogue", "Display"};
 
         if (ImGui::Button("Add UI"))
         {
@@ -1147,7 +1154,7 @@ void ImGuiSystem::Update(float dt)
                     uiSelectedType = SelectedType::TextBox;
                     uiSelectedIndex = localToGlobal(SelectedType::TextBox, (int)textboxes.size() - 1);
                 }
-                else // Dialogue
+                else if (addTypeIdx == 2) // Dialogue
                 {
                     // Prepare default text box
                     DialogueConfig d;
@@ -1172,6 +1179,23 @@ void ImGuiSystem::Update(float dt)
 
                     uiSelectedType = SelectedType::Dialogue;
                     uiSelectedIndex = localToGlobal(SelectedType::Dialogue, (int)dialogues.size() - 1);
+                }
+                else if (addTypeIdx == 3) // Display
+                {
+                    DisplayConfig dp;
+                    dp.basePos = dp.pos = { 960, 540 };
+                    dp.baseSize = dp.size = { 240, 160 };
+                    dp.centered = true;
+                    dp.isVisible = true;
+                    dp.m_renderData.SetRenderType(UIRenderType::Shape);
+                    auto& shp = dp.m_renderData.GetShapeData();
+                    shp.shape = ButtonShape::Rectangle;
+                    shp.color = { 0.3f, 0.5f, 0.8f };
+                    dp.ID = nextID();
+                    displays.push_back(dp);
+
+                    uiSelectedType = SelectedType::Display;
+                    uiSelectedIndex = localToGlobal(SelectedType::Display, (int)displays.size() - 1);
                 }
                 ImGui::CloseCurrentPopup();
                 openAddPopup = false;
@@ -1236,6 +1260,14 @@ void ImGuiSystem::Update(float dt)
                 uiSelectedType = SelectedType::Dialogue;
                 uiSelectedIndex = localToGlobal(SelectedType::Dialogue, (int)dialogues.size() - 1);
             }
+            else if (type == SelectedType::Display && lIdx >= 0 && lIdx < (int)displays.size())
+            {
+                DisplayConfig src = displays[lIdx];
+                src.ID = nextID();
+                displays.push_back(src);
+                uiSelectedType = SelectedType::Display;
+                uiSelectedIndex = localToGlobal(SelectedType::Display, (int)displays.size() - 1);
+            }
         }
 
         ImGui::SameLine();
@@ -1264,6 +1296,13 @@ void ImGuiSystem::Update(float dt)
                     dialogues.erase(dialogues.begin() + lIdx);
                 }
             }
+            else if (type == SelectedType::Display)
+            {
+                if (lIdx >= 0 && lIdx < (int)displays.size())
+                {
+                    displays.erase(displays.begin() + lIdx);
+                }
+            }
             // Reset selection
             uiSelectedType = SelectedType::None;
             uiSelectedIndex = -1;
@@ -1284,10 +1323,11 @@ void ImGuiSystem::Update(float dt)
         // Build flat list sorted by ID
         struct Row { SelectedType type; int local; int id; };
         std::vector<Row> flat;
-        flat.reserve(buttons.size() + textboxes.size() + dialogues.size());
+        flat.reserve(buttons.size() + textboxes.size() + dialogues.size() + displays.size());
         for (int i = 0; i < (int)buttons.size(); ++i) flat.push_back({ SelectedType::Button,   i, buttons[i].ID });
         for (int i = 0; i < (int)textboxes.size(); ++i) flat.push_back({ SelectedType::TextBox,  i, textboxes[i].ID });
         for (int i = 0; i < (int)dialogues.size(); ++i) flat.push_back({ SelectedType::Dialogue, i, dialogues[i].ID });
+        for (int i = 0; i < (int)displays.size(); ++i) flat.push_back({ SelectedType::Display, i, displays[i].ID });
 
         std::sort(flat.begin(), flat.end(), [](const Row& a, const Row& b) { return a.id < b.id; });
 
@@ -1314,7 +1354,7 @@ void ImGuiSystem::Update(float dt)
                 const auto& tb = textboxes[r.local];
                 label = "Text: " + tb.text + "  [ID " + std::to_string(tb.ID) + "]";
             }
-            else 
+            else if (r.type == SelectedType::Dialogue)
             {
                 const auto& d = dialogues[r.local];
                 auto* comp = d.textComp ? d.textComp : d.owned.get();
@@ -1325,6 +1365,20 @@ void ImGuiSystem::Update(float dt)
                     label += ": " + (ln.size() > 24 ? (ln.substr(0, 24) + "...") : ln);
                 }
                 label += "  [ID " + std::to_string(d.ID) + "]";
+            }
+            else if (r.type == SelectedType::Display)
+            {
+                const auto& dp = displays[r.local];
+                const char* dpType = "None";
+                switch (dp.m_renderData.GetRenderType())
+                {
+                case UIRenderType::Shape: dpType = "Shape"; break;
+                case UIRenderType::Image: dpType = "Image"; break;
+                case UIRenderType::ImageSheet: dpType = "ImageSheet"; break;
+                case UIRenderType::CustomQuad: dpType = "Quad"; break;
+                default: break;
+                }
+                label = std::string("Display (") + dpType + "): [ID " + std::to_string(dp.ID) + "]";
             }
 
             bool selected = (r.type == curSelType && r.local == curSelLocal);
@@ -1366,22 +1420,25 @@ void ImGuiSystem::Update(float dt)
         auto swapIDs = [&](const Row& A, const Row& B) 
             {
             int* idA = nullptr, * idB = nullptr;
-            if (A.type == SelectedType::Button)      idA = &buttons[A.local].ID;
-            else if (A.type == SelectedType::TextBox) idA = &textboxes[A.local].ID;
-            else                                       idA = &dialogues[A.local].ID;
+            if (A.type == SelectedType::Button)         idA = &buttons[A.local].ID;
+            else if (A.type == SelectedType::TextBox)   idA = &textboxes[A.local].ID;
+            else if (A.type == SelectedType::Dialogue)  idA = &dialogues[A.local].ID;
+            else if (A.type == SelectedType::Display)   idA = &displays[A.local].ID;
 
-            if (B.type == SelectedType::Button)      idB = &buttons[B.local].ID;
-            else if (B.type == SelectedType::TextBox) idB = &textboxes[B.local].ID;
-            else                                       idB = &dialogues[B.local].ID;
+            if (B.type == SelectedType::Button)         idB = &buttons[B.local].ID;
+            else if (B.type == SelectedType::TextBox)   idB = &textboxes[B.local].ID;
+            else if (B.type == SelectedType::Dialogue)  idB = &dialogues[B.local].ID;
+            else if (B.type == SelectedType::Display)   idB = &displays[B.local].ID;
 
             std::swap(*idA, *idB);
             };
 
         // pointer getter for an element's ID (works across all types)
         auto idPtrOf = [&](const Row& r) -> int* {
-            if (r.type == SelectedType::Button)   return &buttons[r.local].ID;
-            if (r.type == SelectedType::TextBox)  return &textboxes[r.local].ID;
-            /* r.type == SelectedType::Dialogue */ return &dialogues[r.local].ID;
+            if (r.type == SelectedType::Button)     return &buttons[r.local].ID;
+            if (r.type == SelectedType::TextBox)    return &textboxes[r.local].ID;
+            if (r.type == SelectedType::Dialogue)   return &dialogues[r.local].ID;
+            if (r.type == SelectedType::Display)    return &displays[r.local].ID;
             };
 
         int selPos = findFlatPosOfSelection();
@@ -2116,6 +2173,261 @@ void ImGuiSystem::Update(float dt)
                     }
                 }
             }
+            else if (uiSelectedType == SelectedType::Display)
+            {
+                if (selectedLocal >= 0 && selectedLocal < (int)displays.size())
+                {
+                    auto& dp = displays[selectedLocal];
+                    ImGui::SeparatorText("Transform");
+                    ImGui::SliderFloat("posX", &dp.basePos.x, 0.f, 1920.f);
+                    ImGui::SliderFloat("posY", &dp.basePos.y, 0.f, 1080.f);
+                    ImGui::SliderFloat("sizeX", &dp.baseSize.x, 0.1f, 1920.f);
+                    ImGui::SliderFloat("sizeY", &dp.baseSize.y, 0.1f, 1080.f);
+                    ImGui::Checkbox("Centered", &dp.centered);
+
+                    ImGui::SeparatorText("Render");
+                    const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
+                    int currType = (int)dp.m_renderData.GetRenderType();
+                    if (ImGui::Combo("RenderType", &currType, typeNames, IM_ARRAYSIZE(typeNames)))
+                    {
+                        dp.m_renderData.SetRenderType((UIRenderType)currType);
+                    }
+
+                    switch (dp.m_renderData.GetRenderType())
+                    {
+                    case UIRenderType::Shape:
+                    {
+                        auto& shape = dp.m_renderData.GetShapeData();
+                        const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
+                        int currShape = (int)shape.shape;
+                        if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames)))
+                        {
+                            shape.shape = (ButtonShape)currShape;
+                        }
+
+                        float col[3] = { shape.color.r, shape.color.g, shape.color.b };
+                        if (ImGui::ColorEdit3("Color", col)) 
+                        {
+                            shape.color = { col[0], col[1], col[2] };
+                        }
+                    } break;
+
+                    case UIRenderType::CustomQuad:
+                    {
+                        auto& quad = dp.m_renderData.GetQuadData();
+                        ImGui::InputFloat2("v0", &quad.v0.x);
+                        ImGui::InputFloat2("v1", &quad.v1.x);
+                        ImGui::InputFloat2("v2", &quad.v2.x);
+                        ImGui::InputFloat2("v3", &quad.v3.x);
+
+                        if (ImGui::Button("Automatic quad by size"))
+                        {
+                            quad.v0 = { dp.basePos.x - (0.5f * dp.baseSize.x), dp.basePos.y - (0.5f * dp.baseSize.y) };
+                            quad.v1 = { dp.basePos.x + (0.5f * dp.baseSize.x), dp.basePos.y - (0.5f * dp.baseSize.y) };
+                            quad.v2 = { dp.basePos.x + (0.5f * dp.baseSize.x), dp.basePos.y + (0.5f * dp.baseSize.y) };
+                            quad.v3 = { dp.basePos.x - (0.5f * dp.baseSize.x), dp.basePos.y + (0.5f * dp.baseSize.y) };
+                        }
+                        float col[3] = { quad.color.r, quad.color.g, quad.color.b };
+                        if (ImGui::ColorEdit3("Color", col)) 
+                        {
+                            quad.color = { col[0], col[1], col[2] };
+                        }
+                    } break;
+
+                    case UIRenderType::Image:
+                    {
+                        auto& imgData = dp.m_renderData.GetImageData();
+                        Image& img = imgData.m_image;
+                        const auto& cache = Render::GetInstance().Get_TextureCache();
+
+                        static int selected = 0;
+                        std::vector<const char*> imgOptions;
+                        std::vector<GLuint> textureIDs;
+                        imgOptions.reserve(cache.size());
+                        for (auto const& [optname, optval] : cache) 
+                        {
+                            imgOptions.push_back(optname.c_str());
+                            textureIDs.push_back(optval);
+                        }
+                        for (size_t i = 0; i < textureIDs.size(); i++) 
+                        {
+                            if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
+                        }
+                        if (ImGui::Combo("Texture", &selected, imgOptions.data(), (int)imgOptions.size())) 
+                        {
+                            img = CreateImage(imgOptions[selected]);
+                        }
+
+                        {
+                            GLuint texID = img.textureID;
+                            ImVec2 avail = ImGui::GetContentRegionAvail();
+                            float scale = img.widthPixels ? (avail.x / img.widthPixels) * 0.9f : 0.f;
+                            ImVec2 displaySize(img.widthPixels * scale, img.heightPixels * scale);
+                            ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+                        }
+
+                        ImGui::Text("Resize to aspect ratio:");
+                        if (ImGui::Button("Width"))  dp.baseSize.x = dp.baseSize.y * ((float)img.widthPixels / (float)img.heightPixels);
+                        ImGui::SameLine();
+                        if (ImGui::Button("Height")) dp.baseSize.y = dp.baseSize.x * ((float)img.heightPixels / (float)img.widthPixels);
+                    } break;
+
+                    case UIRenderType::ImageSheet:
+                    {
+                        auto& sheet = dp.m_renderData.GetImageSheetData();
+                        Image& img = sheet.m_image;
+
+                        const auto& cache = Render::GetInstance().Get_TextureCache();
+                        static int selected = 0;
+                        std::vector<const char*> imgOptions;
+                        std::vector<GLuint> textureIDs;
+                        imgOptions.reserve(cache.size());
+                        for (auto const& [optname, optval] : cache) 
+                        {
+                            imgOptions.push_back(optname.c_str());
+                            textureIDs.push_back(optval);
+                        }
+                        for (size_t i = 0; i < textureIDs.size(); i++) 
+                        {
+                            if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
+                        }
+                        if (ImGui::Combo("Texture Drawn", &selected, imgOptions.data(), (int)imgOptions.size())) 
+                        {
+                            img = CreateImage(imgOptions[selected]);
+                        }
+
+                        // display
+                        {
+                            GLuint texID = img.textureID;
+                            const float texW = (float)img.widthPixels;
+                            const float texH = (float)img.heightPixels;
+
+                            ImVec2 avail = ImGui::GetContentRegionAvail();
+
+                            float scale = (texW != 0) ? avail.x / texW : 0.f;
+                            scale *= 0.9f;
+
+                            ImVec2 displaySize(texW * scale, texH * scale);
+                            ImVec2 imagePos = ImGui::GetCursorScreenPos();
+
+                            ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+
+                            ImDrawList* draw = ImGui::GetWindowDrawList();
+
+                            int rows = sheet.total_rows;
+                            int cols = sheet.total_cols;
+
+                            float cellW = displaySize.x / cols;
+                            float cellH = displaySize.y / rows;
+
+                            // vertical lines
+                            for (int c = 1; c < cols; ++c)
+                            {
+                                float x = imagePos.x + c * cellW;
+                                draw->AddLine(ImVec2(x, imagePos.y),
+                                    ImVec2(x, imagePos.y + displaySize.y),
+                                    IM_COL32(255, 255, 255, 128));
+                            }
+
+                            // horizontal lines
+                            for (int r = 1; r < rows; ++r)
+                            {
+                                float y = imagePos.y + r * cellH;
+                                draw->AddLine(ImVec2(imagePos.x, y),
+                                    ImVec2(imagePos.x + displaySize.x, y),
+                                    IM_COL32(255, 255, 255, 128));
+                            }
+
+                            // highlight
+                            int r = sheet.frame_index.curr_row;
+                            int c = sheet.frame_index.curr_col;
+
+                            ImVec2 p0(
+                                imagePos.x + c * cellW,
+                                imagePos.y + r * cellH
+                            );
+                            ImVec2 p1(
+                                imagePos.x + (c + 1) * cellW,
+                                imagePos.y + (r + 1) * cellH
+                            );
+
+                            // Filled highlight
+                            draw->AddRectFilled(p0, p1, IM_COL32(255, 255, 0, 80));
+
+                            // Outline
+                            draw->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
+                        }
+
+                        ImGui::InputInt("Rows", (int*)&sheet.total_rows);
+                        if (sheet.total_rows < 1) { sheet.total_rows = 1; }
+                        ImGui::InputInt("Columns", (int*)&sheet.total_cols);
+                        if (sheet.total_cols < 1) { sheet.total_cols = 1; }
+
+                        ImGui::Separator();
+
+                        ImGui::SliderInt("Current Row", (int*)&sheet.frame_index.curr_row, 0, (int)sheet.total_rows - 1);
+                        ImGui::SliderInt("Current Col", (int*)&sheet.frame_index.curr_col, 0, (int)sheet.total_cols - 1);
+
+
+                        sheet.total_cols = std::max(1u, sheet.total_cols);
+                        sheet.total_rows = std::max(1u, sheet.total_rows);
+
+                        if (ImGui::TreeNode("State Frames"))
+                        {
+                            for (auto& [state, idx] : sheet.frames)
+                            {
+                                ImGui::PushID(state);
+
+                                ImGui::Text("State %u", state);
+
+                                ImGui::InputInt("Row", (int*)&idx.curr_row);
+                                ImGui::InputInt("Col", (int*)&idx.curr_col);
+
+                                idx.curr_row = std::clamp(idx.curr_row, 0u, sheet.total_rows - 1);
+                                idx.curr_col = std::clamp(idx.curr_col, 0u, sheet.total_cols - 1);
+
+                                if (ImGui::Button("Delete"))
+                                    sheet.frames.erase(state);
+
+                                ImGui::Separator();
+                                ImGui::PopID();
+                            }
+
+                            static int newStateID = 0;
+                            ImGui::InputInt("Add State", &newStateID);
+                            if (ImGui::Button("Add")) 
+                            {
+                                sheet.frames[newStateID] = { 0,0 };
+                            }
+
+                            ImGui::TreePop();
+                        }
+
+                        // Aspect helpers (use frame size)
+                        int frameW = img.widthPixels / std::max(1u, sheet.total_cols);
+                        int frameH = img.heightPixels / std::max(1u, sheet.total_rows);
+                        ImGui::Text("Resize to aspect ratio:");
+                        if (ImGui::Button("Width"))  dp.baseSize.x = dp.baseSize.y * (float(frameW) / float(frameH));
+                        ImGui::SameLine();
+                        if (ImGui::Button("Height")) dp.baseSize.y = dp.baseSize.x * (float(frameH) / float(frameW));
+                    } break;
+
+                    default:
+                        ImGui::TextDisabled("No render info.");
+                        break;
+                    }
+
+                    ImGui::Separator();
+                    if (ImGui::Button("Delete This Display"))
+                    {
+                        displays.erase(displays.begin() + selectedLocal);
+                        uiSelectedIndex = -1;
+                        uiSelectedType = SelectedType::None;
+                        clampSelectionAfterErase();
+                        goto _UI_PROPS_END_;
+                    }
+                }
+            }
         }
     _UI_PROPS_END_:
         ImGui::EndChild();
@@ -2132,6 +2444,7 @@ void ImGuiSystem::Update(float dt)
                 if (t == SelectedType::Button) { if (li >= 0 && li < (int)buttons.size())   return buttons[li].ID; }
                 if (t == SelectedType::TextBox) { if (li >= 0 && li < (int)textboxes.size()) return textboxes[li].ID; }
                 if (t == SelectedType::Dialogue) { if (li >= 0 && li < (int)dialogues.size()) return dialogues[li].ID; }
+                if (t == SelectedType::Display) { if (li >= 0 && li < (int)displays.size()) return displays[li].ID; }
                 return -1;
             };
 
@@ -2144,9 +2457,10 @@ void ImGuiSystem::Update(float dt)
         auto findByID = [&](int id) -> FoundRef
             {
                 if (id <= 0) return {};
-                for (int i = 0; i < (int)buttons.size(); ++i)   if (buttons[i].ID == id)   return { SelectedType::Button,   i };
-                for (int i = 0; i < (int)textboxes.size(); ++i) if (textboxes[i].ID == id) return { SelectedType::TextBox,  i };
-                for (int i = 0; i < (int)dialogues.size(); ++i) if (dialogues[i].ID == id) return { SelectedType::Dialogue, i };
+                for (int i = 0; i < (int)buttons.size(); ++i)   if (buttons[i].ID == id)    return { SelectedType::Button,   i };
+                for (int i = 0; i < (int)textboxes.size(); ++i) if (textboxes[i].ID == id)  return { SelectedType::TextBox,  i };
+                for (int i = 0; i < (int)dialogues.size(); ++i) if (dialogues[i].ID == id)  return { SelectedType::Dialogue, i };
+                for (int i = 0; i < (int)displays.size(); ++i) if (displays[i].ID == id)    return { SelectedType::Display,  i };
                 return {};
             };
 
@@ -2250,11 +2564,12 @@ void ImGuiSystem::Update(float dt)
                     for (int i = 0; i < (int)grp.memberIDs.size(); ++i)
                     {
                         int id = grp.memberIDs[i];
-                        FoundRef fr = findByID(id);
+                        FoundRef found = findByID(id);
                         std::string label = "#" + std::to_string(id) + "  ";
-                        if (fr.type == SelectedType::Button)   label += "[Button]  " + buttons[fr.local].label;
-                        else if (fr.type == SelectedType::TextBox)  label += "[Text]    " + textboxes[fr.local].text;
-                        else if (fr.type == SelectedType::Dialogue) label += "[Dialogue]";
+                        if (found.type == SelectedType::Button)   label += "[Button]  " + buttons[found.local].label;
+                        else if (found.type == SelectedType::TextBox)  label += "[Text]    " + textboxes[found.local].text;
+                        else if (found.type == SelectedType::Dialogue) label += "[Dialogue]";
+                        else if (found.type == SelectedType::Display) label += "[Display]";
                         else label += "(missing)";
 
                         ImGui::BulletText("%s", label.c_str());
@@ -2263,8 +2578,8 @@ void ImGuiSystem::Update(float dt)
                         if (ImGui::SmallButton("Select"))
                         {
                             // Jump selection to this element
-                            if (fr.type != SelectedType::None)
-                                uiSelectedIndex = localToGlobal(fr.type, fr.local);
+                            if (found.type != SelectedType::None)
+                                uiSelectedIndex = localToGlobal(found.type, found.local);
                         }
                         ImGui::SameLine();
                         if (ImGui::SmallButton("Remove")) removeAt = i;
@@ -2289,18 +2604,20 @@ void ImGuiSystem::Update(float dt)
                 bool anyVisible = false;
                 for (int id : grp.memberIDs)
                 {
-                    FoundRef fr = findByID(id);
-                    if (fr.type == SelectedType::Button) { if (buttons[fr.local].isVisible) { anyVisible = true; break; } }
-                    if (fr.type == SelectedType::TextBox) { if (textboxes[fr.local].isVisible) { anyVisible = true; break; } }
-                    if (fr.type == SelectedType::Dialogue) { if (dialogues[fr.local].isVisible) { anyVisible = true; break; } }
+                    FoundRef found = findByID(id);
+                    if (found.type == SelectedType::Button) { if (buttons[found.local].isVisible) { anyVisible = true; break; } }
+                    if (found.type == SelectedType::TextBox) { if (textboxes[found.local].isVisible) { anyVisible = true; break; } }
+                    if (found.type == SelectedType::Dialogue) { if (dialogues[found.local].isVisible) { anyVisible = true; break; } }
+                    if (found.type == SelectedType::Display) { if (displays[found.local].isVisible) { anyVisible = true; break; } }
                 }
                 bool newState = !anyVisible;
                 for (int id : grp.memberIDs)
                 {
-                    FoundRef fr = findByID(id);
-                    if (fr.type == SelectedType::Button)      buttons[fr.local].isVisible = newState;
-                    else if (fr.type == SelectedType::TextBox)  textboxes[fr.local].isVisible = newState;
-                    else if (fr.type == SelectedType::Dialogue) dialogues[fr.local].isVisible = newState;
+                    FoundRef found = findByID(id);
+                    if (found.type == SelectedType::Button) buttons[found.local].isVisible = newState;
+                    else if (found.type == SelectedType::TextBox)  textboxes[found.local].isVisible = newState;
+                    else if (found.type == SelectedType::Dialogue) dialogues[found.local].isVisible = newState;
+                    else if (found.type == SelectedType::Display) displays[found.local].isVisible = newState;
                 }
             }
 
@@ -2316,29 +2633,35 @@ void ImGuiSystem::Update(float dt)
             {
                 for (int id : grp.memberIDs)
                 {
-                    FoundRef fr = findByID(id);
-                    switch (fr.type)
+                    FoundRef found = findByID(id);
+                    switch (found.type)
                     {
                     case SelectedType::Button:
                     {
-                        auto& b = buttons[fr.local];
+                        auto& b = buttons[found.local];
                         b.basePos.x += g_dx; b.basePos.y += g_dy;
                         b.baseSize.x *= g_uniformScale; b.baseSize.y *= g_uniformScale;
                         b.baseTextScale *= g_textScaleMul;
                     } break;
                     case SelectedType::TextBox:
                     {
-                        auto& t = textboxes[fr.local];
+                        auto& t = textboxes[found.local];
                         t.basePos.x += g_dx; t.basePos.y += g_dy;
                         t.baseScale *= g_uniformScale;
                         t.baseScale *= g_textScaleMul;
                     } break;
                     case SelectedType::Dialogue:
                     {
-                        auto& d = dialogues[fr.local];
+                        auto& d = dialogues[found.local];
                         d.textBox.basePos.x += g_dx; d.textBox.basePos.y += g_dy;
                         d.textBox.baseScale *= g_uniformScale;
                         d.textBox.baseScale *= g_textScaleMul;
+                    } break;
+                    case SelectedType::Display:
+                    {
+                        auto& dp = displays[found.local];
+                        dp.basePos.x += g_dx; dp.basePos.y += g_dy;
+                        dp.baseSize.x *= g_uniformScale; dp.baseSize.y *= g_uniformScale;
                     } break;
                     default: break;
                     }
@@ -2412,6 +2735,15 @@ void ImGuiSystem::Update(float dt)
                         newMemberIDs.push_back(gui.Dialogues().back().ID);
                     } break;
 
+                    case SelectedType::Display:
+                    {
+                        DisplayConfig dp = displays[found.local];
+                        dp.ID = 0;
+                        dp.basePos.x += kOffX; dp.basePos.y += kOffY;
+                        gui.AddDisplay(dp);
+                        newMemberIDs.push_back(gui.Displays().back().ID);
+                    } break;
+
                     default: break;
                     }
                 }
@@ -2450,6 +2782,12 @@ void ImGuiSystem::Update(float dt)
                     if (std::find(grp.memberIDs.begin(), grp.memberIDs.end(), dialogues[i].ID) != grp.memberIDs.end())
                         dialogues.erase(dialogues.begin() + i);
                 }
+                // Displays
+                for (int i = (int)displays.size() - 1; i >= 0; --i)
+                {
+                    if (std::find(grp.memberIDs.begin(), grp.memberIDs.end(), dialogues[i].ID) != grp.memberIDs.end())
+                        displays.erase(displays.begin() + i);
+                }
 
                 // Clear group selection & definition (since the elements are gone)
                 s_groups.erase(s_groups.begin() + s_activeGroup);
@@ -2469,7 +2807,8 @@ void ImGuiSystem::Update(float dt)
         numBtn = (int)buttons.size();
         numTxt = (int)textboxes.size();
         numDlg = (int)dialogues.size();
-        total = numBtn + numTxt + numDlg;
+        numDisp = (int)displays.size();
+        total = numBtn + numTxt + numDlg + numDisp;
         {
             // Build a flat list of all UI elements for the dropdown
             static int comboIndex = -1;
@@ -2536,7 +2875,8 @@ void ImGuiSystem::Update(float dt)
         numBtn = (int)buttons.size();
         numTxt = (int)textboxes.size();
         numDlg = (int)dialogues.size();
-        total = numBtn + numTxt + numDlg;
+        numDisp = (int)displays.size();
+        total = numBtn + numTxt + numDlg + numDisp;
 
         ImGui::NextColumn();
         //ShowAddRemoveComponents(); // right: add/remove comp

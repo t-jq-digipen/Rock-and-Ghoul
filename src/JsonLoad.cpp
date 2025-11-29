@@ -655,6 +655,17 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
         j["gui"]["dialogues"].push_back(std::move(jd));
     }
 
+    // UI Displays
+    for (const auto& dp : s.guiDisplays) {
+        j["gui"]["displays"].push_back({
+            {"ID", dp.ID},
+            {"pos", {dp.pos.x, dp.pos.y}},
+            {"size", {dp.size.x, dp.size.y}},
+            {"renderData", dp.renderData},
+            {"centered", dp.centered}
+        });
+    }
+
     for (const auto& entity : s.entities) {
         json entityJson;
         to_json(entityJson, entity);
@@ -755,6 +766,23 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
             d.currentLineIndex = dlg.value("currentLineIndex", 0);
 
             s.guiDialogues.push_back(std::move(d));
+        }
+    }
+    if (j.contains("gui") && j["gui"].contains("displays"))
+    {
+        for (auto& dp : j["gui"]["displays"])
+        {
+            SavedScene::SavedDisplay d;
+            d.ID = dp.value("ID", fallbackID++);
+            d.pos = { dp["pos"][0], dp["pos"][1] };
+            d.size = { dp["size"][0], dp["size"][1] };
+            if (dp.contains("renderData"))
+            {
+                d.renderData = dp["renderData"];
+            }
+            d.centered = { dp["centered"] };
+
+            s.guiDisplays.push_back(std::move(d));
         }
     }
     for (const auto& entityJson : j["entities"]) {
@@ -871,7 +899,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         scene.bgmAssetName = SceneManager::Get().GetCurrentSceneBGM();
         std::cout << "[SaveCurrentScene] Saving BGM: '" << scene.bgmAssetName << "'\n";
 
-        // GUI buttons
+        // GUI Buttons
         auto& gui = GuiSystem::Get();
         for (auto& b : gui.GetButtons()) {
             SavedScene::SavedButton sb;
@@ -888,6 +916,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sb.soundType = static_cast<int>(b.soundType);
             scene.guiButtons.push_back(sb);
         }
+        // GUI TextBoxes
         for (auto& t : gui.GetTextBoxes())
         {
             SavedScene::SavedTextBox st;
@@ -899,6 +928,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             st.centered = t.centered;
             scene.guiTextboxes.push_back(st);
         }
+        // GUI Dialogues
         for (auto& d : gui.GetDialogues())
         {
             SavedScene::SavedDialogue sd;
@@ -919,6 +949,17 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             }
 
             scene.guiDialogues.push_back(std::move(sd));
+        }
+        // GUI Displays
+        for (auto& dp : gui.GetDisplays())
+        {
+            SavedScene::SavedDisplay sd;
+            sd.ID = dp.ID;
+            sd.pos = dp.basePos;
+            sd.size = dp.baseSize;
+            sd.renderData = dp.m_renderData.Serialize();
+            sd.centered = dp.centered;
+            scene.guiDisplays.push_back(std::move(sd));
         }
         // Get all alive entities
         EntityManager& em = EntityManager::get();
@@ -1053,6 +1094,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             GuiSystem::Get().AddButton(cfg);
         }
 
+        // Restore GUI TextBoxes
         for (auto& t : scene.guiTextboxes)
         {
             TextBoxConfig cfg;
@@ -1067,6 +1109,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             GuiSystem::Get().AddTextBox(cfg);
         }
 
+        // Restore GUI Dialogues
         for (auto& d : scene.guiDialogues)
         {
             DialogueConfig cfg{};
@@ -1178,6 +1221,23 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             }
 
             GuiSystem::Get().AddDialogue(cfg);
+        }
+
+        // Restore GUI Displays
+        for (auto& dp : scene.guiDisplays)
+        {
+            DisplayConfig cfg;
+            cfg.ID = dp.ID;
+            cfg.pos = dp.pos;
+            cfg.basePos = dp.pos;
+            cfg.size = dp.size;
+            cfg.baseSize = dp.size;
+            cfg.centered = dp.centered;
+            if (!dp.renderData.empty())
+            {
+                cfg.m_renderData = UI_RenderData::DeSerialize(dp.renderData);
+            }
+            GuiSystem::Get().AddDisplay(cfg);
         }
 
         SavedScene::SavedCamera& camSet = scene.camSettings;

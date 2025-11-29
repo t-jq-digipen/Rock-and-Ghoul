@@ -235,6 +235,7 @@ void GuiSystem::Initialize() {
     buttons.clear();
     textboxes.clear();
     dialogues.clear();
+    displays.clear();
     nextUIID = 1; // start fresh
 
     // Register button actions
@@ -289,6 +290,16 @@ void GuiSystem::AddDialogue(const DialogueConfig& cfg)
     if (copy.ID <= 0) copy.ID = nextUIID++;
     else nextUIID = std::max(nextUIID, copy.ID + 1);
     dialogues.push_back(std::move(copy));
+}
+
+void GuiSystem::AddDisplay(const DisplayConfig& cfg)
+{
+    DisplayConfig copy = cfg;
+    copy.basePos = cfg.pos;
+    copy.baseSize = cfg.size;
+    if (copy.ID <= 0) copy.ID = nextUIID++;
+    else nextUIID = std::max(nextUIID, copy.ID + 1);
+    displays.push_back(std::move(copy));
 }
 
 int GuiSystem::AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox, const std::string& sceneID)
@@ -624,6 +635,68 @@ void GuiSystem::Update(float dt)
             }
         };
 
+        auto drawDisplayAt = [&](int i)
+        {
+            auto& d = displays[i];
+            if (!d.isVisible) return;
+
+            d.size = d.baseSize * uiScale;
+            d.pos.x = d.basePos.x * scaleX;
+            d.pos.y = d.basePos.y * scaleY;
+
+            switch (d.m_renderData.GetRenderType())
+            {
+            case UIRenderType::Shape:
+            {
+                UIShapeRender data = d.m_renderData.GetShapeData();
+                switch (data.shape)
+                {
+                case ButtonShape::Rectangle:
+                {
+                    render.DrawRect(d.pos, d.size.x, d.size.y, data.color);
+                    break;
+                }
+                case ButtonShape::Circle:
+                {
+                    render.DrawCircle(d.pos, std::min(d.size.x, d.size.y) * 0.5f, data.color, 48);
+                    break;
+                }
+                case ButtonShape::Rounded:
+                {
+                    render.DrawRoundedRect(d.pos, d.size.x, d.size.y, std::min(d.size.x, d.size.y) * 0.5f, data.color);
+                    break;
+                }
+                } break;
+            }
+            case UIRenderType::CustomQuad:
+            {
+                auto data = d.m_renderData.GetQuadData();
+                render.DrawCustomQuad(data.v0, data.v1, data.v2, data.v3, data.color);
+            } break;
+
+            case UIRenderType::Image:
+            {
+                auto data = d.m_renderData.GetImageData();
+                render.DrawImageRotated(data.m_image, d.pos.x, d.pos.y, d.size.x, d.size.y, 0.f, 0.f);
+            } break;
+
+            case UIRenderType::ImageSheet:
+            {
+                auto data = d.m_renderData.GetImageSheetData();
+                int tileW = data.m_image.widthPixels / data.total_cols;
+                int tileH = data.m_image.heightPixels / data.total_rows;
+                int col = data.frame_index.curr_col;
+                int row = data.total_rows - 1 - data.frame_index.curr_row;
+                float u0 = float(col * tileW), v0 = float(row * tileH);
+                float u1 = u0 + tileW, v1 = v0 + tileH;
+
+                render.DrawImageSub(data.m_image, d.pos.x, d.pos.y, d.size.x, d.size.y, u0, v0, u1, v1, 0.f, 0.f);
+            } break;
+
+            default: break;
+            }
+        };
+
     // Draw UI elements according to ascending ID
     for (const auto& it : drawList)
     {
@@ -637,6 +710,9 @@ void GuiSystem::Update(float dt)
             break;
         case SelectedType::Dialogue:
             if (it.index >= 0 && it.index < (int)dialogues.size()) drawDialogueAt(it.index);
+            break;
+        case SelectedType::Display:
+            if (it.index >= 0 && it.index < (int)displays.size()) drawDisplayAt(it.index);
             break;
         default: break;
         }
@@ -666,6 +742,7 @@ void GuiSystem::Shutdown() {
     buttons.clear();
     textboxes.clear();
     dialogues.clear();
+    displays.clear();
     nextUIID = 1;
     //audio = nullptr;
 }
@@ -720,6 +797,7 @@ void GuiSystem::Clear()
     buttons.clear();
     textboxes.clear();
     dialogues.clear();
+    displays.clear();
     nextUIID = 1;
 }
 
@@ -964,17 +1042,18 @@ void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartT
 std::vector<GuiSystem::DrawItem> GuiSystem::BuildSortedDrawList() const
 {
     std::vector<DrawItem> out;
-    out.reserve(buttons.size() + textboxes.size() + dialogues.size());
+    out.reserve(buttons.size() + textboxes.size() + dialogues.size() + displays.size());
 
     for (int i = 0; i < (int)buttons.size(); ++i) out.push_back({ SelectedType::Button,   i, buttons[i].ID });
     for (int i = 0; i < (int)textboxes.size(); ++i) out.push_back({ SelectedType::TextBox,  i, textboxes[i].ID });
     for (int i = 0; i < (int)dialogues.size(); ++i) out.push_back({ SelectedType::Dialogue, i, dialogues[i].ID });
+    for (int i = 0; i < (int)displays.size(); ++i) out.push_back({ SelectedType::Display, i, displays[i].ID });
 
     std::sort(out.begin(), out.end(), [](const DrawItem& a, const DrawItem& b) {
         if (a.ID != b.ID)   return a.ID < b.ID;                 // Ascending by ID
         if (a.type != b.type) return (int)a.type < (int)b.type;   // Stable across types
         return a.index < b.index;
-        });
+    });
 
     return out;
 }
@@ -1014,5 +1093,6 @@ void GuiSystem::ReseedNextUIID()
     for (const auto& b : buttons)    maxID = std::max(maxID, b.ID);
     for (const auto& t : textboxes)  maxID = std::max(maxID, t.ID);
     for (const auto& d : dialogues)  maxID = std::max(maxID, d.ID);
+    for (const auto& dp : displays)  maxID = std::max(maxID, dp.ID);
     nextUIID = std::max(1, maxID + 1);
 }

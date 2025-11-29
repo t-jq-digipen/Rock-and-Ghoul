@@ -58,7 +58,8 @@ enum class SelectedType
     None,
     Button,
     TextBox,
-    Dialogue
+    Dialogue,
+    Display
 };
 
 enum class UIRenderType
@@ -374,6 +375,17 @@ struct DialogueConfig {
     int ID;
 };
 
+struct DisplayConfig
+{
+    Vec2 pos;
+    Vec2 size;
+    Vec2 basePos;
+    Vec2 baseSize;
+    bool centered = false;
+    UI_RenderData m_renderData{};
+    bool isVisible = true;
+    int ID;
+};
 
 struct Button {
     ButtonConfig cfg;
@@ -403,6 +415,8 @@ public:
     void AddDialogue(const DialogueConfig& cfg);
     int AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox, const std::string& sceneID = "0");
 
+    void AddDisplay(const DisplayConfig& cfg);
+
     void SetEditMode(bool isEditing);
     bool GetEditMode() const;
 
@@ -413,11 +427,13 @@ public:
     std::vector<ButtonConfig>& Buttons() { return buttons; }
     std::vector<TextBoxConfig>& TextBoxes() { return textboxes; }
     std::vector<DialogueConfig>& Dialogues() { return dialogues; }
+    std::vector<DisplayConfig>& Displays() { return displays; }
 
     // Const Getters
     const std::vector<ButtonConfig>& GetButtons() const { return buttons; }
     const std::vector<TextBoxConfig>& GetTextBoxes() const { return textboxes; }
     const std::vector<DialogueConfig>& GetDialogues() const { return dialogues; }
+    const std::vector<DisplayConfig>& GetDisplays() const { return displays; }
     const SelectedType& GetSelectedType() const { return selectedType; }
     const int& GetSelectedIndex() const { return selectedIndex; }
 
@@ -455,7 +471,7 @@ private:
     std::vector<ButtonConfig> buttons;
     std::vector<TextBoxConfig> textboxes;
     std::vector<DialogueConfig> dialogues;
-
+    std::vector<DisplayConfig> displays;
 
     // a registry to hold functions, keyed by function name
     std::unordered_map<std::string, ActionFunction> actionRegistry;
