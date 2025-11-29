@@ -1,3 +1,30 @@
+/* ========================================================
+ * @file        SceneManager.h
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @date        29 NOV 2025
+ *
+ * @brief
+ * Implements the SceneManager, which controls scene loading,
+ * unloading, transitioning, play/edit modes, and scene state.
+ *
+ * - Handles safe scene loading using deferred loading (queued load).
+ * - Manages scene transitions with optional fade timing.
+ * - Controls PLAY mode, PAUSE state, and EDIT mode switching.
+ * - Integrates with JsonLoad for scene serialization/deserialization.
+ * - Updates camera mode depending on play/edit state.
+ * - Ensures audio is stopped when entering edit mode.
+ * - Provides scene saving and reloading functionality.
+ * - Stores current scene metadata (name, path, temporary paths).
+ *
+ * Additional Features:
+ * - Supports hotkeys for pause (P) and scene switching (H).
+ * - Ensures scene loading happens only at safe points in the frame.
+ * - Restores default scene camera and renderer settings.
+ *
+ * Copyright © 2025 DigiPen, All rights reserved.
+ * ========================================================
+ */
 #pragma once
 #include <string>
 #include "DataDefs.h"
