@@ -447,6 +447,8 @@ public:
 
     std::unordered_map<std::string, ActionFunction>& GetActionMap() { return actionRegistry; }
 
+    // For UI editor (ensure next UI ID is always unique)
+    void ReseedNextUIID();
 
 private:
 

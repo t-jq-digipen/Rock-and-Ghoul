@@ -1006,3 +1006,13 @@ bool GuiSystem::CallAction(const std::string& name, const nlohmann::json& params
 
     return true;
 }
+
+// For UI editor
+void GuiSystem::ReseedNextUIID()
+{
+    int maxID = 0;
+    for (const auto& b : buttons)    maxID = std::max(maxID, b.ID);
+    for (const auto& t : textboxes)  maxID = std::max(maxID, t.ID);
+    for (const auto& d : dialogues)  maxID = std::max(maxID, d.ID);
+    nextUIID = std::max(1, maxID + 1);
+}
