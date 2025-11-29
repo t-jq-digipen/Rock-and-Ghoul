@@ -23,7 +23,6 @@
 #include "Entity.h"
 #include "JsonLoad.h"   // for SavedEntity
 
- // Forward declaration – we only pass it by const reference.
 struct TransformComponent;
 
 /**
@@ -40,7 +39,6 @@ public:
         Modify
     };
 
-    // Internal representation of a transform state
     struct TransformState
     {
         float posX = 0.0f;
@@ -54,19 +52,17 @@ public:
     {
         ActionType type = ActionType::Add;
 
-        // Common
         Entity entity = INVALID_ENTITY;
 
-        // For REMOVE (restore from snapshot)
+        //REMOVE (restore from snapshot)
         SavedEntity savedEntity;
 
-        // For MODIFY (transform-only)
+        //MODIFY
         TransformState before;
         TransformState after;
         bool hasBeforeAfter = false;
     };
 
-    // global singleton instance
     static UndoSystem& Get();
 
     // clear all recorded actions
@@ -75,16 +71,15 @@ public:
     // record that an entity was just created.
     void RecordAdd(Entity e);
 
-    // record that an entity is about to be removed (pass snapshot).
+    // record that an entity is about to be removed (snapshot).
     void RecordRemove(const SavedEntity& snapshot);
 
     // when gizmo starts modifying transform.
     void BeginModify(Entity e, const TransformComponent& before);
 
-    // when gizmo finishes records final transform if changed
+    // when gizmo done records final transform
     void EndModify(Entity e, const TransformComponent& after);
 
-    //Undo last action (no redo for now).
     void Undo();
 
 private:
