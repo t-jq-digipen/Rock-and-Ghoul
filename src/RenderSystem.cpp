@@ -629,7 +629,9 @@ void RenderSystem::Update(float dt) {
     renderInstance.FlushBatch();
 
     // UI (rendered last, most in front)
-    renderer.useCamera = false;
+
+    renderInstance.SetProjectionType(ProjectionType::UI);
+    //renderer.useCamera = false;
     renderInstance.BeginBatch();
     // DrawLayer(uiEntities);
     drawLayer(ui_list);

@@ -135,7 +135,10 @@ enum class ResolutionMode {
     Window
 };
 
-
+enum class ProjectionType {
+    WORLD,
+    UI
+};
 
 class Render {
 public:
@@ -745,6 +748,9 @@ public:
     void UseVirtualWindow(bool enable);
 
     void DrawLetterboxedTexture(GLuint texture);
+
+    //UI uses screen-space projection
+    void SetProjectionType(ProjectionType type);
 
 
     /**

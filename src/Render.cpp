@@ -113,8 +113,6 @@ void Render::Init() {
 
     glBindVertexArray(0);
 
-
-
     //====== Instancing render ==========
 
     //instance VBO (initially empty, will be filled per draw call)
@@ -205,6 +203,38 @@ void Render::UpdateProjection()
     );
 }
 
+void Render::SetProjectionType(ProjectionType type)
+{
+    GLuint shader = GetSpriteShader();
+    glUseProgram(shader);
+
+    glm::mat4 proj;
+
+    switch (type)
+    {
+    case ProjectionType::WORLD:
+        proj = mainCamera.GetViewProjection();
+        break;
+
+    case ProjectionType::UI:
+        proj = glm::ortho(
+            0.f, (float)GLApp::VIRTUAL_W,
+            0.f, (float)GLApp::VIRTUAL_H,
+            -1.f, 1.f
+        );
+        break;
+    }
+
+    glUniformMatrix4fv(
+        glGetUniformLocation(shader, "uProjection"),
+        1, GL_FALSE,
+        &proj[0][0]
+    );
+
+    glUseProgram(0);
+}
+
+
 
 void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color, float rotation) {
     glUseProgram(shaderProgram);
@@ -292,8 +322,6 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
     glUseProgram(shaderProgram);
 
     // Set required uniforms
-    /*glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
-        1, GL_FALSE, &projection[0][0]);*/
     glm::mat4 projMatrix = useCamera
         ? mainCamera.GetViewProjection()
         : projection;
@@ -320,6 +348,9 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
     glBindVertexArray(0);
     glDeleteBuffers(1, &vboLine);
     glDeleteVertexArrays(1, &vaoLine);
+
+    //reset color, cause it seems to cause greenish overlay
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
 
     glUseProgram(0);
 }
