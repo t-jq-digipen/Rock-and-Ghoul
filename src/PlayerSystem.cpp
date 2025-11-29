@@ -317,6 +317,56 @@ namespace RockScript {
 
 	std::unordered_map<Entity, size_t> subscriberID;
 
+	enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
+
+	struct Spell
+	{
+		SpellType type;
+		float cooldown; //Time before next use
+		float currentCD; //Counts down in Update
+		int charges; //Number of uses
+
+		//Default constructor
+		Spell()
+			: type(SpellType::SOUNDWAVE), cooldown(0.f), currentCD(0.f), charges(0) {
+		}
+
+		//Parameterized constructor
+		Spell(SpellType t, float cd, int ch)
+			: type(t), cooldown(cd), currentCD(0.f), charges(ch) {
+		}
+
+		bool CanUse() const { return charges > 0 && currentCD <= 0.f; }
+
+		void Use() {
+			if (CanUse()) {
+				charges--;
+				currentCD = cooldown;
+			}
+		}
+
+		void Update(float dt) {
+			if (currentCD > 0.f) currentCD -= dt;
+			if (currentCD < 0.f) currentCD = 0.f;
+		}
+	};
+
+	std::array<Spell, 3> spellSlots;
+
+	void AddSpellToSlot(SpellType type, float cooldown, int charges)
+	{
+		for (auto& slot : spellSlots)
+		{
+			if (slot.charges <= 0) //Empty slot
+			{
+				slot = Spell(type, cooldown, charges);
+				std::cout << "Added spell to slot! Type: " << static_cast<int>(type) << "\n";
+				return;
+			}
+		}
+		std::cout << "All spell slots full! Cannot add spell.\n";
+	}
+
 	void Dash(Entity eID) {
 		if (stunnedtimer < 1.f || atktimer < 1.f) { return; }
 
@@ -359,7 +409,7 @@ namespace RockScript {
 	//Record key presses in buffer
 	void RecordInput(int key) {
 		inputBuffer.push_back(key);
-		if (inputBuffer.size() > MAX_COMBO) inputBuffer.erase(inputBuffer.begin()); //keep max input sequence length
+		if (inputBuffer.size() > MAX_COMBO) inputBuffer.erase(inputBuffer.begin()); //Keep max input sequence length
 		switch (key) {
 		case UP:    std::cout << "Arrow UP pressed\n"; break;
 		case DOWN:  std::cout << "Arrow DOWN pressed\n"; break;
@@ -380,12 +430,14 @@ namespace RockScript {
 			inputBuffer[inputBuffer.size() - 2] == UP &&
 			inputBuffer[inputBuffer.size() - 1] == DOWN)
 		{
-			auto& trans = registry.Get_Component<TransformComponent>(eID);
+			/*auto& trans = registry.Get_Component<TransformComponent>(eID);
 
 			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json",
 				trans.pos.x, trans.pos.y);
 
-			std::cout << "Projectile spawned at (" << trans.pos.x << ", " << trans.pos.y << ")\n";
+			std::cout << "Projectile spawned at (" << trans.pos.x << ", " << trans.pos.y << ")\n";*/
+
+			AddSpellToSlot(SpellType::SOUNDWAVE, 5.f, 2);
 
 			inputBuffer.clear();
 			return;
@@ -397,10 +449,12 @@ namespace RockScript {
 			inputBuffer[inputBuffer.size() - 2] == LEFT &&
 			inputBuffer[inputBuffer.size() - 1] == DOWN)
 		{
-			auto& trans = registry.Get_Component<TransformComponent>(eID);
-			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json",
-				trans.pos.x, trans.pos.y + 5.f  // spawn above
-			);
+			//auto& trans = registry.Get_Component<TransformComponent>(eID);
+			//JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json",
+			//	trans.pos.x, trans.pos.y + 5.f  // spawn above
+			//);
+
+			AddSpellToSlot(SpellType::AOE, 8.f, 1);
 			inputBuffer.clear();
 			return;
 		}
@@ -411,10 +465,12 @@ namespace RockScript {
 			inputBuffer[inputBuffer.size() - 2] == DOWN &&
 			inputBuffer[inputBuffer.size() - 1] == RIGHT)
 		{
-			isVulnerable = false;
+			/*isVulnerable = false;
 			shieldTimer = 0.f;
 
-			std::cout << "Shield activated! Invulnerable: " << !isVulnerable << ", Timer: " << shieldTimer << "s\n";
+			std::cout << "Shield activated! Invulnerable: " << !isVulnerable << ", Timer: " << shieldTimer << "s\n";*/
+
+			AddSpellToSlot(SpellType::SHIELD, 10.f, 1);
 
 			inputBuffer.clear();
 			return;
@@ -425,13 +481,14 @@ namespace RockScript {
 			inputBuffer[inputBuffer.size() - 3] == RIGHT &&
 			inputBuffer[inputBuffer.size() - 2] == UP &&
 			inputBuffer[inputBuffer.size() - 1] == RIGHT) {
-			if (registry.Has_Component<HealthComponent>(eID)) {
+			/*if (registry.Has_Component<HealthComponent>(eID)) {
 				auto& health = registry.Get_Component<HealthComponent>(eID);
 				health.currhp += 10.f;
 				if (health.currhp > health.maxhp) health.currhp = health.maxhp;
 
 				std::cout << "Healing triggered! Current HP: " << health.currhp << "/" << health.maxhp << "\n";
-			}
+			}*/
+			AddSpellToSlot(SpellType::HEAL, 15.f, 1);
 			inputBuffer.clear();
 			return;
 		}
@@ -452,13 +509,54 @@ namespace RockScript {
 		}
 	}
 
+	void ActivateSpell(int slotIndex, Entity eID)
+	{
+		if (slotIndex < 0 || slotIndex >= 3) return;
+
+		Spell& spell = spellSlots[slotIndex];
+		if (!spell.CanUse()) {
+			std::cout << "Spell slot " << slotIndex + 1 << " not ready!\n";
+			return;
+		}
+
+		spell.Use(); // decrement charges + start cooldown
+		auto& registry = Registry::Get();
+		auto& trans = registry.Get_Component<TransformComponent>(eID);
+
+		switch (spell.type)
+		{
+		case SpellType::SOUNDWAVE:
+			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y);
+			std::cout << "Soundwave cast!\n";
+			break;
+		case SpellType::AOE:
+			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
+			std::cout << "AOE cast!\n";
+			break;
+		case SpellType::SHIELD:
+			RockScript::isVulnerable = false;
+			RockScript::shieldTimer = 0.f;
+			std::cout << "Shield activated!\n";
+			break;
+		case SpellType::HEAL:
+			if (registry.Has_Component<HealthComponent>(eID)) {
+				auto& health = registry.Get_Component<HealthComponent>(eID);
+				health.currhp += 10.f;
+				if (health.currhp > health.maxhp) health.currhp = health.maxhp;
+				std::cout << "Heal cast! HP: " << health.currhp << "/" << health.maxhp << "\n";
+			}
+			break;
+		}
+	}
+
 	inline void Start(Entity eID)
 	{
 		std::cout << "Rock script started" << std::endl;
 
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
 			//Record arrow keys
-			if (e.key == UP || e.key == DOWN || e.key == LEFT || e.key == RIGHT) {
+			if (e.key == UP || e.key == DOWN || e.key == LEFT || e.key == RIGHT)
+			{
 				RecordInput(e.key);
 				CheckCombos(eID);
 			}
@@ -474,6 +572,12 @@ namespace RockScript {
 			{
 				Knockback(eID);
 			}
+			if (e.key == GLFW_KEY_1)
+				ActivateSpell(0, eID);
+			else if (e.key == GLFW_KEY_2)
+				ActivateSpell(1, eID);
+			else if (e.key == GLFW_KEY_3)
+				ActivateSpell(2, eID);
 			});
 	}
 
@@ -482,6 +586,12 @@ namespace RockScript {
 
 		//Shield Timer
 		UpdateShield(dt);
+
+		for (auto& spell : spellSlots)
+		{
+			spell.Update(dt);
+		}
+
 
 		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
 		
