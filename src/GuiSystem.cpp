@@ -1097,3 +1097,32 @@ void GuiSystem::ReseedNextUIID()
     for (const auto& dp : displays)  maxID = std::max(maxID, dp.ID);
     nextUIID = std::max(1, maxID + 1);
 }
+
+UIGroup& GuiSystem::GetGroup(const std::string& name) {
+    for (UIGroup& group : m_groups) {
+        if (group.groupName == name)
+        {
+            return group;
+        }
+    }
+}
+
+bool GuiSystem::SetDisplaySheetState(int ID, unsigned int frame) {
+    
+    for (auto& display : displays)
+    {
+        if (display.ID == ID)
+        {
+            if (display.m_renderData.GetRenderType() != UIRenderType::ImageSheet)
+            {
+                std::cerr << "Tried to set UI element " << ID << " sheet frame, but it is not imagesheet\n";
+                return false;
+            }
+
+            display.m_renderData.GetImageSheetData().SetFrame(frame);
+            return true;
+        }
+    }
+
+    return false;
+}

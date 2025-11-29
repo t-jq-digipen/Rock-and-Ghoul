@@ -37,6 +37,23 @@ namespace PlayerMove {
     inline void End(Entity e);
 }
 
+namespace RockScript {
+
+    enum class Element : int
+    {
+        NONE = 0,
+        LIGHTNING,
+        FIRE,
+        WIND,
+        ICE,
+
+        COUNT
+    };
+
+    enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
+
+}
+
 class PlayerSystem : public ISystem {
 private:
     //void WASD_Movement(Entity eID, float& dt);

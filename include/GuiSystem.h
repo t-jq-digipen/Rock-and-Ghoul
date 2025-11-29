@@ -286,6 +286,18 @@ struct UIImageSheetRender : public IUIRender
         return ret;
     }
 
+    bool SetFrame(unsigned int frame) {
+        if (current_frame == frame) { return false; }
+
+        current_frame = frame;
+        if (frames.find(frame) == frames.end()) {
+            std::cerr << "frame does not exist in this UI display\n";
+            return false;
+        }
+        frame_index = frames[current_frame];
+        return true;
+    }
+
 };
 
 struct UI_RenderData {
@@ -482,6 +494,10 @@ public:
     std::vector<UIGroup>& GetGroups() { return m_groups; }
 
     void AddGroup(const UIGroup& group) { m_groups.push_back(group); }
+
+    UIGroup& GetGroup(const std::string& name);
+
+    bool SetDisplaySheetState(int uiID, unsigned int frame);
 
 private:
 

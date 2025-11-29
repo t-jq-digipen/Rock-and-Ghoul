@@ -28,6 +28,7 @@
 #include "MonoSystem.h"
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
+#include "GuiSystem.h"
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
@@ -318,20 +319,9 @@ namespace RockScript {
 
 	std::unordered_map<Entity, size_t> subscriberID;
 
-	enum class Element : int
-	{
-		NONE = 0,
-		LIGHTNING,
-		FIRE,
-		WIND,
-		ICE,
-
-		COUNT
-	};
 
 	static Element currentElement = Element::NONE; //Set default element to none
 
-	enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
 
 	struct Spell
 	{
@@ -379,6 +369,49 @@ namespace RockScript {
 			}
 		}
 		std::cout << "All spell slots full! Cannot add spell.\n";
+	}
+
+	void AssignSlots()
+	{
+		GuiSystem& UIsys = GuiSystem::Get();
+		UIGroup& slots = UIsys.GetGroup("Spell Slots");
+		
+		for (size_t i = 0; i < 3; i++)
+		{
+			// Empty
+			if (spellSlots[i].charges <= 0) 
+			{
+				UIsys.SetDisplaySheetState(slots.memberIDs[i], 0);
+			}
+			// Not empty
+			else
+			{
+				unsigned int frame = 0;
+				switch (spellSlots[i].type)
+				{
+				case SpellType::SOUNDWAVE:
+					frame = 1;
+					break;
+
+				case SpellType::AOE:
+					frame = 2;
+					break;
+
+				case SpellType::SHIELD:
+					frame = 3;
+					break;
+
+				case SpellType::HEAL:
+					frame = 4;
+					break;
+
+				default:
+					frame = 0;
+					break;
+				}
+				UIsys.SetDisplaySheetState(slots.memberIDs[i], frame);
+			}
+		}
 	}
 
 	void CycleElement() {
@@ -651,6 +684,24 @@ namespace RockScript {
 			else if (e.key == GLFW_KEY_3)
 				ActivateSpell(2, eID);
 			});
+
+		for (auto& spell : spellSlots)
+		{
+			spell.charges = 0;
+		}
+
+		currentElement = Element::NONE;
+
+
+
+		stunnedtimer = 1.f;
+		atktimer = 1.f;
+		shot = false;
+
+		inputBuffer.clear();
+		shieldTimer = 0.f;
+		isVulnerable = true;
+
 	}
 
 	inline void Update(Entity eID, float dt) {
@@ -663,6 +714,8 @@ namespace RockScript {
 		{
 			spell.Update(dt);
 		}
+
+		AssignSlots();
 
 
 		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
