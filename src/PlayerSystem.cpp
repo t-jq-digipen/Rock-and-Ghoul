@@ -317,6 +317,19 @@ namespace RockScript {
 
 	std::unordered_map<Entity, size_t> subscriberID;
 
+	enum class Element : int
+	{
+		NONE = 0,
+		LIGHTNING,
+		FIRE,
+		WIND,
+		ICE,
+
+		COUNT
+	};
+
+	static Element currentElement = Element::NONE; //Set default element to none
+
 	enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
 
 	struct Spell
@@ -365,6 +378,20 @@ namespace RockScript {
 			}
 		}
 		std::cout << "All spell slots full! Cannot add spell.\n";
+	}
+
+	void CycleElement() {
+		int index = static_cast<int>(currentElement);
+		index = (index + 1) % static_cast<int>(Element::COUNT);
+		currentElement = static_cast<Element>(index);
+
+		switch (currentElement) {
+		case Element::NONE: std::cout << "Element: NONE\n"; break;
+		case Element::LIGHTNING: std::cout << "Element: LIGHTNING\n"; break;
+		case Element::FIRE: std::cout << "Element: FIRE\n"; break;
+		case Element::WIND: std::cout << "Element: WIND\n"; break;
+		case Element::ICE: std::cout << "Element: ICE\n"; break;
+		}
 	}
 
 	void Dash(Entity eID) {
@@ -509,6 +536,40 @@ namespace RockScript {
 		}
 	}
 
+	void ApplyElementToProjectile(Entity proj)
+	{
+		auto& registry = Registry::Get();
+
+		//Damage Component in future
+
+		switch (currentElement)
+		{
+		case Element::NONE:
+			break;
+
+		case Element::FIRE:
+			//Burn damage
+			//Burn lasts 3 sec
+			std::cout << "Fire applied: burn damage\n";
+			break;
+
+		case Element::LIGHTNING:
+			//Stun 5 sec
+			std::cout << "Lightning applied: stun 5 sec\n";
+			break;
+
+		case Element::WIND:
+			//Knocksback
+			std::cout << "Wind applied: knockback\n";
+			break;
+
+		case Element::ICE:
+			//Slow amount and duration
+			std::cout << "Ice applied: slow\n";
+			break;
+		}
+	}
+
 	void ActivateSpell(int slotIndex, Entity eID)
 	{
 		if (slotIndex < 0 || slotIndex >= 3) return;
@@ -526,13 +587,19 @@ namespace RockScript {
 		switch (spell.type)
 		{
 		case SpellType::SOUNDWAVE:
-			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y);
+		{
+			Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y);
 			std::cout << "Soundwave cast!\n";
+			ApplyElementToProjectile(proj);
 			break;
+		}
 		case SpellType::AOE:
-			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
+		{
+			Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
 			std::cout << "AOE cast!\n";
+			ApplyElementToProjectile(proj);
 			break;
+		}
 		case SpellType::SHIELD:
 			RockScript::isVulnerable = false;
 			RockScript::shieldTimer = 0.f;
@@ -571,6 +638,10 @@ namespace RockScript {
 			else if (e.key == GLFW_KEY_G)
 			{
 				Knockback(eID);
+			}
+			else if (e.key == GLFW_KEY_Q)
+			{
+				CycleElement();
 			}
 			if (e.key == GLFW_KEY_1)
 				ActivateSpell(0, eID);
