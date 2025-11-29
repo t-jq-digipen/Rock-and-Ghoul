@@ -162,7 +162,7 @@ namespace
 
     static std::unordered_map<std::string, AudioAsset> RefreshAudioAssets()
     {
-        // Reload AudioCache fully
+        // reload AudioCache fully
         AudioCache::Shutdown();
         AudioCache::Initialize(AUDIO_MANIFEST_PATH);
 
@@ -202,6 +202,7 @@ namespace
         }
         try
         {
+            //.dump() returns the originally stored string value
             out << manifest.dump(4);
             return true;
         }
@@ -235,39 +236,47 @@ namespace
         std::string filePath;
 
         // remove from categories
-        const char* categories[] = { "music", "sfx", "ui", "ambience" };
+        // manifest["music"]["bgm1"], manifest["sfx"]["hit"], etc.
+        // loop through each cat and see if exist
+        const char* categories[] = { "music", "sfx", "ui"};
         for (const char* cat : categories)
         {
             if (manifest.contains(cat) &&
                 manifest[cat].is_object() &&
                 manifest[cat].contains(assetName))
             {
+                // store the file path, delete the actual sound file later
                 filePath = manifest[cat][assetName].value("path", "");
                 manifest[cat].erase(assetName);
-                std::cout << "[AudioEditor] Removed '" << assetName
-                    << "' from category '" << cat << "'\n";
+                std::cout << "[AudioEditor] Removed '" << assetName << "' from category '" << cat << "'\n";
                 break;
             }
         }
 
         // remove from banks
+        // "banks": { "level1": ["hit", "jump", "bgm1"] }
         if (manifest.contains("banks") && manifest["banks"].is_object())
         {
             for (auto& [bankName, list] : manifest["banks"].items())
             {
                 if (!list.is_array())
                     continue;
+
                 auto& arr = list;
+
+                //erase() shifts elements need manually do 
                 for (size_t i = 0; i < arr.size();)
                 {
                     if (arr[i].is_string() && arr[i].get<std::string>() == assetName)
+                        //remove the reference to the deleted asset
+                        //long long coz 64-bit i unsigned
                         arr.erase(arr.begin() + static_cast<long long>(i));
                     else
                         ++i;
                 }
             }
         }
-
+        //save updated into json
         if (!SaveAudioManifest(manifest))
             return false;
 
@@ -276,11 +285,11 @@ namespace
         {
             try
             {
+                // check if file exists before trying to remove it
                 if (std::filesystem::exists(filePath))
                 {
                     std::filesystem::remove(filePath);
-                    std::cout << "[AudioEditor] Deleted file: "
-                        << filePath << "\n";
+                    std::cout << "[AudioEditor] Deleted file: " << filePath << "\n";
                 }
             }
             catch (const std::exception& e)
@@ -346,7 +355,7 @@ bool AddOrUpdateAudioInManifest(const std::string& key, const std::string& categ
     entry["loop"] = loop;
     entry["group"] = group;
     if (spatial)
-        entry["spatial"] = true; // optional field
+        entry["spatial"] = true;
 
     manifest[category][key] = entry;
 
@@ -430,7 +439,7 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
 
     Vec2 minW, maxW;
 
-    // From Render Component
+    // render Component
     if (reg.Has_Component<RenderComponent>(e))
     {
         auto& r = reg.Get_Component<RenderComponent>(e);
@@ -440,9 +449,11 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
         {
             Sprite::SpriteComponent& sprite = r.GetSprite();
             const Image& img = sprite.Get_Image();
-
+            //image pixel size to world size based on unitsPerPixel
             Vec2 worldSize = { img.widthPixels * RenderSystem::unitsPerPixel, img.heightPixels * RenderSystem::unitsPerPixel };
+            //sprite scale + transform scale
             Vec2 size = worldSize * r.GetSprite().Get_Scale() * t.scale;
+            //bounding box
             Vec2 half = size * 0.5f;
             minW = t.pos - half;
             maxW = t.pos + half;
@@ -454,7 +465,7 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
             Sprite::SpriteSheet& spritesheet    = r.GetSpriteSheet();
             Sprite::SpriteComponent& sprite     = spritesheet.Sprite();
             //const Image& img = sprite.Get_Image();
-
+            // width/height in image space UV difference
             float frameW = spritesheet.u1 - spritesheet.u0;
             float frameH = spritesheet.v1 - spritesheet.v0;
 
@@ -478,7 +489,7 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
         break;
         }
     }
-    // Physics fallback
+    //if no render use physics collider
     else if (reg.Has_Component<ColliderComponent>(e))
     {
         auto& col = reg.Get_Component<ColliderComponent>(e);
@@ -488,24 +499,29 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
     }
     else return;
 
-    // Convert world to panel
+    // convert world to panel
     ImVec2 tl = Render::GetInstance().WorldToPanel(minW, cursor, { w, h });
     ImVec2 br = Render::GetInstance().WorldToPanel(maxW, cursor, { w, h });
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
-    // Outer glow
+    //just for funz
     dl->AddRect(tl, br, IM_COL32(0, 255, 255, 60), 0.0f, 0, 6.0f);
-    // Main outline
+    //outline
     dl->AddRect(tl, br, IM_COL32(0, 255, 255, 255), 0.0f, 0, 2.0f);
 
 }
+
 Entity PickEntityAtWorldPos(const Vec2& world)
 {
     Registry& reg = Registry::Get();
+
     Entity best = INVALID_ENTITY;
+    //track the closest entity to click
+    //FLT_MAX any real distance will be smaller
     float bestDist = FLT_MAX;
 
+    //loop every enetity w transform comp
     for (auto& [e, t] : reg.Get_ComponentMap<TransformComponent>())
     {
         if (!EntityManager::get().isAlive(e))
@@ -513,6 +529,7 @@ Entity PickEntityAtWorldPos(const Vec2& world)
 
         bool hit = false;
 
+        //check render
         if (reg.Has_Component<RenderComponent>(e))
         {
             auto& r = reg.Get_Component<RenderComponent>(e);
@@ -523,11 +540,11 @@ Entity PickEntityAtWorldPos(const Vec2& world)
             {
                 Sprite::SpriteComponent& sprite = r.GetSprite();
                 const Image& img = sprite.Get_Image();
-
+                //same as above
                 Vec2 worldSize = { img.widthPixels * RenderSystem::unitsPerPixel, img.heightPixels * RenderSystem::unitsPerPixel };
                 Vec2 size = worldSize * r.GetSprite().Get_Scale() * t.scale;
-                Vec2 half = size * 0.5f;
 
+                Vec2 half = size * 0.5f;
                 min = t.pos - half;
                 max = t.pos + half;
             }
@@ -555,25 +572,27 @@ Entity PickEntityAtWorldPos(const Vec2& world)
                 min = t.pos - h;
                 max = t.pos + h;
             }
-
-            hit = (world.x >= min.x && world.x <= max.x &&
-                world.y >= min.y && world.y <= max.y);
+            //aabb test
+            hit = (world.x >= min.x && world.x <= max.x && world.y >= min.y && world.y <= max.y);
         }
 
+        //collider as backup again
         else if (reg.Has_Component<ColliderComponent>(e))
         {
             auto& col = reg.Get_Component<ColliderComponent>(e);
             AABB a = col.Get_AABB();
-            hit = (world.x >= a.min.x && world.x <= a.max.x &&
-                world.y >= a.min.y && world.y <= a.max.y);
+            hit = (world.x >= a.min.x && world.x <= a.max.x && world.y >= a.min.y && world.y <= a.max.y);
         }
 
+        //if click hit this entity
         if (hit)
         {
+            //sqrted dist
             float dx = world.x - t.pos.x;
             float dy = world.y - t.pos.y;
             float d = dx * dx + dy * dy;
 
+            //entity closest to click
             if (d < bestDist)
             {
                 bestDist = d;
@@ -581,18 +600,19 @@ Entity PickEntityAtWorldPos(const Vec2& world)
             }
         }
     }
-
+    //winner!!!!!
     return best;
 }
 
 inline float AngleToMouse(const Vec2& posWorld, const Vec2& mouseWorld)
 {
-    return glm::degrees(atan2(mouseWorld.y - posWorld.y,
-        mouseWorld.x - posWorld.x));
+    //atan angle btwn 2 points 
+    return glm::degrees(atan2(mouseWorld.y - posWorld.y,mouseWorld.x - posWorld.x));
 }
 
 inline float SmoothDampAngle(float current, float target, float factor)
 {
+    //rotates smooth -180 to 180
     float diff = glm::mod(target - current + 540.0f, 360.0f) - 180.0f;
     return current + diff * factor;
 }
@@ -778,8 +798,8 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
     if (ext == ".wav")
     {
         g_pendingAudioSourcePath = path;
-        g_pendingAudioCategory = 0;         // default to Music
-        g_showAudioImportPopup = true;      // popup handled in Assets window
+        g_pendingAudioCategory = 0;         
+        g_showAudioImportPopup = true;
         return;
     }
 
@@ -2188,6 +2208,7 @@ void ImGuiSystem::Update(float dt)
 
         DrawSelectionOutline(selectedEntity, cursor, newWidth, newHeight);
 
+        //gizmooooo
         ImGuizmo::BeginFrame();
         ImGuizmo::SetOrthographic(false);
         ImGuizmo::SetDrawlist();
@@ -2201,49 +2222,37 @@ void ImGuiSystem::Update(float dt)
         {
             TransformComponent& t = reg.Get_Component<TransformComponent>(selectedEntity);
 
-            // -------------------------------------------------------
-            // 1. Compose model matrix
-            // -------------------------------------------------------
-            glm::mat4 model = glm::translate(glm::mat4(1.0f),
-                glm::vec3(t.pos.x, t.pos.y, 0.0f));
-
+            // Build model matrix TRSSSS
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(t.pos.x, t.pos.y, 0.0f));
             model = glm::rotate(model, glm::radians(t.rot), glm::vec3(0, 0, 1));
             model = glm::scale(model, glm::vec3(t.scale.x, t.scale.y, 1.0f));
 
-            // -------------------------------------------------------
-            // 2. Camera matrices
-            // -------------------------------------------------------
+            //cam for gizmo
             Camera& cam = Camera::GetInstance();
             glm::mat4 view = cam.GetViewMatrix();
             glm::mat4 proj = cam.GetProjMatrix();
 
             ImGuizmo::SetOrthographic(true);
 
-            // -------------------------------------------------------
-            // 3. Gizmo Manipulate
-            // -------------------------------------------------------
+
             ImGuizmo::Manipulate(
                 glm::value_ptr(view),
                 glm::value_ptr(proj),
-                gizmoOperation,
-                gizmoMode,
+                gizmoOperation, // move/rot/scale
+                gizmoMode, //local/world
                 glm::value_ptr(model)
             );
-
+            //check if using gizmo
             bool isUsingNow = ImGuizmo::IsUsing();
 
-            // -------------------------------------------------------
-            // 4. UNDO: BeginModify (first frame gizmo starts)
-            // -------------------------------------------------------
+            //UNDOOOOO
             if (isUsingNow && !wasGizmoUsing)
             {
                 UndoSystem::Get().BeginModify(selectedEntity, t);
                 lastScale = glm::vec3(1.0f);
             }
 
-            // -------------------------------------------------------
-            // 5. Apply transform while gizmo active
-            // -------------------------------------------------------
+
             if (isUsingNow)
             {
                 glm::vec3 translation, rotation3, scaleAbs;
@@ -2254,59 +2263,32 @@ void ImGuiSystem::Update(float dt)
                     glm::value_ptr(scaleAbs)
                 );
 
-                // Position
+                // pos
                 t.pos.x = translation.x;
                 t.pos.y = translation.y;
 
-                // Rotation (follow mouse)
+                //rototo
                 if (gizmoOperation == ImGuizmo::ROTATE)
                 {
                     ImVec2 mouseScreen = ImGui::GetMousePos();
-
+                    //mouse from screen to NDC
                     float u = (mouseScreen.x - cursor.x) / newWidth;
                     float v = (mouseScreen.y - cursor.y) / newHeight;
 
                     float ndcX = u * 2.0f - 1.0f;
                     float ndcY = (1.0f - v) * 2.0f - 1.0f;
 
+                    //NDC to world
                     Vec2 mouseWorld = cam.NDCToWorld({ ndcX, ndcY });
+                    //mouse rototo angle stuff
                     float targetRot = AngleToMouse(t.pos, mouseWorld);
                     t.rot = SmoothDampAngle(t.rot, targetRot, 0.18f);
                 }
-
-                //// Scale (incremental)
-                //glm::vec3 scaleDelta = scaleAbs / lastScale;
-                //lastScale = scaleAbs;
-
-                // scaleAbs = { t.scale.x,t.scale.y,1.f };
-                //if (reg.Has_Component<RenderComponent>(selectedEntity))
-                //{
-                //    auto& r = reg.Get_Component<RenderComponent>(selectedEntity);
-
-                //    if (r.GetRenderType() == RT_IMAGE)
-                //    {
-                //        auto& sprite = r.GetSprite();
-                //        Vec2 cur = sprite.Get_Scale();
-                //        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
-                //    }
-                //    else if (r.GetRenderType() == RT_SPRITESHEET)
-                //    {
-                //        auto& sprite = r.GetSpriteSheet().Sprite();
-                //        Vec2 cur = sprite.Get_Scale();
-                //        sprite.Set_Size({ cur.x * scaleDelta.x, cur.y * scaleDelta.y });
-                //    }
-                //    else if (r.GetRenderType() == RT_SHAPE)
-                //    {
-                //        auto& shape = r.GetShape();
-                //        shape.dimensions.x *= scaleDelta.x;
-                //        shape.dimensions.y *= scaleDelta.y;
-                //    }
-                //}
-
+                //scale
                 t.scale.x = scaleAbs.x;
                 t.scale.y = scaleAbs.y;
 
-                // Collider sync
+                //collider nid to sync
                 if (reg.Has_Component<ColliderComponent>(selectedEntity))
                 {
                     auto& col = reg.Get_Component<ColliderComponent>(selectedEntity);
@@ -2314,14 +2296,11 @@ void ImGuiSystem::Update(float dt)
                 }
             }
 
-            // -------------------------------------------------------
-            // 6. UNDO: EndModify (first frame gizmo stops)
-            // -------------------------------------------------------
             if (!isUsingNow && wasGizmoUsing)
             {
                 UndoSystem::Get().EndModify(selectedEntity, t);
             }
-
+            //track prev frame state
             wasGizmoUsing = isUsingNow;
         }
 
@@ -2331,18 +2310,20 @@ void ImGuiSystem::Update(float dt)
         {
             if (!ImGuizmo::IsUsing())
             {
-                // Convert mouse position to world position
+                // mouse position to world position
                 ImVec2 mousePos = ImGui::GetMousePos();
 
                 ImVec2 imgMin = cursor;
                 ImVec2 imgMax = ImVec2(cursor.x + newWidth, cursor.y + newHeight);
 
-                if (mousePos.x >= imgMin.x && mousePos.x <= imgMax.x &&
-                    mousePos.y >= imgMin.y && mousePos.y <= imgMax.y)
+                //if the mouse is actually inside the scene preview rectangle
+                if (mousePos.x >= imgMin.x && mousePos.x <= imgMax.x && mousePos.y >= imgMin.y && mousePos.y <= imgMax.y)
                 {
+                    //conversion again
                     float u = (mousePos.x - imgMin.x) / (imgMax.x - imgMin.x);
                     float v = (mousePos.y - imgMin.y) / (imgMax.y - imgMin.y);
 
+                    //imgui top left so converttt
                     float ndcX = u * 2.0f - 1.0f;
                     float ndcY = (1.0f - v) * 2.0f - 1.0f;
 
@@ -3728,13 +3709,14 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
         if (ImGui::BeginTabItem("Audio"))
         {
+            //storing audio assets
             static std::unordered_map<std::string, AudioAsset> audioList;
             auto& all = audioList;
 
-
+            //refresh each frame when add/removed
             audioList = AudioCache::GetAllAssets();
 
-            // categories
+            // cats
             std::vector<std::string> musicList;
             std::vector<std::string> sfxList;
             std::vector<std::string> uiList;
@@ -3755,7 +3737,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 {
                     const AudioAsset& asset = all[name];
 
-                    ImGui::PushID(name.c_str());
+                    ImGui::PushID(name.c_str()); //unique ID
 
                     // Title
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 0.6f, 1));
@@ -3940,17 +3922,18 @@ void ImGuiSystem::ShowAssetPreviewWindow()
         }
 
 
-
-
         ImGui::EndTabBar();
+        //other than .wav
         if (g_showAudioErrorPopup)
         {
             ImGui::OpenPopup("Invalid Audio File");
+            //reset so dont ope every frame
             g_showAudioErrorPopup = false;
         }
 
         if (ImGui::BeginPopupModal("Invalid Audio File", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
+            //err msg
             ImGui::TextWrapped("%s", g_audioErrorMessage.c_str());
             ImGui::Separator();
 
@@ -3973,19 +3956,19 @@ void ImGuiSystem::ShowAssetPreviewWindow()
         g_showAudioImportPopup = false;
     }
 
-    if (ImGui::BeginPopupModal("Import Audio File", nullptr,
-        ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("Import Audio File", nullptr,ImGuiWindowFlags_AlwaysAutoResize))
     {
         namespace fs = std::filesystem;
-
-        ImGui::TextWrapped("Import audio file:\n%s",
-            g_pendingAudioSourcePath.c_str());
+        //path of the audio file being imported
+        ImGui::TextWrapped("Import audio file:\n%s", g_pendingAudioSourcePath.c_str());
         ImGui::Separator();
+
+        //catergories dropdown
         const char* categories[] = { "Music", "SFX", "UI" };
         ImGui::Text("Import into category:");
-        ImGui::Combo("##AudioCategory", &g_pendingAudioCategory,
-            categories, IM_ARRAYSIZE(categories));
+        ImGui::Combo("##AudioCategory", &g_pendingAudioCategory, categories, IM_ARRAYSIZE(categories));
 
+        //manifest key
         static char nameBuf[64] = "";
         // prefill name from filename if empty
         if (nameBuf[0] == '\0' && !g_pendingAudioSourcePath.empty())
@@ -3999,9 +3982,12 @@ void ImGuiSystem::ShowAssetPreviewWindow()
         ImGui::TextDisabled("This is the name used in audio_manifest.json");
 
         ImGui::Separator();
+
+
         if (ImGui::Button("Import", ImVec2(120, 0)))
         {
             std::string assetKey = nameBuf;
+            // prevent empty asset names
             if (assetKey.empty())
             {
                 std::cout << "[AudioEditor] Name cannot be empty.\n";
@@ -4010,7 +3996,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
             {
                 try
                 {
-                    // determine folders
+                    //folders
                     std::string catKey;
                     std::string groupStr;
                     std::string subdir;
@@ -4037,11 +4023,12 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         break;
                         }
                     }
-
+                    //copy file into folder
                     std::string destDir = "../Assets/audio/" + subdir + "/";
                     if (!fs::exists(destDir))
                         fs::create_directories(destDir);
 
+                    //filename only like image
                     std::string destPath = destDir + fs::path(g_pendingAudioSourcePath).filename().string();
 
                     fs::copy_file(g_pendingAudioSourcePath, destPath, fs::copy_options::overwrite_existing);
@@ -4051,6 +4038,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                     // update manifest
                     nlohmann::json manifest;
                     if (!LoadAudioManifest(manifest))
+                        //if dh make new
                         manifest = nlohmann::json::object();
 
                     if (!manifest.contains(catKey))
@@ -4066,7 +4054,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                     if (SaveAudioManifest(manifest))
                     {
-                        // refresh cache so Audio tab sees it immediately
+                        // refresh cache so Audio tab see immediately
                         AudioCache::Initialize(AUDIO_MANIFEST_PATH);
                     }
                 }
