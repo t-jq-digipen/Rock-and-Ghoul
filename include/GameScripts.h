@@ -148,6 +148,48 @@ namespace PatrolEnemyScript
     }
 }
 
+namespace MainMenuMover {
+
+
+    inline void Start(Entity e)
+    {
+        std::cout << "[MainMenuMover] start\n";
+        if (!Registry::Get().Has_Component<TransformComponent>(e) || !Registry::Get().Has_Component<Movement::MovementComponent>(e)) return;
+        Movement::MovementComponent& move = Registry::Get().Get_Component<Movement::MovementComponent>(e);
+
+        move.SetMovementDirection({ -1.f,1.f });
+        move.SetIsMoving(true);
+
+    }
+
+    inline void Update(Entity e, float)
+    {
+        Vec2 min{ 200.f, -700.f };
+        Vec2 max{ 1720.f, 1780.f };
+        Registry& reg = Registry::Get();
+        if (!reg.Has_Component<TransformComponent>(e) || !reg.Has_Component<Movement::MovementComponent>(e)) return;
+        TransformComponent& transform = Registry::Get().Get_Component<TransformComponent>(e);
+        Movement::MovementComponent& move = Registry::Get().Get_Component<Movement::MovementComponent>(e);
+
+        Vec2 movedir = move.GetMovementDirection();
+
+        Vec2 pos = transform.pos;
+
+        if (pos.x <= min.x && movedir.x < 0) movedir.x = 1.f;
+        if (pos.x >= max.x && movedir.x > 0) movedir.x = -1.f;
+
+        if (pos.y <= min.y && movedir.y < 0) movedir.y = 1.f;
+        if (pos.y >= max.y && movedir.y > 0) movedir.y = -1.f;
+
+        move.SetMovementDirection(movedir);
+    }
+
+    inline void End(Entity) {
+        std::cout << "[MainMenuMover] ended\n";
+    }
+
+}
+
 
 
 
@@ -161,6 +203,14 @@ inline void RegisterAllGameScripts()
 
     // Register Behaviour
     {
+
+        //// mover
+        //BehaviourFCT move;
+        //move.Init = [](Entity e) { MainMenuMover::Start(e); };
+        //move.Update = [](Entity e, float dt) { MainMenuMover::Update(e, dt); };
+        //move.End = [](Entity e) { MainMenuMover::End(e); };
+        //logicSys.RegisterScript("Movey", move, ScriptID::MAINMENU_BG);
+
         BehaviourFCT ghoul;
         //function that takes an Entity e calls GhoulScript::Start(e)
         ghoul.Init = [](Entity e) { GhoulScript::Start(e); };
