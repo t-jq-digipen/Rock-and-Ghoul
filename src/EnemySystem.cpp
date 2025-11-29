@@ -337,7 +337,7 @@ void EnemySystem::Initialize()
 	});
 }
 
-void EnemySystem::Update(float)
+void EnemySystem::Update(float dt)
 {
 	SceneManager& sm = SceneManager::Get();
 	// check if game paused

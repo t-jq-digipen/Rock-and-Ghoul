@@ -122,9 +122,9 @@ void CollisionLayerManager::SaveCollisionSettings() {
         for (uint32_t i = 0; i < 32; ++i) {
             uint32_t bit = 1 << i;
             if (maskBit & bit) {
-                std::string layerName = CollisionLayerManager::Get().GetLayerName(bit);
-                if (!layerName.empty()) {
-                    maskNames.push_back(layerName);
+                std::string name = CollisionLayerManager::Get().GetLayerName(bit);
+                if (!name.empty()) {
+                    maskNames.push_back(name);
                 }
             }
         }

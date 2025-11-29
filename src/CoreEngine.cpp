@@ -201,7 +201,7 @@ void CoreEngine::Initialize()
 void CoreEngine::Run()
 {
     std::cout << "EngRun\n";
-    //FrameRateController frameRate(60);
+    FrameRateController frameRate(60);
     SceneManager& sm = SceneManager::Get();
     double lastTitleUpdate = glfwGetTime();
     int    frames = 0;
@@ -217,6 +217,8 @@ void CoreEngine::Run()
         float fixedDt = static_cast<float>(frameRate.GetFixedDeltaTime());
         int   numSteps = frameRate.GetCurrentNumberOfSteps();
 
+        
+        SceneManager& sm = SceneManager::Get();
         sm.Update(dt, fixedDt, numSteps);
 
         // expose fixed dt to scripts / systems that still read g_dt

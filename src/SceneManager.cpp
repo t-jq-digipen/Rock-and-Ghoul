@@ -25,7 +25,7 @@ void SceneManager::QueueLoadScene(const std::string& path)
 {
     pendingScene = path;
 }
-void SceneManager::Update(float dt, float, int numSteps)
+void SceneManager::Update(float dt, float fixedDt, int numSteps)
 {
     // Only load scenes at SAFE time (start of frame)
     if (!pendingScene.empty())

@@ -3,7 +3,6 @@
         "../Assets/MainMenu_Background.JPG",
         "../Assets/MainMenu_Rock&Ghoul.PNG"
     ],
-    "bgmAssetName": "main_menu",
     "cameraSpawn": [
         0.0,
         0.0
@@ -26,13 +25,11 @@
                     1650.0,
                     550.0
                 ],
-                "renderData": "{\"data\":\"{\\\"ButtonShape\\\":\\\"Rounded\\\",\\\"Color\\\":[0.0784313753247261,0.7137255072593689,0.7490196228027344]}\",\"type\":\"shape\"}",
                 "shape": "Rounded",
                 "size": [
                     300.0,
                     100.0
-                ],
-                "soundType": 0
+                ]
             },
             {
                 "ID": 2,
@@ -47,13 +44,11 @@
                     1650.0,
                     350.0
                 ],
-                "renderData": "{\"data\":\"{\\\"ButtonShape\\\":\\\"Rounded\\\",\\\"Color\\\":[0.0784313753247261,0.7137255072593689,0.7490196228027344]}\",\"type\":\"shape\"}",
                 "shape": "Rounded",
                 "size": [
                     300.0,
                     100.0
-                ],
-                "soundType": 0
+                ]
             },
             {
                 "ID": 3,
@@ -68,19 +63,20 @@
                     1650.0,
                     150.0
                 ],
-                "renderData": "{\"data\":\"{\\\"ButtonShape\\\":\\\"Rounded\\\",\\\"Color\\\":[0.0784313753247261,0.7137255072593689,0.7490196228027344]}\",\"type\":\"shape\"}",
                 "shape": "Rounded",
                 "size": [
                     300.0,
                     100.0
-                ],
-                "soundType": 0
+                ]
             }
         ],
-        "dialogues": [],
-        "textboxes": []
+        "textboxes": [
+        ],
+        "dialogues": [
+        ]
     },
     "sceneName": "MainMenu",
+    "bgmAssetName": "main_menu",
     "sceneType": 0,
     "worldMax": [
         1920.0,

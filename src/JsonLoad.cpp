@@ -612,9 +612,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"label", btn.label},
             {"pos", {btn.pos.x, btn.pos.y}},
             {"size", {btn.size.x, btn.size.y}},
-            //{"color", {btn.color.r, btn.color.g, btn.color.b}},
-            {"renderData", btn.renderData},
-            //{"shape", btn.shape},
+            {"color", {btn.color.r, btn.color.g, btn.color.b}},
+            {"shape", btn.shape},
             {"action", btn.action},
             {"soundType", btn.soundType }
             });
@@ -698,12 +697,8 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
             b.label = btn["label"];
             b.pos = { btn["pos"][0], btn["pos"][1] };
             b.size = { btn["size"][0], btn["size"][1] };
-            //b.color = { btn["color"][0], btn["color"][1], btn["color"][2] };
-            if (btn.contains("renderData"))
-            {
-                b.renderData = btn["renderData"];
-            }
-            //b.shape = btn["shape"];
+            b.color = { btn["color"][0], btn["color"][1], btn["color"][2] };
+            b.shape = btn["shape"];
             b.action = btn.value("action", "");
             b.soundType = btn.value("soundType", 0);
             s.guiButtons.push_back(b);
@@ -869,9 +864,8 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sb.label = b.label;
             sb.pos = b.basePos;
             sb.size = b.baseSize;
-            //sb.color = b.color;
-            sb.renderData = b.m_renderData.Serialize();
-            //sb.shape = ButtonShapeToString(b.shape);
+            sb.color = b.color;
+            sb.shape = ButtonShapeToString(b.shape);
             sb.action = ButtonActionToString(b.action); 
             sb.soundType = static_cast<int>(b.soundType);
             scene.guiButtons.push_back(sb);
@@ -964,7 +958,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         // Load entities
         for (const auto& savedEntity : scene.entities) {
-            Registry::Get().Load_Entity(savedEntity);
+            Entity e = Registry::Get().Load_Entity(savedEntity);
         }
 
         // Load backgrounds
@@ -989,12 +983,8 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.basePos = b.pos;
             cfg.size = b.size;
             cfg.baseSize = b.size;
-            //cfg.color = b.color;
-            if (!b.renderData.empty())
-            {
-                cfg.m_renderData = UI_RenderData::DeSerialize(b.renderData);
-            }
-            //cfg.shape = StringToButtonShape(b.shape);
+            cfg.color = b.color;
+            cfg.shape = StringToButtonShape(b.shape);
             cfg.action = StringToButtonAction(b.action);
             cfg.soundType = static_cast<AudioSystem::ButtonType>(b.soundType);
 
@@ -1166,7 +1156,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             GuiSystem::Get().AddDialogue(cfg);
         }
 
-        //SavedScene::SavedCamera& camSet = scene.camSettings;
+        SavedScene::SavedCamera& camSet = scene.camSettings;
 
         // Camera settings
         Camera& cam = Camera::GetInstance();
@@ -1298,8 +1288,8 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
 
         return e;
     }
-    catch (const std::exception& e) {
-        std::cerr << "Error loading entity from file: " << filepath << e.what() << std::endl;
+    catch (const std::exception& ex) {
+        std::cerr << "Error loading entity from file: " << filepath << std::endl;
         return 0;
     }
 }

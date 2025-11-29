@@ -30,7 +30,6 @@
 #include <functional>
 #include <vector>
 #include <string>
-#include "DataDefs.h"
 
 enum class ButtonShape 
 {
@@ -61,278 +60,16 @@ enum class SelectedType
     Dialogue
 };
 
-enum class UIRenderType
-{
-    None,
-    Shape,
-    CustomQuad,
-    Image,
-    ImageSheet
-};
-
-class IUIRender
-{
-public:
-    virtual ~IUIRender() = default;
-
-    virtual std::string Serialize() const = 0;
-
-    virtual UIRenderType GetType() const = 0;
-
-    virtual std::unique_ptr<IUIRender> Clone() const = 0;
-};
-
-struct UIShapeRender : public IUIRender
-{
-    ButtonShape shape = ButtonShape::Rectangle;
-    Colour3 color{ 0.3f, 0.3f, 0.3f };
-
-    std::string Serialize() const override {
-        using json = nlohmann::json;
-        json j;
-        std::string shapename = "Rectangle";
-        if (shape == ButtonShape::Rounded) { shapename = "Rounded"; }
-        else if (shape == ButtonShape::Circle) { shapename = "Circle"; }
-        j["ButtonShape"] = shapename;
-        j["Color"] = { color.r, color.g, color.b };
-        return j.dump();
-    }
-
-    UIRenderType GetType() const { return UIRenderType::Shape; }
-
-    std::unique_ptr<IUIRender> Clone() const override {
-        return std::make_unique<UIShapeRender>(*this);
-    }
-
-    static UIShapeRender DeSerialize(const std::string& data) {
-
-        using json = nlohmann::json;
-
-        json j = json::parse(data);
-
-        UIShapeRender ret;
-
-        ret.shape = ButtonShape::Rectangle;
-        if (j["ButtonShape"] == "Circle") { ret.shape = ButtonShape::Circle; }
-        if (j["ButtonShape"] == "Rounded") { ret.shape = ButtonShape::Rounded; }
-        ret.color = { j["Color"][0], j["Color"][1], j["Color"][2] };
-
-        return ret;
-    }
-
-};
-
-struct UICustomQuadRender : public IUIRender
-{
-    Vec2 v0{0.f,0.f}, v1{ 0.f,0.f }, v2{ 0.f,0.f }, v3{ 0.f,0.f };
-    Colour3 color{ 0.3f, 0.3f, 0.3f };
-
-    std::string Serialize() const override {
-        using json = nlohmann::json;
-
-        json j;
-        j["v0"] = { v0.x, v0.y };
-        j["v1"] = { v1.x, v1.y };
-        j["v2"] = { v2.x, v2.y };
-        j["v3"] = { v3.x, v3.y };
-
-        j["color"] = { color.r, color.g, color.b };
-
-        return j.dump();
-    }
-
-    UIRenderType GetType() const { return UIRenderType::CustomQuad; }
-
-    std::unique_ptr<IUIRender> Clone() const override {
-        return std::make_unique<UICustomQuadRender>(*this);
-    }
-
-    static UICustomQuadRender DeSerialize(const std::string& data) {
-        using json = nlohmann::json;
-        json j = json::parse(data);
-
-        UICustomQuadRender ret;
-
-        ret.v0 = { j["v0"][0], j["v0"][1] };
-        ret.v1 = { j["v1"][0], j["v1"][1] };
-        ret.v2 = { j["v2"][0], j["v2"][1] };
-        ret.v3 = { j["v3"][0], j["v3"][1] };
-
-        ret.color = { j["color"][0],j["color"][1],j["color"][2] } ;
-
-        return ret;
-    }
-
-};
-
-struct UIImageRender : public IUIRender
-{
-    Image m_image;
-
-    std::string Serialize() const override {
-        using json = nlohmann::json;
-        json j;
-        j["texturePath"] = Render::GetInstance().Get_TexturePath(m_image.textureID);
-        return j.dump();
-    }
-
-    UIRenderType GetType() const { return UIRenderType::Image; }
-
-    std::unique_ptr<IUIRender> Clone() const override {
-        return std::make_unique<UIImageRender>(*this);
-    }
-
-    static UIImageRender DeSerialize(const std::string& data) {
-        using json = nlohmann::json;
-        json j = json::parse(data);
-
-        UIImageRender ret;
-
-        ret.m_image = CreateImage(j["texturePath"]);
-
-        return ret;
-    }
-};
-
-struct UIImageSheetRender : public IUIRender
-{
-    Image m_image;
-
-    struct UVs {
-        float u0, v0, u1, v1;
-    };
-
-    struct FrameIndex {
-        unsigned int curr_row = 0;
-        unsigned int curr_col = 0;
-    };
-
-    std::unordered_map<unsigned int, FrameIndex> frames;
-
-    unsigned int current_frame = 0;
-    unsigned int total_rows = 1;
-    unsigned int total_cols = 1;
-
-    FrameIndex frame_index;
-
-
-    std::string Serialize() const override {
-        using json = nlohmann::json;
-        json j;
-
-        j["texturePath"] = Render::GetInstance().Get_TexturePath(m_image.textureID);
-
-        j["currFrame"]  = current_frame;
-
-        j["currRow"]    = frame_index.curr_row;
-        j["currCol"]    = frame_index.curr_col;
-
-        json framesJson = json::object();
-        for (auto& [state, index] : frames)
-        {
-            framesJson[std::to_string(state)] = {
-                {"row", index.curr_row},
-                {"col", index.curr_col}
-            };
-        }
-
-        j["frames"] = framesJson;
-
-        return j.dump();
-    }
-
-    UIRenderType GetType() const { return UIRenderType::ImageSheet; }
-
-    std::unique_ptr<IUIRender> Clone() const override {
-        return std::make_unique<UIImageSheetRender>(*this);
-    }
-
-    static UIImageSheetRender DeSerialize(const std::string& data) {
-        using json = nlohmann::json;
-        json j = json::parse(data);
-
-        UIImageSheetRender ret;
-
-        ret.m_image = CreateImage(j["texturePath"]);
-        
-        ret.current_frame        = j["currFrame"];
-
-        ret.frame_index.curr_row = j["currRow"];
-        ret.frame_index.curr_col = j["currCol"];
-
-        if (j.contains("frames"))
-        {
-            for (auto& [state, frames] : j["frames"].items())
-            {
-                FrameIndex frameIDX;
-                frameIDX.curr_row = frames["row"];
-                frameIDX.curr_col = frames["col"];
-
-                ret.frames[std::stoi(state)] = frameIDX;
-            }
-        }
-        else
-        {
-            ret.frames[0] = { 0,0 };
-        }
-
-        return ret;
-    }
-
-};
-
-struct UI_RenderData {
-    std::unique_ptr<IUIRender> data = nullptr;
-
-    UI_RenderData() : data{ nullptr } {}
-
-    UI_RenderData(const UI_RenderData& rhs) {
-        data = nullptr;
-        if (rhs.data) data = rhs.data->Clone();
-    }
-
-    UI_RenderData& operator=(const UI_RenderData& rhs) {
-        data = nullptr;
-        if (rhs.data) data = rhs.data->Clone();
-
-        return *this;
-    }
-
-    void SetRenderType(UIRenderType type);
-
-    UIRenderType GetRenderType() const;
-
-    UIShapeRender& GetShapeData();
-    const UIShapeRender& GetShapeData() const;
-
-    UICustomQuadRender& GetQuadData();
-    const UICustomQuadRender& GetQuadData() const;
-
-    UIImageRender& GetImageData();
-    const UIImageRender& GetImageData() const;
-
-    UIImageSheetRender& GetImageSheetData();
-    const UIImageSheetRender& GetImageSheetData() const;
-
-    std::string Serialize() const;
-
-    static UI_RenderData DeSerialize(const std::string& data);
-
-};
-
 struct ButtonConfig {
     std::string label;
     Vec2 pos;
     Vec2 size{ 200.f, 100.f };
-    //Colour3 color{ 0.3f, 0.3f, 0.3f };
-
-    UI_RenderData m_renderData{};
-
+    Colour3 color{ 0.3f, 0.3f, 0.3f };
     float textScale{ 1.f };
 
     std::function<void()> onClick = nullptr;
     AudioSystem::ButtonType soundType = AudioSystem::ButtonType::PLAY;
-    //ButtonShape shape = ButtonShape::Rectangle;
+    ButtonShape shape = ButtonShape::Rectangle;
     ButtonAction action = ButtonAction::None;
 
     // baseline (screen-space anchors)
@@ -341,9 +78,6 @@ struct ButtonConfig {
     float baseTextScale{ 1.f };
     bool isVisible = true;
     int ID;
-
-
-    void DrawButton(bool hovered);
 };
 
 struct TextBoxConfig {
