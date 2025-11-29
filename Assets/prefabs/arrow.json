@@ -1,6 +1,6 @@
 {
     "components": {
-        "Collider": "{\"aabb_dimX\":1.0,\"aabb_dimY\":1.0,\"aabb_maxX\":1729.85107421875,\"aabb_maxY\":288.47247314453125,\"aabb_minX\":1728.85107421875,\"aabb_minY\":287.47247314453125,\"circle_posX\":1729.35107421875,\"circle_posY\":287.97247314453125,\"circle_rad\":0.5,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Projectile\",\"triggerEvent\":\"\"}",
+        "Collider": "{\"aabb_dimX\":1.0,\"aabb_dimY\":1.0,\"aabb_maxX\":1729.85107421875,\"aabb_maxY\":288.47247314453125,\"aabb_minX\":1728.85107421875,\"aabb_minY\":287.47247314453125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Projectile\",\"triggerEvent\":\"\"}",
         "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
         "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/right.png\\\"}\",\"renderLayer\":1,\"renderType\":1}",
         "Tag": "{\"tagID\":2}",

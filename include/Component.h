@@ -134,11 +134,11 @@ struct TransformComponent {
 	Editor::ComponentData EditorData() {
 
 		Editor::ComponentData ret("Transform");
-		ret.Add_Data("posX",		{ Editor::Widget_Float{ &pos.x , true, 0.f, 1920.f } });
-		ret.Add_Data("posY",		{ Editor::Widget_Float{ &pos.y , true, 0.f, 1080.f } });
-		ret.Add_Data("scaleX",		{ Editor::Widget_Float{ &scale.x , true, 0.1f, 50.f } });
-		ret.Add_Data("scaleY",		{ Editor::Widget_Float{ &scale.y , true, 0.1f, 50.f } });
-		ret.Add_Data("Rotation",	{ Editor::Widget_Float{ &rot , true, -360.f, 360.f } });
+		ret.Add_Data("posX",		{ Editor::Widget_Float{ &pos.x } });
+		ret.Add_Data("posY",		{ Editor::Widget_Float{ &pos.y } });
+		ret.Add_Data("scaleX",		{ Editor::Widget_Float{ &scale.x } });
+		ret.Add_Data("scaleY",		{ Editor::Widget_Float{ &scale.y } });
+		ret.Add_Data("Rotation",	{ Editor::Widget_Float{ &rot } });
 
 		return ret;
 	}
@@ -280,7 +280,6 @@ struct TagComponent {
 struct ColliderComponent {
 	// Collision geometry
 	AABB aabbhitbox;
-	Circle circlehitbox;
 
 	// Collision filtering (names for serialization, bits for runtime)
 	//std::string layerName = "";                  // Layer name (for save/load)
@@ -295,26 +294,30 @@ struct ColliderComponent {
 
 	ColliderComponent()
 		: aabbhitbox{{0.f, 0.f}, {0.f, 0.f}, {0.f, 0.f}}
-		, circlehitbox{{0.f, 0.f}, 0.f}
 		, layerBit(0)
 //		, maskBit(0)
 		, isTrigger(false)
 		, isActive(true)
 	{}
 
-	ColliderComponent(AABB const& aabb, Circle const& circle, bool active = true)
+	ColliderComponent(AABB const& aabb, bool active = true)
 		: aabbhitbox(aabb)
-		, circlehitbox(circle)
 		, layerBit(0)
 //		, maskBit(0)
 		, isTrigger(false)
 		, isActive(active)
 	{}
 
-	// Hitbox updates
-	void UpdateHitboxes(Vec2 const& pos) {
-		Update_AABB(aabbhitbox, pos);
-		circlehitbox.pos = pos;
+	// Update hitboxes with scale
+	void UpdateHitboxes(Vec2 const& pos, Vec2 const& scale) {
+		// Apply scale to AABB dimensions
+		float scaledWidth = aabbhitbox.dim.x * scale.x;
+		float scaledHeight = aabbhitbox.dim.y * scale.y;
+
+		aabbhitbox.min.x = pos.x - scaledWidth / 2.f;
+		aabbhitbox.min.y = pos.y - scaledHeight / 2.f;
+		aabbhitbox.max.x = pos.x + scaledWidth / 2.f;
+		aabbhitbox.max.y = pos.y + scaledHeight / 2.f;
 	}
 
 	// Layer management (implementations in Component.cpp or inline)
@@ -328,12 +331,9 @@ struct ColliderComponent {
 	bool IsActive() const { return isActive; }
 
 	const AABB& Get_AABB() const { return aabbhitbox; }
-	const Circle& Get_Circle() const { return circlehitbox; }
 	AABB& Get_AABB() { return aabbhitbox; }
-	Circle& Get_Circle() { return circlehitbox; }
 
 	void Set_AABB(AABB const& newAABB) { aabbhitbox = newAABB; }
-	void Set_Circle(Circle const& newCircle) { circlehitbox = newCircle; }
 
 	// String-based layer setters (need CollisionManager)
 	void SetLayer(const std::string& name);
@@ -345,11 +345,10 @@ struct ColliderComponent {
 
 	Editor::ComponentData EditorData() {
 		Editor::ComponentData ret("Collider");
-		ret.Add_Data("AABB Min X", Editor::Widget_Float{&aabbhitbox.min.x});
-		ret.Add_Data("AABB Min Y", Editor::Widget_Float{&aabbhitbox.min.y});
+		//ret.Add_Data("AABB Min X", Editor::Widget_Float{&aabbhitbox.min.x});
+		//ret.Add_Data("AABB Min Y", Editor::Widget_Float{&aabbhitbox.min.y});
 		ret.Add_Data("AABB Dim X", Editor::Widget_Float{&aabbhitbox.dim.x});
 		ret.Add_Data("AABB Dim Y", Editor::Widget_Float{&aabbhitbox.dim.y});
-		ret.Add_Data("Circle Radius", Editor::Widget_Float{&circlehitbox.rad});
 		ret.Add_Data("Is Trigger", Editor::Widget_Checkmark{&isTrigger});
 		ret.Add_Data("Is Active", Editor::Widget_Checkmark{&isActive});
 		return ret;

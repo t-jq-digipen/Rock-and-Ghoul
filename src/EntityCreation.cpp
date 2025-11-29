@@ -3,7 +3,7 @@
  * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
  * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
  * @co-author   Yasmin Tazi         | yasmin.t@digipen.edu
- * @date        01 OCT 2025
+ * @date        28 NOV 2025
  *
  * @brief
  *
@@ -141,10 +141,9 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<TransformComponent>(player, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
-            Circle circle = { {0, 0}, 200.f };
             Registry::Get().Add_Component<Physics::PhysicsComponent>(player, Physics::PhysicsComponent(0.015f, 500.f, false));
 
-            ColliderComponent collider(aabb, circle, true);
+            ColliderComponent collider(aabb, true);
             collider.SetLayer("Player");
             //collider.SetMask({"Enemy", "Projectile", "Wall"});
             Registry::Get().Add_Component<ColliderComponent>(player, collider);
@@ -209,10 +208,9 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<TransformComponent>(waffle, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
-            Circle circle = { {0, 0}, 200.f };
             Registry::Get().Add_Component<Physics::PhysicsComponent>(waffle, Physics::PhysicsComponent(0.015f, 500.f, false));
 
-            ColliderComponent waffleCollider(aabb, circle, true);
+            ColliderComponent waffleCollider(aabb, true);
             waffleCollider.SetLayer("Player");
             //waffleCollider.SetMask({"Enemy", "Projectile", "Wall"});
             Registry::Get().Add_Component<ColliderComponent>(waffle, waffleCollider);
@@ -261,10 +259,9 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<TransformComponent>(rect, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
-            Circle circle = { {0, 0}, 200.f };
             Registry::Get().Add_Component<Physics::PhysicsComponent>(rect, Physics::PhysicsComponent(0.015f, 500.f, false));
 
-            ColliderComponent rectCollider(aabb, circle, true);
+            ColliderComponent rectCollider(aabb, true);
             rectCollider.SetLayer("Player");
             //rectCollider.SetMask({"Enemy", "Projectile", "Wall"});
             Registry::Get().Add_Component<ColliderComponent>(rect, rectCollider);
@@ -301,10 +298,9 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<TransformComponent>(circle_ent, TransformComponent{ {0, 0}, {100.f, 100.f} });
 
             AABB aabb = Create_AABB({ 0, 0 }, { 200.f, 200.f });
-            Circle circle = { {0, 0}, 100.f };
             Registry::Get().Add_Component<Physics::PhysicsComponent>(circle_ent, Physics::PhysicsComponent(0.015f, 500.f, false));
 
-            ColliderComponent circleCollider(aabb, circle, true);
+            ColliderComponent circleCollider(aabb, true);
             circleCollider.SetLayer("Player");
             //circleCollider.SetMask({"Enemy", "Projectile", "Wall"});
             Registry::Get().Add_Component<ColliderComponent>(circle_ent, circleCollider);
@@ -342,9 +338,8 @@ Entity Create_Wall(float x, float y, float width, float height) {
     //Registry::Get().Add_Component<ShapeComponent>(wall, ShapeComponent{ SHAPE_RECTANGLE });
     Registry::Get().Add_Component<TransformComponent>(wall, TransformComponent{ {x, y}, {width, height} });
     AABB aabb = Create_AABB({ x, y }, { width, height });
-    Circle circle = { {x, y}, 0.0f }; // zero radius
     Registry::Get().Add_Component<Physics::PhysicsComponent>(wall, Physics::PhysicsComponent(0.0f, 500.f, true));
-    Registry::Get().Add_Component<ColliderComponent>(wall, ColliderComponent(aabb, circle, true));
+    Registry::Get().Add_Component<ColliderComponent>(wall, ColliderComponent(aabb, true));
 
     Registry::Get().Add_Component<TagComponent>(wall, TagComponent{ T_WALL });
     return wall;
