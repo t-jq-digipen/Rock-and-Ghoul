@@ -151,10 +151,10 @@ void Render::Init() {
         "../Assets/fragmentSrc.frag"
     );
 
-    InstanceShaderProgram = CreateProgramFromFiles(
+    /*InstanceShaderProgram = CreateProgramFromFiles(
         "../Assets/InstanceVertexSrc.vert",  // try use a new vertex shader for instancing , cus it needs per-instance attributes
         "../Assets/fragmentSrc.frag"
-    );
+    );*/
 
 
     glEnable(GL_BLEND);
