@@ -1,7 +1,7 @@
 /*!
 @file       fragmentSrc.frag
 @author   kervinguancheng.ong@digipen.edu
-@date    	  02/10/2025
+@date    	  28/11/2025
 
 This file implements the fragment shader.
 
@@ -24,6 +24,9 @@ uniform vec3 uTextColor;    // text color
 //faded
 uniform float uAlpha;
 
+//brightness (use 0 for normal, 1 for full white)
+uniform float uBrightness;
+
 in vec2 TexCoord;
 
 void main() {
@@ -35,7 +38,16 @@ void main() {
     }
     else if (uUseTexture) {
     	vec4 texColor = texture(uTexture, TexCoord);
-    	FragColor = vec4(texColor.rgb * (uColor * 0.5 + 0.5), texColor.a);
+
+	//tinting
+	vec3 tinted = texColor.rgb * (uColor * 0.5 + 0.5);
+	
+	//gonna blend towards white through brightness
+	tinted = mix(tinted, vec3(1.0), uBrightness);
+
+	//final color
+    	FragColor = vec4(tinted, texColor.a);
+	
     }
     else{
         FragColor = vec4(uColor, uAlpha);
