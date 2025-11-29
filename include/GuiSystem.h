@@ -335,6 +335,9 @@ struct ButtonConfig {
     //ButtonShape shape = ButtonShape::Rectangle;
     ButtonAction action = ButtonAction::None;
 
+    std::string actionName{"[]"};
+    json actionParams{ "[]" };
+
     // baseline (screen-space anchors)
     Vec2 basePos;         // base position for scaling (1920x1080)
     Vec2 baseSize;
@@ -433,11 +436,27 @@ public:
     // Dialogue helpers
     void SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartTyping);
 
+    // Action registry
+    // make actions a parameterized function instead to take string,
+    // can save params into a json c:
+    using ActionFunction = std::function<void(const json&)>;
+
+    void RegisterAction(const std::string& name, ActionFunction func);
+
+    bool CallAction(const std::string& name, const nlohmann::json& params);
+
+    std::unordered_map<std::string, ActionFunction>& GetActionMap() { return actionRegistry; }
+
+
 private:
 
     std::vector<ButtonConfig> buttons;
     std::vector<TextBoxConfig> textboxes;
     std::vector<DialogueConfig> dialogues;
+
+
+    // a registry to hold functions, keyed by function name
+    std::unordered_map<std::string, ActionFunction> actionRegistry;
 
     struct DrawItem
     {
