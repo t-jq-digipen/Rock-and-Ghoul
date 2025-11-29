@@ -17,6 +17,8 @@
 #include "Debug.h"
 #include <unordered_map>
 #include "glapp.h"
+#include "Registry.h"
+#include "Physics.h"
 static std::unordered_map<Entity, Vec2> lastPos;
 static std::unordered_map<Entity, Vec2> smoothVel;
 void DebugDraw::DrawAABB(const AABB& box, Render& renderer) {
@@ -67,8 +69,10 @@ void DebugDraw::DrawVelocity(Entity e, const TransformComponent& t, Render& rend
         smoothVel[e] = { 0.f, 0.f };
         return;
     }
-    // compute delta velocity
+    if (dt < 0.000001f) dt = 0.016f; // avoid division by 0
     Vec2 rawVel = (pos - lastPos[e]) / dt;
+
+
     lastPos[e] = pos;
 
     // smooth
@@ -79,6 +83,7 @@ void DebugDraw::DrawVelocity(Entity e, const TransformComponent& t, Render& rend
     Vec2 end = pos + smoothVel[e] * scale;
 
     renderer.DrawLine(pos, end, { 1.f, 0.f, 0.f });
+
 }
 
 void DebugDraw::DrawSpatialGrid(SpatialGrid* grid, Render& renderer) {
