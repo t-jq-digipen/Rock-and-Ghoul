@@ -32,11 +32,11 @@
 #include <string>
 #include "DataDefs.h"
 
-enum class ButtonShape 
+enum class ButtonShape
 {
-    Rectangle, 
-    Rounded, 
-    Circle 
+    Rectangle,
+    Rounded,
+    Circle
 };
 
 enum class ButtonAction
@@ -124,7 +124,7 @@ struct UIShapeRender : public IUIRender
 
 struct UICustomQuadRender : public IUIRender
 {
-    Vec2 v0{0.f,0.f}, v1{ 0.f,0.f }, v2{ 0.f,0.f }, v3{ 0.f,0.f };
+    Vec2 v0{ 0.f,0.f }, v1{ 0.f,0.f }, v2{ 0.f,0.f }, v3{ 0.f,0.f };
     Colour3 color{ 0.3f, 0.3f, 0.3f };
 
     std::string Serialize() const override {
@@ -158,7 +158,7 @@ struct UICustomQuadRender : public IUIRender
         ret.v2 = { j["v2"][0], j["v2"][1] };
         ret.v3 = { j["v3"][0], j["v3"][1] };
 
-        ret.color = { j["color"][0],j["color"][1],j["color"][2] } ;
+        ret.color = { j["color"][0],j["color"][1],j["color"][2] };
 
         return ret;
     }
@@ -222,10 +222,10 @@ struct UIImageSheetRender : public IUIRender
 
         j["texturePath"] = Render::GetInstance().Get_TexturePath(m_image.textureID);
 
-        j["currFrame"]  = current_frame;
+        j["currFrame"] = current_frame;
 
-        j["currRow"]    = frame_index.curr_row;
-        j["currCol"]    = frame_index.curr_col;
+        j["currRow"] = frame_index.curr_row;
+        j["currCol"] = frame_index.curr_col;
 
         json framesJson = json::object();
         for (auto& [state, index] : frames)
@@ -254,8 +254,8 @@ struct UIImageSheetRender : public IUIRender
         UIImageSheetRender ret;
 
         ret.m_image = CreateImage(j["texturePath"]);
-        
-        ret.current_frame        = j["currFrame"];
+
+        ret.current_frame = j["currFrame"];
 
         ret.frame_index.curr_row = j["currRow"];
         ret.frame_index.curr_col = j["currCol"];
@@ -429,7 +429,7 @@ public:
     void ToggleAllTextboxes();
     void ToggleAllDialogues();
     void DrawStateWindow(Render& render);
-    
+
     // Helper to get mouse position if ImGui editor is open
     void GetMouseImgui(Vec2& pos);
 
@@ -447,6 +447,8 @@ public:
 
     std::unordered_map<std::string, ActionFunction>& GetActionMap() { return actionRegistry; }
 
+    // For UI editor (ensure next UI ID is always unique)
+    void ReseedNextUIID();
 
 private:
 

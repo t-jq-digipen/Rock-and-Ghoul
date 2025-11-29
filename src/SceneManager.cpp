@@ -29,7 +29,7 @@ void SceneManager::QueueLoadScene(const std::string& path)
     if (GetTransitionProgress() < 1.f) return;
     pendingScene = path;
 }
-void SceneManager::Update(float dt, float, int numSteps)
+void SceneManager::Update(float dt, float fixedDt, int numSteps)
 {
     
     if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying()) {

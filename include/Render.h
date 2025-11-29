@@ -273,12 +273,12 @@ public:
 
 
     /**
-     * @brief Draws an image at the specified position with rotation applied.
-     * @param image The Image object containing texture data.
-     * @param x The x position of the image's origin.
-     * @param y The y position of the image's origin.
-     * @param angle The rotation angle in radians.
-     */
+        * @brief Draws an image at the specified position with rotation applied.
+        * @param image The Image object containing texture data.
+        * @param x The x position of the image's origin.
+        * @param y The y position of the image's origin.
+        * @param angle The rotation angle in radians.
+        */
     void DrawImageRotated(const Image& image, float x, float y, float w, float h, float rotation = 0.0f, float brightness = 0.f);
 
 

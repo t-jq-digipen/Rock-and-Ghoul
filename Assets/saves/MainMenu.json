@@ -3,7 +3,6 @@
         "../Assets/MainMenu_Background.JPG",
         "../Assets/MainMenu_Rock&Ghoul.PNG"
     ],
-    "bgmAssetName": "main_menu",
     "cameraSpawn": [
         0.0,
         0.0
@@ -87,10 +86,13 @@
                 "soundType": 0
             }
         ],
-        "dialogues": [],
-        "textboxes": []
+        "textboxes": [
+        ],
+        "dialogues": [
+        ]
     },
     "sceneName": "MainMenu",
+    "bgmAssetName": "main_menu",
     "sceneType": 0,
     "worldMax": [
         1920.0,
