@@ -95,6 +95,8 @@ struct SavedScene {
         std::string renderData;
         //std::string shape;
         std::string action;
+        std::string actionName{"{}"};
+        json actionParams{"{}"};
         int soundType = 0; // default to PLAY(0)
     };
     std::vector<SavedButton> guiButtons;

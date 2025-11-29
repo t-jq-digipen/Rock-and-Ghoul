@@ -263,6 +263,28 @@ void GuiSystem::Initialize() {
     textboxes.clear();
     dialogues.clear();
     nextUIID = 1; // start fresh
+
+    // Register button actions
+
+    // Go to another scene!
+    RegisterAction("LoadScene",
+        [](const json& p)
+        {
+            // Go to another scene!
+            if (!p.contains("scene")) { throw std::runtime_error("Button call load scene but params wrong"); }
+            std::string scene = FilePath::SAVES_FOLDER + std::string(p.at("scene")) + ".json";
+            SceneManager::Get().LoadScene(scene);
+            SceneManager::Get().SetTransitionTime(p.at("duration"));
+        });
+
+    // Quit the application :(
+    RegisterAction("Quit",
+        [](const json&)
+        {
+            CoreEngine::GetInstance().Quit();
+        });
+
+
 }
 
 void GuiSystem::AddButton(const ButtonConfig& cfg)
@@ -440,6 +462,7 @@ void GuiSystem::Update(float dt)
                 if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
                     if (audio) audio->PlayButtonSound(cfg.soundType);
                     if (cfg.onClick) cfg.onClick();
+                    if (cfg.actionName != "") CallAction(cfg.actionName, cfg.actionParams);
                 }
 #if 1 //EDITORMACRO
             }
@@ -1516,4 +1539,32 @@ std::vector<GuiSystem::DrawItem> GuiSystem::BuildSortedDrawList() const
         });
 
     return out;
+}
+
+void GuiSystem::RegisterAction(const std::string& name, ActionFunction func) {
+    if (actionRegistry.contains(name)) { std::cerr << "Button function " << name << " already registered...\n"; }
+    actionRegistry[name] = func;
+}
+
+bool GuiSystem::CallAction(const std::string& name, const nlohmann::json& params) {
+    auto it = actionRegistry.find(name);
+
+    if (it == actionRegistry.end()) {
+        std::cerr << "[GuiSystem] Button action '" << name << "' called but not registered!\n";
+        return false;
+    }
+
+    try {
+        it->second(params);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "[GuiSystem] Error calling button action '" << name << "' : " << e.what() << '\n';
+    }
+    catch (...)
+    {
+        std::cerr << "[GuiSystem] Error calling button action '" << name << "' but error unknown :(\n";
+    }
+
+    return true;
 }
