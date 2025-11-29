@@ -142,8 +142,8 @@ namespace Sprite {
 		{
 			dropdown.Add_Option(optname, optval);
 		}
-		ret.Add_Data("TextureIDtest", dropdown);
-		ret.Add_Data("TextureID", Editor::Widget_String{});
+		ret.Add_Data("TextureID", dropdown);
+		//ret.Add_Data("TextureID", Editor::Widget_String{});
 
 		ret.Add_Data("ScaleX", Editor::Widget_Float(&m_scale.x));
 		ret.Add_Data("ScaleY", Editor::Widget_Float(&m_scale.y));

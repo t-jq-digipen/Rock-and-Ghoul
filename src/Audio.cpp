@@ -721,7 +721,7 @@ void AudioManager::UpdateListenerToCamera() {
  * @param dt Delta time in seconds.
  */
 
-void AudioManager::Update(float dt) {
+void AudioManager::Update(float) {
     // Update listener to follow camera every frame
     UpdateListenerToCamera();
 

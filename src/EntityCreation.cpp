@@ -57,36 +57,36 @@ Entity LoadEntity(const std::string& entityName, float x, float y) {
 //Entity Create_Player(float const& x, float const& y) {
 //    return LoadEntity("Player", x, y);
 //}
-Entity Create_Player(float const& x, float const& y) {
-    // Load from Rock.json instead of Player.json (Rock is the actual player entity)
-    return LoadEntity("Rock", x, y);
-}
-Entity Create_Waffle(float const& x, float const& y) {
-    return LoadEntity("Waffle", x, y);
-}
-Entity Create_Ghoul(float const& x, float const& y) {
-    Entity ghoul = LoadEntity("ghoul", x, y);
-
-    // Add behaviour component with the ManfredEnemy script
-    BehaviourComponent bc;
-    bc.AddScript("ManfredEnemy");
-    Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
-
-    return ghoul;
-}
-Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme scheme) {
-    Entity shape = 0;
-    if (shapeType == SHAPE_RECTANGLE) {
-        return LoadEntity("Rectangle", spawnx, spawny);
-    }
-    else if (shapeType == SHAPE_CIRCLE) {
-        return LoadEntity("Circle", spawnx, spawny);
-    }
-
-
-
-    return 0;
-}
+//Entity Create_Player(float const& x, float const& y) {
+//    // Load from Rock.json instead of Player.json (Rock is the actual player entity)
+//    return LoadEntity("Rock", x, y);
+//}
+//Entity Create_Waffle(float const& x, float const& y) {
+//    return LoadEntity("Waffle", x, y);
+//}
+//Entity Create_Ghoul(float const& x, float const& y) {
+//    Entity ghoul = LoadEntity("ghoul", x, y);
+//
+//    // Add behaviour component with the ManfredEnemy script
+//    BehaviourComponent bc;
+//    bc.AddScript("ManfredEnemy");
+//    Registry::Get().Add_Component<BehaviourComponent>(ghoul, bc);
+//
+//    return ghoul;
+//}
+//Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme scheme) {
+//    Entity shape = 0;
+//    if (shapeType == SHAPE_RECTANGLE) {
+//        return LoadEntity("Rectangle", spawnx, spawny);
+//    }
+//    else if (shapeType == SHAPE_CIRCLE) {
+//        return LoadEntity("Circle", spawnx, spawny);
+//    }
+//
+//
+//
+//    return 0;
+//}
 
 /**
  * @brief Generates initial prefab JSON files in Assets/prefabs/.
