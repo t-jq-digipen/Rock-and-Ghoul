@@ -93,6 +93,7 @@ struct SavedScene {
         Vec2 size;
         Colour3 color;
         std::string shape;
+        std::string renderData;
         std::string action;
         int soundType = 0; // default to PLAY(0)
     };

@@ -742,7 +742,7 @@ void Render::DrawImageScaled(const Image& image, float x, float y, float scaleX,
     Draw_SpecImage(image, x, y, w, h, rotation);
 }
 
-void Render::DrawImageRotated(const Image& image, float x, float y, float angleRad) {
+void Render::DrawImageRotated(const Image& image, float x, float y, float w, float h, float angleRad, float brightness) {
     if (!image.IsValid()) {
         return;
     }
@@ -757,8 +757,9 @@ void Render::DrawImageRotated(const Image& image, float x, float y, float angleR
 
     // upload transform
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), x, y);
-    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), (float)image.widthPixels, (float)image.heightPixels);
+    glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), w, h);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), angleRad);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uBrightness"), brightness);
 
     // bind texture + draw
     glActiveTexture(GL_TEXTURE0);
@@ -769,12 +770,14 @@ void Render::DrawImageRotated(const Image& image, float x, float y, float angleR
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
 
+    glUniform1f(glGetUniformLocation(shaderProgram, "uBrightness"), 0.f);
+
     glUseProgram(0);
 }
 
 void Render::DrawImageSub(const Image& Image,
     float x, float y, float w, float h,
-    float u0, float v0, float u1, float v1, float rotation)
+    float u0, float v0, float u1, float v1, float rotation, float brightness)
 {
     glUseProgram(shaderProgram);
 
@@ -806,6 +809,7 @@ void Render::DrawImageSub(const Image& Image,
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseSubImage"), true); //tell shader i want to use sub image mode
     glUniform4f(glGetUniformLocation(shaderProgram, "uUVRect"), u0n, v0n, u1n, v1n); //sub mode uses this uniform
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uBrightness"), brightness);
 
     //Texture binding
     glActiveTexture(GL_TEXTURE0);
@@ -822,6 +826,7 @@ void Render::DrawImageSub(const Image& Image,
     glBindVertexArray(0);
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseSubImage"), false); //tell shader ok i am done using sub image mode*
+    glUniform1f(glGetUniformLocation(shaderProgram, "uBrightness"), 0.f);
 }
 
 
