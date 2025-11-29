@@ -121,6 +121,15 @@ struct SavedScene {
     };
     std::vector<SavedDialogue> guiDialogues;
 
+    struct SavedDisplay {
+        int ID = 0;
+        Vec2 pos;
+        Vec2 size;
+        bool centered;
+        std::string renderData;
+    };
+    std::vector<SavedDisplay> guiDisplays;
+
     struct SavedCamera {
         Vec2 pos;
         float zoom;

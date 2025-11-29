@@ -86,10 +86,9 @@
                 "soundType": 0
             }
         ],
-        "textboxes": [
-        ],
-        "dialogues": [
-        ]
+        "textboxes": [],
+        "dialogues": [],
+        "displays": []
     },
     "sceneName": "MainMenu",
     "bgmAssetName": "main_menu",

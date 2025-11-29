@@ -128,8 +128,9 @@
     "fontConfig": "../Assets/fontAssets.json",
     "gui": {
         "buttons": [],
+        "textboxes": [],
         "dialogues": [],
-        "textboxes": []
+        "displays": []
     },
     "sceneName": "level1",
     "sceneType": 1,
