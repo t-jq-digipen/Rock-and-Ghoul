@@ -381,6 +381,19 @@ struct Button {
     bool pressed = false;
 };
 
+struct DisplayConfig {
+
+    Vec2 pos;
+    float size;
+
+    UI_RenderData m_renderData{};
+
+    Vec2 basePos;
+    Vec2 baseSize;
+    bool isVisible{ true };
+    int ID;
+};
+
 std::string ButtonShapeToString(ButtonShape shape);
 ButtonShape StringToButtonShape(const std::string& s);
 std::string ButtonActionToString(ButtonAction action);

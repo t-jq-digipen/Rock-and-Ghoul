@@ -626,7 +626,7 @@ void GLApp::SetWindowedMode(int width, int height)
     windowed_width = width;
     windowed_height = height;
 
-    std::cout << "[GLApp] Setting windowed resolution: "  << p_width << "x" << p_height << "\n";
+    std::cout << "[GLApp] Setting windowed resolution: "  << width << "x" << height << "\n";
 
     glfwSetWindowSize(ptr_window, width, height);
 
