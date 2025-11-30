@@ -362,5 +362,11 @@ void CoreEngine::Shutdown()
 
 void CoreEngine::Quit()
 {
+    AudioSystem::PlayButtonSound(AudioSystem::ButtonType::QUIT);
+
+    double startTime = glfwGetTime();
+    while (glfwGetTime() - startTime < 0.5) {
+        AudioSystem::Update();
+    }
     running = false;
 }
