@@ -3157,7 +3157,7 @@ void ImGuiSystem::Update(float dt)
                 col.aabbhitbox.dim = baseWorldSize;
 
                 // UpdateHitboxes apply TransformComponent scale and set min/max
-                col.UpdateHitboxes(t.pos, t.scale);
+                //col.UpdateHitboxes(t.pos, t.scale);
 
                 col.SetActive(true);
                 col.SetTrigger(false);
