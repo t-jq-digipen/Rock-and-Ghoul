@@ -24,6 +24,13 @@
 
 AudioManager* GuiSystem::audio = nullptr;
 
+// Settings
+static float settingsVolume = 1.f;
+static const float volStep = 0.05f;
+static const int settingsBarFillID = 7; // to match display ID in settings.json
+static const float settingsBarMaxW = 1000.f;
+bool settingsNeedSync = false;
+
 // ==============================
 // UI_RenderData & variants
 // ==============================
@@ -231,6 +238,16 @@ void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
     audio = audioMgr;
 }
 
+// Helper to adjust volume based on settings
+static void ApplyNewVolume(float v)
+{
+    FMOD::Channel* ch = AudioManager::Get().GetCurrentMusicChannel();
+    if (ch)
+    {
+        ch->setVolume(std::clamp(v, 0.f, 1.f));
+    }
+}
+
 void GuiSystem::Initialize() {
     buttons.clear();
     textboxes.clear();
@@ -258,7 +275,108 @@ void GuiSystem::Initialize() {
             CoreEngine::GetInstance().Quit();
         });
 
+    // Load the Settings scene from settings.json, and prime volume from the file
+    RegisterAction("LoadSettings",
+        [](const json&)
+        {
+            SceneManager::Get().LoadScene(FilePath::SETTINGS_FILE);
+            SceneManager::Get().SetTransitionTime(0.f);
 
+            float newVolume01 = 1.0f;
+            try
+            {
+                std::ifstream ifs(FilePath::SETTINGS_FILE);
+                if (ifs)
+                {
+                    json j;
+                    ifs >> j;
+
+                    if (j.contains("settings") && j["settings"].is_object())
+                    {
+                        const auto& js = j["settings"];
+                        if (js.contains("volume"))
+                        {
+                            float volPct = js["volume"].get<float>();
+                            newVolume01 = std::clamp(volPct / 100.0f, 0.0f, 1.0f);
+                        }
+                    }
+                }
+            }
+            catch (...) {
+            }
+
+            settingsVolume = newVolume01;
+            if (GuiSystem::audio)
+            {
+                ApplyNewVolume(settingsVolume);
+            }
+
+            settingsNeedSync = true;
+
+            auto& gui = GuiSystem::Get();
+            if (settingsNeedSync)
+            {
+                for (auto& v : gui.Displays())
+                {
+                    if (v.ID == settingsBarFillID)
+                    {
+                        v.baseSize.x = settingsBarMaxW * settingsVolume;
+                        v.size.x = v.baseSize.x;
+                        break;
+                    }
+                }
+            }
+        });
+
+    // Decrease volume
+    RegisterAction("VolDown",
+        [](const json&)
+        {
+            settingsVolume = std::clamp(settingsVolume - volStep, 0.f, 1.f);
+            if (GuiSystem::audio) ApplyNewVolume(settingsVolume);
+
+            auto& gui = GuiSystem::Get();
+            for (auto& v : gui.Displays())
+                if (v.ID == settingsBarFillID) { v.baseSize.x = settingsBarMaxW * settingsVolume; break; }
+        });
+
+    // Increase volume
+    RegisterAction("VolUp",
+        [](const json&)
+        {
+            settingsVolume = std::clamp(settingsVolume + volStep, 0.f, 1.f);
+            if (GuiSystem::audio) ApplyNewVolume(settingsVolume);
+
+            auto& gui = GuiSystem::Get();
+            for (auto& v : gui.Displays())
+                if (v.ID == settingsBarFillID) { v.baseSize.x = settingsBarMaxW * settingsVolume; break; }
+        });
+
+    // Persist volume back to settings.json
+    RegisterAction("SaveSettings",
+        [](const json&)
+        {
+            json j;
+            try {
+                std::ifstream ifs(FilePath::SETTINGS_FILE);
+                if (ifs) ifs >> j;
+            }
+            catch (...) { /* start fresh on error */ }
+
+            j["settings"]["volume"] = std::round(settingsVolume * 100.0f);
+
+            if (!j.contains("resolutionWidth"))  j["resolutionWidth"] = 1920;
+            if (!j.contains("resolutionHeight")) j["resolutionHeight"] = 1080;
+            if (!j.contains("fullscreen"))       j["fullscreen"] = true;
+
+            try {
+                std::ofstream ofs(FilePath::SETTINGS_FILE, std::ios::trunc);
+                ofs << j.dump(4);
+            }
+            catch (...) {
+                std::cerr << "[Settings] Failed to write settings.json\n";
+            }
+        });
 }
 
 void GuiSystem::AddButton(const ButtonConfig& cfg)
@@ -709,6 +827,20 @@ void GuiSystem::Update(float dt)
         }
     }; // end DRAW DISPLAY
     // --------------------------------------------------
+
+    if (settingsNeedSync)
+    {
+        for (auto& dp : displays)
+        {
+            if (dp.ID == settingsBarFillID)
+            {
+                dp.baseSize.x = settingsBarMaxW * settingsVolume;
+                dp.size.x = dp.baseSize.x;
+                settingsNeedSync = false;
+                break;
+            }
+        }
+    }
 
     // Draw UI elements according to ascending ID
     for (const auto& it : drawList)
