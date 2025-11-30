@@ -12,6 +12,13 @@
     "entities": [
         {
             "components": {
+                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
+                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "MainMenu_Rock&Ghoul"
+        },
+        {
+            "components": {
                 "Behaviour": "{\"scripts\":[\"Movey\"]}",
                 "Movement": "{\"moveSpeed\":50.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
@@ -19,13 +26,6 @@
                 "Transform": "{\"posX\":1682.5478515625,\"posY\":-177.76971435546875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "MainMenu_Dots"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
-                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "MainMenu_Rock&Ghoul"
         }
     ],
     "fontConfig": "../Assets/fontAssets.json",
@@ -73,7 +73,7 @@
                 "action": "None",
                 "actionName": "LoadControls",
                 "actionParams": "{}",
-                "label": "CONTROLS",
+                "label": "how to play",
                 "pos": [
                     1650.0,
                     300.0
@@ -103,7 +103,7 @@
                 "soundType": 0
             },
             {
-                "ID": 7,
+                "ID": 8,
                 "action": "None",
                 "actionName": "Quit",
                 "actionParams": "",
@@ -115,16 +115,16 @@
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_QuitButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
-                    150.0
+                    189.47369384765625
                 ],
                 "soundType": 0
             },
             {
-                "ID": 8,
+                "ID": 9,
                 "action": "None",
                 "actionName": "LoadScene",
                 "actionParams": {
-                    "duration": 2.0,
+                    "duration": 0.0,
                     "scene": "MainMenu"
                 },
                 "label": "NO",
@@ -135,7 +135,7 @@
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_NewGame_Button.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
-                    150.0
+                    189.47369384765625
                 ],
                 "soundType": 0
             }
@@ -143,22 +143,35 @@
         "dialogues": [],
         "displays": [
             {
+                "ID": 6,
+                "centered": true,
+                "pos": [
+                    960.0,
+                    540.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ExitPanel.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    1000.0,
+                    1000.0
+                ]
+            },
+            {
                 "ID": 5,
                 "centered": true,
                 "pos": [
                     960.0,
                     540.0
                 ],
-                "renderData": "{\"data\":\"{\\\"ButtonShape\\\":\\\"Rectangle\\\",\\\"Color\\\":[0.30000001192092896,0.5,0.800000011920929]}\",\"type\":\"shape\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/halfblack.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    500.0,
-                    500.0
+                    3000.0,
+                    2000.0
                 ]
             }
         ],
         "textboxes": [
             {
-                "ID": 6,
+                "ID": 7,
                 "centered": false,
                 "color": [
                     0.0,
