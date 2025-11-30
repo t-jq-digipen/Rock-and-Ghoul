@@ -16,7 +16,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "Level2.h"
 #include "Input.h"
 #include "Fretboard.h"
 #include "Render.h"

@@ -60,7 +60,8 @@ void SceneManager::QueueLoadScene(const std::string& path)
 }
 void SceneManager::Update(float dt, float fixedDt, int numSteps)
 {
-    
+    (void)fixedDt;
+    (void)numSteps;
     if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying()) {
         TogglePause();
         //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");

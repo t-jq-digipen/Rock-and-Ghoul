@@ -17,7 +17,6 @@
 #include "Component.h"     // All component structs
 #include "Input.h"
 #include "Movement.h"
-#include "GameStateManager.h"
 #include "BehaviourFCT.h"   // BehaviourFCT
 #include <iostream>
 #include <unordered_map>

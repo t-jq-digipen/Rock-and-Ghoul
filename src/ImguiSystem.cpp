@@ -548,7 +548,7 @@ Entity PickEntityAtWorldPos(const Vec2& world)
             {
                 Sprite::SpriteSheet& spritesheet = r.GetSpriteSheet();
                 Sprite::SpriteComponent& sprite = spritesheet.Sprite();
-                const Image& img = sprite.Get_Image();
+                //const Image& img = sprite.Get_Image();
 
                 float frameW = spritesheet.u1 - spritesheet.u0;
                 float frameH = spritesheet.v1 - spritesheet.v0;

@@ -19,7 +19,6 @@
 #include "PlayerSystem.h"
 #include "Registry.h"
 #include "Audio.h"
-#include "GameStateManager.h"
 #include "CoreEngine.h" // to check pause state for music
 #include "LogicSystem.h"
 #include "JsonLoad.h"
@@ -982,6 +981,7 @@ void PlayerSystem::Initialize()
 
 void PlayerSystem::Update(float dt)
 {
+	(void)dt;
 	SceneManager& sm = SceneManager::Get();
 	// check if game paused
 	if (sm.IsPaused()) {

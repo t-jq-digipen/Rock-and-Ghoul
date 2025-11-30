@@ -13,7 +13,6 @@
  */
 
 #include "GuiSystem.h"
-#include "GameStateManager.h"
 #include "CoreEngine.h"
 #include "glapp.h"
 #ifndef NO_IMGUI

@@ -25,7 +25,6 @@
 #include "CoreEngine.h"
 #include "PlayerSystem.h"
 #include "Camera.h"
-#include "GameStateManager.h"
 #include <iostream>
 #include "SceneManager.h"
 #include "GuiSystem.h"
@@ -722,6 +721,7 @@ void AudioManager::UpdateListenerToCamera() {
  */
 
 void AudioManager::Update(float dt) {
+    (void)dt;
     // Update listener to follow camera every frame
     UpdateListenerToCamera();
 

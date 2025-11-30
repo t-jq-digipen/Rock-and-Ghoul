@@ -205,24 +205,23 @@ void CoreEngine::Initialize()
 void CoreEngine::Run()
 {
     std::cout << "EngRun\n";
-    FrameRateController frameRate(60);
+    FrameRateController fr(60);
     SceneManager& sm = SceneManager::Get();
     double lastTitleUpdate = glfwGetTime();
     int    frames = 0;
 
     while (running && !glfwWindowShouldClose(GLApp::ptr_window))
     {
-        frameRate.StartFrame();
+        fr.StartFrame();
         glfwPollEvents();
 
-        float dt = static_cast<float>(frameRate.GetDeltaTime());
+        float dt = static_cast<float>(fr.GetDeltaTime());
         dt = std::clamp(dt, 0.0f, 0.05f); // clamp variable dt
 
-        float fixedDt = static_cast<float>(frameRate.GetFixedDeltaTime());
-        int   numSteps = frameRate.GetCurrentNumberOfSteps();
+        float fixedDt = static_cast<float>(fr.GetFixedDeltaTime());
+        int   numSteps = fr.GetCurrentNumberOfSteps();
 
-        
-        SceneManager& sm = SceneManager::Get();
+       
         sm.Update(dt, fixedDt, numSteps);
 
         // expose fixed dt to scripts / systems that still read g_dt

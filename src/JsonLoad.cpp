@@ -1053,7 +1053,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         // Load entities
         for (const auto& savedEntity : scene.entities) {
-            Entity e = Registry::Get().Load_Entity(savedEntity);
+            Registry::Get().Load_Entity(savedEntity);
         }
 
         // Load backgrounds
@@ -1275,7 +1275,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             GuiSystem::Get().AddDisplay(cfg);
         }
 
-        SavedScene::SavedCamera& camSet = scene.camSettings;
+        //SavedScene::SavedCamera& camSet = scene.camSettings;
 
         // Camera settings
         Camera& cam = Camera::GetInstance();

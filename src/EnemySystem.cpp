@@ -339,6 +339,7 @@ void EnemySystem::Initialize()
 
 void EnemySystem::Update(float dt)
 {
+	(void)dt;
 	SceneManager& sm = SceneManager::Get();
 	// check if game paused
 	if (sm.IsPaused())
