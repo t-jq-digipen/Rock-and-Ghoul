@@ -1,7 +1,8 @@
 /* ========================================================
  * @file        GuiSystem.h
- * @author		Manfred Sim | manfred.sim@digipen.edu
- * @date        30 OCT 2025
+ * @author		Manfred Sim     | manfred.sim@digipen.edu
+ * @co-author   Tan Jun Quan    | t.junquan@digipen.edu
+ * @date        30 NOV 2025
  *
  * @brief
  *
