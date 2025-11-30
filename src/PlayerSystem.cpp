@@ -335,7 +335,7 @@ namespace RockScript {
 
 	static bool faceRight = true;
 
-
+	Entity shieldy = INVALID_ENTITY;
 
 
 	struct Spell
@@ -397,6 +397,7 @@ namespace RockScript {
 			if (spellSlots[i].charges <= 0) 
 			{
 				UIsys.SetDisplaySheetState(slots.memberIDs[i], 0);
+				spellSlots[i].cooldown = 0.f;
 			}
 			// Not empty
 			else
@@ -424,7 +425,9 @@ namespace RockScript {
 					frame = 0;
 					break;
 				}
-				UIsys.SetDisplaySheetState(slots.memberIDs[i], frame);
+				if (!UIsys.SetDisplaySheetState(slots.memberIDs[i], frame)) return;
+
+				
 			}
 		}
 	}
@@ -491,6 +494,7 @@ namespace RockScript {
 	void Attack() {
 		if (IsBusy()) { return; }
 
+		// ARIPUTSOUND [melee swing]
 		meleetimer = 0.f;
 		shot = false;
 	}
@@ -596,28 +600,27 @@ namespace RockScript {
 	}
 
 	//Update shield state
-	void UpdateShield(float dt)
+	void UpdateShield(float dt, float x, float y)
 	{
-		//if (!isVulnerable)
-		//{
-		//	shieldTimer += dt;
-		//	if (shieldTimer >= 5.f)
-		//	{
-		//		isVulnerable = true;
-		//		shieldTimer = 0.f;
-		//		std::cout << "Shield ended. Vulnerable again!\n";
-		//	}
-		//}
 
 		// Shield inactive
 		if (shieldTimer >= SHIELD_DURATION) {
 			isVulnerable = true;
 			return;
+			shieldy = INVALID_ENTITY;
 		}
 
 		// Update shield
 		shieldTimer += dt;
 		isVulnerable = false;
+		Registry& reg = Registry::Get();
+		if (reg.Has_Component<TransformComponent>(shieldy))
+		{
+			TransformComponent& shieldytransform = reg.Get_Component<TransformComponent>(shieldy);
+			shieldytransform.pos = { x,y };
+		}
+		else shieldy = INVALID_ENTITY;
+
 		return;
 
 	}
@@ -674,29 +677,51 @@ namespace RockScript {
 		{
 		case SpellType::SOUNDWAVE:
 		{
-			Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y);
+			// ARIPUTSOUND [soundwave]
+
+			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y);
+			Entity wave = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "SoundwaveFX.json", trans.pos.x, trans.pos.y);
+			if (!faceRight)
+			{
+				Physics::PhysicsComponent& phyComp = registry.Get_Component<Physics::PhysicsComponent>(wave);
+				Vec2 vel = phyComp.Get_Vel();
+				vel.x = -vel.x;
+				phyComp.Set_Vel(vel);
+				registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
+			}
 			std::cout << "Soundwave cast!\n";
-			ApplyElementToProjectile(proj);
+			//ApplyElementToProjectile(proj);
 			// to start animation
 			wavetimer = 0.f;
 			break;
 		}
 		case SpellType::AOE:
 		{
-			Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
+			// ARIPUTSOUND [AoE]
+
+			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
+			float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
+			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "AoeFX.json", posx, trans.pos.y + 400.f);
 			std::cout << "AOE cast!\n";
-			ApplyElementToProjectile(proj);
+			//ApplyElementToProjectile(proj);
 			aoetimer = 0.f;
 			break;
 		}
 		case SpellType::SHIELD:
+			// ARIPUTSOUND [Shield]
+
 			RockScript::isVulnerable = false;
 			RockScript::shieldTimer = 0.f;
 			// to start animation
 			wavetimer = 0.f;
 			std::cout << "Shield activated!\n";
+			if (shieldy != INVALID_ENTITY) registry.Remove_Entity(shieldy);
+			shieldy = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "ShieldFX.json", trans.pos.x, trans.pos.y);
+			
 			break;
 		case SpellType::HEAL:
+			// ARIPUTSOUND [Healing]
+
 			if (registry.Has_Component<HealthComponent>(eID)) {
 				auto& health = registry.Get_Component<HealthComponent>(eID);
 				health.currhp += 10.f;
@@ -762,13 +787,24 @@ namespace RockScript {
 
 		faceRight = true;
 
+		shieldy = INVALID_ENTITY;
+
+		// ARIPUTSOUND [voiceline?]
+
 	}
 
 	inline void Update(Entity eID, float dt) {
 		Registry& registry = Registry::Get();
 
+		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
+
+		auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
+		auto& physics = registry.Get_Component<Physics::PhysicsComponent>(eID);
+		auto& transComp = registry.Get_Component<TransformComponent>(eID);
+
+
 		//Shield Timer
-		UpdateShield(dt);
+		UpdateShield(dt, transComp.pos.x, transComp.pos.y);
 
 		for (auto& spell : spellSlots)
 		{
@@ -778,11 +814,6 @@ namespace RockScript {
 		AssignSlots();
 
 
-		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
-		
-		auto& moveComp	= registry.Get_Component<Movement::MovementComponent>(eID);
-		auto& physics		= registry.Get_Component<Physics::PhysicsComponent>(eID);
-		auto& transComp			= registry.Get_Component<TransformComponent>(eID);
 
 		int animstate = (faceRight) ? 0 : 1; //idle
 
@@ -839,20 +870,6 @@ namespace RockScript {
 					footstepTimers[eID] = 0.0f;  // Reset timer
 				}
 			}
-
-			//if (Input::IsKeyPressed(GLFW_KEY_G))
-			//{
-			//	stunnedtimer = 0.f;
-			//	animstate = 2;
-			//	physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
-			//}
-
-			/*if (Input::IsKeyPressed(GLFW_KEY_E))
-			{
-				meleetimer = 0.f;
-				animstate = 3;
-				shot = false;
-			}*/
 		}
 		else if (stunnedtimer < STAGGER_DURATION)
 		{

@@ -274,7 +274,7 @@ namespace Sprite {
 		m_current_col = frames.col_start + static_cast<int>((anim_timer / anim_duration) * (range + 1));
 		if (m_current_col > frames.col_end)
 		{
-			m_current_col = frames.col_end-1;
+			m_current_col = frames.col_end;
 		}
 
 		UpdateUV();
