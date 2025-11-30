@@ -5045,6 +5045,7 @@ void ImGuiSystem::ShowPrefabControls()
     static bool triggerPopup = false;
     static std::string pendingDeletePrefab;
     static bool DeletePopup = false;
+    static bool updateInstancesPopup = false;
 
     if (selectedEntity != INVALID_ENTITY)
     {
@@ -5115,6 +5116,7 @@ void ImGuiSystem::ShowPrefabControls()
         //popup for replacing
         if (triggerPopup)
         {
+            pendingPrefabName = prefabNameBuf;
             ImGui::OpenPopup("Prefab Replace Confirmation");
             triggerPopup = false;
         }
@@ -5131,21 +5133,105 @@ void ImGuiSystem::ShowPrefabControls()
                 {
                     Registry::Get().Get_EntityNameMap()[selectedEntity] = pendingPrefabName;
                     std::cout << "[Editor] Replaced prefab: " << outpath << "\n";
+                    updateInstancesPopup = true;
+                    ImGui::CloseCurrentPopup();
                 }
-                pendingPrefabName.clear();
-                ImGui::CloseCurrentPopup();
+               // pendingPrefabName.clear();
+                //ImGui::CloseCurrentPopup();
             }
 
             ImGui::SameLine();
 
             if (ImGui::Button("No", ImVec2(120, 0)))
             {
-                pendingPrefabName.clear();
+                //pendingPrefabName.clear();
                 ImGui::CloseCurrentPopup();
             }
 
             ImGui::EndPopup();
         }
+        // exceptional part
+        if (updateInstancesPopup)
+        {
+            ImGui::OpenPopup("Update Prefab Instances?");
+            updateInstancesPopup = false;
+        }
+
+        if (ImGui::BeginPopupModal("Update Prefab Instances?", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Prefab has been replaced.\nUpdate existing instances?");
+            ImGui::Separator();
+
+            if (ImGui::Button("Yes, Update All", ImVec2(150, 0)))
+            {
+                auto& registry = Registry::Get();
+                auto& nameMap = registry.Get_EntityNameMap();
+
+                // use whatever name stored for this prefab
+                std::string targetName = pendingPrefabName;
+                std::string targetLower = targetName;
+                std::transform(targetLower.begin(), targetLower.end(), targetLower.begin(), ::tolower);
+
+                // collect all entities to replace
+                std::vector<Entity> replaceList;
+
+                for (auto& [entID, name] : nameMap)
+                {
+                    std::string n = name;
+                    std::transform(n.begin(), n.end(), n.begin(), ::tolower);
+
+                    if (n == targetLower)
+                    {
+                        replaceList.push_back(entID);
+                    }
+                }
+
+                std::string prefabPath =
+                    FilePath::PREFABS_FOLDER + targetName + ".json";
+
+                //replace old entity
+                for (Entity oldEnt : replaceList)
+                {
+                    // Copy old transform
+                    if (!registry.Has_Component<TransformComponent>(oldEnt))
+                        continue;
+
+                    TransformComponent oldT = registry.Get_Component<TransformComponent>(oldEnt);
+
+                    // remove old entity
+                    registry.Remove_Entity(oldEnt);
+
+                    // spawn new one from prefab
+                    Entity newEnt = JsonLoad::LoadEntityFromFile(prefabPath, oldT.pos.x, oldT.pos.y);
+
+                    if (!newEnt)    // failed to load prefab
+                        continue;
+
+                    //scale + rotation
+                    auto& newT = registry.Get_Component<TransformComponent>(newEnt);
+                    newT.scale = oldT.scale;
+                    newT.rot = oldT.rot;
+
+                    registry.Get_EntityNameMap()[newEnt] = targetName;
+                }
+
+                ImGui::CloseCurrentPopup();
+                pendingPrefabName.clear();
+            }
+
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("No", ImVec2(80, 0)))
+            {
+                ImGui::CloseCurrentPopup();
+                pendingPrefabName.clear();
+
+            }
+
+            ImGui::EndPopup();
+        }
+
     }
     else
     {
