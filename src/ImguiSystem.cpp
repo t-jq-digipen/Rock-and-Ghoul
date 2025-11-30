@@ -856,7 +856,7 @@ void ImGuiSystem::Initialize() {
 
 void ImGuiSystem::Update(float dt)
 {
-    Render::GetInstance().EndSceneCapture();
+    //Render::GetInstance().EndSceneCapture();
     (void)dt;
     if (ImGui::IsKeyPressed(ImGuiKey_W)) gizmoOperation = ImGuizmo::TRANSLATE;
     if (ImGui::IsKeyPressed(ImGuiKey_E)) gizmoOperation = ImGuizmo::ROTATE;
