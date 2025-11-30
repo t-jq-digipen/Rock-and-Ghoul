@@ -295,9 +295,9 @@ void GLApp::key_cb(GLFWwindow *pwin, int key, int scancode, int action, int mod)
 #endif
   }
 
-  if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action) {
-    glfwSetWindowShouldClose(pwin, GLFW_TRUE);
-  }
+  //if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action) {
+  //  glfwSetWindowShouldClose(pwin, GLFW_TRUE);
+  //}
 
   //if (key == GLFW_KEY_ENTER && action == GLFW_PRESS &&
   //    (mod & GLFW_MOD_ALT))
@@ -671,6 +671,8 @@ bool GLApp::IsFullscreen()
     return is_fullscreen;
 }
 
+static bool waspaused = false;
+
 void GLApp::window_focus_cb(GLFWwindow* window, int focused)
 {
     (void)window;
@@ -682,7 +684,7 @@ void GLApp::window_focus_cb(GLFWwindow* window, int focused)
         std::cout << "[Window] Focus gained\n";
 
         // resume gameplay if playing before
-        if (sm.IsPlaying())
+        if (sm.IsPlaying() && !waspaused)
             sm.SetPaused(false);
 
         // resume audio
@@ -692,6 +694,7 @@ void GLApp::window_focus_cb(GLFWwindow* window, int focused)
     {
         std::cout << "[Window] Focus lost\n";
 
+        waspaused = sm.IsPaused();
         // pause if in play
         if (sm.IsPlaying())
             sm.SetPaused(true);

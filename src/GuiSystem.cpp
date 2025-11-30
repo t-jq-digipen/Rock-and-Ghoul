@@ -960,6 +960,7 @@ void GuiSystem::Update(float dt)
         renderer.DrawImageRotated(img, 960, 540, 1000, 1000);
         bool hovercontrol = false;
         bool hoverexit = false;
+        bool hoverresume = false;
 
         {
             hovercontrol = (renderer.IsAreaTouched(mouse, { 960,400 }, 400, 190));
@@ -992,6 +993,23 @@ void GuiSystem::Update(float dt)
         }
 
 
+        {
+            hoverresume = (renderer.IsAreaTouched(mouse, { 960,800 }, 400, 190));
+            float brightness = hoverresume ? 0.2f : 0.f;
+            Image btnimg = CreateImage("../Assets/UI_MainMenu_NewGame_Button.png");
+            renderer.DrawImageRotated(btnimg, 960.f, 800.f, 400.f, 190.f, 0.f, brightness);
+
+            const Vec2 baseTitlePos = { 960.f, 800.f };
+            const std::string title = "RESUME";
+            Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+            float textX = baseTitlePos.x - textSize.x * 0.5f;
+            float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
+            render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+
+        }
+
+
+
         if (hovercontrol && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             opencontrol = true;
@@ -1002,6 +1020,11 @@ void GuiSystem::Update(float dt)
         {
             SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
             SceneManager::Get().SetTransitionTime(2.f);
+        }
+
+        if (hoverresume && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            SceneManager::Get().TogglePause();
         }
 
         }

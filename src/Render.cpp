@@ -540,7 +540,7 @@ GLuint Render::LoadTexture(const std::string& path) {
     // Check if texture already exists
     auto it = textureCache.find(path);
     if (it != textureCache.end()) {
-        std::cout << "Found in cache: " << path << " ID: " << it->second << std::endl;
+        //std::cout << "Found in cache: " << path << " ID: " << it->second << std::endl;
         return it->second; // Return cached texture
     }
 
