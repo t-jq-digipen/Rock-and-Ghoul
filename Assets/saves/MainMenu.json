@@ -53,8 +53,8 @@
             },
             {
                 "ID": 2,
-                "action": "OpenStateWindow",
-                "actionName": "{}",
+                "action": "None",
+                "actionName": "LoadSettings",
                 "actionParams": "{}",
                 "label": "SETTINGS",
                 "pos": [
@@ -87,7 +87,8 @@
             }
         ],
         "dialogues": [],
-        "textboxes": []
+        "textboxes": [],
+        "displays": []
     },
     "sceneName": "MainMenu",
     "sceneType": 0,

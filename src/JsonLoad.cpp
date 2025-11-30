@@ -819,7 +819,6 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
             }
         }
     }
-    
 
     for (const auto& entityJson : j["entities"]) {
         SavedEntity entity;
@@ -907,10 +906,16 @@ void JsonLoad::to_json(json& j, const GameSettings& s) {
  * @param s Reference to GameSettings to populate with deserialized data.
  */
 void JsonLoad::from_json(const json& j, GameSettings& s) {
-    j.at("volume").get_to(s.volume);
-    j.at("resolutionWidth").get_to(s.resolutionWidth);
-    j.at("resolutionHeight").get_to(s.resolutionHeight);
-    j.at("fullscreen").get_to(s.fullscreen);
+    const json* src = &j;
+    if (j.is_object() && j.contains("settings") && j["settings"].is_object()) {
+        src = &j["settings"];
+    }
+    const json& o = *src;
+
+    s.volume = o.value("volume", s.volume);
+    s.resolutionWidth = o.value("resolutionWidth", s.resolutionWidth);
+    s.resolutionHeight = o.value("resolutionHeight", s.resolutionHeight);
+    s.fullscreen = o.value("fullscreen", s.fullscreen);
 }
 #pragma endregion Serialization
 
@@ -1117,6 +1122,11 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                     SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
                     };
             }
+            else if (b.action == "LoadSettings") {
+                cfg.onClick = []() {
+                    SceneManager::Get().QueueLoadScene("../Assets/others/settings.json");
+                    };
+            }
             else if (b.action == "OpenStateWindow") {
                 cfg.onClick = []() {
                     GuiSystem::Get().DrawStateWindow(Render::GetInstance());
@@ -1298,8 +1308,21 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 bool JsonLoad::SaveSettings(const std::string& filepath, GameSettings& settings) {
 
     try {
+        std::string content = FileIO::ReadFile(filepath);
         json j;
-        to_json(j, settings);
+
+        if (!content.empty()) {
+            j = json::parse(content);
+        }
+        else {
+            j = json::object();
+        }
+
+        // Ensure we have a "settings" object and write into it
+        json settingsObj;
+        JsonLoad::to_json(settingsObj, settings);      // only volume/resolution/fullscreen
+        j["settings"] = settingsObj;
+
         return FileIO::WriteFile(filepath, j.dump(4));
     }
     catch (const std::exception& e) {
@@ -1322,7 +1345,13 @@ std::optional<GameSettings> JsonLoad::LoadSettings(const std::string& filepath) 
 
         json j = json::parse(content);
         GameSettings settings;
-        from_json(j, settings);
+        if (j.contains("settings") && j["settings"].is_object()) {
+            from_json(j["settings"], settings);
+        }
+        else {
+            from_json(j, settings);
+        }
+
         return settings;
     }
     catch (const std::exception& e) {

@@ -23,6 +23,13 @@
 
 AudioManager* GuiSystem::audio = nullptr;
 
+// Settings
+static float settingsVolume = 1.f;
+static const float volStep = 0.05f;
+static const int settingsBarFillID = 7; // to match display ID in settings.json
+static const float settingsBarMaxW = 1000.f;
+bool settingsNeedSync = false;
+
 // ==============================
 // UI_RenderData & variants
 // ==============================
@@ -230,6 +237,16 @@ void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
     audio = audioMgr;
 }
 
+// Helper to adjust volume based on settings
+static void ApplyNewVolume(float v)
+{
+    FMOD::Channel* ch = AudioManager::Get().GetCurrentMusicChannel();
+    if (ch)
+    {
+        ch->setVolume(std::clamp(v, 0.f, 1.f));
+    }
+}
+
 void GuiSystem::Initialize() {
     buttons.clear();
     textboxes.clear();
@@ -257,7 +274,108 @@ void GuiSystem::Initialize() {
             CoreEngine::GetInstance().Quit();
         });
 
+    // Load the Settings scene from settings.json, and prime volume from the file
+    RegisterAction("LoadSettings",
+        [](const json&)
+        {
+            SceneManager::Get().LoadScene(FilePath::SETTINGS_FILE);
+            SceneManager::Get().SetTransitionTime(0.f);
 
+            float newVolume01 = 1.0f;
+            try
+            {
+                std::ifstream ifs(FilePath::SETTINGS_FILE);
+                if (ifs)
+                {
+                    json j;
+                    ifs >> j;
+
+                    if (j.contains("settings") && j["settings"].is_object())
+                    {
+                        const auto& js = j["settings"];
+                        if (js.contains("volume"))
+                        {
+                            float volPct = js["volume"].get<float>();
+                            newVolume01 = std::clamp(volPct / 100.0f, 0.0f, 1.0f);
+                        }
+                    }
+                }
+            }
+            catch (...) {
+            }
+
+            settingsVolume = newVolume01;
+            if (GuiSystem::audio)
+            {
+                ApplyNewVolume(settingsVolume);
+            }
+
+            settingsNeedSync = true;
+
+            auto& gui = GuiSystem::Get();
+            if (settingsNeedSync)
+            {
+                for (auto& v : gui.Displays())
+                {
+                    if (v.ID == settingsBarFillID)
+                    {
+                        v.baseSize.x = settingsBarMaxW * settingsVolume;
+                        v.size.x = v.baseSize.x;
+                        break;
+                    }
+                }
+            }
+        });
+
+    // Decrease volume
+    RegisterAction("VolDown",
+        [](const json&)
+        {
+            settingsVolume = std::clamp(settingsVolume - volStep, 0.f, 1.f);
+            if (GuiSystem::audio) ApplyNewVolume(settingsVolume);
+
+            auto& gui = GuiSystem::Get();
+            for (auto& v : gui.Displays())
+                if (v.ID == settingsBarFillID) { v.baseSize.x = settingsBarMaxW * settingsVolume; break; }
+        });
+
+    // Increase volume
+    RegisterAction("VolUp",
+        [](const json&)
+        {
+            settingsVolume = std::clamp(settingsVolume + volStep, 0.f, 1.f);
+            if (GuiSystem::audio) ApplyNewVolume(settingsVolume);
+
+            auto& gui = GuiSystem::Get();
+            for (auto& v : gui.Displays())
+                if (v.ID == settingsBarFillID) { v.baseSize.x = settingsBarMaxW * settingsVolume; break; }
+        });
+
+    // Persist volume back to settings.json
+    RegisterAction("SaveSettings",
+        [](const json&)
+        {
+            json j;
+            try {
+                std::ifstream ifs(FilePath::SETTINGS_FILE);
+                if (ifs) ifs >> j;
+            }
+            catch (...) { /* start fresh on error */ }
+
+            j["settings"]["volume"] = std::round(settingsVolume * 100.0f);
+
+            if (!j.contains("resolutionWidth"))  j["resolutionWidth"] = 1920;
+            if (!j.contains("resolutionHeight")) j["resolutionHeight"] = 1080;
+            if (!j.contains("fullscreen"))       j["fullscreen"] = true;
+
+            try {
+                std::ofstream ofs(FilePath::SETTINGS_FILE, std::ios::trunc);
+                ofs << j.dump(4);
+            }
+            catch (...) {
+                std::cerr << "[Settings] Failed to write settings.json\n";
+            }
+        });
 }
 
 void GuiSystem::AddButton(const ButtonConfig& cfg)
@@ -648,40 +766,40 @@ void GuiSystem::Update(float dt)
     // --------------------------------------------------
     auto drawDisplayAt = [&](int i)
     {
-        auto& d = displays[i];
-        if (!d.isVisible) return;
+        auto& dp = displays[i];
+        if (!dp.isVisible) return;
 
-        d.size = d.baseSize * uiScale;
-        d.pos.x = d.basePos.x * scaleX;
-        d.pos.y = d.basePos.y * scaleY;
+        dp.size = dp.baseSize * uiScale;
+        dp.pos.x = dp.basePos.x * scaleX;
+        dp.pos.y = dp.basePos.y * scaleY;
 
-        switch (d.m_renderData.GetRenderType())
+        switch (dp.m_renderData.GetRenderType())
         {
         case UIRenderType::Shape:
         {
-            UIShapeRender data = d.m_renderData.GetShapeData();
+            UIShapeRender data = dp.m_renderData.GetShapeData();
             switch (data.shape)
             {
             case ButtonShape::Rectangle:
             {
-                render.DrawRect(d.pos, d.size.x, d.size.y, data.color);
+                render.DrawRect(dp.pos, dp.size.x, dp.size.y, data.color);
                 break;
             }
             case ButtonShape::Circle:
             {
-                render.DrawCircle(d.pos, std::min(d.size.x, d.size.y) * 0.5f, data.color, 48);
+                render.DrawCircle(dp.pos, std::min(dp.size.x, dp.size.y) * 0.5f, data.color, 48);
                 break;
             }
             case ButtonShape::Rounded:
             {
-                render.DrawRoundedRect(d.pos, d.size.x, d.size.y, std::min(d.size.x, d.size.y) * 0.5f, data.color);
+                render.DrawRoundedRect(dp.pos, dp.size.x, dp.size.y, std::min(dp.size.x, dp.size.y) * 0.5f, data.color);
                 break;
             }
             } break;
         }
         case UIRenderType::CustomQuad:
         {
-            auto data = d.m_renderData.GetQuadData();
+            auto data = dp.m_renderData.GetQuadData();
 
             float sx = GLApp::width / 1920.f;
             float sy = GLApp::height / 1080.f;
@@ -695,13 +813,13 @@ void GuiSystem::Update(float dt)
 
         case UIRenderType::Image:
         {
-            auto data = d.m_renderData.GetImageData();
-            render.DrawImageRotated(data.m_image, d.pos.x, d.pos.y, d.size.x, d.size.y, 0.f, 0.f);
+            auto data = dp.m_renderData.GetImageData();
+            render.DrawImageRotated(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, 0.f, 0.f);
         } break;
 
         case UIRenderType::ImageSheet:
         {
-            auto data = d.m_renderData.GetImageSheetData();
+            auto data = dp.m_renderData.GetImageSheetData();
             int tileW = data.m_image.widthPixels / data.total_cols;
             int tileH = data.m_image.heightPixels / data.total_rows;
             int col = data.frame_index.curr_col;
@@ -709,13 +827,27 @@ void GuiSystem::Update(float dt)
             float u0 = float(col * tileW), v0 = float(row * tileH);
             float u1 = u0 + tileW, v1 = v0 + tileH;
 
-            render.DrawImageSub(data.m_image, d.pos.x, d.pos.y, d.size.x, d.size.y, u0, v0, u1, v1, 0.f, 0.f);
+            render.DrawImageSub(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, u0, v0, u1, v1, 0.f, 0.f);
         } break;
 
         default: break;
         }
     }; // end DRAW DISPLAY
     // --------------------------------------------------
+
+    if (settingsNeedSync)
+    {
+        for (auto& dp : displays)
+        {
+            if (dp.ID == settingsBarFillID)
+            {
+                dp.baseSize.x = settingsBarMaxW * settingsVolume;
+                dp.size.x = dp.baseSize.x;
+                settingsNeedSync = false;
+                break;
+            }
+        }
+    }
 
     // Draw UI elements according to ascending ID
     for (const auto& it : drawList)
@@ -795,6 +927,7 @@ std::string ButtonActionToString(ButtonAction action)
     case ButtonAction::ToggleAllButtons:    return "ToggleAllButtons";
     case ButtonAction::ToggleAllTextboxes:  return "ToggleAllTextboxes";
     case ButtonAction::ToggleAllDialogues:  return "ToggleAllDialogues";
+    case ButtonAction::ToggleAllDisplays:   return "ToggleAllDisplays";
     default:                                return "None";
     }
 }
@@ -809,6 +942,7 @@ ButtonAction StringToButtonAction(const std::string& s)
     if (s == "ToggleAllButtons")  return ButtonAction::ToggleAllButtons;
     if (s == "ToggleAllTextboxes")return ButtonAction::ToggleAllTextboxes;
     if (s == "ToggleAllDialogues")return ButtonAction::ToggleAllDialogues;
+    if (s == "ToggleAllDisplays") return ButtonAction::ToggleAllDisplays;
     return ButtonAction::None;
 }
 
@@ -837,6 +971,9 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
         break;
     case ButtonAction::ToggleAllDialogues:
         btn.onClick = [this]() { ToggleAllDialogues(); };
+        break;
+    case ButtonAction::ToggleAllDisplays:
+        btn.onClick = [this]() { ToggleAllDisplays(); };
         break;
     case ButtonAction::LoadLevel1:
         btn.onClick = [this]() {
@@ -897,6 +1034,14 @@ void GuiSystem::ToggleAllDialogues()
     bool anyVisible = false;
     for (auto& d : dialogues) if (d.isVisible) { anyVisible = true; break; }
     for (auto& d : dialogues) d.isVisible = !anyVisible;
+}
+
+void GuiSystem::ToggleAllDisplays()
+{
+    if (displays.empty()) return;
+    bool anyVisible = false;
+    for (auto& dp : displays) if (dp.isVisible) { anyVisible = true; break; }
+    for (auto& dp : displays) dp.isVisible = !anyVisible;
 }
 
 void GuiSystem::DrawStateWindow(Render& render)
