@@ -513,7 +513,7 @@ struct ButtonConfig {
     Vec2 baseSize;
     float baseTextScale{ 1.f };
     bool isVisible = true;
-    int ID;
+    int ID = 0;
 
 /**
  * @brief Draws the button using the current configuration.
@@ -535,7 +535,7 @@ struct TextBoxConfig {
     // baseline (screen-space anchors)
     Vec2 basePos;
     float baseScale{ 1.f };
-    int ID;
+    int ID = 0;
 };
 
 struct DialogueConfig {
@@ -545,7 +545,7 @@ struct DialogueConfig {
     std::string jsonPath;
     std::string sceneID = "0";
     bool isVisible = true;
-    int ID;
+    int ID = 0;
 };
 
 struct DisplayConfig
@@ -557,7 +557,7 @@ struct DisplayConfig
     bool centered = false;
     UI_RenderData m_renderData{};
     bool isVisible = true;
-    int ID;
+    int ID = 0;
 };
 
 struct Button {

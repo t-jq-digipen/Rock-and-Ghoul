@@ -699,7 +699,7 @@ void GuiSystem::Update(float dt)
     GuiSystem::GetMouseImgui(mouse);
 
     // Render setup (UI in screen space)
-    Render& render = Render::GetInstance();              // <-- restored local renderer
+    // Render& render = Render::GetInstance();              // <-- restored local renderer
     const bool prevCam = render.useCamera;
     render.useCamera = false;
 
@@ -1329,12 +1329,12 @@ void GuiSystem::ToggleAllDisplays()
  * @param render    Reference to the Render instance to use.
  */
 
-void GuiSystem::DrawStateWindow(Render& render)
+void GuiSystem::DrawStateWindow(Render& renderer)
 {
     if (!stateWindowActive) return;
 
-    const bool prevCam = render.useCamera;
-    render.useCamera = false;
+    const bool prevCam = renderer.useCamera;
+    renderer.useCamera = false;
 
     const float defaultW = 1920.f;
     const float defaultH = 1080.f;
@@ -1601,6 +1601,8 @@ void GuiSystem::ReseedNextUIID()
  * @return      UIGroup& Reference to the matching group.
  */
 
+// Returns a reference to the UIGroup with the given name.
+// Throws std::out_of_range if no group with the given name is found.
 UIGroup& GuiSystem::GetGroup(const std::string& name) 
 {
     for (UIGroup& group : m_groups) 
@@ -1610,6 +1612,7 @@ UIGroup& GuiSystem::GetGroup(const std::string& name)
             return group;
         }
     }
+    throw std::out_of_range("GuiSystem::GetGroup: group not found: " + name);
 }
 
 /**

@@ -187,6 +187,7 @@ namespace
         }
         catch (const std::exception& e)
         {
+            std::cerr << "Error: " << e.what() << std::endl;
             return false;
         }
     }
@@ -207,6 +208,7 @@ namespace
         }
         catch (const std::exception& e)
         {
+            std::cerr << "Error: " << e.what() << std::endl;
             return false;
         }
     }
@@ -393,6 +395,7 @@ void ImportAudioFile(const std::string& srcPathStr)
     }
     catch (const fs::filesystem_error& e)
     {
+        std::cerr << "Error: " << e.what() << std::endl;
         return;
     }
 
@@ -549,7 +552,7 @@ Entity PickEntityAtWorldPos(const Vec2& world)
             {
                 Sprite::SpriteSheet& spritesheet = r.GetSpriteSheet();
                 Sprite::SpriteComponent& sprite = spritesheet.Sprite();
-                const Image& img = sprite.Get_Image();
+                // const Image& img = sprite.Get_Image();
 
                 float frameW = spritesheet.u1 - spritesheet.u0;
                 float frameH = spritesheet.v1 - spritesheet.v0;
@@ -1473,7 +1476,10 @@ void ImGuiSystem::Update(float dt)
             else if (B.type == SelectedType::Dialogue)  idB = &dialogues[B.local].ID;
             else if (B.type == SelectedType::Display)   idB = &displays[B.local].ID;
 
-            std::swap(*idA, *idB);
+            if (idA && idB)
+            {
+                std::swap(*idA, *idB);
+            }
             };
 
         // pointer getter for an element's ID (works across all types)
@@ -1482,6 +1488,7 @@ void ImGuiSystem::Update(float dt)
             if (r.type == SelectedType::TextBox)    return &textboxes[r.local].ID;
             if (r.type == SelectedType::Dialogue)   return &dialogues[r.local].ID;
             if (r.type == SelectedType::Display)    return &displays[r.local].ID;
+            else return 0;
             };
 
         int selPos = findFlatPosOfSelection();
@@ -1599,15 +1606,15 @@ void ImGuiSystem::Update(float dt)
                         {
                             actionNames.push_back(name.c_str());
                         }
-                        for (size_t i = 0; i < actionNames.size(); i++)
+                        for (size_t i = 0; i < static_cast<int>(actionNames.size()); i++)
                         {
                             if (b.actionName == actionNames[i]) {
-                                selected = i;
+                                selected = static_cast<int>(i);
                                 break;
                             }
                         }
 
-                        if (ImGui::Combo("ClickAction", &selected, actionNames.data(), actionNames.size()))
+                        if (ImGui::Combo("ClickAction", &selected, actionNames.data(), static_cast<int>(actionNames.size())))
                         {
                             b.actionName = actionNames[selected];
                             b.actionParams.clear();
@@ -1656,12 +1663,12 @@ void ImGuiSystem::Update(float dt)
                             {
                                 if (currScene == sceneFilePtr[i])
                                 {
-                                    selectedScene = i;
+                                    selectedScene = static_cast<int>(i);
                                     break;
                                 }
                             }
 
-                            if (ImGui::Combo("Go scene", &selectedScene, sceneFilePtr.data(), sceneFilePtr.size()))
+                            if (ImGui::Combo("Go scene", &selectedScene, sceneFilePtr.data(), static_cast<int>(sceneFilePtr.size())))
                             {
                                 b.actionParams["scene"] = sceneFilePtr[selectedScene];
                             }
@@ -1753,13 +1760,13 @@ void ImGuiSystem::Update(float dt)
                             }
                             for (size_t i = 0; i < textureIDs.size(); i++) {
                                 if (textureIDs[i] == img.textureID) {
-                                    selected = i;
+                                    selected = static_cast<int>(i);
                                     break;
                                 }
                             }
 
                             // Image texture
-                            if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), imgOptions.size()))
+                            if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), static_cast<int>(imgOptions.size())))
                             {
                                 img = CreateImage(imgOptions[selected]);
                             }
@@ -1815,13 +1822,13 @@ void ImGuiSystem::Update(float dt)
                             }
                             for (size_t i = 0; i < textureIDs.size(); i++) {
                                 if (textureIDs[i] == img.textureID) {
-                                    selected = i;
+                                    selected = static_cast<int>(i);
                                     break;
                                 }
                             }
 
                             // Image texture
-                            if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), imgOptions.size()))
+                            if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), static_cast<int>(imgOptions.size())))
                             {
                                 img = CreateImage(imgOptions[selected]);
                             }
@@ -1952,6 +1959,7 @@ void ImGuiSystem::Update(float dt)
 
                         case UIRenderType::None:
                             ImGui::Text("No render information");
+                            break;
                         default:
                             break;
                         }
@@ -2764,7 +2772,7 @@ void ImGuiSystem::Update(float dt)
             // CLONE GROUP
             if (ImGui::Button("Clone Group"))
             {
-                auto& gui = GuiSystem::Get();
+                // auto& gui = GuiSystem::Get();
 
                 gui.ReseedNextUIID();
 
@@ -2902,7 +2910,7 @@ void ImGuiSystem::Update(float dt)
         {
             // Build a flat list of all UI elements for the dropdown
             static int comboIndex = -1;
-            const int total = totalCount();
+            total = totalCount();
 
             static std::vector<std::string> labels;
             labels.clear();
@@ -3710,11 +3718,11 @@ void ImGuiSystem::ShowSceneBrowser()
         {
             musicTrackList.push_back(asset.name.c_str());
             if (asset.name == bgmName)
-            { selectedTrack = musicTrackList.size()-1; }
+            { selectedTrack = static_cast<int>(musicTrackList.size())-1; }
         }
     }
 
-    if (ImGui::Combo("BGM Track", &selectedTrack, musicTrackList.data(), musicTrackList.size()))
+    if (ImGui::Combo("BGM Track", &selectedTrack, musicTrackList.data(), static_cast<int>(musicTrackList.size())))
     {
         //std::string trackName = AudioCache::GetAssetName(selectedTrack);
         std::string trackName = musicTrackList[selectedTrack];
