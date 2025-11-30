@@ -141,7 +141,7 @@ struct SavedScene {
 
     SavedCamera camSettings;
 
-    SceneType sceneType;
+    SceneType sceneType = ST_MENU;
 
     /**
      * @brief Default constructor with no name.

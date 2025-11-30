@@ -453,7 +453,7 @@ namespace RockScript {
 		if (shieldTimer >= SHIELD_DURATION) {
 			isVulnerable = true;
 			return;
-			shieldy = INVALID_ENTITY;
+			// shieldy = INVALID_ENTITY;
 		}
 
 		// Update shield

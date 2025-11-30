@@ -139,8 +139,9 @@ namespace
                 continue; //skips folder 
             //extension string
             std::string ext = entry.path().extension().string();
-            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-
+            // Use a lambda to ensure the result of ::tolower is cast to char
+            std::transform(ext.begin(), ext.end(), ext.begin(),
+                [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
             if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
             {
                 try {
@@ -704,8 +705,11 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         return;
     }
 
+    //extension string
     std::string ext = fs::path(path).extension().string();
-    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+    // Use a lambda to ensure the result of ::tolower is cast to char
+    std::transform(ext.begin(), ext.end(), ext.begin(),
+        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     //filename = "blabla.PNG"
     std::string filename = fs::path(path).filename().string();
 
@@ -4371,7 +4375,8 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         continue;
                     std::string path = entry.path().string();
                     std::string ext = entry.path().extension().string();
-                    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                    std::transform(ext.begin(), ext.end(), ext.begin(),
+                        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
                     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
                     {
@@ -4482,7 +4487,8 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                             if (!entry.is_regular_file())
                                 continue;
                             auto ext = entry.path().extension().string();
-                            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                            std::transform(ext.begin(), ext.end(), ext.begin(),
+                                [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
                             if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
                             {
                                 if (Image img = CreateImage(entry.path().string()); img.IsValid())
@@ -5140,7 +5146,8 @@ void ImGuiSystem::ShowPrefabControls()
                 bool prefabExists = false;
                 std::string existingName;
                 std::string lowerInput = prefabName;
-                std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), ::tolower);
+                std::transform(lowerInput.begin(), lowerInput.end(), lowerInput.begin(), 
+                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
                 for (auto& entry : std::filesystem::directory_iterator(FilePath::PREFABS_FOLDER))
                 {
@@ -5149,7 +5156,8 @@ void ImGuiSystem::ShowPrefabControls()
                         //same as scene
                         std::string existing = entry.path().stem().string();
                         std::string lowerExisting = existing;
-                        std::transform(lowerExisting.begin(), lowerExisting.end(), lowerExisting.begin(), ::tolower);
+                        std::transform(lowerExisting.begin(), lowerExisting.end(), lowerExisting.begin(),
+                            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
                         if (lowerExisting == lowerInput)
                         {
@@ -5235,7 +5243,8 @@ void ImGuiSystem::ShowPrefabControls()
                 // use whatever name stored for this prefab
                 std::string targetName = pendingPrefabName;
                 std::string targetLower = targetName;
-                std::transform(targetLower.begin(), targetLower.end(), targetLower.begin(), ::tolower);
+                std::transform(targetLower.begin(), targetLower.end(), targetLower.begin(),
+                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
                 // collect all entities to replace
                 std::vector<Entity> replaceList;
@@ -5243,7 +5252,8 @@ void ImGuiSystem::ShowPrefabControls()
                 for (auto& [entID, name] : nameMap)
                 {
                     std::string n = name;
-                    std::transform(n.begin(), n.end(), n.begin(), ::tolower);
+                    std::transform(n.begin(), n.end(), n.begin(),
+                        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
                     if (n == targetLower)
                     {

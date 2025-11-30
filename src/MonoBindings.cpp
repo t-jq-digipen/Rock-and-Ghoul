@@ -132,7 +132,7 @@ extern "C" {
 
         if (render.GetRenderType() != RT_SPRITESHEET) return;
 
-        if (render.GetSpriteSheet().GetCurrentState() == state) return;
+        if (render.GetSpriteSheet().GetCurrentState() == static_cast<int>(state)) return;
 
         render.GetSpriteSheet().SetState(state);
     }

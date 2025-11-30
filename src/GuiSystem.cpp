@@ -1105,11 +1105,11 @@ void GuiSystem::Update(float dt)
     // Pause menu
     if (SceneManager::Get().IsPaused())
     {
-        const float defaultW = 1920.f;
-        const float defaultH = 1080.f;
-        const float scaleX = GLApp::width / defaultW;
-        const float scaleY = GLApp::height / defaultH;
-        const float uiScale = std::min(scaleX, scaleY);
+        // const float defaultW = 1920.f;
+        // const float defaultH = 1080.f;
+        // const float scaleX = GLApp::width / defaultW;
+        // const float scaleY = GLApp::height / defaultH;
+        // const float uiScale = std::min(scaleX, scaleY);
         // Title text (scaled like UI text)
         float baseTextScale = 1.0f;
         const float textScale = baseTextScale * uiScale;
@@ -1217,8 +1217,8 @@ void GuiSystem::Update(float dt)
                     const Vec2 baseTitlePos = { 960.f * scaleX, 900.f * scaleY };
                     const std::string title = "CONTROLS";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    float textX = baseTitlePos.x - textSize.x * .8f;
-                    float textY = baseTitlePos.y - textSize.y * .8f + textSize.y * 0.15f;
+                    // float textX = baseTitlePos.x - textSize.x * .8f;
+                    // float textY = baseTitlePos.y - textSize.y * .8f + textSize.y * 0.15f;
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
@@ -1364,11 +1364,11 @@ void GuiSystem::Update(float dt)
     if (showFPS)
     {
         double framesdisplay = CoreEngine::GetInstance().GetFPS();
-        const float defaultW = 1920.f;
-        const float defaultH = 1080.f;
-        const float scaleX = GLApp::width / defaultW;
-        const float scaleY = GLApp::height / defaultH;
-        const float uiScale = std::min(scaleX, scaleY);
+        // const float defaultW = 1920.f;
+        // const float defaultH = 1080.f;
+        // const float scaleX = GLApp::width / defaultW;
+        // const float scaleY = GLApp::height / defaultH;
+        // float uiScale = std::min(scaleX, scaleY);
         // Title text (scaled like UI text)
         float baseTextScale = 1.0f;
         const float textScale = baseTextScale * uiScale;
