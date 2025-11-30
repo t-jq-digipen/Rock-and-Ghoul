@@ -649,52 +649,52 @@ void GuiSystem::Update(float dt)
     // --------------------------------------------------
     auto drawDisplayAt = [&](int i)
     {
-        auto& d = displays[i];
-        if (!d.isVisible) return;
+        auto& dp = displays[i];
+        if (!dp.isVisible) return;
 
-        d.size = d.baseSize * uiScale;
-        d.pos.x = d.basePos.x * scaleX;
-        d.pos.y = d.basePos.y * scaleY;
+        dp.size = dp.baseSize * uiScale;
+        dp.pos.x = dp.basePos.x * scaleX;
+        dp.pos.y = dp.basePos.y * scaleY;
 
-        switch (d.m_renderData.GetRenderType())
+        switch (dp.m_renderData.GetRenderType())
         {
         case UIRenderType::Shape:
         {
-            UIShapeRender data = d.m_renderData.GetShapeData();
+            UIShapeRender data = dp.m_renderData.GetShapeData();
             switch (data.shape)
             {
             case ButtonShape::Rectangle:
             {
-                render.DrawRect(d.pos, d.size.x, d.size.y, data.color);
+                render.DrawRect(dp.pos, dp.size.x, dp.size.y, data.color);
                 break;
             }
             case ButtonShape::Circle:
             {
-                render.DrawCircle(d.pos, std::min(d.size.x, d.size.y) * 0.5f, data.color, 48);
+                render.DrawCircle(dp.pos, std::min(dp.size.x, dp.size.y) * 0.5f, data.color, 48);
                 break;
             }
             case ButtonShape::Rounded:
             {
-                render.DrawRoundedRect(d.pos, d.size.x, d.size.y, std::min(d.size.x, d.size.y) * 0.5f, data.color);
+                render.DrawRoundedRect(dp.pos, dp.size.x, dp.size.y, std::min(dp.size.x, dp.size.y) * 0.5f, data.color);
                 break;
             }
             } break;
         }
         case UIRenderType::CustomQuad:
         {
-            auto data = d.m_renderData.GetQuadData();
+            auto data = dp.m_renderData.GetQuadData();
             render.DrawCustomQuad(data.v0, data.v1, data.v2, data.v3, data.color);
         } break;
 
         case UIRenderType::Image:
         {
-            auto data = d.m_renderData.GetImageData();
-            render.DrawImageRotated(data.m_image, d.pos.x, d.pos.y, d.size.x, d.size.y, 0.f, 0.f);
+            auto data = dp.m_renderData.GetImageData();
+            render.DrawImageRotated(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, 0.f, 0.f);
         } break;
 
         case UIRenderType::ImageSheet:
         {
-            auto data = d.m_renderData.GetImageSheetData();
+            auto data = dp.m_renderData.GetImageSheetData();
             int tileW = data.m_image.widthPixels / data.total_cols;
             int tileH = data.m_image.heightPixels / data.total_rows;
             int col = data.frame_index.curr_col;
@@ -702,7 +702,7 @@ void GuiSystem::Update(float dt)
             float u0 = float(col * tileW), v0 = float(row * tileH);
             float u1 = u0 + tileW, v1 = v0 + tileH;
 
-            render.DrawImageSub(data.m_image, d.pos.x, d.pos.y, d.size.x, d.size.y, u0, v0, u1, v1, 0.f, 0.f);
+            render.DrawImageSub(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, u0, v0, u1, v1, 0.f, 0.f);
         } break;
 
         default: break;
@@ -788,6 +788,7 @@ std::string ButtonActionToString(ButtonAction action)
     case ButtonAction::ToggleAllButtons:    return "ToggleAllButtons";
     case ButtonAction::ToggleAllTextboxes:  return "ToggleAllTextboxes";
     case ButtonAction::ToggleAllDialogues:  return "ToggleAllDialogues";
+    case ButtonAction::ToggleAllDisplays:   return "ToggleAllDisplays";
     default:                                return "None";
     }
 }
@@ -802,6 +803,7 @@ ButtonAction StringToButtonAction(const std::string& s)
     if (s == "ToggleAllButtons")  return ButtonAction::ToggleAllButtons;
     if (s == "ToggleAllTextboxes")return ButtonAction::ToggleAllTextboxes;
     if (s == "ToggleAllDialogues")return ButtonAction::ToggleAllDialogues;
+    if (s == "ToggleAllDisplays") return ButtonAction::ToggleAllDisplays;
     return ButtonAction::None;
 }
 
@@ -830,6 +832,9 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
         break;
     case ButtonAction::ToggleAllDialogues:
         btn.onClick = [this]() { ToggleAllDialogues(); };
+        break;
+    case ButtonAction::ToggleAllDisplays:
+        btn.onClick = [this]() { ToggleAllDisplays(); };
         break;
     case ButtonAction::LoadLevel1:
         btn.onClick = [this]() {
@@ -890,6 +895,14 @@ void GuiSystem::ToggleAllDialogues()
     bool anyVisible = false;
     for (auto& d : dialogues) if (d.isVisible) { anyVisible = true; break; }
     for (auto& d : dialogues) d.isVisible = !anyVisible;
+}
+
+void GuiSystem::ToggleAllDisplays()
+{
+    if (displays.empty()) return;
+    bool anyVisible = false;
+    for (auto& dp : displays) if (dp.isVisible) { anyVisible = true; break; }
+    for (auto& dp : displays) dp.isVisible = !anyVisible;
 }
 
 void GuiSystem::DrawStateWindow(Render& render)

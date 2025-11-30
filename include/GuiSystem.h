@@ -50,6 +50,8 @@ enum class ButtonAction
     ToggleAllButtons,
     ToggleAllTextboxes,
     ToggleAllDialogues,
+    ToggleAllDisplays,
+    LoadSettings,
     GetActionCount
 };
 
@@ -469,6 +471,7 @@ public:
     void ToggleAllButtons(const ButtonConfig* exclude = nullptr);
     void ToggleAllTextboxes();
     void ToggleAllDialogues();
+    void ToggleAllDisplays();
     void DrawStateWindow(Render& render);
 
     // Helper to get mouse position if ImGui editor is open
