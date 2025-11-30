@@ -57,7 +57,8 @@ const std::string FilePath::DIALOGUE = FilePath::ASSETS_FOLDER + "Dialogue.json"
 #else
 
 const std::string FilePath::SAVES_FOLDER = getExeDir() + "/../../Assets/saves/";
-const std::string FilePath::SETTINGS_FILE = getExeDir() + "/../../Assets/others/settings.json";
+//const std::string FilePath::SETTINGS_FILE = getExeDir() + "/../../Assets/others/settings.json";
+const std::string FilePath::SETTINGS_FILE = getExeDir() + "/../../Assets/saves/settings.json";
 const std::string FilePath::COLLISIONSETTINGS_FILE = getExeDir() + "/../../Assets/others/CollisionSettings.json";
 const std::string FilePath::LEVEL1_SCENE = FilePath::SAVES_FOLDER + "level1.json";
 const std::string FilePath::LEVEL2_SCENE = FilePath::SAVES_FOLDER + "level2.json";

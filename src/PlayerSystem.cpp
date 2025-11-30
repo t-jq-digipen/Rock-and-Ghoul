@@ -4,7 +4,7 @@
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
  * @co-author   Manfred Sim		   | manfred.sim@digipen.edu
- * @date	    06 NOV 2025
+ * @date	    30 NOV 2025
  *
  * @brief	Player System for handling player behaviour.
  *
@@ -56,166 +56,6 @@ Movement::InputDirection VelToDir(float x, float y)
 	return (x > 0.f) ? Movement::MOVE_RIGHT : (x < 0.f ? Movement::MOVE_LEFT : Movement::MOVE_NONE);
 }
 
-//void PlayerSystem::WASD_Movement(Entity eID, float& dt)
-//{
-//	(void)dt;
-//
-//	if (!m_registry.Has_Component<Movement::MovementComponent>(eID)) return;
-//	auto& moveComp = m_registry.Get_Component<Movement::MovementComponent>(eID);
-//	auto& physics = m_registry.Get_Component<Physics::PhysicsComponent>(eID);
-//
-//
-//	// Ensure max speed is set (prevents tunneling)
-//	if (physics.GetMaxSpeed() < MAX_SPEED) {
-//		physics.SetMaxSpeed(MAX_SPEED);
-//	}
-//	// Clear forces every frame so that player instantly switches directions
-//	physics.ClearForces();
-//
-//	const auto& input = m_registry.Get_Component<InputComponent>(eID);
-//
-//	int hor = 0, ver = 0;
-//	switch (input.scheme)
-//	{
-//	case CS_WASD:
-//		if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
-//		break;
-//	case CS_IJKL:
-//		if (Input::IsKeyHeld(GLFW_KEY_I)) ver += 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_K)) ver -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_J)) hor -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_L)) hor += 1;
-//		break;
-//	case CS_ARROWS:
-//		if (Input::IsKeyHeld(GLFW_KEY_UP))    ver += 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_DOWN))  ver -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_LEFT))  hor -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) hor += 1;
-//		break;
-//	default: break;
-//	}
-//
-//	float fx = static_cast<float>(hor);
-//	float fy = static_cast<float>(ver);
-//	NormalizeDiagonalMovement(fx, fy);
-//
-//	const bool moving = (fx != 0.f || fy != 0.f);
-//	moveComp.SetIsMoving(moving);
-//	moveComp.SetInputDirection(VelToDir(fx, fy));
-//	moveComp.SetMovementDirection({ fx, fy });
-//
-//	// Clear forces every frame
-//	physics.ClearForces();
-//
-//	// Dash
-//	// constexpr float DASH_IMPULSE = 700.f;
-//
-//	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT) && moving) {
-//		Vec2 dashImpulse = { fx * DASH_IMPULSE, fy * DASH_IMPULSE };
-//		physics.AddImpulse(dashImpulse);
-//	}
-//
-//	// Adjust max speed based on current speed
-//	float currentSpeed = RG_Length(physics.Get_Vel());
-//	if (currentSpeed > 500.f) {
-//		physics.SetMaxSpeed(1000.f);  // For da dash
-//	}
-//	else {
-//		physics.SetMaxSpeed(500.f);   // Normal speed
-//	}
-//
-//	if (moving) {
-//		physics.AddForce({ fx, fy }, MOVE_FORCE, 0.f);
-//	}
-//
-//	//if (!m_registry.Has_Component<InputComponent>(eID)) {
-//	//	return; // No input component, skip movement
-//	//}
-//	//auto& input = m_registry.Get_Component<InputComponent>(eID);
-//
-//	//// Handle movement based on control scheme
-//	//switch (input.scheme) {
-//	//case CS_WASD:
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_W)) transform.pos.y += speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_S)) transform.pos.y -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt; 
-//	//    if (Input::IsKeyHeld(GLFW_KEY_W)) physics.AddForce({ 0,1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_S)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_A)) physics.AddForce({ -1,0 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_D)) physics.AddForce({ 1,0 }, 1.f, 0.f);
-//	//	break;
-//
-//	//case CS_IJKL:
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_I)) transform.pos.y += speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_K)) transform.pos.y -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_J)) transform.pos.x -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_L)) transform.pos.x += speed * dt;
-//	//	if (Input::IsKeyHeld(GLFW_KEY_I)) physics.AddForce({ 0,1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_K)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_J)) physics.AddForce({ -1,0 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_L)) physics.AddForce({ 1,0 }, 1.f, 0.f);
-//	//	if (m_registry.Has_Component<Animator::AnimatorComponent>(eID))
-//	//	{
-//	//		if ((Input::IsKeyHeld(GLFW_KEY_I) || Input::IsKeyHeld(GLFW_KEY_J) || Input::IsKeyHeld(GLFW_KEY_K) || Input::IsKeyHeld(GLFW_KEY_L)))
-//	//		{
-//	//			m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(PS_WALK);
-//	//		}
-//	//		else
-//	//		{
-//	//			m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(PS_IDLE);
-//	//		}
-//
-//	//	}
-//	//	break;
-//	//case CS_ARROWS:
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_UP)) transform.pos.y += speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_DOWN)) transform.pos.y -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_LEFT)) transform.pos.x -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) transform.pos.x += speed * dt;
-//	//	if (Input::IsKeyHeld(GLFW_KEY_UP)) physics.AddForce({ 0,1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_DOWN)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_LEFT)) physics.AddForce({ -1,0 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) physics.AddForce({ 1,0 }, 1.f, 0.f);
-//	//	break;
-//	//}
-//
-//	//// knockback test
-//	//int vert{0};
-//	//int hor{0};
-//	//if (Input::IsKeyHeld(GLFW_KEY_W)) vert += 1;
-//	//if (Input::IsKeyHeld(GLFW_KEY_S)) vert -= 1;
-//	//if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
-//	//if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
-//
-//	//Vec2 dir{ (float)hor, (float)vert };
-//
-//	//if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) physics.AddForce(dir, dash);
-//
-//	///*if (Input::IsKeyHeld(GLFW_KEY_W) && vel.y < maxspeed) physics.AddForce({ 0.f,1.f }, accel);
-//	//if (Input::IsKeyHeld(GLFW_KEY_S) && vel.y > -maxspeed) physics.AddForce({ 0.f,-1.f }, accel);
-//	//if (Input::IsKeyHeld(GLFW_KEY_A) && vel.x > -maxspeed) physics.AddForce({ -1.f,0.f }, accel);
-//	//if (Input::IsKeyHeld(GLFW_KEY_D) && vel.x < maxspeed) physics.AddForce({ 1.f,0.f }, accel);*/
-//
-//	// DASH - Working impulse
-//	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
-//		Vec2 dashDir{ (float)hor, (float)ver };
-//
-//		fx = static_cast<float>(hor);
-//		fy = static_cast<float>(ver);
-//		NormalizeDiagonalMovement(fx, fy);
-//
-//		if (RG_LengthSquared(dashDir) > 0.01f) {
-//			dashDir = RG_Normalize(dashDir);
-//			Vec2 dashImpulse = RG_Scale(dashDir, DASH_IMPULSE);
-//			physics.ApplyLinearImpulse(dashImpulse);
-//		}
-//	}
-//}
 
 namespace PlayerMove {
 	std::unordered_map<Entity, size_t> subscriberID;
@@ -306,14 +146,18 @@ namespace PlayerMove {
 } // end namespace PlayerMove
 
 namespace RockScript {
-	// Attack timers
+	// Constants
+#pragma region CONSTANTS
 	constexpr float SWING_TIME = 0.5f;
 	constexpr float SOUNDWAVE_TIME = 0.5f;
 	constexpr float AOE_TIME = 1.f;
 	constexpr float SHIELD_DURATION = 5.f;
-	
+
 	constexpr float STAGGER_DURATION = 1.f;
-	
+#pragma endregion
+
+	// Variables
+#pragma region VARIABLES
 	static float stunnedtimer = STAGGER_DURATION;
 
 	static float meleetimer = SWING_TIME; // swing
@@ -335,14 +179,16 @@ namespace RockScript {
 	static bool faceRight = true;
 
 	Entity shieldy = INVALID_ENTITY;
+#pragma endregion
 
 
+	// Spells struct with cooldown and activation charges
 	struct Spell
 	{
-		SpellType type;
-		float cooldown; //Time before next use
-		float currentCD; //Counts down in Update
-		int charges; //Number of uses
+		SpellType type;		// Type of spell
+		float cooldown;		// Time before next use
+		float currentCD;	// Counts down in Update
+		int charges;		// Number of uses
 
 		//Default constructor
 		Spell()
