@@ -3136,7 +3136,7 @@ void ImGuiSystem::Update(float dt)
                     sprite.Set_Image(img);
                     // Auto-size to the actual texture size
                     //sprite.Set_Size(Vec2((float)img.widthPixels, (float)img.heightPixels));
-                    sprite.Set_Size({ 1.f,1.f });
+                    sprite.Set_Size({ 10.f,10.f });
                 }
                 else
                 {
@@ -3152,7 +3152,7 @@ void ImGuiSystem::Update(float dt)
 
                 // image size in world units
                 Vec2 imgPixels = sprite.Get_ImageSize(); // pixel
-                Vec2 baseWorldSize = imgPixels * RenderSystem::unitsPerPixel;  // convert to world units
+                Vec2 baseWorldSize = imgPixels * RenderSystem::unitsPerPixel * 10;  // convert to world units
 
                 col.aabbhitbox.dim = baseWorldSize;
 

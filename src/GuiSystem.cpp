@@ -29,6 +29,7 @@ static const float volStep = 0.05f;
 static const int settingsBarFillID = 7; // to match display ID in settings.json
 static const float settingsBarMaxW = 1000.f;
 bool settingsNeedSync = false;
+bool showFPS = false;
 
 // ==============================
 // UI_RenderData & variants
@@ -502,6 +503,12 @@ void GuiSystem::Update(float dt)
     static bool spaceHandled = false;
     const bool spacePressed = Input::IsKeyPressed(GLFW_KEY_SPACE);
     const bool spaceHeld = Input::IsKeyHeld(GLFW_KEY_SPACE);
+
+    // toggle fps
+    if (Input::IsKeyPressed(GLFW_KEY_F3))
+    {
+        showFPS = !showFPS;
+    }
 
     if (!editMode && spacePressed && !spaceHandled)
     {
@@ -1166,6 +1173,20 @@ void GuiSystem::Update(float dt)
 #ifndef NO_IMGUI
     }
 #endif
+
+    if (showFPS)
+    {
+        double framesdisplay = CoreEngine::GetInstance().GetFPS();
+        const float defaultW = 1920.f;
+        const float defaultH = 1080.f;
+        const float scaleX = GLApp::width / defaultW;
+        const float scaleY = GLApp::height / defaultH;
+        const float uiScale = std::min(scaleX, scaleY);
+        // Title text (scaled like UI text)
+        float baseTextScale = 1.0f;
+        const float textScale = baseTextScale * uiScale;
+        render.DrawText("FPS: " + std::to_string(framesdisplay), 50.f, 50.f, textScale, { 1,1,1 }, "Marker");
+    }
 
     // Transition overlay
     {
