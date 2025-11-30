@@ -485,6 +485,7 @@ void Render::DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, cons
 
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"),
         color.r, color.g, color.b);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseCustomVerts"), GL_TRUE);
