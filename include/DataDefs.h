@@ -202,6 +202,7 @@ struct ActiveFrames {
     int col_start = 0;	// First column index
     int col_end = 0;	// Last column index
     float duration = 0.f;	// Duration of time in seconds the animation takes to go from first column to last column
+    bool willLoop = false;
 
     /**
         * @brief Equality operator for ActiveFrames.

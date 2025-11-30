@@ -182,7 +182,7 @@ struct LifetimeComponent {
 
 	Editor::ComponentData EditorData() {
 		Editor::ComponentData ret("Lifetime");
-		ret.Add_Data("lifetime", { Editor::Widget_Float{&lifetime, true, 0.f, 100.f} });
+		ret.Add_Data("lifetime", { Editor::Widget_Float{&lifetime} });
 
 		return ret;
 

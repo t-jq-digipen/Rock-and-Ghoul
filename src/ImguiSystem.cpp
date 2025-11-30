@@ -3132,7 +3132,8 @@ void ImGuiSystem::Update(float dt)
                 {
                     sprite.Set_Image(img);
                     // Auto-size to the actual texture size
-                    sprite.Set_Size(Vec2((float)img.widthPixels, (float)img.heightPixels));
+                    //sprite.Set_Size(Vec2((float)img.widthPixels, (float)img.heightPixels));
+                    sprite.Set_Size({ 1.f,1.f });
                 }
                 else
                 {
@@ -3148,7 +3149,7 @@ void ImGuiSystem::Update(float dt)
                 ColliderComponent col;
 
                 // Build an AABB around current transform using sprite size
-                Vec2 size = sprite.Get_Scale();         // your Sprite API's "size"
+                Vec2 size = sprite.Get_ImageSize();
                 Vec2 half = size * 0.5f;
                 AABB aabb;
                 aabb.min = t.pos - half;
@@ -3899,11 +3900,11 @@ void ImGuiSystem::ShowInspectorWindow()
                     }
                     spritesheet.SetState(spritesheet.GetCurrentState());
 
-
                     Editor::Widget_Int widgetrow(&temp.row, true, 0, spritesheet.GetTotalRows());
-                    Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, spritesheet.GetTotalCols());
-                    Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, spritesheet.GetTotalCols());
+                    Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, spritesheet.GetTotalCols()-1);
+                    Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, spritesheet.GetTotalCols()-1);
                     Editor::Widget_Float widgetduration(&temp.duration);
+                    Editor::Widget_Checkmark widgetloop(&temp.willLoop);
                     //ImGui::PushItemWidth(displaySize.x/4);
                     MakeWidget(widgetrow, "row");
                     //ImGui::SameLine();
@@ -3912,6 +3913,8 @@ void ImGuiSystem::ShowInspectorWindow()
                     MakeWidget(widgetcolend, "last col");
                     //ImGui::PopItemWidth();
                     MakeWidget(widgetduration, "duration");
+                    
+                    MakeWidget(widgetloop, "loop");
 
                     ImGui::Separator();
                     if (ImGui::SmallButton("Add State"))
@@ -3919,7 +3922,7 @@ void ImGuiSystem::ShowInspectorWindow()
                         spritesheet.AddState(static_cast<int>(spritesheet.GetStateFrames().size()), { 0,0,0 });
                     }
 
-                    spritesheet.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration);
+                    spritesheet.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration, temp.willLoop);
 
                 }
                 break; // end RT_SPRITESHEET

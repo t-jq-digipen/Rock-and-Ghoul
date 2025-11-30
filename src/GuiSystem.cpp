@@ -385,6 +385,9 @@ void GuiSystem::Update(float dt)
     auto drawList = BuildSortedDrawList();
 
     // Draw UI elements per type
+    
+    // Draw button
+    // --------------------------------------------------
     auto drawButtonAt = [&](int i)
         {
             auto& cfg = buttons[i];
@@ -421,7 +424,7 @@ void GuiSystem::Update(float dt)
 
             render.DrawText(cfg.label, textX, textY, textScale, { 1, 1, 1 }, "Marker");
 
-#if 1 //EDITORMACRO
+#ifndef NO_IMGUI  //EDITORMACRO
             if (!SceneManager::Get().inEditMode) {
 #endif
                 if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
@@ -429,11 +432,14 @@ void GuiSystem::Update(float dt)
                     if (cfg.onClick) cfg.onClick();
                     if (cfg.actionName != "") CallAction(cfg.actionName, cfg.actionParams);
                 }
-#if 1 //EDITORMACRO
+#ifndef NO_IMGUI //EDITORMACRO
             }
 #endif
-        };
+        }; // end DRAW UI ELEMENTS PER TYPE
+    // --------------------------------------------------
 
+    // Draw text box
+    // --------------------------------------------------
     auto drawTextBoxAt = [&](int i)
         {
             auto& tb = textboxes[i];
@@ -453,8 +459,11 @@ void GuiSystem::Update(float dt)
             }
 
             render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, tb.fontKey);
-        };
+        }; // end DRAW TEXTBOX
+    // --------------------------------------------------
 
+    // Draw dialogue
+    // --------------------------------------------------
     auto drawDialogueAt = [&](int i)
         {
             auto& d = dialogues[i];
@@ -633,69 +642,73 @@ void GuiSystem::Update(float dt)
                 render.DrawText(ln, drawX, yCursor, d.textBox.scale, drawColor, "Marker");
                 yCursor -= lineH;
             }
-        };
+        }; // end DRAW DIALOGUE
+        // --------------------------------------------------
 
-        auto drawDisplayAt = [&](int i)
+    // Draw display
+    // --------------------------------------------------
+    auto drawDisplayAt = [&](int i)
+    {
+        auto& d = displays[i];
+        if (!d.isVisible) return;
+
+        d.size = d.baseSize * uiScale;
+        d.pos.x = d.basePos.x * scaleX;
+        d.pos.y = d.basePos.y * scaleY;
+
+        switch (d.m_renderData.GetRenderType())
         {
-            auto& d = displays[i];
-            if (!d.isVisible) return;
-
-            d.size = d.baseSize * uiScale;
-            d.pos.x = d.basePos.x * scaleX;
-            d.pos.y = d.basePos.y * scaleY;
-
-            switch (d.m_renderData.GetRenderType())
+        case UIRenderType::Shape:
+        {
+            UIShapeRender data = d.m_renderData.GetShapeData();
+            switch (data.shape)
             {
-            case UIRenderType::Shape:
+            case ButtonShape::Rectangle:
             {
-                UIShapeRender data = d.m_renderData.GetShapeData();
-                switch (data.shape)
-                {
-                case ButtonShape::Rectangle:
-                {
-                    render.DrawRect(d.pos, d.size.x, d.size.y, data.color);
-                    break;
-                }
-                case ButtonShape::Circle:
-                {
-                    render.DrawCircle(d.pos, std::min(d.size.x, d.size.y) * 0.5f, data.color, 48);
-                    break;
-                }
-                case ButtonShape::Rounded:
-                {
-                    render.DrawRoundedRect(d.pos, d.size.x, d.size.y, std::min(d.size.x, d.size.y) * 0.5f, data.color);
-                    break;
-                }
-                } break;
+                render.DrawRect(d.pos, d.size.x, d.size.y, data.color);
+                break;
             }
-            case UIRenderType::CustomQuad:
+            case ButtonShape::Circle:
             {
-                auto data = d.m_renderData.GetQuadData();
-                render.DrawCustomQuad(data.v0, data.v1, data.v2, data.v3, data.color);
-            } break;
-
-            case UIRenderType::Image:
-            {
-                auto data = d.m_renderData.GetImageData();
-                render.DrawImageRotated(data.m_image, d.pos.x, d.pos.y, d.size.x, d.size.y, 0.f, 0.f);
-            } break;
-
-            case UIRenderType::ImageSheet:
-            {
-                auto data = d.m_renderData.GetImageSheetData();
-                int tileW = data.m_image.widthPixels / data.total_cols;
-                int tileH = data.m_image.heightPixels / data.total_rows;
-                int col = data.frame_index.curr_col;
-                int row = data.total_rows - 1 - data.frame_index.curr_row;
-                float u0 = float(col * tileW), v0 = float(row * tileH);
-                float u1 = u0 + tileW, v1 = v0 + tileH;
-
-                render.DrawImageSub(data.m_image, d.pos.x, d.pos.y, d.size.x, d.size.y, u0, v0, u1, v1, 0.f, 0.f);
-            } break;
-
-            default: break;
+                render.DrawCircle(d.pos, std::min(d.size.x, d.size.y) * 0.5f, data.color, 48);
+                break;
             }
-        };
+            case ButtonShape::Rounded:
+            {
+                render.DrawRoundedRect(d.pos, d.size.x, d.size.y, std::min(d.size.x, d.size.y) * 0.5f, data.color);
+                break;
+            }
+            } break;
+        }
+        case UIRenderType::CustomQuad:
+        {
+            auto data = d.m_renderData.GetQuadData();
+            render.DrawCustomQuad(data.v0, data.v1, data.v2, data.v3, data.color);
+        } break;
+
+        case UIRenderType::Image:
+        {
+            auto data = d.m_renderData.GetImageData();
+            render.DrawImageRotated(data.m_image, d.pos.x, d.pos.y, d.size.x, d.size.y, 0.f, 0.f);
+        } break;
+
+        case UIRenderType::ImageSheet:
+        {
+            auto data = d.m_renderData.GetImageSheetData();
+            int tileW = data.m_image.widthPixels / data.total_cols;
+            int tileH = data.m_image.heightPixels / data.total_rows;
+            int col = data.frame_index.curr_col;
+            int row = data.total_rows - 1 - data.frame_index.curr_row;
+            float u0 = float(col * tileW), v0 = float(row * tileH);
+            float u1 = u0 + tileW, v1 = v0 + tileH;
+
+            render.DrawImageSub(data.m_image, d.pos.x, d.pos.y, d.size.x, d.size.y, u0, v0, u1, v1, 0.f, 0.f);
+        } break;
+
+        default: break;
+        }
+    }; // end DRAW DISPLAY
+    // --------------------------------------------------
 
     // Draw UI elements according to ascending ID
     for (const auto& it : drawList)

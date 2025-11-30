@@ -307,8 +307,19 @@ namespace PlayerMove {
 } // end namespace PlayerMove
 
 namespace RockScript {
-	static float stunnedtimer = 1.f;
-	static float atktimer = 1.f;
+	// Attack timers
+	constexpr float SWING_TIME = 0.5f;
+	constexpr float SOUNDWAVE_TIME = 0.5f;
+	constexpr float AOE_TIME = 1.f;
+	constexpr float SHIELD_DURATION = 5.f;
+	
+	constexpr float STAGGER_DURATION = 1.f;
+	
+	static float stunnedtimer = STAGGER_DURATION;
+
+	static float meleetimer = SWING_TIME; // swing
+	static float aoetimer = AOE_TIME;
+	static float wavetimer = SOUNDWAVE_TIME;
 	static bool shot = false;
 
 	//INPUT SEQUENCE SYSTEM
@@ -321,6 +332,10 @@ namespace RockScript {
 
 
 	static Element currentElement = Element::NONE; //Set default element to none
+
+	static bool faceRight = true;
+
+
 
 
 	struct Spell
@@ -428,9 +443,33 @@ namespace RockScript {
 		}
 	}
 
-	void Dash(Entity eID) {
-		if (stunnedtimer < 1.f || atktimer < 1.f) { return; }
+	// check if timers active
+	bool IsBusy() {
+		if (
+			stunnedtimer < STAGGER_DURATION ||
+			meleetimer	 < SWING_TIME ||
+			aoetimer     < AOE_TIME ||
+			wavetimer    < SOUNDWAVE_TIME
+			)
+		{
+			return true;
+		}
 
+		return false;
+	}
+
+	void ResetTimers() {
+		meleetimer = SWING_TIME;
+		aoetimer = AOE_TIME;
+		wavetimer = SOUNDWAVE_TIME;
+	}
+
+
+	void Dash(Entity eID) {
+		if (IsBusy()) { return; }
+		// dk if want to allow dash cancelling spells
+		ResetTimers();
+		shot = true;
 
 		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID) || !Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
 		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
@@ -448,15 +487,16 @@ namespace RockScript {
 
 	}
 
-	void Attack(Entity) {
-		if ((stunnedtimer < 1.f || atktimer < 1.f)) { return; }
+	// melee swing
+	void Attack() {
+		if (IsBusy()) { return; }
 
-		atktimer = 0.f;
+		meleetimer = 0.f;
 		shot = false;
 	}
 
 	void Knockback(Entity eID) {
-		if ((stunnedtimer < 1.f || atktimer < 1.f)) { return; }
+		if ((stunnedtimer < 1.f)) { return; }
 
 		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) { return; }
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
@@ -558,21 +598,33 @@ namespace RockScript {
 	//Update shield state
 	void UpdateShield(float dt)
 	{
-		if (!isVulnerable)
-		{
-			shieldTimer += dt;
-			if (shieldTimer >= 5.f)
-			{
-				isVulnerable = true;
-				shieldTimer = 0.f;
-				std::cout << "Shield ended. Vulnerable again!\n";
-			}
+		//if (!isVulnerable)
+		//{
+		//	shieldTimer += dt;
+		//	if (shieldTimer >= 5.f)
+		//	{
+		//		isVulnerable = true;
+		//		shieldTimer = 0.f;
+		//		std::cout << "Shield ended. Vulnerable again!\n";
+		//	}
+		//}
+
+		// Shield inactive
+		if (shieldTimer >= SHIELD_DURATION) {
+			isVulnerable = true;
+			return;
 		}
+
+		// Update shield
+		shieldTimer += dt;
+		isVulnerable = false;
+		return;
+
 	}
 
 	void ApplyElementToProjectile(Entity proj)
 	{
-		auto& registry = Registry::Get();
+		//auto& registry = Registry::Get();
 
 		//Damage Component in future
 
@@ -606,7 +658,7 @@ namespace RockScript {
 
 	void ActivateSpell(int slotIndex, Entity eID)
 	{
-		if (slotIndex < 0 || slotIndex >= 3) return;
+		if (slotIndex < 0 || slotIndex >= 3 || IsBusy()) return;
 
 		Spell& spell = spellSlots[slotIndex];
 		if (!spell.CanUse()) {
@@ -625,6 +677,8 @@ namespace RockScript {
 			Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y);
 			std::cout << "Soundwave cast!\n";
 			ApplyElementToProjectile(proj);
+			// to start animation
+			wavetimer = 0.f;
 			break;
 		}
 		case SpellType::AOE:
@@ -632,11 +686,14 @@ namespace RockScript {
 			Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
 			std::cout << "AOE cast!\n";
 			ApplyElementToProjectile(proj);
+			aoetimer = 0.f;
 			break;
 		}
 		case SpellType::SHIELD:
 			RockScript::isVulnerable = false;
 			RockScript::shieldTimer = 0.f;
+			// to start animation
+			wavetimer = 0.f;
 			std::cout << "Shield activated!\n";
 			break;
 		case SpellType::HEAL:
@@ -645,6 +702,9 @@ namespace RockScript {
 				health.currhp += 10.f;
 				if (health.currhp > health.maxhp) health.currhp = health.maxhp;
 				std::cout << "Heal cast! HP: " << health.currhp << "/" << health.maxhp << "\n";
+				JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "HealFX.json", trans.pos.x, trans.pos.y + 5.f);
+				// to start animation
+				wavetimer = 0.f;
 			}
 			break;
 		}
@@ -667,7 +727,7 @@ namespace RockScript {
 			}
 			else if (e.key == GLFW_KEY_E)
 			{
-				Attack(eID);
+				Attack();
 			}
 			else if (e.key == GLFW_KEY_G)
 			{
@@ -693,14 +753,14 @@ namespace RockScript {
 		currentElement = Element::NONE;
 
 
-
-		stunnedtimer = 1.f;
-		atktimer = 1.f;
+		ResetTimers();
 		shot = false;
 
 		inputBuffer.clear();
-		shieldTimer = 0.f;
+		shieldTimer = SHIELD_DURATION;
 		isVulnerable = true;
+
+		faceRight = true;
 
 	}
 
@@ -724,18 +784,26 @@ namespace RockScript {
 		auto& physics		= registry.Get_Component<Physics::PhysicsComponent>(eID);
 		auto& transComp			= registry.Get_Component<TransformComponent>(eID);
 
-		int animstate = 0; //idle
+		int animstate = (faceRight) ? 0 : 1; //idle
 
 		// MOVEMENT
 		// ================================================================================
-		if (stunnedtimer >= 1.f && atktimer >= 1.f)
+		if (!IsBusy())
 		{
 			int hor = 0;
 			int ver = 0;
 			if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
 			if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
-			if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
-			if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+			if (Input::IsKeyHeld(GLFW_KEY_A)) 
+			{
+				hor -= 1;
+				faceRight = false;
+			}
+			if (Input::IsKeyHeld(GLFW_KEY_D)) 
+			{
+				hor += 1;
+				faceRight = true;
+			}
 			float fx = static_cast<float>(hor);
 			float fy = static_cast<float>(ver);
 			NormalizeDiagonalMovement(fx, fy);
@@ -746,7 +814,7 @@ namespace RockScript {
 			moveComp.SetMovementDirection({ fx, fy });
 
 			if (moving) { 
-				animstate = 1; 
+				animstate = (faceRight) ? 2 : 3; 
 			}
 
 			// Reset timer when not moving
@@ -781,30 +849,50 @@ namespace RockScript {
 
 			/*if (Input::IsKeyPressed(GLFW_KEY_E))
 			{
-				atktimer = 0.f;
+				meleetimer = 0.f;
 				animstate = 3;
 				shot = false;
 			}*/
 		}
-		else if (stunnedtimer < 1.f)
+		else if (stunnedtimer < STAGGER_DURATION)
 		{
+			isVulnerable = false;
 			moveComp.ResetFrameIntent();
 			stunnedtimer += dt;
-			animstate = 2;
+			animstate = (faceRight) ? 10 : 11;
 		}
-		else if (atktimer < 1.f)
+		else if (meleetimer < SWING_TIME)
 		{
 			moveComp.ResetFrameIntent();
-			atktimer += dt;
-			animstate = 3;
+			meleetimer += dt;
+			animstate = (faceRight) ? 4 : 5;
 
-			if (atktimer >= 0.7f && !shot)
+			if (meleetimer >= 0.7f && !shot)
 			{
+				// need to summon hitbox
 				// auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
 				
-				JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", transComp.pos.x, transComp.pos.y);
+				// JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", transComp.pos.x, transComp.pos.y);
 				shot = true;
 			}
+		}
+		else if (wavetimer < SOUNDWAVE_TIME)
+		{
+			moveComp.ResetFrameIntent();
+			wavetimer += dt;
+			animstate = (faceRight) ? 6 : 7;
+
+			if (wavetimer >= .25f && !shot)
+			{
+				// shoot soundwave
+				shot = true;
+			}
+		}
+		else if (aoetimer < AOE_TIME)
+		{
+			moveComp.ResetFrameIntent();
+			aoetimer += dt;
+			animstate = (faceRight) ? 8 : 9;
 		}
 
 		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
