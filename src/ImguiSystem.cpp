@@ -5356,6 +5356,7 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     if (!inEdit) { ImGui::BeginDisabled(); }
     if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
     {
+        selectedEntity = INVALID_ENTITY;
         // Set GameViewRect FIRST before mode switch
         GameViewRect rect;
         rect.x = 0.0f;
