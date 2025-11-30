@@ -25,8 +25,8 @@
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_AmbienceLogo.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    960.0,
-                    660.0
+                    100.0,
+                    100.0
                 ],
                 "soundType": 0
             },
@@ -42,8 +42,8 @@
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_SFXLogo.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    960.0,
-                    660.0
+                    100.0,
+                    100.0
                 ],
                 "soundType": 0
             },
@@ -54,13 +54,13 @@
                 "actionParams": "{}",
                 "label": "SAVE",
                 "pos": [
-                    660.0,
+                    700.0,
                     220.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_Continue.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    840.0,
-                    660.0
+                    400.0,
+                    200.0
                 ],
                 "soundType": 0
             },
@@ -69,18 +69,18 @@
                 "action": "None",
                 "actionName": "LoadScene",
                 "actionParams": {
-                    "duration": 2.0,
+                    "duration": 0.0,
                     "scene": "MainMenu"
                 },
                 "label": "",
                 "pos": [
-                    660.0,
-                    100.0
+                    100.0,
+                    1000.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_BackButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    300.0,
-                    300.0
+                    200.0,
+                    180.0
                 ],
                 "soundType": 0
             }
@@ -102,7 +102,7 @@
             },
             {
                 "ID": 7,
-                "centered": true,
+                "centered": false,
                 "pos": [
                     720.0,
                     600.0
@@ -140,7 +140,7 @@
         "fullscreen": true,
         "resolutionHeight": 1080,
         "resolutionWidth": 1920,
-        "volume": 0.0
+        "volume": 100.0
     },
     "worldMax": [
         1920.0,

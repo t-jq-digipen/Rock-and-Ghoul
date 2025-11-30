@@ -1127,6 +1127,11 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                     SceneManager::Get().QueueLoadScene("../Assets/others/settings.json");
                     };
             }
+            else if (b.action == "LoadControls") {
+                cfg.onClick = []() {
+                    SceneManager::Get().QueueLoadScene("../Assets/others/controls.json");
+                    };
+            }
             else if (b.action == "OpenStateWindow") {
                 cfg.onClick = []() {
                     GuiSystem::Get().DrawStateWindow(Render::GetInstance());
@@ -1296,6 +1301,11 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         // set bgm before entering...
         SceneManager::Get().SetCurrentSceneBGM(scene.bgmAssetName);
         std::cout << "[LoadScene] Scene BGM set to: '" << scene.bgmAssetName << "'\n";
+
+        if (scene.sceneName == "Controls")
+        {
+            GuiSystem::Get().CallAction("ControlsPage1", j.object());
+        }
 
         return true;
     }

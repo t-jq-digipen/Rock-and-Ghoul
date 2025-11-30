@@ -1,0 +1,186 @@
+{
+  "backgrounds": [
+    "../Assets/UI_ControlsPage_Background.PNG"
+  ],
+  "bgmAssetName": "main_menu",
+  "cameraSpawn": [0.0, 0.0],
+  "cameraZoom": 1.0,
+  "entities": [],
+  "fontConfig": "../Assets/fontAssets.json",
+  "gui": {
+    "buttons": [
+      {
+        "ID": 1,
+        "action": "None",
+        "actionName": "LoadScene",
+        "actionParams": {
+          "scene": "MainMenu",
+          "duration": 0.0
+        },
+        "label": "",
+        "pos": [100.0, 1000.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlsPage_BackButton.png\\\"}\",\"type\":\"image\"}",
+        "size": [200.0, 180.0],
+        "soundType": 0
+      },
+      {
+        "ID": 2,
+        "action": "None",
+        "actionName": "ControlsPage1",
+        "actionParams": "{}",
+        "label": "",
+        "pos": [120.0, 100.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlsPage_BackwardsPageLogo.png\\\"}\",\"type\":\"image\"}",
+        "size": [180.0, 150.0],
+        "soundType": 0
+      },
+      {
+        "ID": 3,
+        "action": "None",
+        "actionName": "ControlsPage2",
+        "actionParams": "{}",
+        "label": "",
+        "pos": [120.0, 200.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlsPage_ForwardPageLogo.png\\\"}\",\"type\":\"image\"}",
+        "size": [180.0, 150.0],
+        "soundType": 0
+      }
+    ],
+    "textboxes": [
+      {
+        "ID": 4,
+        "text": "CONTROLS",
+        "pos": [960.0, 900.0],
+        "scale": 1.5,
+        "color": [1.0, 1.0, 1.0],
+        "centered": true
+      },
+      {
+        "ID": 5,
+        "text": "W - Move Up",
+        "pos": [200.0, 650.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 6,
+        "text": "S - Move Down",
+        "pos": [200.0, 600.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 7,
+        "text": "A - Move Left",
+        "pos": [200.0, 550.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 8,
+        "text": "D - Move Right",
+        "pos": [200.0, 500.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 9,
+        "text": "Shift - Dash/Dodge",
+        "pos": [200.0, 450.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 10,
+        "text": "Arrow Keys - Spell Input Sequence",
+        "pos": [800.0, 650.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 11,
+        "text": "1 / 2 / 3 - Use Song Slot 1-2-3",
+        "pos": [800.0, 600.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 12,
+        "text": "Q - Cycle Through Element",
+        "pos": [800.0, 550.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 13,
+        "text": "E - Melee Attack",
+        "pos": [800.0, 500.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 14,
+        "text": "ESC - Pause/Resume Game",
+        "pos": [800.0, 450.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 15,
+        "text": "Song List:",
+        "pos": [700.0, 650.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 16,
+        "text": "Soundwave Attack -> Up, Down",
+        "pos": [700.0, 600.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 17,
+        "text": "AOE Attack -> Up, Left, Down",
+        "pos": [700.0, 550.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 18,
+        "text": "Shield -> Down, Down, Right",
+        "pos": [700.0, 500.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      },
+      {
+        "ID": 19,
+        "text": "Healing -> Right, Up, Right",
+        "pos": [700.0, 450.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false
+      }
+    ],
+    "dialogues": [],
+    "displays": []
+  },
+  "sceneName": "Controls",
+  "sceneType": 0,
+  "worldMax": [1920.0, 1080.0],
+  "worldMin": [0.0, 0.0]
+}

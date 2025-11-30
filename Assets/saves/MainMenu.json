@@ -42,12 +42,12 @@
                 "label": "PLAY",
                 "pos": [
                     1650.0,
-                    550.0
+                    600.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_NewGame_Button.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    405.0,
-                    191.8421173095703
+                    400.0,
+                    150.0
                 ],
                 "soundType": 0
             },
@@ -59,17 +59,34 @@
                 "label": "SETTINGS",
                 "pos": [
                     1650.0,
-                    350.0
+                    450.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_SettingsButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    405.0,
-                    191.8421173095703
+                    400.0,
+                    150.0
                 ],
                 "soundType": 0
             },
             {
                 "ID": 3,
+                "action": "None",
+                "actionName": "LoadControls",
+                "actionParams": "{}",
+                "label": "CONTROLS",
+                "pos": [
+                    1650.0,
+                    300.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_Controls.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    400.0,
+                    150.0
+                ],
+                "soundType": 0
+            },
+            {
+                "ID": 4,
                 "action": "None",
                 "actionName": "Quit",
                 "actionParams": "",
@@ -80,8 +97,8 @@
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_QuitButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    405.0,
-                    191.8421173095703
+                    400.0,
+                    150.0
                 ],
                 "soundType": 0
             }

@@ -52,6 +52,7 @@ enum class ButtonAction
     ToggleAllDialogues,
     ToggleAllDisplays,
     LoadSettings,
+    LoadControls,
     GetActionCount
 };
 
