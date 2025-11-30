@@ -47,6 +47,7 @@ const std::string FilePath::LEVEL1_TEMP_SCENE = FilePath::SAVES_FOLDER + "level1
 const std::string FilePath::LEVEL2_TEMP_SCENE = FilePath::SAVES_FOLDER + "level2_temp.json";
 
 const std::string FilePath::SCENES_LIST = getExeDir() + "/../Assets/others/ScenesList.json";
+const std::string FilePath::CONTROLS_FILE = getExeDir() + "/../../Assets/saves/controls.json";
 
 // assets
 const std::string FilePath::ASSETS_FOLDER = getExeDir() + "/../Assets/";
@@ -65,7 +66,7 @@ const std::string FilePath::LEVEL2_SCENE = FilePath::SAVES_FOLDER + "level2.json
 const std::string FilePath::LEVEL1_TEMP_SCENE = FilePath::SAVES_FOLDER + "level1_temp.json";
 const std::string FilePath::LEVEL2_TEMP_SCENE = FilePath::SAVES_FOLDER + "level2_temp.json";
 const std::string FilePath::SCENES_LIST = getExeDir() + "/../../Assets/others/ScenesList.json";
-
+const std::string FilePath::CONTROLS_FILE = getExeDir() + "/../../Assets/saves/controls.json";
 
 
 

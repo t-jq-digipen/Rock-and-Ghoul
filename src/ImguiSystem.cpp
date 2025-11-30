@@ -1549,7 +1549,8 @@ void ImGuiSystem::Update(float dt)
                             "Toggle All Textboxes",
                             "Toggle All Dialogues",
                             "Toggle All Displays",
-                            "Load Settings"
+                            "Load Settings",
+                            "Load Controls"
                         };
                         int actionCount = (int)(sizeof(actionNames) / sizeof(actionNames[0]));
                         int curr = (int)b.action;

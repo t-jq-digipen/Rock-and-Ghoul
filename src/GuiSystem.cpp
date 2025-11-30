@@ -376,6 +376,54 @@ void GuiSystem::Initialize() {
                 std::cerr << "[Settings] Failed to write settings.json\n";
             }
         });
+
+    // Load "How to Play" page / the Controls scene from controls.json
+    RegisterAction("LoadControls",
+        [](const json&)
+        {
+            SceneManager::Get().LoadScene(FilePath::CONTROLS_FILE);
+            SceneManager::Get().SetTransitionTime(0.f);
+        });
+
+    RegisterAction("ControlsPage1",
+        [](const json&)
+        {
+            auto& gui = GuiSystem::Get();
+            auto& tbs = gui.TextBoxes();
+            auto& btns = gui.Buttons();
+
+            for (auto& tb : tbs)
+            {
+                if (tb.ID >= 5 && tb.ID <= 14) tb.isVisible = true;
+                else if (tb.ID >= 15) tb.isVisible = false;
+            }
+
+            for (auto& b : btns)
+            {
+                if (b.ID == 2)      b.isVisible = false;
+                else if (b.ID == 3) b.isVisible = true;
+            }
+        });
+
+    RegisterAction("ControlsPage2",
+        [](const json&)
+        {
+            auto& gui = GuiSystem::Get();
+            auto& tbs = gui.TextBoxes();
+            auto& btns = gui.Buttons();
+
+            for (auto& tb : tbs)
+            {
+                if (tb.ID >= 5 && tb.ID <= 14) tb.isVisible = false;
+                else if (tb.ID >= 15) tb.isVisible = true;
+            }
+
+            for (auto& b : btns)
+            {
+                if (b.ID == 2)      b.isVisible = true;
+                else if (b.ID == 3) b.isVisible = false;
+            }
+        });
 }
 
 void GuiSystem::AddButton(const ButtonConfig& cfg)
@@ -928,21 +976,25 @@ std::string ButtonActionToString(ButtonAction action)
     case ButtonAction::ToggleAllTextboxes:  return "ToggleAllTextboxes";
     case ButtonAction::ToggleAllDialogues:  return "ToggleAllDialogues";
     case ButtonAction::ToggleAllDisplays:   return "ToggleAllDisplays";
+    case ButtonAction::LoadSettings:        return "LoadSettings";
+    case ButtonAction::LoadControls:        return "LoadControls";
     default:                                return "None";
     }
 }
 
 ButtonAction StringToButtonAction(const std::string& s)
 {
-    if (s == "LoadLevel1")        return ButtonAction::LoadLevel1;
-    if (s == "LoadLevel2")        return ButtonAction::LoadLevel2;
-    if (s == "LoadMainMenu")      return ButtonAction::LoadMainMenu;
-    if (s == "Quit")              return ButtonAction::Quit;
-    if (s == "OpenStateWindow")   return ButtonAction::OpenStateWindow;
-    if (s == "ToggleAllButtons")  return ButtonAction::ToggleAllButtons;
-    if (s == "ToggleAllTextboxes")return ButtonAction::ToggleAllTextboxes;
-    if (s == "ToggleAllDialogues")return ButtonAction::ToggleAllDialogues;
-    if (s == "ToggleAllDisplays") return ButtonAction::ToggleAllDisplays;
+    if (s == "LoadLevel1")          return ButtonAction::LoadLevel1;
+    if (s == "LoadLevel2")          return ButtonAction::LoadLevel2;
+    if (s == "LoadMainMenu")        return ButtonAction::LoadMainMenu;
+    if (s == "Quit")                return ButtonAction::Quit;
+    if (s == "OpenStateWindow")     return ButtonAction::OpenStateWindow;
+    if (s == "ToggleAllButtons")    return ButtonAction::ToggleAllButtons;
+    if (s == "ToggleAllTextboxes")  return ButtonAction::ToggleAllTextboxes;
+    if (s == "ToggleAllDialogues")  return ButtonAction::ToggleAllDialogues;
+    if (s == "ToggleAllDisplays")   return ButtonAction::ToggleAllDisplays;
+    if (s == "LoadSettings")        return ButtonAction::LoadSettings;
+    if (s == "LoadControls")        return ButtonAction::LoadControls;
     return ButtonAction::None;
 }
 
@@ -984,11 +1036,23 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
     case ButtonAction::LoadMainMenu:
         btn.onClick = [this]() {
             SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
-            SceneManager::Get().SetTransitionTime(2.f);
+            SceneManager::Get().SetTransitionTime(0.f);
             };
         break;
     case ButtonAction::Quit:
         btn.onClick = [this]() { CoreEngine::GetInstance().Quit(); };
+        break;
+    case ButtonAction::LoadSettings:
+        btn.onClick = [this]() {
+            SceneManager::Get().QueueLoadScene(FilePath::SETTINGS_FILE);
+            SceneManager::Get().SetTransitionTime(0.f);
+            };
+        break;
+    case ButtonAction::LoadControls:
+        btn.onClick = [this]() {
+            SceneManager::Get().QueueLoadScene(FilePath::CONTROLS_FILE);
+            SceneManager::Get().SetTransitionTime(0.f);
+            };
         break;
     default:
         btn.onClick = nullptr;
