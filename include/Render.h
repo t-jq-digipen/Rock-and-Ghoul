@@ -2,7 +2,7 @@
  * @file        Render.h
  * @author      Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
  * @co-author   Tan Jun Quan          | t.junquan@digipen.edu
- * @date        05 NOV 2025
+ * @date        28 NOV 2025
  *
  * @brief   Rendering system class, consisting function declarations for drawing 2D
  *          primitives, images, and text using OpenGL.
@@ -14,7 +14,7 @@
  * API for use by game systems and tools.
  *
  * Functionalities include:
- * - Drawing shapes (rectangles, circles, lines)
+ * - Drawing shapes (rectangles, circles, lines, custom quads)
  * - Loading, caching, and unloading textures
  * - Drawing images (full, scaled, sub-regions, rotated)
  * - Batched/Instanced rendering for performance optimization
@@ -741,16 +741,112 @@ public:
 
     ResolutionMode resMode = ResolutionMode::Virtual;
 
+
+    /**
+    * @brief Converts a mouse position in an ImGui panel into world-space coordinates.
+    *
+    * Transforms a point expressed in panel-local screen space into the
+    * corresponding world-space position This function accounts for panel
+    * offset, panel size, and any active viewport scaling.
+    *
+    * @param mouse
+    * The mouse position relative to the panel (top-left origin).
+    *
+    * @param panelPos
+    * The absolute top-left pixel position of the panel within the window.
+    *
+    * @param panelSize
+    * The size of the panel in pixels.
+    *
+    * @return
+    * A Vec2 containing the world-space equivalent of the provided panel-space
+    * mouse position.
+    */
     Vec2 PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImVec2& panelSize);
 
+
+
+
+    /**
+    * @brief Converts a world-space position into its corresponding ImGui panel position.
+    *
+    * Maps a point in world coordinates to panel-local screen space for use
+    * with editor UI elements, gizmos, or hit-tests performed inside an
+    * ImGui-driven viewport panel.
+    *
+    * @param world
+    * The world-space position to transform.
+    *
+    * @param panelPos
+    * The absolute top-left pixel position of the panel within the window.
+    *
+    * @param panelSize
+    * The size of the panel in pixels.
+    *
+    * @return
+    * An ImVec2 representing the position of the world point within the panel.
+    */
     ImVec2 WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImVec2& panelSize);
 
+
+
+
+    /**
+    * @brief Enables or disables virtual-resolution rendering.
+    *
+    * Toggles whether the renderer uses a fixed virtual coordinate system
+    * instead of the actual window resolution. This allows UI and gameplay
+    * elements to maintain consistent scaling across varying display sizes
+    * and aspect ratios.
+    *
+    * @param enable
+    * Set to true to activate virtual window scaling, or false to use the
+    * physical window resolution directly.
+    *
+    * @note Changing this setting affects subsequent projection updates.
+    */
     void UseVirtualWindow(bool enable);
 
+
+
+
+    /**
+    * @brief Draws a texture using automatic letterboxing to preserve aspect ratio.
+    *
+    * Renders the provided texture scaled to fit the current window while
+    * maintaining its original aspect ratio. Black bars may be inserted on
+    * the horizontal or vertical sides when needed to avoid stretching.
+    *
+    * @param texture
+    * The OpenGL texture ID to draw.
+    *
+    * @note Intended for fullscreen previews, cutscenes, splash screens, or
+    * image viewing modes.
+    */
     void DrawLetterboxedTexture(GLuint texture);
 
+
+
+
+
     //UI uses screen-space projection
+    /**
+    * @brief Changes the projection mode used by the renderer.
+    *
+    * Updates the renderer to use the specified projection type, which
+    * determines how world and UI elements are transformed into screen
+    * coordinates. This allows switching between world-space projection,
+    * screen-space projection, or virtual-window projection.
+    *
+    * @param type
+    * The projection mode to apply.
+    *
+    * @note Projection changes take effect on the next draw cycle or
+    * after updating the projection matrix.
+    */
     void SetProjectionType(ProjectionType type);
+
+
 
 
     /**
@@ -1023,13 +1119,69 @@ public:
     */
     Vec2 ScreenToWorld(float ndcX, float ndcY) const;
 
+
+
+    /**
+    * @brief Sets the horizontal and vertical scaling factors for the window.
+    *
+    * Updates the internal scale values used when rendering content that must
+    * adapt to different window sizes or aspect ratios. These scale factors
+    * influence how virtual coordinates map onto the physical framebuffer.
+    *
+    * @param scaleX
+    * The horizontal scaling factor.
+    *
+    * @param scaleY
+    * The vertical scaling factor.
+    *
+    * @note This function does not automatically update projection matrices.
+    * Call the appropriate projection update function if needed.
+    */
     void SetWindowScale(float scaleX, float scaleY);
 
+
+
+    /**
+    * @brief Retrieves the effective window scale used for rendering.
+    *
+    * Returns the minimum of the two internal scaling factors (X and Y), which
+    * represents the uniform scale applied when maintaining aspect ratio or
+    * performing letterboxed rendering.
+    *
+    * @return
+    * A float representing the smaller of the X/Y scale values.
+    */
     float GetWindowScale() const { return m_WindowScale.x < m_WindowScale.y ? m_WindowScale.x : m_WindowScale.y; }
 
     //void DrawScreenQuad(GLuint texture, float x, float y, float w, float h);
 
+
+
+    /**
+    * @brief Finalizes and presents the rendered frame to the screen.
+    *
+    * Completes the rendering cycle for the current frame by submitting all
+    * buffered draw commands, resolving the final framebuffer, and displaying
+    * the composed scene. This function is typically called once per frame
+    * after all world and UI rendering has been performed.
+    *
+    * @note PresentScene() should be called only once per frame and always
+    * after all draw operations have completed.
+    */
     void PresentScene();
 
+
+
+    /**
+    * @brief Applies a letterboxed viewport to preserve aspect ratio.
+    *
+    * Computes and sets an OpenGL viewport that maintains the virtual
+    * aspect ratio by introducing horizontal or vertical padding. This ensures
+    * that rendered content is not stretched when the actual window size does
+    * not match the virtual resolution.
+    *
+    * @note This function modifies the OpenGL viewport. Any subsequent viewport
+    * changes should be made after this call if u want the custom behavior 
+    */
     void ApplyLetterboxViewport();
 };

@@ -682,7 +682,15 @@ void GuiSystem::Update(float dt)
         case UIRenderType::CustomQuad:
         {
             auto data = d.m_renderData.GetQuadData();
-            render.DrawCustomQuad(data.v0, data.v1, data.v2, data.v3, data.color);
+
+            float sx = GLApp::width / 1920.f;
+            float sy = GLApp::height / 1080.f;
+
+            auto scale = [&](Vec2 v) { return Vec2{ v.x * sx, v.y * sy };}; //lambda function to calculate scale value for full screen
+
+            render.DrawCustomQuad(scale(data.v0), scale(data.v1), scale(data.v2),scale(data.v3),data.color); //then use scaled values
+
+            //render.DrawCustomQuad(data.v0, data.v1, data.v2, data.v3, data.color);
         } break;
 
         case UIRenderType::Image:
