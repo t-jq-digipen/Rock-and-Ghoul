@@ -60,17 +60,15 @@ void SceneManager::QueueLoadScene(const std::string& path)
 }
 void SceneManager::Update(float dt, float fixedDt, int numSteps)
 {
+    
     if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying()) {
         TogglePause();
-        //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+        std::cout << (IsPaused() ? "[SceneManager] Game paused\n" : "[SceneManager] Game resumed\n");
+    }
+    if (IsPlaying() && IsPaused() && GetSceneType() == ST_MENU) {
+        isPaused = false;
     }
 
-    //if (Input::IsKeyPressed(GLFW_KEY_H) && IsPlaying()) {
-    //    sceneTransitionTime = 0.f;
-    //    sceneFadeDuration = 2.f;
-    //    QueueLoadScene("../Assets/saves/level1.json");
-    //    //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
-    //}
 
     // Only load scenes at SAFE time (start of frame)
     if (!pendingScene.empty())
@@ -117,13 +115,6 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
         }
     }
 
-    // ============================================================
-    // HANDLE GAME PAUSE (P key) - ONLY IN PLAY MODE
-    // ============================================================
-    if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying() && !IsInEditMode()) {
-        TogglePause();
-        std::cout << (IsPaused() ? "[SceneManager] Game paused\n" : "[SceneManager] Game resumed\n");
-    }
 }
 
 

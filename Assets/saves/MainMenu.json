@@ -73,7 +73,7 @@
                 "action": "None",
                 "actionName": "LoadControls",
                 "actionParams": "{}",
-                "label": "CONTROLS",
+                "label": "how to play",
                 "pos": [
                     1650.0,
                     300.0
@@ -88,8 +88,11 @@
             {
                 "ID": 4,
                 "action": "None",
-                "actionName": "Quit",
-                "actionParams": "",
+                "actionName": "LoadScene",
+                "actionParams": {
+                    "duration": 0.0,
+                    "scene": "QuitGameOption"
+                },
                 "label": "QUIT",
                 "pos": [
                     1650.0,
@@ -104,8 +107,7 @@
             }
         ],
         "dialogues": [],
-        "textboxes": [],
-        "displays": []
+        "textboxes": []
     },
     "sceneName": "MainMenu",
     "sceneType": 0,

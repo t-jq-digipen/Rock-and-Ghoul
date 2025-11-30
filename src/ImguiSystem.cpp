@@ -3146,24 +3146,24 @@ void ImGuiSystem::Update(float dt)
                 }
                 rc.SetSprite(sprite);
                 reg.Add_Component<RenderComponent>(e, rc);
-                // reg.Add_Component<Sprite::SpriteComponent>(e, sprite);
+               // reg.Add_Component<Sprite::SpriteComponent>(e, sprite);
 
-                // Physics (AABB sized to sprite; SetStatic(false))
                 ColliderComponent col;
 
-                // Build an AABB around current transform using sprite size
-                Vec2 size = sprite.Get_ImageSize();
-                Vec2 half = size * 0.5f;
-                AABB aabb;
-                aabb.min = t.pos - half;
-                aabb.max = t.pos + half;
+                // image size in world units
+                Vec2 imgPixels = sprite.Get_ImageSize(); // pixel
+                Vec2 baseWorldSize = imgPixels * RenderSystem::unitsPerPixel;  // convert to world units
 
-                // Build AABB
-                col.Set_AABB(aabb);
+                col.aabbhitbox.dim = baseWorldSize;
+
+                // UpdateHitboxes apply TransformComponent scale and set min/max
+                //col.UpdateHitboxes(t.pos, t.scale);
+
                 col.SetActive(true);
                 col.SetTrigger(false);
 
                 reg.Add_Component<ColliderComponent>(e, col);
+
 
                 // Sync hitboxes
                 auto& cRef = reg.Get_Component<ColliderComponent>(e);
@@ -3926,7 +3926,6 @@ void ImGuiSystem::ShowInspectorWindow()
                     }
 
                     spritesheet.EditFrames(temp.row, temp.col_start, temp.col_end, temp.duration, temp.willLoop);
-
                 }
                 break; // end RT_SPRITESHEET
 
