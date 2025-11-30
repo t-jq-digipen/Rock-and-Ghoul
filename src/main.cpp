@@ -94,8 +94,8 @@ int main() {
         JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
     }
 
-#ifndef NO_IMGUI
-    settings.fullscreen = false;
+#ifdef NO_IMGUI
+    settings.fullscreen = true;
 #endif
 
     // USE the loaded settings to initialize window

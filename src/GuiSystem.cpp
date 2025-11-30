@@ -954,21 +954,21 @@ void GuiSystem::Update(float dt)
         {
 
 
-        renderer.DrawRect({ 960.f, 540.f }, 3000.f, 2000.f, { 0.f,0.f,0.f }, 0.f, 0.5f);
+        renderer.DrawRect({ 960.f * scaleX, 540.f * scaleY }, 3000.f * scaleX, 2000.f * scaleY, { 0.f,0.f,0.f }, 0.f, 0.5f);
 
         Image img = CreateImage("../Assets/UI_ExitPanel.PNG");
-        renderer.DrawImageRotated(img, 960, 540, 1000, 1000);
+        renderer.DrawImageRotated(img, 960 * scaleX, 540 * scaleY, 1000 * scaleX, 1000 * scaleY);
         bool hovercontrol = false;
         bool hoverexit = false;
         bool hoverresume = false;
 
         {
-            hovercontrol = (renderer.IsAreaTouched(mouse, { 960,400 }, 400, 190));
+            hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX,400 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hovercontrol ? 0.2f : 0.f;
             Image btnimg = CreateImage("../Assets/UI_MainMenu_NewGame_Button.png");
-            renderer.DrawImageRotated(btnimg, 960.f, 400.f, 400.f, 190.f, 0.f, brightness);
+            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 400.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
-            const Vec2 baseTitlePos = { 960.f, 400.f };
+            const Vec2 baseTitlePos = { 960.f * scaleX, 400.f * scaleY};
             const std::string title = "how to play";
             Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
             float textX = baseTitlePos.x - textSize.x * 0.5f;
@@ -978,13 +978,13 @@ void GuiSystem::Update(float dt)
         }
 
         {
-            hoverexit = (renderer.IsAreaTouched(mouse, { 960,600 }, 400, 190));
+            hoverexit = (renderer.IsAreaTouched(mouse, { 960 * scaleX,600 * scaleY}, 400 * scaleX, 190 * scaleY));
             float brightness = hoverexit ? 0.2f : 0.f;
             Image btnimg = CreateImage("../Assets/UI_MainMenu_QuitButton.png");
-            renderer.DrawImageRotated(btnimg, 960.f, 600.f, 400.f, 190.f, 0.f, brightness);
+            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 600.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
-            const Vec2 baseTitlePos = { 960.f, 600.f };
-            const std::string title = "QUIT";
+            const Vec2 baseTitlePos = { 960.f * scaleX, 600.f * scaleY };
+            const std::string title = "QUIT GAME";
             Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
             float textX = baseTitlePos.x - textSize.x * 0.5f;
             float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
@@ -994,13 +994,13 @@ void GuiSystem::Update(float dt)
 
 
         {
-            hoverresume = (renderer.IsAreaTouched(mouse, { 960,800 }, 400, 190));
+            hoverresume = (renderer.IsAreaTouched(mouse, { 960 * scaleX,800 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hoverresume ? 0.2f : 0.f;
             Image btnimg = CreateImage("../Assets/UI_MainMenu_NewGame_Button.png");
-            renderer.DrawImageRotated(btnimg, 960.f, 800.f, 400.f, 190.f, 0.f, brightness);
+            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 800.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
-            const Vec2 baseTitlePos = { 960.f, 800.f };
-            const std::string title = "RESUME";
+            const Vec2 baseTitlePos = { 960.f * scaleX, 800.f * scaleY };
+            const std::string title = "RESUME GAME";
             Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
             float textX = baseTitlePos.x - textSize.x * 0.5f;
             float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
@@ -1031,15 +1031,15 @@ void GuiSystem::Update(float dt)
         else
         {
             Image pagebg = CreateImage("../Assets/UI_ControlsPage_Background.PNG");
-            renderer.DrawImageRotated(pagebg, 960.f, 540.f, 1920.f, 1080.f);
+            renderer.DrawImageRotated(pagebg, 960.f * scaleX, 540.f * scaleY, 1920.f * scaleX, 1080.f * scaleY);
             baseTextScale = 0.8f;
 
 
-            bool hoverleave = (renderer.IsAreaTouched(mouse, { 100,1000 }, 200, 180));
+            bool hoverleave = (renderer.IsAreaTouched(mouse, { 100 * scaleX,1000 * scaleY }, 200 * scaleX, 180 * scaleY));
             {
                 Image exitbtn = CreateImage("../Assets/UI_ControlsPage_BackButton.png");
                 float brightness = hoverleave ? 0.2f : 0.f;
-                renderer.DrawImageRotated(exitbtn, 100.f, 1000.f, 200.f, 180.f, 0.f, brightness);
+                renderer.DrawImageRotated(exitbtn, 100.f * scaleX, 1000.f * scaleY, 200.f * scaleX, 180.f * scaleY, 0.f, brightness);
             }
             if (hoverleave && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
             {
@@ -1050,7 +1050,7 @@ void GuiSystem::Update(float dt)
             if (controlpage == 0)
             {
                 {
-                    const Vec2 baseTitlePos = { 960.f, 900.f };
+                    const Vec2 baseTitlePos = { 960.f * scaleX, 900.f * scaleY };
                     const std::string title = "CONTROLS";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     float textX = baseTitlePos.x - textSize.x * .8f;
@@ -1059,81 +1059,81 @@ void GuiSystem::Update(float dt)
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 200.f, 650.f };
+                    const Vec2 baseTitlePos = { 200.f * scaleX, 650.f * scaleY };
                     const std::string title = "W - Move Up";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 200.f, 600.f };
+                    const Vec2 baseTitlePos = { 200.f * scaleX, 600.f * scaleY };
                     const std::string title = "S - Move Down";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 200.f, 550.f };
+                    const Vec2 baseTitlePos = { 200.f * scaleX, 550.f * scaleY };
                     const std::string title = "A - Move Left";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 200.f, 500.f };
+                    const Vec2 baseTitlePos = { 200.f * scaleX, 500.f * scaleY };
                     const std::string title = "D - Move Right";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 200.f, 450.f };
+                    const Vec2 baseTitlePos = { 200.f * scaleX, 450.f * scaleY };
                     const std::string title = "Shift - Dash/Dodge";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 800.f, 650.f };
+                    const Vec2 baseTitlePos = { 800.f * scaleX, 650.f * scaleY };
                     const std::string title = "Arrow Keys - Spell Input Sequence";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 800.f, 600.f };
+                    const Vec2 baseTitlePos = { 800.f * scaleX, 600.f * scaleY };
                     const std::string title = "1 / 2 / 3 - Use Song Slot 1-2-3";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 800.f, 550.f };
+                    const Vec2 baseTitlePos = { 800.f * scaleX, 550.f * scaleY };
                     const std::string title = "Q - Cycle Through Element";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 800.f, 500.f };
+                    const Vec2 baseTitlePos = { 800.f * scaleX, 500.f * scaleY };
                     const std::string title = "E - Melee Attack";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 800.f, 450.f };
+                    const Vec2 baseTitlePos = { 800.f * scaleX, 450.f * scaleY };
                     const std::string title = "ESC - Pause/Resume Game";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
 
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
-                bool hoverpage = (renderer.IsAreaTouched(mouse, { 120,150 }, 180, 150));
+                bool hoverpage = (renderer.IsAreaTouched(mouse, { 120 * scaleX,150 * scaleY }, 180 * scaleX, 150 * scaleY));
                 {
                     Image pgbtn = CreateImage("../Assets/UI_ControlsPage_ForwardPageLogo.png");
                     float brightness = hoverpage ? 0.2f : 0.f;
-                    renderer.DrawImageRotated(pgbtn, 120.f, 100, 180.f, 150.f, 0.f, brightness);
+                    renderer.DrawImageRotated(pgbtn, 120.f * scaleX, 100 * scaleY, 180.f * scaleX, 150.f * scaleY, 0.f, brightness);
                 }
                 if (hoverpage && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
                 {
@@ -1143,45 +1143,45 @@ void GuiSystem::Update(float dt)
             else 
             {
                 {
-                    const Vec2 baseTitlePos = { 700.f, 650.f };
+                    const Vec2 baseTitlePos = { 700.f * scaleX, 650.f * scaleY };
                     const std::string title = "Song List:";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 700.f, 600.f };
+                    const Vec2 baseTitlePos = { 700.f * scaleX, 600.f * scaleY };
                     const std::string title = "Soundwave Attack -> Up, Down";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 700.f, 550.f };
+                    const Vec2 baseTitlePos = { 700.f * scaleX, 550.f * scaleY };
                     const std::string title = "AOE Attack -> Up, Left, Down";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 700.f, 500.f };
+                    const Vec2 baseTitlePos = { 700.f * scaleX, 500.f * scaleY };
                     const std::string title = "Shield -> Down, Down, Right";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 700.f, 450.f };
+                    const Vec2 baseTitlePos = { 700.f * scaleX, 450.f * scaleY };
                     const std::string title = "Healing -> Right, Up, Right";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
                 }
 
-                bool hoverpage = (renderer.IsAreaTouched(mouse, { 120,200 }, 180, 150));
+                bool hoverpage = (renderer.IsAreaTouched(mouse, { 120 * scaleX,200 * scaleY }, 180 * scaleX, 150 * scaleY));
                 {
                     Image pgbtn = CreateImage("../Assets/UI_ControlsPage_BackwardsPageLogo.png");
                     float brightness = hoverpage ? 0.2f : 0.f;
-                    renderer.DrawImageRotated(pgbtn, 120.f, 200.f, 180.f, 150.f, 0.f, brightness);
+                    renderer.DrawImageRotated(pgbtn, 120.f * scaleX, 200.f * scaleY, 180.f * scaleX, 150.f * scaleY, 0.f, brightness);
                 }
                 if (hoverpage && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
                 {
