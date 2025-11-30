@@ -91,10 +91,12 @@ struct SavedScene {
         std::string label;
         Vec2 pos;
         Vec2 size;
-        //Colour3 color;
+        Colour3 color;
+        std::string shape;
         std::string renderData;
-        //std::string shape;
         std::string action;
+        std::string actionName{"{}"};
+        json actionParams{"{}"};
         int soundType = 0; // default to PLAY(0)
     };
     std::vector<SavedButton> guiButtons;

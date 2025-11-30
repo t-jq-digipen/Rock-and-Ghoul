@@ -616,6 +616,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"renderData", btn.renderData},
             //{"shape", btn.shape},
             {"action", btn.action},
+            {"actionName", btn.actionName},
+            {"actionParams", btn.actionParams},
             {"soundType", btn.soundType }
             });
     }
@@ -703,6 +705,14 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
             {
                 b.renderData = btn["renderData"];
             }
+            if (btn.contains("actionName")) {
+                b.actionName = btn["actionName"]; 
+            }
+            else { b.actionName = "{}"; }
+            if (btn.contains("actionParams")) {
+                b.actionParams = btn["actionParams"]; 
+            }
+            else { b.actionParams = "{}"; }
             //b.shape = btn["shape"];
             b.action = btn.value("action", "");
             b.soundType = btn.value("soundType", 0);
@@ -873,6 +883,8 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sb.renderData = b.m_renderData.Serialize();
             //sb.shape = ButtonShapeToString(b.shape);
             sb.action = ButtonActionToString(b.action); 
+            sb.actionName = b.actionName;
+            sb.actionParams = b.actionParams;
             sb.soundType = static_cast<int>(b.soundType);
             scene.guiButtons.push_back(sb);
         }
@@ -964,7 +976,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         // Load entities
         for (const auto& savedEntity : scene.entities) {
-            Registry::Get().Load_Entity(savedEntity);
+            Entity e = Registry::Get().Load_Entity(savedEntity);
         }
 
         // Load backgrounds
@@ -996,6 +1008,8 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             }
             //cfg.shape = StringToButtonShape(b.shape);
             cfg.action = StringToButtonAction(b.action);
+            cfg.actionName = b.actionName;
+            cfg.actionParams = b.actionParams;
             cfg.soundType = static_cast<AudioSystem::ButtonType>(b.soundType);
 
             if (b.action == "LoadLevel1") {
@@ -1166,7 +1180,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             GuiSystem::Get().AddDialogue(cfg);
         }
 
-        //SavedScene::SavedCamera& camSet = scene.camSettings;
+        SavedScene::SavedCamera& camSet = scene.camSettings;
 
         // Camera settings
         Camera& cam = Camera::GetInstance();
@@ -1298,8 +1312,8 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
 
         return e;
     }
-    catch (const std::exception& e) {
-        std::cerr << "Error loading entity from file: " << filepath << e.what() << std::endl;
+    catch (const std::exception& ex) {
+        std::cerr << "Error loading entity from file: " << filepath << std::endl;
         return 0;
     }
 }

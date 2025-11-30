@@ -1,22 +1,21 @@
 /* ========================================================
- * @file        ImguiSystem.cpp
+ * @file        ImguiSystem.h
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
  * @date        06 NOV 2025
  *
  * @brief
  * Implements the ImGuiSystem, which provides the in-game editor
  * and debugging interface for the engine.
  *
- *
- * - Engine Info: Displays Framerate and system timings
- * - Collision + Scene: Shows collider stats, spatial grid stats and scene management
- * - Entity Editor + Prefabs: Allows editing, adding, and saving entities.
- * - Assets: Browser for textures and audio files via drag-and-drop import.
+ * - Engine Info: Displays framerate and system timings.
+ * - Collision: Shows collider information, spatial grid details, collision debugging options and collision layer matrix.
+ * - Scene: Handles scene loading, saving, backgrounds, and scene configuration
+ * - Entity Editor + Prefabs: Allows editing, adding, duplicating, deleting, and saving entities and prefabs.
+ * - Assets: Provides a browser for textures and audio files with drag-and-drop import support.
  * - Game View: Renders the current scene with play/stop simulation controls.
- * - Editor Camera: Provides overview of the level camera.
+ * - Editor Camera: Provides a free-camera overview for navigating the level during editing.
  *
- * It also supports prefab placement, entity dragging, file drag-and-drop
- * imports, and scene.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================

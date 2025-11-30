@@ -574,38 +574,30 @@ void GLApp::ToggleFullscreen()
 
     if (is_fullscreen)
     {
-        // Switch to Windowed
-        std::cout << "[GLApp] Switching to Windowed mode ("
-            << windowed_width << "x" << windowed_height << ")\n";
+        // switch to window
+        std::cout << "[GLApp] Switching to Windowed mode (" << windowed_width << "x" << windowed_height << ")\n";
 
-        glfwSetWindowMonitor(ptr_window, nullptr,
-            windowed_pos_x, windowed_pos_y,
-            windowed_width, windowed_height,
-            GLFW_DONT_CARE);
+        glfwSetWindowMonitor(ptr_window, nullptr, windowed_pos_x, windowed_pos_y, windowed_width, windowed_height, GLFW_DONT_CARE);
         GLApp::width = windowed_width;
         GLApp::height = windowed_height;
         is_fullscreen = false;
     }
     else
     {
-        // Save current windowed position and size before going fullscreen
+        // save current window position and size before going fullscreen
         glfwGetWindowPos(ptr_window, &windowed_pos_x, &windowed_pos_y);
         glfwGetWindowSize(ptr_window, &windowed_width, &windowed_height);
 
-        // Switch to Fullscreen
-        std::cout << "[GLApp] Switching to Fullscreen mode ("
-            << mode->width << "x" << mode->height << ")\n";
+        // switch to Fullscreen
+        std::cout << "[GLApp] Switching to Fullscreen mode ("  << mode->width << "x" << mode->height << ")\n";
 
-        glfwSetWindowMonitor(ptr_window, monitor,
-            0, 0,
-            mode->width, mode->height,
-            mode->refreshRate);
+        glfwSetWindowMonitor(ptr_window, monitor,  0, 0, mode->width, mode->height, mode->refreshRate);
         GLApp::width = mode->width;
         GLApp::height = mode->height;
         is_fullscreen = true;
     }
 
-    // Trigger framebuffer size callback to update viewport
+    //framebuffer size callback to update viewport
     int newWidth, newHeight;
     glfwGetFramebufferSize(ptr_window, &newWidth, &newHeight);
     fbsize_cb(ptr_window, newWidth, newHeight);
@@ -621,32 +613,31 @@ void GLApp::ToggleFullscreen()
 
 Sets the window to windowed mode with specified dimensions.
 */
-void GLApp::SetWindowedMode(int p_width, int p_height)
+void GLApp::SetWindowedMode(int width, int height)
 {
     if (!ptr_window) return;
 
     if (is_fullscreen)
     {
-        // Exit fullscreen first
+        // exit fullscreen first
         ToggleFullscreen();
     }
 
-    windowed_width = p_width;
-    windowed_height = p_height;
+    windowed_width = width;
+    windowed_height = height;
 
-    std::cout << "[GLApp] Setting windowed resolution: "
-        << p_width << "x" << p_height << "\n";
+    std::cout << "[GLApp] Setting windowed resolution: "  << width << "x" << height << "\n";
 
-    glfwSetWindowSize(ptr_window, p_width, p_height);
+    glfwSetWindowSize(ptr_window, width, height);
 
-    // Center window on screen
+    // center window on screen
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-    windowed_pos_x = (mode->width - p_width) / 2;
-    windowed_pos_y = (mode->height - p_height) / 2;
+    windowed_pos_x = (mode->width - width) / 2;
+    windowed_pos_y = (mode->height - height) / 2;
     glfwSetWindowPos(ptr_window, windowed_pos_x, windowed_pos_y);
 
-    // Update viewport
+    // update viewport
     int newWidth, newHeight;
     glfwGetFramebufferSize(ptr_window, &newWidth, &newHeight);
     fbsize_cb(ptr_window, newWidth, newHeight);

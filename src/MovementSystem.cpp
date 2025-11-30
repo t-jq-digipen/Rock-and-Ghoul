@@ -18,15 +18,23 @@
 #include "MovementSystem.h"
 #include "PhysicsSystem.h"
 #include "CoreEngine.h"
+#include "LogicSystem.h"
+#include "GameScripts.h"
 
 void MovementSystem::Initialize()
 {
+	LogicSystem& logicSys = LogicSystem::Get();
+	// mover
+	BehaviourFCT move;
+	move.Init = [](Entity e) { MainMenuMover::Start(e); };
+	move.Update = [](Entity e, float dt) { MainMenuMover::Update(e, dt); };
+	move.End = [](Entity e) { MainMenuMover::End(e); };
+	logicSys.RegisterScript("Movey", move, ScriptID::MAINMENU_BG);
 
 }
 
 void MovementSystem::Update(float dt)
 {
-	(void)dt;
 
 	// Define movement logic (player input handled in PlayerSystem)
 

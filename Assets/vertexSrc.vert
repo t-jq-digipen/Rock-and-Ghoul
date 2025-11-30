@@ -1,7 +1,7 @@
 /*!
 @file       vertexSrc.vert
 @author   kervinguancheng.ong@digipen.edu
-@date    	  02/10/2025
+@date    	  28/11/2025
 
 This file implements the vertex shader required for regular rendering
 
