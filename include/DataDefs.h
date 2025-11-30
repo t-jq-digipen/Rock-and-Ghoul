@@ -146,7 +146,7 @@ struct SavedScene {
     /**
      * @brief Default constructor with no name.
      */
-    SavedScene() : sceneName("") {}
+    //SavedScene() : sceneName("") {}
 };
 
 /**
