@@ -187,7 +187,6 @@ namespace
         }
         catch (const std::exception&)
         {
-            std::cerr << "Error: " << e.what() << std::endl;
             return false;
         }
     }
@@ -208,7 +207,6 @@ namespace
         }
         catch (const std::exception&)
         {
-            std::cerr << "Error: " << e.what() << std::endl;
             return false;
         }
     }
@@ -395,7 +393,6 @@ void ImportAudioFile(const std::string& srcPathStr)
     }
     catch (const fs::filesystem_error&)
     {
-        std::cerr << "Error: " << e.what() << std::endl;
         return;
     }
 
