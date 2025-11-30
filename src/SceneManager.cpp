@@ -62,7 +62,7 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
 {
     if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying()) {
         TogglePause();
-        //std::cout << (sm.IsPaused() ? "[AudioManager] Game paused (music continues)\n" : "[AudioManager] Game resumed\n");
+        std::cout << (IsPaused() ? "[SceneManager] Game paused\n" : "[SceneManager] Game resumed\n");
     }
 
     //if (Input::IsKeyPressed(GLFW_KEY_H) && IsPlaying()) {
@@ -117,13 +117,6 @@ void SceneManager::Update(float dt, float fixedDt, int numSteps)
         }
     }
 
-    // ============================================================
-    // HANDLE GAME PAUSE (P key) - ONLY IN PLAY MODE
-    // ============================================================
-    if (Input::IsKeyPressed(GLFW_KEY_P) && IsPlaying() && !IsInEditMode()) {
-        TogglePause();
-        std::cout << (IsPaused() ? "[SceneManager] Game paused\n" : "[SceneManager] Game resumed\n");
-    }
 }
 
 
