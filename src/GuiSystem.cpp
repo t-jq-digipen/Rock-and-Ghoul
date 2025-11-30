@@ -1139,3 +1139,47 @@ bool GuiSystem::SetDisplaySheetState(int ID, unsigned int frame) {
 
     return false;
 }
+
+
+bool GuiSystem::GetDisplayQuad(int ID, Vec2& v0, Vec2& v1, Vec2& v2, Vec2& v3) {
+    for (auto& display : displays)
+    {
+        if (display.ID != ID) continue;
+
+        if (display.m_renderData.GetRenderType() != UIRenderType::CustomQuad)
+        {
+            std::cerr << "Tried to get quad data from element " << ID << " but its not quad\n";
+            return false;
+        }
+
+        UICustomQuadRender quad = display.m_renderData.GetQuadData();
+        v0 = quad.v0;
+        v1 = quad.v1;
+        v2 = quad.v2;
+        v3 = quad.v3;
+        return true;
+    }
+    return false;
+}
+
+bool GuiSystem::SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3) {
+    for (auto& display : displays)
+    {
+        if (display.ID != ID) continue;
+
+        if (display.m_renderData.GetRenderType() != UIRenderType::CustomQuad)
+        {
+            std::cerr << "Tried to get quad data from element " << ID << " but its not quad\n";
+            return false;
+        }
+
+        UICustomQuadRender& quad = display.m_renderData.GetQuadData();
+        
+        quad.v0 = v0;
+        quad.v1 = v1;
+        quad.v2 = v2;
+        quad.v3 = v3;
+        return true;
+    }
+    return false;
+}

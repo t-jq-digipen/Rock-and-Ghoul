@@ -511,6 +511,7 @@ namespace RockScript {
 	//Arrow key codes for easier reference
 	enum ArrowKey { UP = GLFW_KEY_UP, DOWN = GLFW_KEY_DOWN, LEFT = GLFW_KEY_LEFT, RIGHT = GLFW_KEY_RIGHT };
 
+
 	//Record key presses in buffer
 	void RecordInput(int key) {
 		inputBuffer.push_back(key);
@@ -627,7 +628,6 @@ namespace RockScript {
 
 	void ApplyElementToProjectile(Entity proj)
 	{
-		//auto& registry = Registry::Get();
 
 		//Damage Component in future
 
@@ -673,11 +673,11 @@ namespace RockScript {
 		auto& registry = Registry::Get();
 		auto& trans = registry.Get_Component<TransformComponent>(eID);
 
+		// ARIPUTSOUND [spell cast]
 		switch (spell.type)
 		{
 		case SpellType::SOUNDWAVE:
 		{
-			// ARIPUTSOUND [soundwave]
 
 			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y);
 			Entity wave = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "SoundwaveFX.json", trans.pos.x, trans.pos.y);
@@ -697,7 +697,6 @@ namespace RockScript {
 		}
 		case SpellType::AOE:
 		{
-			// ARIPUTSOUND [AoE]
 
 			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
 			float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
@@ -708,7 +707,6 @@ namespace RockScript {
 			break;
 		}
 		case SpellType::SHIELD:
-			// ARIPUTSOUND [Shield]
 
 			RockScript::isVulnerable = false;
 			RockScript::shieldTimer = 0.f;
@@ -720,7 +718,6 @@ namespace RockScript {
 			
 			break;
 		case SpellType::HEAL:
-			// ARIPUTSOUND [Healing]
 
 			if (registry.Has_Component<HealthComponent>(eID)) {
 				auto& health = registry.Get_Component<HealthComponent>(eID);
@@ -918,6 +915,39 @@ namespace RockScript {
 		Sprite::SpriteSheet& spriteSheet = renderComp.GetSpriteSheet();
 
 		spriteSheet.SetState(animstate);
+
+		if (registry.Has_Component<HealthComponent>(eID))
+		{
+			HealthComponent& hpComp = registry.Get_Component<HealthComponent>(eID);
+			if (hpComp.maxhp == 0) return;
+
+			if (Input::IsKeyHeld(GLFW_KEY_Y)) hpComp.currhp -= 20 * dt;
+
+			if (Input::IsKeyHeld(GLFW_KEY_U)) hpComp.currhp += 20 * dt;
+
+			hpComp.currhp = std::clamp(hpComp.currhp, 0.f, hpComp.maxhp);
+
+
+
+			GuiSystem& UIsys = GuiSystem::Get();
+			UIGroup& stats = UIsys.GetGroup("Stats");
+			
+			Vec2 v0, v1, v2, v3;
+			// Get background quad
+			UIsys.GetDisplayQuad(stats.memberIDs[1], v0, v1, v2, v3);
+			// Calculate position for new quad
+			float amount = hpComp.currhp / hpComp.maxhp;
+
+			Vec2 newV1 = v0 + (v1 - v0) * amount;   // bottom right moves left
+			Vec2 newV2 = v3 + (v2 - v3) * amount;   // top right moves left
+
+			UIsys.SetDisplayQuad(stats.memberIDs[2], v0, newV1, newV2, v3);
+
+			int state = (hpComp.currhp > 0.2f * hpComp.maxhp) ? 0 : 1;
+			UIsys.SetDisplaySheetState(stats.memberIDs[4], state);
+
+			
+		}
 	}
 
 	inline void End(Entity e)

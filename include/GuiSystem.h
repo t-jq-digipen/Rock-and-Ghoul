@@ -499,6 +499,10 @@ public:
 
     bool SetDisplaySheetState(int uiID, unsigned int frame);
 
+    bool GetDisplayQuad(int ID, Vec2& v0, Vec2& v1, Vec2& v2, Vec2& v3);
+
+    bool SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3);
+
 private:
 
     std::vector<ButtonConfig> buttons;
@@ -534,6 +538,7 @@ private:
 
     // state window overlay
     bool stateWindowActive = false;
+
 };
 
 // inline GuiSystem guiSystem;

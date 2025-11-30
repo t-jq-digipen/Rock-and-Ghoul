@@ -516,6 +516,8 @@ void Render::DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, cons
 
     //reset for future draw calls 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseCustomVerts"), GL_FALSE);
+    // Reset color so next sprite draw isn't tinted
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
 
     glUseProgram(0);
 }

@@ -215,8 +215,8 @@ struct HealthComponent {
 
 	Editor::ComponentData EditorData() {
 		Editor::ComponentData ret("Health");
-		ret.Add_Data("currentHP",	Editor::Widget_Float{&currhp, true, 0.f, maxhp} );
-		ret.Add_Data("maxHP",		Editor::Widget_Float{&maxhp, true, 0.f, 100.f} );
+		ret.Add_Data("currentHP",	Editor::Widget_Float{&currhp} );
+		ret.Add_Data("maxHP",		Editor::Widget_Float{&maxhp} );
 
 		return ret;
 	}
