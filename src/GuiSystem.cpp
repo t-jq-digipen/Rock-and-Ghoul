@@ -1,12 +1,25 @@
 /* ========================================================
  * @file        GuiSystem.cpp
- * @author		Manfred Sim | manfred.sim@digipen.edu
+ * @author      Manfred Sim | manfred.sim@digipen.edu
+ * @co-author	Tan Jun Quan | t.junquan@digipen.edu
  * @date        30 OCT 2025
  *
  * @brief
  *
  * Implements the GuiSystem, which provides a in-game editor 
- * for UI elements (inside the ImGui editor).
+ * for UI elements (inside the ImGui editor). This source file
+ * defines rendering, interaction, actions and utility functions
+ * for:
+ * - Buttons
+ * - Textboxes
+ * - Dialogues
+ * - Displays
+ * 
+ * It also implements the following:
+ * - Global UI ID management
+ * - Settings page (volume bar + save settings)
+ * - Controls page ("How to Play")
+ * - State window overlay (for jumping to different scenes)
  *
  * Copyright � 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -22,19 +35,34 @@
 #include "SceneManager.h"
 #include <FilePath.h>
 
+// Call Audio Manager for GuiSystem
 AudioManager* GuiSystem::audio = nullptr;
 
 // Settings
+// Master Volume (min 0.f, max 1.f)
 static float settingsVolume = 1.f;
+
+// Step size for volume up/down actions
 static const float volStep = 0.05f;
+
+// ID for the display ID as loaded from the settings scene
 static const int settingsBarFillID = 7; // to match display ID in settings.json
+
+// Maximum width of the settings volume bar fill
 static const float settingsBarMaxW = 1000.f;
+
+// Flag to sync settings volume bar fill size after scene loads
 bool settingsNeedSync = false;
 
 // ==============================
 // UI_RenderData & variants
 // ==============================
 
+
+/**
+ * @brief       Sets the render type of the selected UI element.
+ * @param type  The UI render type to be determined.
+ */
 void UI_RenderData::SetRenderType(UIRenderType type) {
     switch (type)
     {
@@ -59,50 +87,100 @@ void UI_RenderData::SetRenderType(UIRenderType type) {
     }
 }
 
+/**
+ * @brief   Returns the current render variant type of a UI element.
+ * @return  The UIRenderType, or UIRenderType::None if no data.
+ */
+
 UIRenderType UI_RenderData::GetRenderType() const {
     if (!data) { return UIRenderType::None; }
     return data->GetType();
 }
+
+/**
+ * @brief   The accessor for shape render data.
+ * @return  The UIShapeRender& reference to the underlying shape render data.
+ */
 
 UIShapeRender& UI_RenderData::GetShapeData() {
     if (data->GetType() != UIRenderType::Shape) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
     return *static_cast<UIShapeRender*>(data.get());
 }
 
+/**
+ * @brief   The const accessor for shape render data.
+ * @return  The UIShapeRender& const reference to the underlying shape render data.
+ */
+
 const UIShapeRender& UI_RenderData::GetShapeData() const {
     if (data->GetType() != UIRenderType::Shape) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
     return *static_cast<const UIShapeRender*>(data.get());
 }
+
+/**
+ * @brief   The accessor for custom quad render data.
+ * @return  The UICustomQuadRender& reference to the underlying quad render data.
+ */
 
 UICustomQuadRender& UI_RenderData::GetQuadData() {
     if (data->GetType() != UIRenderType::CustomQuad) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
     return *static_cast<UICustomQuadRender*>(data.get());
 }
 
+/**
+ * @brief   The const accessor for custom quad render data.
+ * @return  The UICustomQuadRender& const reference to the underlying quad render data.
+ */
+
 const UICustomQuadRender& UI_RenderData::GetQuadData() const {
     if (data->GetType() != UIRenderType::CustomQuad) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
     return *static_cast<const UICustomQuadRender*>(data.get());
 }
+
+/**
+ * @brief   The accessor for image render data.
+ * @return  The UIImageRender& reference to the underlying image render data.
+ */
 
 UIImageRender& UI_RenderData::GetImageData() {
     if (data->GetType() != UIRenderType::Image) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
     return *static_cast<UIImageRender*>(data.get());
 }
 
+/**
+ * @brief   The const accessor for image render data.
+ * @return  The UIImageRender& const reference to the underlying image render data.
+ */
+
 const UIImageRender& UI_RenderData::GetImageData() const {
     if (data->GetType() != UIRenderType::Image) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
     return *static_cast<const UIImageRender*>(data.get());
 }
+
+/**
+ * @brief   The accessor for image sheet render data.
+ * @return  The UIImageSheetRender& reference to the underlying image sheet render data.
+ */
 
 UIImageSheetRender& UI_RenderData::GetImageSheetData() {
     if (data->GetType() != UIRenderType::ImageSheet) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
     return *static_cast<UIImageSheetRender*>(data.get());
 }
 
+/**
+ * @brief   The const accessor for image sheet render data.
+ * @return  The UIImageSheetRender& const reference to the underlying image sheet render data.
+ */
+
 const UIImageSheetRender& UI_RenderData::GetImageSheetData() const {
     if (data->GetType() != UIRenderType::ImageSheet) { throw std::runtime_error("trying to get shape from ui button but is not shape"); }
     return *static_cast<const UIImageSheetRender*>(data.get());
 }
+
+/**
+ * @brief   Serializes the current render data into a JSON string.
+ * @return  JSON string representation of the render data, or "{}" if none.
+ */
 
 std::string UI_RenderData::Serialize() const {
     using json = nlohmann::json;
@@ -122,6 +200,13 @@ std::string UI_RenderData::Serialize() const {
     j["data"] = data->Serialize();
     return j.dump();
 }
+
+/**
+ * @brief           Deserializes the current render data from a JSON string previously 
+                    produced by Serialize().
+ * @param dataStr   The JSON string containing type and data.
+ * @return          JSON string representation of the render data, or "{}" if none.
+ */
 
 UI_RenderData UI_RenderData::DeSerialize(const std::string& dataStr) {
     using json = nlohmann::json;
@@ -150,6 +235,17 @@ UI_RenderData UI_RenderData::DeSerialize(const std::string& dataStr) {
 // ==============================
 // ButtonConfig draw
 // ==============================
+
+/**
+ * @brief           Renders the button using its current render data and hover state.
+ *
+ *                  The specific draw behavior depends on the ButtonConfig::m_renderData type:
+ *                  - Shape: rectangle, circle, or rounded rectangle
+ *                  - CustomQuad: arbitrary quad with color
+ *                  - Image: textured quad
+ *                  - ImageSheet: sub-rectangle of a spritesheet
+ * @param hovered   True if the mouse is currently hovering the button.
+ */
 
 void ButtonConfig::DrawButton(bool hovered) {
     Render& render = Render::GetInstance();
@@ -234,11 +330,19 @@ void ButtonConfig::DrawButton(bool hovered) {
 // GuiSystem impl
 // ==============================
 
+/**
+ * @brief           Sets the shared AudioManager pointer used by the GUI system.
+ * @param audioMgr  Pointer to the AudioManager instance.
+ */
+
 void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
     audio = audioMgr;
 }
 
-// Helper to adjust volume based on settings
+/**
+ * @brief   Helper to apply the current settings volume to the music channel.
+ * @param v Normalized volume (0.0–1.0).
+ */
 static void ApplyNewVolume(float v)
 {
     FMOD::Channel* ch = AudioManager::Get().GetCurrentMusicChannel();
@@ -247,6 +351,15 @@ static void ApplyNewVolume(float v)
         ch->setVolume(std::clamp(v, 0.f, 1.f));
     }
 }
+
+/**
+ * @brief   Initializes the GUI system and registers all button actions.
+ *          Clears all UI containers, resets ID allocation and registers:
+ *          - Scene loading actions (LoadScene, LoadSettings, LoadControls)
+ *          - Quit the application
+ *          - Volume up/down + save settings
+ *          - Controls page paging actions
+ */
 
 void GuiSystem::Initialize() {
     buttons.clear();
@@ -386,6 +499,7 @@ void GuiSystem::Initialize() {
             SceneManager::Get().SetTransitionTime(0.f);
         });
 
+    // Controls page 1: show the first page of textboxes
     RegisterAction("ControlsPage1",
         [](const json&)
         {
@@ -406,6 +520,7 @@ void GuiSystem::Initialize() {
             }
         });
 
+    // Controls page 1: show the second page of textboxes
     RegisterAction("ControlsPage2",
         [](const json&)
         {
@@ -427,6 +542,11 @@ void GuiSystem::Initialize() {
         });
 }
 
+/**
+ * @brief       Adds a new button to the GUI system with a unique ID.
+ * @param cfg   The button configuration to add.
+ */
+
 void GuiSystem::AddButton(const ButtonConfig& cfg)
 {
     ButtonConfig copy = cfg;
@@ -440,6 +560,11 @@ void GuiSystem::AddButton(const ButtonConfig& cfg)
     buttons.push_back(copy);
 }
 
+/**
+ * @brief       Adds a new textbox to the GUI system with a unique ID.
+ * @param cfg   The textbox configuration to add.
+ */
+
 void GuiSystem::AddTextBox(const TextBoxConfig& cfg)
 {
     TextBoxConfig copy = cfg;
@@ -450,6 +575,11 @@ void GuiSystem::AddTextBox(const TextBoxConfig& cfg)
     textboxes.push_back(copy);
 }
 
+/**
+ * @brief       Adds a new dialogue to the GUI system with a unique ID.
+ * @param cfg   The dialogue configuration to add.
+ */
+
 void GuiSystem::AddDialogue(const DialogueConfig& cfg)
 {
     DialogueConfig copy = cfg;
@@ -457,6 +587,11 @@ void GuiSystem::AddDialogue(const DialogueConfig& cfg)
     else nextUIID = std::max(nextUIID, copy.ID + 1);
     dialogues.push_back(std::move(copy));
 }
+
+/**
+ * @brief       Adds a new display to the GUI system with a unique ID.
+ * @param cfg   The display configuration to add.
+ */
 
 void GuiSystem::AddDisplay(const DisplayConfig& cfg)
 {
@@ -467,6 +602,14 @@ void GuiSystem::AddDisplay(const DisplayConfig& cfg)
     else nextUIID = std::max(nextUIID, copy.ID + 1);
     displays.push_back(std::move(copy));
 }
+
+/**
+ * @brief           Helper to spawn a DialogueConfig from a JSON dialogue file and textbox template.
+ * @param jsonPath  Path to the dialogue JSON file.
+ * @param textBox   Template textbox configuration (position, scale, etc.).
+ * @param sceneID   Scene ID within the dialogue file (defaults to "0").
+ * @return          Index of the newly added dialogue in dialogues container, or -1 on failure.
+ */
 
 int GuiSystem::AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox, const std::string& sceneID)
 {
@@ -487,15 +630,35 @@ int GuiSystem::AddDialogueFromJson(const std::string& jsonPath, const TextBoxCon
     return static_cast<int>(dialogues.size()) - 1;
 }
 
+/**
+ * @brief           Enables or disables GUI edit mode.
+ * @param isEditing True to enable edit mode, false to disable.
+ */
+
 void GuiSystem::SetEditMode(bool isEditing)
 {
     editMode = isEditing;
 }
 
+/**
+ * @brief   Returns whether GUI is currently in edit mode.
+ * @return  True if editing, false otherwise.
+ */
+
 bool GuiSystem::GetEditMode() const
 {
     return editMode;
 }
+
+/**
+ * @brief       Main per-frame update for the GUI system.
+ *              Functions:
+ *              - Handles dialogue progression on SPACE (when not editing)
+ *              - Converts mouse coords into game-view space
+ *              - Builds draw order and render all UI elements (buttons, textboxes, dialogues, displays)
+ *              - Applies transition overlay and state window rendering
+ * @param dt    Delta time in seconds since last frame.
+ */
 
 void GuiSystem::Update(float dt)
 {
@@ -876,6 +1039,7 @@ void GuiSystem::Update(float dt)
     }; // end DRAW DISPLAY
     // --------------------------------------------------
 
+    // Sync for settings volume bar after scene load
     if (settingsNeedSync)
     {
         for (auto& dp : displays)
@@ -931,6 +1095,11 @@ void GuiSystem::Update(float dt)
     render.useCamera = prevCam;
 }
 
+/**
+ * @brief   Shuts down the GUI system and clears all managed UI elements. 
+            Resets the next UI ID to 1.
+ */
+
 void GuiSystem::Shutdown() {
     buttons.clear();
     textboxes.clear();
@@ -939,6 +1108,12 @@ void GuiSystem::Shutdown() {
     nextUIID = 1;
     //audio = nullptr;
 }
+
+/**
+ * @brief       Converts a ButtonShape enum to its corresponding string representation.
+ * @param shape ButtonShape enum value.
+ * @return      String representation.
+ */
 
 std::string ButtonShapeToString(ButtonShape shape) {
     switch (shape) {
@@ -949,11 +1124,25 @@ std::string ButtonShapeToString(ButtonShape shape) {
     }
 }
 
-ButtonShape StringToButtonShape(const std::string& s) {
+/**
+ * @brief   Converts a string into a ButtonShape enum.
+ *          Defaults to ButtonShape::Rectangle if the string is unrecognized.
+ * @param s Input string (e.g. "Rounded", "Circle").
+ * @return  ButtonShape parsed enum.
+ */
+
+ButtonShape StringToButtonShape(const std::string& s) 
+{
     if (s == "Rounded") return ButtonShape::Rounded;
     if (s == "Circle")  return ButtonShape::Circle;
     return ButtonShape::Rectangle;
 }
+
+/**
+ * @brief           Converts a ButtonAction enum to a string.
+ * @param action    ButtonAction value.
+ * @return          String representation.
+ */
 
 std::string ButtonActionToString(ButtonAction action)
 {
@@ -975,6 +1164,12 @@ std::string ButtonActionToString(ButtonAction action)
     }
 }
 
+/**
+ * @brief   Converts string representation of action into ButtonAction enum.
+ * @param s String (e.g. "LoadMainMenu", "Quit").
+ * @return  ButtonAction parsed enum or ButtonAction::None for unknown strings.
+ */
+
 ButtonAction StringToButtonAction(const std::string& s)
 {
     if (s == "LoadLevel1")          return ButtonAction::LoadLevel1;
@@ -991,6 +1186,10 @@ ButtonAction StringToButtonAction(const std::string& s)
     return ButtonAction::None;
 }
 
+/**
+ * @brief   Clears all managed UI elements. Resets the next UI ID to 1.
+ */
+
 void GuiSystem::Clear()
 {
     buttons.clear();
@@ -1000,6 +1199,11 @@ void GuiSystem::Clear()
     m_groups.clear();
     nextUIID = 1;
 }
+
+/**
+ * @brief       Binds built-in click behaviors to a button based on its ButtonAction.
+ * @param btn   The button configuration to modify.
+ */
 
 void GuiSystem::BindButtonAction(ButtonConfig& btn)
 {
@@ -1053,6 +1257,12 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
     }
 }
 
+/**
+ * @brief           Toggles visibility of all buttons except an optional excluded one.
+ *                  If all considered buttons are visible, hides them; otherwise shows them.
+ * @param exclude   Optional button pointer to ignore when toggling.
+ */
+
 void GuiSystem::ToggleAllButtons(const ButtonConfig* exclude)
 {
     auto& btns = Buttons();
@@ -1077,6 +1287,10 @@ void GuiSystem::ToggleAllButtons(const ButtonConfig* exclude)
     }
 }
 
+/**
+ * @brief Toggles visibility of all textboxes at once.
+ */
+
 void GuiSystem::ToggleAllTextboxes()
 {
     if (textboxes.empty()) return;
@@ -1084,6 +1298,10 @@ void GuiSystem::ToggleAllTextboxes()
     for (auto& t : textboxes) if (t.isVisible) { anyVisible = true; break; }
     for (auto& t : textboxes) t.isVisible = !anyVisible;
 }
+
+/**
+ * @brief Toggles visibility of all dialogues at once.
+ */
 
 void GuiSystem::ToggleAllDialogues()
 {
@@ -1093,6 +1311,10 @@ void GuiSystem::ToggleAllDialogues()
     for (auto& d : dialogues) d.isVisible = !anyVisible;
 }
 
+/**
+ * @brief Toggles visibility of all displays at once.
+ */
+
 void GuiSystem::ToggleAllDisplays()
 {
     if (displays.empty()) return;
@@ -1100,6 +1322,12 @@ void GuiSystem::ToggleAllDisplays()
     for (auto& dp : displays) if (dp.isVisible) { anyVisible = true; break; }
     for (auto& dp : displays) dp.isVisible = !anyVisible;
 }
+
+/**
+ * @brief           Draws the state window overlay UI (e.g. "Choose Your State" menu).
+ *                  This overlay is drawn in screen space, including its own buttons and close control.
+ * @param render    Reference to the Render instance to use.
+ */
 
 void GuiSystem::DrawStateWindow(Render& render)
 {
@@ -1220,20 +1448,29 @@ void GuiSystem::DrawStateWindow(Render& render)
     render.useCamera = prevCam;
 }
 
+/**
+ * @brief       Converts the given mouse position to game-view coordinates when ImGui is active.
+ *              If mouse is outside the game view rect, moves it off-screen so UI hit tests ignore it.
+ * @param mouse Reference to mouse position to modify in-place.
+ */
+
 void GuiSystem::GetMouseImgui(Vec2& mouse)
 {
 #ifndef NO_IMGUI
-    if (!ImGuiSystem::guiEnabled) {
+    if (!ImGuiSystem::guiEnabled) 
+    {
         // Fullscreen mouse coords are already correct
     }
-    else {
+    else 
+    {
         if (mouse.x < m_gameViewRect.x || mouse.x > m_gameViewRect.x + m_gameViewRect.width ||
             mouse.y < m_gameViewRect.y || mouse.y > m_gameViewRect.y + m_gameViewRect.height)
         {
             mouse.x = -9999.f;
             mouse.y = -9999.f;
         }
-        else {
+        else 
+        {
             mouse.x -= m_gameViewRect.x;
             mouse.y -= m_gameViewRect.y;
 
@@ -1246,6 +1483,15 @@ void GuiSystem::GetMouseImgui(Vec2& mouse)
     }
 #endif
 }
+
+/**
+ * @brief               Sets the current line of a dialogue text component, optionally restarting typing.
+ *                      Bounds-checks the requested index, stops typing if currently typing, and sets
+ *                      the new current line index. Optionally starts typing again from the new line.
+ * @param dlg           Dialogue configuration whose text component should be updated.
+ * @param newIndex      Desired line index within the dialogue lines.
+ * @param restartTyping True to restart the typewriter effect; false to leave it stopped.
+ */
 
 void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartTyping)
 {
@@ -1261,6 +1507,13 @@ void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartT
     comp->SetCurrentLineIndex(newIndex);
     if (restartTyping) comp->StartTyping();
 }
+
+/**
+ * @brief   Builds a single draw list of all UI elements sorted by ascending ID.
+ *          The resulting DrawItem vector is used in Update() to render UI in a stable order
+ *          across all UI types: Buttons, TextBoxes, Dialogues and Displays.
+ * @return  Sorted list of drawable UI references.
+ */
 
 std::vector<GuiSystem::DrawItem> GuiSystem::BuildSortedDrawList() const
 {
@@ -1281,20 +1534,37 @@ std::vector<GuiSystem::DrawItem> GuiSystem::BuildSortedDrawList() const
     return out;
 }
 
+/**
+ * @brief       Registers an action callback with a string name.
+ * @param name  Name of the action.
+ * @param func  Callback accepting const json& parameters.
+ */
+
 void GuiSystem::RegisterAction(const std::string& name, ActionFunction func) {
     if (actionRegistry.contains(name)) { std::cerr << "Button function " << name << " already registered...\n"; }
     actionRegistry[name] = func;
 }
 
+/**
+ * @brief           Invokes a previously registered action by name.
+ *                  Logs a warning to stderr if the action is not found or throws an exception.
+ * @param name      Name of the action to invoke.
+ * @param params    JSON parameters to pass to the registered callback.
+ * @return true     If the action was found and invoked (even if it threw).
+ * @return false    If the action name was not found.
+ */
+
 bool GuiSystem::CallAction(const std::string& name, const nlohmann::json& params) {
     auto it = actionRegistry.find(name);
 
-    if (it == actionRegistry.end()) {
+    if (it == actionRegistry.end()) 
+    {
         std::cerr << "[GuiSystem] Button action '" << name << "' called but not registered!\n";
         return false;
     }
 
-    try {
+    try 
+    {
         it->second(params);
     }
     catch (const std::exception& e)
@@ -1310,6 +1580,11 @@ bool GuiSystem::CallAction(const std::string& name, const nlohmann::json& params
 }
 
 // For UI editor
+/**
+ * @brief   Reseeds the next UI element ID from the maximum existing ID plus one.
+ *          Scans all buttons, textboxes, dialogues and displays.
+ *          Used when loading scenes to keep IDs globally unique.
+ */
 void GuiSystem::ReseedNextUIID()
 {
     int maxID = 0;
@@ -1320,8 +1595,16 @@ void GuiSystem::ReseedNextUIID()
     nextUIID = std::max(1, maxID + 1);
 }
 
-UIGroup& GuiSystem::GetGroup(const std::string& name) {
-    for (UIGroup& group : m_groups) {
+/**
+ * @brief       Returns a reference to a UIGroup by name.
+ * @param name  Group name to search for.
+ * @return      UIGroup& Reference to the matching group.
+ */
+
+UIGroup& GuiSystem::GetGroup(const std::string& name) 
+{
+    for (UIGroup& group : m_groups) 
+    {
         if (group.groupName == name)
         {
             return group;
@@ -1329,8 +1612,18 @@ UIGroup& GuiSystem::GetGroup(const std::string& name) {
     }
 }
 
-bool GuiSystem::SetDisplaySheetState(int ID, unsigned int frame) {
-    
+/**
+ * @brief           Sets the current frame (state) of an ImageSheet-based display by UI ID.
+ *                  Only valid for Display elements with UIRenderType::ImageSheet.
+ *                  Logs an error if the ID is not an ImageSheet display.
+ * @param ID        The display's unique UI ID.
+ * @param frame     Desired frame/state ID in the sheet.
+ * @return true     If the frame was updated successfully.
+ * @return false    If display not found or is not ImageSheet.
+ */
+
+bool GuiSystem::SetDisplaySheetState(int ID, unsigned int frame) 
+{
     for (auto& display : displays)
     {
         if (display.ID == ID)
@@ -1345,6 +1638,5 @@ bool GuiSystem::SetDisplaySheetState(int ID, unsigned int frame) {
             return true;
         }
     }
-
     return false;
 }

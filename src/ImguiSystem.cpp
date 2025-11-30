@@ -1,10 +1,11 @@
 /* ========================================================
  * @file        ImguiSystem.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
+ * @co-author   Manfred Sim        | manfred.sim@digipen.edu
  * @date        06 NOV 2025
  *
- * @brief
+ * 
  * Implements the ImGuiSystem, which provides the in-game editor
  * and debugging interface for the engine.
  *
@@ -15,7 +16,7 @@
  * - Assets: Provides a browser for textures and audio files with drag-and-drop import support.
  * - Game View: Renders the current scene with play/stop simulation controls.
  * - Editor Camera: Provides a free-camera overview for navigating the level during editing.
- *
+ * - UI Editor: Allows editing, adding, duplicating, deleting, and saving UI entities and groups.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -1061,6 +1062,19 @@ void ImGuiSystem::Update(float dt)
     }
     ImGui::End();
 
+/**
+ *  Renders the UI Editor main window.
+ *
+ * This function creates the "UI Editor" ImGui window, which allows users to:
+ * - View and select UI entities and groups.
+ * - Edit properties of selected UI entities (position, size, color, etc.).
+ * - Add, duplicate, or delete UI entities and groups.
+ * - Save and load UI layouts.
+ * - Drag and drop UI elements for reordering or grouping.
+ *
+ * The window is only rendered if the UI Editor is enabled.
+ */
+
     if (ImGui::Begin("UI Editor", nullptr)) {
         if (/* */!sm.inEditMode) ImGui::BeginDisabled();
 
@@ -1126,13 +1140,14 @@ void ImGuiSystem::Update(float dt)
         static int addTypeIdx = 0;
         const char* addTypeNames[] = { "Button", "TextBox", "Dialogue", "Display"};
 
+        //  Button to add a new UI entity to the scene.
         if (ImGui::Button("Add UI"))
         {
             openAddPopup = true;
             ImGui::OpenPopup("Add UI Type");
         }
 
-        // Additional popup to choose which UI element type to add
+        //  Open a popup to choose which UI entity type to add
         if (ImGui::BeginPopupModal("Add UI Type", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("Choose UI element type to add:");
@@ -1229,6 +1244,8 @@ void ImGuiSystem::Update(float dt)
         }
 
         ImGui::SameLine();
+
+        //  Button to duplicate the currently selected UI entity.
         if (ImGui::Button("Clone UI") && uiSelectedIndex >= 0)
         {
             SelectedType type; int lIdx;
@@ -1290,6 +1307,8 @@ void ImGuiSystem::Update(float dt)
         }
 
         ImGui::SameLine();
+
+        //  Button to delete the currently selected UI entity.
         if (ImGui::Button("Delete UI") && uiSelectedIndex >= 0)
         {
             SelectedType type; int lIdx;
@@ -1336,7 +1355,7 @@ void ImGuiSystem::Update(float dt)
         numDlg = (int)dialogues.size();
         total = numBtn + numTxt + numDlg;
 
-        // UI HIERARCHY
+        // Hierarchy of UI elements listed by order of ID
         ImGui::SeparatorText("UI Elements");
 
         // Build flat list sorted by ID
@@ -1357,22 +1376,26 @@ void ImGuiSystem::Update(float dt)
             globalToLocal(uiSelectedIndex, curSelType, curSelLocal);
         }
 
+        // Display list of UI entities
         ImGui::BeginChild("List", ImVec2(0, 220), true, ImGuiWindowFlags_HorizontalScrollbar);
         for (int i = 0; i < (int)flat.size(); ++i) 
         {
             const Row& r = flat[i];
 
             std::string label;
+            // Buttons
             if (r.type == SelectedType::Button) 
             {
                 const auto& b = buttons[r.local];
                 label = "Button: " + b.label + "  [ID " + std::to_string(b.ID) + "]";
             }
+            // Textboxes
             else if (r.type == SelectedType::TextBox) 
             {
                 const auto& tb = textboxes[r.local];
                 label = "Text: " + tb.text + "  [ID " + std::to_string(tb.ID) + "]";
             }
+            // Dialogues
             else if (r.type == SelectedType::Dialogue)
             {
                 const auto& d = dialogues[r.local];
@@ -1385,6 +1408,7 @@ void ImGuiSystem::Update(float dt)
                 }
                 label += "  [ID " + std::to_string(d.ID) + "]";
             }
+            // Displays
             else if (r.type == SelectedType::Display)
             {
                 const auto& dp = displays[r.local];
@@ -1406,7 +1430,7 @@ void ImGuiSystem::Update(float dt)
                 uiSelectedType = r.type;
                 uiSelectedIndex = localToGlobal(r.type, r.local);
 
-                // Re-arm dialogue typing on selection (keeps your previous behavior)
+                // Re-arm dialogue typing on selection
                 if (r.type == SelectedType::Dialogue) 
                 {
                     auto& d = dialogues[r.local];
@@ -1493,7 +1517,7 @@ void ImGuiSystem::Update(float dt)
         }
         ImGui::EndDisabled();
 
-        // UI PROPERTIES
+        // UI Properties Window for selected UI entity
         ImGui::SeparatorText("UI Properties");
         ImGui::BeginChild("Properties", ImVec2(0, 300), true);
 
@@ -1503,6 +1527,7 @@ void ImGuiSystem::Update(float dt)
         }
         else
         {
+            // Clamp selection after erasure
             auto clampSelectionAfterErase = [&]()
                 {
                     int nB = (int)buttons.size();
@@ -1519,6 +1544,7 @@ void ImGuiSystem::Update(float dt)
                     selectedLocal = li2;
                 };
 
+            // Button Properties
             if (uiSelectedType == SelectedType::Button)
             {
                 if (selectedLocal >= 0 && selectedLocal < (int)buttons.size())
@@ -1661,6 +1687,8 @@ void ImGuiSystem::Update(float dt)
 
                         switch (b.m_renderData.GetRenderType())
                         {
+
+                        // Shape Render
                         case UIRenderType::Shape:
                         {
                             auto& shape = b.m_renderData.GetShapeData();
@@ -1680,6 +1708,7 @@ void ImGuiSystem::Update(float dt)
                         }
                         break; //end case SHAPE
 
+                        // Custom Quad Render
                         case UIRenderType::CustomQuad:
                         {
                             auto& quad = b.m_renderData.GetQuadData();
@@ -1705,12 +1734,12 @@ void ImGuiSystem::Update(float dt)
                         }
                         break; // end case CUSTOMQUAD
 
+                        // Image Render
                         case UIRenderType::Image:
                         {
                             auto& imgData = b.m_renderData.GetImageData();
                             Image& img = imgData.m_image;
 
-                            // dropdown.enumMap = Render::GetInstance().Get_TextureCache();
                             const auto& cache = Render::GetInstance().Get_TextureCache();
 
                             static int selected = 0;
@@ -1729,7 +1758,7 @@ void ImGuiSystem::Update(float dt)
                                 }
                             }
 
-
+                            // Image texture
                             if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), imgOptions.size()))
                             {
                                 img = CreateImage(imgOptions[selected]);
@@ -1752,6 +1781,7 @@ void ImGuiSystem::Update(float dt)
 
                             }
 
+                            // Resize image based on ratio
                             ImGui::Text("Resize to aspect ratio:");
                             if (ImGui::Button("Width"))
                             {
@@ -1765,13 +1795,13 @@ void ImGuiSystem::Update(float dt)
                         }
                         break; // end case IMAGE
 
+                        // Image Sheet Render
                         case UIRenderType::ImageSheet:
                         {
                             auto& imgsheet = b.m_renderData.GetImageSheetData();
 
                             Image& img = imgsheet.m_image;
 
-                            // dropdown.enumMap = Render::GetInstance().Get_TextureCache();
                             const auto& cache = Render::GetInstance().Get_TextureCache();
 
                             static int selected = 0;
@@ -1790,6 +1820,7 @@ void ImGuiSystem::Update(float dt)
                                 }
                             }
 
+                            // Image texture
                             if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), imgOptions.size()))
                             {
                                 img = CreateImage(imgOptions[selected]);
@@ -1857,6 +1888,7 @@ void ImGuiSystem::Update(float dt)
                                 draw->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
                             }
 
+                            // Render image based on selected row and column of the image sheet
                             ImGui::InputInt("Rows", (int*)&imgsheet.total_rows);
                             if (imgsheet.total_rows < 1) { imgsheet.total_rows = 1; }
                             ImGui::InputInt("Columns", (int*)&imgsheet.total_cols);
@@ -1871,6 +1903,7 @@ void ImGuiSystem::Update(float dt)
                             imgsheet.total_cols = std::max(1u, imgsheet.total_cols);
                             imgsheet.total_rows = std::max(1u, imgsheet.total_rows);
 
+                            // State Frames
                             if (ImGui::TreeNode("State Frames"))
                             {
                                 for (auto& [state, idx] : imgsheet.frames)
@@ -1934,6 +1967,8 @@ void ImGuiSystem::Update(float dt)
                         ImGui::InputFloat("textScale", &b.baseTextScale, 0.1f);
                     }
                     ImGui::Separator();
+
+                    // Delete Button
                     if (ImGui::Button("Delete This Button"))
                     {
                         buttons.erase(buttons.begin() + selectedLocal);
@@ -1944,6 +1979,8 @@ void ImGuiSystem::Update(float dt)
                     }
                 }
             }
+
+            // TextBox Properties
             else if (uiSelectedType == SelectedType::TextBox)
             {
                 if (selectedLocal >= 0 && selectedLocal < (int)textboxes.size())
@@ -1975,6 +2012,8 @@ void ImGuiSystem::Update(float dt)
                     }
 
                     ImGui::Separator();
+
+                    // Delete TextBox
                     if (ImGui::Button("Delete This Text")) {
                         textboxes.erase(textboxes.begin() + selectedLocal);
                         uiSelectedIndex = -1;
@@ -1984,6 +2023,7 @@ void ImGuiSystem::Update(float dt)
                     }
                 }
             }
+            // Dialogue Properties
             else if (uiSelectedType == SelectedType::Dialogue)
             {
                 if (selectedLocal >= 0 && selectedLocal < (int)dialogues.size())
@@ -2060,6 +2100,7 @@ void ImGuiSystem::Update(float dt)
                         activeSceneIdx = 0;
                     }
 
+                    // Apply script to text component based on scene ID
                     auto applySceneToComp = [&](int sceneIdx)
                         {
                             if (!dlgDoc.contains("scenes") || !dlgDoc["scenes"].is_array()) return;
@@ -2107,6 +2148,7 @@ void ImGuiSystem::Update(float dt)
                         applySceneToComp(activeSceneIdx);
                     }
 
+                    // Dialogue TextBox Properties
                     ImGui::SeparatorText("Dialogue Text Box");
                     ImGui::SliderFloat("posX", &d.textBox.basePos.x, 0.f, 1920.f, "%.3f");
                     ImGui::SliderFloat("posY", &d.textBox.basePos.y, 0.f, 1080.f, "%.3f");
@@ -2119,6 +2161,7 @@ void ImGuiSystem::Update(float dt)
                         comp->SetColor({ col[0], col[1], col[2] });
                     }
 
+                    // Scene (determines script)
                     ImGui::SeparatorText("Scene");
                     {
                         std::vector<const char*> sceneItems;
@@ -2151,6 +2194,7 @@ void ImGuiSystem::Update(float dt)
                         }
                     }
 
+                    // Lines
                     ImGui::SeparatorText("Lines");
                     if (comp)
                     {
@@ -2195,6 +2239,8 @@ void ImGuiSystem::Update(float dt)
                     }
 
                     ImGui::Separator();
+
+                    // Delete Dialogue
                     if (ImGui::Button("Delete This Dialogue"))
                     {
                         dialogues.erase(dialogues.begin() + selectedLocal);
@@ -2205,6 +2251,8 @@ void ImGuiSystem::Update(float dt)
                     }
                 }
             }
+
+            // Display Properties
             else if (uiSelectedType == SelectedType::Display)
             {
                 if (selectedLocal >= 0 && selectedLocal < (int)displays.size())
@@ -2233,6 +2281,7 @@ void ImGuiSystem::Update(float dt)
 
                         switch (dp.m_renderData.GetRenderType())
                         {
+                        // Shape Render
                         case UIRenderType::Shape:
                         {
                             auto& shape = dp.m_renderData.GetShapeData();
@@ -2250,6 +2299,7 @@ void ImGuiSystem::Update(float dt)
                             }
                         } break;
 
+                        // Custom Quad Render
                         case UIRenderType::CustomQuad:
                         {
                             auto& quad = dp.m_renderData.GetQuadData();
@@ -2272,6 +2322,7 @@ void ImGuiSystem::Update(float dt)
                             }
                         } break;
 
+                        // Image Render
                         case UIRenderType::Image:
                         {
                             auto& imgData = dp.m_renderData.GetImageData();
@@ -2310,6 +2361,7 @@ void ImGuiSystem::Update(float dt)
                             if (ImGui::Button("Height")) dp.baseSize.y = dp.baseSize.x * ((float)img.heightPixels / (float)img.widthPixels);
                         } break;
 
+                        // Image Sheet Render
                         case UIRenderType::ImageSheet:
                         {
                             auto& sheet = dp.m_renderData.GetImageSheetData();
@@ -2396,6 +2448,7 @@ void ImGuiSystem::Update(float dt)
                                 draw->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
                             }
 
+                            // Render image based on selected row and column of the image sheet
                             ImGui::InputInt("Rows", (int*)&sheet.total_rows);
                             if (sheet.total_rows < 1) { sheet.total_rows = 1; }
                             ImGui::InputInt("Columns", (int*)&sheet.total_cols);
@@ -2410,6 +2463,7 @@ void ImGuiSystem::Update(float dt)
                             sheet.total_cols = std::max(1u, sheet.total_cols);
                             sheet.total_rows = std::max(1u, sheet.total_rows);
 
+                            // State Frames
                             if (ImGui::TreeNode("State Frames"))
                             {
                                 for (auto& [state, idx] : sheet.frames)
@@ -2457,6 +2511,7 @@ void ImGuiSystem::Update(float dt)
                     }
                     ImGui::Separator();
 
+                    // Delete Display
                     if (ImGui::Button("Delete This Display"))
                     {
                         displays.erase(displays.begin() + selectedLocal);
@@ -2471,8 +2526,9 @@ void ImGuiSystem::Update(float dt)
     _UI_PROPS_END_:
         ImGui::EndChild();
 
-        // UI GROUP PROPERTIES
-        ImGui::SeparatorText("UI Group Properties");
+        // UI GROUPS
+        // Manage groups of UI entities
+        ImGui::SeparatorText("UI Groups");
         ImGui::BeginChild("Group Properties", ImVec2(0, 0), true);
 
         // Helper to work with IDs of various UI types
@@ -2493,6 +2549,7 @@ void ImGuiSystem::Update(float dt)
             int local = -1; 
         };
 
+        // Find UI element by ID
         auto findByID = [&](int id) -> FoundRef
             {
                 if (id <= 0) return {};
@@ -2887,6 +2944,7 @@ void ImGuiSystem::Update(float dt)
             else if (total == 0)
                 comboIndex = -1;
 
+            // UI Elements
             if (ImGui::Combo("UI Elements", &comboIndex,
                 items.data(), (int)items.size()))
             {

@@ -3,11 +3,12 @@
  * @author	    Manfred Sim | manfred.sim@digipen.edu
  * @date	    30 OCT 2025
  *
- * @brief		Implementation of the Text System for the GUI editor.
+ * @brief		Implementation of the Text System for handling
+				dialogue boxes for the GUI system.
  *
  * The Text System is responsible for rendering text and
  * handling typing behavior of dialogue boxes used by the
- * GUI editor. It also contains implementation of the TextComponent
+ * UI editor. It also contains implementation of the TextComponent
  * that will be used for defining dialogue boxes and helper
  * functions that are used to simulate the typing of dialogue text.
  *
@@ -19,7 +20,27 @@
 
 namespace TextSystem
 {
+
+/**
+ * @brief	Default constructor for TextComponent.
+ *			Initializes all member variables to their default values.
+ */
+
 	TextComponent::TextComponent() : lines{ "" }, currentLineIndex{ 0 }, textSpeed{ 0.f }, speakerID{ 0 }, fontPath{}, fontSize{ 0 }, isTyping{}, color{} {}
+
+/**
+ * @brief Parameterized constructor for TextComponent.
+ *
+ * @param lines Vector of dialogue lines.
+ * @param currentLineIndex Index of the current line.
+ * @param textSpeed Speed at which text is revealed.
+ * @param speakerID ID of the speaker.
+ * @param fontPath Path to the font file.
+ * @param fontSize Size of the font.
+ * @param Typing Whether the text is currently being typed out.
+ * @param color Color of the text.
+ */
+
 	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float textSpeed, int speakerID, std::string fontPath, float fontSize, bool Typing, Vec3 color)
 		: lines{ lines }, currentLineIndex{ currentLineIndex }, textSpeed{ textSpeed }, speakerID{ speakerID }, fontPath{ fontPath }, fontSize{ fontSize }, isTyping{ Typing }, color {
 		color
@@ -27,27 +48,138 @@ namespace TextSystem
 	}
 
 	// GETTERS
+
+/**
+ * @brief Gets the dialogue lines.
+ * @return Reference to the vector of dialogue lines.
+ */
+
 	const std::vector<std::string>& TextComponent::GetLines() const noexcept { return lines; }
+
+/**
+ * @brief Gets the current line index.
+ * @return Index of the current line.
+ */
+
 	int	TextComponent::GetCurrentLineIndex() const noexcept { return currentLineIndex; }
+
+/**
+ * @brief Gets the text speed.
+ * @return Speed at which text is revealed.
+ */
+
 	float TextComponent::GetTextSpeed() const noexcept { return textSpeed; }
+
+/**
+ * @brief Gets the speaker ID.
+ * @return ID of the speaker.
+ */
+
 	int TextComponent::GetSpeakerID() const noexcept { return speakerID; }
+
+/**
+ * @brief Gets the font path.
+ * @return Reference to the font file path.
+ */
+
 	const std::string& TextComponent::GetFontPath() const noexcept { return fontPath; }
+
+/**
+ * @brief Gets the font size.
+ * @return Size of the font.
+ */
+
 	float TextComponent::GetFontSize() const noexcept { return fontSize; }
+
+/**
+ * @brief Checks if the text is currently being typed out.
+ * @return True if typing, false otherwise.
+ */
+
 	bool TextComponent::CheckIfTyping() const noexcept { return isTyping; }
+
+/**
+ * @brief Gets the color of the text.
+ * @return Reference to the color vector.
+ */
+
 	const Vec3& TextComponent::GetColor() const noexcept { return color; }
+
+/**
+ * @brief Gets the current line of text.
+ * @param index Index of the line to retrieve.
+ * @return Reference to the string at the specified index.
+ */
+
 	const std::string& TextComponent::GetCurrentLine(int index) const noexcept { return lines[index]; }
 
 	// SETTERS
+
+/**
+ * @brief Sets the dialogue lines.
+ * @param script Vector of dialogue lines.
+ */
+
 	void TextComponent::SetLines(const std::vector<std::string>& script) { lines = script; }
+
+/**
+ * @brief Sets the current line index.
+ * @param index Index to set as current.
+ */
+
 	void TextComponent::SetCurrentLineIndex(int index) { currentLineIndex = index; }
+
+/**
+ * @brief Sets the text speed.
+ * @param speed Speed at which text is revealed.
+ */
+
 	void TextComponent::SetTextSpeed(float speed) { textSpeed = speed; }
+
+/**
+ * @brief Sets the speaker ID.
+ * @param id ID of the speaker.
+ */
+
 	void TextComponent::SetSpeakerID(int id) { speakerID = id; }
+
+/**
+ * @brief Sets the font path.
+ * @param path Path to the font file.
+ */
+
 	void TextComponent::SetFontPath(const std::string& path) { fontPath = path; }
+
+/**
+ * @brief Sets the font size.
+ * @param size Size of the font.
+ */
+
 	void TextComponent::SetFontSize(float size) { fontSize = size; }
+
+/**
+ * @brief Sets whether the text is being typed out.
+ * @param isType True if typing, false otherwise.
+ */
+
 	void TextComponent::SetIsTyping(bool isType) { isTyping = isType; }
+
+/**
+ * @brief Sets the color of the text.
+ * @param colorVec Color vector to set.
+ */
+
 	void TextComponent::SetColor(Vec3 const& colorVec) { color = colorVec; }
 
-	// Toggle text behavior (if isTyping = true, text gets rendered from left to right)
+/**
+ * @brief	Updates the typing animation for the text. 
+ *			Advances the number of visible characters based on elapsed time and speed.
+ *
+ * @param txt Reference to the TextComponent to update.
+ * @param dt Delta time since last update.
+ * @param speedMul Speed multiplier for typing.
+ */
+
 	void UpdateTyping(TextComponent& txt, float dt, float speedMul)
 	{
 		if (!txt.isTyping) return;
@@ -67,13 +199,27 @@ namespace TextSystem
 		}
 	}
 
-	// Render all visible text
+/**
+ * @brief	Gets the currently visible portion of the text.
+ *			Returns a substring of the current line based on the number of visible characters.
+ * @param txt Reference to the TextComponent.
+ * @return String containing the visible text.
+ */
+
 	std::string GetVisibleText(const TextComponent& txt)
 	{
 		const std::string& fullLine = txt.GetCurrentLine(txt.GetCurrentLineIndex());
 		const int n = std::clamp(txt.visibleChars, 0, (int)fullLine.size());
 		return fullLine.substr(0, n);
 	}
+
+/**
+ * @brief	Loads dialogue data from a JSON file into a TextComponent.
+ *			Reads a JSON file, parses dialogue lines and settings, and applies them to the TextComponent.
+ * @param filepath Path to the JSON file.
+ * @param textComp Reference to the TextComponent to populate.
+ * @return True if loading was successful, false otherwise.
+ */
 
 	bool LoadDialogueFromJson(const std::string& filepath, TextComponent& textComp)
 	{

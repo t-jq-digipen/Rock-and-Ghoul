@@ -1,21 +1,15 @@
 /* ========================================================
  * @file        GuiSystem.h
- * @author		Manfred Sim | manfred.sim@digipen.edu
+ * @author      Manfred Sim | manfred.sim@digipen.edu
+ * @co-author	Tan Jun Quan | t.junquan@digipen.edu
  * @date        30 OCT 2025
  *
  * @brief
  *
- * Declares the GuiSystem, an engine subsystem that manages the 
- * in-game editor for UI elements (buttons, textboxes and
- * dialogue boxes).
- *
- * Features:
- * - Toggles on/off with a key press (F8).
- * - Renders a single "GUI Editor" window onto the game screen
- * with selectable panels for each active UI element.
- * - Scales with the game screen, including when ImGui Editor 
- * is active.
- * - Configurations for each UI element type.
+ * Implements the GuiSystem, which provides a in-game editor
+ * for UI elements (inside the ImGui editor). This header file
+ * declares the functions and enumerations to be defined in
+ * GuiSystem.cpp.
  *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
@@ -91,6 +85,11 @@ struct UIShapeRender : public IUIRender
     ButtonShape shape = ButtonShape::Rectangle;
     Colour3 color{ 0.3f, 0.3f, 0.3f };
 
+/**
+ * @brief Serializes the UIShapeRender to a JSON string.
+ * @return Serialized JSON string.
+ */
+
     std::string Serialize() const override {
         using json = nlohmann::json;
         json j;
@@ -102,11 +101,27 @@ struct UIShapeRender : public IUIRender
         return j.dump();
     }
 
+/**
+ * @brief Gets the render type of the UIShapeRender.
+ * @return UIRenderType::Shape.
+ */
+
     UIRenderType GetType() const { return UIRenderType::Shape; }
+
+/**
+ * @brief Clones the UIShapeRender object.
+ * @return Unique pointer to the cloned UIShapeRender.
+ */
 
     std::unique_ptr<IUIRender> Clone() const override {
         return std::make_unique<UIShapeRender>(*this);
     }
+
+/**
+ * @brief Deserializes a UIShapeRender from a JSON string.
+ * @param data JSON string.
+ * @return Deserialized UIShapeRender object.
+*/
 
     static UIShapeRender DeSerialize(const std::string& data) {
 
@@ -131,6 +146,11 @@ struct UICustomQuadRender : public IUIRender
     Vec2 v0{ 0.f,0.f }, v1{ 0.f,0.f }, v2{ 0.f,0.f }, v3{ 0.f,0.f };
     Colour3 color{ 0.3f, 0.3f, 0.3f };
 
+/**
+ * @brief Serializes the UICustomQuadRender to a JSON string.
+ * @return Serialized JSON string.
+ */
+
     std::string Serialize() const override {
         using json = nlohmann::json;
 
@@ -145,11 +165,27 @@ struct UICustomQuadRender : public IUIRender
         return j.dump();
     }
 
+/**
+ * @brief Gets the render type of the UICustomQuadRender.
+ * @return UIRenderType::CustomQuad.
+ */
+
     UIRenderType GetType() const { return UIRenderType::CustomQuad; }
+
+/**
+ * @brief Clones the UICustomQuadRender object.
+ * @return Unique pointer to the cloned UICustomQuadRender.
+ */
 
     std::unique_ptr<IUIRender> Clone() const override {
         return std::make_unique<UICustomQuadRender>(*this);
     }
+
+/**
+ * @brief Deserializes a UICustomQuadRender from a JSON string.
+ * @param data JSON string.
+ * @return Deserialized UICustomQuadRender object.
+ */
 
     static UICustomQuadRender DeSerialize(const std::string& data) {
         using json = nlohmann::json;
@@ -173,6 +209,11 @@ struct UIImageRender : public IUIRender
 {
     Image m_image;
 
+/**
+ * @brief Serializes the UIImageRender to a JSON string.
+ * @return Serialized JSON string.
+ */
+
     std::string Serialize() const override {
         using json = nlohmann::json;
         json j;
@@ -180,11 +221,27 @@ struct UIImageRender : public IUIRender
         return j.dump();
     }
 
+/**
+ * @brief Gets the render type of the UIImageRender.
+ * @return UIRenderType::Image.
+ */
+
     UIRenderType GetType() const { return UIRenderType::Image; }
+
+/**
+ * @brief Clones the UIImageRender object.
+ * @return Unique pointer to the cloned UIImageRender.
+ */
 
     std::unique_ptr<IUIRender> Clone() const override {
         return std::make_unique<UIImageRender>(*this);
     }
+
+/**
+ * @brief Deserializes a UIImageRender from a JSON string.
+ * @param data JSON string.
+ * @return Deserialized UIImageRender object.
+ */
 
     static UIImageRender DeSerialize(const std::string& data) {
         using json = nlohmann::json;
@@ -219,6 +276,10 @@ struct UIImageSheetRender : public IUIRender
 
     FrameIndex frame_index;
 
+/**
+ * @brief Serializes the UIImageSheetRender to a JSON string.
+ * @return Serialized JSON string.
+ */
 
     std::string Serialize() const override {
         using json = nlohmann::json;
@@ -248,11 +309,27 @@ struct UIImageSheetRender : public IUIRender
         return j.dump();
     }
 
+/**
+ * @brief Gets the render type of the UIImageSheetRender.
+ * @return UIRenderType::ImageSheet.
+ */
+
     UIRenderType GetType() const { return UIRenderType::ImageSheet; }
+
+/**
+ * @brief Clones the UIImageSheetRender object.
+ * @return Unique pointer to the cloned UIImageSheetRender.
+ */
 
     std::unique_ptr<IUIRender> Clone() const override {
         return std::make_unique<UIImageSheetRender>(*this);
     }
+
+/**
+ * @brief Deserializes a UIImageSheetRender from a JSON string.
+ * @param data JSON string.
+ * @return Deserialized UIImageSheetRender object.
+ */
 
     static UIImageSheetRender DeSerialize(const std::string& data) {
         using json = nlohmann::json;
@@ -289,6 +366,12 @@ struct UIImageSheetRender : public IUIRender
         return ret;
     }
 
+/**
+ * @brief Sets the current frame for the image sheet.
+ * @param frame Frame index to set.
+ * @return True if frame was set, false otherwise.
+ */
+
     bool SetFrame(unsigned int frame) {
         if (current_frame == frame) { return false; }
 
@@ -320,23 +403,88 @@ struct UI_RenderData {
         return *this;
     }
 
+/**
+ * @brief Sets the render type for the UI_RenderData.
+ * @param type The render type to set.
+ */
+
     void SetRenderType(UIRenderType type);
+
+/**
+ * @brief Gets the render type of the UI_RenderData.
+ * @return The current UIRenderType.
+ */
 
     UIRenderType GetRenderType() const;
 
+/**
+ * @brief Gets the shape render data.
+ * @return Reference to UIShapeRender.
+ */
+
     UIShapeRender& GetShapeData();
+
+/**
+ * @brief Gets the shape render data (const).
+ * @return Const reference to UIShapeRender.
+ */
+
     const UIShapeRender& GetShapeData() const;
 
+/**
+ * @brief Gets the custom quad render data.
+ * @return Reference to UICustomQuadRender.
+ */
+
     UICustomQuadRender& GetQuadData();
+
+/**
+ * @brief Gets the custom quad render data (const).
+ * @return Const reference to UICustomQuadRender.
+ */
+
     const UICustomQuadRender& GetQuadData() const;
 
+/**
+ * @brief Gets the image render data.
+ * @return Reference to UIImageRender.
+ */
+
     UIImageRender& GetImageData();
+
+/**
+ * @brief Gets the image render data (const).
+ * @return Const reference to UIImageRender.
+ */
+
     const UIImageRender& GetImageData() const;
 
+/**
+ * @brief Gets the image sheet render data.
+ * @return Reference to UIImageSheetRender.
+ */
+
     UIImageSheetRender& GetImageSheetData();
+
+/**
+ * @brief Gets the image sheet render data (const).
+ * @return Const reference to UIImageSheetRender.
+ */
+
     const UIImageSheetRender& GetImageSheetData() const;
 
+/**
+ * @brief Serializes the UI_RenderData to a JSON string.
+ * @return Serialized JSON string.
+ */
+
     std::string Serialize() const;
+
+/**
+ * @brief Deserializes a UI_RenderData from a JSON string.
+ * @param data JSON string.
+ * @return Deserialized UI_RenderData object.
+ */
 
     static UI_RenderData DeSerialize(const std::string& data);
 
@@ -367,6 +515,10 @@ struct ButtonConfig {
     bool isVisible = true;
     int ID;
 
+/**
+ * @brief Draws the button using the current configuration.
+ * @param hovered Whether the button is currently hovered.
+ */
 
     void DrawButton(bool hovered);
 };
@@ -421,9 +573,36 @@ struct UIGroup
     std::vector<int> memberIDs;
 };
 
+/**
+ * @brief Converts a ButtonShape enum value to its string representation.
+ * @param shape The ButtonShape value.
+ * @return String representation of the ButtonShape.
+ */
+
 std::string ButtonShapeToString(ButtonShape shape);
+
+/**
+ * @brief Converts a string to a ButtonShape enum value.
+ * @param str The string representation of the ButtonShape.
+ * @return Corresponding ButtonShape value.
+ */
+
 ButtonShape StringToButtonShape(const std::string& s);
+
+/**
+ * @brief Converts a ButtonAction enum value to its string representation.
+ * @param action The ButtonAction value.
+ * @return String representation of the ButtonAction.
+ */
+
 std::string ButtonActionToString(ButtonAction action);
+
+/**
+ * @brief Converts a string to a ButtonAction enum value.
+ * @param str The string representation of the ButtonAction.
+ * @return Corresponding ButtonAction value.
+ */
+
 ButtonAction StringToButtonAction(const std::string& s);
 
 class GuiSystem : public ISystem {
@@ -432,53 +611,243 @@ public:
         static GuiSystem instance;
         return instance;
     }
+
+/**
+ * @brief   Initializes the GUI system and registers all button actions.
+ *          Clears all UI containers, resets ID allocation and registers:
+ *          - Scene loading actions (LoadScene, LoadSettings, LoadControls)
+ *          - Quit the application
+ *          - Volume up/down + save settings
+ *          - Controls page paging actions
+ */
+
     void Initialize() override;
+
+/**
+ * @brief       Main per-frame update for the GUI system.
+ *              Functions:
+ *              - Handles dialogue progression on SPACE (when not editing)
+ *              - Converts mouse coords into game-view space
+ *              - Builds draw order and render all UI elements (buttons, textboxes, dialogues, displays)
+ *              - Applies transition overlay and state window rendering
+ * @param dt    Delta time in seconds since last frame.
+ */
+
     void Update(float dt) override;
+
+/**
+ * @brief   Shuts down the GUI system and clears all managed UI elements. 
+            Resets the next UI ID to 1.
+ */
+
     void Shutdown() override;
 
-    void AddButton(const ButtonConfig& cfg);
-    void AddTextBox(const TextBoxConfig& cfg);
+/**
+ * @brief           Sets the shared AudioManager pointer used by the GUI system.
+ * @param audioMgr  Pointer to the AudioManager instance.
+ */
+
     static void SetAudioManager(AudioManager* audioMgr);
 
+/**
+ * @brief       Adds a new button to the GUI system with a unique ID.
+ * @param cfg   The button configuration to add.
+ */
+
+    void AddButton(const ButtonConfig& cfg);
+
+/**
+ * @brief       Adds a new textbox to the GUI system with a unique ID.
+ * @param cfg   The textbox configuration to add.
+ */
+
+    void AddTextBox(const TextBoxConfig& cfg);
+
+/**
+ * @brief       Adds a new dialogue to the GUI system with a unique ID.
+ * @param cfg   The dialogue configuration to add.
+ */
+
     void AddDialogue(const DialogueConfig& cfg);
+
+/**
+ * @brief           Helper to spawn a DialogueConfig from a JSON dialogue file and textbox template.
+ * @param jsonPath  Path to the dialogue JSON file.
+ * @param textBox   Template textbox configuration (position, scale, etc.).
+ * @param sceneID   Scene ID within the dialogue file (defaults to "0").
+ * @return          Index of the newly added dialogue in dialogues container, or -1 on failure.
+ */
+
     int AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox, const std::string& sceneID = "0");
+
+/**
+ * @brief       Adds a new display to the GUI system with a unique ID.
+ * @param cfg   The display configuration to add.
+ */
 
     void AddDisplay(const DisplayConfig& cfg);
 
+/**
+ * @brief           Enables or disables GUI edit mode.
+ * @param isEditing True to enable edit mode, false to disable.
+ */
+
     void SetEditMode(bool isEditing);
+
+/**
+ * @brief   Returns whether GUI is currently in edit mode.
+ * @return  True if editing, false otherwise.
+ */
+
     bool GetEditMode() const;
 
+/**
+ * @brief       Set the game view rectangle.
+ * @param rect  The game view rectangle to be rendered.
+ */
 
     void SetGameViewRect(const GameViewRect& rect) { m_gameViewRect = rect; }
 
     // Non-Const Getters
+
+/**
+ * @brief   Get a reference to the current list of buttons (ButtonConfig objects).
+ * @return  The reference.
+ */
+
     std::vector<ButtonConfig>& Buttons() { return buttons; }
+
+/**
+ * @brief   Get a reference to the current list of textboxes (TextBoxConfig objects).
+ * @return  The reference.
+ */
+
     std::vector<TextBoxConfig>& TextBoxes() { return textboxes; }
+
+/**
+ * @brief   Get a reference to the current list of dialogues (DialogueConfig objects).
+ * @return  The reference.
+ */
+
     std::vector<DialogueConfig>& Dialogues() { return dialogues; }
+
+/**
+ * @brief   Get a reference to the current list of displays (DisplayConfig objects).
+ * @return  The reference.
+ */
+
     std::vector<DisplayConfig>& Displays() { return displays; }
 
     // Const Getters
+
+/**
+ * @brief   Get a const reference to the current list of buttons (ButtonConfig objects).
+ * @return  The const reference.
+ */
+
     const std::vector<ButtonConfig>& GetButtons() const { return buttons; }
+
+/**
+ * @brief   Get a const reference to the current list of textboxes (TextBoxConfig objects).
+ * @return  The const reference.
+ */
+
     const std::vector<TextBoxConfig>& GetTextBoxes() const { return textboxes; }
+
+/**
+ * @brief   Get a const reference to the current list of dialogues (DialogueConfig objects).
+ * @return  The const reference.
+ */
+
     const std::vector<DialogueConfig>& GetDialogues() const { return dialogues; }
+
+/**
+ * @brief   Get a const reference to the current list of displays (DisplayConfig objects).
+ * @return  The const reference.
+ */
+
     const std::vector<DisplayConfig>& GetDisplays() const { return displays; }
+
+/**
+ * @brief   Get a reference to the type of the selected UI element.
+ * @return  The type of the selected UI element.
+ */
+
     const SelectedType& GetSelectedType() const { return selectedType; }
+
+/**
+ * @brief   Get a reference to the index of the selected UI element.
+ * @return  The index of the selected UI element.
+ */
+
     const int& GetSelectedIndex() const { return selectedIndex; }
+
+/**
+ * @brief   Clears all managed UI elements. Resets the next UI ID to 1.
+ */
 
     void Clear();
 
     // Button functions
+
+/**
+ * @brief       Binds built-in click behaviors to a button based on its ButtonAction.
+ * @param btn   The button configuration to modify.
+ */
+
     void BindButtonAction(ButtonConfig& btn);
+
+/**
+ * @brief           Toggles visibility of all buttons except an optional excluded one.
+ *                  If all considered buttons are visible, hides them; otherwise shows them.
+ * @param exclude   Optional button pointer to ignore when toggling.
+ */
+
     void ToggleAllButtons(const ButtonConfig* exclude = nullptr);
+
+/**
+ * @brief Toggles visibility of all textboxes at once.
+ */
+
     void ToggleAllTextboxes();
+
+/**
+ * @brief Toggles visibility of all dialogues at once.
+ */
+
     void ToggleAllDialogues();
+
+/**
+ * @brief Toggles visibility of all displays at once.
+ */
+
     void ToggleAllDisplays();
+
+/**
+ * @brief           Draws the state window overlay UI (e.g. "Choose Your State" menu).
+ *                  This overlay is drawn in screen space, including its own buttons and close control.
+ * @param render    Reference to the Render instance to use.
+ */
+
     void DrawStateWindow(Render& render);
 
-    // Helper to get mouse position if ImGui editor is open
+/**
+ * @brief       Converts the given mouse position to game-view coordinates when ImGui is active.
+ *              If mouse is outside the game view rect, moves it off-screen so UI hit tests ignore it.
+ * @param mouse Reference to mouse position to modify in-place.
+ */
+
     void GetMouseImgui(Vec2& pos);
 
-    // Dialogue helpers
+/**
+ * @brief               Sets the current line of a dialogue text component, optionally restarting typing.
+ *                      Bounds-checks the requested index, stops typing if currently typing, and sets
+ *                      the new current line index. Optionally starts typing again from the new line.
+ * @param dlg           Dialogue configuration whose text component should be updated.
+ * @param newIndex      Desired line index within the dialogue lines.
+ * @param restartTyping True to restart the typewriter effect; false to leave it stopped.
+ */
+
     void SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartTyping);
 
     // Action registry
@@ -486,20 +855,72 @@ public:
     // can save params into a json c:
     using ActionFunction = std::function<void(const json&)>;
 
+/**
+ * @brief       Registers an action callback with a string name.
+ * @param name  Name of the action.
+ * @param func  Callback accepting const json& parameters.
+ */
+
     void RegisterAction(const std::string& name, ActionFunction func);
+
+/**
+ * @brief           Invokes a previously registered action by name.
+ *                  Logs a warning to stderr if the action is not found or throws an exception.
+ * @param name      Name of the action to invoke.
+ * @param params    JSON parameters to pass to the registered callback.
+ * @return true     If the action was found and invoked (even if it threw).
+ * @return false    If the action name was not found.
+ */
 
     bool CallAction(const std::string& name, const nlohmann::json& params);
 
+/**
+ * @brief   Gets a map of all action registries.
+ * @return  The map of action registries.
+ */
+
     std::unordered_map<std::string, ActionFunction>& GetActionMap() { return actionRegistry; }
 
-    // For UI editor (ensure next UI ID is always unique)
+/**
+ * @brief   Reseeds the next UI element ID from the maximum existing ID plus one.
+ *          Scans all buttons, textboxes, dialogues and displays.
+ *          Used when loading scenes to keep IDs globally unique.
+ */
+
     void ReseedNextUIID();
+
+/**
+ * @brief       Returns a reference to a UIGroup by name.
+ * @param name  Group name to search for.
+ * @return      UIGroup& Reference to the matching group.
+ */
 
     std::vector<UIGroup>& GetGroups() { return m_groups; }
 
+/**
+ * @brief       Add a group of UI elements to a list of groups.
+ * @param group Group to be added/
+ */
+
     void AddGroup(const UIGroup& group) { m_groups.push_back(group); }
 
+/**
+ * @brief       Returns a reference to a UIGroup by name.
+ * @param name  Group name to search for.
+ * @return      UIGroup& Reference to the matching group.
+ */
+
     UIGroup& GetGroup(const std::string& name);
+
+/**
+ * @brief           Sets the current frame (state) of an ImageSheet-based display by UI ID.
+ *                  Only valid for Display elements with UIRenderType::ImageSheet.
+ *                  Logs an error if the ID is not an ImageSheet display.
+ * @param ID        The display's unique UI ID.
+ * @param frame     Desired frame/state ID in the sheet.
+ * @return true     If the frame was updated successfully.
+ * @return false    If display not found or is not ImageSheet.
+ */
 
     bool SetDisplaySheetState(int uiID, unsigned int frame);
 
@@ -521,6 +942,14 @@ private:
         int index;
         int ID;
     };
+
+/**
+ * @brief   Builds a single draw list of all UI elements sorted by ascending ID.
+ *          The resulting DrawItem vector is used in Update() to render UI in a stable order
+ *          across all UI types: Buttons, TextBoxes, Dialogues and Displays.
+ * @return  Sorted list of drawable UI references.
+ */
+
     std::vector<DrawItem> BuildSortedDrawList() const;
 
     // ID assignment for new elements (if ID not set)
