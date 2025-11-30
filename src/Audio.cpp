@@ -721,7 +721,7 @@ void AudioManager::UpdateListenerToCamera() {
  */
 
 void AudioManager::Update(float dt) {
-    (void)dt;
+    //(void)dt;
     // Update listener to follow camera every frame
     UpdateListenerToCamera();
 

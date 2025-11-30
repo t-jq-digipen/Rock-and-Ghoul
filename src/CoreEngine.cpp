@@ -205,21 +205,21 @@ void CoreEngine::Initialize()
 void CoreEngine::Run()
 {
     std::cout << "EngRun\n";
-    FrameRateController fr(60);
+    FrameRateController frameRate(60);
     SceneManager& sm = SceneManager::Get();
     double lastTitleUpdate = glfwGetTime();
     int    frames = 0;
 
     while (running && !glfwWindowShouldClose(GLApp::ptr_window))
     {
-        fr.StartFrame();
+        frameRate.StartFrame();
         glfwPollEvents();
 
-        float dt = static_cast<float>(fr.GetDeltaTime());
+        float dt = static_cast<float>(frameRate.GetDeltaTime());
         dt = std::clamp(dt, 0.0f, 0.05f); // clamp variable dt
 
-        float fixedDt = static_cast<float>(fr.GetFixedDeltaTime());
-        int   numSteps = fr.GetCurrentNumberOfSteps();
+        float fixedDt = static_cast<float>(frameRate.GetFixedDeltaTime());
+        int   numSteps = frameRate.GetCurrentNumberOfSteps();
 
        
         sm.Update(dt, fixedDt, numSteps);
