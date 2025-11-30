@@ -8,7 +8,7 @@
  * This file declares a player system for the ECS, managing
  * control inputs and reactions.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once

@@ -8,7 +8,7 @@
  * Implements the GuiSystem, which provides a in-game editor 
  * for UI elements (inside the ImGui editor).
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 

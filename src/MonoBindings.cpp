@@ -20,7 +20,7 @@
  * Each function automatically checks if the entity has a
  * TransformComponent before performing the operation.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ======================================================== 
  */
 

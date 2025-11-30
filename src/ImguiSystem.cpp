@@ -184,7 +184,7 @@ namespace
             in >> manifest;
             return true;
         }
-        catch (const std::exception& e)
+        catch (const std::exception&)
         {
             return false;
         }
@@ -204,7 +204,7 @@ namespace
             out << manifest.dump(4);
             return true;
         }
-        catch (const std::exception& e)
+        catch (const std::exception&)
         {
             return false;
         }
@@ -390,7 +390,7 @@ void ImportAudioFile(const std::string& srcPathStr)
     {
         fs::copy_file(srcPath, destPath, fs::copy_options::overwrite_existing);
     }
-    catch (const fs::filesystem_error& e)
+    catch (const fs::filesystem_error&)
     {
         return;
     }

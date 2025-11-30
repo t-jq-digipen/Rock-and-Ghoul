@@ -20,7 +20,7 @@
  *
  * On shutdown, clears the texture cache to free GPU resources.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "RenderSystem.h"

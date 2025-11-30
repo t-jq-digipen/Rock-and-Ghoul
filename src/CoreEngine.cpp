@@ -78,7 +78,7 @@ void CoreEngine::AddRenderSystem(ISystem* sys)
 }
 
 // Target FPS
-FrameRateController frameRate(60);
+//FrameRateController frameRate(60);
 
 // Legacy globals (still used in some systems like LogicSystem / scripts)
 //GSM   gsm;
