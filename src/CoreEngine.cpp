@@ -278,12 +278,22 @@ void CoreEngine::Run()
 
             std::string name = typeid(*s).name();
             renderTimings[name] += ms;
+        }
+
 
 #ifndef NO_IMGUI
+        if (ImGuiSystem::guiEnabled) {
+            Render::GetInstance().EndSceneCapture();
+        }
+
+        // Now render ImGui (which displays the captured scene)
+        for (auto* s : renderSystems)
+        {
             if (auto* imgui = dynamic_cast<ImGuiSystem*>(s))
                 imgui->Render();
-#endif
         }
+#endif
+        
 
 
         // Input needs a frame-end update
