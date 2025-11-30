@@ -97,7 +97,7 @@ namespace Sprite {
 		 * @brief Set whether the sprite is animated.
 		 * @param set True to mark as animated, false for static.
 		 */
-		void Set_Animated(bool set);
+		//void Set_Animated(bool set);
 
 		/**
 		 * @brief Get the sprite's image.

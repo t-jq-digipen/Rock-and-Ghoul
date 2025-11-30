@@ -94,7 +94,7 @@ double Input::GetScrollY() { return scrollY; }
 // -----------------------------
 // GLFW Callbacks
 // -----------------------------
-void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void Input::KeyCallback(GLFWwindow* , int key, int scancode, int action, int mods) {
     (void)scancode;
     (void)mods;
     if (action == GLFW_PRESS) {

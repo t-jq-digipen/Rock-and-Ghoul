@@ -278,7 +278,7 @@ were held down
 This function is called when keyboard buttons are pressed.
 When the ESC key is pressed, the close flag of the window is set.
 */
-void GLApp::key_cb(GLFWwindow *pwin, int key, int scancode, int action, int mod) {
+void GLApp::key_cb(GLFWwindow *, int, int scancode, int action, int mod) {
     (void)scancode;
     (void)mod;
  if (GLFW_PRESS == action) {

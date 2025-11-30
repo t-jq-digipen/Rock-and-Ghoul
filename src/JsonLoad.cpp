@@ -1446,7 +1446,7 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
 
         return e;
     }
-    catch (const std::exception& ex) {
+    catch (const std::exception& ) {
         std::cerr << "Error loading entity from file: " << filepath << std::endl;
         return 0;
     }

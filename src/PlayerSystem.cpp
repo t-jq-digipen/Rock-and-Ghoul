@@ -371,10 +371,10 @@ namespace RockScript {
 	}
 
 	//Check Input sequence and execute respective actions
-	void CheckCombos(Entity eID) {
+	void CheckCombos(Entity) {
 		if (inputBuffer.size() < 2) return;
 
-		auto& registry = Registry::Get();
+		//auto& registry = Registry::Get();
 
 		//Soundwave Spell
 		if (inputBuffer.size() >= 2 &&
@@ -471,7 +471,7 @@ namespace RockScript {
 
 	}
 
-	void ApplyElementToProjectile(Entity proj)
+	void ApplyElementToProjectile(Entity)
 	{
 
 		//Damage Component in future
@@ -643,7 +643,7 @@ namespace RockScript {
 		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
 
 		auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
-		auto& physics = registry.Get_Component<Physics::PhysicsComponent>(eID);
+		//auto& physics = registry.Get_Component<Physics::PhysicsComponent>(eID);
 		auto& transComp = registry.Get_Component<TransformComponent>(eID);
 
 

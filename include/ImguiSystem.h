@@ -136,7 +136,7 @@ private:
      * panelPos   The Game View’s screen-space position.
      * panelSize  The Game View’s size for coordinate scaling.
      */
-    void DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize);
+    //void DrawEntityDragHandles(ImVec2 panelPos, ImVec2 panelSize);
 
     /**
     * @brief Displays prefab management controls.

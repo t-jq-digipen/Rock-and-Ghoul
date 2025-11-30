@@ -146,7 +146,7 @@ extern "C" {
         RenderComponent& render = reg.Get_Component<RenderComponent>(entity);
 
         RenderType renderType = render.GetRenderType();
-        if (renderType != RT_SPRITESHEET || renderType != RT_IMAGE) return false;
+        if (renderType != RT_SPRITESHEET && renderType != RT_IMAGE) return false;
 
         Sprite::SpriteComponent& sprite = (renderType == RT_SPRITESHEET) ? render.GetSpriteSheet().Sprite() : render.GetSprite();
 
@@ -162,7 +162,7 @@ extern "C" {
         RenderComponent& render = reg.Get_Component<RenderComponent>(entity);
 
         RenderType renderType = render.GetRenderType();
-        if (renderType != RT_SPRITESHEET || renderType != RT_IMAGE) return;
+        if (renderType != RT_SPRITESHEET && renderType != RT_IMAGE) return;
 
         Sprite::SpriteComponent& sprite = (renderType == RT_SPRITESHEET) ? render.GetSpriteSheet().Sprite() : render.GetSprite();
 
@@ -178,7 +178,7 @@ extern "C" {
         RenderComponent& render = reg.Get_Component<RenderComponent>(entity);
 
         RenderType renderType = render.GetRenderType();
-        if (renderType != RT_SPRITESHEET || renderType != RT_IMAGE) return false;
+        if (renderType != RT_SPRITESHEET && renderType != RT_IMAGE) return false;
 
         Sprite::SpriteComponent& sprite = (renderType == RT_SPRITESHEET) ? render.GetSpriteSheet().Sprite() : render.GetSprite();
 
@@ -194,7 +194,7 @@ extern "C" {
         RenderComponent& render = reg.Get_Component<RenderComponent>(entity);
 
         RenderType renderType = render.GetRenderType();
-        if (renderType != RT_SPRITESHEET || renderType != RT_IMAGE) return;
+        if (renderType != RT_SPRITESHEET && renderType != RT_IMAGE) return;
 
         Sprite::SpriteComponent& sprite = (renderType == RT_SPRITESHEET) ? render.GetSpriteSheet().Sprite() : render.GetSprite();
 
