@@ -33,6 +33,10 @@ class CoreEngine {
     bool running;
     double lastFrame;
 
+    int m_fpsFrames = 0;
+    double m_fpsLastUpdate = 0.0;
+    double m_fps = 0.0;
+
     struct TimingInfo { double ms = 0.0; };
 
     double DurationMs(const std::chrono::high_resolution_clock::time_point& start,
@@ -74,6 +78,7 @@ public:
     // Quit the Core Engine
     void Quit();
 
+    double GetFPS() const { return m_fps; }
     //getter function for your timings map
     //the key is a std::string
     //the value is a SystemTiming struct (contains ms for elapsed milliseconds).
