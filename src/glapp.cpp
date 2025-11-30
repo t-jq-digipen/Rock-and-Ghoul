@@ -24,6 +24,9 @@ to OpenGL implementations.
 #include "CoreEngine.h"
 #include "GuiSystem.h"
 #include <Camera.h>
+#include "AudioSystem.h"
+#include "SceneManager.h"
+#include "Audio.h"
 // Before asking GLFW to create an OpenGL context, we specify the minimum constraints
 // in that context:
 #define GL_MINOR 5
@@ -154,6 +157,7 @@ bool GLApp::init(GLint w, GLint h, std::string t, bool enable) {
   // this is the default setting ...
   glfwSetInputMode(GLApp::ptr_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
+  glfwSetWindowFocusCallback(GLApp::ptr_window, GLApp::window_focus_cb);
   // initialize OpenGL (and extension) function loading library
   GLenum err = glewInit();
 
@@ -665,4 +669,34 @@ void GLApp::SetFullscreenMode()
 bool GLApp::IsFullscreen()
 {
     return is_fullscreen;
+}
+
+void GLApp::window_focus_cb(GLFWwindow* window, int focused)
+{
+    (void)window;
+
+    SceneManager& sm = SceneManager::Get();
+
+    if (focused)
+    {
+        std::cout << "[Window] Focus gained\n";
+
+        // resume gameplay if playing before
+        if (sm.IsPlaying())
+            sm.SetPaused(false);
+
+        // resume audio
+        AudioManager::Get().ResumeMusic();
+    }
+    else
+    {
+        std::cout << "[Window] Focus lost\n";
+
+        // pause if in play
+        if (sm.IsPlaying())
+            sm.SetPaused(true);
+
+
+        AudioManager::Get().PauseMusic();
+    }
 }

@@ -45,10 +45,14 @@ public:
     bool inEditMode = true;     // True = editor mode
 #endif
 
-    // Optional helper functions
+    //helper functions
     inline bool IsPlaying() const { return isPlaying; }
     inline bool IsEditor()  const { return inEditMode; }
     inline bool IsPaused()  const { return isPaused; }
+    void SetPaused(bool p) {
+        isPaused = p;
+    }
+
     void TogglePause() { isPaused = !isPaused; }
     void EnterPlayMode();
     void EnterEditMode();
@@ -77,7 +81,7 @@ private:
     SceneManager() = default;
 
     std::string currentScenePath;      // Which .json is currently loaded
-    std::string tempScenePath = "../Assets/saves/temp.json";         // Auto-generated temp version
+    std::string tempScenePath = "../Assets/saves/temp.json";
     std::string currentSceneBGM;  // BGM asset name for current scene
     std::string pendingScene = "";
     float sceneTransitionTime = 0.f; // goes from 1.f to 0.f
