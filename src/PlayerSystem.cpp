@@ -494,7 +494,7 @@ namespace RockScript {
 	void Attack() {
 		if (IsBusy()) { return; }
 
-		// ARIPUTSOUND [melee swing]
+		AudioSystem::PlaySoundAt("player_dodge", 0.0f, 0.0f, 1.0f);
 		meleetimer = 0.f;
 		shot = false;
 	}
@@ -673,7 +673,7 @@ namespace RockScript {
 		auto& registry = Registry::Get();
 		auto& trans = registry.Get_Component<TransformComponent>(eID);
 
-		// ARIPUTSOUND [spell cast]
+		AudioSystem::PlaySoundAt("guitar_strum_heavy", 0.0f, 0.0f, 1.0f);
 		switch (spell.type)
 		{
 		case SpellType::SOUNDWAVE:
@@ -786,7 +786,7 @@ namespace RockScript {
 
 		shieldy = INVALID_ENTITY;
 
-		// ARIPUTSOUND [voiceline?]
+		AudioSystem::PlaySoundAt("player_spawnSound", 0.0f, 0.0f, 1.0f);
 
 	}
 

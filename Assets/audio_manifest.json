@@ -62,15 +62,23 @@
     },
     "player_dodge": {
       "path": "../Assets/audio/sfx/player/Dodge.wav",
-      "loop": true,
+      "loop": false,
       "group": "SFX",
-      "spatial": true
+      "spatial": false
     },
     "player_die": {
       "path": "../Assets/audio/sfx/player/Rock Dies.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
+    },
+    "player_spawnSound": {
+      "path": "../Assets/audio/sfx/player/Bring it on.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 2000.0
     },
     "player_footstep_wood": {
       "path": "../Assets/audio/sfx/player/Walking on Wood.wav",
@@ -106,7 +114,9 @@
     ],
     "level1": [
       "level_1",
-      "player_footstep_wood"
+      "player_footstep_wood",
+      "player_dodge",
+      "player_spawnSound"
     ]
   }
 }
