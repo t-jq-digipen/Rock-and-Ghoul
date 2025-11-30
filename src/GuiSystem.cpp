@@ -924,6 +924,249 @@ void GuiSystem::Update(float dt)
         DrawStateWindow(render);
     }
 
+#ifndef NO_IMGUI
+    if (!SceneManager::Get().inEditMode)
+    {
+#endif
+
+    static bool opencontrol = false;
+    static int controlpage = 0;
+    // Pause menu
+    if (SceneManager::Get().IsPaused())
+    {
+        const float defaultW = 1920.f;
+        const float defaultH = 1080.f;
+        const float scaleX = GLApp::width / defaultW;
+        const float scaleY = GLApp::height / defaultH;
+        const float uiScale = std::min(scaleX, scaleY);
+        // Title text (scaled like UI text)
+        float baseTextScale = 1.0f;
+        const float textScale = baseTextScale * uiScale;
+        Render& renderer = Render::GetInstance();
+        if (!opencontrol)
+        {
+
+
+        renderer.DrawRect({ 960.f, 540.f }, 3000.f, 2000.f, { 0.f,0.f,0.f }, 0.f, 0.5f);
+
+        Image img = CreateImage("../Assets/UI_ExitPanel.PNG");
+        renderer.DrawImageRotated(img, 960, 540, 1000, 1000);
+        bool hovercontrol = false;
+        bool hoverexit = false;
+
+        {
+            hovercontrol = (renderer.IsAreaTouched(mouse, { 960,400 }, 400, 190));
+            float brightness = hovercontrol ? 0.2f : 0.f;
+            Image btnimg = CreateImage("../Assets/UI_MainMenu_NewGame_Button.png");
+            renderer.DrawImageRotated(btnimg, 960.f, 400.f, 400.f, 190.f, 0.f, brightness);
+
+            const Vec2 baseTitlePos = { 960.f, 400.f };
+            const std::string title = "how to play";
+            Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+            float textX = baseTitlePos.x - textSize.x * 0.5f;
+            float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
+            render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+
+        }
+
+        {
+            hoverexit = (renderer.IsAreaTouched(mouse, { 960,600 }, 400, 190));
+            float brightness = hoverexit ? 0.2f : 0.f;
+            Image btnimg = CreateImage("../Assets/UI_MainMenu_QuitButton.png");
+            renderer.DrawImageRotated(btnimg, 960.f, 600.f, 400.f, 190.f, 0.f, brightness);
+
+            const Vec2 baseTitlePos = { 960.f, 600.f };
+            const std::string title = "QUIT";
+            Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+            float textX = baseTitlePos.x - textSize.x * 0.5f;
+            float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
+            render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+
+        }
+
+
+        if (hovercontrol && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            opencontrol = true;
+            controlpage = 0;
+        }
+
+        if (hoverexit && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
+            SceneManager::Get().SetTransitionTime(2.f);
+        }
+
+        }
+        else
+        {
+            Image pagebg = CreateImage("../Assets/UI_ControlsPage_Background.PNG");
+            renderer.DrawImageRotated(pagebg, 960.f, 540.f, 1920.f, 1080.f);
+            baseTextScale = 0.8f;
+
+
+            bool hoverleave = (renderer.IsAreaTouched(mouse, { 100,1000 }, 200, 180));
+            {
+                Image exitbtn = CreateImage("../Assets/UI_ControlsPage_BackButton.png");
+                float brightness = hoverleave ? 0.2f : 0.f;
+                renderer.DrawImageRotated(exitbtn, 100.f, 1000.f, 200.f, 180.f, 0.f, brightness);
+            }
+            if (hoverleave && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+            {
+                controlpage = 0;
+                opencontrol = false;
+            }
+
+            if (controlpage == 0)
+            {
+                {
+                    const Vec2 baseTitlePos = { 960.f, 900.f };
+                    const std::string title = "CONTROLS";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    float textX = baseTitlePos.x - textSize.x * .8f;
+                    float textY = baseTitlePos.y - textSize.y * .8f + textSize.y * 0.15f;
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 200.f, 650.f };
+                    const std::string title = "W - Move Up";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 200.f, 600.f };
+                    const std::string title = "S - Move Down";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 200.f, 550.f };
+                    const std::string title = "A - Move Left";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 200.f, 500.f };
+                    const std::string title = "D - Move Right";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 200.f, 450.f };
+                    const std::string title = "Shift - Dash/Dodge";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 800.f, 650.f };
+                    const std::string title = "Arrow Keys - Spell Input Sequence";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 800.f, 600.f };
+                    const std::string title = "1 / 2 / 3 - Use Song Slot 1-2-3";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 800.f, 550.f };
+                    const std::string title = "Q - Cycle Through Element";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 800.f, 500.f };
+                    const std::string title = "E - Melee Attack";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 800.f, 450.f };
+                    const std::string title = "ESC - Pause/Resume Game";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                bool hoverpage = (renderer.IsAreaTouched(mouse, { 120,150 }, 180, 150));
+                {
+                    Image pgbtn = CreateImage("../Assets/UI_ControlsPage_ForwardPageLogo.png");
+                    float brightness = hoverpage ? 0.2f : 0.f;
+                    renderer.DrawImageRotated(pgbtn, 120.f, 100, 180.f, 150.f, 0.f, brightness);
+                }
+                if (hoverpage && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+                {
+                    controlpage = 1;
+                }
+            }
+            else 
+            {
+                {
+                    const Vec2 baseTitlePos = { 700.f, 650.f };
+                    const std::string title = "Song List:";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 700.f, 600.f };
+                    const std::string title = "Soundwave Attack -> Up, Down";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 700.f, 550.f };
+                    const std::string title = "AOE Attack -> Up, Left, Down";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 700.f, 500.f };
+                    const std::string title = "Shield -> Down, Down, Right";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 700.f, 450.f };
+                    const std::string title = "Healing -> Right, Up, Right";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                }
+
+                bool hoverpage = (renderer.IsAreaTouched(mouse, { 120,200 }, 180, 150));
+                {
+                    Image pgbtn = CreateImage("../Assets/UI_ControlsPage_BackwardsPageLogo.png");
+                    float brightness = hoverpage ? 0.2f : 0.f;
+                    renderer.DrawImageRotated(pgbtn, 120.f, 200.f, 180.f, 150.f, 0.f, brightness);
+                }
+                if (hoverpage && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+                {
+                    controlpage = 0;
+                }
+            }
+        }
+
+
+    }
+
+#ifndef NO_IMGUI
+    }
+#endif
+
     // Transition overlay
     {
         float t = SceneManager::Get().GetTransitionProgress();
@@ -933,7 +1176,6 @@ void GuiSystem::Update(float dt)
             render.DrawRect(pos, (float)GLApp::width, (float)GLApp::height, { 0.f,0.f,0.f }, 0.0f, t);
         }
     }
-
     // restore camera back to world
     render.useCamera = prevCam;
 }
