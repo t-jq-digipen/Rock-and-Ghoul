@@ -785,7 +785,10 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         Entity ent = JsonLoad::LoadEntityFromFile(path, 300.f, 300.f);
         if (ent != INVALID_ENTITY)
         {
-            selectedEntity = ent;
+            // Register entity name so it can be found during prefab updates
+            std::filesystem::path filepath(path);
+            std::string prefabName = filepath.stem().string();
+            Registry::Get().Get_EntityNameMap()[ent] = prefabName;
             std::cout << "[ImGui Drop] Spawned prefab entity " << ent << std::endl;
         }
         else
@@ -3310,6 +3313,10 @@ void ImGuiSystem::Update(float dt)
                 {
                     selectedEntity = newEnt;
                     UndoSystem::Get().RecordAdd(newEnt);
+                    // Register entity name so it can be found during prefab updates
+                    std::filesystem::path path(pendingPrefabPath);
+                    std::string prefabName = path.stem().string();
+                    Registry::Get().Get_EntityNameMap()[newEnt] = prefabName;
                     std::cout << "[Editor] Spawned prefab at (" << worldX << ", " << worldY << ")\n";
                 }
                 else
@@ -5240,15 +5247,13 @@ void ImGuiSystem::ShowPrefabControls()
                 auto& registry = Registry::Get();
                 auto& nameMap = registry.Get_EntityNameMap();
 
-                // use whatever name stored for this prefab
                 std::string targetName = pendingPrefabName;
                 std::string targetLower = targetName;
                 std::transform(targetLower.begin(), targetLower.end(), targetLower.begin(),
                     [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-                // collect all entities to replace
+                // Collect ALL entities that match the name
                 std::vector<Entity> replaceList;
-
                 for (auto& [entID, name] : nameMap)
                 {
                     std::string n = name;
@@ -5261,39 +5266,63 @@ void ImGuiSystem::ShowPrefabControls()
                     }
                 }
 
-                std::string prefabPath =
-                    FilePath::PREFABS_FOLDER + targetName + ".json";
 
-                //replace old entity
+
+                std::string prefabPath = FilePath::PREFABS_FOLDER + targetName + ".json";
+
+                // Replace old entities
                 for (Entity oldEnt : replaceList)
                 {
-                    // Copy old transform
+
+                    // Check if transform exists
                     if (!registry.Has_Component<TransformComponent>(oldEnt))
+                    {
+                     
                         continue;
+                    }
 
-                    TransformComponent oldT = registry.Get_Component<TransformComponent>(oldEnt);
+                    // Only preserve POSITION and optionally ROTATION from old entity
+                    TransformComponent oldTransform = registry.Get_Component<TransformComponent>(oldEnt);
 
-                    // remove old entity
+                    // Delete the old entity
                     registry.Remove_Entity(oldEnt);
 
-                    // spawn new one from prefab
-                    Entity newEnt = JsonLoad::LoadEntityFromFile(prefabPath, oldT.pos.x, oldT.pos.y);
+                    // Spawn new entity from prefab at OLD position
+                    Entity newEnt = JsonLoad::LoadEntityFromFile(prefabPath, oldTransform.pos.x, oldTransform.pos.y);
 
-                    if (!newEnt)    // failed to load prefab
+                    if (newEnt == INVALID_ENTITY)
+                    {
                         continue;
+                    }
 
-                    //scale + rotation
-                    auto& newT = registry.Get_Component<TransformComponent>(newEnt);
-                    newT.scale = oldT.scale;
-                    newT.rot = oldT.rot;
 
+                    // Verify new entity has transform
+                    if (!registry.Has_Component<TransformComponent>(newEnt))
+                    {
+                        continue;
+                    }
+
+                    // Get reference to new transform
+                    TransformComponent& newTransform = registry.Get_Component<TransformComponent>(newEnt);
+                    newTransform.rot = oldTransform.rot;
+
+
+                    // Update collider with NEW prefab scale
+                    if (registry.Has_Component<ColliderComponent>(newEnt))
+                    {
+                        auto& col = registry.Get_Component<ColliderComponent>(newEnt);
+                        col.UpdateHitboxes(newTransform.pos, newTransform.scale);
+                    }
+
+                    // Set the name
                     registry.Get_EntityNameMap()[newEnt] = targetName;
                 }
+
+                std::cout << "[Update Instances] Finished updating " << replaceList.size() << " instances" << std::endl;
 
                 ImGui::CloseCurrentPopup();
                 pendingPrefabName.clear();
             }
-
 
             ImGui::SameLine();
 
