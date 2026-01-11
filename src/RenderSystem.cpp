@@ -33,6 +33,7 @@
 #include "RenderComponent.h"
 #include "SceneManager.h"
 #include "SimpleAtlas.h"
+#include <libavformat/avformat.h>
  // ---------------------------------------------
  // @brief Temporary struct for per-frame draw queue
  // ---------------------------------------------
@@ -43,6 +44,7 @@
     float sortY;
 };*/
 
+int avformat_open_input();
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
