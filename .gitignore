@@ -101,3 +101,5 @@ GameScripts/bin/*
 !GameScripts/bin/Debug/
 !GameScripts/bin/Debug/GameScripts.dll
 
+# FFmpeg
+deps/FFmpeg/

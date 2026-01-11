@@ -207,8 +207,31 @@ add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
 )
 
 
+# =========================
+# FFmpeg
+# =========================
+set(FFMPEG_DIR "${CMAKE_SOURCE_DIR}/deps/FFmpeg")
+
+add_library(ffmpeg INTERFACE)
+
+target_include_directories(ffmpeg INTERFACE
+    "${FFMPEG_DIR}/include"
+)
+
+target_link_libraries(ffmpeg INTERFACE
+    "${FFMPEG_DIR}/lib/avcodec.lib"
+    "${FFMPEG_DIR}/lib/avformat.lib"
+    "${FFMPEG_DIR}/lib/avutil.lib"
+)
 
 
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ffmpeg)
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${FFMPEG_DIR}/bin"
+    "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>"
+)
 
 
 
