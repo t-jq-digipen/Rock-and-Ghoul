@@ -147,6 +147,24 @@ namespace PlayerMove {
 
 namespace RockScript {
 	// Constants
+	// IDs for arrow displays: [slot][direction]
+	// Slot 0 (leftmost): IDs 10-13 (up, down, left, right)
+	// Slot 1 (middle): IDs 14-17 (up, down, left, right)  
+	// Slot 2 (rightmost): IDs 18-21 (up, down, left, right)
+	static const int ARROW_DISPLAY_IDS[3][4] = {
+		{10, 11, 12, 13},  // Slot 0: UP, DOWN, LEFT, RIGHT
+		{14, 15, 16, 17},  // Slot 1: UP, DOWN, LEFT, RIGHT
+		{18, 19, 20, 21}   // Slot 2: UP, DOWN, LEFT, RIGHT
+	};
+
+	static const float VISUAL_DISPLAY_TIME = 2.0f;
+
+	struct InputVisual {
+		int direction;
+		float timeRemaining;
+		bool active;
+	};
+	static std::array<InputVisual, 3> visualBuffer;
 #pragma region CONSTANTS
 	constexpr float SWING_TIME = 0.5f;
 	constexpr float SOUNDWAVE_TIME = 0.5f;
@@ -355,12 +373,161 @@ namespace RockScript {
 
 	//Arrow key codes for easier reference
 	enum ArrowKey { UP = GLFW_KEY_UP, DOWN = GLFW_KEY_DOWN, LEFT = GLFW_KEY_LEFT, RIGHT = GLFW_KEY_RIGHT };
+	//map arrow key to array index
+	int GetDirectionIndex(int key) {
+		switch (key) {
+		case UP: return 0;
+		case DOWN: return 1;
+		case LEFT: return 2;
+		case RIGHT: return 3;
+		default: return -1;
+		}
+	}	
 
+	// possible next keys based on current input buffer
+	std::vector<int> GetPossibleNextKeys() {
+		std::vector<int> possibleKeys;
+
+		if (inputBuffer.empty()) {
+			possibleKeys.push_back(UP);    // Soundwave, AOE
+			possibleKeys.push_back(DOWN);  // Shield
+			possibleKeys.push_back(RIGHT); // Healing
+			return possibleKeys;
+		}
+
+		if (inputBuffer.size() == 1) {
+			if (inputBuffer[0] == UP) {
+				// After UP, can press DOWN (Soundwave) or LEFT (AOE)
+				possibleKeys.push_back(DOWN);
+				possibleKeys.push_back(LEFT);
+			}
+			else if (inputBuffer[0] == DOWN) {
+				// After DOWN, can press DOWN again (Shield)
+				possibleKeys.push_back(DOWN);
+			}
+			else if (inputBuffer[0] == RIGHT) {
+				// After RIGHT, can press UP (Healing)
+				possibleKeys.push_back(UP);
+			}
+		}
+		else if (inputBuffer.size() == 2) {
+			if (inputBuffer[0] == UP && inputBuffer[1] == LEFT) {
+				// UP, LEFT -> need DOWN for AOE
+				possibleKeys.push_back(DOWN);
+			}
+			else if (inputBuffer[0] == DOWN && inputBuffer[1] == DOWN) {
+				// DOWN, DOWN -> need RIGHT for Shield
+				possibleKeys.push_back(RIGHT);
+			}
+			else if (inputBuffer[0] == RIGHT && inputBuffer[1] == UP) {
+				// RIGHT, UP -> need RIGHT for Healing
+				possibleKeys.push_back(RIGHT);
+			}
+			// UP, DOWN completes immediately so wont hit size==2 for that
+		}
+
+		return possibleKeys;
+	}
+
+	// if a key press is valid
+	bool IsValidInput(int key) {
+		std::vector<int> validKeys = GetPossibleNextKeys();
+
+		// Check if the pressed key is in the list of valid next keys
+		for (int validKey : validKeys) {
+			if (key == validKey) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	void UpdateVisualDisplays() {
+		GuiSystem& gui = GuiSystem::Get();
+
+		// Get mutable reference to displays
+		auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
+
+		// Hide all arrow displays first
+		for (int slot = 0; slot < 3; slot++) {
+			for (int dir = 0; dir < 4; dir++) {
+				int displayID = ARROW_DISPLAY_IDS[slot][dir];
+				for (auto& display : displays) {
+					if (display.ID == displayID) {
+						display.isVisible = false;
+						break;
+					}
+				}
+			}
+		}
+		if (inputBuffer.empty()) {
+			return;
+		}
+		// show already pressed keys
+		int bufferSize = static_cast<int>(inputBuffer.size());
+		for (int i = 0; i < bufferSize && i < 3; i++) {
+			// i represents which key in sequence: 0=first, 1=second, 2=third
+			int key = inputBuffer[i];  // key from START of buffer
+
+			int dirIndex = GetDirectionIndex(key);
+			if (dirIndex == -1) continue;
+
+			// i as the slot index (0, 1, or 2 based on sequence position)
+			int displayID = ARROW_DISPLAY_IDS[i][dirIndex];
+
+			for (auto& display : displays) {
+				if (display.ID == displayID) {
+					display.isVisible = true;
+					break;
+				}
+			}
+		}
+
+		// possible next keys in the next available slot
+		if (bufferSize < 3) {
+			std::vector<int> nextKeys = GetPossibleNextKeys();
+			// If there are no possible next keys, don't show anything
+			if (nextKeys.empty()) {
+				return;
+			}
+
+			// Next key will be at position bufferSize (0, 1, or 2)
+			int nextSlotIndex = bufferSize;
+
+			for (int nextKey : nextKeys) {
+				int dirIndex = GetDirectionIndex(nextKey);
+				if (dirIndex == -1) continue;
+
+				int displayID = ARROW_DISPLAY_IDS[nextSlotIndex][dirIndex];
+
+				for (auto& display : displays) {
+					if (display.ID == displayID) {
+						display.isVisible = true;
+						break;
+					}
+				}
+			}
+		}
+	}
 
 	//Record key presses in buffer
 	void RecordInput(int key) {
+
+		if (!IsValidInput(key)) {
+			// invalid key clear everything and restart
+			std::cout << "Invalid input Clearing combo lol\n";
+			inputBuffer.clear();
+			UpdateVisualDisplays();  // hide all arrows
+			return;  //dont process key
+		}
+
 		inputBuffer.push_back(key);
-		if (inputBuffer.size() > MAX_COMBO) inputBuffer.erase(inputBuffer.begin()); //Keep max input sequence length
+
+		if (inputBuffer.size() > MAX_COMBO) inputBuffer.erase(inputBuffer.begin());
+
+		// update displays to show current buffer
+		UpdateVisualDisplays();
+
 		switch (key) {
 		case UP:    std::cout << "Arrow UP pressed\n"; break;
 		case DOWN:  std::cout << "Arrow DOWN pressed\n"; break;
@@ -370,77 +537,55 @@ namespace RockScript {
 		}
 	}
 
-	//Check Input sequence and execute respective actions
+
+	//check sequence and execute actions
 	void CheckCombos(Entity) {
 		if (inputBuffer.size() < 2) return;
 
 		//auto& registry = Registry::Get();
-
-		//Soundwave Spell
+		//Soundwave Spell (=Up, Down)
 		if (inputBuffer.size() >= 2 &&
 			inputBuffer[inputBuffer.size() - 2] == UP &&
 			inputBuffer[inputBuffer.size() - 1] == DOWN)
 		{
-			/*auto& trans = registry.Get_Component<TransformComponent>(eID);
-
-			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json",
-				trans.pos.x, trans.pos.y);
-
-			std::cout << "Projectile spawned at (" << trans.pos.x << ", " << trans.pos.y << ")\n";*/
-
 			AddSpellToSlot(SpellType::SOUNDWAVE, 5.f, 2);
-
 			inputBuffer.clear();
+			UpdateVisualDisplays();  // clear display after correct combo
 			return;
 		}
 
-		//AOE Spell
+		//AOE Spell (=Up, Left, Down)
 		if (inputBuffer.size() == 3 &&
 			inputBuffer[inputBuffer.size() - 3] == UP &&
 			inputBuffer[inputBuffer.size() - 2] == LEFT &&
 			inputBuffer[inputBuffer.size() - 1] == DOWN)
 		{
-			//auto& trans = registry.Get_Component<TransformComponent>(eID);
-			//JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json",
-			//	trans.pos.x, trans.pos.y + 5.f  // spawn above
-			//);
-
 			AddSpellToSlot(SpellType::AOE, 8.f, 1);
 			inputBuffer.clear();
+			UpdateVisualDisplays();  // clear display after correct combo
 			return;
 		}
 
-		//Shield Spell
+		//Shield Spell (=Down, Down, Right)
 		if (inputBuffer.size() == 3 &&
 			inputBuffer[inputBuffer.size() - 3] == DOWN &&
 			inputBuffer[inputBuffer.size() - 2] == DOWN &&
 			inputBuffer[inputBuffer.size() - 1] == RIGHT)
 		{
-			/*isVulnerable = false;
-			shieldTimer = 0.f;
-
-			std::cout << "Shield activated! Invulnerable: " << !isVulnerable << ", Timer: " << shieldTimer << "s\n";*/
-
 			AddSpellToSlot(SpellType::SHIELD, 10.f, 1);
-
 			inputBuffer.clear();
+			UpdateVisualDisplays();  // clear display after correct combo
 			return;
 		}
 
-		//Healing Spell
+		//Healing Spell (=Right, Up, Right)
 		if (inputBuffer.size() == 3 &&
 			inputBuffer[inputBuffer.size() - 3] == RIGHT &&
 			inputBuffer[inputBuffer.size() - 2] == UP &&
 			inputBuffer[inputBuffer.size() - 1] == RIGHT) {
-			/*if (registry.Has_Component<HealthComponent>(eID)) {
-				auto& health = registry.Get_Component<HealthComponent>(eID);
-				health.currhp += 10.f;
-				if (health.currhp > health.maxhp) health.currhp = health.maxhp;
-
-				std::cout << "Healing triggered! Current HP: " << health.currhp << "/" << health.maxhp << "\n";
-			}*/
 			AddSpellToSlot(SpellType::HEAL, 15.f, 1);
 			inputBuffer.clear();
+			UpdateVisualDisplays();  // clear display after correct combo
 			return;
 		}
 	}
@@ -580,7 +725,16 @@ namespace RockScript {
 	inline void Start(Entity eID)
 	{
 		std::cout << "Rock script started" << std::endl;
+		for (auto& visual : visualBuffer) {
+			visual.direction = 0;
+			visual.timeRemaining = 0.f;
+			visual.active = false;
+		}
+		// clear input buffer
+		inputBuffer.clear();
 
+		// hide all arrow displays initially
+		UpdateVisualDisplays();
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
 			//Record arrow keys
 			if (SceneManager::Get().IsPaused()) return;
