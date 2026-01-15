@@ -33,7 +33,14 @@
 #include "RenderComponent.h"
 #include "SceneManager.h"
 #include "SimpleAtlas.h"
+#include <iostream>
+
+//need this to prevent name mangling 
+extern "C" {
 #include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+}
+
  // ---------------------------------------------
  // @brief Temporary struct for per-frame draw queue
  // ---------------------------------------------
@@ -44,7 +51,113 @@
     float sortY;
 };*/
 
-int avformat_open_input();
+void TestOpenVideo() {
+
+    AVFormatContext* pFormatContext = nullptr;
+    int result = avformat_open_input(
+        &pFormatContext,
+        "../Assets/Intro.mp4",
+        nullptr,
+        nullptr
+    );
+
+    //if successful print to console (sanity check)
+    if (result == 0) {
+        std::cout << "\n=====VIDEO MP4 DEBUG INFORMATION=====\nSuccessfully Opened video file\n";
+
+
+        //now get stream info
+        int info = avformat_find_stream_info(pFormatContext, nullptr);
+        if (info == 0) {
+            std::cout << "Successfully found stream info\n";
+        }
+
+        //Loop through streams
+        int videoStreamIndex = -1;
+
+        for (unsigned int i = 0; i < pFormatContext->nb_streams; i++) {
+            AVStream* stream = pFormatContext->streams[i];
+
+            if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+                videoStreamIndex = i;
+                break;
+            }
+        }
+
+        if (videoStreamIndex == -1) {
+            std::cout << "No video stream found\n";
+            return;
+        }
+
+        //sanity checkpoint (make sure it matches the mp4 resolution in assets)=================================
+        AVStream* videoStreamMeta = pFormatContext->streams[videoStreamIndex];
+
+        std::cout << "<SANITY CHECK> Video Resolution ( width x height): "
+            << videoStreamMeta->codecpar->width
+            << " x "
+            << videoStreamMeta->codecpar->height
+            << std::endl;
+
+
+        //next, we need find and open the decoder 
+        AVStream* videoStream = pFormatContext->streams[videoStreamIndex];
+        AVCodecParameters* codecParams = videoStream->codecpar;
+
+        const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
+
+        //hello, ffpmeg do u have a decoder for this codec ID? if no have the video cannot be decoded 
+        if (!codec) {
+            std::cout << "Unsupported codec\n";
+            return;
+        }
+
+        //if we have a decoder for it, ok, lets allocate a codec context
+        //This will hold the decoder state
+        AVCodecContext* codecCtx = avcodec_alloc_context3(codec);
+
+        if (!codecCtx) {
+            std::cout << "Failed to allocate codec context\n";
+            return;
+        }
+
+
+        //if successful, next we shall copy the stream params into the context
+        if (avcodec_parameters_to_context(codecCtx, codecParams) < 0) {
+            std::cout << "Failed to copy codec parameters\n";
+            return;
+        }
+
+        //After this, everything for the decoder is prepped and ready, we can open the decoder next
+        // and ready to decode packets
+        if (avcodec_open2(codecCtx, codec, nullptr) < 0) {
+            std::cout << "Failed to open decoder\n";
+            return;
+        }
+
+        //Now, we can read the packets from the stream and decode them into frames
+        //First, lets allocate memory for AVPacket and AVFrame
+        AVPacket* pPacket = av_packet_alloc();
+        AVFrame* pFrame = av_frame_alloc();
+
+        if (!pPacket || !pFrame) {
+            std::cout << "Failed to allocate AVPacket/AVFrame\n";
+            return;
+        }
+
+
+
+
+    }
+
+    //specify error if cannot open video
+    else {
+        char errbuf[AV_ERROR_MAX_STRING_SIZE];
+        av_strerror(result, errbuf, sizeof(errbuf));
+        std::cout << "FFmpeg error: " << errbuf << std::endl;
+    }
+}
+
+//AVFormatContext* pFormatContext = avformat_alloc_context();
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
@@ -206,6 +319,7 @@ void RenderSystem::Initialize() {
         std::cout << "  Size: " << sp.width << "x" << sp.height << "\n";
     }*/
 
+    TestOpenVideo();
 }
 
 void RenderSystem::Update(float dt) {
