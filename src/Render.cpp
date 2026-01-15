@@ -306,51 +306,61 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
 }
 
 void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) {
-    GLfloat vertices[4] = {
-        start.x, start.y,
-        end.x,   end.y
-    };
-
-    GLuint vboLine, vaoLine;
-    glGenVertexArrays(1, &vaoLine);
-    glGenBuffers(1, &vboLine);
-
-    glBindVertexArray(vaoLine);
-    glBindBuffer(GL_ARRAY_BUFFER, vboLine);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
     glUseProgram(shaderProgram);
 
-    // Set required uniforms
+    // Set line width FIRST
+    glLineWidth(3.0f);
+
+    // Upload projection
     glm::mat4 projMatrix = useCamera
         ? mainCamera.GetViewProjection()
         : projection;
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uProjection"),
         1, GL_FALSE, &projMatrix[0][0]);
+
+    // Set uniforms - match what DrawRect does
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
-
-    // Set pos and scale to neutral values so vertices pass through unchanged
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
 
+    // Create vertices with BOTH position and texcoord (even though we don't use texcoord)
+    // This matches the layout expected by the main vao
+    float vertices[] = {
+        start.x, start.y, 0.0f, 0.0f,  // pos + uv
+        end.x,   end.y,   1.0f, 1.0f   // pos + uv
+    };
+
+    GLuint tempVAO, tempVBO;
+    glGenVertexArrays(1, &tempVAO);
+    glGenBuffers(1, &tempVBO);
+
+    glBindVertexArray(tempVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, tempVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // Position attribute (location 0)
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 
-    //draw
+    // Texcoord attribute (location 1) - even though unused
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    // Draw
     glDrawArrays(GL_LINES, 0, 2);
-    glLineWidth(3.0f);
 
-    // cleanup
-    glDisableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // Cleanup
     glBindVertexArray(0);
-    glDeleteBuffers(1, &vboLine);
-    glDeleteVertexArrays(1, &vaoLine);
+    glDeleteBuffers(1, &tempVBO);
+    glDeleteVertexArrays(1, &tempVAO);
 
-    //reset color, cause it seems to cause greenish overlay
+    // Reset state
+    glLineWidth(1.0f);
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 
     glUseProgram(0);
 }
@@ -475,6 +485,7 @@ void Render::DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, cons
 
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"),
         color.r, color.g, color.b);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseCustomVerts"), GL_TRUE);
@@ -516,6 +527,8 @@ void Render::DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, cons
 
     //reset for future draw calls 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseCustomVerts"), GL_FALSE);
+    // Reset color so next sprite draw isn't tinted
+    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
 
     glUseProgram(0);
 }
@@ -527,7 +540,7 @@ GLuint Render::LoadTexture(const std::string& path) {
     // Check if texture already exists
     auto it = textureCache.find(path);
     if (it != textureCache.end()) {
-        std::cout << "Found in cache: " << path << " ID: " << it->second << std::endl;
+        //std::cout << "Found in cache: " << path << " ID: " << it->second << std::endl;
         return it->second; // Return cached texture
     }
 

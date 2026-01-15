@@ -24,6 +24,9 @@ to OpenGL implementations.
 #include "CoreEngine.h"
 #include "GuiSystem.h"
 #include <Camera.h>
+#include "AudioSystem.h"
+#include "SceneManager.h"
+#include "Audio.h"
 // Before asking GLFW to create an OpenGL context, we specify the minimum constraints
 // in that context:
 #define GL_MINOR 5
@@ -154,6 +157,7 @@ bool GLApp::init(GLint w, GLint h, std::string t, bool enable) {
   // this is the default setting ...
   glfwSetInputMode(GLApp::ptr_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
+  glfwSetWindowFocusCallback(GLApp::ptr_window, GLApp::window_focus_cb);
   // initialize OpenGL (and extension) function loading library
   GLenum err = glewInit();
 
@@ -274,7 +278,7 @@ were held down
 This function is called when keyboard buttons are pressed.
 When the ESC key is pressed, the close flag of the window is set.
 */
-void GLApp::key_cb(GLFWwindow *pwin, int key, int scancode, int action, int mod) {
+void GLApp::key_cb(GLFWwindow *, int, int scancode, int action, int mod) {
     (void)scancode;
     (void)mod;
  if (GLFW_PRESS == action) {
@@ -291,9 +295,9 @@ void GLApp::key_cb(GLFWwindow *pwin, int key, int scancode, int action, int mod)
 #endif
   }
 
-  if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action) {
-    glfwSetWindowShouldClose(pwin, GLFW_TRUE);
-  }
+  //if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action) {
+  //  glfwSetWindowShouldClose(pwin, GLFW_TRUE);
+  //}
 
   //if (key == GLFW_KEY_ENTER && action == GLFW_PRESS &&
   //    (mod & GLFW_MOD_ALT))
@@ -613,7 +617,7 @@ void GLApp::ToggleFullscreen()
 
 Sets the window to windowed mode with specified dimensions.
 */
-void GLApp::SetWindowedMode(int width, int height)
+void GLApp::SetWindowedMode(int w, int h)
 {
     if (!ptr_window) return;
 
@@ -623,18 +627,18 @@ void GLApp::SetWindowedMode(int width, int height)
         ToggleFullscreen();
     }
 
-    windowed_width = width;
-    windowed_height = height;
+    windowed_width = w;
+    windowed_height = h;
 
-    std::cout << "[GLApp] Setting windowed resolution: "  << width << "x" << height << "\n";
+    std::cout << "[GLApp] Setting windowed resolution: "  << w << "x" << h << "\n";
 
-    glfwSetWindowSize(ptr_window, width, height);
+    glfwSetWindowSize(ptr_window, w, h);
 
     // center window on screen
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-    windowed_pos_x = (mode->width - width) / 2;
-    windowed_pos_y = (mode->height - height) / 2;
+    windowed_pos_x = (mode->width - w) / 2;
+    windowed_pos_y = (mode->height - w) / 2;
     glfwSetWindowPos(ptr_window, windowed_pos_x, windowed_pos_y);
 
     // update viewport
@@ -665,4 +669,37 @@ void GLApp::SetFullscreenMode()
 bool GLApp::IsFullscreen()
 {
     return is_fullscreen;
+}
+
+static bool waspaused = false;
+
+void GLApp::window_focus_cb(GLFWwindow* window, int focused)
+{
+    (void)window;
+
+    SceneManager& sm = SceneManager::Get();
+
+    if (focused)
+    {
+        std::cout << "[Window] Focus gained\n";
+
+        // resume gameplay if playing before
+        if (sm.IsPlaying() && !waspaused)
+            sm.SetPaused(false);
+
+        // resume audio
+        AudioManager::Get().ResumeMusic();
+    }
+    else
+    {
+        std::cout << "[Window] Focus lost\n";
+
+        waspaused = sm.IsPaused();
+        // pause if in play
+        if (sm.IsPlaying())
+            sm.SetPaused(true);
+
+
+        AudioManager::Get().PauseMusic();
+    }
 }

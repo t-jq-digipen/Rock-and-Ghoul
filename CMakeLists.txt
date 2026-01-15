@@ -260,7 +260,7 @@ source_group("BaseEngine\\Serialization" FILES
 source_group("BaseEngine\\Mono Scripting" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoManager.h
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoSystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoSystem.h
 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoBindings.cpp
@@ -352,9 +352,6 @@ source_group("BaseEngine\\Systems\\Undo" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/UndoSystem.cpp
 )
 source_group("BaseEngine\\Managers" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GameStateManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStateManager.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameStates.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/SceneManager.h
    ${CMAKE_CURRENT_SOURCE_DIR}/src/SceneManager.cpp
 
@@ -422,12 +419,6 @@ source_group("others\\EventBus" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EventBus.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EventBus.h
 )
-source_group("Game\\Levels" FILES 
-       ${CMAKE_CURRENT_SOURCE_DIR}/src/Level2.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Level2.h
-
-)
-
 source_group("Game\\Main Menu" FILES 
    )
 

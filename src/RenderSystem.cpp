@@ -20,7 +20,7 @@
  *
  * On shutdown, clears the texture cache to free GPU resources.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "RenderSystem.h"
@@ -751,15 +751,45 @@ void RenderSystem::Update(float dt) {
 
 
 #ifndef NO_IMGUI
+    renderInstance.SetProjectionType(ProjectionType::WORLD);
+
+    // Make absolutely sure we're rendering to the scene FBO
+
+    //// ===== TEST: Draw using DrawRect instead of DrawLine =====
+    //{
+    //    // Try drawing a rectangle which we KNOW works
+    //    Vec2 testPos{ 960.f, 540.f };  // Center of screen
+    //    Colour3 brightRed{ 1.f, 0.f, 0.f };
+
+    //    renderInstance.DrawRect(testPos, 200.f, 200.f, brightRed);
+    //    std::cout << "[RenderSystem] Drew test RECTANGLE at center (960,540)\n";
+    //}
+
+    //// Now try the line
+    //{
+    //    Vec2 testStart{ 0.f, 540.f };
+    //    Vec2 testEnd{ 1920.f, 540.f };
+    //    Colour3 brightMagenta{ 1.f, 0.f, 1.f };
+
+    //    glLineWidth(10.0f);
+    //    renderInstance.DrawLine(testStart, testEnd, brightMagenta);
+    //    glLineWidth(1.0f);
+
+    //    std::cout << "[RenderSystem] Drew test LINE\n";
+    //}
+    //{
+    //    Vec2 dummyPos{ -9999.f, -9999.f };  // Way off-screen
+    //    Colour3 transparent{ 0.f, 0.f, 0.f };
+    //    renderInstance.DrawRect(dummyPos, 1.f, 1.f, transparent, 0.0f, 0.0f); // Fully transparent
+    //}
     // Debug drawing for spatial grid
     {
-    SpatialGrid* grid = CollisionManager::GetSpatialGrid();
-
-    if (ImGuiSystem::showSpatialGrid) {
-        if (grid) {
-            DebugDraw::DrawSpatialGrid(grid, renderInstance);
+        SpatialGrid* grid = CollisionManager::GetSpatialGrid();
+        if (ImGuiSystem::showSpatialGrid) {
+            if (grid) {
+                DebugDraw::DrawSpatialGrid(grid, renderInstance);
+            }
         }
-    }
     }
 
     // Debug drawing for colliders
@@ -767,15 +797,8 @@ void RenderSystem::Update(float dt) {
         for (auto& [entID, collider] : m_registry.Get_ComponentMap<ColliderComponent>()) {
             if (!m_registry.Has_Component<TransformComponent>(entID)) continue;
             auto& t = m_registry.Get_Component<TransformComponent>(entID);
-
+            std::cout << "[RenderSystem] Drawing AABB for entity " << entID << "\n";
             DebugDraw::DrawAABB(collider.Get_AABB(), renderInstance);
-
-            //if (m_registry.Has_Component<ShapeComponent>(entID)) {
-            //    auto& shape = m_registry.Get_Component<ShapeComponent>(entID);
-            //    if (shape.shape == SHAPE_CIRCLE)
-            //        DebugDraw::DrawCircleCollider(collider.Get_Circle(), renderInstance);
-            //}
-
             DebugDraw::DrawHotspot(t.pos, renderInstance);
         }
     }

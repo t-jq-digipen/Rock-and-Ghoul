@@ -8,7 +8,7 @@
  * This file declares a player system for the ECS, managing
  * control inputs and reactions.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -17,7 +17,6 @@
 #include "Component.h"     // All component structs
 #include "Input.h"
 #include "Movement.h"
-#include "GameStateManager.h"
 #include "BehaviourFCT.h"   // BehaviourFCT
 #include <iostream>
 #include <unordered_map>
@@ -35,6 +34,23 @@ namespace PlayerMove {
     inline void Update(Entity e, float dt);
 
     inline void End(Entity e);
+}
+
+namespace RockScript {
+
+    enum class Element : int
+    {
+        NONE = 0,
+        LIGHTNING,
+        FIRE,
+        WIND,
+        ICE,
+
+        COUNT
+    };
+
+    enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
+
 }
 
 class PlayerSystem : public ISystem {

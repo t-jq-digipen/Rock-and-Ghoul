@@ -74,8 +74,8 @@ Entity Create_Ghoul(float const& x, float const& y) {
 
     return ghoul;
 }
-Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme scheme) {
-    Entity shape = 0;
+Entity Create_Shape(float const& spawnx, float const& spawny, ShapeType shapeType, ControlScheme) {
+    //Entity shape = 0;
     if (shapeType == SHAPE_RECTANGLE) {
         return LoadEntity("Rectangle", spawnx, spawny);
     }

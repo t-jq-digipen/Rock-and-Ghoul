@@ -35,7 +35,6 @@
 #include "glapp.h"
 #include "CoreEngine.h"
 #include "AudioSystem.h"  // contains AudioManager
-#include "MainMenu.h"
 #include "RenderSystem.h"
 #include "PlayerSystem.h"
 #include "PhysicsSystem.h"
@@ -69,8 +68,20 @@ int main() {
 
     GameSettings settings;
     if (settingsOpt.has_value()) {
-        settings = settingsOpt.value();
-        std::cout << "Loaded settings from file" << std::endl;
+        try {
+            settings = settingsOpt.value();
+            std::cout << "Loaded settings from file" << std::endl;
+        }
+        catch (const nlohmann::json::type_error& e)
+        {
+            std::cerr << "Settings file is invalid: " << e.what() << std::endl;
+            // Fallback to defaults
+            settings.volume = 100.0f;
+            settings.resolutionWidth = 1920;
+            settings.resolutionHeight = 1080;
+            settings.fullscreen = true;
+            JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
+        }
     }
     else {
         // If file doesn't exist, create default settings
@@ -83,8 +94,8 @@ int main() {
         JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
     }
 
-#ifndef NO_IMGUI
-    settings.fullscreen = false;
+#ifdef NO_IMGUI
+    settings.fullscreen = true;
 #endif
 
     // USE the loaded settings to initialize window

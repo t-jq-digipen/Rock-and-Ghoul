@@ -1,6 +1,150 @@
 {
+    "backgrounds": [
+        "../Assets/UI_SettingsPage_Background.PNG"
+    ],
+    "bgmAssetName": "main_menu",
+    "cameraSpawn": [
+        0.0,
+        0.0
+    ],
+    "cameraZoom": 1.0,
+    "entities": [],
+    "fontConfig": "../Assets/fontAssets.json",
     "fullscreen": true,
+    "gui": {
+        "buttons": [
+            {
+                "ID": 1,
+                "action": "None",
+                "actionName": "VolDown",
+                "actionParams": "{}",
+                "label": "",
+                "pos": [
+                    280.0,
+                    600.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_AmbienceLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    250.0,
+                    250.0
+                ],
+                "soundType": 0
+            },
+            {
+                "ID": 2,
+                "action": "None",
+                "actionName": "VolUp",
+                "actionParams": "{}",
+                "label": "",
+                "pos": [
+                    1120.0,
+                    600.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_SFXLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    250.0,
+                    250.0
+                ],
+                "soundType": 0
+            },
+            {
+                "ID": 3,
+                "action": "None",
+                "actionName": "SaveSettings",
+                "actionParams": "{}",
+                "label": "SAVE",
+                "pos": [
+                    660.0,
+                    220.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_Continue.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    300.0,
+                    142.1052703857422
+                ],
+                "soundType": 0
+            },
+            {
+                "ID": 4,
+                "action": "None",
+                "actionName": "LoadScene",
+                "actionParams": {
+                    "duration": 2.0,
+                    "scene": "MainMenu"
+                },
+                "label": "",
+                "pos": [
+                    660.0,
+                    100.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_BackButton.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    150.0,
+                    150.0
+                ],
+                "soundType": 0
+            }
+        ],
+        "dialogues": [],
+        "displays": [
+            {
+                "ID": 6,
+                "centered": true,
+                "pos": [
+                    720.0,
+                    600.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_BarLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    1000.0,
+                    800.0
+                ]
+            },
+            {
+                "ID": 7,
+                "centered": true,
+                "pos": [
+                    720.0,
+                    600.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_RedBar.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    1000.0,
+                    800.0
+                ]
+            }
+        ],
+        "textboxes": [
+            {
+                "ID": 5,
+                "centered": true,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "pos": [
+                    760.0,
+                    800.0
+                ],
+                "scale": 1.399999976158142,
+                "text": "VOLUME"
+            }
+        ]
+    },
     "resolutionHeight": 1080,
     "resolutionWidth": 1920,
-    "volume": 100.0
+    "sceneName": "settings",
+    "sceneType": 0,
+    "settings": {
+        "volume": 50.0
+    },
+    "worldMax": [
+        1920.0,
+        1080.0
+    ],
+    "worldMin": [
+        0.0,
+        0.0
+    ]
 }

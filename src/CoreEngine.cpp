@@ -78,7 +78,7 @@ void CoreEngine::AddRenderSystem(ISystem* sys)
 }
 
 // Target FPS
-FrameRateController frameRate(60);
+//FrameRateController frameRate(60);
 
 // Legacy globals (still used in some systems like LogicSystem / scripts)
 //GSM   gsm;
@@ -207,8 +207,8 @@ void CoreEngine::Run()
     std::cout << "EngRun\n";
     FrameRateController frameRate(60);
     SceneManager& sm = SceneManager::Get();
-    double lastTitleUpdate = glfwGetTime();
-    int    frames = 0;
+    m_fpsLastUpdate = glfwGetTime();
+    m_fpsFrames = 0;
 
     while (running && !glfwWindowShouldClose(GLApp::ptr_window))
     {
@@ -221,8 +221,7 @@ void CoreEngine::Run()
         float fixedDt = static_cast<float>(frameRate.GetFixedDeltaTime());
         int   numSteps = frameRate.GetCurrentNumberOfSteps();
 
-        
-        SceneManager& sm = SceneManager::Get();
+       
         sm.Update(dt, fixedDt, numSteps);
 
         // expose fixed dt to scripts / systems that still read g_dt
@@ -278,12 +277,22 @@ void CoreEngine::Run()
 
             std::string name = typeid(*s).name();
             renderTimings[name] += ms;
+        }
+
 
 #ifndef NO_IMGUI
+        if (ImGuiSystem::guiEnabled) {
+            Render::GetInstance().EndSceneCapture();
+        }
+
+        // Now render ImGui (which displays the captured scene)
+        for (auto* s : renderSystems)
+        {
             if (auto* imgui = dynamic_cast<ImGuiSystem*>(s))
                 imgui->Render();
-#endif
         }
+#endif
+        
 
 
         // Input needs a frame-end update
@@ -296,16 +305,21 @@ void CoreEngine::Run()
         // ---------------------------------------------
         // FPS in window title
         // ---------------------------------------------
-        frames++;
+        m_fpsFrames++;
         double now = glfwGetTime();
-        if (now - lastTitleUpdate >= 1.0)
+
+        if (now - m_fpsLastUpdate >= 1.0)
         {
-            double fps = frames / (now - lastTitleUpdate);
-            std::string title = "Rock & Ghoul - FPS: " + std::to_string(static_cast<int>(fps));
+            m_fps = m_fpsFrames / (now - m_fpsLastUpdate);
+
+            // optional: keep updating window title
+            std::string title = "Rock & Ghoul - FPS: " + std::to_string(static_cast<int>(m_fps));
             glfwSetWindowTitle(GLApp::ptr_window, title.c_str());
-            frames = 0;
-            lastTitleUpdate = now;
+
+            m_fpsFrames = 0;
+            m_fpsLastUpdate = now;
         }
+
     }
 }
 
@@ -348,5 +362,11 @@ void CoreEngine::Shutdown()
 
 void CoreEngine::Quit()
 {
+    AudioSystem::PlayButtonSound(AudioSystem::ButtonType::QUIT);
+
+    double startTime = glfwGetTime();
+    while (glfwGetTime() - startTime < 0.5) {
+        AudioSystem::Update();
+    }
     running = false;
 }

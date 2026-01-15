@@ -121,6 +121,15 @@ struct SavedScene {
     };
     std::vector<SavedDialogue> guiDialogues;
 
+    struct SavedDisplay {
+        int ID = 0;
+        Vec2 pos;
+        Vec2 size;
+        bool centered;
+        std::string renderData;
+    };
+    std::vector<SavedDisplay> guiDisplays;
+
     struct SavedCamera {
         Vec2 pos;
         float zoom;
@@ -132,12 +141,12 @@ struct SavedScene {
 
     SavedCamera camSettings;
 
-    SceneType sceneType;
+    SceneType sceneType = ST_MENU;
 
     /**
      * @brief Default constructor with no name.
      */
-    SavedScene() : sceneName("") {}
+    //SavedScene() : sceneName("") {}
 };
 
 /**
@@ -193,6 +202,7 @@ struct ActiveFrames {
     int col_start = 0;	// First column index
     int col_end = 0;	// Last column index
     float duration = 0.f;	// Duration of time in seconds the animation takes to go from first column to last column
+    bool willLoop = false;
 
     /**
         * @brief Equality operator for ActiveFrames.

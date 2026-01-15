@@ -18,7 +18,6 @@
 #include "System.h"
 
 #include "Registry.h"
-#include "GameStateManager.h"
 #include <chrono>
 #include <unordered_map>
 #include <string>
@@ -33,6 +32,10 @@ class CoreEngine {
     std::unordered_map<std::string, SystemTiming> timings;
     bool running;
     double lastFrame;
+
+    int m_fpsFrames = 0;
+    double m_fpsLastUpdate = 0.0;
+    double m_fps = 0.0;
 
     struct TimingInfo { double ms = 0.0; };
 
@@ -75,6 +78,7 @@ public:
     // Quit the Core Engine
     void Quit();
 
+    double GetFPS() const { return m_fps; }
     //getter function for your timings map
     //the key is a std::string
     //the value is a SystemTiming struct (contains ms for elapsed milliseconds).

@@ -265,6 +265,7 @@ namespace Sprite {
 
 
 		// Reset timer
+		if (frames.willLoop)
 		Loop_Timer(anim_timer, anim_duration);
 
 		// Assign current row and col
@@ -322,11 +323,12 @@ namespace Sprite {
 		stateframe[state] = framerange;
 	}
 
-	void SpriteSheet::EditFrames(int row, int colstart, int colend, float duration) {
+	void SpriteSheet::EditFrames(int row, int colstart, int colend, float duration, bool loop) {
 		stateframe[m_current_state].row = row;
 		stateframe[m_current_state].col_start = colstart;
 		stateframe[m_current_state].col_end = colend;
 		stateframe[m_current_state].duration = duration;
+		stateframe[m_current_state].willLoop = loop;
 	}
 
 	void SpriteSheet::Update(float dt) {
@@ -340,7 +342,13 @@ namespace Sprite {
 
 		for (const auto& [state, stateFrames] : stateframe)
 		{
-			statesJson[std::to_string(state)] = { {"row", stateFrames.row}, {"col_start", stateFrames.col_start}, {"col_end", stateFrames.col_end}, {"duration", stateFrames.duration} };
+			statesJson[std::to_string(state)] = { 
+				{"row", stateFrames.row}, 
+				{"col_start", stateFrames.col_start}, 
+				{"col_end", stateFrames.col_end}, 
+				{"duration", stateFrames.duration},
+				{"willLoop", stateFrames.willLoop}
+			};
 		}
 
 		json j = {
@@ -353,7 +361,9 @@ namespace Sprite {
 			{"frameColStart", GetFrames().col_start},
 			{"frameColEnd", GetFrames().col_end},
 			{"currentState", GetCurrentState()},
-			{"states", statesJson}
+			{"states", statesJson},
+			{"loop", frames.willLoop}
+
 
 		};
 
@@ -381,6 +391,7 @@ namespace Sprite {
 		frames.col_start = j.value("frameColStart", 0);
 		frames.col_end = j.value("frameColEnd", 0);
 		frames.duration = j.value("frameDuration", 1.0f);
+		frames.willLoop = j.value("loop", false);
 
 		// Get basic values
 		ret.m_total_rows = j.value("totalRows", 1);
@@ -400,6 +411,8 @@ namespace Sprite {
 				stateFrames.col_start = stateData.value("col_start", 0);
 				stateFrames.col_end = stateData.value("col_end", 0);
 				stateFrames.duration = stateData.value("duration", 1.0f);
+				stateFrames.willLoop = stateData.value("willLoop", false);
+
 
 				ret.AddState(stateID, stateFrames);
 				ret.SetState(stateID);
@@ -414,6 +427,10 @@ namespace Sprite {
 		// check for null
 		if (j.contains("currentState") && !j["currentState"].is_null() && j["currentState"] != -1) {
 			ret.SetState(j["currentState"]);
+		}
+
+		if (j.contains("loop")) {
+			ret.SetLoop(j["loop"]);
 		}
 
 		ret.UpdateUV(imageWidth, imageHeight);

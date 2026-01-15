@@ -60,6 +60,7 @@ struct GLApp
   static void SetWindowedMode(int width, int height);
   static void SetFullscreenMode();
   static bool IsFullscreen();
+  static void window_focus_cb(GLFWwindow* window, int focused);
 
 
   static bool is_fullscreen;

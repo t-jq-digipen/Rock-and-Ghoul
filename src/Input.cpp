@@ -94,7 +94,7 @@ double Input::GetScrollY() { return scrollY; }
 // -----------------------------
 // GLFW Callbacks
 // -----------------------------
-void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void Input::KeyCallback(GLFWwindow* , int key, int scancode, int action, int mods) {
     (void)scancode;
     (void)mods;
     if (action == GLFW_PRESS) {
@@ -115,9 +115,9 @@ void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
         EventBus::Get().PushEvent(keyheld);
         keys[key] = KeyState::HELD;
     }
-    if (key == GLFW_KEY_ESCAPE) {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }
+    //if (key == GLFW_KEY_ESCAPE) {
+    //    glfwSetWindowShouldClose(window, GLFW_TRUE);
+    //}
     if (key == GLFW_KEY_ENTER && action == GLFW_PRESS && (mods & GLFW_MOD_ALT)) {
         GLApp::ToggleFullscreen();
         return;

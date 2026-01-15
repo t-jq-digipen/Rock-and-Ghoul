@@ -97,7 +97,7 @@ namespace Sprite {
 		 * @brief Set whether the sprite is animated.
 		 * @param set True to mark as animated, false for static.
 		 */
-		void Set_Animated(bool set);
+		//void Set_Animated(bool set);
 
 		/**
 		 * @brief Get the sprite's image.
@@ -192,6 +192,7 @@ namespace Sprite {
 		// Using int for enumeration compatibility with developers
 		unsigned int m_current_state = 0;							// Animation state
 
+
 	public:
 		float u0, v0, u1, v1;								// For sub image drawing
 
@@ -284,7 +285,11 @@ namespace Sprite {
 		 */
 		std::unordered_map<unsigned int, ActiveFrames>& GetStateFrames() { return stateframe; }
 
-		void EditFrames(int row, int colstart, int colend, float duration);
+		void EditFrames(int row, int colstart, int colend, float duration, bool loop);
+
+		bool GetLoop() const { return frames.willLoop; }
+
+		void SetLoop(bool loop) { frames.willLoop = loop; }
 
 
 		/**

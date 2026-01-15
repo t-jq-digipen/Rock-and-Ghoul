@@ -4,7 +4,7 @@
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
  * @co-author   Manfred Sim		   | manfred.sim@digipen.edu
- * @date	    06 NOV 2025
+ * @date	    30 NOV 2025
  *
  * @brief	Player System for handling player behaviour.
  *
@@ -19,7 +19,6 @@
 #include "PlayerSystem.h"
 #include "Registry.h"
 #include "Audio.h"
-#include "GameStateManager.h"
 #include "CoreEngine.h" // to check pause state for music
 #include "LogicSystem.h"
 #include "JsonLoad.h"
@@ -28,6 +27,7 @@
 #include "MonoSystem.h"
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
+#include "GuiSystem.h"
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
@@ -56,166 +56,6 @@ Movement::InputDirection VelToDir(float x, float y)
 	return (x > 0.f) ? Movement::MOVE_RIGHT : (x < 0.f ? Movement::MOVE_LEFT : Movement::MOVE_NONE);
 }
 
-//void PlayerSystem::WASD_Movement(Entity eID, float& dt)
-//{
-//	(void)dt;
-//
-//	if (!m_registry.Has_Component<Movement::MovementComponent>(eID)) return;
-//	auto& moveComp = m_registry.Get_Component<Movement::MovementComponent>(eID);
-//	auto& physics = m_registry.Get_Component<Physics::PhysicsComponent>(eID);
-//
-//
-//	// Ensure max speed is set (prevents tunneling)
-//	if (physics.GetMaxSpeed() < MAX_SPEED) {
-//		physics.SetMaxSpeed(MAX_SPEED);
-//	}
-//	// Clear forces every frame so that player instantly switches directions
-//	physics.ClearForces();
-//
-//	const auto& input = m_registry.Get_Component<InputComponent>(eID);
-//
-//	int hor = 0, ver = 0;
-//	switch (input.scheme)
-//	{
-//	case CS_WASD:
-//		if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
-//		break;
-//	case CS_IJKL:
-//		if (Input::IsKeyHeld(GLFW_KEY_I)) ver += 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_K)) ver -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_J)) hor -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_L)) hor += 1;
-//		break;
-//	case CS_ARROWS:
-//		if (Input::IsKeyHeld(GLFW_KEY_UP))    ver += 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_DOWN))  ver -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_LEFT))  hor -= 1;
-//		if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) hor += 1;
-//		break;
-//	default: break;
-//	}
-//
-//	float fx = static_cast<float>(hor);
-//	float fy = static_cast<float>(ver);
-//	NormalizeDiagonalMovement(fx, fy);
-//
-//	const bool moving = (fx != 0.f || fy != 0.f);
-//	moveComp.SetIsMoving(moving);
-//	moveComp.SetInputDirection(VelToDir(fx, fy));
-//	moveComp.SetMovementDirection({ fx, fy });
-//
-//	// Clear forces every frame
-//	physics.ClearForces();
-//
-//	// Dash
-//	// constexpr float DASH_IMPULSE = 700.f;
-//
-//	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT) && moving) {
-//		Vec2 dashImpulse = { fx * DASH_IMPULSE, fy * DASH_IMPULSE };
-//		physics.AddImpulse(dashImpulse);
-//	}
-//
-//	// Adjust max speed based on current speed
-//	float currentSpeed = RG_Length(physics.Get_Vel());
-//	if (currentSpeed > 500.f) {
-//		physics.SetMaxSpeed(1000.f);  // For da dash
-//	}
-//	else {
-//		physics.SetMaxSpeed(500.f);   // Normal speed
-//	}
-//
-//	if (moving) {
-//		physics.AddForce({ fx, fy }, MOVE_FORCE, 0.f);
-//	}
-//
-//	//if (!m_registry.Has_Component<InputComponent>(eID)) {
-//	//	return; // No input component, skip movement
-//	//}
-//	//auto& input = m_registry.Get_Component<InputComponent>(eID);
-//
-//	//// Handle movement based on control scheme
-//	//switch (input.scheme) {
-//	//case CS_WASD:
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_W)) transform.pos.y += speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_S)) transform.pos.y -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_A)) transform.pos.x -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_D)) transform.pos.x += speed * dt; 
-//	//    if (Input::IsKeyHeld(GLFW_KEY_W)) physics.AddForce({ 0,1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_S)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_A)) physics.AddForce({ -1,0 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_D)) physics.AddForce({ 1,0 }, 1.f, 0.f);
-//	//	break;
-//
-//	//case CS_IJKL:
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_I)) transform.pos.y += speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_K)) transform.pos.y -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_J)) transform.pos.x -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_L)) transform.pos.x += speed * dt;
-//	//	if (Input::IsKeyHeld(GLFW_KEY_I)) physics.AddForce({ 0,1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_K)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_J)) physics.AddForce({ -1,0 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_L)) physics.AddForce({ 1,0 }, 1.f, 0.f);
-//	//	if (m_registry.Has_Component<Animator::AnimatorComponent>(eID))
-//	//	{
-//	//		if ((Input::IsKeyHeld(GLFW_KEY_I) || Input::IsKeyHeld(GLFW_KEY_J) || Input::IsKeyHeld(GLFW_KEY_K) || Input::IsKeyHeld(GLFW_KEY_L)))
-//	//		{
-//	//			m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(PS_WALK);
-//	//		}
-//	//		else
-//	//		{
-//	//			m_registry.Get_Component<Animator::AnimatorComponent>(eID).SetState(PS_IDLE);
-//	//		}
-//
-//	//	}
-//	//	break;
-//	//case CS_ARROWS:
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_UP)) transform.pos.y += speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_DOWN)) transform.pos.y -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_LEFT)) transform.pos.x -= speed * dt;
-//	//	//if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) transform.pos.x += speed * dt;
-//	//	if (Input::IsKeyHeld(GLFW_KEY_UP)) physics.AddForce({ 0,1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_DOWN)) physics.AddForce({ 0,-1 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_LEFT)) physics.AddForce({ -1,0 }, 1.f, 0.f);
-//	//	if (Input::IsKeyHeld(GLFW_KEY_RIGHT)) physics.AddForce({ 1,0 }, 1.f, 0.f);
-//	//	break;
-//	//}
-//
-//	//// knockback test
-//	//int vert{0};
-//	//int hor{0};
-//	//if (Input::IsKeyHeld(GLFW_KEY_W)) vert += 1;
-//	//if (Input::IsKeyHeld(GLFW_KEY_S)) vert -= 1;
-//	//if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
-//	//if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
-//
-//	//Vec2 dir{ (float)hor, (float)vert };
-//
-//	//if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) physics.AddForce(dir, dash);
-//
-//	///*if (Input::IsKeyHeld(GLFW_KEY_W) && vel.y < maxspeed) physics.AddForce({ 0.f,1.f }, accel);
-//	//if (Input::IsKeyHeld(GLFW_KEY_S) && vel.y > -maxspeed) physics.AddForce({ 0.f,-1.f }, accel);
-//	//if (Input::IsKeyHeld(GLFW_KEY_A) && vel.x > -maxspeed) physics.AddForce({ -1.f,0.f }, accel);
-//	//if (Input::IsKeyHeld(GLFW_KEY_D) && vel.x < maxspeed) physics.AddForce({ 1.f,0.f }, accel);*/
-//
-//	// DASH - Working impulse
-//	if (Input::IsKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
-//		Vec2 dashDir{ (float)hor, (float)ver };
-//
-//		fx = static_cast<float>(hor);
-//		fy = static_cast<float>(ver);
-//		NormalizeDiagonalMovement(fx, fy);
-//
-//		if (RG_LengthSquared(dashDir) > 0.01f) {
-//			dashDir = RG_Normalize(dashDir);
-//			Vec2 dashImpulse = RG_Scale(dashDir, DASH_IMPULSE);
-//			physics.ApplyLinearImpulse(dashImpulse);
-//		}
-//	}
-//}
 
 namespace PlayerMove {
 	std::unordered_map<Entity, size_t> subscriberID;
@@ -306,15 +146,178 @@ namespace PlayerMove {
 } // end namespace PlayerMove
 
 namespace RockScript {
-	static float stunnedtimer = 1.f;
-	static float atktimer = 1.f;
+	// Constants
+#pragma region CONSTANTS
+	constexpr float SWING_TIME = 0.5f;
+	constexpr float SOUNDWAVE_TIME = 0.5f;
+	constexpr float AOE_TIME = 1.f;
+	constexpr float SHIELD_DURATION = 5.f;
+
+	constexpr float STAGGER_DURATION = 1.f;
+#pragma endregion
+
+	// Variables
+#pragma region VARIABLES
+	static float stunnedtimer = STAGGER_DURATION;
+
+	static float meleetimer = SWING_TIME; // swing
+	static float aoetimer = AOE_TIME;
+	static float wavetimer = SOUNDWAVE_TIME;
 	static bool shot = false;
+
+	//INPUT SEQUENCE SYSTEM
+	static std::vector<int> inputBuffer; //Stores arrow key presses
+	static const int MAX_COMBO = 3; //Longest input sequence length
+	static float shieldTimer = 0.f; //Timer for shield invulnerability
+	static bool isVulnerable = true; //Is Rock vulnerable
 
 	std::unordered_map<Entity, size_t> subscriberID;
 
-	void Dash(Entity eID) {
-		if (stunnedtimer < 1.f || atktimer < 1.f) { return; }
 
+	static Element currentElement = Element::NONE; //Set default element to none
+
+	static bool faceRight = true;
+
+	Entity shieldy = INVALID_ENTITY;
+#pragma endregion
+
+
+	// Spells struct with cooldown and activation charges
+	struct Spell
+	{
+		SpellType type;		// Type of spell
+		float cooldown;		// Time before next use
+		float currentCD;	// Counts down in Update
+		int charges;		// Number of uses
+
+		//Default constructor
+		Spell()
+			: type(SpellType::SOUNDWAVE), cooldown(0.f), currentCD(0.f), charges(0) {
+		}
+
+		//Parameterized constructor
+		Spell(SpellType t, float cd, int ch)
+			: type(t), cooldown(cd), currentCD(0.f), charges(ch) {
+		}
+
+		bool CanUse() const { return charges > 0 && currentCD <= 0.f; }
+
+		void Use() {
+			if (CanUse()) {
+				charges--;
+				currentCD = cooldown;
+			}
+		}
+
+		void Update(float dt) {
+			if (currentCD > 0.f) currentCD -= dt;
+			if (currentCD < 0.f) currentCD = 0.f;
+		}
+	};
+
+	std::array<Spell, 3> spellSlots;
+
+	void AddSpellToSlot(SpellType type, float cooldown, int charges)
+	{
+		for (auto& slot : spellSlots)
+		{
+			if (slot.charges <= 0) //Empty slot
+			{
+				slot = Spell(type, cooldown, charges);
+				std::cout << "Added spell to slot! Type: " << static_cast<int>(type) << "\n";
+				return;
+			}
+		}
+		std::cout << "All spell slots full! Cannot add spell.\n";
+	}
+
+	void AssignSlots()
+	{
+		GuiSystem& UIsys = GuiSystem::Get();
+		UIGroup& slots = UIsys.GetGroup("Spell Slots");
+		
+		for (size_t i = 0; i < 3; i++)
+		{
+			// Empty
+			if (spellSlots[i].charges <= 0) 
+			{
+				UIsys.SetDisplaySheetState(slots.memberIDs[i], 0);
+				spellSlots[i].cooldown = 0.f;
+			}
+			// Not empty
+			else
+			{
+				unsigned int frame = 0;
+				switch (spellSlots[i].type)
+				{
+				case SpellType::SOUNDWAVE:
+					frame = 1;
+					break;
+
+				case SpellType::AOE:
+					frame = 2;
+					break;
+
+				case SpellType::SHIELD:
+					frame = 3;
+					break;
+
+				case SpellType::HEAL:
+					frame = 4;
+					break;
+
+				default:
+					frame = 0;
+					break;
+				}
+				if (!UIsys.SetDisplaySheetState(slots.memberIDs[i], frame)) return;
+
+				
+			}
+		}
+	}
+
+	void CycleElement() {
+		int index = static_cast<int>(currentElement);
+		index = (index + 1) % static_cast<int>(Element::COUNT);
+		currentElement = static_cast<Element>(index);
+
+		switch (currentElement) {
+		case Element::NONE: std::cout << "Element: NONE\n"; break;
+		case Element::LIGHTNING: std::cout << "Element: LIGHTNING\n"; break;
+		case Element::FIRE: std::cout << "Element: FIRE\n"; break;
+		case Element::WIND: std::cout << "Element: WIND\n"; break;
+		case Element::ICE: std::cout << "Element: ICE\n"; break;
+		}
+	}
+
+	// check if timers active
+	bool IsBusy() {
+		if (
+			stunnedtimer < STAGGER_DURATION ||
+			meleetimer	 < SWING_TIME ||
+			aoetimer     < AOE_TIME ||
+			wavetimer    < SOUNDWAVE_TIME
+			)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	void ResetTimers() {
+		meleetimer = SWING_TIME;
+		aoetimer = AOE_TIME;
+		wavetimer = SOUNDWAVE_TIME;
+	}
+
+
+	void Dash(Entity eID) {
+		if (IsBusy()) { return; }
+		// dk if want to allow dash cancelling spells
+		ResetTimers();
+		shot = true;
 
 		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID) || !Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
 		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
@@ -332,15 +335,17 @@ namespace RockScript {
 
 	}
 
-	void Attack(Entity eID) {
-		if ((stunnedtimer < 1.f || atktimer < 1.f)) { return; }
+	// melee swing
+	void Attack() {
+		if (IsBusy()) { return; }
 
-		atktimer = 0.f;
+		AudioSystem::PlaySoundAt("player_dodge", 0.0f, 0.0f, 1.0f);
+		meleetimer = 0.f;
 		shot = false;
 	}
 
 	void Knockback(Entity eID) {
-		if ((stunnedtimer < 1.f || atktimer < 1.f)) { return; }
+		if ((stunnedtimer < 1.f)) { return; }
 
 		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) { return; }
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
@@ -348,49 +353,332 @@ namespace RockScript {
 		physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
 	}
 
+	//Arrow key codes for easier reference
+	enum ArrowKey { UP = GLFW_KEY_UP, DOWN = GLFW_KEY_DOWN, LEFT = GLFW_KEY_LEFT, RIGHT = GLFW_KEY_RIGHT };
+
+
+	//Record key presses in buffer
+	void RecordInput(int key) {
+		inputBuffer.push_back(key);
+		if (inputBuffer.size() > MAX_COMBO) inputBuffer.erase(inputBuffer.begin()); //Keep max input sequence length
+		switch (key) {
+		case UP:    std::cout << "Arrow UP pressed\n"; break;
+		case DOWN:  std::cout << "Arrow DOWN pressed\n"; break;
+		case LEFT:  std::cout << "Arrow LEFT pressed\n"; break;
+		case RIGHT: std::cout << "Arrow RIGHT pressed\n"; break;
+		default: break;
+		}
+	}
+
+	//Check Input sequence and execute respective actions
+	void CheckCombos(Entity) {
+		if (inputBuffer.size() < 2) return;
+
+		//auto& registry = Registry::Get();
+
+		//Soundwave Spell
+		if (inputBuffer.size() >= 2 &&
+			inputBuffer[inputBuffer.size() - 2] == UP &&
+			inputBuffer[inputBuffer.size() - 1] == DOWN)
+		{
+			/*auto& trans = registry.Get_Component<TransformComponent>(eID);
+
+			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json",
+				trans.pos.x, trans.pos.y);
+
+			std::cout << "Projectile spawned at (" << trans.pos.x << ", " << trans.pos.y << ")\n";*/
+
+			AddSpellToSlot(SpellType::SOUNDWAVE, 5.f, 2);
+
+			inputBuffer.clear();
+			return;
+		}
+
+		//AOE Spell
+		if (inputBuffer.size() == 3 &&
+			inputBuffer[inputBuffer.size() - 3] == UP &&
+			inputBuffer[inputBuffer.size() - 2] == LEFT &&
+			inputBuffer[inputBuffer.size() - 1] == DOWN)
+		{
+			//auto& trans = registry.Get_Component<TransformComponent>(eID);
+			//JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json",
+			//	trans.pos.x, trans.pos.y + 5.f  // spawn above
+			//);
+
+			AddSpellToSlot(SpellType::AOE, 8.f, 1);
+			inputBuffer.clear();
+			return;
+		}
+
+		//Shield Spell
+		if (inputBuffer.size() == 3 &&
+			inputBuffer[inputBuffer.size() - 3] == DOWN &&
+			inputBuffer[inputBuffer.size() - 2] == DOWN &&
+			inputBuffer[inputBuffer.size() - 1] == RIGHT)
+		{
+			/*isVulnerable = false;
+			shieldTimer = 0.f;
+
+			std::cout << "Shield activated! Invulnerable: " << !isVulnerable << ", Timer: " << shieldTimer << "s\n";*/
+
+			AddSpellToSlot(SpellType::SHIELD, 10.f, 1);
+
+			inputBuffer.clear();
+			return;
+		}
+
+		//Healing Spell
+		if (inputBuffer.size() == 3 &&
+			inputBuffer[inputBuffer.size() - 3] == RIGHT &&
+			inputBuffer[inputBuffer.size() - 2] == UP &&
+			inputBuffer[inputBuffer.size() - 1] == RIGHT) {
+			/*if (registry.Has_Component<HealthComponent>(eID)) {
+				auto& health = registry.Get_Component<HealthComponent>(eID);
+				health.currhp += 10.f;
+				if (health.currhp > health.maxhp) health.currhp = health.maxhp;
+
+				std::cout << "Healing triggered! Current HP: " << health.currhp << "/" << health.maxhp << "\n";
+			}*/
+			AddSpellToSlot(SpellType::HEAL, 15.f, 1);
+			inputBuffer.clear();
+			return;
+		}
+	}
+
+	//Update shield state
+	void UpdateShield(float dt, float x, float y)
+	{
+
+		// Shield inactive
+		if (shieldTimer >= SHIELD_DURATION) {
+			isVulnerable = true;
+			return;
+			// shieldy = INVALID_ENTITY;
+		}
+
+		// Update shield
+		shieldTimer += dt;
+		isVulnerable = false;
+		Registry& reg = Registry::Get();
+		if (reg.Has_Component<TransformComponent>(shieldy))
+		{
+			TransformComponent& shieldytransform = reg.Get_Component<TransformComponent>(shieldy);
+			shieldytransform.pos = { x,y };
+		}
+		else shieldy = INVALID_ENTITY;
+
+		return;
+
+	}
+
+	void ApplyElementToProjectile(Entity)
+	{
+
+		//Damage Component in future
+
+		switch (currentElement)
+		{
+		case Element::NONE:
+			break;
+
+		case Element::FIRE:
+			//Burn damage
+			//Burn lasts 3 sec
+			std::cout << "Fire applied: burn damage\n";
+			break;
+
+		case Element::LIGHTNING:
+			//Stun 5 sec
+			std::cout << "Lightning applied: stun 5 sec\n";
+			break;
+
+		case Element::WIND:
+			//Knocksback
+			std::cout << "Wind applied: knockback\n";
+			break;
+
+		case Element::ICE:
+			//Slow amount and duration
+			std::cout << "Ice applied: slow\n";
+			break;
+		}
+	}
+
+	void ActivateSpell(int slotIndex, Entity eID)
+	{
+		if (slotIndex < 0 || slotIndex >= 3 || IsBusy()) return;
+
+		Spell& spell = spellSlots[slotIndex];
+		if (!spell.CanUse()) {
+			std::cout << "Spell slot " << slotIndex + 1 << " not ready!\n";
+			return;
+		}
+
+		spell.Use(); // decrement charges + start cooldown
+		auto& registry = Registry::Get();
+		auto& trans = registry.Get_Component<TransformComponent>(eID);
+
+		AudioSystem::PlaySoundAt("guitar_strum_heavy", 0.0f, 0.0f, 1.0f);
+		switch (spell.type)
+		{
+		case SpellType::SOUNDWAVE:
+		{
+
+			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y);
+			Entity wave = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "SoundwaveFX.json", trans.pos.x, trans.pos.y);
+			if (!faceRight)
+			{
+				Physics::PhysicsComponent& phyComp = registry.Get_Component<Physics::PhysicsComponent>(wave);
+				Vec2 vel = phyComp.Get_Vel();
+				vel.x = -vel.x;
+				phyComp.Set_Vel(vel);
+				registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
+			}
+			std::cout << "Soundwave cast!\n";
+			//ApplyElementToProjectile(proj);
+			// to start animation
+			wavetimer = 0.f;
+			break;
+		}
+		case SpellType::AOE:
+		{
+
+			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
+			float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
+			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "AoeFX.json", posx, trans.pos.y + 400.f);
+			std::cout << "AOE cast!\n";
+			//ApplyElementToProjectile(proj);
+			aoetimer = 0.f;
+			break;
+		}
+		case SpellType::SHIELD:
+
+			RockScript::isVulnerable = false;
+			RockScript::shieldTimer = 0.f;
+			// to start animation
+			wavetimer = 0.f;
+			std::cout << "Shield activated!\n";
+			if (shieldy != INVALID_ENTITY) registry.Remove_Entity(shieldy);
+			shieldy = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "ShieldFX.json", trans.pos.x, trans.pos.y);
+			
+			break;
+		case SpellType::HEAL:
+
+			if (registry.Has_Component<HealthComponent>(eID)) {
+				auto& health = registry.Get_Component<HealthComponent>(eID);
+				health.currhp += 10.f;
+				if (health.currhp > health.maxhp) health.currhp = health.maxhp;
+				std::cout << "Heal cast! HP: " << health.currhp << "/" << health.maxhp << "\n";
+				JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "HealFX.json", trans.pos.x, trans.pos.y + 5.f);
+				// to start animation
+				wavetimer = 0.f;
+			}
+			break;
+		}
+	}
+
 	inline void Start(Entity eID)
 	{
 		std::cout << "Rock script started" << std::endl;
 
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
+			//Record arrow keys
+			if (SceneManager::Get().IsPaused()) return;
 
+			if (e.key == UP || e.key == DOWN || e.key == LEFT || e.key == RIGHT)
+			{
+				RecordInput(e.key);
+				CheckCombos(eID);
+			}
 			if (e.key == GLFW_KEY_LEFT_SHIFT)
 			{
 				Dash(eID);
 			}
 			else if (e.key == GLFW_KEY_E)
 			{
-				Attack(eID);
+				Attack();
 			}
 			else if (e.key == GLFW_KEY_G)
 			{
 				Knockback(eID);
 			}
+			else if (e.key == GLFW_KEY_Q)
+			{
+				CycleElement();
+			}
+			if (e.key == GLFW_KEY_1)
+				ActivateSpell(0, eID);
+			else if (e.key == GLFW_KEY_2)
+				ActivateSpell(1, eID);
+			else if (e.key == GLFW_KEY_3)
+				ActivateSpell(2, eID);
 			});
+
+		for (auto& spell : spellSlots)
+		{
+			spell.charges = 0;
+		}
+
+		currentElement = Element::NONE;
+
+
+		ResetTimers();
+		shot = false;
+
+		inputBuffer.clear();
+		shieldTimer = SHIELD_DURATION;
+		isVulnerable = true;
+
+		faceRight = true;
+
+		shieldy = INVALID_ENTITY;
+
+		AudioSystem::PlaySoundAt("player_spawnSound", 0.0f, 0.0f, 1.0f);
+
 	}
 
 	inline void Update(Entity eID, float dt) {
 		Registry& registry = Registry::Get();
 
-
 		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
-		
-		auto& moveComp	= registry.Get_Component<Movement::MovementComponent>(eID);
-		auto& physics		= registry.Get_Component<Physics::PhysicsComponent>(eID);
-		auto& transComp			= registry.Get_Component<TransformComponent>(eID);
 
-		int animstate = 0; //idle
+		auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
+		//auto& physics = registry.Get_Component<Physics::PhysicsComponent>(eID);
+		auto& transComp = registry.Get_Component<TransformComponent>(eID);
+
+
+		//Shield Timer
+		UpdateShield(dt, transComp.pos.x, transComp.pos.y);
+
+		for (auto& spell : spellSlots)
+		{
+			spell.Update(dt);
+		}
+
+		AssignSlots();
+
+
+
+		int animstate = (faceRight) ? 0 : 1; //idle
 
 		// MOVEMENT
 		// ================================================================================
-		if (stunnedtimer >= 1.f && atktimer >= 1.f)
+		if (!IsBusy())
 		{
 			int hor = 0;
 			int ver = 0;
 			if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
 			if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
-			if (Input::IsKeyHeld(GLFW_KEY_A)) hor -= 1;
-			if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
+			if (Input::IsKeyHeld(GLFW_KEY_A)) 
+			{
+				hor -= 1;
+				faceRight = false;
+			}
+			if (Input::IsKeyHeld(GLFW_KEY_D)) 
+			{
+				hor += 1;
+				faceRight = true;
+			}
 			float fx = static_cast<float>(hor);
 			float fy = static_cast<float>(ver);
 			NormalizeDiagonalMovement(fx, fy);
@@ -401,7 +689,7 @@ namespace RockScript {
 			moveComp.SetMovementDirection({ fx, fy });
 
 			if (moving) { 
-				animstate = 1; 
+				animstate = (faceRight) ? 2 : 3; 
 			}
 
 			// Reset timer when not moving
@@ -426,40 +714,46 @@ namespace RockScript {
 					footstepTimers[eID] = 0.0f;  // Reset timer
 				}
 			}
-
-			//if (Input::IsKeyPressed(GLFW_KEY_G))
-			//{
-			//	stunnedtimer = 0.f;
-			//	animstate = 2;
-			//	physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
-			//}
-
-			/*if (Input::IsKeyPressed(GLFW_KEY_E))
-			{
-				atktimer = 0.f;
-				animstate = 3;
-				shot = false;
-			}*/
 		}
-		else if (stunnedtimer < 1.f)
+		else if (stunnedtimer < STAGGER_DURATION)
 		{
+			isVulnerable = false;
 			moveComp.ResetFrameIntent();
 			stunnedtimer += dt;
-			animstate = 2;
+			animstate = (faceRight) ? 10 : 11;
 		}
-		else if (atktimer < 1.f)
+		else if (meleetimer < SWING_TIME)
 		{
 			moveComp.ResetFrameIntent();
-			atktimer += dt;
-			animstate = 3;
+			meleetimer += dt;
+			animstate = (faceRight) ? 4 : 5;
 
-			if (atktimer >= 0.7f && !shot)
+			if (meleetimer >= 0.7f && !shot)
 			{
+				// need to summon hitbox
 				// auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
 				
-				JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", transComp.pos.x, transComp.pos.y);
+				// JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", transComp.pos.x, transComp.pos.y);
 				shot = true;
 			}
+		}
+		else if (wavetimer < SOUNDWAVE_TIME)
+		{
+			moveComp.ResetFrameIntent();
+			wavetimer += dt;
+			animstate = (faceRight) ? 6 : 7;
+
+			if (wavetimer >= .25f && !shot)
+			{
+				// shoot soundwave
+				shot = true;
+			}
+		}
+		else if (aoetimer < AOE_TIME)
+		{
+			moveComp.ResetFrameIntent();
+			aoetimer += dt;
+			animstate = (faceRight) ? 8 : 9;
 		}
 
 		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
@@ -468,6 +762,39 @@ namespace RockScript {
 		Sprite::SpriteSheet& spriteSheet = renderComp.GetSpriteSheet();
 
 		spriteSheet.SetState(animstate);
+
+		if (registry.Has_Component<HealthComponent>(eID))
+		{
+			HealthComponent& hpComp = registry.Get_Component<HealthComponent>(eID);
+			if (hpComp.maxhp == 0) return;
+
+			if (Input::IsKeyHeld(GLFW_KEY_Y)) hpComp.currhp -= 20 * dt;
+
+			if (Input::IsKeyHeld(GLFW_KEY_U)) hpComp.currhp += 20 * dt;
+
+			hpComp.currhp = std::clamp(hpComp.currhp, 0.f, hpComp.maxhp);
+
+
+
+			GuiSystem& UIsys = GuiSystem::Get();
+			UIGroup& stats = UIsys.GetGroup("Stats");
+			
+			Vec2 v0, v1, v2, v3;
+			// Get background quad
+			UIsys.GetDisplayQuad(stats.memberIDs[1], v0, v1, v2, v3);
+			// Calculate position for new quad
+			float amount = hpComp.currhp / hpComp.maxhp;
+
+			Vec2 newV1 = v0 + (v1 - v0) * amount;   // bottom right moves left
+			Vec2 newV2 = v3 + (v2 - v3) * amount;   // top right moves left
+
+			UIsys.SetDisplayQuad(stats.memberIDs[2], v0, newV1, newV2, v3);
+
+			int state = (hpComp.currhp > 0.2f * hpComp.maxhp) ? 0 : 1;
+			UIsys.SetDisplaySheetState(stats.memberIDs[4], state);
+
+			
+		}
 	}
 
 	inline void End(Entity e)
@@ -502,6 +829,7 @@ void PlayerSystem::Initialize()
 
 void PlayerSystem::Update(float dt)
 {
+	(void)dt;
 	SceneManager& sm = SceneManager::Get();
 	// check if game paused
 	if (sm.IsPaused()) {

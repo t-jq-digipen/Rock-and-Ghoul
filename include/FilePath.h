@@ -39,6 +39,7 @@ public:
      */
     static const std::string SETTINGS_FILE;
     static const std::string COLLISIONSETTINGS_FILE;
+    static const std::string CONTROLS_FILE;
 
     /**
      * @brief The absolute path to the Level 1 scene data file.
