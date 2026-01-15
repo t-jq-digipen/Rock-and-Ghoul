@@ -813,6 +813,25 @@ void GuiSystem::Update(float dt)
             d.textBox.scale = d.textBox.baseScale * uiScale;
 
             SceneManager& sm = SceneManager::Get();
+            static bool prevInEdit = false;
+
+            if (prevInEdit && !sm.inEditMode)
+            {
+                for (auto& d : dialogues)
+                {
+                    if (!d.isVisible) continue;
+                    TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+                    if (!comp) continue;
+
+                    const auto& lines = comp->GetLines();
+                    if (lines.empty()) continue;
+
+                    // Restart typing on current line
+                    comp->StopTyping();
+                    comp->StartTyping();
+                }
+            }
+            prevInEdit = sm.inEditMode;
 
             // Resolve full line (for size), and visible string (typewriter or full)
             const auto& lines = comp->GetLines();

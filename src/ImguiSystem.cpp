@@ -1249,6 +1249,10 @@ void ImGuiSystem::Update(float dt)
 
         ImGui::SameLine();
 
+        // static maps for accessing Dialogue properties for clones
+        static std::unordered_map<int, int> perDlgSceneIdxById; // key by d.ID
+        static std::unordered_map<int, bool> perDlgColorOverrideById; // key by d.ID
+
         //  Button to duplicate the currently selected UI entity.
         if (ImGui::Button("Clone UI") && uiSelectedIndex >= 0)
         {
@@ -1282,6 +1286,16 @@ void ImGuiSystem::Update(float dt)
                 dst.isVisible = src.isVisible;
                 dst.jsonPath = src.jsonPath;
                 dst.sceneID = src.sceneID;
+                
+                {
+                    const bool srcColorOverriden = perDlgColorOverrideById.contains(src.ID) ? perDlgColorOverrideById[src.ID] : false;
+                    perDlgColorOverrideById[dst.ID] = srcColorOverriden;
+
+                    if (perDlgSceneIdxById.contains(src.ID))
+                    {
+                        perDlgSceneIdxById[dst.ID] = perDlgSceneIdxById[src.ID];
+                    }
+                }
 
                 const TextSystem::TextComponent* sc = src.textComp ? src.textComp : src.owned.get();
                 if (sc)
@@ -1290,6 +1304,8 @@ void ImGuiSystem::Update(float dt)
                     dst.owned->SetLines(sc->GetLines());
                     dst.owned->SetCurrentLineIndex(sc->GetCurrentLineIndex());
                     dst.textComp = dst.owned.get();
+
+                    dst.owned->SetColor({ dst.textBox.color.r, dst.textBox.color.g, dst.textBox.color.b });
                 }
                 else
                 {
@@ -2090,27 +2106,28 @@ void ImGuiSystem::Update(float dt)
 
                     static std::unordered_map<int, int> perDlgSceneIdx;
                     if (d.sceneID.empty()) d.sceneID = "0";
-                    if (!perDlgSceneIdx.count(selectedLocal))
+                    if (!perDlgSceneIdxById.contains(d.ID))
                     {
                         int initIdx = 0;
                         for (int i = 0; i < (int)sceneIDs.size(); ++i)
                             if (sceneIDs[i] == d.sceneID) { initIdx = i; break; }
-                        perDlgSceneIdx[selectedLocal] = initIdx;
+                        perDlgSceneIdxById[d.ID] = initIdx;
                     }
 
-                    int& activeSceneIdx = perDlgSceneIdx[selectedLocal];
+                    int& activeSceneIdx = perDlgSceneIdxById[d.ID];
                     if (!sceneIDs.empty())
                     {
-                        if (activeSceneIdx < 0) activeSceneIdx = 0;
-                        if (activeSceneIdx >= (int)sceneIDs.size()) activeSceneIdx = (int)sceneIDs.size() - 1;
+                        activeSceneIdx = std::clamp(activeSceneIdx, 0, (int)sceneIDs.size() - 1);
                     }
                     else
                     {
                         activeSceneIdx = 0;
                     }
 
+                    bool& colorOverriden = perDlgColorOverrideById[d.ID];
+
                     // Apply script to text component based on scene ID
-                    auto applySceneToComp = [&](int sceneIdx)
+                    auto applySceneToComp = [&](int sceneIdx, bool applyColor)
                         {
                             if (!dlgDoc.contains("scenes") || !dlgDoc["scenes"].is_array()) return;
                             if (sceneIdx < 0 || sceneIdx >= (int)dlgDoc["scenes"].size()) return;
@@ -2136,11 +2153,15 @@ void ImGuiSystem::Update(float dt)
                             comp->SetFontPath(sc.value("fontPath", std::string("../Assets/fonts/Marker.ttf")));
                             comp->SetFontSize(sc.value("fontSize", 1.0f));
 
-                            if (sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3)
+                            if (applyColor && sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3)
                             {
                                 Vec3 c{ sc["color"][0].get<float>(), sc["color"][1].get<float>(), sc["color"][2].get<float>() };
                                 comp->SetColor(c);
                                 d.textBox.color = { c.x, c.y, c.z };
+                            }
+                            else
+                            {
+                                comp->SetColor({ d.textBox.color.r, d.textBox.color.g, d.textBox.color.b });
                             }
 
                             comp->StartTyping();
@@ -2151,10 +2172,8 @@ void ImGuiSystem::Update(float dt)
                         int wantIdx = 0;
                         for (int i = 0; i < (int)sceneIDs.size(); ++i)
                             if (sceneIDs[i] == d.sceneID) { wantIdx = i; break; }
-                        activeSceneIdx = wantIdx;
-                        if (activeSceneIdx < 0) activeSceneIdx = 0;
-                        if (activeSceneIdx >= (int)sceneIDs.size()) activeSceneIdx = (int)sceneIDs.size() - 1;
-                        applySceneToComp(activeSceneIdx);
+                        activeSceneIdx = std::clamp(wantIdx, 0, std::max(0, (int)sceneIDs.size() - 1));
+                        applySceneToComp(activeSceneIdx, !colorOverriden);
                     }
 
                     // Dialogue TextBox Properties
@@ -2168,6 +2187,7 @@ void ImGuiSystem::Update(float dt)
                     {
                         d.textBox.color = { col[0], col[1], col[2] };
                         comp->SetColor({ col[0], col[1], col[2] });
+                        colorOverriden = true;
                     }
 
                     // Scene (determines script)
@@ -2183,22 +2203,16 @@ void ImGuiSystem::Update(float dt)
                         // Clamp if needed
                         if (!sceneItems.empty()) 
                         {
-                            if (activeSceneIdx < 0) activeSceneIdx = 0;
-                            if (activeSceneIdx >= (int)sceneItems.size()) activeSceneIdx = (int)sceneItems.size() - 1;
+                            activeSceneIdx = std::clamp(activeSceneIdx, 0, (int)sceneItems.size() - 1);
                         }
                         else 
                         {
                             activeSceneIdx = 0;
                         }
 
-                        bool needApply = false;
-                        if (comp->GetLines().empty()) needApply = true;     // first-time populate
-                        if (activeSceneIdx != prevScene) needApply = true;  // user changed scene
-                        if (sm.inEditMode) needApply = true;
-
-                        if (needApply) 
+                        if (activeSceneIdx != prevScene) 
                         {
-                            applySceneToComp(activeSceneIdx);               // resets lines and (re)starts typing
+                            applySceneToComp(activeSceneIdx, !colorOverriden);               // resets lines and (re)starts typing
                             d.sceneID = sceneIDs.empty() ? "0" : sceneIDs[activeSceneIdx];
                         }
                     }
