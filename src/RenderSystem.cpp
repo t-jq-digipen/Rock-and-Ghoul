@@ -51,6 +51,13 @@ extern "C" {
     float sortY;
 };*/
 
+//debug for ffmpeg
+auto PrintErr = [](int err) {
+    char buf[AV_ERROR_MAX_STRING_SIZE]{};
+    av_strerror(err, buf, sizeof(buf));
+    std::cout << buf;
+    };
+
 void TestOpenVideo() {
 
     AVFormatContext* pFormatContext = nullptr;
@@ -144,7 +151,81 @@ void TestOpenVideo() {
             return;
         }
 
+        //Next, we do the decode loop to turn the packets into frames
+        while (av_read_frame(pFormatContext, pPacket) >= 0) {
 
+            // Only process packets from the video stream
+            if (pPacket->stream_index != videoStreamIndex) {
+                av_packet_unref(pPacket);
+                continue;
+            }
+
+            // Send the compressed packet to the decoder
+            int ret = avcodec_send_packet(codecCtx, pPacket);
+
+            // We can unref the packet right after sending, decoder will make its own copy
+            av_packet_unref(pPacket);
+
+            //Failed to send the packet to decoder
+            if (ret < 0) {
+                std::cout << "avcodec_send_packet failed: ";
+                PrintErr(ret);
+                std::cout << "\n";
+                break;
+            }
+
+
+            //flush (maybe need? comment out first, since it was causing issues)
+            //avcodec_send_packet(codecCtx, nullptr);
+            // Flush decoder at end-of-stream
+
+            // Receive as many frames as the decoder produces from that packet
+            while (true) {
+
+                ret = avcodec_receive_frame(codecCtx, pFrame);
+
+                //success
+                if (ret == 0) {
+                   
+                    //small test now to sanity check if its working
+                    //YAYYY, Prints gotcha 901 times, matches my test mp4 (30 seconds at 30 fps)
+                    //std::cout << "gotcha\n";
+
+                    // --- IMPORTANT: NEXT STEP LATER ---
+                    // We can do the manipulation of frames here, here is where we use the frames
+                    // Convert this frame to RGBA (sws_scale) and upload to OpenGL.
+
+
+
+
+
+
+                    // When you're done using this frame's data, unref it:
+                    av_frame_unref(pFrame);
+                    continue;
+                }
+
+                if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                    // Decoder needs more packets before it can output more frames
+                    break;
+                }
+
+                // Any other negative value is an actual error, try to get detailed error to help with debug
+                std::cout << "avcodec_receive_frame error: ";
+                PrintErr(ret);
+                std::cout << "\n";
+                break;
+            }
+
+
+        }
+
+        //Cleanup previously allocated mem, to prevent mem leaks (i hope is in the right place)
+        av_frame_free(&pFrame);
+        av_packet_free(&pPacket);
+
+        avcodec_free_context(&codecCtx);
+        avformat_close_input(&pFormatContext);
 
 
     }
