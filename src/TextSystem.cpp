@@ -106,6 +106,13 @@ namespace TextSystem
 	const Vec3& TextComponent::GetColor() const noexcept { return color; }
 
 /**
+ * @brief Gets the time elapsed of the text typing
+ * @return Reference to time elapsed.
+ */
+
+	float TextComponent::GetTimeElapsed() const noexcept { return timeElapsed; }
+
+/**
  * @brief Gets the current line of text.
  * @param index Index of the line to retrieve.
  * @return Reference to the string at the specified index.
@@ -172,6 +179,20 @@ namespace TextSystem
 	void TextComponent::SetColor(Vec3 const& colorVec) { color = colorVec; }
 
 /**
+ * @brief Sets the visible characters of the text.
+ * @param visibleChars Number of visible characters (from left to right of each line).
+ */
+
+	void TextComponent::SetVisibleChars(int charCount) { visibleChars = charCount; }
+
+/**
+ * @brief Sets the time elapsed for the text typing.
+ * @param charCount Time elapsed while typing the text.
+ */
+
+	void TextComponent::SetTimeElapsed(float time) { timeElapsed = time; }
+
+/**
  * @brief	Updates the typing animation for the text. 
  *			Advances the number of visible characters based on elapsed time and speed.
  *
@@ -183,14 +204,17 @@ namespace TextSystem
 	void UpdateTyping(TextComponent& txt, float dt, float speedMul)
 	{
 		if (!txt.isTyping) return;
+		dt = std::clamp(dt, 0.f, 1.f / 30.f);
+
 		const std::string& fullLine = txt.GetCurrentLine(txt.GetCurrentLineIndex());
-		if (fullLine.empty()) { txt.isTyping = false; txt.visibleChars = 0; return; }
+		if (fullLine.empty()) { txt.isTyping = false; txt.visibleChars = 0; txt.timeElapsed = 0.f; return; }
 
-		txt.timeElapsed += std::max(0.f, dt);
 		const float cps = std::max(0.f, txt.textSpeed) * std::max(0.f, speedMul);
-		const int target = (int)(txt.timeElapsed * cps);
 
-		if (target > txt.visibleChars) txt.visibleChars = target;
+		txt.timeElapsed += dt;
+
+		const int target = (int)(txt.timeElapsed * cps);
+		txt.visibleChars = std::min((int)fullLine.size(), std::max(txt.visibleChars, target));
 
 		if (txt.visibleChars >= (int)fullLine.size())
 		{

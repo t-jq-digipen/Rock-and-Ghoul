@@ -662,6 +662,43 @@ bool GuiSystem::GetEditMode() const
 
 void GuiSystem::Update(float dt)
 {
+    SceneManager& sm = SceneManager::Get();
+    static bool prev = sm.inEditMode;
+    if (prev != sm.inEditMode) 
+    {
+        for (auto& d : dialogues)
+        {
+            if (d.isVisible)
+            {
+                if (auto* comp = (d.textComp ? d.textComp : d.owned.get()))
+                {
+                    const auto& lines = comp->GetLines();
+                    if (lines.empty()) continue;
+                    comp->SetCurrentLineIndex(std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1));
+                    if (comp->GetTextSpeed() <= 0.f) comp->SetTextSpeed(30.f);
+                    comp->StartTyping();
+                }
+            }
+        }
+        prev = sm.inEditMode;
+    }
+
+    // --- reset typing on editor toggle ---
+    static bool prevEdit = false;
+    if (prevEdit && !sm.inEditMode) 
+    {
+        for (auto& d : dialogues) 
+        {
+            if (!d.isVisible) continue;
+            auto* c = d.textComp ? d.textComp : d.owned.get();
+            if (!c) continue;
+            c->SetVisibleChars(0);
+            c->SetTimeElapsed(0.f);
+            c->SetIsTyping(true);
+        }
+    }
+    prevEdit = sm.inEditMode;
+
     // --- SPACE advances dialogue when NOT editing ---
     static bool spaceHandled = false;
     const bool spacePressed = Input::IsKeyPressed(GLFW_KEY_SPACE);
@@ -673,12 +710,12 @@ void GuiSystem::Update(float dt)
         showFPS = !showFPS;
     }
 
-    if (!editMode && spacePressed && !spaceHandled)
+    if (!sm.inEditMode && spacePressed && !spaceHandled)
     {
         for (auto& d : dialogues)
         {
             if (!d.isVisible) continue;
-            TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+            auto* comp = d.textComp ? d.textComp : d.owned.get();
             if (!comp) continue;
 
             if (comp->CheckIfTyping())
@@ -692,6 +729,8 @@ void GuiSystem::Update(float dt)
                 if (idx + 1 < static_cast<int>(lines.size()))
                 {
                     comp->SetCurrentLineIndex(idx + 1);
+                    comp->SetVisibleChars(0);
+                    comp->SetTimeElapsed(0.f);
                     comp->StartTyping();
                 }
             }
@@ -699,6 +738,17 @@ void GuiSystem::Update(float dt)
         spaceHandled = true;
     }
     if (!spaceHeld) spaceHandled = false;
+
+    if (!sm.inEditMode)
+    {
+        for (auto& d : dialogues) if (d.isVisible)
+        {
+            if (auto* comp = d.textComp ? d.textComp : d.owned.get())
+            {
+                TextSystem::UpdateTyping(*comp, dt, 1.f);
+            }
+        }
+    }
 
     // Mouse (convert to GameView space if ImGui is active)
     Vec2 mouse = Input::GetMousePosition();
@@ -812,27 +862,6 @@ void GuiSystem::Update(float dt)
             d.textBox.pos.y = d.textBox.basePos.y * scaleY;
             d.textBox.scale = d.textBox.baseScale * uiScale;
 
-            SceneManager& sm = SceneManager::Get();
-            static bool prevInEdit = false;
-
-            if (prevInEdit && !sm.inEditMode)
-            {
-                for (auto& d : dialogues)
-                {
-                    if (!d.isVisible) continue;
-                    TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
-                    if (!comp) continue;
-
-                    const auto& lines = comp->GetLines();
-                    if (lines.empty()) continue;
-
-                    // Restart typing on current line
-                    comp->StopTyping();
-                    comp->StartTyping();
-                }
-            }
-            prevInEdit = sm.inEditMode;
-
             // Resolve full line (for size), and visible string (typewriter or full)
             const auto& lines = comp->GetLines();
             if (lines.empty()) return;
@@ -851,7 +880,7 @@ void GuiSystem::Update(float dt)
             }
             else {
                 // In play mode: typewriter
-                TextSystem::UpdateTyping(*comp, dt, 1.f);
+                // TextSystem::UpdateTyping(*comp, dt, 1.f);
                 vis = comp->CheckIfTyping() ? TextSystem::GetVisibleText(*comp) : lines[idx];
             }
 

@@ -133,6 +133,13 @@ namespace TextSystem
 		const Vec3& GetColor() const noexcept;
 
 /**
+ * @brief Gets the time elapsed of the text typing
+ * @return Reference to time elapsed.
+ */
+
+		float GetTimeElapsed() const noexcept;
+
+/**
  * @brief Gets the current line of text.
  * @param index Index of the line to retrieve.
  * @return Reference to the string at the specified index.
@@ -197,6 +204,21 @@ namespace TextSystem
  */
 
 		void SetColor(Vec3 const& colorVec);
+
+
+/**
+ * @brief Sets the visible characters of the text.
+ * @param charCount Number of visible characters (from left to right of each line).
+ */
+
+		void SetVisibleChars(int charCount);
+
+/**
+ * @brief Sets the time elapsed for the text typing.
+ * @param charCount Time elapsed while typing the text.
+ */
+
+		void SetTimeElapsed(float time);
 
 		// TYPE TEXT CALL FUNCTIONS
 

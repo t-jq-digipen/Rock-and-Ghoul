@@ -1455,7 +1455,7 @@ void ImGuiSystem::Update(float dt)
                 {
                     auto& d = dialogues[r.local];
                     auto* tc = d.textComp ? d.textComp : d.owned.get();
-                    if (tc) GuiSystem::Get().SetDialogueLine(d, tc->GetCurrentLineIndex(), true);
+                    if (tc) GuiSystem::Get().SetDialogueLine(d, tc->GetCurrentLineIndex(), !SceneManager::Get().inEditMode);
                 }
                 curSelType = r.type;
                 curSelLocal = r.local;
@@ -2164,6 +2164,7 @@ void ImGuiSystem::Update(float dt)
                                 comp->SetColor({ d.textBox.color.r, d.textBox.color.g, d.textBox.color.b });
                             }
 
+                            comp->SetVisibleChars(0);
                             comp->StartTyping();
                         };
 
