@@ -1,7 +1,10 @@
 #pragma once
 #include "Entity.h"
+#include <DataDefs.h>
+#include <string>
 
 namespace Enemy {
+
 	// Set enemy to attack melee or projectile
 	enum EnemyAttackMode : unsigned int
 	{
@@ -31,47 +34,50 @@ namespace Enemy {
 	{
 	public:
 		// General Settings
-		EnemyAttackMode attackMode;
-		EnemyState state;
+		EnemyAttackMode attackMode{ MELEE_ONLY };
+		EnemyState state{ ENEMY_ROAMING };
 
 		// Detection
-		float detectionRadius;
-		float loseInterestDistance;
+		float detectionRadius{ 300.f };
+		float loseInterestDistance{ 360.f };
 
 		// Movement
-		float moveSpeed;
-		float chaseSpeed;
-		float roamRadius;
-		float idleDuration;
-		float roamWaitDuration;
-		bool canMove;
+		float moveSpeed{ 200.f };
+		float chaseSpeed{ 300.f };
+		float roamRadius{ 120.f };
+		float idleDuration{ 0.8f };
+		float roamWaitDuration{ 0.0f };
+		bool canMove{ true };
 
 		// Melee
-		float meleeCooldown;
-		float meleeRange;
-		bool canHit;
+		float meleeCooldown{ 0.8f };
+		float meleeRange{ 60.f };
+		bool canHit{ true };
 
 		// Projectile
-		float shootCooldown;
-		float reloadTime;
-		int magazineSize;
-		float shootRange;
-		float engageRange;
+		float shootCooldown{ 1.2f };
+		float reloadTime{ 1.5f };
+		int magazineSize{ 3 };
+		float shootRange{ 240.f };
+		float engageRange{ 200.f };
 
 		// Dodge Settings
-		float dodgeDetectionRadius;
-		float dodgeChancePerSecond;
-		float dodgeForce;
-		float dodgeDuration;
+		float dodgeDetectionRadius{ 0.f };
+		float dodgeChancePerSecond{ 0.f };
+		float dodgeForce{ 0.f };
+		float dodgeDuration{ 0.f };
 
 		// Avoidance Settings
-		float enemyAvoidanceRadius;
-		float avoidanceStrength;
+		float enemyAvoidanceRadius{ 0.f };
+		float avoidanceStrength{ 0.f };
 
 		// References
-		Entity enemy { 0 };
+		Entity enemy{ 0 };
 		Entity target{ 0 };
+
+		// Start position
 		Vec2 startPos{ 0.f, 0.f };
+		bool startPosInitialized{ false };
 
 		// Runtime
 		int currentAmmo{ 3 };
@@ -93,4 +99,3 @@ namespace Enemy {
 		Editor::ComponentData EditorData();
 	};
 }
-
