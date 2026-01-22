@@ -928,6 +928,11 @@ public:
 
     bool SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3);
 
+
+    void SetTextBoxText(int textBoxID, const std::string& text);
+    void ShowTextBox(int textBoxID);
+    void HideTextBox(int textBoxID);
+
 private:
 
     std::vector<ButtonConfig> buttons;

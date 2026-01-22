@@ -1980,3 +1980,40 @@ bool GuiSystem::SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3) {
     }
     return false;
 }
+
+
+void GuiSystem::SetTextBoxText(int textBoxID, const std::string& text)
+{
+    for (auto& textbox : textboxes)
+    {
+        if (textbox.ID == textBoxID)
+        {
+            textbox.text = text;
+            return;
+        }
+    }
+}
+
+void GuiSystem::ShowTextBox(int textBoxID)
+{
+    for (auto& textbox : textboxes)
+    {
+        if (textbox.ID == textBoxID)
+        {
+            textbox.isVisible = true;
+            return;
+        }
+    }
+}
+
+void GuiSystem::HideTextBox(int textBoxID)
+{
+    for (auto& textbox : textboxes)
+    {
+        if (textbox.ID == textBoxID)
+        {
+            textbox.isVisible = false;
+            return;
+        }
+    }
+}

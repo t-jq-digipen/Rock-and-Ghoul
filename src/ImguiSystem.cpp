@@ -2007,6 +2007,8 @@ void ImGuiSystem::Update(float dt)
                             t.text = buf;
                         }
                     }
+                    ImGui::Separator();
+                    ImGui::Checkbox("Visible", &t.isVisible);
 
                     // Transform
                     ImGui::Separator();

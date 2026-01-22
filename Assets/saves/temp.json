@@ -11,19 +11,19 @@
     "entities": [
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":270.3009948730469,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":1640.35400390625,\"aabb_maxY\":819.3413696289063,\"aabb_minX\":1370.052978515625,\"aabb_minY\":627.6674194335938,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":136.69700622558594,\"aabb_dimY\":1000.0,\"aabb_maxX\":2073.5166015625,\"aabb_maxY\":1008.4601440429688,\"aabb_minX\":1936.8197021484375,\"aabb_minY\":8.46014404296875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":1505.2034912109375,\"posY\":723.50439453125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":2005.168212890625,\"posY\":508.46014404296875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":136.69700622558594,\"aabb_dimY\":1000.0,\"aabb_maxX\":2073.5166015625,\"aabb_maxY\":1008.4601440429688,\"aabb_minX\":1936.8197021484375,\"aabb_minY\":8.46014404296875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":270.3009948730469,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":1640.35400390625,\"aabb_maxY\":819.3413696289063,\"aabb_minX\":1370.052978515625,\"aabb_minY\":627.6674194335938,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":2005.168212890625,\"posY\":508.46014404296875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":1505.2034912109375,\"posY\":723.50439453125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
@@ -426,7 +426,53 @@
                 "name": "Stats"
             }
         ],
-        "textboxes": []
+        "textboxes": [
+            {
+                "ID": 22,
+                "centered": false,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "pos": [
+                    663.9249877929688,
+                    322.9909973144531
+                ],
+                "scale": 0.7329999804496765,
+                "text": "0x"
+            },
+            {
+                "ID": 23,
+                "centered": false,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "pos": [
+                    762.6170043945313,
+                    312.89801025390625
+                ],
+                "scale": 0.7329999804496765,
+                "text": "0x"
+            },
+            {
+                "ID": 24,
+                "centered": false,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "pos": [
+                    852.3359985351563,
+                    307.8500061035156
+                ],
+                "scale": 0.7329999804496765,
+                "text": "0x"
+            }
+        ]
     },
     "sceneName": "temp",
     "sceneType": 1,

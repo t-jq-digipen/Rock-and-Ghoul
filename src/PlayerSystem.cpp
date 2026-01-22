@@ -254,6 +254,8 @@ namespace RockScript {
 		GuiSystem& UIsys = GuiSystem::Get();
 		UIGroup& slots = UIsys.GetGroup("Spell Slots");
 		
+		static const int CHARGE_TEXT_IDS[3] = { 22, 23, 24 };
+
 		for (size_t i = 0; i < 3; i++)
 		{
 			// Empty
@@ -261,6 +263,8 @@ namespace RockScript {
 			{
 				UIsys.SetDisplaySheetState(slots.memberIDs[i], 0);
 				spellSlots[i].cooldown = 0.f;
+
+				UIsys.HideTextBox(CHARGE_TEXT_IDS[i]);
 			}
 			// Not empty
 			else
@@ -289,7 +293,9 @@ namespace RockScript {
 					break;
 				}
 				if (!UIsys.SetDisplaySheetState(slots.memberIDs[i], frame)) return;
-
+				std::string chargeText = std::to_string(spellSlots[i].charges) + "x";
+				UIsys.SetTextBoxText(CHARGE_TEXT_IDS[i], chargeText);
+				UIsys.ShowTextBox(CHARGE_TEXT_IDS[i]);
 				
 			}
 		}
@@ -548,7 +554,7 @@ namespace RockScript {
 			inputBuffer[inputBuffer.size() - 2] == UP &&
 			inputBuffer[inputBuffer.size() - 1] == DOWN)
 		{
-			AddSpellToSlot(SpellType::SOUNDWAVE, 5.f, 2);
+			AddSpellToSlot(SpellType::SOUNDWAVE, 2.f, 5);
 			inputBuffer.clear();
 			UpdateVisualDisplays();  // clear display after correct combo
 			return;
@@ -560,7 +566,7 @@ namespace RockScript {
 			inputBuffer[inputBuffer.size() - 2] == LEFT &&
 			inputBuffer[inputBuffer.size() - 1] == DOWN)
 		{
-			AddSpellToSlot(SpellType::AOE, 8.f, 1);
+			AddSpellToSlot(SpellType::AOE, 2.f, 1);
 			inputBuffer.clear();
 			UpdateVisualDisplays();  // clear display after correct combo
 			return;
@@ -572,7 +578,7 @@ namespace RockScript {
 			inputBuffer[inputBuffer.size() - 2] == DOWN &&
 			inputBuffer[inputBuffer.size() - 1] == RIGHT)
 		{
-			AddSpellToSlot(SpellType::SHIELD, 10.f, 1);
+			AddSpellToSlot(SpellType::SHIELD, 2.f, 2);
 			inputBuffer.clear();
 			UpdateVisualDisplays();  // clear display after correct combo
 			return;
@@ -583,7 +589,7 @@ namespace RockScript {
 			inputBuffer[inputBuffer.size() - 3] == RIGHT &&
 			inputBuffer[inputBuffer.size() - 2] == UP &&
 			inputBuffer[inputBuffer.size() - 1] == RIGHT) {
-			AddSpellToSlot(SpellType::HEAL, 15.f, 1);
+			AddSpellToSlot(SpellType::HEAL, 2.f, 1);
 			inputBuffer.clear();
 			UpdateVisualDisplays();  // clear display after correct combo
 			return;
