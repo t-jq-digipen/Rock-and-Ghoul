@@ -2093,6 +2093,28 @@ void ImGuiSystem::Update(float dt)
                                 for (auto& sc : dlgDoc["scenes"])
                                 {
                                     sceneIDs.push_back(sc.value("sceneID", std::string("0")));
+                                    // speaker label defaults
+                                    if (sc.contains("speakerUI") && sc["speakerUI"].is_object()) 
+                                    {
+                                        auto& sl = sc["speakerUI"];
+                                        if (sl.contains("pos") && sl["pos"].is_array()) 
+                                        {
+                                            d.speakerNameBasePos = { sl["pos"][0].get<float>(), sl["pos"][1].get<float>() };
+                                        }
+                                        if (sl.contains("scale")) 
+                                        {
+                                            d.speakerNameBaseScale = sl["scale"].get<float>();
+                                        }
+                                        if (sl.contains("color") && sl["color"].is_array()) 
+                                        {
+                                            d.speakerNameColor = { sl["color"][0].get<float>(), sl["color"][1].get<float>(), sl["color"][2].get<float>() };
+                                        }
+                                    }
+                                    if (sc.contains("textSpeed")) d.textSpeed = sc["textSpeed"].get<float>();
+                                    if (sc.contains("wrapWidth")) d.wrapWidth = sc["wrapWidth"].get<float>();
+                                    if (sc.contains("customSpeaker")) d.customSpeaker = sc["customSpeaker"].get<bool>();
+                                    if (sc.contains("customSpeakerName")) d.customSpeakerName = sc["customSpeakerName"].get<std::string>();
+                                    break;
                                 }
                                 dlgLoaded = true;
                             }
@@ -2164,6 +2186,27 @@ void ImGuiSystem::Update(float dt)
                                 comp->SetColor({ d.textBox.color.r, d.textBox.color.g, d.textBox.color.b });
                             }
 
+                            d.wrapWidth = sc.value("wrapWidth", d.wrapWidth);
+
+                            d.customSpeaker = sc.value("customSpeaker", false);
+                            d.customSpeakerName = sc.value("customSpeakerName", d.customSpeakerName);
+
+                            if (sc.contains("speakerUI"))
+                            {
+                                auto& s = sc["speakerUI"];
+                                if (s.contains("pos") && s["pos"].is_array() && s["pos"].size() == 2)
+                                {
+                                    d.speakerNameBasePos = { s["pos"][0].get<float>(), s["pos"][1].get<float>() };
+                                }
+                                d.speakerNameBaseScale = s.value("scale", d.speakerNameBaseScale);
+                                d.speakerNameCentered = s.value("centered", d.speakerNameCentered);
+
+                                if (s.contains("color") && s["color"].is_array() && s["color"].size() == 3)
+                                {
+                                    d.speakerNameColor = { s["color"][0].get<float>(), s["color"][1].get<float>(), s["color"][2].get<float>() };
+                                }
+                            }
+
                             comp->SetVisibleChars(0);
                             comp->StartTyping();
                         };
@@ -2189,6 +2232,13 @@ void ImGuiSystem::Update(float dt)
                         d.textBox.color = { col[0], col[1], col[2] };
                         comp->SetColor({ col[0], col[1], col[2] });
                         colorOverriden = true;
+                    }
+
+                    ImGui::SliderFloat("Wrap Width", &d.wrapWidth, 0.f, 1920.f, "%.3f");
+                    float spd = comp->GetTextSpeed();
+                    if (ImGui::SliderFloat("Text Speed", &spd, 0.f, 200.f, "%.3f"))
+                    {
+                        comp->SetTextSpeed(spd);
                     }
 
                     // Scene (determines script)
@@ -2251,6 +2301,27 @@ void ImGuiSystem::Update(float dt)
                                 comp->SetCurrentLineIndex(idx);
                                 comp->StartTyping();
                             }
+
+                            ImGui::SeparatorText("Speaker Name");
+                            ImGui::Checkbox("Custom Speaker?", &d.customSpeaker);
+                            if (d.customSpeaker)
+                            {
+                                char buf[64]; std::snprintf(buf, sizeof(buf), "%s", d.customSpeakerName.c_str());
+                                if (ImGui::InputText("Speaker Name", buf, IM_ARRAYSIZE(buf)))
+                                {
+                                    d.customSpeakerName = buf;
+                                }
+                            }
+                            ImGui::SliderFloat("Speaker posX", &d.speakerNameBasePos.x, 0.f, 1920.f);
+                            ImGui::SliderFloat("Speaker posY", &d.speakerNameBasePos.y, 0.f, 1080.f);
+                            ImGui::SliderFloat("Speaker scale", &d.speakerNameBaseScale, 0.1f, 10.f, "%.3f");
+
+                            float scol[3] = { d.speakerNameColor.r, d.speakerNameColor.g, d.speakerNameColor.b };
+                            if (ImGui::ColorEdit3("Speaker color", scol))
+                                d.speakerNameColor = { scol[0], scol[1], scol[2] };
+
+                            ImGui::Checkbox("Speaker centered", &d.speakerNameCentered);
+
                         }
                         else
                         {

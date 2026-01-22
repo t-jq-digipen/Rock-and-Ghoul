@@ -33,6 +33,9 @@ namespace TextSystem
 		std::vector<std::string> lines;
 		int currentLineIndex{};
 		float textSpeed{};
+		float wrapWidth{};
+		bool customSpeaker{ false };
+		std::string speakerName;
 		int speakerID{};
 		std::string fontPath;
 		float fontSize{ 0 };
@@ -58,15 +61,19 @@ namespace TextSystem
  * @param lines Vector of dialogue lines.
  * @param currentLineIndex Index of the current line.
  * @param textSpeed Speed at which text is revealed.
+ * @param wrapWidth Maximum width of rendering text before needing a newline.
+ * @param customSpeaker Whether the speaker name can be changed or not.
+ * @param speakerName Name of the speaker.
  * @param speakerID ID of the speaker.
  * @param fontPath Path to the font file.
  * @param fontSize Size of the font.
- * @param Typing Whether the text is currently being typed out.
+ * @param isTyping Whether the text is currently being typed out.
  * @param color Color of the text.
  */
 
 		TextComponent(std::vector<std::string> lines, int currentLineIndex,
-			float textSpeed, int speakerID, std::string fontPath, float fontSize, bool isTyping, Vec3 color);
+			float textSpeed, float wrapWidth, bool customSpeaker, std::string speakerName, int speakerID, 
+			std::string fontPath, float fontSize, bool isTyping, Vec3 color);
 
 /**
  * @brief	Copy constructor for TextComponent.
@@ -96,6 +103,27 @@ namespace TextSystem
  */
 
 		float GetTextSpeed() const noexcept;
+
+/**
+ * @brief Gets the wrap width.
+ * @return Maximum width of rendering text before needing a newline.
+ */
+
+		float GetWrapWidth() const noexcept;
+
+/**
+ * @brief Gets the custom speaker flag.
+ * @return Whether the speaker name can be changed or not.
+ */
+
+		bool GetCustomSpeaker() const noexcept;
+
+/**
+ * @brief Gets the speaker name.
+ * @return Name of the speaker.
+ */
+
+		const std::string& GetSpeakerName() const noexcept;
 
 /**
  * @brief Gets the speaker ID.
@@ -169,6 +197,27 @@ namespace TextSystem
  */
 
 		void SetTextSpeed(float speed);
+
+/**
+ * @brief Sets the wrap width.
+ * @param width Maximum width of rendering text before needing a newline.
+ */
+
+		void SetWrapWidth(float width);
+
+/**
+ * @brief Sets the custom speaker flag.
+ * @param flag Whether the speaker name can be changed or not.
+ */
+
+		void SetCustomSpeaker(bool flag);
+
+/**
+ * @brief Sets the speaker name.
+ * @param name Name of the speaker.
+ */
+
+		void SetSpeakerName(const std::string& name);
 
 /**
  * @brief Sets the speaker ID.

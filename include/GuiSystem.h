@@ -546,6 +546,17 @@ struct DialogueConfig {
     std::string sceneID = "0";
     bool isVisible = true;
     int ID = 0;
+
+    // New variables
+    float textSpeed = 0.f; // text typing speed
+    float wrapWidth = 0.f; // max width of line before next line
+    bool customSpeaker = false; // for setting custom speaker
+    std::string customSpeakerName = "Beberd";
+
+    Vec2 speakerNameBasePos;
+    float speakerNameBaseScale{ 1.2f };
+    Colour3 speakerNameColor = { 0, 0, 0 };
+    bool speakerNameCentered = false;
 };
 
 struct DisplayConfig

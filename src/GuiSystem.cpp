@@ -936,6 +936,10 @@ void GuiSystem::Update(float dt)
                 {
                     sceneIdxInt = std::max(0, std::min(sceneIdxInt, maxScene));
                     speakerName = getSpeakerName(sDlgDoc, sceneIdxInt, idx);
+                    if (d.customSpeaker)
+                    {
+                        speakerName = d.customSpeakerName;
+                    }
                 }
             }
 
@@ -951,12 +955,23 @@ void GuiSystem::Update(float dt)
             }
 
             // Draw speaker name (no typewriter)
-            const float nameScale = d.textBox.scale * 0.9f;
+            Vec2 speakerPos{ d.speakerNameBasePos.x * scaleX, d.speakerNameBasePos.y * scaleY };
+            float speakerScale = d.speakerNameBaseScale * uiScale;
+            Vec2 speakerSize = render.CalculateTextSize(speakerName, speakerScale, "Marker");
+            float speakerX = speakerPos.x, speakerY = speakerPos.y;
+            if (d.speakerNameCentered) 
+            { 
+                speakerX -= speakerSize.x * 0.5f; 
+                speakerY -= speakerSize.y * 0.5f; 
+            }
+            render.DrawText(speakerName, speakerX, speakerY, speakerScale, d.speakerNameColor, "Marker");
+
+            //const float nameScale = d.textBox.scale * 0.9f;
             const float lineH = render.CalculateTextSize("A", d.textBox.scale, "Marker").y;
-            render.DrawText(speakerName, drawX, drawY + (lineH * 1.5f), nameScale, drawColor, "Marker");
+            //render.DrawText(speakerName, drawX, drawY + (lineH * 1.5f), nameScale, drawColor, "Marker");
 
             // Word-wrap visible text
-            const float maxWidth = (defaultWidth / 2) * uiScale;
+            const float maxWidth = ((d.wrapWidth > 0.f) ? d.wrapWidth : (defaultWidth / 2.f)) * uiScale;
             std::vector<std::string> wrappedLines;
             wrappedLines.reserve(8);
 

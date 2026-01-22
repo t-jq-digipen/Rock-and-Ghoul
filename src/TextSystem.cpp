@@ -34,17 +34,19 @@ namespace TextSystem
  * @param lines Vector of dialogue lines.
  * @param currentLineIndex Index of the current line.
  * @param textSpeed Speed at which text is revealed.
+ * @param wrapWidth Maximum width of rendering text before needing a newline.
+ * @param customSpeaker Whether the speaker name can be changed or not.
+ * @param speakerName Name of the speaker.
  * @param speakerID ID of the speaker.
  * @param fontPath Path to the font file.
  * @param fontSize Size of the font.
- * @param Typing Whether the text is currently being typed out.
+ * @param isTyping Whether the text is currently being typed out.
  * @param color Color of the text.
  */
 
-	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float textSpeed, int speakerID, std::string fontPath, float fontSize, bool Typing, Vec3 color)
-		: lines{ lines }, currentLineIndex{ currentLineIndex }, textSpeed{ textSpeed }, speakerID{ speakerID }, fontPath{ fontPath }, fontSize{ fontSize }, isTyping{ Typing }, color {
-		color
-	} {
+	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float textSpeed, float wrapWidth, bool customSpeaker, std::string speakerName, int speakerID, std::string fontPath, float fontSize, bool Typing, Vec3 color)
+		: lines{ lines }, currentLineIndex{ currentLineIndex }, textSpeed{ textSpeed }, wrapWidth{ wrapWidth }, customSpeaker{ customSpeaker }, speakerName{ speakerName }, speakerID { speakerID }, fontPath{ fontPath }, fontSize{ fontSize }, isTyping{ Typing }, color{ color } 
+	{
 	}
 
 	// GETTERS
@@ -69,6 +71,27 @@ namespace TextSystem
  */
 
 	float TextComponent::GetTextSpeed() const noexcept { return textSpeed; }
+
+/**
+ * @brief Gets the wrap width.
+ * @return Maximum width of rendering text before needing a newline.
+ */
+
+	float TextComponent::GetWrapWidth() const noexcept { return wrapWidth; }
+
+/**
+ * @brief Gets the custom speaker flag.
+ * @return Whether the speaker name can be changed or not.
+ */
+
+	bool TextComponent::GetCustomSpeaker() const noexcept { return customSpeaker; }
+
+/**
+ * @brief Gets the speaker name.
+ * @return Name of the speaker.
+ */
+
+	const std::string& TextComponent::GetSpeakerName() const noexcept { return speakerName; }
 
 /**
  * @brief Gets the speaker ID.
@@ -142,6 +165,27 @@ namespace TextSystem
  */
 
 	void TextComponent::SetTextSpeed(float speed) { textSpeed = speed; }
+
+/**
+ * @brief Sets the wrap width.
+ * @param width Maximum width of rendering text before needing a newline.
+ */
+
+	void TextComponent::SetWrapWidth(float width) { wrapWidth = width; }
+
+	/**
+	 * @brief Sets the custom speaker flag.
+	 * @param flag Whether the speaker name can be changed or not.
+	 */
+
+	void TextComponent::SetCustomSpeaker(bool flag) { customSpeaker = flag; }
+
+	/**
+	 * @brief Sets the speaker name.
+	 * @param name Name of the speaker.
+	 */
+
+	void TextComponent::SetSpeakerName(const std::string& name) { speakerName = name; }
 
 /**
  * @brief Sets the speaker ID.
