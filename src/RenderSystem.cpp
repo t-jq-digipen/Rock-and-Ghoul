@@ -39,6 +39,8 @@
 extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h> //NOTE: if cant work, link it in properties->linker->input->additional dependecies
+#include <libavutil/imgutils.h>
 }
 
  // ---------------------------------------------
@@ -50,6 +52,15 @@ extern "C" {
     const TransformComponent* transform;
     float sortY;
 };*/
+
+
+//ffmpeg stuff to convert to RGBA
+SwsContext* sws = nullptr;
+uint8_t* dstData[4] = { nullptr, nullptr, nullptr, nullptr };
+int dstLinesize[4] = { 0, 0, 0, 0 };
+int dstW = 0, dstH = 0;
+AVPixelFormat lastSrcFmt = AV_PIX_FMT_NONE;
+
 
 //debug for ffmpeg
 auto PrintErr = [](int err) {
@@ -151,6 +162,9 @@ void TestOpenVideo() {
             return;
         }
 
+
+       
+
         //Next, we do the decode loop to turn the packets into frames
         while (av_read_frame(pFormatContext, pPacket) >= 0) {
 
@@ -193,7 +207,92 @@ void TestOpenVideo() {
 
                     // --- IMPORTANT: NEXT STEP LATER ---
                     // We can do the manipulation of frames here, here is where we use the frames
+                    
+                
                     // Convert this frame to RGBA (sws_scale) and upload to OpenGL.
+
+                    //Setup RGBA buffer and sws context and all
+                    AVPixelFormat srcFmt = (AVPixelFormat)pFrame->format;
+                    int w = pFrame->width;
+                    int h = pFrame->height;
+
+                    const char* fmtName = av_get_pix_fmt_name(srcFmt);
+
+
+
+                    // (Re)initialize sws + output buffer if needed
+                    if (!sws || w != dstW || h != dstH || srcFmt != lastSrcFmt) {
+
+                        // free old output buffer
+                        if (dstData[0]) {
+                            av_freep(&dstData[0]);           // frees buffer from av_image_alloc
+                            dstData[0] = nullptr;
+                        }
+
+                        // free old scaler
+                        if (sws) {
+                            sws_freeContext(sws);
+                            sws = nullptr;
+                        }
+
+                        dstW = w;
+                        dstH = h;
+                        lastSrcFmt = srcFmt;
+
+                        sws = sws_getContext(
+                            w, h, srcFmt,
+                            w, h, AV_PIX_FMT_RGBA,
+                            SWS_BILINEAR,
+                            nullptr, nullptr, nullptr
+                        );
+
+                        if (!sws) {
+                            std::cout << "sws_getContext FAILED\n";
+                            break; // don't return; let cleanup happen
+                        }
+
+                        int allocRet = av_image_alloc(dstData, dstLinesize, w, h, AV_PIX_FMT_RGBA, 1);
+                        if (allocRet < 0) {
+                            std::cout << "av_image_alloc FAILED: ";
+                            PrintErr(allocRet);
+                            std::cout << "\n";
+                            break;
+                        }
+
+                    }
+
+
+                    // Convert to RGBA fark
+                    int outH = sws_scale(
+                        sws,
+                        pFrame->data,
+                        pFrame->linesize,
+                        0,
+                        h,
+                        dstData,
+                        dstLinesize
+                    );
+
+
+                    if (outH <= 0) {
+                        std::cout << "sws_scale FAILED/returned " << outH << "\n";
+                        // keep going or break; your choice
+                        break;
+                    }
+
+
+
+                    //(UP NEXT)
+                    //Else... Next step will be OpenGL upload using dstData[0] and dstLinesize[0]
+                    // Now rgbaData contains w*h pixels in RGBA format.
+                    // Next step after this: upload rgbaData to an OpenGL texture.
+
+
+
+      
+
+
+
 
 
 
@@ -204,6 +303,7 @@ void TestOpenVideo() {
                     av_frame_unref(pFrame);
                     continue;
                 }
+
 
                 if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
                     // Decoder needs more packets before it can output more frames
@@ -218,6 +318,18 @@ void TestOpenVideo() {
             }
 
 
+        }
+
+
+
+
+
+        //free the sws context and RGBA buffer 
+        if (dstData[0]) {
+            av_freep(&dstData[0]);
+        }
+        if (sws) {
+            sws_freeContext(sws);
         }
 
         //Cleanup previously allocated mem, to prevent mem leaks (i hope is in the right place)
