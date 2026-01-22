@@ -1032,7 +1032,8 @@ void GuiSystem::Update(float dt)
         case UIRenderType::Image:
         {
             auto data = dp.m_renderData.GetImageData();
-            render.DrawImageRotated(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, 0.f, 0.f);
+            float brightness = (dp.opacity - 1.0f) * 0.8f;  // opacity 1.0 = brightness 0, opacity 0.4 = brightness -0.48
+            render.DrawImageRotated(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, 0.f, brightness);
         } break;
 
         case UIRenderType::ImageSheet:
@@ -1044,8 +1045,8 @@ void GuiSystem::Update(float dt)
             int row = data.total_rows - 1 - data.frame_index.curr_row;
             float u0 = float(col * tileW), v0 = float(row * tileH);
             float u1 = u0 + tileW, v1 = v0 + tileH;
-
-            render.DrawImageSub(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, u0, v0, u1, v1, 0.f, 0.f);
+            float brightness = (dp.opacity - 1.0f) * 0.8f;  // opacity 1.0 = brightness 0, opacity 0.4 = brightness -0.48
+            render.DrawImageSub(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, u0, v0, u1, v1, 0.f, brightness);
         } break;
 
         default: break;

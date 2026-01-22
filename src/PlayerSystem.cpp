@@ -461,6 +461,7 @@ namespace RockScript {
 				for (auto& display : displays) {
 					if (display.ID == displayID) {
 						display.isVisible = false;
+						display.opacity = 1.0f;
 						break;
 					}
 				}
@@ -484,6 +485,7 @@ namespace RockScript {
 			for (auto& display : displays) {
 				if (display.ID == displayID) {
 					display.isVisible = true;
+					display.opacity = 1.0f;
 					break;
 				}
 			}
@@ -509,6 +511,7 @@ namespace RockScript {
 				for (auto& display : displays) {
 					if (display.ID == displayID) {
 						display.isVisible = true;
+						display.opacity = 1.5f;
 						break;
 					}
 				}

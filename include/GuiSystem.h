@@ -557,6 +557,7 @@ struct DisplayConfig
     bool centered = false;
     UI_RenderData m_renderData{};
     bool isVisible = true;
+    float opacity = 1.0f;
     int ID = 0;
 };
 
