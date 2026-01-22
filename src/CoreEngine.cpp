@@ -263,7 +263,7 @@ void CoreEngine::Run()
             }
         }
 
-
+        Update_AudioComponents(fixedDt);
         float renderDt = fixedDt * numSteps;
 
         for (auto* s : renderSystems)

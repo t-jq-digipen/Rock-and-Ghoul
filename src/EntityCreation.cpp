@@ -158,26 +158,25 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Registry::Get().Add_Component<Movement::MovementComponent>(player, Movement::MovementComponent{ 500.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
 
-            //Registry::Get().Add_Component<RenderLayerComponent>(player, RenderLayerComponent{ LAYER_BACKGROUND });
             AudioComponent playerAudio;
 
+            // JQ CHECK HERE
             // Look up asset by name via audiocache
             AudioAsset* dieSound = AudioCache::GetAsset("player_die");
             if (dieSound) {
-                playerAudio.soundName = dieSound->name;
+                playerAudio.sounds["die"] = dieSound->name;  // using sound map
             }
             else {
                 std::cerr << "WARNING: player_die audio asset not found!" << std::endl;
-                playerAudio.soundName = "";  // No sound
             }
 
-            playerAudio.loopingSoundName = "";
-            playerAudio.autoPlay = false;
-            playerAudio.autoPlayLooping = false;
+            // no autoPlay/looping fields anymore
+            playerAudio.autoPlaySound = "";  // Empty = no auto-play
             playerAudio.spatial = true;
             playerAudio.volume = 0.8f;
             playerAudio.minDistance = 10.0f;
             playerAudio.maxDistance = 100.0f;
+            // NO MORE TO CHECK
             Registry::Get().Add_Component<AudioComponent>(player, playerAudio);
 
             if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Rock.json", player)) {

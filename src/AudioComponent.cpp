@@ -5,59 +5,46 @@
  *
  * @brief   Implementation file for entity-based audio component system
  *
- * This file contains the implementation of the AudioComponent member
- * functions and the global Update_AudioComponents system function.
- * It handles audio playback initialization, channel management,
- * spatial audio positioning updates, and playback state tracking.
- * The implementation integrates with the AudioCache for sound asset
- * loading by name, the AudioSystem for FMOD channel control, and
- * the Registry for entity component access. Editor integration is
- * provided through the EditorData() function, which creates UI
- * widgets for sound selection (dropdowns populated from AudioCache),
- * volume control (sliders), auto-play toggles (checkboxes), and
- * spatial audio configuration (distance parameters). The system
- * update function processes all AudioComponent instances each frame,
- * handling auto-play triggers, playback state updates, and spatial
- * position synchronization with entity transforms.
- *
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
+
 #include "AudioComponent.h"
 #include "Registry.h"
 #include "AudioCache.h"
 #include "Audio.h"
-#include "Component.h"
 #include <nlohmann/json.hpp>
 #include <iostream>
-
+// audio test will delete asap
+#include "Input.h"
+#include <GLFW/glfw3.h>
 using json = nlohmann::json;
 
 // ============================================================================
 // AUDIOCOMPONENT MEMBER FUNCTIONS
 // ============================================================================
 
-/**
-* @brief Play the main sound effect
-* @param eID Entity ID (for spatial positioning)
-*/
-void AudioComponent::PlaySound(Entity eID) {
-    if (soundName.empty()) return;  // No sound assigned
-
-    // Stop current sound
-    StopSound();
-
-    // Get sound from cache
-    FMOD::Sound* sound = AudioCache::GetSound(soundName);
-    if (!sound) {
-        std::cerr << "[AudioComponent] Failed to load sound: " << soundName << std::endl;
-        return;
+bool AudioComponent::PlaySound(Entity eID, const std::string& soundID) {
+    auto it = sounds.find(soundID);
+    if (it == sounds.end()) {
+        std::cerr << "[AudioComponent] Sound ID '" << soundID << "' not found!" << std::endl;
+        return false;
     }
 
-    // Play with spatial audio or normal
+    const std::string& assetName = it->second;
+    StopSound(soundID);
+
+    FMOD::Sound* sound = AudioCache::GetSound(assetName);
+    if (!sound) {
+        std::cerr << "[AudioComponent] Failed to load sound: " << assetName << std::endl;
+        return false;
+    }
+
+    FMOD::Channel* channel = nullptr;
+
     if (spatial && Registry::Get().Has_Component<TransformComponent>(eID)) {
         auto& transform = Registry::Get().Get_Component<TransformComponent>(eID);
-        channel = AudioSystem::PlaySoundAt(soundName, transform.pos.x, transform.pos.y, volume);
+        channel = AudioSystem::PlaySoundAt(assetName, transform.pos.x, transform.pos.y, volume);
     }
     else {
         channel = AudioSystem::PlaySoundGetChannel(sound, false);
@@ -66,127 +53,144 @@ void AudioComponent::PlaySound(Entity eID) {
         }
     }
 
-    isPlaying = (channel != nullptr);
+    if (channel) {
+        activeChannels[soundID] = channel;
+        std::cout << "[AudioComponent] Playing sound: " << soundID << " (" << assetName << ")" << std::endl;
+        return true;
+    }
+
+    return false;
 }
 
-/**
- * @brief Play the looping sound
- * @param eID Entity ID (for spatial positioning)
- */
-void AudioComponent::PlayLoopingSound(Entity eID) {
-    if (loopingSoundName.empty()) return;  // No looping sound assigned
+void AudioComponent::StopSound(const std::string& soundID) {
+    auto it = activeChannels.find(soundID);
+    if (it != activeChannels.end() && it->second) {
+        it->second->stop();
+        activeChannels.erase(it);
+        std::cout << "[AudioComponent] Stopped sound: " << soundID << std::endl;
+    }
+}
 
-    // Stop current looping sound
-    StopLoopingSound();
+void AudioComponent::StopAllSounds() {
+    for (auto& [soundID, channel] : activeChannels) {
+        if (channel) {
+            channel->stop();
+        }
+    }
+    activeChannels.clear();
+    std::cout << "[AudioComponent] Stopped all sounds" << std::endl;
+}
 
-    // Get sound from cache
-    FMOD::Sound* sound = AudioCache::GetSound(loopingSoundName);
-    if (!sound) {
-        std::cerr << "[AudioComponent] Failed to load looping sound: " << loopingSoundName << std::endl;
-        return;
+bool AudioComponent::IsPlaying(const std::string& soundID) {
+    auto it = activeChannels.find(soundID);
+    if (it == activeChannels.end() || !it->second) {
+        return false;
     }
 
-    // Play with spatial audio or normal
-    if (spatial && Registry::Get().Has_Component<TransformComponent>(eID)) {
-        auto& transform = Registry::Get().Get_Component<TransformComponent>(eID);
-        loopingChannel = AudioSystem::PlaySoundAt(loopingSoundName, transform.pos.x, transform.pos.y, volume);
-    }
-    else {
-        loopingChannel = AudioSystem::PlaySoundGetChannel(sound, false);
-        if (loopingChannel) {
-            loopingChannel->setVolume(volume);
+    bool playing = false;
+    it->second->isPlaying(&playing);
+    return playing;
+}
+
+void AudioComponent::UpdatePlaybackStates(Entity eID) {
+    std::vector<std::string> toRemove;
+
+    for (auto& [soundID, channel] : activeChannels) {
+        if (!channel) {
+            toRemove.push_back(soundID);
+            continue;
+        }
+
+        bool playing = false;
+        channel->isPlaying(&playing);
+
+        if (!playing) {
+            toRemove.push_back(soundID);
+        }
+        else if (spatial) {
+            UpdateChannelSpatialPosition(eID, channel);
         }
     }
 
-    isLoopingPlaying = (loopingChannel != nullptr);
-}
-/**
- * @brief Stop the main sound
- */
-void AudioComponent::StopSound() {
-    if (channel) {
-        channel->stop();
-        channel = nullptr;
+    for (const auto& soundID : toRemove) {
+        activeChannels.erase(soundID);
     }
-    isPlaying = false;
 }
 
-/**
- * @brief Stop the looping sound
- */
-void AudioComponent::StopLoopingSound() {
-    if (loopingChannel) {
-        loopingChannel->stop();
-        loopingChannel = nullptr;
+void AudioComponent::UpdateChannelSpatialPosition(Entity eID, FMOD::Channel* channel) {
+    if (!channel || !Registry::Get().Has_Component<TransformComponent>(eID)) {
+        return;
     }
-    isLoopingPlaying = false;
-}
-/**
- * @brief Update spatial audio position (called per frame)
- * @param eID Entity ID to get position from
- */
-void AudioComponent::UpdateSpatialPosition(Entity eID) {
-    if (!spatial) return;
-
-    if (!Registry::Get().Has_Component<TransformComponent>(eID)) return;
 
     auto& transform = Registry::Get().Get_Component<TransformComponent>(eID);
     FMOD_VECTOR pos = { transform.pos.x, transform.pos.y, 0.0f };
     FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
 
-    // Update main sound position
-    if (channel && isPlaying) {
-        channel->set3DAttributes(&pos, &vel);
-        channel->set3DMinMaxDistance(minDistance, maxDistance);
-    }
-
-    // Update looping sound position
-    if (loopingChannel && isLoopingPlaying) {
-        loopingChannel->set3DAttributes(&pos, &vel);
-        loopingChannel->set3DMinMaxDistance(minDistance, maxDistance);
-    }
+    channel->set3DAttributes(&pos, &vel);
+    channel->set3DMinMaxDistance(minDistance, maxDistance);
 }
 
-/**
- * @brief Update playback state (checks if sounds finished)
- */
-void AudioComponent::UpdatePlaybackState() {
-    // Check main sound
-    if (channel) {
-        bool playing = false;
-        channel->isPlaying(&playing);
-        isPlaying = playing;
-
-        if (!playing) {
-            channel = nullptr;  // Clean up finished channel
-        }
-    }
-
-    // Check looping sound
-    if (loopingChannel) {
-        bool playing = false;
-        loopingChannel->isPlaying(&playing);
-        isLoopingPlaying = playing;
-
-        if (!playing) {
-            loopingChannel = nullptr;  // Clean up finished channel
-        }
-    }
-}
-
-/**
- * @brief Set volume for all channels
- * @param vol Volume level (0.0 - 1.0)
- */
 void AudioComponent::SetVolume(float vol) {
     volume = vol;
 
-    if (channel) {
-        channel->setVolume(volume);
+    for (auto& [soundID, channel] : activeChannels) {
+        if (channel) {
+            channel->setVolume(volume);
+        }
     }
 
-    if (loopingChannel) {
-        loopingChannel->setVolume(volume);
+    std::cout << "[AudioComponent] Volume set to: " << (volume * 100.0f) << "%" << std::endl;
+}
+
+// ============================================================================
+// SERIALIZATION
+// ============================================================================
+
+std::string AudioComponent::Serialize() const {
+    json j;
+
+    j["sounds"] = sounds;
+    j["autoPlaySound"] = autoPlaySound;
+    j["volume"] = volume;
+    j["spatial"] = spatial;
+    j["minDistance"] = minDistance;
+    j["maxDistance"] = maxDistance;
+
+    return j.dump();
+}
+
+AudioComponent AudioComponent::DeSerialize(Entity eID, const std::string& data) {
+    (void)eID;
+
+    if (data.empty()) {
+        return AudioComponent();
+    }
+
+    try {
+        json j = json::parse(data);
+        AudioComponent audio;
+
+        if (j.contains("sounds") && j["sounds"].is_object()) {
+            for (auto it = j["sounds"].begin(); it != j["sounds"].end(); ++it) {
+                audio.sounds[it.key()] = it.value().get<std::string>();
+            }
+        }
+
+        audio.autoPlaySound = j.value("autoPlaySound", std::string{});
+        audio.volume = j.value("volume", 1.0f);
+        audio.spatial = j.value("spatial", false);
+        audio.minDistance = j.value("minDistance", 1.0f);
+        audio.maxDistance = j.value("maxDistance", 100.0f);
+
+        // activeChannels start empty
+
+        std::cout << "[AudioComponent] Loaded " << audio.sounds.size() << " sounds" << std::endl;
+
+        return audio;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "[AudioComponent] Failed to deserialize: " << e.what() << std::endl;
+        return AudioComponent();
     }
 }
 
@@ -194,66 +198,28 @@ void AudioComponent::SetVolume(float vol) {
 // EDITOR INTEGRATION
 // ============================================================================
 
-/**
- * @brief Get editor-compatible data for this component.
- *
- * This function creates and configures editor widgets for the AudioComponent,
- * including dropdown menus for sound selection, checkboxes for auto-play
- * settings, spatial audio toggles, volume sliders, and distance parameters
- * for 3D spatial positioning. The widgets are populated with available
- * audio assets from the AudioCache.
- *
- * @return Editor::ComponentData Object containing all configured editor widgets
- *         for this component.
- */
 Editor::ComponentData AudioComponent::EditorData() {
     Editor::ComponentData data("Audio");
 
-    // ========== Sound Name Dropdown ==========
-    Editor::Widget_Dropdown soundDropdown;
-    // Store selected name as a string index (editor handles this)
-    soundDropdown.ref = reinterpret_cast<unsigned int*>(&soundName);
-    soundDropdown.Add_Option("None", 0);
+    // Auto-Play Sound Dropdown
+    if (!sounds.empty()) {
+        Editor::Widget_Dropdown autoPlayDropdown;
+        autoPlayDropdown.ref = reinterpret_cast<unsigned int*>(&autoPlaySound);
+        autoPlayDropdown.Add_Option("None", 0);
 
-    // Populate with all available audio assets
-    unsigned int index = 1;
-    for (const auto& [name, asset] : AudioCache::GetAllAssets()) {
-        std::string displayName = name + " [" + asset.group + "]";
-        soundDropdown.Add_Option(displayName, index++);
-        // Store mapping from index to name (you may need to handle this in editor code)
-    }
-    data.Add_Data("Sound Asset", soundDropdown);
-
-    // ========== Looping Sound Name Dropdown ==========
-    Editor::Widget_Dropdown loopingDropdown;
-    loopingDropdown.ref = reinterpret_cast<unsigned int*>(&loopingSoundName);
-    loopingDropdown.Add_Option("None", 0);
-
-    // Only show looping sounds
-    index = 1;
-    for (const auto& [name, asset] : AudioCache::GetAllAssets()) {
-        if (asset.loop) {
-            std::string displayName = name + " [" + asset.group + "]";
-            loopingDropdown.Add_Option(displayName, index++);
+        unsigned int index = 1;
+        for (const auto& [soundID, assetName] : sounds) {
+            autoPlayDropdown.Add_Option(soundID + " [" + assetName + "]", index++);
         }
+        data.Add_Data("Auto Play Sound", autoPlayDropdown);
     }
-    data.Add_Data("Looping Sound", loopingDropdown);
 
-    // ========== Auto-Play Checkboxes ==========
-    Editor::Widget_Checkmark autoPlayWidget;
-    autoPlayWidget.ref = &autoPlay;
-    data.Add_Data("Auto Play", autoPlayWidget);
-
-    Editor::Widget_Checkmark autoPlayLoopingWidget;
-    autoPlayLoopingWidget.ref = &autoPlayLooping;
-    data.Add_Data("Auto Play Looping", autoPlayLoopingWidget);
-
-    // ========== Spatial Audio Checkbox ==========
+    // Spatial Audio Checkbox
     Editor::Widget_Checkmark spatialWidget;
     spatialWidget.ref = &spatial;
     data.Add_Data("Spatial Audio", spatialWidget);
 
-    // ========== Volume Slider ==========
+    // Volume Slider
     Editor::Widget_Float volumeWidget;
     volumeWidget.ref = &volume;
     volumeWidget.slider = true;
@@ -261,7 +227,7 @@ Editor::ComponentData AudioComponent::EditorData() {
     volumeWidget.max = 1.0f;
     data.Add_Data("Volume", volumeWidget);
 
-    // ========== Spatial Distance Settings ==========
+    // Spatial Distance Settings
     if (spatial) {
         Editor::Widget_Float minDistWidget;
         minDistWidget.ref = &minDistance;
@@ -285,34 +251,46 @@ Editor::ComponentData AudioComponent::EditorData() {
 // SYSTEM UPDATE FUNCTION
 // ============================================================================
 
-/**
- * @brief Updates all AudioComponents in the registry
- * @param dt Delta time (unused, but follows system pattern)
- */
 void Update_AudioComponents(float dt) {
-    (void)dt;  // Unused param
+    (void)dt;
+
+    // JQ CHECK HERE
+// ========== AUDIO TEST (DELETE WHEN DONE) ==========
+    static bool testSetup = false;
+    static AudioComponent audio;
+
+    if (!testSetup) {
+        audio.sounds["test1"] = "button_play";
+        audio.sounds["test2"] = "button_quit";
+        audio.sounds["test3"] = "level_1";
+
+        testSetup = true;
+        std::cout << "[AUDIO TEST] Setup complete!\n";
+        std::cout << "[AUDIO TEST] Press 1,2,3 to play sounds, 4 to stop all\n";
+    }
+
+    if (Input::IsKeyPressed(GLFW_KEY_1)) {
+        audio.PlaySound(0, "test1");
+    }
+    if (Input::IsKeyPressed(GLFW_KEY_2)) {
+        audio.PlaySound(0, "test2");
+    }
+    if (Input::IsKeyPressed(GLFW_KEY_3)) {
+        audio.PlaySound(0, "test3");
+    }
+    if (Input::IsKeyPressed(GLFW_KEY_4)) {
+        audio.StopAllSounds();
+    }
+    // ========== END AUDIO TEST ==========
 
     Registry& registry = Registry::Get();
 
-    // Update all AudioComponents
     for (auto& [entity, audio] : registry.Get_ComponentMap<AudioComponent>()) {
-        // Auto-play sounds on first frame if requested
-        if (audio.autoPlay && !audio.isPlaying && !audio.soundName.empty()) {
-            audio.PlaySound(entity);
-            audio.autoPlay = false;  // Only play once
+        if (!audio.autoPlaySound.empty() && !audio.IsPlaying(audio.autoPlaySound)) {
+            audio.PlaySound(entity, audio.autoPlaySound); // store many sounds to one entity :3
+            audio.autoPlaySound = ""; // audio that happens when entities spawn NO MORE TO CHECK
         }
 
-        if (audio.autoPlayLooping && !audio.isLoopingPlaying && !audio.loopingSoundName.empty()) {
-            audio.PlayLoopingSound(entity);
-            audio.autoPlayLooping = false;  // Only play once
-        }
-
-        // Check if sounds finished playing, update playback state
-        audio.UpdatePlaybackState();
-
-        // Update spatial positioning
-        if (audio.spatial) {
-            audio.UpdateSpatialPosition(entity);
-        }
+        audio.UpdatePlaybackStates(entity);
     }
 }
