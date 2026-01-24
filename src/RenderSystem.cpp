@@ -55,7 +55,7 @@ extern "C" {
 
 
 //ffmpeg stuff to convert to RGBA
-SwsContext* sws = nullptr;
+/*SwsContext* sws = nullptr;
 uint8_t* dstData[4] = { nullptr, nullptr, nullptr, nullptr };
 int dstLinesize[4] = { 0, 0, 0, 0 };
 int dstW = 0, dstH = 0;
@@ -71,6 +71,11 @@ auto PrintErr = [](int err) {
 
 void TestOpenVideo() {
 
+    //OPEN GL variables
+    static GLuint videoTex = 0;
+    static bool texInited = false;
+
+    //FFmpeg varibles
     AVFormatContext* pFormatContext = nullptr;
     int result = avformat_open_input(
         &pFormatContext,
@@ -287,9 +292,42 @@ void TestOpenVideo() {
                     // Now rgbaData contains w*h pixels in RGBA format.
                     // Next step after this: upload rgbaData to an OpenGL texture.
 
+                    //Set up and init buffers once for the OpenGL
+                    if (!texInited) {
+                        glGenTextures(1, &videoTex);
+                        glBindTexture(GL_TEXTURE_2D, videoTex);
+
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+                        // Allocate GPU storage (no pixels yet)
+                        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+                        texInited = true;
+                    }
 
 
-      
+                    //Bind textures
+                    glBindTexture(GL_TEXTURE_2D, videoTex);
+
+                    // Handle stride (dstLinesize[0] may include padding)
+                    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                    glPixelStorei(GL_UNPACK_ROW_LENGTH, dstLinesize[0] / 4); // RGBA = 4 bytes/pixel
+
+                    glTexSubImage2D(
+                        GL_TEXTURE_2D,
+                        0,
+                        0, 0,
+                        w, h,
+                        GL_RGBA,
+                        GL_UNSIGNED_BYTE,
+                        dstData[0]
+                    );
+
+                    // Reset to avoid affecting other texture uploads
+                    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
 
 
@@ -332,6 +370,14 @@ void TestOpenVideo() {
             sws_freeContext(sws);
         }
 
+        //Clean up texture
+        if (videoTex) {
+            glDeleteTextures(1, &videoTex);
+            videoTex = 0;
+            texInited = false;
+        }
+
+
         //Cleanup previously allocated mem, to prevent mem leaks (i hope is in the right place)
         av_frame_free(&pFrame);
         av_packet_free(&pPacket);
@@ -348,14 +394,242 @@ void TestOpenVideo() {
         av_strerror(result, errbuf, sizeof(errbuf));
         std::cout << "FFmpeg error: " << errbuf << std::endl;
     }
-}
+}*/
 
 //AVFormatContext* pFormatContext = avformat_alloc_context();
+
+
+struct CutscenePlayer {
+    // FFmpeg
+    AVFormatContext* fmt = nullptr;
+    AVCodecContext* dec = nullptr;
+    AVPacket* pkt = nullptr;
+    AVFrame* frm = nullptr;
+    int videoStreamIndex = -1;
+
+    // swscale + RGBA buffer
+    SwsContext* sws = nullptr;
+    uint8_t* dstData[4] = { nullptr };
+    int dstLinesize[4] = { 0 };
+    int w = 0, h = 0;
+
+    // OpenGL
+    GLuint tex = 0;
+    bool texInited = false;
+
+    // Playback timing
+    double fps = 30.0;        // start with hardcode
+    double acc = 0.0;
+    bool finished = false;
+
+    bool Init(const char* path);
+    void Update(double dt);   // decode+upload as needed
+    void Render();            // draw tex
+    void Shutdown();
+};
+
+
+bool CutscenePlayer::Init(const char* path)
+{
+    // Clean any previous state just in case (optional but helpful)
+    Shutdown();
+
+    auto PrintErr = [](int err) {
+        char buf[AV_ERROR_MAX_STRING_SIZE]{};
+        av_strerror(err, buf, sizeof(buf));
+        std::cout << buf;
+        };
+
+    // 1) Open container
+    int r = avformat_open_input(&fmt, path, nullptr, nullptr);
+    if (r < 0) {
+        std::cout << "avformat_open_input failed: ";
+        PrintErr(r);
+        std::cout << "\n";
+        return false;
+    }
+
+    // 2) Read stream metadata (needed to locate streams/codecs cleanly)
+    r = avformat_find_stream_info(fmt, nullptr);
+    if (r < 0) {
+        std::cout << "avformat_find_stream_info failed: ";
+        PrintErr(r);
+        std::cout << "\n";
+        return false;
+    }
+
+    // 3) Find the video stream index
+    videoStreamIndex = -1;
+    for (unsigned i = 0; i < fmt->nb_streams; ++i) {
+        AVStream* s = fmt->streams[i];
+        if (s && s->codecpar && s->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            videoStreamIndex = static_cast<int>(i);
+            break;
+        }
+    }
+
+    if (videoStreamIndex < 0) {
+        std::cout << "Init failed: no video stream found in " << path << "\n";
+        return false;
+    }
+
+    // 4) Find decoder for that stream
+    AVCodecParameters* par = fmt->streams[videoStreamIndex]->codecpar;
+    const AVCodec* codec = avcodec_find_decoder(par->codec_id);
+    if (!codec) {
+        std::cout << "Init failed: unsupported codec id = " << par->codec_id << "\n";
+        return false;
+    }
+
+    // 5) Create decoder context
+    dec = avcodec_alloc_context3(codec);
+    if (!dec) {
+        std::cout << "Init failed: avcodec_alloc_context3 returned null\n";
+        return false;
+    }
+
+    // 6) Copy stream parameters into decoder context
+    r = avcodec_parameters_to_context(dec, par);
+    if (r < 0) {
+        std::cout << "avcodec_parameters_to_context failed: ";
+        PrintErr(r);
+        std::cout << "\n";
+        return false;
+    }
+
+    // 7) Open decoder
+    r = avcodec_open2(dec, codec, nullptr);
+    if (r < 0) {
+        std::cout << "avcodec_open2 failed: ";
+        PrintErr(r);
+        std::cout << "\n";
+        return false;
+    }
+
+    // 8) Allocate reusable packet + frame
+    pkt = av_packet_alloc();
+    frm = av_frame_alloc();
+    if (!pkt || !frm) {
+        std::cout << "Init failed: av_packet_alloc/av_frame_alloc returned null\n";
+        return false;
+    }
+
+    // Optional: print info
+    std::cout << "Cutscene Init OK\n";
+    std::cout << "  path: " << path << "\n";
+    std::cout << "  videoStreamIndex: " << videoStreamIndex << "\n";
+    std::cout << "  codec: " << (codec->long_name ? codec->long_name : codec->name) << "\n";
+
+    finished = false;
+    texInited = false;
+    // sws/dstData will be initialized lazily in Update() after first decoded frame
+
+    return true;
+}
+
+
+void CutscenePlayer::Update(double dt) {
+    if (finished) return;
+
+    acc += dt;
+    const double frameTime = 1.0 / fps;
+
+    while (acc >= frameTime) {
+        acc -= frameTime;
+
+        // decode exactly ONE frame and upload it
+        // (loop reading packets until you get a frame)
+        bool gotFrame = false;
+
+        while (!gotFrame) {
+            int r = av_read_frame(fmt, pkt);
+            if (r < 0) { finished = true; return; }
+
+            if (pkt->stream_index != videoStreamIndex) {
+                av_packet_unref(pkt);
+                continue;
+            }
+
+            r = avcodec_send_packet(dec, pkt);
+            av_packet_unref(pkt);
+            if (r < 0) { finished = true; return; }
+
+            while (true) {
+                r = avcodec_receive_frame(dec, frm);
+                if (r == 0) {
+                    gotFrame = true;
+
+                    // init sws/rgba/texture on first frame
+                    if (!texInited) {
+                        w = frm->width; h = frm->height;
+                        sws = sws_getContext(w, h, (AVPixelFormat)frm->format, w, h, AV_PIX_FMT_RGBA,
+                            SWS_BILINEAR, nullptr, nullptr, nullptr);
+                        av_image_alloc(dstData, dstLinesize, w, h, AV_PIX_FMT_RGBA, 1);
+
+                        glGenTextures(1, &tex);
+                        glBindTexture(GL_TEXTURE_2D, tex);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+                        texInited = true;
+                    }
+
+                    sws_scale(sws, frm->data, frm->linesize, 0, h, dstData, dstLinesize);
+
+                    glBindTexture(GL_TEXTURE_2D, tex);
+                    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                    glPixelStorei(GL_UNPACK_ROW_LENGTH, dstLinesize[0] / 4);
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, dstData[0]);
+                    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+                    av_frame_unref(frm);
+                    break;
+                }
+
+                if (r == AVERROR(EAGAIN) || r == AVERROR_EOF) break;
+                finished = true; return;
+            }
+        }
+    }
+}
+
+
+
+//cleanup for cutscene
+void CutscenePlayer::Shutdown() {
+    if (dstData[0]) av_freep(&dstData[0]);
+    if (sws) sws_freeContext(sws);
+    if (frm) av_frame_free(&frm);
+    if (pkt) av_packet_free(&pkt);
+    if (dec) avcodec_free_context(&dec);
+    if (fmt) avformat_close_input(&fmt);
+
+    if (tex) glDeleteTextures(1, &tex);
+    tex = 0;
+    texInited = false;
+}
+
+
+
+
+
+
+
 
 Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
 static std::vector<GLuint> s_backgroundTextures;
 static std::vector<std::string> s_backgroundTexturePaths;
+
+
+//draw texture every frame, put in render update?? idk uhhh
+void CutscenePlayer::Render() {
+    if (!texInited) return;
+    renderInstance.DrawLetterboxedTexture(tex);
+}
 
 // Pixels to units conversion, assigned values on initialization of rendersystem
 float RenderSystem::pixelsPerUnit;
@@ -512,7 +786,13 @@ void RenderSystem::Initialize() {
         std::cout << "  Size: " << sp.width << "x" << sp.height << "\n";
     }*/
 
-    TestOpenVideo();
+
+
+    //TestOpenVideo();
+
+    CutscenePlayer gCutscene;
+    gCutscene.Init("../Assets/Intro.mp4");
+    
 }
 
 void RenderSystem::Update(float dt) {
