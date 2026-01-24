@@ -30,7 +30,6 @@
  */
 
 
-#pragma once
 #include "EnemySystem.h"
 #include "MovementSystem.h"
 #include "Registry.h"
@@ -38,330 +37,415 @@
 #include "Remath.h"
 #include "BehaviourFCT.h"
 #include "LogicSystem.h"
-#include "GameScripts.h"
-#include "CoreEngine.h"
 #include "SceneManager.h"
-#include "CollisionManager.h"
+#include "Enemy.h"
+#include <unordered_map>
 
-// Temporary const values
-static constexpr float DETECT_RADIUS = 300.f; // detection radius
-static constexpr float LOSE_RADIUS = 360.f;  // hysteresis
-static constexpr float STOP_DISTANCE = 8.f;    // arrive radius
-static constexpr float CHASE_SPEED = 300.f;  // units/sec
+static constexpr float DETECT_RADIUS = 300.f;
+static constexpr float LOSE_RADIUS = 360.f;
+static constexpr float STOP_DISTANCE = 8.f;
 
-// Roam constants
-static constexpr float ROAM_SINE_SPEED = 2.f; // "speed" (radians/sec, matches time*speed)
-static constexpr float ROAM_SPEED_MAX= 200.f;   // cap velocity (units/sec)
-static constexpr float ROAM_AMPLITUDE = 100.f;   // how far up/down when roaming
-static constexpr float EPS = 0.5f; // prevents jitter at the roaming boundary
+static constexpr float ROAM_SINE_SPEED = 2.f;
+static constexpr float ROAM_SPEED_MAX = 200.f;
+static constexpr float ROAM_AMPLITUDE = 100.f;
+static constexpr float ROAM_EPS = 0.5f;
 
-// Return constants
-static constexpr float RETURN_SPEED = 600.f; // units/sec
+static constexpr float CHASE_SPEED = 300.f;
+static constexpr float RETURN_SPEED = 600.f;
 
-// Internal enemy state check (no ECS included!!!)
-struct EnemyAIState
+static constexpr float MELEE_RANGE = 60.f;
+static constexpr float MELEE_COOLDOWN = 0.8f;
+static constexpr float MELEE_WINDUP = 0.15f;
+
+static constexpr float SHOOT_RANGE = 240.f;
+static constexpr float SHOOT_COOLDOWN = 1.2f;
+static constexpr float PROJECTILE_SPEED = 600.f;
+
+enum class AttackMode : unsigned int
 {
-	EnemyState state{ E_ROAMING };
-	float baseX{ 0.f };
-	float baseY{ 0.f };
-	float time{ 0.f };
-	bool basePosInitialized{ false };
-	bool movingUp{ true };
+	MELEE_ONLY,
+	PROJECTILE_ONLY
 };
 
-static std::unordered_map<Entity, EnemyAIState> e_state;
-
-// Helper to ensure MovementComponent exists and is configured
-static inline Movement::MovementComponent& EnsureMovement(Entity eID)
+enum class AIState : unsigned int
 {
-	//if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID))
-	//{
-	//	Registry::Get().Add_Component<Movement::MovementComponent>(eID, Movement::MovementComponent{});
-	//	Registry::Get().Get_Component<Movement::MovementComponent>(eID).SetMoveType(Movement::MOVE_VELOCITY); // ensure movement by velocity
-	//}
-	auto& mv = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
-	mv.SetMoveType(Movement::MOVE_POSITION);
-	return mv;
+	ROAMING,
+	CHASING,
+	ATTACKING,
+	COOLDOWN,
+	RETURNING
+};
+
+struct EnemyRuntime
+{
+	AIState state{ AIState::ROAMING };
+
+	AttackMode attackMode{ AttackMode::PROJECTILE_ONLY };
+
+	// base position
+	Vec2 basePos{ 0.f, 0.f };
+	bool baseSet{ false };
+
+	// roam time
+	float t{ 0.f };
+
+	// cooldown
+	float cooldown{ 0.f };
+
+	// ranged
+	float shootTimer{ 0.f };
+	int ammo{ 1 };
+
+	float windup{ 0.f };
+	bool hitQueued{ false };
+
+	bool didAttack{ false };
+};
+
+static std::unordered_map<Entity, EnemyRuntime> g_ai;
+
+static inline bool HasTransform(Entity e)
+{
+	return e != INVALID_ENTITY && Registry::Get().Has_Component<TransformComponent>(e);
 }
 
-// Helper to set velocity for entity (normalizes direction internally)
-static inline void SetVelocity(Entity eID, Vec2 dir, float speed, bool isMoving)
+static inline Vec2 GetPos(Entity e)
 {
-	auto& mv = EnsureMovement(eID);
+	auto& tr = Registry::Get().Get_Component<TransformComponent>(e);
+	return { tr.pos.x, tr.pos.y };
+}
 
-	// Normalize defensively
-	const float m2 = RG_LengthSquared(dir);
-	if (isMoving && m2 > 0.f)
+static inline float DistSq(Vec2 a, Vec2 b)
+{
+	return RG_DistanceSquared(a, b);
+}
+
+static inline Movement::MovementComponent& GetMovement(Entity e)
+{
+	return Registry::Get().Get_Component<Movement::MovementComponent>(e);
+}
+
+static inline void ApplyVelocity(Entity e, Vec2 desiredDir, float speed, bool moving)
+{
+	auto& mv = GetMovement(e);
+	mv.SetMoveType(Movement::MOVE_POSITION);
+
+	if (!moving || RG_LengthSquared(desiredDir) <= 0.0001f)
 	{
-		const float inv = 1.f / RG_Sqrt(m2);
-		dir.x *= inv; dir.y *= inv;
+		mv.SetMovementDirection({ 0.f, 0.f });
+		mv.SetMoveSpeed(0.f);
+		mv.SetIsMoving(false);
+		mv.SetInputDirection(Movement::MOVE_NONE);
+		return;
 	}
-	else if (!isMoving || m2 == 0.f)
-	{
-		dir = { 0.f, 0.f };
-		speed = 0.f;
-		isMoving = false;
-	}
+
+	float len2 = RG_LengthSquared(desiredDir);
+	float inv = 1.f / RG_Sqrt(len2);
+	Vec2 dir = { desiredDir.x * inv, desiredDir.y * inv };
 
 	mv.SetInputDirection(Movement::MOVE_NONE);
 	mv.SetMovementDirection(dir);
 	mv.SetMoveSpeed(speed);
-	mv.SetIsMoving(isMoving);
+	mv.SetIsMoving(true);
 }
 
-// Enemy chasing player (E_CHASING)
-// Movement implemented via MovementComponent
-void ChasePlayer(Entity selectID, Entity targetID, float& dt)
+static inline Entity FindPlayer()
 {
-	if (dt <= 0.f || targetID == INVALID_ENTITY) return;
-	if (!Registry::Get().Has_Component<TransformComponent>(selectID) ||
-		!Registry::Get().Has_Component<TransformComponent>(targetID))
-		return;
-
-	// Only continue if enemy state is E_CHASING
-	auto st = e_state.find(selectID);
-	if (st == e_state.end() || st->second.state != E_CHASING) {
-		return;
-	}
-
-	auto& eTrans = Registry::Get().Get_Component<TransformComponent>(selectID);
-	auto& pTrans = Registry::Get().Get_Component<TransformComponent>(targetID);
-
-	const float dx = pTrans.pos.x - eTrans.pos.x;
-	const float dy = pTrans.pos.y - eTrans.pos.y;
-	const float dist = dx * dx + dy * dy;
-	const float stopDist = STOP_DISTANCE * STOP_DISTANCE;
-
-	if (dist <= stopDist) {
-		// Stop movement with MovementComponent
-		SetVelocity(selectID, { 0.f, 0.f }, 0.f, false);
-		return;
-	}
-
-	// Determine movement with MovementComponent
-	SetVelocity(selectID, { dx, dy }, CHASE_SPEED, true);
-
-	// Set facing
-	// eTrans.rot = static_cast<float>(std::atan2(dy, dx) * (180.0 / RG_PI));
-}
-
-// Enemy roaming around (E_ROAMING)
-// Movement implemented via MovementComponent
-void RoamAround(Entity eID, float& dt)
-{
-	if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
-
-	// Only continue if enemy state is E_ROAMING
-	auto& st = e_state[eID];
-	if (st.state != E_ROAMING) return;
-
-	// Ensure can push velocity intent
-	EnsureMovement(eID);
-
-	st.time += dt;
-
-	const float omega = ROAM_SINE_SPEED;
-	const float amp = ROAM_AMPLITUDE;
-	const float vy = amp * omega * std::cos(st.time * omega);
-	const float absVy = std::fabs(vy);
-
-	// if close enough to boundary, stop this frame
-	if (absVy < EPS)
+	for (auto& [entity, comp] : Registry::Get().Get_ComponentMap<TagComponent>())
 	{
-		SetVelocity(eID, { 0.f, 0.f }, 0.f, false);
-		return;
+		if (comp.tag == T_PLAYER && HasTransform(entity))
+			return entity;
 	}
-
-	const float dirY = (vy > 0.f) ? 1.f : -1.f;
-	const float appliedSpeed = std::min(absVy, ROAM_SPEED_MAX);
-
-	// Set movement velocity via MovementComponent
-	SetVelocity(eID, { 0.f, dirY }, appliedSpeed, true);
+	return INVALID_ENTITY;
 }
 
-// Enemy returning to base position (E_RETURNING)
-// Movement implemented via MovementComponent
-void ReturnToBase(Entity eID, float& dt)
+static inline void ApplyMeleeDamage(Entity enemy, Entity target)
 {
-	if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
+	(void)enemy; (void)target;
+	std::cout << "[ENEMY] Melee hit target!\n";
+}
 
-	auto it = e_state.find(eID);
-	if (it == e_state.end() || it->second.state != E_RETURNING) return;
+static inline void SpawnEnemyProjectile(Entity enemy, Vec2 pos, Vec2 dir, float speed)
+{
+	(void)enemy; (void)pos; (void)dir; (void)speed;
+	std::cout << "[ENEMY] Shot projectile!\n";
+}
 
-	auto& st = it->second;
-	auto& tr = Registry::Get().Get_Component<TransformComponent>(eID);
-
-	const float dx = st.baseX - tr.pos.x;
-	const float dy = st.baseY - tr.pos.y;
-	const float distToBase = dx * dx + dy * dy;
-
-	// When enemy arrives back to base position
-	if (distToBase <= EPS * EPS) {
-		SetVelocity(eID, { 0.f,0.f }, 0.f, /*moving=*/false);
-		return;
-	}
-
-	const float dist = std::sqrt(distToBase);
-	const float maxSpeedThisFrame = dist / std::max(dt, 1e-6f);
-	const float appliedSpeed = std::min(RETURN_SPEED, maxSpeedThisFrame);
-
-	SetVelocity(eID, { dx, dy }, appliedSpeed, /*moving=*/true);
+static inline AttackMode DecideAttackMode(Entity e)
+{
+	(void)e;
+	return AttackMode::PROJECTILE_ONLY;
 }
 
 namespace EnemyAI
 {
-	// Helper to find player entity
-	static inline Entity FindPlayer()
-	{
-		for (auto& [entity, comp] : Registry::Get().Get_ComponentMap<TagComponent>())
-		{
-			if (comp.tag == T_PLAYER && Registry::Get().Has_Component<Movement::MovementComponent>(entity))
-			{
-				return entity;
-			}
-		}
-		return INVALID_ENTITY;
-	}
-
 	inline void Start(Entity eID)
 	{
-		auto& st = e_state[eID];
-		if (Registry::Get().Has_Component<TransformComponent>(eID))
-		{
-			auto& tr = Registry::Get().Get_Component<TransformComponent>(eID);
-			st.baseX = tr.pos.x;
-			st.baseY = tr.pos.y;
-			st.basePosInitialized = true;
-			st.time = 0.f;
-			st.state = E_ROAMING;
-		}
-		EnsureMovement(eID);
-		std::cout << "Enemy script started" << std::endl;
+		if (!HasTransform(eID)) return;
+		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
+
+		auto& st = g_ai[eID];
+		st.state = AIState::ROAMING;
+		st.t = 0.f;
+		st.cooldown = 0.f;
+		st.shootTimer = 0.f;
+		st.ammo = 1;
+		st.windup = 0.f;
+		st.hitQueued = false;
+		st.didAttack = false;
+
+		st.attackMode = DecideAttackMode(eID);
+
+		st.basePos = GetPos(eID);
+		st.baseSet = true;
+
+		ApplyVelocity(eID, { 0.f,0.f }, 0.f, false);
 	}
 
 	inline void Update(Entity eID, float dt)
 	{
-		(void)dt;
+		if (dt <= 0.f) return;
+		if (!HasTransform(eID)) return;
 		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
 
-		auto& tr = Registry::Get().Get_Component<TransformComponent>(eID);
-		auto& st = e_state[eID];
-
-		if (!st.basePosInitialized)
+		auto it = g_ai.find(eID);
+		if (it == g_ai.end())
 		{
-			st.baseX = tr.pos.x;
-			st.baseY = tr.pos.y;
-			st.basePosInitialized = true;
-			st.time = 0.f;
-			st.state = E_ROAMING;
+			Start(eID);
+			it = g_ai.find(eID);
+			if (it == g_ai.end()) return;
 		}
+		auto& st = it->second;
 
-		// Get player and distance between enemy and player
+		// timers
+		st.t += dt;
+		st.cooldown = std::max(0.f, st.cooldown - dt);
+		st.shootTimer = std::max(0.f, st.shootTimer - dt);
+		st.windup = std::max(0.f, st.windup - dt);
+
 		const Entity player = FindPlayer();
-		float dist = std::numeric_limits<float>::infinity();
-		if (player != INVALID_ENTITY)
+		const bool hasPlayer = HasTransform(player);
+
+		const Vec2 selfPos = GetPos(eID);
+		const Vec2 basePos = st.basePos;
+
+		const float detectSq = DETECT_RADIUS * DETECT_RADIUS;
+		const float loseSq = LOSE_RADIUS * LOSE_RADIUS;
+
+		float dPlayerSq = std::numeric_limits<float>::infinity();
+		Vec2 playerPos{ 0.f,0.f };
+		if (hasPlayer)
 		{
-			auto& p = Registry::Get().Get_Component<TransformComponent>(player);
-			dist = RG_DistanceSquared(tr.pos, p.pos);
+			playerPos = GetPos(player);
+			dPlayerSq = DistSq(selfPos, playerPos);
 		}
 
-		const float detectRad = DETECT_RADIUS * DETECT_RADIUS;	// check if player is within detection radius
-		const float loseRad = LOSE_RADIUS * LOSE_RADIUS;		// check if player is outside of lose radius
-
-		// For E_RETURNING
-		Vec2 basePos = { st.baseX, st.baseY };
-		Vec2 currPos = { tr.pos.x, tr.pos.y };
-		const float distToBase = RG_DistanceSquared(currPos, basePos);
-
-		// Enemy state transitions
+		// attack range
+		const float atkRange = (st.attackMode == AttackMode::MELEE_ONLY) ? MELEE_RANGE : SHOOT_RANGE;
+		const float atkSq = atkRange * atkRange;
+		if (hasPlayer)
+		{
+			std::cout << "[DBG] e=" << (int)eID
+				<< " state=" << (int)st.state
+				<< " d=" << std::sqrt(dPlayerSq)
+				<< " atk=" << std::sqrt(atkSq)
+				<< " mode=" << (st.attackMode == AttackMode::MELEE_ONLY ? "MELEE" : "RANGED")
+				<< "\n";
+		}
 		switch (st.state)
 		{
-			case E_ROAMING:
-				// std::cout << "Ghoul is ROAMING!" << std::endl;
-				if (player != INVALID_ENTITY && dist <= detectRad)
+		case AIState::ROAMING:
+			if (hasPlayer && dPlayerSq <= detectSq) st.state = AIState::CHASING;
+			break;
+
+		case AIState::CHASING:
+			if (!hasPlayer || dPlayerSq > loseSq)
+			{
+				st.state = AIState::RETURNING;
+			}
+			else if (dPlayerSq <= atkSq)
+			{
+				st.state = AIState::ATTACKING;
+				st.windup = 0.f;
+				st.hitQueued = false;
+				st.didAttack = false;
+			}
+			break;
+
+		case AIState::ATTACKING:
+			if (!hasPlayer || dPlayerSq > loseSq)
+			{
+				st.state = AIState::RETURNING;
+			}
+			else if (dPlayerSq > atkSq)
+			{
+				st.state = AIState::CHASING;
+				st.windup = 0.f;
+				st.hitQueued = false;
+				st.didAttack = false;
+			}
+			else
+			{
+				if (st.didAttack)
 				{
-					st.state = E_CHASING;
+					st.state = AIState::COOLDOWN;
 				}
-				break;
-			case E_CHASING:
-				std::cout << "Ghoul is CHASING YOU!" << std::endl;
-				if (player == INVALID_ENTITY || dist > loseRad)
+			}
+			break;
+
+
+		case AIState::COOLDOWN:
+			if (st.cooldown <= 0.f)
+			{
+				if (st.attackMode == AttackMode::PROJECTILE_ONLY) st.ammo = 1;
+
+				st.state = (hasPlayer && dPlayerSq <= atkSq) ? AIState::ATTACKING : AIState::CHASING;
+
+				if (st.state == AIState::ATTACKING)
 				{
-					st.state = E_RETURNING;
+					st.windup = 0.f;
+					st.hitQueued = false;
 				}
+			}
+			break;
+
+		case AIState::RETURNING:
+		{
+			const float dBaseSq = DistSq(selfPos, basePos);
+			if (hasPlayer && dPlayerSq <= detectSq) st.state = AIState::CHASING;
+			else if (dBaseSq <= ROAM_EPS * ROAM_EPS) st.state = AIState::ROAMING;
+			break;
+		}
+
+		default:
+			st.state = AIState::ROAMING;
+			break;
+		}
+
+		switch (st.state)
+		{
+		case AIState::ROAMING:
+		{
+			const float omega = ROAM_SINE_SPEED;
+			const float amp = ROAM_AMPLITUDE;
+			const float vy = amp * omega * std::cos(st.t * omega);
+			const float absVy = std::fabs(vy);
+
+			if (absVy < ROAM_EPS)
+			{
+				ApplyVelocity(eID, { 0.f,0.f }, 0.f, false);
 				break;
-			case E_RETURNING:
-				std::cout << "Ghoul is RETURNING..." << std::endl;
-				if (player != INVALID_ENTITY && dist <= detectRad)
+			}
+
+			const float dirY = (vy > 0.f) ? 1.f : -1.f;
+			const float speed = std::min(absVy, ROAM_SPEED_MAX);
+			ApplyVelocity(eID, { 0.f, dirY }, speed, true);
+			break;
+		}
+
+		case AIState::CHASING:
+		{
+			if (!hasPlayer)
+			{
+				ApplyVelocity(eID, { 0.f,0.f }, 0.f, false);
+				break;
+			}
+
+			Vec2 to = { playerPos.x - selfPos.x, playerPos.y - selfPos.y };
+			if (DistSq(selfPos, playerPos) <= STOP_DISTANCE * STOP_DISTANCE)
+			{
+				ApplyVelocity(eID, { 0.f,0.f }, 0.f, false);
+			}
+			else
+			{
+				ApplyVelocity(eID, to, CHASE_SPEED, true);
+			}
+			break;
+		}
+
+		case AIState::ATTACKING:
+		{
+			ApplyVelocity(eID, { 0.f,0.f }, 0.f, false);
+
+			if (!hasPlayer) break;
+
+			if (!st.hitQueued)
+			{
+				st.windup = MELEE_WINDUP;
+				st.hitQueued = true;
+			}
+
+			if (st.windup <= 0.f)
+			{
+				Vec2 to = { playerPos.x - selfPos.x, playerPos.y - selfPos.y };
+				float len2 = RG_LengthSquared(to);
+				if (len2 > 0.0001f)
 				{
-					st.state = E_CHASING;
-					break;
+					if (st.attackMode == AttackMode::MELEE_ONLY)
+					{
+						ApplyMeleeDamage(eID, player);
+						st.cooldown = MELEE_COOLDOWN;
+						st.didAttack = true;
+					}
+					else
+					{
+						float inv = 1.f / RG_Sqrt(len2);
+						Vec2 dir = { to.x * inv, to.y * inv };
+
+						if (st.shootTimer <= 0.f && st.ammo > 0)
+						{
+							SpawnEnemyProjectile(eID, selfPos, dir, PROJECTILE_SPEED);
+							st.ammo -= 1;
+							st.shootTimer = SHOOT_COOLDOWN;
+							st.cooldown = SHOOT_COOLDOWN;
+							st.didAttack = true;
+						}
+					}
 				}
-				if (distToBase <= EPS * EPS)
-				{
-					st.state = E_ROAMING;
-				}
-				break;
-			default:
-				std::cout << "Ghoul is IDLING." << std::endl;
-				break;
+			}
+
+			break;
+		}
+
+		case AIState::COOLDOWN:
+			ApplyVelocity(eID, { 0.f,0.f }, 0.f, false);
+			break;
+
+		case AIState::RETURNING:
+		{
+			Vec2 toBase = { basePos.x - selfPos.x, basePos.y - selfPos.y };
+			ApplyVelocity(eID, toBase, RETURN_SPEED, true);
+			break;
+		}
+
+		default:
+			ApplyVelocity(eID, { 0.f,0.f }, 0.f, false);
+			break;
 		}
 	}
 
 	inline void End(Entity eID)
 	{
-		e_state.erase(eID);
+		g_ai.erase(eID);
 		if (Registry::Get().Has_Component<Movement::MovementComponent>(eID))
-		{
 			Registry::Get().Get_Component<Movement::MovementComponent>(eID).ResetFrameIntent();
-		}
-		std::cout << "Enemy script ended" << std::endl;
 	}
 }
 
 void EnemySystem::Initialize()
 {
-	{
-		BehaviourFCT enemy;
-		enemy.Init = [](Entity e) { EnemyAI::Start(e); };
-		enemy.Update = [](Entity e, float dt) { EnemyAI::Update(e, dt); };
-		enemy.End = [](Entity e) { EnemyAI::End(e); };
-		LogicSystem::Get().RegisterScript("ManfredEnemy", enemy, ScriptID::GHOUL);
-	}
-
-	// Subscribe to ProjectileHitEnemy event (just prints for now as placeholder)
-	EventBus::Get().Subscribe<TriggerEvent>([](const TriggerEvent& e) {
-		if (e.eventName == "ProjectileHitEnemy") {
-			std::cout << "[COLLISION] Projectile hit Enemy! YIPPEE!" << std::endl;
-		}
-	});
+	BehaviourFCT enemy;
+	enemy.Init = [](Entity e) { EnemyAI::Start(e); };
+	enemy.Update = [](Entity e, float dt) { EnemyAI::Update(e, dt); };
+	enemy.End = [](Entity e) { EnemyAI::End(e); };
+	LogicSystem::Get().RegisterScript("ManfredEnemy", enemy, ScriptID::GHOUL);
 }
 
 void EnemySystem::Update(float dt)
 {
 	(void)dt;
-	SceneManager& sm = SceneManager::Get();
-	// check if game paused
-	if (sm.IsPaused())
-	{
-		return;  // Don't update enemy movement or footsteps when paused
-	}	
-
-	for (auto& [entity, comp] : m_registry.Get_ComponentMap<TagComponent>())
-	{
-		if (!m_registry.Has_Component<TransformComponent>(entity))
-			continue;
-		if (comp.tag == T_ENEMY)
-		{
-			// THIS IS AN ENEMY, DO ENEMY THINGS
-			//ChasePlayer(entity, EnemyAI::FindPlayer(), dt);
-			//RoamAround(entity, dt);
-			//ReturnToBase(entity, dt);
-		}
-	}
 }
 
 void EnemySystem::Shutdown()
 {
-
 }
