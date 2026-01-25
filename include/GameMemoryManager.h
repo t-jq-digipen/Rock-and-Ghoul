@@ -200,11 +200,17 @@ inline ProjectileData* GameMemoryManager::AllocateProjectile() {
     if (proj == nullptr) {
         std::cerr << "[GameMemoryManager] ERROR: Projectile pool exhausted!\n";
     }
+    else {
+        std::cout << "RUNTIME: Booked projectile memory from pre-allocated pool (address: "
+            << proj << ")\n";
+    }
     return proj;
 }
 
 inline void GameMemoryManager::FreeProjectile(ProjectileData* proj) {
     if (proj != nullptr) {
+        std::cout << "RUNTIME: Freed projectile memory back to pool (address: "
+            << proj << ")\n";
         projectilePool.Destroy(proj);
     }
 }
@@ -214,11 +220,17 @@ inline AOEData* GameMemoryManager::AllocateAOE() {
     if (aoe == nullptr) {
         std::cerr << "[GameMemoryManager] ERROR: AOE pool exhausted!\n";
     }
+    else {
+        std::cout << "RUNTIME: Booked AOE memory from pre-allocated pool (address: "
+            << aoe << ")\n";
+    }
     return aoe;
 }
 
 inline void GameMemoryManager::FreeAOE(AOEData* aoe) {
     if (aoe != nullptr) {
+        std::cout << "RUNTIME: Freed AOE memory back to pool (address: "
+            << aoe << ")\n";
         aoePool.Destroy(aoe);
     }
 }

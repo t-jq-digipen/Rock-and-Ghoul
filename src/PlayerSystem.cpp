@@ -685,6 +685,11 @@ namespace RockScript {
 		{
 		case SpellType::SOUNDWAVE:
 		{
+			// ====================================================================
+			// LOAD TIME: Memory was already allocated at game startup
+			// RUNTIME: Programmer simply "books" memory from the pre-allocated pool
+			// NO malloc/new calls happen here just getting memory from the pool
+			// ====================================================================
 			// Create visual entity (for rendering/physics)
 			Entity wave = JsonLoad::LoadEntityFromFile(
 				FilePath::PREFABS_FOLDER + "SoundwaveFX.json",
@@ -883,7 +888,8 @@ namespace RockScript {
 
 					// Remove if expired
 					if (spellData->lifetime <= 0.0f || !spellData->active) {
-						std::cout << "Soundwave expired! Memory returned to POOL.\n";
+						std::cout << "Soundwave expired! Returning memory " << spellData << " to POOL for reuse.\n";
+
 
 						registry.Remove_Entity(it->ecsEntity);
 						PooledEntityFactory::Get().DestroyEntity(it->poolEntity);
