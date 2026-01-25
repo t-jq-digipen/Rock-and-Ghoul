@@ -398,8 +398,11 @@ void TestOpenVideo() {
 
 //AVFormatContext* pFormatContext = avformat_alloc_context();
 
+Render& renderInstance = Render::GetInstance();
 
+//Reorganise cutscene stuff below
 struct CutscenePlayer {
+
     // FFmpeg
     AVFormatContext* fmt = nullptr;
     AVCodecContext* dec = nullptr;
@@ -412,35 +415,42 @@ struct CutscenePlayer {
     uint8_t* dstData[4] = { nullptr };
     int dstLinesize[4] = { 0 };
     int w = 0, h = 0;
+    AVPixelFormat lastSrcFmt = AV_PIX_FMT_NONE;
+
 
     // OpenGL
     GLuint tex = 0;
     bool texInited = false;
 
     // Playback timing
-    double fps = 30.0;        // start with hardcode
+    double fps = 24.0;        // start with hardcode (i follow the intro2 mp4 fps, 24fps)
     double acc = 0.0;
     bool finished = false;
 
+
     bool Init(const char* path);
-    void Update(double dt);   // decode+upload as needed
-    void Render();            // draw tex
-    void Shutdown();
+    void Update(double dt);   // decode and upload as needed
+    void Render() const;            // draw texture
+    void Shutdown();    //cleanup all once cutscene sectuon is done
+
 };
 
+static CutscenePlayer gCutscene;
+bool cutsceneActive;   // show cutscene instead of gameplay
 
 bool CutscenePlayer::Init(const char* path)
 {
     // Clean any previous state just in case (optional but helpful)
     Shutdown();
 
+    //lambda that uses the error handling that ffmpeg supports
     auto PrintErr = [](int err) {
         char buf[AV_ERROR_MAX_STRING_SIZE]{};
         av_strerror(err, buf, sizeof(buf));
         std::cout << buf;
         };
 
-    // 1) Open container
+    // Open container
     int r = avformat_open_input(&fmt, path, nullptr, nullptr);
     if (r < 0) {
         std::cout << "avformat_open_input failed: ";
@@ -449,7 +459,7 @@ bool CutscenePlayer::Init(const char* path)
         return false;
     }
 
-    // 2) Read stream metadata (needed to locate streams/codecs cleanly)
+    // Read stream metadata (needed to locate streams/codecs)
     r = avformat_find_stream_info(fmt, nullptr);
     if (r < 0) {
         std::cout << "avformat_find_stream_info failed: ";
@@ -458,7 +468,7 @@ bool CutscenePlayer::Init(const char* path)
         return false;
     }
 
-    // 3) Find the video stream index
+    // Find the video stream index
     videoStreamIndex = -1;
     for (unsigned i = 0; i < fmt->nb_streams; ++i) {
         AVStream* s = fmt->streams[i];
@@ -473,7 +483,7 @@ bool CutscenePlayer::Init(const char* path)
         return false;
     }
 
-    // 4) Find decoder for that stream
+    // Find decoder for that stream
     AVCodecParameters* par = fmt->streams[videoStreamIndex]->codecpar;
     const AVCodec* codec = avcodec_find_decoder(par->codec_id);
     if (!codec) {
@@ -481,14 +491,14 @@ bool CutscenePlayer::Init(const char* path)
         return false;
     }
 
-    // 5) Create decoder context
+    // Create decoder context
     dec = avcodec_alloc_context3(codec);
     if (!dec) {
         std::cout << "Init failed: avcodec_alloc_context3 returned null\n";
         return false;
     }
 
-    // 6) Copy stream parameters into decoder context
+    // Copy stream parameters into decoder context
     r = avcodec_parameters_to_context(dec, par);
     if (r < 0) {
         std::cout << "avcodec_parameters_to_context failed: ";
@@ -497,7 +507,7 @@ bool CutscenePlayer::Init(const char* path)
         return false;
     }
 
-    // 7) Open decoder
+    // Open decoder
     r = avcodec_open2(dec, codec, nullptr);
     if (r < 0) {
         std::cout << "avcodec_open2 failed: ";
@@ -506,7 +516,7 @@ bool CutscenePlayer::Init(const char* path)
         return false;
     }
 
-    // 8) Allocate reusable packet + frame
+    // Allocate reusable packet + frame
     pkt = av_packet_alloc();
     frm = av_frame_alloc();
     if (!pkt || !frm) {
@@ -514,22 +524,24 @@ bool CutscenePlayer::Init(const char* path)
         return false;
     }
 
-    // Optional: print info
-    std::cout << "Cutscene Init OK\n";
-    std::cout << "  path: " << path << "\n";
-    std::cout << "  videoStreamIndex: " << videoStreamIndex << "\n";
-    std::cout << "  codec: " << (codec->long_name ? codec->long_name : codec->name) << "\n";
+    // print info sanity check for myself
+    std::cout << "[CUTSCENE INIT]: SUCCESS\n";
+    std::cout << "Path: " << path << "\n";
+    std::cout << "VideoStreamIndex: " << videoStreamIndex << "\n";
+    std::cout << "Codec: " << (codec->long_name ? codec->long_name : codec->name) << "\n";
 
     finished = false;
     texInited = false;
-    // sws/dstData will be initialized lazily in Update() after first decoded frame
 
     return true;
 }
 
 
 void CutscenePlayer::Update(double dt) {
-    if (finished) return;
+
+    if (finished) {
+        return;
+    }
 
     acc += dt;
     const double frameTime = 1.0 / fps;
@@ -537,13 +549,18 @@ void CutscenePlayer::Update(double dt) {
     while (acc >= frameTime) {
         acc -= frameTime;
 
-        // decode exactly ONE frame and upload it
-        // (loop reading packets until you get a frame)
+        // decode exactly one frame and upload it
+        // loop reading packets until you get a frame
         bool gotFrame = false;
 
         while (!gotFrame) {
+
             int r = av_read_frame(fmt, pkt);
-            if (r < 0) { finished = true; return; }
+
+            if (r < 0) { 
+                finished = true; 
+                return; 
+            }
 
             if (pkt->stream_index != videoStreamIndex) {
                 av_packet_unref(pkt);
@@ -552,10 +569,16 @@ void CutscenePlayer::Update(double dt) {
 
             r = avcodec_send_packet(dec, pkt);
             av_packet_unref(pkt);
-            if (r < 0) { finished = true; return; }
+
+            if (r < 0) { 
+                finished = true; 
+                return; 
+            }
 
             while (true) {
+
                 r = avcodec_receive_frame(dec, frm);
+
                 if (r == 0) {
                     gotFrame = true;
 
@@ -577,7 +600,19 @@ void CutscenePlayer::Update(double dt) {
                         texInited = true;
                     }
 
-                    sws_scale(sws, frm->data, frm->linesize, 0, h, dstData, dstLinesize);
+                    //sws_scale(sws, frm->data, frm->linesize, 0, h, dstData, dstLinesize);
+                    
+                    // need to flip the image, cause ffmpeg and opengl texture origin mismatch
+                    // flip vertically during conversion (FFmpeg top-left map to GL bottom-left)
+                    uint8_t* dstSlice[4] = { dstData[0], dstData[1], dstData[2], dstData[3] };
+                    int      dstStride[4] = { dstLinesize[0], dstLinesize[1], dstLinesize[2], dstLinesize[3] };
+
+                    // Start writing at last row, and walk upward by using negative stride
+                    dstSlice[0] = dstData[0] + (h - 1) * dstLinesize[0];
+                    dstStride[0] = -dstLinesize[0];
+
+                    sws_scale(sws, frm->data, frm->linesize, 0, h, dstSlice, dstStride);
+
 
                     glBindTexture(GL_TEXTURE_2D, tex);
                     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -589,8 +624,13 @@ void CutscenePlayer::Update(double dt) {
                     break;
                 }
 
-                if (r == AVERROR(EAGAIN) || r == AVERROR_EOF) break;
-                finished = true; return;
+                if (r == AVERROR(EAGAIN) || r == AVERROR_EOF) {
+                    break;
+                }
+
+                finished = true; 
+                return;
+
             }
         }
     }
@@ -598,16 +638,46 @@ void CutscenePlayer::Update(double dt) {
 
 
 
+//draw texture every frame, put in render update?? idk uhhh
+void CutscenePlayer::Render() const {
+    if (!texInited) {
+        return;
+    }
+
+    renderInstance.DrawLetterboxedTexture(tex);
+}
+
+
 //cleanup for cutscene
 void CutscenePlayer::Shutdown() {
-    if (dstData[0]) av_freep(&dstData[0]);
-    if (sws) sws_freeContext(sws);
-    if (frm) av_frame_free(&frm);
-    if (pkt) av_packet_free(&pkt);
-    if (dec) avcodec_free_context(&dec);
-    if (fmt) avformat_close_input(&fmt);
+    if (dstData[0]) {
+        av_freep(&dstData[0]);
+    }
 
-    if (tex) glDeleteTextures(1, &tex);
+    if (sws) {
+        sws_freeContext(sws);
+    }
+
+    if (frm) {
+        av_frame_free(&frm);
+    }
+
+    if (pkt) {
+        av_packet_free(&pkt);
+    }
+
+    if (dec) {
+        avcodec_free_context(&dec);
+    }
+
+    if (fmt) {
+        avformat_close_input(&fmt);
+    }
+
+    if (tex) {
+        glDeleteTextures(1, &tex);
+    }
+
     tex = 0;
     texInited = false;
 }
@@ -619,17 +689,15 @@ void CutscenePlayer::Shutdown() {
 
 
 
-Render& renderInstance = Render::GetInstance();
+
+
+//Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
 static std::vector<GLuint> s_backgroundTextures;
 static std::vector<std::string> s_backgroundTexturePaths;
 
 
-//draw texture every frame, put in render update?? idk uhhh
-void CutscenePlayer::Render() {
-    if (!texInited) return;
-    renderInstance.DrawLetterboxedTexture(tex);
-}
+
 
 // Pixels to units conversion, assigned values on initialization of rendersystem
 float RenderSystem::pixelsPerUnit;
@@ -790,8 +858,10 @@ void RenderSystem::Initialize() {
 
     //TestOpenVideo();
 
-    CutscenePlayer gCutscene;
-    gCutscene.Init("../Assets/Intro.mp4");
+    //CutscenePlayer gCutscene;
+    gCutscene.Init("../Assets/Intro2.mp4");
+    cutsceneActive = true;
+
     
 }
 
@@ -804,6 +874,45 @@ void RenderSystem::Update(float dt) {
     Render& renderer = Render::GetInstance();
     
     bool camcheck = renderer.useCamera;
+
+
+
+    //idk where to put this for cutscene stuff
+    if (cutsceneActive)
+    {
+        //Decode/upload based on dt (progress playback)
+        gCutscene.Update(dt);
+
+        //Present to the main framebuffer (NOT your scene FBO)
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, GLApp::width, GLApp::height);
+
+        // renderer.ApplyLetterboxViewport();
+
+        renderer.ClearBackground({ 0.f, 0.f, 0.f, 1.f });
+
+        // Draw the cutscene in a projection/state that won't be overwritten
+        // Important: avoid camera projection for this.
+        auto oldCam = renderer.useCamera;
+        renderer.useCamera = false;
+        renderer.SetProjectionType(ProjectionType::UI);
+
+        gCutscene.Render(); // calls DrawLetterboxedTexture(tex)
+
+        renderer.SetProjectionType(ProjectionType::WORLD);
+        renderer.useCamera = oldCam;
+
+        //End condition
+        if (gCutscene.finished)
+        {
+            cutsceneActive = false;
+            gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
+        }
+
+        return; // <<< SUPER IMPORTANT: don't run the rest of RenderSystem
+    }
+
+
 
 #ifndef NO_IMGUI
     if (ImGuiSystem::guiEnabled) {
