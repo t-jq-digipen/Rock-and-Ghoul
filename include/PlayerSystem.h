@@ -20,6 +20,7 @@
 #include "BehaviourFCT.h"   // BehaviourFCT
 #include <iostream>
 #include <unordered_map>
+#include "PooledEntityFactory.h"
 
 enum PlayerState : unsigned int {
     PS_IDLE,
@@ -60,7 +61,7 @@ private:
     void UpdateFootsteps(Entity eID, float dt);
     void PlayFootstep(Entity eID);
     // static inline Movement::InputDirection VelToDir(float x, float y);
-
+    std::vector<PooledEntity> activeProjectiles;
     // static inline void NormalizeDiagonalMovement(float& x, float& y);
 
 public:

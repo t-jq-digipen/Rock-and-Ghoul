@@ -435,12 +435,16 @@ source_group("others" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TextSystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/TextSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MemoryPool.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameMemoryManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/PooledEntityFactory.h
     
 )
 
 source_group("others\\EventBus" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EventBus.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EventBus.h
+
 )
 source_group("Game\\Main Menu" FILES 
    )

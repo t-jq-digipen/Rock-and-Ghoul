@@ -147,6 +147,14 @@ namespace PlayerMove {
 
 namespace RockScript {
 	// Constants
+	// 
+	struct ActiveSpell {
+        Entity ecsEntity;        // Visual entity from JsonLoad
+        PooledEntity poolEntity; // Pool data for logic
+        float lifetime;
+    };
+    
+    static std::vector<ActiveSpell> activeSpells;
 	// IDs for arrow displays: [slot][direction]
 	// Slot 0 (leftmost): IDs 10-13 (up, down, left, right)
 	// Slot 1 (middle): IDs 14-17 (up, down, left, right)  
@@ -677,31 +685,71 @@ namespace RockScript {
 		{
 		case SpellType::SOUNDWAVE:
 		{
+			// Create visual entity (for rendering/physics)
+			Entity wave = JsonLoad::LoadEntityFromFile(
+				FilePath::PREFABS_FOLDER + "SoundwaveFX.json",
+				trans.pos.x, trans.pos.y
+			);
 
-			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y);
-			Entity wave = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "SoundwaveFX.json", trans.pos.x, trans.pos.y);
-			if (!faceRight)
-			{
+			// Create pool entity using THE SAME FILE
+			float dirX = faceRight ? 1.0f : -1.0f;
+			PooledEntity poolWave = PooledEntityFactory::Get().CreateProjectile(
+				FilePath::PREFABS_FOLDER + "SoundwaveFX.json",  // SAME FILE!
+				trans.pos.x,
+				trans.pos.y,
+				dirX,
+				0.0f
+			);
+
+			// Link them together
+			if (poolWave.active) {
+				ActiveSpell spelled;
+				spelled.ecsEntity = wave;
+				spelled.poolEntity = poolWave;
+				spelled.lifetime = 2.0f;
+				activeSpells.push_back(spelled);
+			}
+
+			// Handle flipping
+			if (!faceRight && registry.Has_Component<Physics::PhysicsComponent>(wave)) {
 				Physics::PhysicsComponent& phyComp = registry.Get_Component<Physics::PhysicsComponent>(wave);
 				Vec2 vel = phyComp.Get_Vel();
 				vel.x = -vel.x;
 				phyComp.Set_Vel(vel);
 				registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
 			}
+
 			std::cout << "Soundwave cast!\n";
-			//ApplyElementToProjectile(proj);
-			// to start animation
 			wavetimer = 0.f;
 			break;
 		}
 		case SpellType::AOE:
 		{
-
-			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
+			// Create visual entity (for rendering/physics)
 			float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
-			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "AoeFX.json", posx, trans.pos.y + 400.f);
+			Entity aoeVisual = JsonLoad::LoadEntityFromFile(
+				FilePath::PREFABS_FOLDER + "AoeFX.json",
+				posx,
+				trans.pos.y + 400.f
+			);
+
+			// Create pool entity using THE SAME FILE
+			PooledEntity poolAOE = PooledEntityFactory::Get().CreateAOE(
+				FilePath::PREFABS_FOLDER + "AoeFX.json",
+				posx,
+				trans.pos.y + 400.f
+			);
+
+			// Link them together
+			if (poolAOE.active) {
+				ActiveSpell spelled;
+				spelled.ecsEntity = aoeVisual;
+				spelled.poolEntity = poolAOE;
+				spelled.lifetime = 1.5f; // AOE duration
+				activeSpells.push_back(spelled);
+			}
+
 			std::cout << "AOE cast!\n";
-			//ApplyElementToProjectile(proj);
 			aoetimer = 0.f;
 			break;
 		}
@@ -729,6 +777,8 @@ namespace RockScript {
 			}
 			break;
 		}
+
+
 	}
 
 	inline void Start(Entity eID)
@@ -769,6 +819,13 @@ namespace RockScript {
 			{
 				CycleElement();
 			}
+			else if (e.key == GLFW_KEY_P)  // Press P to see pool stats
+			{
+				std::cout << "\n=== Memory Pool Stats (Press P) ===\n";
+				GameMemoryManager::Get().PrintStats();
+				PooledEntityFactory::Get().PrintStats();
+				std::cout << "====================================\n\n";
+			}
 			if (e.key == GLFW_KEY_1)
 				ActivateSpell(0, eID);
 			else if (e.key == GLFW_KEY_2)
@@ -802,7 +859,71 @@ namespace RockScript {
 
 	inline void Update(Entity eID, float dt) {
 		Registry& registry = Registry::Get();
+		// Update active spells
+		for (auto it = activeSpells.begin(); it != activeSpells.end();) {
+			it->lifetime -= dt;
 
+			// Check what type of spell this is
+			if (it->poolEntity.type == EntityType::PROJECTILE) {
+				// Get projectile pool data
+				ProjectileData* spellData = PooledEntityFactory::Get().GetPoolData<ProjectileData>(it->poolEntity);
+
+				if (spellData != nullptr) {
+					spellData->lifetime -= dt;
+
+					// DEBUG: Show projectile data
+					static float debugTimer = 0.0f;
+					debugTimer += dt;
+					if (debugTimer >= 0.5f) {
+						std::cout << "Soundwave from POOL - Lifetime: " << spellData->lifetime
+							<< "s, Damage: " << spellData->damage
+							<< ", Speed: " << spellData->velX << "\n";
+						debugTimer = 0.0f;
+					}
+
+					// Remove if expired
+					if (spellData->lifetime <= 0.0f || !spellData->active) {
+						std::cout << "Soundwave expired! Memory returned to POOL.\n";
+
+						registry.Remove_Entity(it->ecsEntity);
+						PooledEntityFactory::Get().DestroyEntity(it->poolEntity);
+
+						it = activeSpells.erase(it);
+						continue;
+					}
+				}
+			}
+			else if (it->poolEntity.type == EntityType::AOE) {
+				// Get AOE pool data
+				AOEData* aoeData = PooledEntityFactory::Get().GetPoolData<AOEData>(it->poolEntity);
+
+				if (aoeData != nullptr) {
+					aoeData->duration -= dt;
+
+					// DEBUG: Show AOE data
+					static float debugTimerAOE = 0.0f;
+					debugTimerAOE += dt;
+					if (debugTimerAOE >= 0.5f) {
+						std::cout << "AOE from POOL - Duration: " << aoeData->duration
+							<< "s, Damage: " << aoeData->damage
+							<< ", Radius: " << aoeData->radius << "\n";
+						debugTimerAOE = 0.0f;
+					}
+
+					// Remove if expired
+					if (aoeData->duration <= 0.0f || !aoeData->active) {
+						std::cout << "AOE expired! Memory returned to POOL.\n";
+
+						registry.Remove_Entity(it->ecsEntity);
+						PooledEntityFactory::Get().DestroyEntity(it->poolEntity);
+
+						it = activeSpells.erase(it);
+						continue;
+					}
+				}
+			}
+			++it;
+		}
 		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
 
 		auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
