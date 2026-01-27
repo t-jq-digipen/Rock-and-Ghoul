@@ -272,12 +272,17 @@ namespace Editor {
 
         }
     };
+    struct UndoContext {
+        Entity entity = INVALID_ENTITY;
+        bool enabled = false;
+    };
 
     struct Widget_Int {
         int* ref = nullptr;
         bool slider = false;
         int min = 0;
         int max = 0;
+        Entity ownerEntity = INVALID_ENTITY;
 
     };
 
@@ -286,6 +291,7 @@ namespace Editor {
         bool slider = false;
         float min = 0.f;
         float max = 0.f;
+        Entity ownerEntity = INVALID_ENTITY;
 
     };
 

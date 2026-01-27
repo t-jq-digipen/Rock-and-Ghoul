@@ -115,6 +115,9 @@ static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
 // ========================================================
 namespace
 {
+
+    static Entity g_currentInspectorEntity = INVALID_ENTITY;
+
     //just a safety check
     void EnsureSelectionValid()
     {
@@ -618,7 +621,60 @@ inline float SmoothDampAngle(float current, float target, float factor)
 // Widget templates for component data
 // ========================================================
 #pragma region WIDGETS
+// Static variables to track transform edits for undo
+static Entity g_editingEntity = INVALID_ENTITY;
+static TransformComponent g_transformBeforeEdit;
+static bool g_transformEditStarted = false;
+static std::map<void*, float> g_floatValuesBefore;
 
+// Call this at the start of editing a transform component
+static void BeginTransformEdit(Entity entity)
+{
+    if (entity == INVALID_ENTITY) return;
+    Registry& reg = Registry::Get();
+    if (!reg.Has_Component<TransformComponent>(entity)) return;
+
+    g_editingEntity = entity;
+    g_transformBeforeEdit = reg.Get_Component<TransformComponent>(entity);
+    g_transformEditStarted = true;
+    g_floatValuesBefore.clear();
+}
+
+// Call this at the end of editing a transform component
+static void EndTransformEdit()
+{
+    if (!g_transformEditStarted || g_editingEntity == INVALID_ENTITY) return;
+
+    Registry& reg = Registry::Get();
+    if (!reg.Has_Component<TransformComponent>(g_editingEntity)) {
+        g_transformEditStarted = false;
+        return;
+    }
+
+    TransformComponent& current = reg.Get_Component<TransformComponent>(g_editingEntity);
+
+    // DEBUG OUTPUT
+    std::cout << "[Undo] Before: pos=(" << g_transformBeforeEdit.pos.x << "," << g_transformBeforeEdit.pos.y << ")\n";
+    std::cout << "[Undo] Current: pos=(" << current.pos.x << "," << current.pos.y << ")\n";
+
+    // Only record if something actually changed
+    if (!UndoSystem::StatesEqual(
+        UndoSystem::MakeState(g_transformBeforeEdit),
+        UndoSystem::MakeState(current)))
+    {
+        std::cout << "[Undo] States differ - recording!\n";
+        UndoSystem::Get().BeginModify(g_editingEntity, g_transformBeforeEdit);
+        UndoSystem::Get().EndModify(g_editingEntity, current);
+    }
+    else
+    {
+        std::cout << "[Undo] States equal - not recording\n";
+    }
+
+    g_transformEditStarted = false;
+    g_editingEntity = INVALID_ENTITY;
+    g_floatValuesBefore.clear();
+}
 // Checkbox | For bool
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
     if (!w.ref) return;
@@ -662,23 +718,154 @@ static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label)
 }
 
 
-// Int      | For int lol
-static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
-    if (!w.ref) return;
-    if (w.slider && w.min != w.max)
-        ImGui::SliderInt(label.c_str(), w.ref, w.min, w.max);
-    else
-        ImGui::InputInt(label.c_str(), w.ref);
+namespace {
+    // Per-widget undo tracking
+    struct WidgetUndoState {
+        float floatBefore = 0.0f;
+        int intBefore = 0;
+        Entity entity = INVALID_ENTITY;
+    };
+
+    static std::unordered_map<void*, WidgetUndoState> g_widgetUndoStates;
+
+    // Helper to check if we should record transform undo
+    bool ShouldRecordTransformUndo(Entity e, const std::string& fieldName) {
+        Registry& reg = Registry::Get();
+        if (e == INVALID_ENTITY) return false;
+        if (!reg.Has_Component<TransformComponent>(e)) return false;
+
+        // Only record for transform-related fields
+        return (fieldName == "Position" || fieldName == "Rotation" ||
+            fieldName == "Scale" || fieldName == "pos" ||
+            fieldName == "rot" || fieldName == "scale");
+    }
 }
 
-// Float    | For float lol
+// Float widget with undo support
 static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
     if (!w.ref) return;
+
+    Registry& reg = Registry::Get();
+    void* widgetID = w.ref;
+    Entity entity = g_currentInspectorEntity;
+
+    // ===== RENDER THE WIDGET FIRST =====
     if (w.slider && w.min != w.max)
         ImGui::SliderFloat(label.c_str(), w.ref, w.min, w.max);
     else
         ImGui::InputFloat(label.c_str(), w.ref);
+
+    // ===== NOW check if it just became active =====
+    if (ImGui::IsItemActivated()) {
+        WidgetUndoState& state = g_widgetUndoStates[widgetID];
+        state.floatBefore = *w.ref;
+        state.entity = entity;
+
+        // Only call BeginTransformEdit if hvnt already started editing this entity transform
+        if (ShouldRecordTransformUndo(entity, label) &&
+            reg.Has_Component<TransformComponent>(entity)) {
+
+            // if already editing this entity transform
+            if (g_editingEntity != entity || !g_transformEditStarted) {
+                BeginTransformEdit(entity);
+            }
+        }
+    }
+
+    // ===== RECORD UNDO ON DEACTIVATE =====
+    if (ImGui::IsItemDeactivatedAfterEdit()) {
+        auto it = g_widgetUndoStates.find(widgetID);
+        if (it != g_widgetUndoStates.end()) {
+            WidgetUndoState& state = it->second;
+
+            if (state.floatBefore != *w.ref && state.entity != INVALID_ENTITY) {
+                if (ShouldRecordTransformUndo(state.entity, label) &&
+                    reg.Has_Component<TransformComponent>(state.entity)) {
+
+                    // Only end if this was the widget that started it
+                    if (g_editingEntity == state.entity && g_transformEditStarted) {
+                        EndTransformEdit();
+                    }
+
+                    std::cout << "[Undo Widget] Recorded transform change: " << label
+                        << " from " << state.floatBefore << " to " << *w.ref << "\n";
+                }
+            }
+            g_widgetUndoStates.erase(it);
+        }
+    }
 }
+
+// Int widget with undo support
+static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
+    if (!w.ref) return;
+
+    Registry& reg = Registry::Get();
+    void* widgetID = w.ref;
+    Entity entity = g_currentInspectorEntity;
+
+    // ===== RENDER THE WIDGET FIRST =====
+    if (w.slider && w.min != w.max)
+        ImGui::SliderInt(label.c_str(), w.ref, w.min, w.max);
+    else
+        ImGui::InputInt(label.c_str(), w.ref);
+
+    // ===== NOW check if it just became active =====
+    if (ImGui::IsItemActivated()) {
+        WidgetUndoState& state = g_widgetUndoStates[widgetID];
+        state.intBefore = *w.ref;
+        state.entity = entity;
+
+        if (ShouldRecordTransformUndo(entity, label) &&
+            reg.Has_Component<TransformComponent>(entity)) {
+
+            // Check if we're already editing this entity's transform
+            if (g_editingEntity != entity || !g_transformEditStarted) {
+                BeginTransformEdit(entity);
+            }
+        }
+    }
+
+    // ===== RECORD UNDO ON DEACTIVATE =====
+    if (ImGui::IsItemDeactivatedAfterEdit()) {
+        auto it = g_widgetUndoStates.find(widgetID);
+        if (it != g_widgetUndoStates.end()) {
+            WidgetUndoState& state = it->second;
+
+            if (state.intBefore != *w.ref && state.entity != INVALID_ENTITY) {
+                if (ShouldRecordTransformUndo(state.entity, label) &&
+                    reg.Has_Component<TransformComponent>(state.entity)) {
+
+                    // Only end if this was the widget that started it
+                    if (g_editingEntity == state.entity && g_transformEditStarted) {
+                        EndTransformEdit();
+                    }
+
+                    std::cout << "[Undo Widget] Recorded transform change: " << label
+                        << " from " << state.intBefore << " to " << *w.ref << "\n";
+                }
+            }
+            g_widgetUndoStates.erase(it);
+        }
+    }
+}
+//// Int      | For int lol
+//static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
+//    if (!w.ref) return;
+//    if (w.slider && w.min != w.max)
+//        ImGui::SliderInt(label.c_str(), w.ref, w.min, w.max);
+//    else
+//        ImGui::InputInt(label.c_str(), w.ref);
+//}
+//
+//// Float    | For float lol
+//static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
+//    if (!w.ref) return;
+//    if (w.slider && w.min != w.max)
+//        ImGui::SliderFloat(label.c_str(), w.ref, w.min, w.max);
+//    else
+//        ImGui::InputFloat(label.c_str(), w.ref);
+//}
 
 // AnimatorFrames (SPECIFIC FOR ANIMATOR BC I CANNOT FIGURE OUT HOW TO MAKE IT PROPERLY might remove)
 static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
@@ -3772,10 +3959,12 @@ void ImGuiSystem::ShowInspectorWindow()
     EnsureSelectionValid();
     if (selectedEntity == INVALID_ENTITY)
     {
+        g_currentInspectorEntity = INVALID_ENTITY;
         ImGui::Text("No entity selected");
         ImGui::Columns(1); //reset
         return;
     }
+    g_currentInspectorEntity = selectedEntity;
     ImGui::Text("Entity %d", selectedEntity);
     ImGui::Separator();
 
@@ -4263,6 +4452,60 @@ void ImGuiSystem::ShowInspectorWindow()
 
                 //    ImGui::PopID();
                 //}
+
+                ImGui::TreePop();
+            }
+        }
+
+        else if (compName == "Transform")
+        {
+            if (ImGui::TreeNode(compName.c_str()))
+            {
+                TransformComponent& transform = m_registry.Get_Component<TransformComponent>(selectedEntity);
+
+                // Track editing state for the entire Transform component
+                static bool wasEditingTransform = false;
+                bool isEditingNow = false;
+
+                // For each transform widget
+                for (auto& [name, widgetVariant] : componentData.GetDataMap())
+                {
+                    ImGui::PushID(name.c_str());
+
+                    // Render the widget
+                    std::visit([&](auto& widget) {
+                        MakeWidget(widget, name);
+
+                        // Check if THIS widget is currently active (being edited)
+                        if (ImGui::IsItemActive()) {
+                            isEditingNow = true;
+                        }
+                        }, widgetVariant);
+
+                    ImGui::PopID();
+                }
+
+                // Handle undo recording at the component level
+                if (isEditingNow && !wasEditingTransform)
+                {
+                    // User just started editing ANY transform field
+                    BeginTransformEdit(selectedEntity);
+                }
+                else if (!isEditingNow && wasEditingTransform)
+                {
+                    // User just finished editing ALL transform fields
+                    EndTransformEdit();
+                }
+
+                wasEditingTransform = isEditingNow;
+
+                // Update collider if needed
+                if (selectedEntity != INVALID_ENTITY &&
+                    m_registry.Has_Component<ColliderComponent>(selectedEntity))
+                {
+                    auto& collider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
+                    collider.UpdateHitboxes(transform.pos, transform.scale);
+                }
 
                 ImGui::TreePop();
             }
