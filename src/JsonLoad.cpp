@@ -1307,6 +1307,10 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             GuiSystem::Get().CallAction("ControlsPage1", j.object());
         }
 
+        SceneLoadEvent event;
+		event.sceneType = scene.sceneType;
+		EventBus::Get().PushEvent(event);
+
         return true;
     }
     catch (const std::exception& e) {

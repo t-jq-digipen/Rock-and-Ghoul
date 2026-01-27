@@ -49,6 +49,22 @@ namespace EnemyAI {
 	inline void End(Entity eID);
 }
 
+enum SpiritState : unsigned int {
+	SPIRIT_IDLE,
+	SPIRIT_CHASE,
+	SPIRIT_MELEE,
+	SPIRIT_ESCAPE,
+	SPIRIT_RANGE,
+	SPIRIT_HIT,
+	SPIRIT_DEAD
+};
+
+namespace SpiritScript {
+	inline void Start(Entity eID);
+	inline void Update(Entity eID, float dt);
+	inline void End(Entity eID);
+}
+
 class EnemySystem : public ISystem
 {
 public:

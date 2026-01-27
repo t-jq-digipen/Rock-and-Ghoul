@@ -51,6 +51,12 @@ namespace RockScript {
 
     enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
 
+
+    inline void Start(Entity e);
+
+    inline void Update(Entity e, float dt);
+
+    inline void End(Entity e);
 }
 
 class PlayerSystem : public ISystem {

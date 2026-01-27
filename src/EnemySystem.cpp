@@ -39,6 +39,7 @@
 #include "LogicSystem.h"
 #include "SceneManager.h"
 #include "Enemy.h"
+#include "JsonLoad.h"
 #include <unordered_map>
 
 static constexpr float DETECT_RADIUS = 300.f;
@@ -56,10 +57,16 @@ static constexpr float RETURN_SPEED = 600.f;
 static constexpr float MELEE_RANGE = 60.f;
 static constexpr float MELEE_COOLDOWN = 0.8f;
 static constexpr float MELEE_WINDUP = 0.15f;
+static constexpr float MELEE_DURATION = 1.f;
 
 static constexpr float SHOOT_RANGE = 240.f;
 static constexpr float SHOOT_COOLDOWN = 1.2f;
 static constexpr float PROJECTILE_SPEED = 600.f;
+
+static constexpr float DEATH_DURATION = 1.0f;
+static constexpr int ANIM_DEATH_STATE = 2;
+
+Entity targetPlayer = INVALID_ENTITY;
 
 enum class AttackMode : unsigned int
 {
@@ -100,7 +107,14 @@ struct EnemyRuntime
 	bool hitQueued{ false };
 
 	bool didAttack{ false };
+
+
+	// target
+	Entity target{ INVALID_ENTITY }; // set the player!
+
+	float deathTimer{ 0.f };
 };
+
 
 static std::unordered_map<Entity, EnemyRuntime> g_ai;
 
@@ -239,6 +253,7 @@ namespace EnemyAI
 			playerPos = GetPos(player);
 			dPlayerSq = DistSq(selfPos, playerPos);
 		}
+
 
 		// attack range
 		const float atkRange = (st.attackMode == AttackMode::MELEE_ONLY) ? MELEE_RANGE : SHOOT_RANGE;
@@ -432,6 +447,252 @@ namespace EnemyAI
 	}
 }
 
+size_t SceneSubscriberID = -1;
+
+void AssignTarget() {
+	for (auto& [entity, comp] : Registry::Get().Get_ComponentMap<TagComponent>())
+	{
+		if (comp.tag == T_PLAYER && Registry::Get().Has_Component<TransformComponent>(entity))
+		{
+			targetPlayer = entity;
+			return;
+		}
+	}
+
+	targetPlayer = INVALID_ENTITY;
+	std::cout << "[EnemySystem] No player found to assign as target!\n";
+}
+
+void ClearTarget() {
+	targetPlayer = INVALID_ENTITY;
+}
+
+struct SpiritRuntime
+{
+	SpiritState state{ SpiritState::SPIRIT_IDLE };
+
+	Entity target{ INVALID_ENTITY };
+
+	bool willAttack{ false };
+
+	float stateTime{ 0.f };
+
+	float cooldown{ 0.f };
+};
+
+std::unordered_map<Entity, SpiritRuntime> g_spirits;
+
+void AssignSpirits() {
+	if (targetPlayer == INVALID_ENTITY) {
+		std::cout << "[EnemySystem] No player found to assign as target for spirits!\nSkipping spirit assignments";
+		return;
+	}
+
+	int spiritsCount = 0;
+	for (auto& [entID, tagComp] : Registry::Get().Get_ComponentMap<TagComponent>())
+	{
+		if (tagComp.tag == T_ENEMY && Registry::Get().Has_Component<TransformComponent>(entID))
+		{
+			g_spirits[entID].target = targetPlayer;
+			spiritsCount++;
+		}
+	}
+	std::cout << "[EnemySystem] Assigned " << spiritsCount << " spirits to target player " << targetPlayer << std::endl;
+}
+
+namespace SpiritScript {
+	// Register spirit runtime and assign target player
+	inline void Start(Entity eID) {
+		std::cout << "Spirit script started for entity " << eID << std::endl;
+		g_spirits[eID] = SpiritRuntime();
+		g_spirits[eID].target = targetPlayer;
+	}
+
+	inline void Update(Entity eID, float dt) {
+		if (targetPlayer == INVALID_ENTITY) {
+			// No target player assigned, skipping update for spirit
+			return;
+		}
+		// registry
+		Registry& registry = Registry::Get();
+
+		if (!registry.Has_Component<Movement::MovementComponent>(eID) ||
+			!registry.Has_Component<TransformComponent>(eID) ||
+			!registry.Has_Component<HealthComponent>(eID) ||
+			!registry.Has_Component<RenderComponent>(eID)) 
+		{
+			// missing required components
+			return;
+		}
+
+		auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
+		auto& transComp = registry.Get_Component<TransformComponent>(eID);
+		auto& healthComp = registry.Get_Component<HealthComponent>(eID);
+
+		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
+		Sprite::SpriteSheet& spriteSheet = renderComp.GetSpriteSheet();
+
+		SpiritRuntime& spiritLogic = g_spirits[eID];
+
+		if (healthComp.currhp <= 0.f) {
+			// spirit state not dead yet
+			if (spiritLogic.state != SpiritState::SPIRIT_DEAD) {
+				spiritLogic.state = SpiritState::SPIRIT_DEAD;
+				spiritLogic.stateTime = 0.f;
+				spriteSheet.SetState(2);
+				registry.Add_Component<LifetimeComponent>(eID, LifetimeComponent{ 0.f, DEATH_DURATION });
+				moveComp.ResetFrameIntent();
+			}
+			else // spirit is dead 
+			{
+				spiritLogic.stateTime += dt;
+				spriteSheet.SetState(2);
+				//if (spiritLogic.stateTime >= DEATH_DURATION) {
+				//	// remove spirit entity
+				//	//g_spirits.erase(eID);
+				//}
+			}
+			// no need check the rest bc this fella die alr
+			return;
+		}
+
+		// get player pos and spirit pos
+		Vec2 playerPos = GetPos(targetPlayer);
+		Vec2 selfPos = GetPos(eID);
+
+		Vec2 directionToPlayer = { playerPos.x - selfPos.x, playerPos.y - selfPos.y };
+
+
+		// always face player
+		spriteSheet.Sprite().SetFlipX(directionToPlayer.x >= 0.f);
+		
+
+		//spriteSheet.SetState(animstate);
+
+		if (spiritLogic.state == SpiritState::SPIRIT_IDLE) {
+
+			spriteSheet.SetState(0);
+			float dPlayerSq = std::numeric_limits<float>::infinity();
+			dPlayerSq = DistSq(selfPos, playerPos);
+			float detectSq = DETECT_RADIUS * DETECT_RADIUS;
+			if (dPlayerSq <= detectSq) 
+			{
+				spiritLogic.state = SpiritState::SPIRIT_CHASE;
+			}
+			else // bing chilling no detect player
+			{
+				moveComp.ResetFrameIntent();
+				return;
+			}
+
+		}
+
+
+		moveComp.ResetFrameIntent();
+		switch (spiritLogic.state)
+		{
+		case SpiritState::SPIRIT_CHASE:
+		{
+			spriteSheet.SetState(0);
+			moveComp.ResetFrameIntent();
+			Vec2 moveDir = RG_Normalize(directionToPlayer);
+			moveComp.SetIsMoving(true);
+			moveComp.SetMovementDirection(moveDir);
+
+			// if close enough, time to smack
+			float dPlayerSq = DistSq(selfPos, playerPos);
+			float meleeSq = MELEE_RANGE * MELEE_RANGE;
+			if (dPlayerSq <= meleeSq) {
+				spiritLogic.willAttack = true;
+				spiritLogic.stateTime = 0.f;
+				spiritLogic.state = SpiritState::SPIRIT_MELEE;
+			}
+		}
+		break;
+		// end case SPIRIT_CHASE
+
+		case SpiritState::SPIRIT_MELEE:
+		{
+			spriteSheet.SetState(1);
+			spiritLogic.stateTime += dt;
+
+			if (spiritLogic.stateTime >= MELEE_WINDUP && spiritLogic.willAttack) {
+				spiritLogic.willAttack = false;
+				// spawn the hitbox
+				// spawn prefab here
+			}
+
+			if (spiritLogic.stateTime >= MELEE_DURATION) {
+				spiritLogic.stateTime = 0.f;
+				spiritLogic.state = SpiritState::SPIRIT_ESCAPE;
+				moveComp.ResetFrameIntent();
+			}
+
+		}
+		break;
+		// end case SPIRIT_MELEE
+
+		case SpiritState::SPIRIT_ESCAPE:
+		{
+			spiritLogic.stateTime += dt;
+			spriteSheet.SetState(0);
+			Vec2 moveDir = RG_Normalize(directionToPlayer);
+			moveDir.x = -moveDir.x;
+			moveDir.y = -moveDir.y;
+			moveComp.SetIsMoving(true);
+			moveComp.SetMovementDirection(moveDir);
+
+			if (spiritLogic.stateTime >= 1.5f) {
+				// add chance for range later
+				spiritLogic.willAttack = true;
+
+				spiritLogic.stateTime = 0.f;
+				spiritLogic.state = SpiritState::SPIRIT_CHASE;
+				moveComp.ResetFrameIntent();
+			}
+		}
+		break;
+		// end case SPIRIT_ESCAPE
+
+		case SpiritState::SPIRIT_RANGE:
+		{
+			spiritLogic.stateTime += dt;
+			// for now just set back to chase lol it shouldnt go to range yet
+			spiritLogic.stateTime = 0.f;
+			spiritLogic.state = SpiritState::SPIRIT_CHASE;
+		}
+		break;
+		// end case SPIRIT_RANGE
+
+		case SpiritState::SPIRIT_HIT:
+		{
+			spriteSheet.SetState(3);
+			spiritLogic.stateTime += dt;
+
+			spiritLogic.willAttack = false;
+			if (spiritLogic.stateTime >= 0.5f) {
+				spiritLogic.stateTime = 0.f;
+				spiritLogic.state = SpiritState::SPIRIT_CHASE;
+				moveComp.ResetFrameIntent();
+			}
+
+		}
+		break;
+		// end case SPIRIT_HIT
+
+		default:
+			break;
+
+		} // end switch spirit state
+
+	}
+
+	inline void End(Entity eID) {
+		std::cout << "Spirit script ended for entity " << eID << std::endl;
+		g_spirits.erase(eID);
+	}
+}
+
 void EnemySystem::Initialize()
 {
 	BehaviourFCT enemy;
@@ -439,6 +700,23 @@ void EnemySystem::Initialize()
 	enemy.Update = [](Entity e, float dt) { EnemyAI::Update(e, dt); };
 	enemy.End = [](Entity e) { EnemyAI::End(e); };
 	LogicSystem::Get().RegisterScript("ManfredEnemy", enemy, ScriptID::GHOUL);
+
+	BehaviourFCT spirit;
+	spirit.Init = [](Entity e) { SpiritScript::Start(e); };
+	spirit.Update = [](Entity e, float dt) { SpiritScript::Update(e, dt); };
+	spirit.End = [](Entity e) { SpiritScript::End(e); };
+	LogicSystem::Get().RegisterScript("SpiritScript", spirit, ScriptID::SPIRIT);
+
+	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
+		// on scene load, wipe spirits and assign target player
+		g_spirits.clear();
+		if (e.sceneType == SceneType::ST_GAME) {
+			AssignTarget();
+		}
+		else {
+			ClearTarget();
+		}
+		});
 }
 
 void EnemySystem::Update(float dt)
@@ -448,4 +726,5 @@ void EnemySystem::Update(float dt)
 
 void EnemySystem::Shutdown()
 {
+	EventBus::Get().Unsubscribe<SceneLoadEvent>(SceneSubscriberID);
 }
