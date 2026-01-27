@@ -17,21 +17,35 @@
  *   Projectile* proj = GameMemoryManager::Get().AllocateProjectile();
  *   GameMemoryManager::Get().FreeProjectile(proj);
  *
- * Copyright © 2026 DigiPen, All rights reserved.
+ * Copyright ? 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 
-#ifndef GAME_MEMORY_MANAGER_H
-#define GAME_MEMORY_MANAGER_H
+#ifndef GAMEMEMORYMANAGER_H
+#define GAMEMEMORYMANAGER_H
 
 #include "MemoryPool.h"
 #include <iostream>
 
- // ========================================================
- // Forward declarations for game types
- // ========================================================
+// Configure pool parameters
+static constexpr size_t PROJECTILE_OBJECTS_PER_PAGE = 100;
+static constexpr size_t PROJECTILE_MAX_PAGES = 3;  // Max 300 projectiles
 
- // Projectile data (soundwave spell)
+static constexpr size_t AOE_OBJECTS_PER_PAGE = 20;
+static constexpr size_t AOE_MAX_PAGES = 2;  // Max 40 AOEs
+
+static constexpr size_t SHIELD_OBJECTS_PER_PAGE = 5;
+static constexpr size_t SHIELD_MAX_PAGES = 1;  // Max 5 shields
+
+static constexpr size_t PARTICLE_OBJECTS_PER_PAGE = 500;
+static constexpr size_t PARTICLE_MAX_PAGES = 2;  // Max 1000 particles
+
+static constexpr size_t ENEMY_OBJECTS_PER_PAGE = 50;
+static constexpr size_t ENEMY_MAX_PAGES = 3;  // Max 150 enemies
+
+/**
+ * @brief Data structures for pooled game objects
+ */
 struct ProjectileData {
     float posX, posY;
     float velX, velY;
@@ -40,258 +54,240 @@ struct ProjectileData {
     bool active;
 
     ProjectileData()
-        : posX(0), posY(0), velX(0), velY(0),
-        lifetime(0), damage(0), active(false) {
+        : posX(0), posY(0), velX(0), velY(0)
+        , lifetime(0), damage(0), active(false) {
     }
 };
 
-// AOE effect data
 struct AOEData {
-    float centerX, centerY;
+    float posX, posY;
     float radius;
     float duration;
     int damage;
     bool active;
 
     AOEData()
-        : centerX(0), centerY(0), radius(0),
-        duration(0), damage(0), active(false) {
+        : posX(0), posY(0), radius(0), duration(0)
+        , damage(0), active(false) {
     }
 };
 
-// Shield data
 struct ShieldData {
     float posX, posY;
-    float health;
+    float radius;
     float duration;
+    int absorb;
     bool active;
 
     ShieldData()
-        : posX(0), posY(0), health(0),
-        duration(0), active(false) {
+        : posX(0), posY(0), radius(0), duration(0)
+        , absorb(0), active(false) {
     }
 };
 
-// Particle effect data
 struct ParticleData {
     float posX, posY;
     float velX, velY;
     float lifetime;
-    float size;
-    uint8_t r, g, b, a;  // Color
+    float scaleX, scaleY;
     bool active;
 
     ParticleData()
-        : posX(0), posY(0), velX(0), velY(0),
-        lifetime(0), size(1.0f),
-        r(255), g(255), b(255), a(255),
-        active(false) {
+        : posX(0), posY(0), velX(0), velY(0)
+        , lifetime(0), scaleX(1), scaleY(1), active(false) {
     }
 };
 
-// Enemy ghost data
 struct EnemyData {
     float posX, posY;
-    float health;
-    int type;  // Different enemy types
+    int health;
+    int damage;
     bool active;
 
     EnemyData()
-        : posX(0), posY(0), health(100),
-        type(0), active(false) {
+        : posX(0), posY(0), health(0), damage(0), active(false) {
     }
 };
 
-// ========================================================
-// GameMemoryManager - Singleton pool manager
-// ========================================================
+/**
+ * @brief Singleton managing all game object memory pools
+ *
+ * Provides dynamic memory pools that extend at runtime when exhausted.
+ * Each pool has a maximum page limit to prevent unbounded growth.
+ */
 class GameMemoryManager {
+private:
+    // Dynamic memory pools (will grow at runtime if needed)
+    DynamicMemoryPool<ProjectileData, PROJECTILE_OBJECTS_PER_PAGE> projectilePool_;
+    DynamicMemoryPool<AOEData, AOE_OBJECTS_PER_PAGE> aoePool_;
+    DynamicMemoryPool<ShieldData, SHIELD_OBJECTS_PER_PAGE> shieldPool_;
+    DynamicMemoryPool<ParticleData, PARTICLE_OBJECTS_PER_PAGE> particlePool_;
+    DynamicMemoryPool<EnemyData, ENEMY_OBJECTS_PER_PAGE> enemyPool_;
+
+    GameMemoryManager()
+        : projectilePool_(PROJECTILE_MAX_PAGES)
+        , aoePool_(AOE_MAX_PAGES)
+        , shieldPool_(SHIELD_MAX_PAGES)
+        , particlePool_(PARTICLE_MAX_PAGES)
+        , enemyPool_(ENEMY_MAX_PAGES)
+    {
+        // Pools allocate their first page in constructor
+    }
+
 public:
-    // Singleton access
     static GameMemoryManager& Get() {
         static GameMemoryManager instance;
         return instance;
     }
 
-    // Pool sizes (tune these based on your game needs)
-    static constexpr size_t MAX_PROJECTILES = 100;
-    static constexpr size_t MAX_AOE_EFFECTS = 20;
-    static constexpr size_t MAX_SHIELDS = 5;
-    static constexpr size_t MAX_PARTICLES = 500;
-    static constexpr size_t MAX_ENEMIES = 50;
+    void InitializePools() {
+        std::cout << "\n========================================\n";
+        std::cout << "LOAD TIME - Initializing Dynamic Memory Pools\n";
+        std::cout << "========================================\n";
+        std::cout << "Each pool allocates 1 page at startup.\n";
+        std::cout << "Additional pages allocated dynamically at runtime when needed.\n\n";
 
-    // Initialize all pools (call at game start)
-    void InitializePools();
+        std::cout << "Pool Configuration:\n";
+        std::cout << "  - Projectiles: " << PROJECTILE_OBJECTS_PER_PAGE << " per page, "
+            << "max " << PROJECTILE_MAX_PAGES << " pages ("
+            << (PROJECTILE_OBJECTS_PER_PAGE * PROJECTILE_MAX_PAGES) << " total)\n";
 
-    // Projectile pool
-    ProjectileData* AllocateProjectile();
-    void FreeProjectile(ProjectileData* proj);
+        std::cout << "  - AOE Effects: " << AOE_OBJECTS_PER_PAGE << " per page, "
+            << "max " << AOE_MAX_PAGES << " pages ("
+            << (AOE_OBJECTS_PER_PAGE * AOE_MAX_PAGES) << " total)\n";
 
-    // AOE pool
-    AOEData* AllocateAOE();
-    void FreeAOE(AOEData* aoe);
+        std::cout << "  - Shields:     " << SHIELD_OBJECTS_PER_PAGE << " per page, "
+            << "max " << SHIELD_MAX_PAGES << " pages ("
+            << (SHIELD_OBJECTS_PER_PAGE * SHIELD_MAX_PAGES) << " total)\n";
 
-    // Shield pool
-    ShieldData* AllocateShield();
-    void FreeShield(ShieldData* shield);
+        std::cout << "  - Particles:   " << PARTICLE_OBJECTS_PER_PAGE << " per page, "
+            << "max " << PARTICLE_MAX_PAGES << " pages ("
+            << (PARTICLE_OBJECTS_PER_PAGE * PARTICLE_MAX_PAGES) << " total)\n";
 
-    // Particle pool
-    ParticleData* AllocateParticle();
-    void FreeParticle(ParticleData* particle);
+        std::cout << "  - Enemies:     " << ENEMY_OBJECTS_PER_PAGE << " per page, "
+            << "max " << ENEMY_MAX_PAGES << " pages ("
+            << (ENEMY_OBJECTS_PER_PAGE * ENEMY_MAX_PAGES) << " total)\n";
 
-    // Enemy pool
-    EnemyData* AllocateEnemy();
-    void FreeEnemy(EnemyData* enemy);
+        // Calculate initial memory footprint (1 page per pool)
+        size_t initialMemory =
+            sizeof(ProjectileData) * PROJECTILE_OBJECTS_PER_PAGE +
+            sizeof(AOEData) * AOE_OBJECTS_PER_PAGE +
+            sizeof(ShieldData) * SHIELD_OBJECTS_PER_PAGE +
+            sizeof(ParticleData) * PARTICLE_OBJECTS_PER_PAGE +
+            sizeof(EnemyData) * ENEMY_OBJECTS_PER_PAGE;
 
-    // Stats and debugging
-    void PrintStats() const;
-    void ResetPools();
+        std::cout << "\nInitial memory (1 page per pool): "
+            << (initialMemory / 1024.0f) << " KB\n";
 
-private:
-    GameMemoryManager() = default;
-    ~GameMemoryManager() = default;
+        // Calculate maximum possible memory
+        size_t maxMemory =
+            sizeof(ProjectileData) * PROJECTILE_OBJECTS_PER_PAGE * PROJECTILE_MAX_PAGES +
+            sizeof(AOEData) * AOE_OBJECTS_PER_PAGE * AOE_MAX_PAGES +
+            sizeof(ShieldData) * SHIELD_OBJECTS_PER_PAGE * SHIELD_MAX_PAGES +
+            sizeof(ParticleData) * PARTICLE_OBJECTS_PER_PAGE * PARTICLE_MAX_PAGES +
+            sizeof(EnemyData) * ENEMY_OBJECTS_PER_PAGE * ENEMY_MAX_PAGES;
+
+        std::cout << "Maximum memory (all pages): "
+            << (maxMemory / 1024.0f) << " KB\n";
+
+        std::cout << "\nDynamic memory pools ready!\n";
+        std::cout << "========================================\n\n";
+    }
+
+    // Projectile allocation
+    ProjectileData* AllocateProjectile() {
+        ProjectileData* proj = projectilePool_.Allocate();
+        if (proj == nullptr) {
+            std::cerr << "[GameMemoryManager] ERROR: Projectile pool exhausted!\n";
+        }
+        else {
+            std::cout << "RUNTIME: Booked projectile memory (address: "
+                << proj << ")\n";
+        }
+        return proj;
+    }
+
+    void FreeProjectile(ProjectileData* proj) {
+        if (proj != nullptr) {
+            std::cout << "RUNTIME: Freed projectile memory (address: "
+                << proj << ")\n";
+            projectilePool_.Deallocate(proj);
+        }
+    }
+
+    // AOE allocation
+    AOEData* AllocateAOE() {
+        AOEData* aoe = aoePool_.Allocate();
+        if (aoe == nullptr) {
+            std::cerr << "[GameMemoryManager] ERROR: AOE pool exhausted!\n";
+        }
+        else {
+            std::cout << "RUNTIME: Booked AOE memory (address: "
+                << aoe << ")\n";
+        }
+        return aoe;
+    }
+
+    void FreeAOE(AOEData* aoe) {
+        if (aoe != nullptr) {
+            std::cout << "RUNTIME: Freed AOE memory (address: "
+                << aoe << ")\n";
+            aoePool_.Deallocate(aoe);
+        }
+    }
+
+    // Shield allocation
+    ShieldData* AllocateShield() {
+        ShieldData* shield = shieldPool_.Allocate();
+        if (shield == nullptr) {
+            std::cerr << "[GameMemoryManager] ERROR: Shield pool exhausted!\n";
+        }
+        else {
+            std::cout << "RUNTIME: Booked shield memory (address: "
+                << shield << ")\n";
+        }
+        return shield;
+    }
+
+    void FreeShield(ShieldData* shield) {
+        if (shield != nullptr) {
+            std::cout << "RUNTIME: Freed shield memory (address: "
+                << shield << ")\n";
+            shieldPool_.Deallocate(shield);
+        }
+    }
+
+    // Particle allocation
+    ParticleData* AllocateParticle() {
+        return particlePool_.Allocate();
+    }
+
+    void FreeParticle(ParticleData* particle) {
+        particlePool_.Deallocate(particle);
+    }
+
+    // Enemy allocation
+    EnemyData* AllocateEnemy() {
+        return enemyPool_.Allocate();
+    }
+
+    void FreeEnemy(EnemyData* enemy) {
+        enemyPool_.Deallocate(enemy);
+    }
+
+    void PrintStats() const {
+        std::cout << "\n=== Game Memory Pool Stats ===\n";
+        projectilePool_.PrintStats("Projectiles");
+        aoePool_.PrintStats("AOE Effects");
+        shieldPool_.PrintStats("Shields    ");
+        particlePool_.PrintStats("Particles  ");
+        enemyPool_.PrintStats("Enemies    ");
+        std::cout << "==============================\n";
+    }
 
     // Prevent copying
     GameMemoryManager(const GameMemoryManager&) = delete;
     GameMemoryManager& operator=(const GameMemoryManager&) = delete;
-
-    // Memory pools
-    MemoryPool<ProjectileData, MAX_PROJECTILES> projectilePool;
-    MemoryPool<AOEData, MAX_AOE_EFFECTS> aoePool;
-    MemoryPool<ShieldData, MAX_SHIELDS> shieldPool;
-    MemoryPool<ParticleData, MAX_PARTICLES> particlePool;
-    MemoryPool<EnemyData, MAX_ENEMIES> enemyPool;
-
-    bool initialized = false;
 };
 
-// ========================================================
-// Implementation
-// ========================================================
-
-inline void GameMemoryManager::InitializePools() {
-    if (initialized) {
-        std::cout << "[GameMemoryManager] Pools already initialized!\n";
-        return;
-    }
-
-    std::cout << "[GameMemoryManager] Initializing memory pools...\n";
-    std::cout << "  - Projectiles: " << MAX_PROJECTILES << " slots\n";
-    std::cout << "  - AOE Effects: " << MAX_AOE_EFFECTS << " slots\n";
-    std::cout << "  - Shields: " << MAX_SHIELDS << " slots\n";
-    std::cout << "  - Particles: " << MAX_PARTICLES << " slots\n";
-    std::cout << "  - Enemies: " << MAX_ENEMIES << " slots\n";
-
-    size_t totalMemory =
-        (sizeof(ProjectileData) * MAX_PROJECTILES) +
-        (sizeof(AOEData) * MAX_AOE_EFFECTS) +
-        (sizeof(ShieldData) * MAX_SHIELDS) +
-        (sizeof(ParticleData) * MAX_PARTICLES) +
-        (sizeof(EnemyData) * MAX_ENEMIES);
-
-    std::cout << "  Total pre-allocated memory: " << totalMemory << " bytes ("
-        << (totalMemory / 1024.0f) << " KB)\n";
-
-    initialized = true;
-}
-
-inline ProjectileData* GameMemoryManager::AllocateProjectile() {
-    ProjectileData* proj = projectilePool.Construct();
-    if (proj == nullptr) {
-        std::cerr << "[GameMemoryManager] ERROR: Projectile pool exhausted!\n";
-    }
-    else {
-        std::cout << "RUNTIME: Booked projectile memory from pre-allocated pool (address: "
-            << proj << ")\n";
-    }
-    return proj;
-}
-
-inline void GameMemoryManager::FreeProjectile(ProjectileData* proj) {
-    if (proj != nullptr) {
-        std::cout << "RUNTIME: Freed projectile memory back to pool (address: "
-            << proj << ")\n";
-        projectilePool.Destroy(proj);
-    }
-}
-
-inline AOEData* GameMemoryManager::AllocateAOE() {
-    AOEData* aoe = aoePool.Construct();
-    if (aoe == nullptr) {
-        std::cerr << "[GameMemoryManager] ERROR: AOE pool exhausted!\n";
-    }
-    else {
-        std::cout << "RUNTIME: Booked AOE memory from pre-allocated pool (address: "
-            << aoe << ")\n";
-    }
-    return aoe;
-}
-
-inline void GameMemoryManager::FreeAOE(AOEData* aoe) {
-    if (aoe != nullptr) {
-        std::cout << "RUNTIME: Freed AOE memory back to pool (address: "
-            << aoe << ")\n";
-        aoePool.Destroy(aoe);
-    }
-}
-
-inline ShieldData* GameMemoryManager::AllocateShield() {
-    ShieldData* shield = shieldPool.Construct();
-    if (shield == nullptr) {
-        std::cerr << "[GameMemoryManager] ERROR: Shield pool exhausted!\n";
-    }
-    return shield;
-}
-
-inline void GameMemoryManager::FreeShield(ShieldData* shield) {
-    if (shield != nullptr) {
-        shieldPool.Destroy(shield);
-    }
-}
-
-inline ParticleData* GameMemoryManager::AllocateParticle() {
-    ParticleData* particle = particlePool.Construct();
-    if (particle == nullptr) {
-        std::cerr << "[GameMemoryManager] ERROR: Particle pool exhausted!\n";
-    }
-    return particle;
-}
-
-inline void GameMemoryManager::FreeParticle(ParticleData* particle) {
-    if (particle != nullptr) {
-        particlePool.Destroy(particle);
-    }
-}
-
-inline EnemyData* GameMemoryManager::AllocateEnemy() {
-    EnemyData* enemy = enemyPool.Construct();
-    if (enemy == nullptr) {
-        std::cerr << "[GameMemoryManager] ERROR: Enemy pool exhausted!\n";
-    }
-    return enemy;
-}
-
-inline void GameMemoryManager::FreeEnemy(EnemyData* enemy) {
-    if (enemy != nullptr) {
-        enemyPool.Destroy(enemy);
-    }
-}
-
-inline void GameMemoryManager::PrintStats() const {
-    std::cout << "\n=== Game Memory Pool Stats ===\n";
-    std::cout << "Projectiles: " << projectilePool.GetUsedCount() << "/" << MAX_PROJECTILES << " used\n";
-    std::cout << "AOE Effects: " << aoePool.GetUsedCount() << "/" << MAX_AOE_EFFECTS << " used\n";
-    std::cout << "Shields:     " << shieldPool.GetUsedCount() << "/" << MAX_SHIELDS << " used\n";
-    std::cout << "Particles:   " << particlePool.GetUsedCount() << "/" << MAX_PARTICLES << " used\n";
-    std::cout << "Enemies:     " << enemyPool.GetUsedCount() << "/" << MAX_ENEMIES << " used\n";
-    std::cout << "==============================\n\n";
-}
-
-inline void GameMemoryManager::ResetPools() {
-    std::cout << "[GameMemoryManager] WARNING: Resetting all pools (potential memory leak if objects not destroyed!)\n";
-    // Note: This doesn't call destructors - ensure all objects are properly freed first
-    initialized = false;
-    InitializePools();
-}
-
-#endif // GAME_MEMORY_MANAGER_H
+#endif // GAMEMEMORYMANAGER_H

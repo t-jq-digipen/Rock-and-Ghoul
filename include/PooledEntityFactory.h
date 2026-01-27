@@ -379,8 +379,8 @@ inline void PooledEntityFactory::ApplyPrefabToAOE(
     const PrefabConfig& config,
     float x, float y)
 {
-    aoe->centerX = x;
-    aoe->centerY = y;
+    aoe->posX = x;
+    aoe->posY = y;
     aoe->radius = config.radius > 0 ? config.radius : 150.0f;
     aoe->duration = config.lifetime > 0 ? config.lifetime : 1.5f;
     aoe->damage = config.damage;
@@ -416,7 +416,8 @@ inline void PooledEntityFactory::ApplyPrefabToShield(
 {
     shield->posX = x;
     shield->posY = y;
-    shield->health = config.health > 0 ? config.health : 100.0f;
+    // FIXED: Removed shield->health line (ShieldData doesn't have health)
+    // If you want shield health, add it to ShieldData struct first
     shield->duration = config.lifetime > 0 ? config.lifetime : 5.0f;
     shield->active = true;
 }
