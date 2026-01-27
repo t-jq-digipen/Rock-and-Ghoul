@@ -650,7 +650,14 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"jsonPath", dlg.jsonPath},
             {"sceneID", dlg.sceneID.empty() ? "0" : dlg.sceneID},
             {"lines", dlg.lines},
-            {"currentLineIndex", dlg.currentLineIndex}
+            {"currentLineIndex", dlg.currentLineIndex},
+            {"wrapWidth", dlg.wrapWidth},
+            {"textSpeed", dlg.textSpeed},
+            {"customSpeaker", dlg.customSpeaker},
+            {"customSpeakerName", dlg.customSpeakerName},
+            {"speakerNameBasePos", {dlg.speakerNameBasePos.x, dlg.speakerNameBasePos.y}},
+            {"speakerNameBaseScale", dlg.speakerNameBaseScale},
+            {"speakerNameColor", {dlg.speakerNameColor.r, dlg.speakerNameColor.g, dlg.speakerNameColor.b}}
         };
         j["gui"]["dialogues"].push_back(std::move(jd));
     }
@@ -781,6 +788,13 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                     for (const auto& ln : dlg["lines"]) d.lines.push_back(ln.get<std::string>());
                 }
                 d.currentLineIndex = dlg.value("currentLineIndex", 0);
+                d.wrapWidth = dlg.value("wrapWidth", d.wrapWidth);
+                d.customSpeaker = dlg.value("customSpeaker", false);
+                d.customSpeakerName = dlg.value("customSpeakerName", std::string{ "" });
+
+                d.speakerNameBasePos = { dlg["speakerNameBasePos"][0], dlg["speakerNameBasePos"][1]};
+                d.speakerNameBaseScale = dlg["speakerNameBaseScale"];
+                d.speakerNameColor = { dlg["speakerNameColor"][0], dlg["speakerNameColor"][1], dlg["speakerNameColor"][2]};
 
                 s.guiDialogues.push_back(std::move(d));
             }
@@ -981,6 +995,13 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.textBox.centered = d.textBox.centered;
             sd.jsonPath = d.jsonPath;
             sd.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
+            sd.wrapWidth = d.wrapWidth;
+            sd.textSpeed = d.textSpeed;
+            sd.customSpeaker = d.customSpeaker;
+            sd.customSpeakerName = d.customSpeakerName;
+            sd.speakerNameBasePos = d.speakerNameBasePos;
+            sd.speakerNameBaseScale = d.speakerNameBaseScale;
+            sd.speakerNameColor = d.speakerNameColor;
 
             const TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
             if (comp)
@@ -1173,6 +1194,14 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.textBox.fontKey = "Marker";
             cfg.textBox.centered = d.textBox.centered;
             cfg.textBox.isVisible = true;
+
+            cfg.wrapWidth = d.wrapWidth;
+            cfg.textSpeed = d.textSpeed;
+            cfg.customSpeaker = d.customSpeaker;
+            cfg.customSpeakerName = d.customSpeakerName;
+            cfg.speakerNameBasePos = d.speakerNameBasePos;
+            cfg.speakerNameBaseScale = d.speakerNameBaseScale;
+            cfg.speakerNameColor = d.speakerNameColor;
 
             cfg.jsonPath = d.jsonPath;
             cfg.sceneID = d.sceneID.empty() ? "0" : d.sceneID;

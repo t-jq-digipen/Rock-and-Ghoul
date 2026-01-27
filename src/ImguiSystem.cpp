@@ -2069,7 +2069,7 @@ void ImGuiSystem::Update(float dt)
                     {
                         try
                         {
-                            std::ifstream ifs(FilePath::DIALOGUE);
+                            std::ifstream ifs(d.jsonPath);
                             if (ifs)
                             {
                                 try { ifs >> dlgDoc; }
@@ -2114,14 +2114,13 @@ void ImGuiSystem::Update(float dt)
                                     if (sc.contains("wrapWidth")) d.wrapWidth = sc["wrapWidth"].get<float>();
                                     if (sc.contains("customSpeaker")) d.customSpeaker = sc["customSpeaker"].get<bool>();
                                     if (sc.contains("customSpeakerName")) d.customSpeakerName = sc["customSpeakerName"].get<std::string>();
-                                    break;
                                 }
                                 dlgLoaded = true;
                             }
                         }
                         catch (...)
                         {
-                            dlgLoaded = true;
+                            dlgLoaded = false;
                         }
                         if (sceneIDs.empty()) sceneIDs.push_back("0");
                     }

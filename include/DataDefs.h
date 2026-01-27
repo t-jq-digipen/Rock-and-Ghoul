@@ -118,6 +118,14 @@ struct SavedScene {
         std::string sceneID = "0";
         std::vector<std::string> lines;
         int currentLineIndex = 0;
+
+        float wrapWidth;
+        float textSpeed;
+        bool customSpeaker = false;
+        std::string customSpeakerName = "";
+        Vec2 speakerNameBasePos;
+        float speakerNameBaseScale;
+        Colour3 speakerNameColor;
     };
     std::vector<SavedDialogue> guiDialogues;
 
