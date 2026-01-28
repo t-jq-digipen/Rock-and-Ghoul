@@ -4,7 +4,7 @@
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
  * @co-author   Manfred Sim		   | manfred.sim@digipen.edu
- * @date	    30 NOV 2025
+ * @date	    28 JAN 2026
  *
  * @brief	Player System for handling player behaviour.
  *
@@ -28,6 +28,7 @@
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
 #include "GuiSystem.h"
+#include "CombatSystem.h"
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
@@ -616,38 +617,6 @@ namespace RockScript {
 
 	}
 
-	void ApplyElementToProjectile(Entity)
-	{
-
-		//Damage Component in future
-
-		switch (currentElement)
-		{
-		case Element::NONE:
-			break;
-
-		case Element::FIRE:
-			//Burn damage
-			//Burn lasts 3 sec
-			std::cout << "Fire applied: burn damage\n";
-			break;
-
-		case Element::LIGHTNING:
-			//Stun 5 sec
-			std::cout << "Lightning applied: stun 5 sec\n";
-			break;
-
-		case Element::WIND:
-			//Knocksback
-			std::cout << "Wind applied: knockback\n";
-			break;
-
-		case Element::ICE:
-			//Slow amount and duration
-			std::cout << "Ice applied: slow\n";
-			break;
-		}
-	}
 
 	void ActivateSpell(int slotIndex, Entity eID)
 	{
@@ -680,7 +649,9 @@ namespace RockScript {
 				registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
 			}
 			std::cout << "Soundwave cast!\n";
-			//ApplyElementToProjectile(proj);
+			CombatSystem::ApplyElementToProjectile(wave, currentElement);
+			currentElement = Element::NONE; // Reset element after use
+			std::cout << "Element: NONE\n";
 			// to start animation
 			wavetimer = 0.f;
 			break;
@@ -690,9 +661,11 @@ namespace RockScript {
 
 			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
 			float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
-			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "AoeFX.json", posx, trans.pos.y + 400.f);
+			Entity aoe = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "AoeFX.json", posx, trans.pos.y + 400.f);
 			std::cout << "AOE cast!\n";
-			//ApplyElementToProjectile(proj);
+			CombatSystem::ApplyElementToProjectile(aoe, currentElement);
+			currentElement = Element::NONE; // Reset element after use
+			std::cout << "Element: NONE\n";
 			aoetimer = 0.f;
 			break;
 		}
@@ -759,6 +732,32 @@ namespace RockScript {
 			else if (e.key == GLFW_KEY_Q)
 			{
 				CycleElement();
+			}
+			// Direct element selection
+			else if (e.key == GLFW_KEY_Z)
+			{
+				currentElement = Element::FIRE;
+				std::cout << "Element: FIRE\n";
+			}
+			else if (e.key == GLFW_KEY_X)
+			{
+				currentElement = Element::ICE;
+				std::cout << "Element: ICE\n";
+			}
+			else if (e.key == GLFW_KEY_C)
+			{
+				currentElement = Element::WIND;
+				std::cout << "Element: WIND\n";
+			}
+			else if (e.key == GLFW_KEY_V)
+			{
+				currentElement = Element::LIGHTNING;
+				std::cout << "Element: LIGHTNING\n";
+			}
+			else if (e.key == GLFW_KEY_R)
+			{
+				currentElement = Element::NONE;
+				std::cout << "Element: NONE\n";
 			}
 			if (e.key == GLFW_KEY_1)
 				ActivateSpell(0, eID);

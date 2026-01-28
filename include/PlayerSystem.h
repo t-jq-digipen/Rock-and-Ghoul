@@ -1,7 +1,8 @@
 /* ========================================================
  * @file	    PlayerSystem.h
  * @author	    Tan Jun Quan | t.junquan@digipen.edu
- * @date	    29 SEP 2025
+ * @co-author   Yasmin Tazi  | yasmin.t@digipen.edu
+ * @date	    28 JAN 2026
  *
  * @brief	Player system for handling player behaviour.
  *
@@ -37,17 +38,7 @@ namespace PlayerMove {
 }
 
 namespace RockScript {
-
-    enum class Element : int
-    {
-        NONE = 0,
-        LIGHTNING,
-        FIRE,
-        WIND,
-        ICE,
-
-        COUNT
-    };
+    // Element enum is now global in Component.h
 
     enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
 
