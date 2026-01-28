@@ -557,6 +557,11 @@ struct DialogueConfig {
     float speakerNameBaseScale{ 1.2f };
     Colour3 speakerNameColor = { 0, 0, 0 };
     bool speakerNameCentered = false;
+
+    Vec2 speakerPosOffset = { 0.f, 60.f }; // offset pos of label
+    Colour3 speakerColorOffset = { 0, 0, 0 }; // offset color of label
+    float speakerScaleMul = 1.f; // label scale relative to dialogue box
+    bool speakerCenteredOverride = false; // override centering label if true
 };
 
 struct DisplayConfig
