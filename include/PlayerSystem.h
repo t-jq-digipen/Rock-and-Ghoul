@@ -37,6 +37,8 @@ namespace PlayerMove {
 }
 
 namespace RockScript {
+	// maybe wanna shift into combatsystem later
+    void Knockback(Entity eID, bool left, float damage);
 
     enum class Element : int
     {
@@ -58,6 +60,7 @@ namespace RockScript {
 
     inline void End(Entity e);
 }
+
 
 class PlayerSystem : public ISystem {
 private:

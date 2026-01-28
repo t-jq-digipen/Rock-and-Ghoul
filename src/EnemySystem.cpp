@@ -41,6 +41,9 @@
 #include "Enemy.h"
 #include "JsonLoad.h"
 #include <unordered_map>
+#include "CollisionManager.h"
+#include "FilePath.h"
+#include "PlayerSystem.h"
 
 static constexpr float DETECT_RADIUS = 300.f;
 static constexpr float LOSE_RADIUS = 360.f;
@@ -54,10 +57,12 @@ static constexpr float ROAM_EPS = 0.5f;
 static constexpr float CHASE_SPEED = 300.f;
 static constexpr float RETURN_SPEED = 600.f;
 
-static constexpr float MELEE_RANGE = 60.f;
+static constexpr float MELEE_RANGE = 150.f;
 static constexpr float MELEE_COOLDOWN = 0.8f;
-static constexpr float MELEE_WINDUP = 0.15f;
+static constexpr float MELEE_WINDUP = 0.65f;
 static constexpr float MELEE_DURATION = 1.f;
+static constexpr float MELEE_DAMAGE = 10.f;
+
 
 static constexpr float SHOOT_RANGE = 240.f;
 static constexpr float SHOOT_COOLDOWN = 1.2f;
@@ -449,6 +454,54 @@ namespace EnemyAI
 
 size_t SceneSubscriberID = -1;
 
+namespace SpiritMeleeAttack {
+
+
+	struct AttackProperties {
+		size_t subscriberID{};
+		Entity owner{};
+	};
+
+	void HitPlayer(Entity owner, Entity player) {
+		// check if player is shielded or hit already
+		// bruh need to link to shield oops YASMINHELP
+
+
+		// knockback
+		// direction
+		auto& ownerTransform = Registry::Get().Get_Component<TransformComponent>(owner);
+		auto& playerTransform = Registry::Get().Get_Component<TransformComponent>(player);
+
+		bool left = playerTransform.pos.x < ownerTransform.pos.x;
+		RockScript::Knockback(player, left, MELEE_DAMAGE);
+
+		auto& physicsComp = Registry::Get().Get_Component<Physics::PhysicsComponent>(player);
+	}
+
+	std::unordered_map<Entity, AttackProperties> g_meleeProperties;
+
+	inline void Start(Entity eID) {
+		g_meleeProperties[eID].subscriberID = EventBus::Get().Subscribe<TriggerEvent>([eID](const TriggerEvent& e) {
+			// idk how to name it yet lol
+			// if (e.eventName != "SpiritMeleeHit") return;
+
+			if (e.other != targetPlayer || e.trigger != eID) return;
+
+			HitPlayer(g_meleeProperties[eID].owner, targetPlayer);
+			Registry::Get().Remove_Component<ColliderComponent>(e.trigger);
+			}
+		);
+	}
+	inline void Update(Entity, float) {
+
+	}
+	inline void End(Entity eID) {
+
+		EventBus::Get().Unsubscribe<TriggerEvent>(g_meleeProperties[eID].subscriberID);
+		g_meleeProperties.erase(eID);
+	}
+}
+
 void AssignTarget() {
 	for (auto& [entity, comp] : Registry::Get().Get_ComponentMap<TagComponent>())
 	{
@@ -471,8 +524,6 @@ struct SpiritRuntime
 {
 	SpiritState state{ SpiritState::SPIRIT_IDLE };
 
-	Entity target{ INVALID_ENTITY };
-
 	bool willAttack{ false };
 
 	float stateTime{ 0.f };
@@ -482,30 +533,12 @@ struct SpiritRuntime
 
 std::unordered_map<Entity, SpiritRuntime> g_spirits;
 
-void AssignSpirits() {
-	if (targetPlayer == INVALID_ENTITY) {
-		std::cout << "[EnemySystem] No player found to assign as target for spirits!\nSkipping spirit assignments";
-		return;
-	}
-
-	int spiritsCount = 0;
-	for (auto& [entID, tagComp] : Registry::Get().Get_ComponentMap<TagComponent>())
-	{
-		if (tagComp.tag == T_ENEMY && Registry::Get().Has_Component<TransformComponent>(entID))
-		{
-			g_spirits[entID].target = targetPlayer;
-			spiritsCount++;
-		}
-	}
-	std::cout << "[EnemySystem] Assigned " << spiritsCount << " spirits to target player " << targetPlayer << std::endl;
-}
 
 namespace SpiritScript {
 	// Register spirit runtime and assign target player
 	inline void Start(Entity eID) {
 		std::cout << "Spirit script started for entity " << eID << std::endl;
 		g_spirits[eID] = SpiritRuntime();
-		g_spirits[eID].target = targetPlayer;
 	}
 
 	inline void Update(Entity eID, float dt) {
@@ -564,7 +597,8 @@ namespace SpiritScript {
 
 
 		// always face player
-		spriteSheet.Sprite().SetFlipX(directionToPlayer.x >= 0.f);
+		bool faceRight = directionToPlayer.x >= 0.f;
+		spriteSheet.Sprite().SetFlipX(faceRight);
 		
 
 		//spriteSheet.SetState(animstate);
@@ -620,6 +654,10 @@ namespace SpiritScript {
 				spiritLogic.willAttack = false;
 				// spawn the hitbox
 				// spawn prefab here
+				Entity meleeHitbox = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "SpiritMelee.json", selfPos.x, selfPos.y);
+				ColliderComponent& colliderComp = Registry::Get().Get_Component<ColliderComponent>(meleeHitbox);
+				colliderComp.triggerEvent = "SpiritMeleeHit";
+				SpiritMeleeAttack::g_meleeProperties[meleeHitbox].owner = eID;
 			}
 
 			if (spiritLogic.stateTime >= MELEE_DURATION) {
@@ -690,8 +728,10 @@ namespace SpiritScript {
 	inline void End(Entity eID) {
 		std::cout << "Spirit script ended for entity " << eID << std::endl;
 		g_spirits.erase(eID);
+		
 	}
 }
+
 
 void EnemySystem::Initialize()
 {
@@ -706,6 +746,13 @@ void EnemySystem::Initialize()
 	spirit.Update = [](Entity e, float dt) { SpiritScript::Update(e, dt); };
 	spirit.End = [](Entity e) { SpiritScript::End(e); };
 	LogicSystem::Get().RegisterScript("SpiritScript", spirit, ScriptID::SPIRIT);
+
+	BehaviourFCT spiritMelee;
+	
+	spirit.Init = [](Entity e) { SpiritMeleeAttack::Start(e); };
+	spirit.Update = [](Entity e, float dt) { SpiritMeleeAttack::Update(e, dt); };
+	spirit.End = [](Entity e) { SpiritMeleeAttack::End(e); };
+	LogicSystem::Get().RegisterScript("SpiritMeleeScript", spirit, ScriptID::SPIRITMELEE);
 
 	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
 		// on scene load, wipe spirits and assign target player

@@ -170,6 +170,8 @@ namespace RockScript {
 	constexpr float SOUNDWAVE_TIME = 0.5f;
 	constexpr float AOE_TIME = 1.f;
 	constexpr float SHIELD_DURATION = 5.f;
+	constexpr float DASH_INVULN_DURATION = 1.f;
+	constexpr float DASH_COOLDOWN = 2.f;
 
 	constexpr float STAGGER_DURATION = 1.f;
 #pragma endregion
@@ -177,6 +179,8 @@ namespace RockScript {
 	// Variables
 #pragma region VARIABLES
 	static float stunnedtimer = STAGGER_DURATION;
+
+	static float dashtimer = DASH_COOLDOWN;
 
 	static float meleetimer = SWING_TIME; // swing
 	static float aoetimer = AOE_TIME;
@@ -336,7 +340,8 @@ namespace RockScript {
 		// dk if want to allow dash cancelling spells
 		ResetTimers();
 		shot = true;
-
+		dashtimer = 0.f;
+		
 		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID) || !Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
 		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
@@ -369,6 +374,20 @@ namespace RockScript {
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
 		stunnedtimer = 0.f;
 		physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
+	}
+
+	void Knockback(Entity eID, bool left, float damage) {
+		if (shieldTimer < SHIELD_DURATION || stunnedtimer < STAGGER_DURATION || dashtimer < DASH_INVULN_DURATION) { return; } // no hit when shielded or already knocked back
+
+		auto& healthComp = Registry::Get().Get_Component<HealthComponent>(eID);
+		healthComp.currhp -= damage;
+
+		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) { return; }
+		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
+		stunnedtimer = 0.f;
+		float directionx = left ? -1.f : 1.f;
+		faceRight = left;
+		physics.ApplyLinearImpulse(RG_Scale({ directionx,0 }, DASH_IMPULSE));
 	}
 
 	//Arrow key codes for easier reference
@@ -803,6 +822,12 @@ namespace RockScript {
 
 		//Shield Timer
 		UpdateShield(dt, transComp.pos.x, transComp.pos.y);
+
+		//Dash Timer
+		if (dashtimer < DASH_COOLDOWN)
+		{
+			dashtimer += dt;
+		}
 
 		for (auto& spell : spellSlots)
 		{
