@@ -553,6 +553,7 @@ struct DialogueConfig {
     bool customSpeaker = false; // for setting custom speaker
     std::string customSpeakerName = "Beberd";
 
+    // Speaker label settings
     Vec2 speakerNameBasePos;
     float speakerNameBaseScale{ 1.2f };
     Colour3 speakerNameColor = { 0, 0, 0 };
@@ -562,6 +563,13 @@ struct DialogueConfig {
     Colour3 speakerColorOffset = { 0, 0, 0 }; // offset color of label
     float speakerScaleMul = 1.f; // label scale relative to dialogue box
     bool speakerCenteredOverride = false; // override centering label if true
+
+    // Dialogue box display UI settings
+    bool bgEnabled = false;
+    Vec2 bgBaseSize = { 600.f, 220.f };
+    bool bgCentered = true;
+    UI_RenderData bgRenderData;
+
 };
 
 struct DisplayConfig

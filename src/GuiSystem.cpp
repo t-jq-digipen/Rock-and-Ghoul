@@ -943,7 +943,74 @@ void GuiSystem::Update(float dt)
                 }
             }
 
-            // Draw positions
+            // Draw dialogue background
+
+            if (d.bgEnabled)
+            {
+                Vec2 bgPos = d.textBox.pos;
+                Vec2 bgScale = d.bgBaseSize * uiScale;
+                switch (d.bgRenderData.GetRenderType())
+                {
+                case UIRenderType::Shape:
+                {
+                    UIShapeRender data = d.bgRenderData.GetShapeData();
+                    switch (data.shape)
+                    {
+                    case ButtonShape::Rectangle:
+                    {
+                        render.DrawRect(bgPos, bgScale.x, bgScale.y, data.color);
+                        break;
+                    }
+                    case ButtonShape::Circle:
+                    {
+                        render.DrawCircle(bgPos, std::min(bgScale.x, bgScale.y) * 0.5f, data.color, 48);
+                        break;
+                    }
+                    case ButtonShape::Rounded:
+                    {
+                        render.DrawRoundedRect(bgPos, bgScale.x, bgScale.y, std::min(bgScale.x, bgScale.y) * 0.5f, data.color);
+                        break;
+                    }
+                    } break;
+                }
+                case UIRenderType::CustomQuad:
+                {
+                    auto data = d.bgRenderData.GetQuadData();
+
+                    float sx = GLApp::width / 1920.f;
+                    float sy = GLApp::height / 1080.f;
+
+                    auto scale = [&](Vec2 v) { return Vec2{ v.x * sx, v.y * sy }; }; //lambda function to calculate scale value for full screen
+
+                    render.DrawCustomQuad(scale(data.v0), scale(data.v1), scale(data.v2), scale(data.v3), data.color); //then use scaled values
+
+                    //render.DrawCustomQuad(data.v0, data.v1, data.v2, data.v3, data.color);
+                } break;
+
+                case UIRenderType::Image:
+                {
+                    auto data = d.bgRenderData.GetImageData();
+                    render.DrawImageRotated(data.m_image, bgPos.x, bgPos.y, bgScale.x, bgScale.y, 0.f, 0.f);
+                } break;
+
+                case UIRenderType::ImageSheet:
+                {
+                    auto data = d.bgRenderData.GetImageSheetData();
+                    int tileW = data.m_image.widthPixels / data.total_cols;
+                    int tileH = data.m_image.heightPixels / data.total_rows;
+                    int col = data.frame_index.curr_col;
+                    int row = data.total_rows - 1 - data.frame_index.curr_row;
+                    float u0 = float(col * tileW), v0 = float(row * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+
+                    render.DrawImageSub(data.m_image, bgPos.x, bgPos.y, bgScale.x, bgScale.y, u0, v0, u1, v1, 0.f, 0.f);
+                } break;
+
+                default: break;
+                }
+            }
+
+            // Draw text positions
             Colour3 drawColor = d.textBox.color;
             Vec2 fullSize = render.CalculateTextSize(fullLine, d.textBox.scale, "Marker");
             float drawX = d.textBox.pos.x;
@@ -1040,6 +1107,7 @@ void GuiSystem::Update(float dt)
                 render.DrawText(ln, drawX, yCursor, d.textBox.scale, drawColor, "Marker");
                 yCursor -= lineH;
             }
+
         }; // end DRAW DIALOGUE
         // --------------------------------------------------
 

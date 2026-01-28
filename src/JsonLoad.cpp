@@ -657,7 +657,11 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"customSpeakerName", dlg.customSpeakerName},
             {"speakerNameBasePos", {dlg.speakerNameBasePos.x, dlg.speakerNameBasePos.y}},
             {"speakerNameBaseScale", dlg.speakerNameBaseScale},
-            {"speakerNameColor", {dlg.speakerNameColor.r, dlg.speakerNameColor.g, dlg.speakerNameColor.b}}
+            {"speakerNameColor", {dlg.speakerNameColor.r, dlg.speakerNameColor.g, dlg.speakerNameColor.b}},
+            {"bgEnabled", dlg.bgEnabled},
+            {"bgSize", { dlg.bgSize.x, dlg.bgSize.y }},
+            {"bgCentered", dlg.bgCentered},
+            {"bgRenderData", dlg.bgRenderData}
         };
         j["gui"]["dialogues"].push_back(std::move(jd));
     }
@@ -795,6 +799,14 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 d.speakerNameBasePos = { dlg["speakerNameBasePos"][0], dlg["speakerNameBasePos"][1]};
                 d.speakerNameBaseScale = dlg["speakerNameBaseScale"];
                 d.speakerNameColor = { dlg["speakerNameColor"][0], dlg["speakerNameColor"][1], dlg["speakerNameColor"][2]};
+
+                d.bgEnabled = dlg.value("bgEnabled", false);
+                if (dlg.contains("bgSize") && dlg["bgSize"].is_array())
+                {
+                    d.bgSize = { dlg["bgSize"][0], dlg["bgSize"][1] };
+                }
+                d.bgCentered = dlg.value("bgCentered", true);
+                d.bgRenderData = dlg.value("bgRenderData", std::string{});
 
                 s.guiDialogues.push_back(std::move(d));
             }
@@ -1002,6 +1014,10 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.speakerNameBasePos = d.speakerNameBasePos;
             sd.speakerNameBaseScale = d.speakerNameBaseScale;
             sd.speakerNameColor = d.speakerNameColor;
+            sd.bgEnabled = d.bgEnabled;
+            sd.bgSize = d.bgBaseSize;
+            sd.bgCentered = d.bgCentered;
+            sd.bgRenderData = d.bgRenderData.Serialize();
 
             const TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
             if (comp)
@@ -1202,6 +1218,10 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.speakerNameBasePos = d.speakerNameBasePos;
             cfg.speakerNameBaseScale = d.speakerNameBaseScale;
             cfg.speakerNameColor = d.speakerNameColor;
+            cfg.bgEnabled = d.bgEnabled;
+            cfg.bgBaseSize = d.bgSize;
+            cfg.bgCentered = d.bgCentered;
+            if (!d.bgRenderData.empty()) cfg.bgRenderData = UI_RenderData::DeSerialize(d.bgRenderData);
 
             cfg.jsonPath = d.jsonPath;
             cfg.sceneID = d.sceneID.empty() ? "0" : d.sceneID;

@@ -126,6 +126,11 @@ struct SavedScene {
         Vec2 speakerNameBasePos;
         float speakerNameBaseScale;
         Colour3 speakerNameColor;
+
+        bool bgEnabled = false;
+        Vec2 bgSize = { 600.f, 220.f };
+        bool bgCentered;
+        std::string bgRenderData;
     };
     std::vector<SavedDialogue> guiDialogues;
 

@@ -2309,47 +2309,6 @@ void ImGuiSystem::Update(float dt)
                                 comp->SetCurrentLineIndex(idx);
                                 comp->StartTyping();
                             }
-
-                            // Speaker name label
-                            ImGui::SeparatorText("Speaker Name");
-                            ImGui::Checkbox("Custom Speaker?", &d.customSpeaker);
-                            if (d.customSpeaker)
-                            {
-                                char buf[64]; std::snprintf(buf, sizeof(buf), "%s", d.customSpeakerName.c_str());
-                                if (ImGui::InputText("Speaker Name", buf, IM_ARRAYSIZE(buf)))
-                                {
-                                    d.customSpeakerName = buf;
-                                }
-                            }
-
-                            // --- Speaker label (edit offsets so it keeps following the box) ---
-                            Vec2 sp = d.textBox.basePos + d.speakerPosOffset;
-                            if (ImGui::SliderFloat("Pos X", &sp.x, 0.f, 1920.f)) d.speakerPosOffset.x = sp.x - d.textBox.basePos.x;
-                            if (ImGui::SliderFloat("Pos Y", &sp.y, 0.f, 1080.f)) d.speakerPosOffset.y = sp.y - d.textBox.basePos.y;
-
-                            float ss = d.textBox.baseScale * d.speakerScaleMul;
-                            if (ImGui::SliderFloat("Scale", &ss, 0.1f, 10.f, "%.3f"))
-                                d.speakerScaleMul = (d.textBox.baseScale != 0.f) ? (ss / d.textBox.baseScale) : 1.f;
-
-                            float sc[3] = {
-                                clamp01(d.textBox.color.r + d.speakerColorOffset.r),
-                                clamp01(d.textBox.color.g + d.speakerColorOffset.g),
-                                clamp01(d.textBox.color.b + d.speakerColorOffset.b)
-                            };
-                            if (ImGui::ColorEdit3("Color", sc))
-                                d.speakerColorOffset = { sc[0] - d.textBox.color.r, sc[1] - d.textBox.color.g, sc[2] - d.textBox.color.b };
-
-                            bool sCent = d.textBox.centered ^ d.speakerCenteredOverride;
-                            if (ImGui::Checkbox("Centered?", &sCent))
-                                d.speakerCenteredOverride = (sCent != d.textBox.centered);
-
-                            if (ImGui::Button("Reset Label Settings"))
-                            {
-                                d.speakerPosOffset = { 0.f, 60.f };
-                                d.speakerScaleMul = 1.f;
-                                d.speakerColorOffset = { 0.f, 0.f, 0.f };
-                                d.speakerCenteredOverride = false;
-                            }
                         }
                         else
                         {
@@ -2359,6 +2318,296 @@ void ImGuiSystem::Update(float dt)
                     else
                     {
                         ImGui::TextDisabled("No TextComponent attached!");
+                    }
+
+                    // SPEAKER LABEL SETTINGS
+
+                    ImGui::SeparatorText("Speaker Name");
+                    ImGui::Checkbox("Custom Speaker?", &d.customSpeaker);
+                    if (d.customSpeaker)
+                    {
+                        char buf[64]; std::snprintf(buf, sizeof(buf), "%s", d.customSpeakerName.c_str());
+                        if (ImGui::InputText("Speaker Name", buf, IM_ARRAYSIZE(buf)))
+                        {
+                            d.customSpeakerName = buf;
+                        }
+                    }
+
+                    // --- Speaker label (edit offsets so it keeps following the box) ---
+                    Vec2 sp = d.textBox.basePos + d.speakerPosOffset;
+                    if (ImGui::SliderFloat("Pos X", &sp.x, 0.f, 1920.f)) d.speakerPosOffset.x = sp.x - d.textBox.basePos.x;
+                    if (ImGui::SliderFloat("Pos Y", &sp.y, 0.f, 1080.f)) d.speakerPosOffset.y = sp.y - d.textBox.basePos.y;
+
+                    float ss = d.textBox.baseScale * d.speakerScaleMul;
+                    if (ImGui::SliderFloat("Scale", &ss, 0.1f, 10.f, "%.3f"))
+                        d.speakerScaleMul = (d.textBox.baseScale != 0.f) ? (ss / d.textBox.baseScale) : 1.f;
+
+                    float sc[3] = {
+                        clamp01(d.textBox.color.r + d.speakerColorOffset.r),
+                        clamp01(d.textBox.color.g + d.speakerColorOffset.g),
+                        clamp01(d.textBox.color.b + d.speakerColorOffset.b)
+                    };
+                    if (ImGui::ColorEdit3("Color", sc))
+                        d.speakerColorOffset = { sc[0] - d.textBox.color.r, sc[1] - d.textBox.color.g, sc[2] - d.textBox.color.b };
+
+                    bool sCent = d.textBox.centered ^ d.speakerCenteredOverride;
+                    if (ImGui::Checkbox("Centered?", &sCent))
+                        d.speakerCenteredOverride = (sCent != d.textBox.centered);
+
+                    if (ImGui::Button("Reset Label Settings"))
+                    {
+                        d.speakerPosOffset = { 0.f, 60.f };
+                        d.speakerScaleMul = 1.f;
+                        d.speakerColorOffset = { 0.f, 0.f, 0.f };
+                        d.speakerCenteredOverride = false;
+                    }
+
+                    // DIALOGUE BACKGROUND
+
+                    ImGui::SeparatorText("Background");
+                    ImGui::Checkbox("Enable Background", &d.bgEnabled);
+                    if (d.bgEnabled)
+                    {
+                        ImGui::Checkbox("Centered?", &d.bgCentered);
+                        ImGui::SliderFloat("Width", &d.bgBaseSize.x, 0.f, 1920.f);
+                        ImGui::SliderFloat("Height", &d.bgBaseSize.y, 0.f, 1080.f);
+
+                        const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
+                        int currType = (int)d.bgRenderData.GetRenderType();
+                        if (ImGui::Combo("Render Type", &currType, typeNames, IM_ARRAYSIZE(typeNames)))
+                        {
+                            d.bgRenderData.SetRenderType((UIRenderType)currType);
+                        }
+
+                        switch (d.bgRenderData.GetRenderType())
+                        {
+                            // Shape Render
+                        case UIRenderType::Shape:
+                        {
+                            auto& shape = d.bgRenderData.GetShapeData();
+                            const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
+                            int currShape = (int)shape.shape;
+                            if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames)))
+                            {
+                                shape.shape = (ButtonShape)currShape;
+                            }
+
+                            float col[3] = { shape.color.r, shape.color.g, shape.color.b };
+                            if (ImGui::ColorEdit3("Color", col))
+                            {
+                                shape.color = { col[0], col[1], col[2] };
+                            }
+                        } break;
+
+                        // Custom Quad Render
+                        case UIRenderType::CustomQuad:
+                        {
+                            auto& quad = d.bgRenderData.GetQuadData();
+                            ImGui::InputFloat2("v0", &quad.v0.x);
+                            ImGui::InputFloat2("v1", &quad.v1.x);
+                            ImGui::InputFloat2("v2", &quad.v2.x);
+                            ImGui::InputFloat2("v3", &quad.v3.x);
+
+                            if (ImGui::Button("Automatic quad by size"))
+                            {
+                                quad.v0 = { d.textBox.basePos.x - (0.5f * d.bgBaseSize.x), d.textBox.basePos.y - (0.5f * d.bgBaseSize.y) };
+                                quad.v1 = { d.textBox.basePos.x + (0.5f * d.bgBaseSize.x), d.textBox.basePos.y - (0.5f * d.bgBaseSize.y) };
+                                quad.v2 = { d.textBox.basePos.x + (0.5f * d.bgBaseSize.x), d.textBox.basePos.y + (0.5f * d.bgBaseSize.y) };
+                                quad.v3 = { d.textBox.basePos.x - (0.5f * d.bgBaseSize.x), d.textBox.basePos.y + (0.5f * d.bgBaseSize.y) };
+                            }
+                            float col[3] = { quad.color.r, quad.color.g, quad.color.b };
+                            if (ImGui::ColorEdit3("Color", col))
+                            {
+                                quad.color = { col[0], col[1], col[2] };
+                            }
+                        } break;
+
+                        // Image Render
+                        case UIRenderType::Image:
+                        {
+                            auto& imgData = d.bgRenderData.GetImageData();
+                            Image& img = imgData.m_image;
+                            const auto& cache = Render::GetInstance().Get_TextureCache();
+
+                            static int selected = 0;
+                            std::vector<const char*> imgOptions;
+                            std::vector<GLuint> textureIDs;
+                            imgOptions.reserve(cache.size());
+                            for (auto const& [optname, optval] : cache)
+                            {
+                                imgOptions.push_back(optname.c_str());
+                                textureIDs.push_back(optval);
+                            }
+                            for (size_t i = 0; i < textureIDs.size(); i++)
+                            {
+                                if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
+                            }
+                            if (ImGui::Combo("Texture", &selected, imgOptions.data(), (int)imgOptions.size()))
+                            {
+                                img = CreateImage(imgOptions[selected]);
+                            }
+
+                            {
+                                GLuint texID = img.textureID;
+                                ImVec2 avail = ImGui::GetContentRegionAvail();
+                                float scale = img.widthPixels ? (avail.x / img.widthPixels) * 0.9f : 0.f;
+                                ImVec2 displaySize(img.widthPixels * scale, img.heightPixels * scale);
+                                ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+                            }
+
+                            ImGui::Text("Resize to aspect ratio:");
+                            if (ImGui::Button("Width"))  d.bgBaseSize.x = d.bgBaseSize.y * ((float)img.widthPixels / (float)img.heightPixels);
+                            ImGui::SameLine();
+                            if (ImGui::Button("Height")) d.bgBaseSize.y = d.bgBaseSize.x * ((float)img.heightPixels / (float)img.widthPixels);
+                        } break;
+
+                        // Image Sheet Render
+                        case UIRenderType::ImageSheet:
+                        {
+                            auto& sheet = d.bgRenderData.GetImageSheetData();
+                            Image& img = sheet.m_image;
+
+                            const auto& cache = Render::GetInstance().Get_TextureCache();
+                            static int selected = 0;
+                            std::vector<const char*> imgOptions;
+                            std::vector<GLuint> textureIDs;
+                            imgOptions.reserve(cache.size());
+                            for (auto const& [optname, optval] : cache)
+                            {
+                                imgOptions.push_back(optname.c_str());
+                                textureIDs.push_back(optval);
+                            }
+                            for (size_t i = 0; i < textureIDs.size(); i++)
+                            {
+                                if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
+                            }
+                            if (ImGui::Combo("Texture Drawn", &selected, imgOptions.data(), (int)imgOptions.size()))
+                            {
+                                img = CreateImage(imgOptions[selected]);
+                            }
+
+                            // display
+                            {
+                                GLuint texID = img.textureID;
+                                const float texW = (float)img.widthPixels;
+                                const float texH = (float)img.heightPixels;
+
+                                ImVec2 avail = ImGui::GetContentRegionAvail();
+
+                                float scale = (texW != 0) ? avail.x / texW : 0.f;
+                                scale *= 0.9f;
+
+                                ImVec2 displaySize(texW * scale, texH * scale);
+                                ImVec2 imagePos = ImGui::GetCursorScreenPos();
+
+                                ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+
+                                ImDrawList* draw = ImGui::GetWindowDrawList();
+
+                                int rows = sheet.total_rows;
+                                int cols = sheet.total_cols;
+
+                                float cellW = displaySize.x / cols;
+                                float cellH = displaySize.y / rows;
+
+                                // vertical lines
+                                for (int c = 1; c < cols; ++c)
+                                {
+                                    float x = imagePos.x + c * cellW;
+                                    draw->AddLine(ImVec2(x, imagePos.y),
+                                        ImVec2(x, imagePos.y + displaySize.y),
+                                        IM_COL32(255, 255, 255, 128));
+                                }
+
+                                // horizontal lines
+                                for (int r = 1; r < rows; ++r)
+                                {
+                                    float y = imagePos.y + r * cellH;
+                                    draw->AddLine(ImVec2(imagePos.x, y),
+                                        ImVec2(imagePos.x + displaySize.x, y),
+                                        IM_COL32(255, 255, 255, 128));
+                                }
+
+                                // highlight
+                                int r = sheet.frame_index.curr_row;
+                                int c = sheet.frame_index.curr_col;
+
+                                ImVec2 p0(
+                                    imagePos.x + c * cellW,
+                                    imagePos.y + r * cellH
+                                );
+                                ImVec2 p1(
+                                    imagePos.x + (c + 1) * cellW,
+                                    imagePos.y + (r + 1) * cellH
+                                );
+
+                                // Filled highlight
+                                draw->AddRectFilled(p0, p1, IM_COL32(255, 255, 0, 80));
+
+                                // Outline
+                                draw->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
+                            }
+
+                            // Render image based on selected row and column of the image sheet
+                            ImGui::InputInt("Rows", (int*)&sheet.total_rows);
+                            if (sheet.total_rows < 1) { sheet.total_rows = 1; }
+                            ImGui::InputInt("Columns", (int*)&sheet.total_cols);
+                            if (sheet.total_cols < 1) { sheet.total_cols = 1; }
+
+                            ImGui::Separator();
+
+                            ImGui::SliderInt("Current Row", (int*)&sheet.frame_index.curr_row, 0, (int)sheet.total_rows - 1);
+                            ImGui::SliderInt("Current Col", (int*)&sheet.frame_index.curr_col, 0, (int)sheet.total_cols - 1);
+
+
+                            sheet.total_cols = std::max(1u, sheet.total_cols);
+                            sheet.total_rows = std::max(1u, sheet.total_rows);
+
+                            // State Frames
+                            if (ImGui::TreeNode("State Frames"))
+                            {
+                                for (auto& [state, idx] : sheet.frames)
+                                {
+                                    ImGui::PushID(state);
+
+                                    ImGui::Text("State %u", state);
+
+                                    ImGui::InputInt("Row", (int*)&idx.curr_row);
+                                    ImGui::InputInt("Col", (int*)&idx.curr_col);
+
+                                    idx.curr_row = std::clamp(idx.curr_row, 0u, sheet.total_rows - 1);
+                                    idx.curr_col = std::clamp(idx.curr_col, 0u, sheet.total_cols - 1);
+
+                                    if (ImGui::Button("Delete"))
+                                        sheet.frames.erase(state);
+
+                                    ImGui::Separator();
+                                    ImGui::PopID();
+                                }
+
+                                static int newStateID = 0;
+                                ImGui::InputInt("Add State", &newStateID);
+                                if (ImGui::Button("Add"))
+                                {
+                                    sheet.frames[newStateID] = { 0,0 };
+                                }
+
+                                ImGui::TreePop();
+                            }
+
+                            // Aspect helpers (use frame size)
+                            int frameW = img.widthPixels / std::max(1u, sheet.total_cols);
+                            int frameH = img.heightPixels / std::max(1u, sheet.total_rows);
+                            ImGui::Text("Resize to aspect ratio:");
+                            if (ImGui::Button("Width")) d.bgBaseSize.x = d.bgBaseSize.y * (float(frameW) / float(frameH));
+                            ImGui::SameLine();
+                            if (ImGui::Button("Height")) d.bgBaseSize.y = d.bgBaseSize.x * (float(frameH) / float(frameW));
+                        } break;
+
+                        default:
+                            ImGui::TextDisabled("No render info.");
+                            break;
+                        }
                     }
 
                     ImGui::Separator();
@@ -2937,6 +3186,11 @@ void ImGuiSystem::Update(float dt)
                             dst.owned->SetCurrentLineIndex(sc->GetCurrentLineIndex());
                             dst.owned->SetIsTyping(false);
                             dst.textComp = dst.owned.get();
+
+                            dst.bgEnabled = src.bgEnabled;
+                            dst.bgBaseSize = src.bgBaseSize;
+                            dst.bgCentered = src.bgCentered;
+                            dst.bgRenderData = src.bgRenderData;
                         }
                         else
                         {
