@@ -139,6 +139,9 @@ void SceneManager::Draw()
 
 void SceneManager::EnterPlayMode()
 {
+    //so that it wont break when press stop during cutscene
+    m_cutscenePlaying = false;
+
     isPlaying = true;
     isPaused = false;
     inEditMode = false;
@@ -154,6 +157,9 @@ void SceneManager::EnterPlayMode()
 
 void SceneManager::EnterEditMode()
 {
+    //so that it wont break when press stop during cutscene
+    m_cutscenePlaying = false;
+
     isPlaying = false;
     isPaused = true;
     inEditMode = true;

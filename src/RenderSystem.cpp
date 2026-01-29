@@ -598,6 +598,8 @@ void CutscenePlayer::Update(double dt) {
                         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
                         texInited = true;
+
+
                     }
 
                     //sws_scale(sws, frm->data, frm->linesize, 0, h, dstData, dstLinesize);
@@ -619,6 +621,9 @@ void CutscenePlayer::Update(double dt) {
                     glPixelStorei(GL_UNPACK_ROW_LENGTH, dstLinesize[0] / 4);
                     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, dstData[0]);
                     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+                   
+
 
                     av_frame_unref(frm);
                     break;
@@ -859,8 +864,9 @@ void RenderSystem::Initialize() {
     //TestOpenVideo();
 
     //CutscenePlayer gCutscene;
-    gCutscene.Init("../Assets/Intro2.mp4");
-    cutsceneActive = true;
+    gCutscene.Init("../Assets/IntroCutscene.mp4");
+    //cutsceneActive = true;
+    //SceneManager::Get().SetCutscenePlaying(true);
 
     
 }
@@ -875,42 +881,9 @@ void RenderSystem::Update(float dt) {
     
     bool camcheck = renderer.useCamera;
 
+ 
 
-
-    //idk where to put this for cutscene stuff
-    if (cutsceneActive)
-    {
-        //Decode/upload based on dt (progress playback)
-        gCutscene.Update(dt);
-
-        //Present to the main framebuffer (NOT your scene FBO)
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, GLApp::width, GLApp::height);
-
-        // renderer.ApplyLetterboxViewport();
-
-        renderer.ClearBackground({ 0.f, 0.f, 0.f, 1.f });
-
-        // Draw the cutscene in a projection/state that won't be overwritten
-        // Important: avoid camera projection for this.
-        auto oldCam = renderer.useCamera;
-        renderer.useCamera = false;
-        renderer.SetProjectionType(ProjectionType::UI);
-
-        gCutscene.Render(); // calls DrawLetterboxedTexture(tex)
-
-        renderer.SetProjectionType(ProjectionType::WORLD);
-        renderer.useCamera = oldCam;
-
-        //End condition
-        if (gCutscene.finished)
-        {
-            cutsceneActive = false;
-            gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
-        }
-
-        return; // <<< SUPER IMPORTANT: don't run the rest of RenderSystem
-    }
+   
 
 
 
@@ -991,6 +964,83 @@ void RenderSystem::Update(float dt) {
     }
     else // ST_GAME
     {
+
+        //idk where to put this for cutscene stuff, if i put here, it runs after main menu, BUT it clashes with the UI stuff
+        //Only set it once to true
+        static bool startedCutscene = false;
+        if (SceneManager::Get().GetSceneType() == ST_GAME && !startedCutscene) {
+            SceneManager::Get().SetCutscenePlaying(true);
+            startedCutscene = true;
+        }
+
+        if (SceneManager::Get().IsCutscenePlaying())
+        {
+            //Decode/upload based on dt (progress playback)
+            /*if (!sm.IsPaused()) {
+                gCutscene.Update(dt);
+            }*/
+
+            #ifndef NO_IMGUI
+            if (ImGuiSystem::guiEnabled) {
+                renderer.BeginSceneCapture();                 // binds scene FBO + sets viewport
+                renderer.ClearBackground({ 0.f,0.f,0.f,1.f });  // clear scene FBO
+            }
+            else
+            #endif
+            {
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glViewport(0, 0, GLApp::width, GLApp::height);
+                renderer.ClearBackground({ 0.f,0.f,0.f,1.f });  // clear backbuffer
+            }
+
+
+            gCutscene.Update(dt);
+
+            //Present to the main framebuffer (NOT your scene FBO)
+            /*glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glViewport(0, 0, GLApp::width, GLApp::height);*/
+
+            // renderer.ApplyLetterboxViewport();
+
+            renderer.ClearBackground({ 0.f, 0.f, 0.f, 1.f });
+
+            // Draw the cutscene in a projection/state that won't be overwritten
+            // Important: avoid camera projection for this.
+            auto oldCam = renderer.useCamera;
+            renderer.useCamera = false;
+            renderer.SetProjectionType(ProjectionType::UI);
+
+            gCutscene.Render(); // calls DrawLetterboxedTexture(tex)
+
+            renderer.SetProjectionType(ProjectionType::WORLD);
+            renderer.useCamera = oldCam;
+
+
+            #ifndef NO_IMGUI
+            // If your pipeline expects EndSceneCapture() for the editor view, do it here:
+            if (ImGuiSystem::guiEnabled) {
+                renderer.EndSceneCapture();
+            }
+            #endif
+
+            //End condition
+            if (gCutscene.finished)
+            {
+                //cutsceneActive = false;
+                SceneManager::Get().SetCutscenePlaying(false);
+                gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
+            }
+
+            //static int once = 0;
+            //if (cutsceneActive && once++ % 60 == 0) std::cout << "CUTSCENE FRAME\n";
+
+            /*if (!sm.IsPaused()) {
+                return;
+            }*/
+
+            return; // <<< SUPER IMPORTANT: don't run the rest of RenderSystem
+        }
+
         // Gameplay or editor: fullscreen world background
         for (GLuint tex : s_backgroundTextures)
         {
@@ -1327,15 +1377,15 @@ void RenderSystem::Update(float dt) {
     renderInstance.FlushBatch();
 
     // UI (rendered last, most in front)
+        renderInstance.SetProjectionType(ProjectionType::UI);
+        //renderer.useCamera = false;
+        renderInstance.BeginBatch();
+        // DrawLayer(uiEntities);
+        drawLayer(ui_list);
+        renderInstance.EndBatch();
+        renderInstance.FlushBatch();
+        renderer.useCamera = camcheck;
 
-    renderInstance.SetProjectionType(ProjectionType::UI);
-    //renderer.useCamera = false;
-    renderInstance.BeginBatch();
-    // DrawLayer(uiEntities);
-    drawLayer(ui_list);
-    renderInstance.EndBatch();
-    renderInstance.FlushBatch();
-    renderer.useCamera = camcheck;
 
     //Draw in the correct order
     /*DrawLayer(backgroundEntities);
