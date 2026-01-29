@@ -38,6 +38,8 @@ namespace PlayerMove {
 }
 
 namespace RockScript {
+	// maybe wanna shift into combatsystem later
+    void Knockback(Entity eID, bool left, float damage);
 
     enum class Element : int
     {
@@ -52,7 +54,14 @@ namespace RockScript {
 
     enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
 
+
+    inline void Start(Entity e);
+
+    inline void Update(Entity e, float dt);
+
+    inline void End(Entity e);
 }
+
 
 class PlayerSystem : public ISystem {
 private:
