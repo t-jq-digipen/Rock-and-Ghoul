@@ -1197,8 +1197,8 @@ void ImGuiSystem::Update(float dt)
                     // Prepare default text box
                     DialogueConfig d;
                     d.textBox.text = "";
-                    d.textBox.basePos = { 510, 300 };
-                    d.textBox.baseScale = 0.9f;
+                    d.textBox.basePos = { 450, 200 };
+                    d.textBox.baseScale = 1.f;
                     d.textBox.pos = d.textBox.basePos;
                     d.textBox.scale = d.textBox.baseScale;
                     d.textBox.color = { 0, 0, 0 };
@@ -1208,6 +1208,8 @@ void ImGuiSystem::Update(float dt)
                     d.sceneID = "0";
                     d.ID = nextID();
                     d.owned = std::make_shared<TextSystem::TextComponent>();
+                    d.textSpeed = 30.f;
+                    d.wrapWidth = 1300.f;
                     if (d.owned) 
                     {
                         TextSystem::LoadDialogueFromJson(d.jsonPath, *d.owned);
@@ -1797,7 +1799,6 @@ void ImGuiSystem::Update(float dt)
                                 ImVec2 avail = ImGui::GetContentRegionAvail();
 
                                 float scale = (texW != 0) ? avail.x / texW : 0.f;
-                                scale *= 0.9f;
 
                                 ImVec2 displaySize(texW * scale, texH * scale);
 
@@ -1859,7 +1860,6 @@ void ImGuiSystem::Update(float dt)
                                 ImVec2 avail = ImGui::GetContentRegionAvail();
 
                                 float scale = (texW != 0) ? avail.x / texW : 0.f;
-                                scale *= 0.9f;
 
                                 ImVec2 displaySize(texW * scale, texH * scale);
                                 ImVec2 imagePos = ImGui::GetCursorScreenPos();
@@ -2094,26 +2094,26 @@ void ImGuiSystem::Update(float dt)
                                 {
                                     sceneIDs.push_back(sc.value("sceneID", std::string("0")));
                                     // speaker label defaults
-                                    if (sc.contains("speakerUI") && sc["speakerUI"].is_object()) 
-                                    {
-                                        auto& sl = sc["speakerUI"];
-                                        if (sl.contains("pos") && sl["pos"].is_array())
-                                        {
-                                            d.speakerNameBasePos = { sl["pos"][0].get<float>(), sl["pos"][1].get<float>() };
-                                        }
-                                        if (sl.contains("scale"))
-                                        {
-                                            d.speakerNameBaseScale = sl["scale"].get<float>();
-                                        }
-                                        if (sl.contains("color") && sl["color"].is_array())
-                                        {
-                                            d.speakerNameColor = { sl["color"][0].get<float>(), sl["color"][1].get<float>(), sl["color"][2].get<float>() };
-                                        }
-                                    }
+                                    //if (sc.contains("speakerUI") && sc["speakerUI"].is_object()) 
+                                    //{
+                                    //    auto& sl = sc["speakerUI"];
+                                    //    if (sl.contains("pos") && sl["pos"].is_array())
+                                    //    {
+                                    //        d.speakerNameBasePos = { sl["pos"][0].get<float>(), sl["pos"][1].get<float>() };
+                                    //    }
+                                    //    if (sl.contains("scale"))
+                                    //    {
+                                    //        d.speakerNameBaseScale = sl["scale"].get<float>();
+                                    //    }
+                                    //    if (sl.contains("color") && sl["color"].is_array())
+                                    //    {
+                                    //        d.speakerNameColor = { sl["color"][0].get<float>(), sl["color"][1].get<float>(), sl["color"][2].get<float>() };
+                                    //    }
+                                    //}
                                     if (sc.contains("textSpeed")) d.textSpeed = sc["textSpeed"].get<float>();
                                     if (sc.contains("wrapWidth")) d.wrapWidth = sc["wrapWidth"].get<float>();
-                                    if (sc.contains("customSpeaker")) d.customSpeaker = sc["customSpeaker"].get<bool>();
-                                    if (sc.contains("customSpeakerName")) d.customSpeakerName = sc["customSpeakerName"].get<std::string>();
+                                    //if (sc.contains("customSpeaker")) d.customSpeaker = sc["customSpeaker"].get<bool>();
+                                    //if (sc.contains("customSpeakerName")) d.customSpeakerName = sc["customSpeakerName"].get<std::string>();
                                 }
                                 dlgLoaded = true;
                             }
@@ -2187,24 +2187,24 @@ void ImGuiSystem::Update(float dt)
 
                             d.wrapWidth = sc.value("wrapWidth", d.wrapWidth);
 
-                            d.customSpeaker = sc.value("customSpeaker", false);
-                            d.customSpeakerName = sc.value("customSpeakerName", d.customSpeakerName);
+                            //d.customSpeaker = sc.value("customSpeaker", false);
+                            //d.customSpeakerName = sc.value("customSpeakerName", d.customSpeakerName);
 
-                            if (sc.contains("speakerUI"))
-                            {
-                                auto& s = sc["speakerUI"];
-                                if (s.contains("pos") && s["pos"].is_array() && s["pos"].size() == 2)
-                                {
-                                    d.speakerNameBasePos = { s["pos"][0].get<float>(), s["pos"][1].get<float>() };
-                                }
-                                d.speakerNameBaseScale = s.value("scale", d.speakerNameBaseScale);
-                                d.speakerNameCentered = s.value("centered", d.speakerNameCentered);
+                            //if (sc.contains("speakerUI"))
+                            //{
+                            //    auto& s = sc["speakerUI"];
+                            //    if (s.contains("pos") && s["pos"].is_array() && s["pos"].size() == 2)
+                            //    {
+                            //        d.speakerNameBasePos = { s["pos"][0].get<float>(), s["pos"][1].get<float>() };
+                            //    }
+                            //    d.speakerNameBaseScale = s.value("scale", d.speakerNameBaseScale);
+                            //    d.speakerNameCentered = s.value("centered", d.speakerNameCentered);
 
-                                if (s.contains("color") && s["color"].is_array() && s["color"].size() == 3)
-                                {
-                                    d.speakerNameColor = { s["color"][0].get<float>(), s["color"][1].get<float>(), s["color"][2].get<float>() };
-                                }
-                            }
+                            //    if (s.contains("color") && s["color"].is_array() && s["color"].size() == 3)
+                            //    {
+                            //        d.speakerNameColor = { s["color"][0].get<float>(), s["color"][1].get<float>(), s["color"][2].get<float>() };
+                            //    }
+                            //}
 
                             comp->SetVisibleChars(0);
                             comp->StartTyping();
@@ -2268,13 +2268,13 @@ void ImGuiSystem::Update(float dt)
                     }
 
 
-                    auto clamp01 = [](float v) { return std::clamp(v, 0.f, 1.f); };
-                    d.speakerNameBasePos = d.textBox.basePos + d.speakerPosOffset;
-                    d.speakerNameBaseScale = d.textBox.baseScale * d.speakerScaleMul;
-                    d.speakerNameColor = { clamp01(d.textBox.color.r + d.speakerColorOffset.r),
-                                            clamp01(d.textBox.color.g + d.speakerColorOffset.g),
-                                            clamp01(d.textBox.color.b + d.speakerColorOffset.b) };
-                    d.speakerNameCentered = d.textBox.centered ^ d.speakerCenteredOverride;
+                    //auto clamp01 = [](float v) { return std::clamp(v, 0.f, 1.f); };
+                    //d.speakerNameBasePos = d.textBox.basePos + d.speakerPosOffset;
+                    //d.speakerNameBaseScale = d.textBox.baseScale * d.speakerScaleMul;
+                    //d.speakerNameColor = { clamp01(d.textBox.color.r + d.speakerColorOffset.r),
+                    //                        clamp01(d.textBox.color.g + d.speakerColorOffset.g),
+                    //                        clamp01(d.textBox.color.b + d.speakerColorOffset.b) };
+                    //d.speakerNameCentered = d.textBox.centered ^ d.speakerCenteredOverride;
 
                     // Lines
                     ImGui::SeparatorText("Lines");
@@ -2322,59 +2322,58 @@ void ImGuiSystem::Update(float dt)
 
                     // SPEAKER LABEL SETTINGS
 
-                    ImGui::SeparatorText("Speaker Name");
-                    ImGui::Checkbox("Custom Speaker?", &d.customSpeaker);
-                    if (d.customSpeaker)
-                    {
-                        char buf[64]; std::snprintf(buf, sizeof(buf), "%s", d.customSpeakerName.c_str());
-                        if (ImGui::InputText("Speaker Name", buf, IM_ARRAYSIZE(buf)))
-                        {
-                            d.customSpeakerName = buf;
-                        }
-                    }
+                    //ImGui::SeparatorText("Speaker Name");
+                    //ImGui::Checkbox("Custom Speaker?", &d.customSpeaker);
+                    //if (d.customSpeaker)
+                    //{
+                    //    char buf[64]; std::snprintf(buf, sizeof(buf), "%s", d.customSpeakerName.c_str());
+                    //    if (ImGui::InputText("Speaker Name", buf, IM_ARRAYSIZE(buf)))
+                    //    {
+                    //        d.customSpeakerName = buf;
+                    //    }
+                    //}
 
-                    // --- Speaker label (edit offsets so it keeps following the box) ---
-                    Vec2 sp = d.textBox.basePos + d.speakerPosOffset;
-                    if (ImGui::SliderFloat("Pos X", &sp.x, 0.f, 1920.f)) d.speakerPosOffset.x = sp.x - d.textBox.basePos.x;
-                    if (ImGui::SliderFloat("Pos Y", &sp.y, 0.f, 1080.f)) d.speakerPosOffset.y = sp.y - d.textBox.basePos.y;
+                    //// --- Speaker label (edit offsets so it keeps following the box) ---
+                    //Vec2 sp = d.textBox.basePos + d.speakerPosOffset;
+                    //if (ImGui::SliderFloat("Pos X", &sp.x, 0.f, 1920.f)) d.speakerPosOffset.x = sp.x - d.textBox.basePos.x;
+                    //if (ImGui::SliderFloat("Pos Y", &sp.y, 0.f, 1080.f)) d.speakerPosOffset.y = sp.y - d.textBox.basePos.y;
 
-                    float ss = d.textBox.baseScale * d.speakerScaleMul;
-                    if (ImGui::SliderFloat("Scale", &ss, 0.1f, 10.f, "%.3f"))
-                        d.speakerScaleMul = (d.textBox.baseScale != 0.f) ? (ss / d.textBox.baseScale) : 1.f;
+                    //float ss = d.textBox.baseScale * d.speakerScaleMul;
+                    //if (ImGui::SliderFloat("Scale", &ss, 0.1f, 10.f, "%.3f"))
+                    //    d.speakerScaleMul = (d.textBox.baseScale != 0.f) ? (ss / d.textBox.baseScale) : 1.f;
 
-                    float sc[3] = {
-                        clamp01(d.textBox.color.r + d.speakerColorOffset.r),
-                        clamp01(d.textBox.color.g + d.speakerColorOffset.g),
-                        clamp01(d.textBox.color.b + d.speakerColorOffset.b)
-                    };
-                    if (ImGui::ColorEdit3("Color", sc))
-                        d.speakerColorOffset = { sc[0] - d.textBox.color.r, sc[1] - d.textBox.color.g, sc[2] - d.textBox.color.b };
+                    //float sc[3] = {
+                    //    clamp01(d.textBox.color.r + d.speakerColorOffset.r),
+                    //    clamp01(d.textBox.color.g + d.speakerColorOffset.g),
+                    //    clamp01(d.textBox.color.b + d.speakerColorOffset.b)
+                    //};
+                    //if (ImGui::ColorEdit3("Color", sc))
+                    //    d.speakerColorOffset = { sc[0] - d.textBox.color.r, sc[1] - d.textBox.color.g, sc[2] - d.textBox.color.b };
 
-                    bool sCent = d.textBox.centered ^ d.speakerCenteredOverride;
-                    if (ImGui::Checkbox("Centered?", &sCent))
-                        d.speakerCenteredOverride = (sCent != d.textBox.centered);
+                    //bool sCent = d.textBox.centered ^ d.speakerCenteredOverride;
+                    //if (ImGui::Checkbox("Centered?", &sCent))
+                    //    d.speakerCenteredOverride = (sCent != d.textBox.centered);
 
-                    if (ImGui::Button("Reset Label Settings"))
-                    {
-                        d.speakerPosOffset = { 0.f, 60.f };
-                        d.speakerScaleMul = 1.f;
-                        d.speakerColorOffset = { 0.f, 0.f, 0.f };
-                        d.speakerCenteredOverride = false;
-                    }
+                    //if (ImGui::Button("Reset Label Settings"))
+                    //{
+                    //    d.speakerPosOffset = { 0.f, 60.f };
+                    //    d.speakerScaleMul = 1.f;
+                    //    d.speakerColorOffset = { 0.f, 0.f, 0.f };
+                    //    d.speakerCenteredOverride = false;
+                    //}
 
                     // DIALOGUE BACKGROUND
 
                     ImGui::SeparatorText("Background");
-                    ImGui::Checkbox("Enable Background", &d.bgEnabled);
+                    ImGui::Checkbox("Show Background", &d.bgEnabled);
                     if (d.bgEnabled)
                     {
-                        ImGui::Checkbox("Centered?", &d.bgCentered);
-                        ImGui::SliderFloat("Width", &d.bgBaseSize.x, 0.f, 1920.f);
-                        ImGui::SliderFloat("Height", &d.bgBaseSize.y, 0.f, 1080.f);
+                        ImGui::SliderFloat("BG Width", &d.bgBaseSize.x, 0.f, 1920.f);
+                        ImGui::SliderFloat("BG Height", &d.bgBaseSize.y, 0.f, 1080.f);
 
                         const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
                         int currType = (int)d.bgRenderData.GetRenderType();
-                        if (ImGui::Combo("Render Type", &currType, typeNames, IM_ARRAYSIZE(typeNames)))
+                        if (ImGui::Combo("BG Render Type", &currType, typeNames, IM_ARRAYSIZE(typeNames)))
                         {
                             d.bgRenderData.SetRenderType((UIRenderType)currType);
                         }
@@ -2392,10 +2391,10 @@ void ImGuiSystem::Update(float dt)
                                 shape.shape = (ButtonShape)currShape;
                             }
 
-                            float col[3] = { shape.color.r, shape.color.g, shape.color.b };
-                            if (ImGui::ColorEdit3("Color", col))
+                            float currCol[3] = { shape.color.r, shape.color.g, shape.color.b };
+                            if (ImGui::ColorEdit3("Color", currCol))
                             {
-                                shape.color = { col[0], col[1], col[2] };
+                                shape.color = { currCol[0], currCol[1], currCol[2] };
                             }
                         } break;
 
@@ -2415,10 +2414,10 @@ void ImGuiSystem::Update(float dt)
                                 quad.v2 = { d.textBox.basePos.x + (0.5f * d.bgBaseSize.x), d.textBox.basePos.y + (0.5f * d.bgBaseSize.y) };
                                 quad.v3 = { d.textBox.basePos.x - (0.5f * d.bgBaseSize.x), d.textBox.basePos.y + (0.5f * d.bgBaseSize.y) };
                             }
-                            float col[3] = { quad.color.r, quad.color.g, quad.color.b };
-                            if (ImGui::ColorEdit3("Color", col))
+                            float quadCol[3] = { quad.color.r, quad.color.g, quad.color.b };
+                            if (ImGui::ColorEdit3("Color", quadCol))
                             {
-                                quad.color = { col[0], col[1], col[2] };
+                                quad.color = { quadCol[0], quadCol[1], quadCol[2] };
                             }
                         } break;
 
@@ -2442,7 +2441,7 @@ void ImGuiSystem::Update(float dt)
                             {
                                 if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
                             }
-                            if (ImGui::Combo("Texture", &selected, imgOptions.data(), (int)imgOptions.size()))
+                            if (ImGui::Combo("BG Texture", &selected, imgOptions.data(), (int)imgOptions.size()))
                             {
                                 img = CreateImage(imgOptions[selected]);
                             }
@@ -2450,7 +2449,7 @@ void ImGuiSystem::Update(float dt)
                             {
                                 GLuint texID = img.textureID;
                                 ImVec2 avail = ImGui::GetContentRegionAvail();
-                                float scale = img.widthPixels ? (avail.x / img.widthPixels) * 0.9f : 0.f;
+                                float scale = img.widthPixels ? (avail.x / img.widthPixels) : 0.f;
                                 ImVec2 displaySize(img.widthPixels * scale, img.heightPixels * scale);
                                 ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
                             }
@@ -2495,7 +2494,6 @@ void ImGuiSystem::Update(float dt)
                                 ImVec2 avail = ImGui::GetContentRegionAvail();
 
                                 float scale = (texW != 0) ? avail.x / texW : 0.f;
-                                scale *= 0.9f;
 
                                 ImVec2 displaySize(texW * scale, texH * scale);
                                 ImVec2 imagePos = ImGui::GetCursorScreenPos();
@@ -2602,6 +2600,254 @@ void ImGuiSystem::Update(float dt)
                             if (ImGui::Button("Width")) d.bgBaseSize.x = d.bgBaseSize.y * (float(frameW) / float(frameH));
                             ImGui::SameLine();
                             if (ImGui::Button("Height")) d.bgBaseSize.y = d.bgBaseSize.x * (float(frameH) / float(frameW));
+                        } break;
+
+                        default:
+                            ImGui::TextDisabled("No render info.");
+                            break;
+                        }
+                    }
+
+                    // DIALOGUE PROFILE
+
+                    ImGui::SeparatorText("Profile");
+                    ImGui::Checkbox("Show Profile", &d.profileEnabled);
+                    if (d.profileEnabled)
+                    {
+                        ImGui::SliderFloat("Profile Width", &d.profileBaseSize.x, 0.f, 1920.f);
+                        ImGui::SliderFloat("Profile Height", &d.profileBaseSize.y, 0.f, 1080.f);
+                        ImGui::SliderFloat("Profile Offset X", &d.profileOffset.x, 0.f, 1920.f);
+                        ImGui::SliderFloat("Profile Offset Y", &d.profileOffset.y, 0.f, 1080.f);
+
+                        const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
+                        int currType = (int)d.profileRenderData.GetRenderType();
+                        if (ImGui::Combo("Profile Render Type", &currType, typeNames, IM_ARRAYSIZE(typeNames)))
+                        {
+                            d.profileRenderData.SetRenderType((UIRenderType)currType);
+                        }
+
+                        switch (d.profileRenderData.GetRenderType())
+                        {
+                            // Shape Render
+                        case UIRenderType::Shape:
+                        {
+                            auto& shape = d.profileRenderData.GetShapeData();
+                            const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
+                            int currShape = (int)shape.shape;
+                            if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames)))
+                            {
+                                shape.shape = (ButtonShape)currShape;
+                            }
+
+                            float currCol[3] = { shape.color.r, shape.color.g, shape.color.b };
+                            if (ImGui::ColorEdit3("Color", currCol))
+                            {
+                                shape.color = { currCol[0], currCol[1], currCol[2] };
+                            }
+                        } break;
+
+                        // Custom Quad Render
+                        case UIRenderType::CustomQuad:
+                        {
+                            auto& quad = d.profileRenderData.GetQuadData();
+                            ImGui::InputFloat2("v0", &quad.v0.x);
+                            ImGui::InputFloat2("v1", &quad.v1.x);
+                            ImGui::InputFloat2("v2", &quad.v2.x);
+                            ImGui::InputFloat2("v3", &quad.v3.x);
+
+                            if (ImGui::Button("Automatic quad by size"))
+                            {
+                                quad.v0 = { d.textBox.basePos.x - (0.5f * d.profileBaseSize.x), d.textBox.basePos.y - (0.5f * d.profileBaseSize.y) };
+                                quad.v1 = { d.textBox.basePos.x + (0.5f * d.profileBaseSize.x), d.textBox.basePos.y - (0.5f * d.profileBaseSize.y) };
+                                quad.v2 = { d.textBox.basePos.x + (0.5f * d.profileBaseSize.x), d.textBox.basePos.y + (0.5f * d.profileBaseSize.y) };
+                                quad.v3 = { d.textBox.basePos.x - (0.5f * d.profileBaseSize.x), d.textBox.basePos.y + (0.5f * d.profileBaseSize.y) };
+                            }
+                            float quadCol[3] = { quad.color.r, quad.color.g, quad.color.b };
+                            if (ImGui::ColorEdit3("Color", quadCol))
+                            {
+                                quad.color = { quadCol[0], quadCol[1], quadCol[2] };
+                            }
+                        } break;
+
+                        // Image Render
+                        case UIRenderType::Image:
+                        {
+                            auto& imgData = d.profileRenderData.GetImageData();
+                            Image& img = imgData.m_image;
+                            const auto& cache = Render::GetInstance().Get_TextureCache();
+
+                            static int selected = 0;
+                            std::vector<const char*> imgOptions;
+                            std::vector<GLuint> textureIDs;
+                            imgOptions.reserve(cache.size());
+                            for (auto const& [optname, optval] : cache)
+                            {
+                                imgOptions.push_back(optname.c_str());
+                                textureIDs.push_back(optval);
+                            }
+                            for (size_t i = 0; i < textureIDs.size(); i++)
+                            {
+                                if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
+                            }
+                            if (ImGui::Combo("Profile Texture", &selected, imgOptions.data(), (int)imgOptions.size()))
+                            {
+                                img = CreateImage(imgOptions[selected]);
+                            }
+
+                            {
+                                GLuint texID = img.textureID;
+                                ImVec2 avail = ImGui::GetContentRegionAvail();
+                                float scale = img.widthPixels ? (avail.x / img.widthPixels) : 0.f;
+                                ImVec2 displaySize(img.widthPixels * scale, img.heightPixels * scale);
+                                ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+                            }
+
+                            ImGui::Text("Resize to aspect ratio:");
+                            if (ImGui::Button("Width"))  d.profileBaseSize.x = d.profileBaseSize.y * ((float)img.widthPixels / (float)img.heightPixels);
+                            ImGui::SameLine();
+                            if (ImGui::Button("Height")) d.profileBaseSize.y = d.profileBaseSize.x * ((float)img.heightPixels / (float)img.widthPixels);
+                        } break;
+
+                        // Image Sheet Render
+                        case UIRenderType::ImageSheet:
+                        {
+                            auto& sheet = d.profileRenderData.GetImageSheetData();
+                            Image& img = sheet.m_image;
+
+                            const auto& cache = Render::GetInstance().Get_TextureCache();
+                            static int selected = 0;
+                            std::vector<const char*> imgOptions;
+                            std::vector<GLuint> textureIDs;
+                            imgOptions.reserve(cache.size());
+                            for (auto const& [optname, optval] : cache)
+                            {
+                                imgOptions.push_back(optname.c_str());
+                                textureIDs.push_back(optval);
+                            }
+                            for (size_t i = 0; i < textureIDs.size(); i++)
+                            {
+                                if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
+                            }
+                            if (ImGui::Combo("Texture Drawn", &selected, imgOptions.data(), (int)imgOptions.size()))
+                            {
+                                img = CreateImage(imgOptions[selected]);
+                            }
+
+                            // display
+                            {
+                                GLuint texID = img.textureID;
+                                const float texW = (float)img.widthPixels;
+                                const float texH = (float)img.heightPixels;
+
+                                ImVec2 avail = ImGui::GetContentRegionAvail();
+
+                                float scale = (texW != 0) ? avail.x / texW : 0.f;
+
+                                ImVec2 displaySize(texW * scale, texH * scale);
+                                ImVec2 imagePos = ImGui::GetCursorScreenPos();
+
+                                ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+
+                                ImDrawList* draw = ImGui::GetWindowDrawList();
+
+                                int rows = sheet.total_rows;
+                                int cols = sheet.total_cols;
+
+                                float cellW = displaySize.x / cols;
+                                float cellH = displaySize.y / rows;
+
+                                // vertical lines
+                                for (int c = 1; c < cols; ++c)
+                                {
+                                    float x = imagePos.x + c * cellW;
+                                    draw->AddLine(ImVec2(x, imagePos.y),
+                                        ImVec2(x, imagePos.y + displaySize.y),
+                                        IM_COL32(255, 255, 255, 128));
+                                }
+
+                                // horizontal lines
+                                for (int r = 1; r < rows; ++r)
+                                {
+                                    float y = imagePos.y + r * cellH;
+                                    draw->AddLine(ImVec2(imagePos.x, y),
+                                        ImVec2(imagePos.x + displaySize.x, y),
+                                        IM_COL32(255, 255, 255, 128));
+                                }
+
+                                // highlight
+                                int r = sheet.frame_index.curr_row;
+                                int c = sheet.frame_index.curr_col;
+
+                                ImVec2 p0(
+                                    imagePos.x + c * cellW,
+                                    imagePos.y + r * cellH
+                                );
+                                ImVec2 p1(
+                                    imagePos.x + (c + 1) * cellW,
+                                    imagePos.y + (r + 1) * cellH
+                                );
+
+                                // Filled highlight
+                                draw->AddRectFilled(p0, p1, IM_COL32(255, 255, 0, 80));
+
+                                // Outline
+                                draw->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
+                            }
+
+                            // Render image based on selected row and column of the image sheet
+                            ImGui::InputInt("Rows", (int*)&sheet.total_rows);
+                            if (sheet.total_rows < 1) { sheet.total_rows = 1; }
+                            ImGui::InputInt("Columns", (int*)&sheet.total_cols);
+                            if (sheet.total_cols < 1) { sheet.total_cols = 1; }
+
+                            ImGui::Separator();
+
+                            ImGui::SliderInt("Current Row", (int*)&sheet.frame_index.curr_row, 0, (int)sheet.total_rows - 1);
+                            ImGui::SliderInt("Current Col", (int*)&sheet.frame_index.curr_col, 0, (int)sheet.total_cols - 1);
+
+
+                            sheet.total_cols = std::max(1u, sheet.total_cols);
+                            sheet.total_rows = std::max(1u, sheet.total_rows);
+
+                            // State Frames
+                            if (ImGui::TreeNode("State Frames"))
+                            {
+                                for (auto& [state, idx] : sheet.frames)
+                                {
+                                    ImGui::PushID(state);
+
+                                    ImGui::Text("State %u", state);
+
+                                    ImGui::InputInt("Row", (int*)&idx.curr_row);
+                                    ImGui::InputInt("Col", (int*)&idx.curr_col);
+
+                                    idx.curr_row = std::clamp(idx.curr_row, 0u, sheet.total_rows - 1);
+                                    idx.curr_col = std::clamp(idx.curr_col, 0u, sheet.total_cols - 1);
+
+                                    if (ImGui::Button("Delete"))
+                                        sheet.frames.erase(state);
+
+                                    ImGui::Separator();
+                                    ImGui::PopID();
+                                }
+
+                                static int newStateID = 0;
+                                ImGui::InputInt("Add State", &newStateID);
+                                if (ImGui::Button("Add"))
+                                {
+                                    sheet.frames[newStateID] = { 0,0 };
+                                }
+
+                                ImGui::TreePop();
+                            }
+
+                            // Aspect helpers (use frame size)
+                            int frameW = img.widthPixels / std::max(1u, sheet.total_cols);
+                            int frameH = img.heightPixels / std::max(1u, sheet.total_rows);
+                            ImGui::Text("Resize to aspect ratio:");
+                            if (ImGui::Button("Width")) d.profileBaseSize.x = d.profileBaseSize.y * (float(frameW) / float(frameH));
+                            ImGui::SameLine();
+                            if (ImGui::Button("Height")) d.profileBaseSize.y = d.profileBaseSize.x * (float(frameH) / float(frameW));
                         } break;
 
                         default:
@@ -2722,7 +2968,7 @@ void ImGuiSystem::Update(float dt)
                             {
                                 GLuint texID = img.textureID;
                                 ImVec2 avail = ImGui::GetContentRegionAvail();
-                                float scale = img.widthPixels ? (avail.x / img.widthPixels) * 0.9f : 0.f;
+                                float scale = img.widthPixels ? (avail.x / img.widthPixels) : 0.f;
                                 ImVec2 displaySize(img.widthPixels * scale, img.heightPixels * scale);
                                 ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
                             }
@@ -2767,7 +3013,6 @@ void ImGuiSystem::Update(float dt)
                                 ImVec2 avail = ImGui::GetContentRegionAvail();
 
                                 float scale = (texW != 0) ? avail.x / texW : 0.f;
-                                scale *= 0.9f;
 
                                 ImVec2 displaySize(texW * scale, texH * scale);
                                 ImVec2 imagePos = ImGui::GetCursorScreenPos();
@@ -3189,7 +3434,6 @@ void ImGuiSystem::Update(float dt)
 
                             dst.bgEnabled = src.bgEnabled;
                             dst.bgBaseSize = src.bgBaseSize;
-                            dst.bgCentered = src.bgCentered;
                             dst.bgRenderData = src.bgRenderData;
                         }
                         else

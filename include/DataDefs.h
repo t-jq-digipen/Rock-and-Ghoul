@@ -121,16 +121,20 @@ struct SavedScene {
 
         float wrapWidth;
         float textSpeed;
-        bool customSpeaker = false;
-        std::string customSpeakerName = "";
-        Vec2 speakerNameBasePos;
-        float speakerNameBaseScale;
-        Colour3 speakerNameColor;
+        //bool customSpeaker = false;
+        //std::string customSpeakerName = "";
+        //Vec2 speakerNameBasePos;
+        //float speakerNameBaseScale;
+        //Colour3 speakerNameColor;
 
-        bool bgEnabled = false;
-        Vec2 bgSize = { 600.f, 220.f };
-        bool bgCentered;
+        bool bgEnabled = true;
+        Vec2 bgSize = { 1500.f, 300.f };
         std::string bgRenderData;
+
+        bool profileEnabled = true;
+        Vec2 profileSize = { 200.f, 200.f };
+        Vec2 profileOffset = { 0.f, 0.f };
+        std::string profileRenderData;
     };
     std::vector<SavedDialogue> guiDialogues;
 

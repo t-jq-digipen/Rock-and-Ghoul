@@ -34,8 +34,8 @@ namespace TextSystem
 		int currentLineIndex{};
 		float textSpeed{};
 		float wrapWidth{};
-		bool customSpeaker{ false };
-		std::string speakerName;
+		//bool customSpeaker{ false };
+		//std::string speakerName;
 		int speakerID{};
 		std::string fontPath;
 		float fontSize{ 0 };
@@ -110,20 +110,6 @@ namespace TextSystem
  */
 
 		float GetWrapWidth() const noexcept;
-
-/**
- * @brief Gets the custom speaker flag.
- * @return Whether the speaker name can be changed or not.
- */
-
-		bool GetCustomSpeaker() const noexcept;
-
-/**
- * @brief Gets the speaker name.
- * @return Name of the speaker.
- */
-
-		const std::string& GetSpeakerName() const noexcept;
 
 /**
  * @brief Gets the speaker ID.
@@ -204,20 +190,6 @@ namespace TextSystem
  */
 
 		void SetWrapWidth(float width);
-
-/**
- * @brief Sets the custom speaker flag.
- * @param flag Whether the speaker name can be changed or not.
- */
-
-		void SetCustomSpeaker(bool flag);
-
-/**
- * @brief Sets the speaker name.
- * @param name Name of the speaker.
- */
-
-		void SetSpeakerName(const std::string& name);
 
 /**
  * @brief Sets the speaker ID.

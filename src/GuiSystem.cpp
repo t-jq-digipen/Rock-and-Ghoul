@@ -64,6 +64,7 @@ bool showFPS = false;
  * @param type  The UI render type to be determined.
  */
 void UI_RenderData::SetRenderType(UIRenderType type) {
+    if (data && data->GetType() == type) return;
     switch (type)
     {
     case UIRenderType::Shape:
@@ -928,85 +929,18 @@ void GuiSystem::Update(float dt)
                 catch (...) { sceneIdxInt = 0; }
             }
 
-            std::string speakerName;
+            // std::string speakerName;
             if (sDlgLoaded && sDlgDoc.contains("scenes") && sDlgDoc["scenes"].is_array())
             {
                 int maxScene = (int)sDlgDoc["scenes"].size() - 1;
                 if (maxScene >= 0)
                 {
                     sceneIdxInt = std::max(0, std::min(sceneIdxInt, maxScene));
-                    speakerName = getSpeakerName(sDlgDoc, sceneIdxInt, idx);
-                    if (d.customSpeaker)
-                    {
-                        speakerName = d.customSpeakerName;
-                    }
-                }
-            }
-
-            // Draw dialogue background
-
-            if (d.bgEnabled)
-            {
-                Vec2 bgPos = d.textBox.pos;
-                Vec2 bgScale = d.bgBaseSize * uiScale;
-                switch (d.bgRenderData.GetRenderType())
-                {
-                case UIRenderType::Shape:
-                {
-                    UIShapeRender data = d.bgRenderData.GetShapeData();
-                    switch (data.shape)
-                    {
-                    case ButtonShape::Rectangle:
-                    {
-                        render.DrawRect(bgPos, bgScale.x, bgScale.y, data.color);
-                        break;
-                    }
-                    case ButtonShape::Circle:
-                    {
-                        render.DrawCircle(bgPos, std::min(bgScale.x, bgScale.y) * 0.5f, data.color, 48);
-                        break;
-                    }
-                    case ButtonShape::Rounded:
-                    {
-                        render.DrawRoundedRect(bgPos, bgScale.x, bgScale.y, std::min(bgScale.x, bgScale.y) * 0.5f, data.color);
-                        break;
-                    }
-                    } break;
-                }
-                case UIRenderType::CustomQuad:
-                {
-                    auto data = d.bgRenderData.GetQuadData();
-
-                    float sx = GLApp::width / 1920.f;
-                    float sy = GLApp::height / 1080.f;
-
-                    auto scale = [&](Vec2 v) { return Vec2{ v.x * sx, v.y * sy }; }; //lambda function to calculate scale value for full screen
-
-                    render.DrawCustomQuad(scale(data.v0), scale(data.v1), scale(data.v2), scale(data.v3), data.color); //then use scaled values
-
-                    //render.DrawCustomQuad(data.v0, data.v1, data.v2, data.v3, data.color);
-                } break;
-
-                case UIRenderType::Image:
-                {
-                    auto data = d.bgRenderData.GetImageData();
-                    render.DrawImageRotated(data.m_image, bgPos.x, bgPos.y, bgScale.x, bgScale.y, 0.f, 0.f);
-                } break;
-
-                case UIRenderType::ImageSheet:
-                {
-                    auto data = d.bgRenderData.GetImageSheetData();
-                    int tileW = data.m_image.widthPixels / data.total_cols;
-                    int tileH = data.m_image.heightPixels / data.total_rows;
-                    int col = data.frame_index.curr_col;
-                    int row = data.total_rows - 1 - data.frame_index.curr_row;
-                    float u0 = float(col * tileW), v0 = float(row * tileH);
-                    float u1 = u0 + tileW, v1 = v0 + tileH;
-
-                    render.DrawImageSub(data.m_image, bgPos.x, bgPos.y, bgScale.x, bgScale.y, u0, v0, u1, v1, 0.f, 0.f);
-                } break;
-
-                default: break;
+                    //speakerName = getSpeakerName(sDlgDoc, sceneIdxInt, idx);
+                    //if (d.customSpeaker)
+                    //{
+                    //    speakerName = d.customSpeakerName;
+                    //}
                 }
             }
 
@@ -1022,18 +956,17 @@ void GuiSystem::Update(float dt)
             }
 
             // Draw speaker name (no typewriter)
-            Vec2 speakerPos{ d.speakerNameBasePos.x * scaleX, d.speakerNameBasePos.y * scaleY };
-            float speakerScale = d.speakerNameBaseScale * uiScale;
-            Vec2 speakerSize = render.CalculateTextSize(speakerName, speakerScale, "Marker");
-            float speakerX = speakerPos.x, speakerY = speakerPos.y;
-            if (d.speakerNameCentered) 
-            { 
-                speakerX -= speakerSize.x * 0.5f; 
-                speakerY -= speakerSize.y * 0.5f; 
-            }
-            render.DrawText(speakerName, speakerX, speakerY, speakerScale, d.speakerNameColor, "Marker");
+            //Vec2 speakerPos{ d.speakerNameBasePos.x * scaleX, d.speakerNameBasePos.y * scaleY };
+            //float speakerScale = d.speakerNameBaseScale * uiScale;
+            //Vec2 speakerSize = render.CalculateTextSize(speakerName, speakerScale, "Marker");
+            //float speakerX = speakerPos.x, speakerY = speakerPos.y;
+            //if (d.speakerNameCentered) 
+            //{ 
+            //    speakerX -= speakerSize.x * 0.5f; 
+            //    speakerY -= speakerSize.y * 0.5f; 
+            //}
+            //render.DrawText(speakerName, speakerX, speakerY, speakerScale, d.speakerNameColor, "Marker");
 
-            //const float nameScale = d.textBox.scale * 0.9f;
             const float lineH = render.CalculateTextSize("A", d.textBox.scale, "Marker").y;
             //render.DrawText(speakerName, drawX, drawY + (lineH * 1.5f), nameScale, drawColor, "Marker");
 
@@ -1099,6 +1032,115 @@ void GuiSystem::Update(float dt)
                 if (iChar < vis.size() && vis[iChar] == ' ') ++iChar;
             }
             if (!current.empty()) wrappedLines.push_back(current);
+
+            // Draw dialogue background
+            Vec2 bgScale = d.bgBaseSize * uiScale;
+            float offsetX = bgScale.x * 0.4f; // move pos of background depending on speaker
+            Vec2 bgCenter = { drawX + offsetX, drawY - bgScale.y * 0.1f };
+            if (d.bgEnabled)
+            {
+                Vec2 bgPos = bgCenter;
+                switch (d.bgRenderData.GetRenderType())
+                {
+                case UIRenderType::Shape:
+                {
+                    UIShapeRender data = d.bgRenderData.GetShapeData();
+                    switch (data.shape)
+                    {
+                    case ButtonShape::Rectangle: render.DrawRect(bgPos, bgScale.x, bgScale.y, data.color); break;
+                    case ButtonShape::Circle:    render.DrawCircle(bgPos, std::min(bgScale.x, bgScale.y) * 0.5f, data.color, 48); break;
+                    case ButtonShape::Rounded:   render.DrawRoundedRect(bgPos, bgScale.x, bgScale.y, std::min(bgScale.x, bgScale.y) * 0.5f, data.color); break;
+                    }
+                } break;
+
+                case UIRenderType::CustomQuad:
+                {
+                    auto data = d.bgRenderData.GetQuadData();
+                    Vec2 tl{ bgPos.x - bgScale.x * 0.5f, bgPos.y + bgScale.y * 0.5f };
+                    Vec2 tr{ bgPos.x + bgScale.x * 0.5f, bgPos.y + bgScale.y * 0.5f };
+                    Vec2 br{ bgPos.x + bgScale.x * 0.5f, bgPos.y - bgScale.y * 0.5f };
+                    Vec2 bl{ bgPos.x - bgScale.x * 0.5f, bgPos.y - bgScale.y * 0.5f };
+                    render.DrawCustomQuad(tl, tr, br, bl, data.color);
+                } break;
+
+                case UIRenderType::Image:
+                {
+                    auto data = d.bgRenderData.GetImageData();
+                    render.DrawImageRotated(data.m_image, bgPos.x, bgPos.y, bgScale.x, bgScale.y, 0.f, 0.f);
+                } break;
+
+                case UIRenderType::ImageSheet:
+                {
+                    auto data = d.bgRenderData.GetImageSheetData();
+                    int tileW = data.m_image.widthPixels / data.total_cols;
+                    int tileH = data.m_image.heightPixels / data.total_rows;
+                    int col = data.frame_index.curr_col;
+                    int row = data.total_rows - 1 - data.frame_index.curr_row;
+                    float u0 = float(col * tileW), v0 = float(row * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(data.m_image, bgPos.x, bgPos.y, bgScale.x, bgScale.y, u0, v0, u1, v1, 0.f, 0.f);
+                } break;
+
+                default: break;
+                }
+            }
+
+            // Draw profile next to dialogue box
+            if (d.profileEnabled)
+            {
+                Vec2 profScale = d.profileBaseSize * uiScale;
+                Vec2 profCenter = 
+                { 
+                    bgCenter.x - (bgScale.x * 0.5f) - (profScale.x * 0.5f) + d.profileOffset.x,
+                    bgCenter.y + d.profileOffset.y
+                };
+
+                switch (d.profileRenderData.GetRenderType())
+                {
+                case UIRenderType::Shape:
+                {
+                    UIShapeRender data = d.profileRenderData.GetShapeData();
+                    switch (data.shape)
+                    {
+                    case ButtonShape::Rectangle: render.DrawRect(profCenter, profScale.x, profScale.y, data.color); break;
+                    case ButtonShape::Circle:    render.DrawCircle(profCenter, std::min(profScale.x, profScale.y) * 0.5f, data.color, 48); break;
+                    case ButtonShape::Rounded:   render.DrawRoundedRect(profCenter, profScale.x, profScale.y, std::min(profScale.x, profScale.y) * 0.5f, data.color); break;
+                    }
+                } break;
+
+                case UIRenderType::CustomQuad:
+                {
+                    auto data = d.profileRenderData.GetQuadData();
+                    Vec2 tl{ profCenter.x - profScale.x * 0.5f, profCenter.y + profScale.y * 0.5f };
+                    Vec2 tr{ profCenter.x + profScale.x * 0.5f, profCenter.y + profScale.y * 0.5f };
+                    Vec2 br{ profCenter.x + profScale.x * 0.5f, profCenter.y - profScale.y * 0.5f };
+                    Vec2 bl{ profCenter.x - profScale.x * 0.5f, profCenter.y - profScale.y * 0.5f };
+                    render.DrawCustomQuad(tl, tr, br, bl, data.color);
+                } break;
+
+                case UIRenderType::Image:
+                {
+                    auto data = d.profileRenderData.GetImageData();
+                    render.DrawImageRotated(data.m_image, profCenter.x, profCenter.y, profScale.x, profScale.y, 0.f, 0.f);
+                } break;
+
+                case UIRenderType::ImageSheet:
+                {
+                    auto data = d.profileRenderData.GetImageSheetData();
+                    int tileW = data.m_image.widthPixels / data.total_cols;
+                    int tileH = data.m_image.heightPixels / data.total_rows;
+                    int col = data.frame_index.curr_col;
+                    int row = data.total_rows - 1 - data.frame_index.curr_row;
+                    float u0 = float(col * tileW), v0 = float(row * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(data.m_image, profCenter.x, profCenter.y, profScale.x, profScale.y, u0, v0, u1, v1, 0.f, 0.f);
+                } break;
+
+                default: break;
+                }
+            }
+
+            // render.DrawText(speakerName, speakerX, speakerY, speakerScale, d.speakerNameColor, "Marker");
 
             // Render wrapped lines
             float yCursor = drawY;

@@ -45,7 +45,7 @@ namespace TextSystem
  */
 
 	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float textSpeed, float wrapWidth, bool customSpeaker, std::string speakerName, int speakerID, std::string fontPath, float fontSize, bool Typing, Vec3 color)
-		: lines{ lines }, currentLineIndex{ currentLineIndex }, textSpeed{ textSpeed }, wrapWidth{ wrapWidth }, customSpeaker{ customSpeaker }, speakerName{ speakerName }, speakerID { speakerID }, fontPath{ fontPath }, fontSize{ fontSize }, isTyping{ Typing }, color{ color } 
+		: lines{ lines }, currentLineIndex{ currentLineIndex }, textSpeed{ textSpeed }, wrapWidth{ wrapWidth }, speakerID { speakerID }, fontPath{ fontPath }, fontSize{ fontSize }, isTyping{ Typing }, color{ color } 
 	{
 	}
 
@@ -78,20 +78,6 @@ namespace TextSystem
  */
 
 	float TextComponent::GetWrapWidth() const noexcept { return wrapWidth; }
-
-/**
- * @brief Gets the custom speaker flag.
- * @return Whether the speaker name can be changed or not.
- */
-
-	bool TextComponent::GetCustomSpeaker() const noexcept { return customSpeaker; }
-
-/**
- * @brief Gets the speaker name.
- * @return Name of the speaker.
- */
-
-	const std::string& TextComponent::GetSpeakerName() const noexcept { return speakerName; }
 
 /**
  * @brief Gets the speaker ID.
@@ -172,20 +158,6 @@ namespace TextSystem
  */
 
 	void TextComponent::SetWrapWidth(float width) { wrapWidth = width; }
-
-	/**
-	 * @brief Sets the custom speaker flag.
-	 * @param flag Whether the speaker name can be changed or not.
-	 */
-
-	void TextComponent::SetCustomSpeaker(bool flag) { customSpeaker = flag; }
-
-	/**
-	 * @brief Sets the speaker name.
-	 * @param name Name of the speaker.
-	 */
-
-	void TextComponent::SetSpeakerName(const std::string& name) { speakerName = name; }
 
 /**
  * @brief Sets the speaker ID.

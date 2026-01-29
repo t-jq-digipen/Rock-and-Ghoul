@@ -653,15 +653,18 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"currentLineIndex", dlg.currentLineIndex},
             {"wrapWidth", dlg.wrapWidth},
             {"textSpeed", dlg.textSpeed},
-            {"customSpeaker", dlg.customSpeaker},
-            {"customSpeakerName", dlg.customSpeakerName},
-            {"speakerNameBasePos", {dlg.speakerNameBasePos.x, dlg.speakerNameBasePos.y}},
-            {"speakerNameBaseScale", dlg.speakerNameBaseScale},
-            {"speakerNameColor", {dlg.speakerNameColor.r, dlg.speakerNameColor.g, dlg.speakerNameColor.b}},
+            //{"customSpeaker", dlg.customSpeaker},
+            //{"customSpeakerName", dlg.customSpeakerName},
+            //{"speakerNameBasePos", {dlg.speakerNameBasePos.x, dlg.speakerNameBasePos.y}},
+            //{"speakerNameBaseScale", dlg.speakerNameBaseScale},
+            //{"speakerNameColor", {dlg.speakerNameColor.r, dlg.speakerNameColor.g, dlg.speakerNameColor.b}},
             {"bgEnabled", dlg.bgEnabled},
             {"bgSize", { dlg.bgSize.x, dlg.bgSize.y }},
-            {"bgCentered", dlg.bgCentered},
-            {"bgRenderData", dlg.bgRenderData}
+            {"bgRenderData", dlg.bgRenderData},
+            {"profileEnabled", dlg.profileEnabled},
+            {"profileSize", {dlg.profileSize.x, dlg.profileSize.y }},
+            {"profileOffset", {dlg.profileOffset.x, dlg.profileOffset.y }},
+            {"profileRenderData", dlg.profileRenderData}
         };
         j["gui"]["dialogues"].push_back(std::move(jd));
     }
@@ -793,20 +796,30 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 }
                 d.currentLineIndex = dlg.value("currentLineIndex", 0);
                 d.wrapWidth = dlg.value("wrapWidth", d.wrapWidth);
-                d.customSpeaker = dlg.value("customSpeaker", false);
-                d.customSpeakerName = dlg.value("customSpeakerName", std::string{ "" });
+                //d.customSpeaker = dlg.value("customSpeaker", false);
+                //d.customSpeakerName = dlg.value("customSpeakerName", std::string{ "" });
 
-                d.speakerNameBasePos = { dlg["speakerNameBasePos"][0], dlg["speakerNameBasePos"][1]};
-                d.speakerNameBaseScale = dlg["speakerNameBaseScale"];
-                d.speakerNameColor = { dlg["speakerNameColor"][0], dlg["speakerNameColor"][1], dlg["speakerNameColor"][2]};
+                //d.speakerNameBasePos = { dlg["speakerNameBasePos"][0], dlg["speakerNameBasePos"][1]};
+                //d.speakerNameBaseScale = dlg["speakerNameBaseScale"];
+                //d.speakerNameColor = { dlg["speakerNameColor"][0], dlg["speakerNameColor"][1], dlg["speakerNameColor"][2]};
 
                 d.bgEnabled = dlg.value("bgEnabled", false);
                 if (dlg.contains("bgSize") && dlg["bgSize"].is_array())
                 {
                     d.bgSize = { dlg["bgSize"][0], dlg["bgSize"][1] };
                 }
-                d.bgCentered = dlg.value("bgCentered", true);
                 d.bgRenderData = dlg.value("bgRenderData", std::string{});
+
+                d.profileEnabled = dlg.value("profileEnabled", false);
+                if (dlg.contains("profileSize") && dlg["profileSize"].is_array())
+                {
+                    d.profileSize = { dlg["profileSize"][0], dlg["profileSize"][1] };
+                }
+                if (dlg.contains("profileOffset") && dlg["profileOffset"].is_array())
+                {
+                    d.profileOffset = { dlg["profileOffset"][0], dlg["profileOffset"][1] };
+                }
+                d.profileRenderData = dlg.value("profileRenderData", std::string{});
 
                 s.guiDialogues.push_back(std::move(d));
             }
@@ -1009,15 +1022,18 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
             sd.wrapWidth = d.wrapWidth;
             sd.textSpeed = d.textSpeed;
-            sd.customSpeaker = d.customSpeaker;
-            sd.customSpeakerName = d.customSpeakerName;
-            sd.speakerNameBasePos = d.speakerNameBasePos;
-            sd.speakerNameBaseScale = d.speakerNameBaseScale;
-            sd.speakerNameColor = d.speakerNameColor;
+            //sd.customSpeaker = d.customSpeaker;
+            //sd.customSpeakerName = d.customSpeakerName;
+            //sd.speakerNameBasePos = d.speakerNameBasePos;
+            //sd.speakerNameBaseScale = d.speakerNameBaseScale;
+            //sd.speakerNameColor = d.speakerNameColor;
             sd.bgEnabled = d.bgEnabled;
             sd.bgSize = d.bgBaseSize;
-            sd.bgCentered = d.bgCentered;
             sd.bgRenderData = d.bgRenderData.Serialize();
+            sd.profileEnabled = d.profileEnabled;
+            sd.profileSize = d.profileBaseSize;
+            sd.profileOffset = d.profileOffset;
+            sd.profileRenderData = d.profileRenderData.Serialize();
 
             const TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
             if (comp)
@@ -1213,15 +1229,18 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
             cfg.wrapWidth = d.wrapWidth;
             cfg.textSpeed = d.textSpeed;
-            cfg.customSpeaker = d.customSpeaker;
-            cfg.customSpeakerName = d.customSpeakerName;
-            cfg.speakerNameBasePos = d.speakerNameBasePos;
-            cfg.speakerNameBaseScale = d.speakerNameBaseScale;
-            cfg.speakerNameColor = d.speakerNameColor;
+            //cfg.customSpeaker = d.customSpeaker;
+            //cfg.customSpeakerName = d.customSpeakerName;
+            //cfg.speakerNameBasePos = d.speakerNameBasePos;
+            //cfg.speakerNameBaseScale = d.speakerNameBaseScale;
+            //cfg.speakerNameColor = d.speakerNameColor;
             cfg.bgEnabled = d.bgEnabled;
             cfg.bgBaseSize = d.bgSize;
-            cfg.bgCentered = d.bgCentered;
             if (!d.bgRenderData.empty()) cfg.bgRenderData = UI_RenderData::DeSerialize(d.bgRenderData);
+            cfg.profileEnabled = d.profileEnabled;
+            cfg.profileBaseSize = d.profileSize;
+            cfg.profileOffset = d.profileOffset;
+            if (!d.profileRenderData.empty()) cfg.profileRenderData = UI_RenderData::DeSerialize(d.profileRenderData);
 
             cfg.jsonPath = d.jsonPath;
             cfg.sceneID = d.sceneID.empty() ? "0" : d.sceneID;

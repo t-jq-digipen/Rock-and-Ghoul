@@ -550,26 +550,30 @@ struct DialogueConfig {
     // New variables
     float textSpeed = 0.f; // text typing speed
     float wrapWidth = 0.f; // max width of line before next line
-    bool customSpeaker = false; // for setting custom speaker
-    std::string customSpeakerName = "Beberd";
+    //bool customSpeaker = false; // for setting custom speaker
+    //std::string customSpeakerName = "Beberd";
 
-    // Speaker label settings
-    Vec2 speakerNameBasePos;
-    float speakerNameBaseScale{ 1.2f };
-    Colour3 speakerNameColor = { 0, 0, 0 };
-    bool speakerNameCentered = false;
+    //// Speaker label settings
+    //Vec2 speakerNameBasePos;
+    //float speakerNameBaseScale{ 1.2f };
+    //Colour3 speakerNameColor = { 0, 0, 0 };
+    //bool speakerNameCentered = false;
 
-    Vec2 speakerPosOffset = { 0.f, 60.f }; // offset pos of label
-    Colour3 speakerColorOffset = { 0, 0, 0 }; // offset color of label
-    float speakerScaleMul = 1.f; // label scale relative to dialogue box
-    bool speakerCenteredOverride = false; // override centering label if true
+    //Vec2 speakerPosOffset = { 0.f, 60.f }; // offset pos of label
+    //Colour3 speakerColorOffset = { 0, 0, 0 }; // offset color of label
+    //float speakerScaleMul = 1.f; // label scale relative to dialogue box
+    //bool speakerCenteredOverride = false; // override centering label if true
 
-    // Dialogue box display UI settings
-    bool bgEnabled = false;
-    Vec2 bgBaseSize = { 600.f, 220.f };
-    bool bgCentered = true;
+    // Dialogue box background UI settings
+    bool bgEnabled = true;
+    Vec2 bgBaseSize = { 1500.f, 300.f };
     UI_RenderData bgRenderData;
 
+    // Dialogue box profile UI settings
+    bool profileEnabled = true;
+    Vec2 profileBaseSize = { 300.f, 300.f };
+    Vec2 profileOffset = { 0.f, 0.f };
+    UI_RenderData profileRenderData;
 };
 
 struct DisplayConfig

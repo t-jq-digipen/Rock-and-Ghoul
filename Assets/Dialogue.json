@@ -40,11 +40,11 @@
                 }
             ],
             "textSpeed": 30.0,
-            "wrapWidth": 600.0,
+            "wrapWidth": 1300.0,
             "customSpeaker": false,
             "customSpeakerName": "Beberd",
             "speakerUI": {
-                "pos": [510.0, 360.0],
+                "pos": [300.0, 150.0],
                 "scale": 1.2,
                 "color": [0.0, 0.0, 0.0],
                 "centered": false
@@ -103,11 +103,11 @@
                 }
           ],
             "textSpeed": 30.0,
-            "wrapWidth": 600.0,
+            "wrapWidth": 1300.0,
             "customSpeaker": false,
             "customSpeakerName": "Beberd",
             "speakerUI": {
-                "pos": [510.0, 360.0],
+                "pos": [300.0, 150.0],
                 "scale": 1.2,
                 "color": [0.0, 0.0, 0.0],
                 "centered": false
@@ -166,11 +166,11 @@
                 }
           ],
             "textSpeed": 30.0,
-            "wrapWidth": 600.0,
+            "wrapWidth": 1300.0,
             "customSpeaker": false,
             "customSpeakerName": "Beberd",
             "speakerUI": {
-                "pos": [510.0, 360.0],
+                "pos": [300.0, 150.0],
                 "scale": 1.2,
                 "color": [0.0, 0.0, 0.0],
                 "centered": false
@@ -237,11 +237,11 @@
                 }                
           ],
             "textSpeed": 30.0,
-            "wrapWidth": 600.0,
+            "wrapWidth": 1300.0,
             "customSpeaker": false,
             "customSpeakerName": "Beberd",
             "speakerUI": {
-                "pos": [510.0, 360.0],
+                "pos": [300.0, 150.0],
                 "scale": 1.2,
                 "color": [0.0, 0.0, 0.0],
                 "centered": false
