@@ -423,7 +423,9 @@ struct CutscenePlayer {
     bool texInited = false;
 
     // Playback timing
-    double fps = 24.0;        // start with hardcode (i follow the intro2 mp4 fps, 24fps)
+    // start with hardcode (i follow the intro2 mp4 fps, 24fps)
+    // see first if ltr on need use av_q2d(pFormatCtx->streams[videoStreamIndx]->r_frame_rate);
+    double fps = 24.0;        
     double acc = 0.0;
     bool finished = false;
 
@@ -436,14 +438,14 @@ struct CutscenePlayer {
 };
 
 static CutscenePlayer gCutscene;
-bool cutsceneActive;   // show cutscene instead of gameplay
+//bool cutsceneActive;   // show cutscene instead of gameplay
 
 bool CutscenePlayer::Init(const char* path)
 {
-    // Clean any previous state just in case (optional but helpful)
+    // Clean any previous state just in case 
     Shutdown();
 
-    //lambda that uses the error handling that ffmpeg supports
+    //helper lambda that uses the error handling that ffmpeg supports
     auto PrintErr = [](int err) {
         char buf[AV_ERROR_MAX_STRING_SIZE]{};
         av_strerror(err, buf, sizeof(buf));
@@ -965,7 +967,7 @@ void RenderSystem::Update(float dt) {
     else // ST_GAME
     {
 
-        //idk where to put this for cutscene stuff, if i put here, it runs after main menu, BUT it clashes with the UI stuff
+        //beginning cutscene
         //Only set it once to true
         static bool startedCutscene = false;
         if (SceneManager::Get().GetSceneType() == ST_GAME && !startedCutscene) {
@@ -1038,7 +1040,7 @@ void RenderSystem::Update(float dt) {
                 return;
             }*/
 
-            return; // <<< SUPER IMPORTANT: don't run the rest of RenderSystem
+            return; //IMPORTANT: don't run the rest of RenderSystem
         }
 
         // Gameplay or editor: fullscreen world background
