@@ -55,37 +55,37 @@
 // System notes:
 
 
-// Define component types using enum
-enum ComponentTypeID
-{
-	CT_None = 0,
-	// Basic
-	CT_Transform,		// 1	| Position, Rotation, Scale.
-							  
-	// Graphics				  
-	CT_Sprite,			// 2	| Texture or frame
-	CT_Animator,		// 3	| Handles animations and state
-						  
-	// Physics			  
-	CT_Physics,			// 4	| Velocity, acceleration
-						  
-	// Audio			  
-	CT_Audio,			// 7	| Audio...
-							  
-	// Timer				  
-	CT_Lifetime,		// 8	| Lifetime for timers or expirations
-
-	// Game character specifics
-	CT_Health,			// 9	| Health, can be used for player, enemies, breakable objects, etc.
-	// Tag					  
-	CT_Tag,				// 10	| Tag enumeration (should i use std::string? idk, think again another time)
-							  
-	CT_Input,
-
-	CT_Shape,			//		| Shape enumeration for non-sprite drawing
-
-	CT_Element
-};
+//// Define component types using enum
+//enum ComponentTypeID
+//{
+//	CT_None = 0,
+//	// Basic
+//	CT_Transform,		// 1	| Position, Rotation, Scale.
+//							  
+//	// Graphics				  
+//	CT_Sprite,			// 2	| Texture or frame
+//	CT_Animator,		// 3	| Handles animations and state
+//						  
+//	// Physics			  
+//	CT_Physics,			// 4	| Velocity, acceleration
+//						  
+//	// Audio			  
+//	CT_Audio,			// 7	| Audio...
+//							  
+//	// Timer				  
+//	CT_Lifetime,		// 8	| Lifetime for timers or expirations
+//
+//	// Game character specifics
+//	CT_Health,			// 9	| Health, can be used for player, enemies, breakable objects, etc.
+//	// Tag					  
+//	CT_Tag,				// 10	| Tag enumeration (should i use std::string? idk, think again another time)
+//							  
+//	CT_Input,
+//
+//	CT_Shape,			//		| Shape enumeration for non-sprite drawing
+//
+//	CT_Element
+//};
 
 
 // basically for faster reading, consider implementing later
@@ -223,6 +223,7 @@ struct HealthComponent {
 };
 
 enum C_TagID {
+	T_NONE,
 	T_PLAYER,
 	T_ENEMY,
 	T_PROJECTILE,
@@ -256,6 +257,7 @@ struct TagComponent {
 		Editor::ComponentData ret("Tag");
 		Editor::Widget_Dropdown dropdown;
 		dropdown.ref = reinterpret_cast<unsigned int*>(&tag);
+		dropdown.Add_Option("None", static_cast<unsigned int>(T_NONE));
 		dropdown.Add_Option("Player", static_cast<unsigned int>(T_PLAYER));
 		dropdown.Add_Option("Enemy", static_cast<unsigned int>(T_ENEMY));
 		dropdown.Add_Option("Projectile", static_cast<unsigned int>(T_PROJECTILE));
@@ -284,10 +286,10 @@ struct ColliderComponent {
 	// Collision filtering (names for serialization, bits for runtime)
 	//std::string layerName = "";                  // Layer name (for save/load)
 	//std::vector<std::string> maskNames = {};     // Mask names (for save/load)
-	uint32_t layerBit = 0;                       // Runtime layer bit
-	// uint32_t maskBit = 0;                        // Runtime mask bit
-	bool isTrigger = false;                      // If true, generate event but skip physics response
-	std::string triggerEvent = "";               // Event name to publish on trigger collision
+	uint32_t layerBit = 0;                         // Runtime layer bit
+	// uint32_t maskBit = 0;                       // Runtime mask bit
+	bool isTrigger = false;                        // If true, generate event but skip physics response
+	std::string triggerEvent = "";                 // Event name to publish on trigger collision
 
 	// Collision state
 	bool isActive = true;    // If false, skip collision checks entirely
