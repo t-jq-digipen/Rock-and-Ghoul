@@ -547,9 +547,9 @@ GLuint Render::LoadTexture(const std::string& path) {
     int width, height, channels;
     stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-    std::cout << "Loading texture: " << path
+   /* std::cout << "Loading texture: " << path
         << " (" << width << "x" << height
-        << ", channels=" << channels << ")" << std::endl;
+        << ", channels=" << channels << ")" << std::endl;*/
     if (!data) {
         std::cerr << "Failed to load texture: " << path << std::endl;
         throw std::runtime_error("Unable to load texture\n");
@@ -752,7 +752,7 @@ Image CreateImage(const std::string& path) {
 
     Image temp = { textureID, width, height };
 
-    std::cout << "Loaded image: " << path << " (" << width << "x" << height << ")" << std::endl;
+   // std::cout << "Loaded image: " << path << " (" << width << "x" << height << ")" << std::endl;
     return temp;
 }
 

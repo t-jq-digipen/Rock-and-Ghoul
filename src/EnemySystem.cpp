@@ -265,12 +265,12 @@ namespace EnemyAI
 		const float atkSq = atkRange * atkRange;
 		if (hasPlayer)
 		{
-			std::cout << "[DBG] e=" << (int)eID
-				<< " state=" << (int)st.state
-				<< " d=" << std::sqrt(dPlayerSq)
-				<< " atk=" << std::sqrt(atkSq)
-				<< " mode=" << (st.attackMode == AttackMode::MELEE_ONLY ? "MELEE" : "RANGED")
-				<< "\n";
+			//std::cout << "[DBG] e=" << (int)eID
+			//	<< " state=" << (int)st.state
+			//	<< " d=" << std::sqrt(dPlayerSq)
+			//	<< " atk=" << std::sqrt(atkSq)
+			//	<< " mode=" << (st.attackMode == AttackMode::MELEE_ONLY ? "MELEE" : "RANGED")
+			//	<< "\n";
 		}
 		switch (st.state)
 		{
