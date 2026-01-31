@@ -1208,13 +1208,20 @@ void ImGuiSystem::Update(float dt)
                     d.sceneID = "0";
                     d.ID = nextID();
                     d.owned = std::make_shared<TextSystem::TextComponent>();
-                    d.textSpeed = 30.f;
+                    d.textSpeed = 60.f;
                     d.wrapWidth = 1300.f;
                     if (d.owned) 
                     {
                         TextSystem::LoadDialogueFromJson(d.jsonPath, *d.owned);
                         d.owned->StartTyping();
                     }
+                    d.bgEnabled = true;
+                    d.bgBaseSize = { 1500, 300 };
+                    d.bgRenderData.SetRenderType(UIRenderType::Image);
+                    d.profileEnabled = true;
+                    d.profileBaseSize = { 300, 300 };
+                    d.profileOffset = { 0, 0 };
+                    d.profileRenderData.SetRenderType(UIRenderType::Image);
                     dialogues.push_back(std::move(d));
 
                     uiSelectedType = SelectedType::Dialogue;
@@ -1353,7 +1360,10 @@ void ImGuiSystem::Update(float dt)
             {
                 if (lIdx >= 0 && lIdx < (int)dialogues.size())
                 {
+                    const int erasedID = dialogues[lIdx].ID;
                     dialogues.erase(dialogues.begin() + lIdx);
+                    perDlgSceneIdxById.erase(erasedID);
+                    perDlgColorOverrideById.erase(erasedID);
                 }
             }
             else if (type == SelectedType::Display)
@@ -2861,7 +2871,12 @@ void ImGuiSystem::Update(float dt)
                     // Delete Dialogue
                     if (ImGui::Button("Delete This Dialogue"))
                     {
+                        const int erasedID = dialogues[selectedLocal].ID;
                         dialogues.erase(dialogues.begin() + selectedLocal);
+
+                        perDlgSceneIdxById.erase(erasedID);
+                        perDlgColorOverrideById.erase(erasedID);
+
                         uiSelectedIndex = -1;
                         uiSelectedType = SelectedType::None;
                         clampSelectionAfterErase();

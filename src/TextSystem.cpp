@@ -265,7 +265,7 @@ namespace TextSystem
 	{
 		// Default values
 		std::vector<std::string> lines;
-		float textSpeed = 30.f;
+		float textSpeed = 60.f;
 		Vec3 color = { 1.f, 1.f, 1.f };
 		std::string fontPath = "../Assets/fonts/Marker.ttf";
 		float fontSize = 1.f;

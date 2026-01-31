@@ -664,41 +664,49 @@ bool GuiSystem::GetEditMode() const
 void GuiSystem::Update(float dt)
 {
     SceneManager& sm = SceneManager::Get();
-    static bool prev = sm.inEditMode;
-    if (prev != sm.inEditMode) 
+    const float typingDt = sm.IsPaused() ? 0.f : dt;
+
+    SetDialogueGate(!sm.inEditMode && std::any_of(dialogues.begin(), dialogues.end(), [](auto& d) 
+    { 
+        return d.isVisible; 
+    }));
+
+    static bool prevInEdit = sm.inEditMode;
+    if (prevInEdit != sm.inEditMode)
     {
         for (auto& d : dialogues)
         {
             if (d.isVisible)
             {
+                SetDialogueGate(true);
                 if (auto* comp = (d.textComp ? d.textComp : d.owned.get()))
                 {
                     const auto& lines = comp->GetLines();
                     if (lines.empty()) continue;
                     comp->SetCurrentLineIndex(std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1));
-                    if (comp->GetTextSpeed() <= 0.f) comp->SetTextSpeed(30.f);
+                    if (comp->GetTextSpeed() <= 0.f) comp->SetTextSpeed(60.f);
                     comp->StartTyping();
                 }
             }
         }
-        prev = sm.inEditMode;
+        prevInEdit = sm.inEditMode;
     }
 
-    // --- reset typing on editor toggle ---
-    static bool prevEdit = false;
-    if (prevEdit && !sm.inEditMode) 
-    {
-        for (auto& d : dialogues) 
-        {
-            if (!d.isVisible) continue;
-            auto* c = d.textComp ? d.textComp : d.owned.get();
-            if (!c) continue;
-            c->SetVisibleChars(0);
-            c->SetTimeElapsed(0.f);
-            c->SetIsTyping(true);
-        }
-    }
-    prevEdit = sm.inEditMode;
+    //// --- reset typing on editor toggle ---
+    //static bool prevEdit = false;
+    //if (prevEdit && !sm.inEditMode) 
+    //{
+    //    for (auto& d : dialogues) 
+    //    {
+    //        if (!d.isVisible) continue;
+    //        auto* c = d.textComp ? d.textComp : d.owned.get();
+    //        if (!c) continue;
+    //        c->SetVisibleChars(0);
+    //        c->SetTimeElapsed(0.f);
+    //        c->SetIsTyping(true);
+    //    }
+    //}
+    //prevEdit = sm.inEditMode;
 
     // --- SPACE advances dialogue when NOT editing ---
     static bool spaceHandled = false;
@@ -719,20 +727,25 @@ void GuiSystem::Update(float dt)
             auto* comp = d.textComp ? d.textComp : d.owned.get();
             if (!comp) continue;
 
-            if (comp->CheckIfTyping())
+            if (!sm.IsPaused())
             {
-                comp->StopTyping();
-            }
-            else
-            {
-                const auto& lines = comp->GetLines();
-                int idx = comp->GetCurrentLineIndex();
-                if (idx + 1 < static_cast<int>(lines.size()))
+                if (comp->CheckIfTyping())
                 {
-                    comp->SetCurrentLineIndex(idx + 1);
-                    comp->SetVisibleChars(0);
-                    comp->SetTimeElapsed(0.f);
-                    comp->StartTyping();
+                    comp->StopTyping();
+                }
+                else
+                {
+                    const auto& lines = comp->GetLines();
+                    int idx = comp->GetCurrentLineIndex();
+                    if (idx + 1 < static_cast<int>(lines.size()))
+                    {
+                        comp->SetCurrentLineIndex(idx + 1);
+                        comp->StartTyping();
+                    }
+                    else
+                    {
+                        d.isVisible = false;
+                    }
                 }
             }
         }
@@ -740,13 +753,13 @@ void GuiSystem::Update(float dt)
     }
     if (!spaceHeld) spaceHandled = false;
 
-    if (!sm.inEditMode)
+    if (!prevInEdit)
     {
         for (auto& d : dialogues) if (d.isVisible)
         {
             if (auto* comp = d.textComp ? d.textComp : d.owned.get())
             {
-                TextSystem::UpdateTyping(*comp, dt, 1.f);
+                TextSystem::UpdateTyping(*comp, typingDt, 1.f);
             }
         }
     }
@@ -886,28 +899,41 @@ void GuiSystem::Update(float dt)
             }
 
             // Get speaker name
-            auto getSpeakerName = [&](const json& doc, int sceneIdx, int lineIdx) -> std::string
+            //auto getSpeakerName = [&](const json& doc, int sceneIdx, int lineIdx) -> std::string
+            //    {
+            //        if (!doc.contains("scenes") || !doc["scenes"].is_array()) return {};
+            //        if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return {};
+
+            //        const auto& sc = doc["scenes"][sceneIdx];
+            //        if (!sc.contains("script") || !sc["script"].is_array()) return {};
+
+            //        const auto& script = sc["script"];
+            //        if (lineIdx < 0 || lineIdx >= (int)script.size()) return {};
+
+            //        int speakerID = -1;
+            //        if (script[lineIdx].contains("speakerID") && script[lineIdx]["speakerID"].is_number_integer())
+            //            speakerID = script[lineIdx]["speakerID"].get<int>();
+            //        if (speakerID < 0) return {};
+
+            //        if (!sc.contains("speakers") || !sc["speakers"].is_array()) return {};
+            //        const auto& speakers = sc["speakers"];
+            //        if (speakerID >= 0 && speakerID < (int)speakers.size() && speakers[speakerID].is_string())
+            //            return speakers[speakerID].get<std::string>();
+
+            //        return {};
+            //    };
+
+            // Get speaker ID
+
+            auto getSpeakerID = [&](const json& doc, int sceneIdx, int lineIdx) -> int 
                 {
-                    if (!doc.contains("scenes") || !doc["scenes"].is_array()) return {};
-                    if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return {};
-
+                    if (!doc.contains("scenes") || !doc["scenes"].is_array()) return -1;
+                    if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return -1;
                     const auto& sc = doc["scenes"][sceneIdx];
-                    if (!sc.contains("script") || !sc["script"].is_array()) return {};
-
+                    if (!sc.contains("script") || !sc["script"].is_array()) return -1;
                     const auto& script = sc["script"];
-                    if (lineIdx < 0 || lineIdx >= (int)script.size()) return {};
-
-                    int speakerID = -1;
-                    if (script[lineIdx].contains("speakerID") && script[lineIdx]["speakerID"].is_number_integer())
-                        speakerID = script[lineIdx]["speakerID"].get<int>();
-                    if (speakerID < 0) return {};
-
-                    if (!sc.contains("speakers") || !sc["speakers"].is_array()) return {};
-                    const auto& speakers = sc["speakers"];
-                    if (speakerID >= 0 && speakerID < (int)speakers.size() && speakers[speakerID].is_string())
-                        return speakers[speakerID].get<std::string>();
-
-                    return {};
+                    if (lineIdx < 0 || lineIdx >= (int)script.size()) return -1;
+                    return script[lineIdx].value("speakerID", -1);
                 };
 
             static json sDlgDoc;
@@ -936,12 +962,52 @@ void GuiSystem::Update(float dt)
                 if (maxScene >= 0)
                 {
                     sceneIdxInt = std::max(0, std::min(sceneIdxInt, maxScene));
-                    //speakerName = getSpeakerName(sDlgDoc, sceneIdxInt, idx);
-                    //if (d.customSpeaker)
-                    //{
-                    //    speakerName = d.customSpeakerName;
-                    //}
                 }
+            }
+
+            const int speakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
+            static std::unordered_map<int, int> lastSpeakerAppliedByDlg;
+            static std::unordered_map<int, bool> autoSpeakerImagesByDlg;
+
+            if (!lastSpeakerAppliedByDlg.contains(d.ID))
+            {
+                lastSpeakerAppliedByDlg[d.ID] = -1;
+            }
+
+            if (!autoSpeakerImagesByDlg.contains(d.ID))
+            {
+                autoSpeakerImagesByDlg[d.ID] = true;
+            }
+
+            int& lastSpeaker = lastSpeakerAppliedByDlg[d.ID];
+            bool& autoSpeakerImages = autoSpeakerImagesByDlg[d.ID];
+
+            if (autoSpeakerImages && speakerID >= 0 && speakerID != lastSpeaker)
+            {
+                // To determine background + profile to display depending on current speaker ID
+                auto SelectImage = [&](const std::string& path)
+                {
+                    UI_RenderData rd;
+                    rd.SetRenderType(UIRenderType::Image);
+                    rd.GetImageData().m_image = CreateImage(path.c_str());
+                    return rd;
+                };
+
+                const json& sc = sDlgDoc["scenes"][sceneIdxInt];
+
+                if (sc.contains("speakerBGs") && sc["speakerBGs"].is_array() &&
+                    speakerID < (int)sc["speakerBGs"].size() && sc["speakerBGs"][speakerID].is_string())
+                {
+                    d.bgRenderData = SelectImage(sc["speakerBGs"][speakerID].get<std::string>());
+                }
+
+                if (sc.contains("speakerProfiles") && sc["speakerProfiles"].is_array() &&
+                    speakerID < (int)sc["speakerProfiles"].size() && sc["speakerProfiles"][speakerID].is_string())
+                {
+                    d.profileRenderData = SelectImage(sc["speakerProfiles"][speakerID].get<std::string>());
+                }
+
+                lastSpeaker = speakerID;
             }
 
             // Draw text positions
@@ -954,18 +1020,6 @@ void GuiSystem::Update(float dt)
                 drawX -= fullSize.x * 0.5f;
                 drawY -= fullSize.y * 0.5f;
             }
-
-            // Draw speaker name (no typewriter)
-            //Vec2 speakerPos{ d.speakerNameBasePos.x * scaleX, d.speakerNameBasePos.y * scaleY };
-            //float speakerScale = d.speakerNameBaseScale * uiScale;
-            //Vec2 speakerSize = render.CalculateTextSize(speakerName, speakerScale, "Marker");
-            //float speakerX = speakerPos.x, speakerY = speakerPos.y;
-            //if (d.speakerNameCentered) 
-            //{ 
-            //    speakerX -= speakerSize.x * 0.5f; 
-            //    speakerY -= speakerSize.y * 0.5f; 
-            //}
-            //render.DrawText(speakerName, speakerX, speakerY, speakerScale, d.speakerNameColor, "Marker");
 
             const float lineH = render.CalculateTextSize("A", d.textBox.scale, "Marker").y;
             //render.DrawText(speakerName, drawX, drawY + (lineH * 1.5f), nameScale, drawColor, "Marker");
@@ -1033,18 +1087,23 @@ void GuiSystem::Update(float dt)
             }
             if (!current.empty()) wrappedLines.push_back(current);
 
+            // Decide side from current line's speakerID
+            bool notRock = (speakerID == 1 || speakerID == 2);
+            const float profDir = notRock ? +1.f : -1.f; // +1 = profile on the right, -1 = profile on the left
+            const float posLeftShift = notRock ? -200.f : 0.f;
+            const float gap = 20.f * uiScale;
+
             // Draw dialogue background
             Vec2 bgScale = d.bgBaseSize * uiScale;
-            float offsetX = bgScale.x * 0.4f; // move pos of background depending on speaker
-            Vec2 bgCenter = { drawX + offsetX, drawY - bgScale.y * 0.1f };
+            Vec2 bgCenter = { drawX + bgScale.x * 0.4f, drawY - bgScale.y * 0.1f };
             if (d.bgEnabled)
             {
-                Vec2 bgPos = bgCenter;
+                Vec2 bgPos = { bgCenter.x + posLeftShift, bgCenter.y };
                 switch (d.bgRenderData.GetRenderType())
                 {
                 case UIRenderType::Shape:
                 {
-                    UIShapeRender data = d.bgRenderData.GetShapeData();
+                    auto data = d.bgRenderData.GetShapeData();
                     switch (data.shape)
                     {
                     case ButtonShape::Rectangle: render.DrawRect(bgPos, bgScale.x, bgScale.y, data.color); break;
@@ -1086,12 +1145,13 @@ void GuiSystem::Update(float dt)
             }
 
             // Draw profile next to dialogue box
+            Vec2 profScale = d.profileBaseSize * uiScale;
+            Vec2 profCenter = bgCenter;
             if (d.profileEnabled)
             {
-                Vec2 profScale = d.profileBaseSize * uiScale;
-                Vec2 profCenter = 
+                profCenter = 
                 { 
-                    bgCenter.x - (bgScale.x * 0.5f) - (profScale.x * 0.5f) + d.profileOffset.x,
+                    bgCenter.x + posLeftShift + profDir * (bgScale.x * 0.5f + profScale.x * 0.5f) + d.profileOffset.x,
                     bgCenter.y + d.profileOffset.y
                 };
 
@@ -1099,7 +1159,7 @@ void GuiSystem::Update(float dt)
                 {
                 case UIRenderType::Shape:
                 {
-                    UIShapeRender data = d.profileRenderData.GetShapeData();
+                    auto data = d.profileRenderData.GetShapeData();
                     switch (data.shape)
                     {
                     case ButtonShape::Rectangle: render.DrawRect(profCenter, profScale.x, profScale.y, data.color); break;
@@ -1142,11 +1202,14 @@ void GuiSystem::Update(float dt)
 
             // render.DrawText(speakerName, speakerX, speakerY, speakerScale, d.speakerNameColor, "Marker");
 
+            const float textPosLeftShift = notRock ? -275.f : 0.f;
+            float textX = (bgCenter.x - bgScale.x * 0.4f) + textPosLeftShift;
+
             // Render wrapped lines
             float yCursor = drawY;
             for (const auto& ln : wrappedLines)
             {
-                render.DrawText(ln, drawX, yCursor, d.textBox.scale, drawColor, "Marker");
+                render.DrawText(ln, textX, yCursor, d.textBox.scale, drawColor, "Marker");
                 yCursor -= lineH;
             }
 
@@ -2152,4 +2215,14 @@ bool GuiSystem::SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3) {
         return true;
     }
     return false;
+}
+
+bool GuiSystem::GetDialogueGate()
+{
+    return dialogueGate;
+}
+
+void GuiSystem::SetDialogueGate(bool gate)
+{
+    dialogueGate = gate;
 }

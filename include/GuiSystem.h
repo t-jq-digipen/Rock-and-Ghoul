@@ -548,21 +548,8 @@ struct DialogueConfig {
     int ID = 0;
 
     // New variables
-    float textSpeed = 0.f; // text typing speed
-    float wrapWidth = 0.f; // max width of line before next line
-    //bool customSpeaker = false; // for setting custom speaker
-    //std::string customSpeakerName = "Beberd";
-
-    //// Speaker label settings
-    //Vec2 speakerNameBasePos;
-    //float speakerNameBaseScale{ 1.2f };
-    //Colour3 speakerNameColor = { 0, 0, 0 };
-    //bool speakerNameCentered = false;
-
-    //Vec2 speakerPosOffset = { 0.f, 60.f }; // offset pos of label
-    //Colour3 speakerColorOffset = { 0, 0, 0 }; // offset color of label
-    //float speakerScaleMul = 1.f; // label scale relative to dialogue box
-    //bool speakerCenteredOverride = false; // override centering label if true
+    float textSpeed = 60.f; // text typing speed
+    float wrapWidth = 1300.f; // max width of line before next line
 
     // Dialogue box background UI settings
     bool bgEnabled = true;
@@ -589,7 +576,7 @@ struct DisplayConfig
 };
 
 struct Button {
-    ButtonConfig cfg;
+    ButtonConfig cfg{};
     bool hovered = false;
     bool pressed = false;
 };
@@ -639,6 +626,8 @@ public:
         static GuiSystem instance;
         return instance;
     }
+
+    bool dialogueGate = true;
 
 /**
  * @brief   Initializes the GUI system and registers all button actions.
@@ -955,6 +944,10 @@ public:
     bool GetDisplayQuad(int ID, Vec2& v0, Vec2& v1, Vec2& v2, Vec2& v3);
 
     bool SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3);
+
+    bool GetDialogueGate();
+
+    void SetDialogueGate(bool gate);
 
 private:
 

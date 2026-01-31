@@ -663,7 +663,8 @@ namespace RockScript {
 
 		// MOVEMENT
 		// ================================================================================
-		if (!IsBusy())
+		GuiSystem& gui = GuiSystem::Get();
+		if (!IsBusy() && !gui.GetDialogueGate())
 		{
 			int hor = 0;
 			int ver = 0;
