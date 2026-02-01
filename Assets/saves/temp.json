@@ -5,18 +5,11 @@
     ],
     "bgmAssetName": "main_menu",
     "cameraSpawn": [
-        0.0,
-        0.0
+        960.0,
+        540.0
     ],
     "cameraZoom": 1.0,
     "entities": [
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
-                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "MainMenu_Rock&Ghoul"
-        },
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"Movey\"]}",
@@ -26,6 +19,13 @@
                 "Transform": "{\"posX\":1682.5478515625,\"posY\":-177.76971435546875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "MainMenu_Dots"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
+                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "MainMenu_Rock&Ghoul"
         }
     ],
     "fontConfig": "../Assets/fontAssets.json",
@@ -88,11 +88,8 @@
             {
                 "ID": 4,
                 "action": "None",
-                "actionName": "LoadScene",
-                "actionParams": {
-                    "duration": 0.0,
-                    "scene": "QuitGameOption"
-                },
+                "actionName": "Quit",
+                "actionParams": "",
                 "label": "QUIT GAME",
                 "pos": [
                     1650.0,
@@ -104,10 +101,91 @@
                     150.0
                 ],
                 "soundType": 0
+            },
+            {
+                "ID": 8,
+                "action": "None",
+                "actionName": "Quit",
+                "actionParams": "",
+                "label": "YES",
+                "pos": [
+                    960.0,
+                    600.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_QuitButton.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    400.0,
+                    189.47369384765625
+                ],
+                "soundType": 0
+            },
+            {
+                "ID": 9,
+                "action": "None",
+                "actionName": "LoadScene",
+                "actionParams": {
+                    "duration": 0.0,
+                    "scene": "MainMenu"
+                },
+                "label": "NO",
+                "pos": [
+                    960.0,
+                    400.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_NewGame_Button.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    400.0,
+                    189.47369384765625
+                ],
+                "soundType": 0
             }
         ],
         "dialogues": [],
-        "textboxes": []
+        "displays": [
+            {
+                "ID": 6,
+                "centered": true,
+                "pos": [
+                    960.0,
+                    540.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ExitPanel.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    1000.0,
+                    1000.0
+                ]
+            },
+            {
+                "ID": 5,
+                "centered": true,
+                "pos": [
+                    960.0,
+                    540.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/halfblack.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    3000.0,
+                    2000.0
+                ]
+            }
+        ],
+        "textboxes": [
+            {
+                "ID": 7,
+                "centered": false,
+                "color": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "pos": [
+                    771.5889892578125,
+                    685.7940063476563
+                ],
+                "scale": 1.2000000476837158,
+                "text": "confirm quit?"
+            }
+        ]
     },
     "sceneName": "temp",
     "sceneType": 0,
