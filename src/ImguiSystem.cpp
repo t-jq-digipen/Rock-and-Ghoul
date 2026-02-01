@@ -90,6 +90,9 @@ static bool         g_showAudioImportPopup = false;
 static std::string  g_pendingAudioSourcePath;   // full path from drag drop
 static int          g_pendingAudioCategory = 0; // 0=Music, 1=SFX, 2=UI
 
+static bool         g_showDeleteImagePopup = false;
+static std::string  g_pendingDeleteImageName;
+
 // ========================================================
 // Static Member Definitions
 // ========================================================
@@ -4676,6 +4679,20 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         ImGui::Text("Drag %s", g_imageNames[i].c_str());
                         ImGui::EndDragDropSource();
                     }
+                    // Right-click context menu on image thumbnail
+                    ImGui::PushID((int)i);
+                    if (ImGui::BeginPopupContextItem("##ImgCtx"))
+                    {
+                        ImGui::Text("%s", g_imageNames[i].c_str());
+                        ImGui::Separator();
+                        if (ImGui::MenuItem("Delete Image"))
+                        {
+                            g_pendingDeleteImageName = g_imageNames[i];
+                            g_showDeleteImagePopup = true;
+                        }
+                        ImGui::EndPopup();
+                    }
+                    ImGui::PopID();
                     // filename
                     ImGui::TextWrapped("%s", g_imageNames[i].c_str());
                     ImGui::EndGroup();
@@ -4687,6 +4704,70 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                 ImGui::EndChild();
             }
+
+            // Delete image confirmation modal
+            if (g_showDeleteImagePopup)
+            {
+                ImGui::OpenPopup("Delete Image Confirmation");
+                g_showDeleteImagePopup = false;
+            }
+            if (ImGui::BeginPopupModal("Delete Image Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Are you sure you want to delete:\n%s ?", g_pendingDeleteImageName.c_str());
+                ImGui::Separator();
+
+                if (ImGui::Button("Yes, Delete", ImVec2(120, 0)))
+                {
+                    // search Assets (recursive) for the file by name and delete it
+                    namespace fs = std::filesystem;
+                    const std::string assetFolder = "../Assets/";
+                    bool deleted = false;
+                    for (auto& entry : fs::recursive_directory_iterator(assetFolder))
+                    {
+                        if (entry.is_regular_file() && entry.path().filename().string() == g_pendingDeleteImageName)
+                        {
+                            try
+                            {
+                                fs::remove(entry.path());
+                                std::cout << "[AssetBrowser] Deleted image: " << entry.path() << "\n";
+                                deleted = true;
+                            }
+                            catch (const std::exception& e)
+                            {
+                                std::cerr << "[AssetBrowser] Failed to delete: " << e.what() << "\n";
+                            }
+                            break;
+                        }
+                    }
+
+                    if (deleted)
+                    {
+                        // remove from thumbnail cache so it disappears immediately
+                        for (size_t j = 0; j < g_imageNames.size(); ++j)
+                        {
+                            if (g_imageNames[j] == g_pendingDeleteImageName)
+                            {
+                                g_imageNames.erase(g_imageNames.begin() + j);
+                                g_loadedThumbnails.erase(g_loadedThumbnails.begin() + j);
+                                break;
+                            }
+                        }
+                    }
+
+                    g_pendingDeleteImageName.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    g_pendingDeleteImageName.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+            
             if (showReplacePopup)
             {
                 ImGui::OpenPopup("Replace Existing Asset?");
