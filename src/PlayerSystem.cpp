@@ -16,6 +16,7 @@
  * ========================================================
  */
 
+#include "AudioComponent.h"
 #include "PlayerSystem.h"
 #include "Registry.h"
 #include "Audio.h"
@@ -146,6 +147,18 @@ namespace PlayerMove {
 } // end namespace PlayerMove
 
 namespace RockScript {
+	// JQ CHECK HERE
+	static Entity g_RockEntity = INVALID_ENTITY;  // stores entityID, must repeat for every entity
+
+	void PlayRockSound(const std::string& soundID) {  // soundID = "melee_swing", "footstep", etc
+		if (g_RockEntity != INVALID_ENTITY &&
+			Registry::Get().Has_Component<AudioComponent>(g_RockEntity)) {
+			auto& audioComp = Registry::Get().Get_Component<AudioComponent>(g_RockEntity);
+			audioComp.PlaySound(g_RockEntity, soundID);
+			// audioComp will look up soundID in sounds map to find the actual audio file name
+		}
+	}
+
 	// Constants
 #pragma region CONSTANTS
 	constexpr float SWING_TIME = 0.5f;
@@ -339,7 +352,8 @@ namespace RockScript {
 	void Attack() {
 		if (IsBusy()) { return; }
 
-		AudioSystem::PlaySoundAt("player_dodge", 0.0f, 0.0f, 1.0f);
+		PlayRockSound("melee_swing");
+		//AudioSystem::PlaySoundAt("player_dodge", 0.0f, 0.0f, 1.0f);
 		meleetimer = 0.f;
 		shot = false;
 	}

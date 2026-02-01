@@ -254,41 +254,12 @@ Editor::ComponentData AudioComponent::EditorData() {
 void Update_AudioComponents(float dt) {
     (void)dt;
 
-    // JQ CHECK HERE
-// ========== AUDIO TEST (DELETE WHEN DONE) ==========
-    static bool testSetup = false;
-    static AudioComponent audio;
-
-    if (!testSetup) {
-        audio.sounds["test1"] = "button_play";
-        audio.sounds["test2"] = "button_quit";
-        audio.sounds["test3"] = "level_1";
-
-        testSetup = true;
-        std::cout << "[AUDIO TEST] Setup complete!\n";
-        std::cout << "[AUDIO TEST] Press 1,2,3 to play sounds, 4 to stop all\n";
-    }
-
-    if (Input::IsKeyPressed(GLFW_KEY_1)) {
-        audio.PlaySound(0, "test1");
-    }
-    if (Input::IsKeyPressed(GLFW_KEY_2)) {
-        audio.PlaySound(0, "test2");
-    }
-    if (Input::IsKeyPressed(GLFW_KEY_3)) {
-        audio.PlaySound(0, "test3");
-    }
-    if (Input::IsKeyPressed(GLFW_KEY_4)) {
-        audio.StopAllSounds();
-    }
-    // ========== END AUDIO TEST ==========
-
     Registry& registry = Registry::Get();
 
     for (auto& [entity, audio] : registry.Get_ComponentMap<AudioComponent>()) {
         if (!audio.autoPlaySound.empty() && !audio.IsPlaying(audio.autoPlaySound)) {
             audio.PlaySound(entity, audio.autoPlaySound); // store many sounds to one entity :3
-            audio.autoPlaySound = ""; // audio that happens when entities spawn NO MORE TO CHECK
+            audio.autoPlaySound = ""; // audio that happens when entities spawn
         }
 
         audio.UpdatePlaybackStates(entity);
