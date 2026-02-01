@@ -222,6 +222,7 @@ target_link_libraries(ffmpeg INTERFACE
     "${FFMPEG_DIR}/lib/avcodec.lib"
     "${FFMPEG_DIR}/lib/avformat.lib"
     "${FFMPEG_DIR}/lib/avutil.lib"
+    "${FFMPEG_DIR}/lib/swscale.lib"
 )
 
 
