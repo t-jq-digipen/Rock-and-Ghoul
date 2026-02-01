@@ -44,7 +44,7 @@ struct AudioComponent { // JQ CHECK HERE
     void UpdatePlaybackStates(Entity eID);
     void SetVolume(float vol);
 
-    // ========== Serialization ==========
+    // ========== Serialization (follows your project pattern) ==========
     std::string Serialize() const;
     static AudioComponent DeSerialize(Entity eID, const std::string& data);
 

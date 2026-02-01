@@ -151,7 +151,7 @@ void CoreEngine::Initialize()
     registry.Register_Component<ColliderComponent>("Collider", { "Transform" });
     std::cout << "REGISTRY | REGISTERED COLLIDER COMPONENT\n";
 
-    registry.Register_Component<AudioComponent>("AudioComponent");
+    registry.Register_Component<AudioComponent>("Audio");
     std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";
 
     registry.Register_Component<HealthComponent>("Health");
