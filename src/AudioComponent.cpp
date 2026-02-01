@@ -34,7 +34,7 @@
 using json = nlohmann::json;
 
 void AudioComponent::PlaySound(size_t index, Entity eID) {
-    // Validate index
+    // chceck exist? index
     if (index >= sounds.size()) {
         std::cerr << "[AudioComponent] Invalid sound index: " << index << std::endl;
         return;
@@ -63,7 +63,7 @@ void AudioComponent::PlaySound(size_t index, Entity eID) {
         return;
     }
 
-    // Play with spatial audio or normal
+    // Play with spatial audio or normal THIS DOESNT F WORD WORK
     if (spatial && Registry::Get().Has_Component<TransformComponent>(eID)) {
         auto& transform = Registry::Get().Get_Component<TransformComponent>(eID);
         channels[index] = AudioSystem::PlaySoundAt(sounds[index], transform.pos.x, transform.pos.y, volume);
@@ -219,26 +219,5 @@ void Update_AudioComponents(float dt) {
         if (audio.spatial) {
             audio.UpdateSpatialPosition(entity);
         }
-    }
-}
-
-// ============================================================================
-// HELPER FUNCTION
-// ============================================================================
-
-/**
- * @brief Helper function to play sound on any entity with AudioComponent
- * @param eID Entity ID
- * @param index Sound index to play
- */
-void PlayEntitySound(Entity eID, size_t index) {
-    Registry& registry = Registry::Get();
-
-    if (registry.Has_Component<AudioComponent>(eID)) {
-        auto& audioComp = registry.Get_Component<AudioComponent>(eID);
-        audioComp.PlaySound(index, eID);
-    }
-    else {
-        std::cerr << "[AudioComponent] Entity " << eID << " does not have AudioComponent!" << std::endl;
     }
 }
