@@ -15,24 +15,34 @@
 #include "Audio.h"
 #include <nlohmann/json.hpp>
 #include <iostream>
-// audio test will delete asap
-#include "Input.h"
-#include <GLFW/glfw3.h>
+
 using json = nlohmann::json;
 
 // ============================================================================
-// AUDIOCOMPONENT MEMBER FUNCTIONS
+// CORE FUNCTIONS
 // ============================================================================
 
-bool AudioComponent::PlaySound(Entity eID, const std::string& soundID) {
-    auto it = sounds.find(soundID);
-    if (it == sounds.end()) {
-        std::cerr << "[AudioComponent] Sound ID '" << soundID << "' not found!" << std::endl;
+// Static helper for one-line calls
+bool AudioComponent::Play(Entity eID, int index) {
+    if (eID == INVALID_ENTITY) return false;
+
+    Registry& registry = Registry::Get();
+    if (registry.Has_Component<AudioComponent>(eID)) {
+        auto& audioComp = registry.Get_Component<AudioComponent>(eID);
+        return audioComp.PlaySound(eID, index);
+    }
+    return false;
+}
+
+// Instance method
+bool AudioComponent::PlaySound(Entity eID, int index) {
+    if (index < 0 || index >= static_cast<int>(soundFiles.size())) {
+        std::cerr << "[AudioComponent] Invalid sound index: " << index << std::endl;
         return false;
     }
 
-    const std::string& assetName = it->second;
-    StopSound(soundID);
+    const std::string& assetName = soundFiles[index];
+    StopSound(index);  // Stop if already playing
 
     FMOD::Sound* sound = AudioCache::GetSound(assetName);
     if (!sound) {
@@ -54,35 +64,23 @@ bool AudioComponent::PlaySound(Entity eID, const std::string& soundID) {
     }
 
     if (channel) {
-        activeChannels[soundID] = channel;
-        std::cout << "[AudioComponent] Playing sound: " << soundID << " (" << assetName << ")" << std::endl;
+        activeChannels[index] = channel;
         return true;
     }
 
     return false;
 }
 
-void AudioComponent::StopSound(const std::string& soundID) {
-    auto it = activeChannels.find(soundID);
+void AudioComponent::StopSound(int index) {
+    auto it = activeChannels.find(index);
     if (it != activeChannels.end() && it->second) {
         it->second->stop();
         activeChannels.erase(it);
-        std::cout << "[AudioComponent] Stopped sound: " << soundID << std::endl;
     }
 }
 
-void AudioComponent::StopAllSounds() {
-    for (auto& [soundID, channel] : activeChannels) {
-        if (channel) {
-            channel->stop();
-        }
-    }
-    activeChannels.clear();
-    std::cout << "[AudioComponent] Stopped all sounds" << std::endl;
-}
-
-bool AudioComponent::IsPlaying(const std::string& soundID) {
-    auto it = activeChannels.find(soundID);
+bool AudioComponent::IsPlaying(int index) {
+    auto it = activeChannels.find(index);
     if (it == activeChannels.end() || !it->second) {
         return false;
     }
@@ -93,11 +91,11 @@ bool AudioComponent::IsPlaying(const std::string& soundID) {
 }
 
 void AudioComponent::UpdatePlaybackStates(Entity eID) {
-    std::vector<std::string> toRemove;
+    std::vector<int> toRemove;
 
-    for (auto& [soundID, channel] : activeChannels) {
+    for (auto& [index, channel] : activeChannels) {
         if (!channel) {
-            toRemove.push_back(soundID);
+            toRemove.push_back(index);
             continue;
         }
 
@@ -105,22 +103,86 @@ void AudioComponent::UpdatePlaybackStates(Entity eID) {
         channel->isPlaying(&playing);
 
         if (!playing) {
-            toRemove.push_back(soundID);
+            toRemove.push_back(index);
         }
         else if (spatial) {
             UpdateChannelSpatialPosition(eID, channel);
         }
     }
 
-    for (const auto& soundID : toRemove) {
-        activeChannels.erase(soundID);
+    for (const auto& index : toRemove) {
+        activeChannels.erase(index);
     }
 }
 
-void AudioComponent::UpdateChannelSpatialPosition(Entity eID, FMOD::Channel* channel) {
-    if (!channel || !Registry::Get().Has_Component<TransformComponent>(eID)) {
-        return;
+// ============================================================================
+// SERIALIZATION (Simple - only new format)
+// ============================================================================
+
+std::string AudioComponent::Serialize() const {
+    json j;
+    j["soundFiles"] = soundFiles;
+    j["autoPlayIndex"] = autoPlayIndex;
+    j["volume"] = volume;
+    j["spatial"] = spatial;
+    j["minDistance"] = minDistance;
+    j["maxDistance"] = maxDistance;
+    return j.dump();
+}
+
+AudioComponent AudioComponent::DeSerialize(Entity eID, const std::string& data) {
+    (void)eID;
+
+    if (data.empty()) return AudioComponent();
+
+    try {
+        json j = json::parse(data);
+        AudioComponent audio;
+
+        // ========== HANDLE BOTH FORMATS ==========
+
+        // NEW FORMAT: soundFiles array
+        if (j.contains("soundFiles") && j["soundFiles"].is_array()) {
+            audio.soundFiles = j["soundFiles"].get<std::vector<std::string>>();
+        }
+        // OLD FORMAT: sounds map (convert to array for EntityCreation.cpp compatibility)
+        else if (j.contains("sounds") && j["sounds"].is_object()) {
+            // Convert map to array
+            for (auto it = j["sounds"].begin(); it != j["sounds"].end(); ++it) {
+                audio.soundFiles.push_back(it.value().get<std::string>());
+            }
+        }
+
+        // ========== AUTO-PLAY ==========
+        // NEW: autoPlayIndex
+        if (j.contains("autoPlayIndex")) {
+            audio.autoPlayIndex = j["autoPlayIndex"].get<unsigned int>();
+        }
+        // OLD: autoPlaySound
+        else if (j.contains("autoPlaySound")) {
+            std::string autoPlaySound = j["autoPlaySound"].get<std::string>();
+            audio.autoPlayIndex = autoPlaySound.empty() ? 0 : 1;
+        }
+
+        // ========== COMMON SETTINGS ==========
+        audio.volume = j.value("volume", 1.0f);
+        audio.spatial = j.value("spatial", false);
+        audio.minDistance = j.value("minDistance", 1.0f);
+        audio.maxDistance = j.value("maxDistance", 100.0f);
+
+        return audio;
     }
+    catch (...) {
+        return AudioComponent();
+    }
+}
+
+// ============================================================================
+// PRIVATE HELPER
+// ============================================================================
+
+void AudioComponent::UpdateChannelSpatialPosition(Entity eID, FMOD::Channel* channel) {
+    if (!channel || !Registry::Get().Has_Component<TransformComponent>(eID)) return;
 
     auto& transform = Registry::Get().Get_Component<TransformComponent>(eID);
     FMOD_VECTOR pos = { transform.pos.x, transform.pos.y, 0.0f };
@@ -130,120 +192,13 @@ void AudioComponent::UpdateChannelSpatialPosition(Entity eID, FMOD::Channel* cha
     channel->set3DMinMaxDistance(minDistance, maxDistance);
 }
 
-void AudioComponent::SetVolume(float vol) {
-    volume = vol;
-
-    for (auto& [soundID, channel] : activeChannels) {
-        if (channel) {
-            channel->setVolume(volume);
-        }
-    }
-
-    std::cout << "[AudioComponent] Volume set to: " << (volume * 100.0f) << "%" << std::endl;
-}
-
-// ============================================================================
-// SERIALIZATION
-// ============================================================================
-
-std::string AudioComponent::Serialize() const {
-    json j;
-
-    j["sounds"] = sounds;
-    j["autoPlaySound"] = autoPlaySound;
-    j["volume"] = volume;
-    j["spatial"] = spatial;
-    j["minDistance"] = minDistance;
-    j["maxDistance"] = maxDistance;
-
-    return j.dump();
-}
-
-AudioComponent AudioComponent::DeSerialize(Entity eID, const std::string& data) {
-    (void)eID;
-
-    if (data.empty()) {
-        return AudioComponent();
-    }
-
-    try {
-        json j = json::parse(data);
-        AudioComponent audio;
-
-        if (j.contains("sounds") && j["sounds"].is_object()) {
-            for (auto it = j["sounds"].begin(); it != j["sounds"].end(); ++it) {
-                audio.sounds[it.key()] = it.value().get<std::string>();
-            }
-        }
-
-        audio.autoPlaySound = j.value("autoPlaySound", std::string{});
-        audio.volume = j.value("volume", 1.0f);
-        audio.spatial = j.value("spatial", false);
-        audio.minDistance = j.value("minDistance", 1.0f);
-        audio.maxDistance = j.value("maxDistance", 100.0f);
-
-        // activeChannels start empty
-
-        std::cout << "[AudioComponent] Loaded " << audio.sounds.size() << " sounds" << std::endl;
-
-        return audio;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "[AudioComponent] Failed to deserialize: " << e.what() << std::endl;
-        return AudioComponent();
-    }
-}
-
 // ============================================================================
 // EDITOR INTEGRATION
 // ============================================================================
 
 Editor::ComponentData AudioComponent::EditorData() {
     Editor::ComponentData data("Audio");
-
-    // Auto-Play Sound Dropdown
-    if (!sounds.empty()) {
-        Editor::Widget_Dropdown autoPlayDropdown;
-        autoPlayDropdown.ref = reinterpret_cast<unsigned int*>(&autoPlaySound);
-        autoPlayDropdown.Add_Option("None", 0);
-
-        unsigned int index = 1;
-        for (const auto& [soundID, assetName] : sounds) {
-            autoPlayDropdown.Add_Option(soundID + " [" + assetName + "]", index++);
-        }
-        data.Add_Data("Auto Play Sound", autoPlayDropdown);
-    }
-
-    // Spatial Audio Checkbox
-    Editor::Widget_Checkmark spatialWidget;
-    spatialWidget.ref = &spatial;
-    data.Add_Data("Spatial Audio", spatialWidget);
-
-    // Volume Slider
-    Editor::Widget_Float volumeWidget;
-    volumeWidget.ref = &volume;
-    volumeWidget.slider = true;
-    volumeWidget.min = 0.0f;
-    volumeWidget.max = 1.0f;
-    data.Add_Data("Volume", volumeWidget);
-
-    // Spatial Distance Settings
-    if (spatial) {
-        Editor::Widget_Float minDistWidget;
-        minDistWidget.ref = &minDistance;
-        minDistWidget.slider = false;
-        minDistWidget.min = 0.1f;
-        minDistWidget.max = 1000.0f;
-        data.Add_Data("Min Distance", minDistWidget);
-
-        Editor::Widget_Float maxDistWidget;
-        maxDistWidget.ref = &maxDistance;
-        maxDistWidget.slider = false;
-        maxDistWidget.min = 1.0f;
-        maxDistWidget.max = 10000.0f;
-        data.Add_Data("Max Distance", maxDistWidget);
-    }
-
+    // Minimal implementation - just returns empty data
     return data;
 }
 
@@ -252,14 +207,19 @@ Editor::ComponentData AudioComponent::EditorData() {
 // ============================================================================
 
 void Update_AudioComponents(float dt) {
-    (void)dt;
+    (void)dt; // Unused parameter
 
     Registry& registry = Registry::Get();
 
     for (auto& [entity, audio] : registry.Get_ComponentMap<AudioComponent>()) {
-        if (!audio.autoPlaySound.empty() && !audio.IsPlaying(audio.autoPlaySound)) {
-            audio.PlaySound(entity, audio.autoPlaySound); // store many sounds to one entity :3
-            audio.autoPlaySound = ""; // audio that happens when entities spawn
+        // Handle auto-play
+        if (audio.autoPlayIndex > 0) {
+            int playIndex = static_cast<int>(audio.autoPlayIndex) - 1;
+            if (playIndex >= 0 && playIndex < static_cast<int>(audio.soundFiles.size()) &&
+                !audio.IsPlaying(playIndex)) {
+                audio.PlaySound(entity, playIndex);
+                audio.autoPlayIndex = 0; // Play once
+            }
         }
 
         audio.UpdatePlaybackStates(entity);

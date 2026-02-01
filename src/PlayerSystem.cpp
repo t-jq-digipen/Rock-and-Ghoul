@@ -147,6 +147,8 @@ namespace PlayerMove {
 } // end namespace PlayerMove
 
 namespace RockScript {
+
+	static Entity g_RockEntity = INVALID_ENTITY; //REMOVE
 	// Constants
 #pragma region CONSTANTS
 	constexpr float SWING_TIME = 0.5f;
@@ -339,7 +341,7 @@ namespace RockScript {
 	// melee swing
 	void Attack() {
 		if (IsBusy()) { return; }
-
+		AudioComponent::Play(g_RockEntity, 1);  // index 1 = melee swing REMOVE
 		//AudioSystem::PlaySoundAt("player_dodge", 0.0f, 0.0f, 1.0f);
 		meleetimer = 0.f;
 		shot = false;
@@ -581,6 +583,8 @@ namespace RockScript {
 	inline void Start(Entity eID)
 	{
 		std::cout << "Rock script started" << std::endl;
+
+		g_RockEntity = eID; //REMOVE
 
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
 			//Record arrow keys
