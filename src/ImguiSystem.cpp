@@ -4998,6 +4998,105 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
             ImGui::EndTabItem();
         }
+        // ====================================================
+       // RENDER LAYERS TAB
+       // ====================================================
+        if (ImGui::BeginTabItem("Render Layers"))
+        {
+            
+            // s_layerEnabled[i] maps 1-to-1 onto the RenderLayer enum:
+            //   0 = LAYER_BACKGROUND
+            //   1 = LAYER_GAMEOBJECT
+            //   2 = LAYER_FOREGROUND
+            //   3 = LAYER_UI
+            bool* layerEnabled = RenderSystem::GetLayerEnabledArray();
+
+            // Count entities per layer so the editor can show them
+            int counts[4] = { 0, 0, 0, 0 };
+            Registry& reg = Registry::Get();
+            for (auto& [entID, rc] : reg.Get_ComponentMap<RenderComponent>())
+            {
+                int idx = static_cast<int>(rc.GetRenderLayer());
+                if (idx >= 0 && idx < 4) counts[idx]++;
+            }
+            // GuiSystem UI lives outside RenderComponent add it into the UI count
+            {
+                auto& gui = GuiSystem::Get();
+                counts[LAYER_UI] += (int)gui.Buttons().size()
+                    + (int)gui.TextBoxes().size()
+                    + (int)gui.Dialogues().size()
+                    + (int)gui.Displays().size();
+            }
+            static const char* layerNames[4] = {
+                "Background",
+                "GameObject",
+                "Foreground",
+                "UI"
+            };
+
+
+            static const ImVec4 layerColours[4] = {
+                { 0.3f, 0.5f, 0.8f, 1.0f },   // blue-ish
+                { 0.3f, 0.7f, 0.3f, 1.0f },   // reen-ish
+                { 0.8f, 0.6f, 0.2f, 1.0f },   // orange-ish
+                { 0.7f, 0.3f, 0.7f, 1.0f }    // purple-ish
+            };
+
+            ImGui::SeparatorText("Layer Visibility");
+            ImGui::Spacing();
+
+            float panelW = ImGui::GetContentRegionAvail().x;
+
+            for (int i = 0; i < 4; ++i)
+            {
+                ImGui::PushID(i);
+
+                // Coloured label strip on the left
+                ImVec2 pos = ImGui::GetCursorScreenPos();
+                ImGui::GetWindowDrawList()->AddRectFilled(
+                    pos,
+                    ImVec2(pos.x + 6.0f, pos.y + ImGui::GetFrameHeight()),
+                    ImGui::ColorConvertFloat4ToU32(layerColours[i])
+                );
+                ImGui::SetCursorScreenPos(ImVec2(pos.x + 10.0f, pos.y));
+
+                // Checkbox
+                ImGui::Checkbox("##enable", &layerEnabled[i]);
+                ImGui::SameLine();
+
+                // Layer name
+                if (layerEnabled[i])
+                    ImGui::TextColored(layerColours[i], "%s", layerNames[i]);
+                else
+                    ImGui::TextDisabled("%s  (disabled)", layerNames[i]);
+
+                // Entity count on the right side
+                char countBuf[32];
+                snprintf(countBuf, sizeof(countBuf), "%d entit%s", counts[i], counts[i] == 1 ? "y" : "ies");
+                float countW = ImGui::CalcTextSize(countBuf).x;
+                ImGui::SameLine(panelW - countW - 4.0f);
+                ImGui::TextDisabled("%s", countBuf);
+
+                ImGui::PopID();
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // enable / disable all
+            if (ImGui::Button("Enable All"))
+            {
+                for (int i = 0; i < 4; ++i) layerEnabled[i] = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Disable All"))
+            {
+                for (int i = 0; i < 4; ++i) layerEnabled[i] = false;
+            }
+
+            ImGui::EndTabItem();
+        }
 
 
         ImGui::EndTabBar();

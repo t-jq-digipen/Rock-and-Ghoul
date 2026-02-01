@@ -43,6 +43,8 @@ extern "C" {
 #include <libavutil/imgutils.h>
 }
 
+static bool s_layerEnabled[4] = { true, true, true, true };
+bool* RenderSystem::GetLayerEnabledArray() { return s_layerEnabled; }
  // ---------------------------------------------
  // @brief Temporary struct for per-frame draw queue
  // ---------------------------------------------
@@ -1357,36 +1359,43 @@ void RenderSystem::Update(float dt) {
     //        }
     //    };
 
-    // Background (rendered behind game objects)
-    renderInstance.BeginBatch();
-    // DrawLayer(backgroundEntities);
-    drawLayer(bg_list);
-    renderInstance.EndBatch();
-    renderInstance.FlushBatch();
+   // Background (rendered behind game objects)
+    if (s_layerEnabled[LAYER_BACKGROUND])
+    {
+        renderInstance.BeginBatch();
+        drawLayer(bg_list);
+        renderInstance.EndBatch();
+        renderInstance.FlushBatch();
+    }
 
-    // Game objects
-    renderInstance.BeginBatch();
-    // DrawLayer(gameEntities);
-    drawLayer(go_list);
-    renderInstance.EndBatch();
-    renderInstance.FlushBatch();
+  // Game objects
+    if (s_layerEnabled[LAYER_GAMEOBJECT])
+    {
+        renderInstance.BeginBatch();
+        drawLayer(go_list);
+        renderInstance.EndBatch();
+        renderInstance.FlushBatch();
+    }
 
     // Foreground (rendered above game objects)
-    renderInstance.BeginBatch();
-    // DrawLayer(foregroundEntities);
-    drawLayer(fg_list);
-    renderInstance.EndBatch();
-    renderInstance.FlushBatch();
+    if (s_layerEnabled[LAYER_FOREGROUND])
+    {
+        renderInstance.BeginBatch();
+        drawLayer(fg_list);
+        renderInstance.EndBatch();
+        renderInstance.FlushBatch();
+    }
 
     // UI (rendered last, most in front)
+    if (s_layerEnabled[LAYER_UI])
+    {
         renderInstance.SetProjectionType(ProjectionType::UI);
-        //renderer.useCamera = false;
         renderInstance.BeginBatch();
-        // DrawLayer(uiEntities);
         drawLayer(ui_list);
         renderInstance.EndBatch();
         renderInstance.FlushBatch();
-        renderer.useCamera = camcheck;
+    }
+    renderer.useCamera = camcheck;
 
 
     //Draw in the correct order

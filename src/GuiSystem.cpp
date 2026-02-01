@@ -33,7 +33,7 @@
 #endif
 #include "SceneManager.h"
 #include <FilePath.h>
-
+#include "RenderSystem.h"
 //extern bool cutsceneActive;
 
 // Call Audio Manager for GuiSystem
@@ -735,6 +735,13 @@ void GuiSystem::Update(float dt)
     const float scaleX = GLApp::width / defaultWidth;
     const float scaleY = GLApp::height / defaultHeight;
     const float uiScale = std::min(scaleX, scaleY);
+
+    if (!RenderSystem::GetLayerEnabledArray()[LAYER_UI])
+    {
+        render.useCamera = prevCam;
+        return;
+    }
+
 
     // Build draw order: ALL UI elements sorted by ascending ID
     auto drawList = BuildSortedDrawList();

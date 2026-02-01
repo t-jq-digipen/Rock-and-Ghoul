@@ -37,6 +37,7 @@ public:
     static void AddBackgroundTexture(GLuint texID, const std::string& path);
     static std::vector<std::string> GetBackgroundTexturePaths();
     static void ClearBackgroundTextures();
+    static bool* GetLayerEnabledArray();
 
     static float pixelsPerUnit;
     static float unitsPerPixel;
