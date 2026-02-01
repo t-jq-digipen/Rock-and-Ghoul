@@ -11,16 +11,21 @@
 #pragma once
 #include "fmod.hpp"
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <nlohmann/json.hpp>
 #include "Entity.h"
+#include "Component.h"  // For Editor::ComponentData
 
-struct AudioComponent {
-    // ========== Sound Storage ==========
-    std::vector<std::string> soundFiles;  // Simple array of audio files
+ /**
+  * @class AudioComponent
+  * @brief Entity component for managing multiple audio sources.
+  */
+struct AudioComponent { // JQ CHECK HERE
+    // ========== Sound Collection ==========
+    std::unordered_map<std::string, std::string> sounds; // map for IDs, store audio file names in there in the order of name assigned by whoever, then name of audio from manifest
 
     // ========== Auto-Play Settings ==========
-    unsigned int autoPlayIndex = 0;  // 0 = none, 1 = first sound, 2 = second sound
+    std::string autoPlaySound = ""; // empty = no sound attached
 
     // ========== Playback Settings ==========
     float volume = 1.0f;
@@ -29,27 +34,28 @@ struct AudioComponent {
     float maxDistance = 100.0f;
 
     // ========== Active Playback Tracking ==========
-    std::unordered_map<int, FMOD::Channel*> activeChannels;  // Track by index
+    std::unordered_map<std::string, FMOD::Channel*> activeChannels;
 
     // ========== Core Functions ==========
-    // Static helper for one-line calls (what your PM wants!)
-    static bool Play(Entity eID, int index);
-
-    // Instance method
-    bool PlaySound(Entity eID, int index);
-    void StopSound(int index);
+    bool PlaySound(Entity eID, const std::string& soundID); // informs which sound to play NO MORE TO CHECK
+    void StopSound(const std::string& soundID);
     void StopAllSounds();
-    bool IsPlaying(int index);
+    bool IsPlaying(const std::string& soundID);
     void UpdatePlaybackStates(Entity eID);
     void SetVolume(float vol);
-
-    // ========== Editor Integration ==========
-    Editor::ComponentData EditorData();
 
     // ========== Serialization ==========
     std::string Serialize() const;
     static AudioComponent DeSerialize(Entity eID, const std::string& data);
 
+    // ========== Editor Integration ==========
+    Editor::ComponentData EditorData();
+
 private:
     void UpdateChannelSpatialPosition(Entity eID, FMOD::Channel* channel);
 };
+
+/**
+ * @brief System update function for all AudioComponents
+ */
+void Update_AudioComponents(float dt);
