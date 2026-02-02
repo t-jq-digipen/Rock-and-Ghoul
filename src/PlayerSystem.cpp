@@ -204,9 +204,6 @@ namespace RockScript {
 
 	std::unordered_map<Entity, size_t> subscriberID;
 
-
-	static Element currentElement = Element::NONE; //Set default element to none
-
 	static bool faceRight = true;
 
 	Entity shieldy = INVALID_ENTITY;
@@ -314,19 +311,6 @@ namespace RockScript {
 		}
 	}
 
-	void CycleElement() {
-		int index = static_cast<int>(currentElement);
-		index = (index + 1) % static_cast<int>(Element::COUNT);
-		currentElement = static_cast<Element>(index);
-
-		switch (currentElement) {
-		case Element::NONE: std::cout << "Element: NONE\n"; break;
-		case Element::LIGHTNING: std::cout << "Element: LIGHTNING\n"; break;
-		case Element::FIRE: std::cout << "Element: FIRE\n"; break;
-		case Element::WIND: std::cout << "Element: WIND\n"; break;
-		case Element::ICE: std::cout << "Element: ICE\n"; break;
-		}
-	}
 
 	// check if timers active
 	bool IsBusy() {
@@ -709,12 +693,16 @@ namespace RockScript {
 				Vec2 vel = phyComp.Get_Vel();
 				vel.x = -vel.x;
 				phyComp.Set_Vel(vel);
-				registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
+				if (registry.Has_Component<RenderComponent>(wave)) {
+					registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
+				}
 			}
 
 			std::cout << "Soundwave cast!\n";
-			CombatSystem::ApplyElementToProjectile(wave, currentElement);
-			currentElement = Element::NONE; // Reset element after use
+			if (wave != INVALID_ENTITY) {
+				CombatSystem::ApplyElementToProjectile(wave, CombatSystem::GetCurrentElement());
+			}
+			CombatSystem::SetCurrentElement(Element::NONE); // Reset element after use
 			std::cout << "Element: NONE\n";
 			// to start animation
 			wavetimer = 0.f;
@@ -747,10 +735,10 @@ namespace RockScript {
 			}
 
 			std::cout << "AOE cast!\n";
-			Entity aoe = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "AoeFX.json", posx, trans.pos.y + 400.f);
-			std::cout << "AOE cast!\n";
-			CombatSystem::ApplyElementToProjectile(aoe, currentElement);
-			currentElement = Element::NONE; // Reset element after use
+			if (aoeVisual != INVALID_ENTITY) {
+				CombatSystem::ApplyElementToProjectile(aoeVisual, CombatSystem::GetCurrentElement());
+			}
+			CombatSystem::SetCurrentElement(Element::NONE); // Reset element after use
 			std::cout << "Element: NONE\n";
 			aoetimer = 0.f;
 			break;
@@ -794,6 +782,9 @@ namespace RockScript {
 		// clear input buffer
 		inputBuffer.clear();
 
+		// clear active spells to prevent dangling references
+		activeSpells.clear();
+
 		// hide all arrow displays initially
 		UpdateVisualDisplays();
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
@@ -817,41 +808,12 @@ namespace RockScript {
 			{
 				Knockback(eID);
 			}
-			else if (e.key == GLFW_KEY_Q)
-			{
-				CycleElement();
-			}
 			else if (e.key == GLFW_KEY_P)  // Press P to see pool stats
 			{
 				std::cout << "\n=== Memory Pool Stats (Press P) ===\n";
 				GameMemoryManager::Get().PrintStats();
 				PooledEntityFactory::Get().PrintStats();
 				std::cout << "====================================\n\n";
-			// Direct element selection
-			else if (e.key == GLFW_KEY_Z)
-			{
-				currentElement = Element::FIRE;
-				std::cout << "Element: FIRE\n";
-			}
-			else if (e.key == GLFW_KEY_X)
-			{
-				currentElement = Element::ICE;
-				std::cout << "Element: ICE\n";
-			}
-			else if (e.key == GLFW_KEY_C)
-			{
-				currentElement = Element::WIND;
-				std::cout << "Element: WIND\n";
-			}
-			else if (e.key == GLFW_KEY_V)
-			{
-				currentElement = Element::LIGHTNING;
-				std::cout << "Element: LIGHTNING\n";
-			}
-			else if (e.key == GLFW_KEY_R)
-			{
-				currentElement = Element::NONE;
-				std::cout << "Element: NONE\n";
 			}
 			if (e.key == GLFW_KEY_1)
 				ActivateSpell(0, eID);
@@ -866,7 +828,7 @@ namespace RockScript {
 			spell.charges = 0;
 		}
 
-		currentElement = Element::NONE;
+		CombatSystem::SetCurrentElement(Element::NONE);
 
 
 		ResetTimers();
@@ -1119,6 +1081,17 @@ namespace RockScript {
 	{
 		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID[e]);
 		subscriberID.erase(e);
+
+		// Clean up all active spells when script ends
+		Registry& registry = Registry::Get();
+		for (auto& spell : activeSpells) {
+			if (spell.ecsEntity != INVALID_ENTITY) {
+				registry.Remove_Entity(spell.ecsEntity);
+			}
+			PooledEntityFactory::Get().DestroyEntity(spell.poolEntity);
+		}
+		activeSpells.clear();
+
 		std::cout << "Rock script ended" << std::endl;
 	}
 } // end namespace RockScript

@@ -4,8 +4,8 @@
     ],
     "bgmAssetName": "level_1",
     "cameraSpawn": [
-        0.0,
-        0.0
+        794.2777099609375,
+        453.8341979980469
     ],
     "cameraZoom": 1.2000000476837158,
     "entities": [
@@ -38,22 +38,22 @@
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":466.52398681640625,\"aabb_dimY\":210.6439971923828,\"aabb_maxX\":1135.899169921875,\"aabb_maxY\":745.6759643554688,\"aabb_minX\":669.3751220703125,\"aabb_minY\":535.0319213867188,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":466.52398681640625,\"aabb_dimY\":210.6439971923828,\"aabb_maxX\":1135.90087890625,\"aabb_maxY\":650.900634765625,\"aabb_minX\":669.376953125,\"aabb_minY\":440.2566223144531,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":902.6371459960938,\"posY\":640.3539428710938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":902.638916015625,\"posY\":545.57861328125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":200.0,\"aabb_maxX\":1248.1488037109375,\"aabb_maxY\":600.0,\"aabb_minX\":1148.1488037109375,\"aabb_minY\":400.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":200.0,\"aabb_maxX\":1232.3546142578125,\"aabb_maxY\":600.0,\"aabb_minX\":1132.3546142578125,\"aabb_minY\":400.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
                 "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
                 "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":10.0,\\\"scaleY\\\":10.0,\\\"texturePath\\\":\\\"../Assets/Ghoul_2048px.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
                 "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":1198.1488037109375,\"posY\":500.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":1182.3546142578125,\"posY\":500.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "ghoul"
         },
@@ -144,10 +144,10 @@
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":466.52398681640625,\"aabb_dimY\":210.6439971923828,\"aabb_maxX\":1135.899169921875,\"aabb_maxY\":745.6759643554688,\"aabb_minX\":669.3751220703125,\"aabb_minY\":535.0319213867188,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":466.52398681640625,\"aabb_dimY\":210.6439971923828,\"aabb_maxX\":630.486328125,\"aabb_maxY\":899.961669921875,\"aabb_minX\":163.96237182617188,\"aabb_minY\":689.317626953125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":902.6371459960938,\"posY\":640.3539428710938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":397.224365234375,\"posY\":794.6396484375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
@@ -468,6 +468,110 @@
                     240.0,
                     160.0
                 ]
+            },
+            {
+                "ID": 26,
+                "centered": true,
+                "pos": [
+                    350.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Lightning.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 25,
+                "centered": true,
+                "pos": [
+                    345.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 27,
+                "centered": true,
+                "pos": [
+                    450.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 28,
+                "centered": true,
+                "pos": [
+                    455.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Fire.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 29,
+                "centered": true,
+                "pos": [
+                    545.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 30,
+                "centered": true,
+                "pos": [
+                    550.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Wind.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    210.0
+                ]
+            },
+            {
+                "ID": 31,
+                "centered": true,
+                "pos": [
+                    645.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 32,
+                "centered": true,
+                "pos": [
+                    650.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Ice.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    210.0
+                ]
             }
         ],
         "groups": [
@@ -490,6 +594,20 @@
                     9
                 ],
                 "name": "Stats"
+            },
+            {
+                "ID": 1,
+                "members": [
+                    32,
+                    31,
+                    30,
+                    29,
+                    28,
+                    27,
+                    26,
+                    25
+                ],
+                "name": "Elements"
             }
         ],
         "textboxes": [
@@ -502,8 +620,8 @@
                     1.0
                 ],
                 "pos": [
-                    663.9249877929688,
-                    322.9909973144531
+                    547.2899780273438,
+                    272.52398681640625
                 ],
                 "scale": 0.7329999804496765,
                 "text": "0x"
@@ -517,8 +635,8 @@
                     1.0
                 ],
                 "pos": [
-                    762.6170043945313,
-                    312.89801025390625
+                    610.093017578125,
+                    257.3840026855469
                 ],
                 "scale": 0.7329999804496765,
                 "text": "0x"
@@ -532,8 +650,8 @@
                     1.0
                 ],
                 "pos": [
-                    852.3359985351563,
-                    307.8500061035156
+                    681.8690185546875,
+                    242.24200439453125
                 ],
                 "scale": 0.7329999804496765,
                 "text": "0x"

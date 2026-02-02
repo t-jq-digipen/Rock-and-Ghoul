@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        CombatSystem.cpp
  * @author      Yasmin Tazi | yasmin.t@digipen.edu
- * @date        28 JAN 2026
+ * @date        02 FEB 2026
  *
  * @brief       Combat system implementation for damage and element effects.
  *
@@ -21,16 +21,57 @@
 #include "Movement.h"
 #include "Physics.h"
 #include "Remath.h"
+#include "GuiSystem.h"
+#include "Input.h"
 #include <iostream>
+
+// Current selected element (static)
+static Element currentElement = Element::NONE;
+
+void CombatSystem::UpdateElementUI()
+{
+	GuiSystem& gui = GuiSystem::Get();
+	auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
+
+	// Element icon IDs
+	const int LIGHTNING_ID = 26;
+	const int FIRE_ID = 28;
+	const int WIND_ID = 30;
+	const int ICE_ID = 32;
+
+	for (auto& display : displays) {
+		if (display.ID == LIGHTNING_ID) {
+			display.opacity = (currentElement == Element::LIGHTNING) ? 1.0f : 0.4f;
+		}
+		else if (display.ID == FIRE_ID) {
+			display.opacity = (currentElement == Element::FIRE) ? 1.0f : 0.4f;
+		}
+		else if (display.ID == WIND_ID) {
+			display.opacity = (currentElement == Element::WIND) ? 1.0f : 0.4f;
+		}
+		else if (display.ID == ICE_ID) {
+			display.opacity = (currentElement == Element::ICE) ? 1.0f : 0.4f;
+		}
+	}
+}
 
 void CombatSystem::Initialize()
 {
 	// Subscribe to ProjectileHitEnemy event
 	EventBus::Get().Subscribe<TriggerEvent>([](const TriggerEvent& e) {
 		if (e.eventName == "ProjectileHitEnemy") {
-			std::cout << "[COLLISION] Projectile hit Enemy! YIPPEE!" << std::endl;
-
 			Registry& reg = Registry::Get();
+
+			// Verify the target is actually an enemy (not the player)
+			if (reg.Has_Component<TagComponent>(e.other)) {
+				auto& targetTag = reg.Get_Component<TagComponent>(e.other);
+				if (targetTag.tag == T_PLAYER) {
+					// Don't damage the player with their own projectiles
+					return;
+				}
+			}
+
+			std::cout << "[COLLISION] Projectile hit Enemy! YIPPEE!" << std::endl;
 
 			// Get projectile element (if any)
 			Element projElement = Element::NONE;
@@ -50,6 +91,11 @@ void CombatSystem::Initialize()
 				ApplyElementEffect(e.other, projElement, e.trigger);
 			}
 
+			// Remove the projectile after hitting
+			if (e.trigger != INVALID_ENTITY) {
+				reg.Remove_Entity(e.trigger);
+			}
+
 			// Check if entity died
 			if (reg.Has_Component<HealthComponent>(e.other)) {
 				auto& health = reg.Get_Component<HealthComponent>(e.other);
@@ -60,6 +106,16 @@ void CombatSystem::Initialize()
 			}
 		}
 	});
+
+	// Subscribe to Q key to cycle elements
+	EventBus::Get().Subscribe<KeyPressedEvent>([](const KeyPressedEvent& e) {
+		if (e.key == GLFW_KEY_Q) {
+			CycleElement();
+		}
+	});
+
+	// Initialize element UI to greyed out state
+	UpdateElementUI();
 }
 
 void CombatSystem::ApplyDamage(Entity target, float damage)
@@ -83,6 +139,10 @@ void CombatSystem::ApplyDamage(Entity target, float damage)
 void CombatSystem::ApplyElementToProjectile(Entity projectile, Element element, float baseDamage)
 {
 	if (element == Element::NONE) return;
+	if (projectile == INVALID_ENTITY) {
+		std::cout << "[ERROR] Cannot apply element to invalid entity" << std::endl;
+		return;
+	}
 
 	Registry& reg = Registry::Get();
 
@@ -234,4 +294,35 @@ void CombatSystem::UpdateElementEffects(Registry& registry, float dt)
 			statusEffect.burnTickTimer = 0.0f;
 		}
 	}
+}
+
+Element CombatSystem::GetCurrentElement()
+{
+	return currentElement;
+}
+
+void CombatSystem::SetCurrentElement(Element element)
+{
+	currentElement = element;
+	UpdateElementUI();
+}
+
+void CombatSystem::CycleElement()
+{
+	// Cycle through elements: NONE -> FIRE -> ICE -> WIND -> LIGHTNING -> NONE
+	int index = static_cast<int>(currentElement);
+	index = (index + 1) % static_cast<int>(Element::COUNT);
+	currentElement = static_cast<Element>(index);
+
+	// Print current element
+	switch (currentElement) {
+	case Element::NONE: std::cout << "Element: NONE\n"; break;
+	case Element::LIGHTNING: std::cout << "Element: LIGHTNING\n"; break;
+	case Element::FIRE: std::cout << "Element: FIRE\n"; break;
+	case Element::WIND: std::cout << "Element: WIND\n"; break;
+	case Element::ICE: std::cout << "Element: ICE\n"; break;
+	}
+
+	// Update UI
+	UpdateElementUI();
 }

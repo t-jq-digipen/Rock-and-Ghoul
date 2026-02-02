@@ -28,6 +28,9 @@ public:
     // Update all active element effects (called every frame)
     static void UpdateElementEffects(Registry& registry, float dt);
 
+    // Update element UI slots based on current element
+    static void UpdateElementUI();
+
     // Apply damage to an entity
     static void ApplyDamage(Entity target, float damage);
 
@@ -36,4 +39,13 @@ public:
 
     // Add ElementComponent to a projectile
     static void ApplyElementToProjectile(Entity projectile, Element element, float baseDamage = 25.0f);
+
+    // Get the currently selected element
+    static Element GetCurrentElement();
+
+    // Set the current element
+    static void SetCurrentElement(Element element);
+
+    // Cycle to the next element (called when Q is pressed)
+    static void CycleElement();
 };

@@ -40,6 +40,7 @@
 #include "SceneManager.h"
 #include "Enemy.h"
 #include "JsonLoad.h"
+#include "FilePath.h"
 #include <unordered_map>
 #include "CollisionManager.h"
 #include "PlayerSystem.h"
@@ -229,26 +230,22 @@ namespace EnemyAI
 
 		auto it = g_ai.find(eID);
 		if (it == g_ai.end())
-		// Check if enemy is stunned
-		if (Registry::Get().Has_Component<StatusEffectComponent>(eID)) {
-			auto& statusEffect = Registry::Get().Get_Component<StatusEffectComponent>(eID);
-			if (statusEffect.isStunned) {
-				// Stop movement while stunned
-				SetVelocity(eID, { 0.f, 0.f }, 0.f, false);
-				return;
-			}
-		}
-
-		auto& tr = Registry::Get().Get_Component<TransformComponent>(eID);
-		auto& st = e_state[eID];
-
-		if (!st.basePosInitialized)
 		{
 			Start(eID);
 			it = g_ai.find(eID);
 			if (it == g_ai.end()) return;
 		}
 		auto& st = it->second;
+
+		// Check if enemy is stunned
+		if (Registry::Get().Has_Component<StatusEffectComponent>(eID)) {
+			auto& statusEffect = Registry::Get().Get_Component<StatusEffectComponent>(eID);
+			if (statusEffect.isStunned) {
+				// Stop movement while stunned
+				ApplyVelocity(eID, { 0.f, 0.f }, 0.f, false);
+				return;
+			}
+		}
 
 		// timers
 		st.t += dt;

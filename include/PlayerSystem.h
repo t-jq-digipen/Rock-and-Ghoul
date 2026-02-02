@@ -49,6 +49,8 @@ namespace RockScript {
     inline void Update(Entity e, float dt);
 
     inline void End(Entity e);
+
+    void Knockback(Entity eID, bool left, float damage);
 }
 
 
