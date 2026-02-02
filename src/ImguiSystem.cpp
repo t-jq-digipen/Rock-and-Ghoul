@@ -1603,7 +1603,6 @@ void ImGuiSystem::Update(float dt)
                         {
                             "None",
                             "Load Level 1",
-                            "Load Level 2",
                             "Load Main Menu",
                             "Quit",
                             "Open State Window",
@@ -1612,7 +1611,8 @@ void ImGuiSystem::Update(float dt)
                             "Toggle All Dialogues",
                             "Toggle All Displays",
                             "Load Settings",
-                            "Load Controls"
+                            "Load Controls",
+                            "Advance Dialogue"
                         };
                         int actionCount = (int)(sizeof(actionNames) / sizeof(actionNames[0]));
                         int curr = (int)b.action;

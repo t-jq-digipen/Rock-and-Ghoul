@@ -161,6 +161,13 @@ namespace TextSystem
 
 		const std::string& GetCurrentLine(int index) const noexcept;
 
+/**
+ * @brief Gets the current number of visible characters.
+ * @return Reference to the number of visible characters.
+ */
+
+		int GetVisibleChars() const noexcept;
+
 		// SETTERS
 
 /**

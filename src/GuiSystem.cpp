@@ -541,6 +541,13 @@ void GuiSystem::Initialize() {
                 else if (b.ID == 3) b.isVisible = false;
             }
         });
+
+    // Advance dialogue to next line
+    RegisterAction("AdvanceDialogue",
+        [this](const json&)
+        {
+            HandleDialogueAdvance(true);
+        });
 }
 
 /**
@@ -664,7 +671,26 @@ bool GuiSystem::GetEditMode() const
 void GuiSystem::Update(float dt)
 {
     SceneManager& sm = SceneManager::Get();
+
+    static float advanceBtnPosShift = 0.f;
+    static bool showAdvanceBtn = false;
+    static int speakerID = 0;
+
+    // Decide rendering from current line's speakerID
+    bool notRock = (speakerID == 1 || speakerID == 2);
+    const float profDir = notRock ? +1.f : -1.f; // +1 = profile on the right, -1 = profile on the left
+    const float posLeftShift = notRock ? -200.f : 0.f;
+
     const float typingDt = sm.IsPaused() ? 0.f : dt;
+
+    // Toggle visibility of "AdvanceDialogue" button
+    for (auto& b : buttons)
+    {
+        if (b.actionName == "AdvanceDialogue")
+        {
+            b.isVisible = !sm.inEditMode && HandleDialogueAdvance(false);
+        }
+    }
 
     SetDialogueGate(!sm.inEditMode && std::any_of(dialogues.begin(), dialogues.end(), [](auto& d) 
     { 
@@ -691,22 +717,6 @@ void GuiSystem::Update(float dt)
         }
         prevInEdit = sm.inEditMode;
     }
-
-    //// --- reset typing on editor toggle ---
-    //static bool prevEdit = false;
-    //if (prevEdit && !sm.inEditMode) 
-    //{
-    //    for (auto& d : dialogues) 
-    //    {
-    //        if (!d.isVisible) continue;
-    //        auto* c = d.textComp ? d.textComp : d.owned.get();
-    //        if (!c) continue;
-    //        c->SetVisibleChars(0);
-    //        c->SetTimeElapsed(0.f);
-    //        c->SetIsTyping(true);
-    //    }
-    //}
-    //prevEdit = sm.inEditMode;
 
     // --- SPACE advances dialogue when NOT editing ---
     static bool spaceHandled = false;
@@ -780,6 +790,63 @@ void GuiSystem::Update(float dt)
     const float scaleY = GLApp::height / defaultHeight;
     const float uiScale = std::min(scaleX, scaleY);
 
+    static json sDlgDoc;
+    static bool sDlgLoaded = false;
+    if (!sDlgLoaded)
+    {
+        try
+        {
+            std::ifstream ifs(FilePath::DIALOGUE);
+            if (ifs) { ifs >> sDlgDoc; sDlgLoaded = true; }
+        }
+        catch (...) { /* leave unloaded on error */ }
+    }
+
+    // Get speaker ID
+    auto getSpeakerID = [&](const json& doc, int sceneIdx, int lineIdx) -> int
+        {
+            if (!doc.contains("scenes") || !doc["scenes"].is_array()) return -1;
+            if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return -1;
+            const auto& sc = doc["scenes"][sceneIdx];
+            if (!sc.contains("script") || !sc["script"].is_array()) return -1;
+            const auto& script = sc["script"];
+            if (lineIdx < 0 || lineIdx >= (int)script.size()) return -1;
+            return script[lineIdx].value("speakerID", -1);
+        };
+
+    speakerID = 0;
+
+    if (sDlgLoaded)
+    {
+        for (auto& d : dialogues)
+        {
+            if (!d.isVisible) continue;
+            auto* comp = d.textComp ? d.textComp : d.owned.get();
+            if (!comp) break;
+
+            const auto& lines = comp->GetLines();
+            if (lines.empty()) break;
+
+            int idx = std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1);
+
+            int sceneIdxInt = 0;
+            if (!d.sceneID.empty())
+            {
+                try { sceneIdxInt = std::stoi(d.sceneID); }
+                catch (...) { sceneIdxInt = 0; }
+            }
+
+            if (sDlgDoc.contains("scenes") && sDlgDoc["scenes"].is_array())
+            {
+                int maxScene = (int)sDlgDoc["scenes"].size() - 1;
+                sceneIdxInt = std::clamp(sceneIdxInt, 0, std::max(0, maxScene));
+            }
+
+            speakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
+            break;
+        }
+    }
+
     // Build draw order: ALL UI elements sorted by ascending ID
     auto drawList = BuildSortedDrawList();
 
@@ -795,8 +862,16 @@ void GuiSystem::Update(float dt)
             cfg.size = cfg.baseSize * uiScale;
             cfg.textScale = cfg.baseTextScale * uiScale;
 
-            cfg.pos.x = cfg.basePos.x * scaleX;
-            cfg.pos.y = cfg.basePos.y * scaleY;
+            Vec2 base = cfg.basePos;
+
+            if (!sm.inEditMode && cfg.actionName == "AdvanceDialogue")
+            {
+                if (notRock) base.x += advanceBtnPosShift;
+            }
+            cfg.pos = { base.x * scaleX, base.y * scaleY };
+
+            // cfg.pos.x = cfg.basePos.x * scaleX;
+            // cfg.pos.y = cfg.basePos.y * scaleY;
 
             bool hover = false;
             if (cfg.m_renderData.GetRenderType() == UIRenderType::Shape &&
@@ -806,7 +881,8 @@ void GuiSystem::Update(float dt)
                 float dist = RG_Distance(mouse, cfg.pos);
                 hover = dist <= radius;
             }
-            else {
+            else 
+            {
                 hover = render.IsAreaTouched(mouse, cfg.pos, cfg.size.x, cfg.size.y);
             }
 
@@ -824,7 +900,8 @@ void GuiSystem::Update(float dt)
             render.DrawText(cfg.label, textX, textY, textScale, { 1, 1, 1 }, "Marker");
 
 #ifndef NO_IMGUI  //EDITORMACRO
-            if (!SceneManager::Get().inEditMode) {
+            if (!SceneManager::Get().inEditMode) 
+            {
 #endif
                 if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
                     if (audio) audio->PlayButtonSound(cfg.soundType);
@@ -833,6 +910,7 @@ void GuiSystem::Update(float dt)
                 }
 #ifndef NO_IMGUI //EDITORMACRO
             }
+
 #endif
         }; // end DRAW UI ELEMENTS PER TYPE
     // --------------------------------------------------
@@ -898,44 +976,6 @@ void GuiSystem::Update(float dt)
                 vis = comp->CheckIfTyping() ? TextSystem::GetVisibleText(*comp) : lines[idx];
             }
 
-            // Get speaker name
-            //auto getSpeakerName = [&](const json& doc, int sceneIdx, int lineIdx) -> std::string
-            //    {
-            //        if (!doc.contains("scenes") || !doc["scenes"].is_array()) return {};
-            //        if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return {};
-
-            //        const auto& sc = doc["scenes"][sceneIdx];
-            //        if (!sc.contains("script") || !sc["script"].is_array()) return {};
-
-            //        const auto& script = sc["script"];
-            //        if (lineIdx < 0 || lineIdx >= (int)script.size()) return {};
-
-            //        int speakerID = -1;
-            //        if (script[lineIdx].contains("speakerID") && script[lineIdx]["speakerID"].is_number_integer())
-            //            speakerID = script[lineIdx]["speakerID"].get<int>();
-            //        if (speakerID < 0) return {};
-
-            //        if (!sc.contains("speakers") || !sc["speakers"].is_array()) return {};
-            //        const auto& speakers = sc["speakers"];
-            //        if (speakerID >= 0 && speakerID < (int)speakers.size() && speakers[speakerID].is_string())
-            //            return speakers[speakerID].get<std::string>();
-
-            //        return {};
-            //    };
-
-            // Get speaker ID
-
-            auto getSpeakerID = [&](const json& doc, int sceneIdx, int lineIdx) -> int 
-                {
-                    if (!doc.contains("scenes") || !doc["scenes"].is_array()) return -1;
-                    if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return -1;
-                    const auto& sc = doc["scenes"][sceneIdx];
-                    if (!sc.contains("script") || !sc["script"].is_array()) return -1;
-                    const auto& script = sc["script"];
-                    if (lineIdx < 0 || lineIdx >= (int)script.size()) return -1;
-                    return script[lineIdx].value("speakerID", -1);
-                };
-
             static json sDlgDoc;
             static bool sDlgLoaded = false;
             if (!sDlgLoaded)
@@ -947,6 +987,18 @@ void GuiSystem::Update(float dt)
                 }
                 catch (...) { /* leave unloaded on error */ }
             }
+
+            // Get speaker ID
+            auto getSpeakerID = [&](const json& doc, int sceneIdx, int lineIdx) -> int
+                {
+                    if (!doc.contains("scenes") || !doc["scenes"].is_array()) return -1;
+                    if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return -1;
+                    const auto& sc = doc["scenes"][sceneIdx];
+                    if (!sc.contains("script") || !sc["script"].is_array()) return -1;
+                    const auto& script = sc["script"];
+                    if (lineIdx < 0 || lineIdx >= (int)script.size()) return -1;
+                    return script[lineIdx].value("speakerID", -1);
+                };
 
             int sceneIdxInt = 0;
             if (!d.sceneID.empty())
@@ -965,9 +1017,16 @@ void GuiSystem::Update(float dt)
                 }
             }
 
-            const int speakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
+            // Speaker ID
+            speakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
             static std::unordered_map<int, int> lastSpeakerAppliedByDlg;
             static std::unordered_map<int, bool> autoSpeakerImagesByDlg;
+
+            if (!sm.inEditMode)
+            {
+                advanceBtnPosShift = notRock ? -300.f : 0.f;
+                showAdvanceBtn = HandleDialogueAdvance(false);
+            }
 
             if (!lastSpeakerAppliedByDlg.contains(d.ID))
             {
@@ -1086,12 +1145,6 @@ void GuiSystem::Update(float dt)
                 if (iChar < vis.size() && vis[iChar] == ' ') ++iChar;
             }
             if (!current.empty()) wrappedLines.push_back(current);
-
-            // Decide side from current line's speakerID
-            bool notRock = (speakerID == 1 || speakerID == 2);
-            const float profDir = notRock ? +1.f : -1.f; // +1 = profile on the right, -1 = profile on the left
-            const float posLeftShift = notRock ? -200.f : 0.f;
-            const float gap = 20.f * uiScale;
 
             // Draw dialogue background
             Vec2 bgScale = d.bgBaseSize * uiScale;
@@ -1679,7 +1732,6 @@ std::string ButtonActionToString(ButtonAction action)
     {
     case ButtonAction::None:                return "None";
     case ButtonAction::LoadLevel1:          return "LoadLevel1";
-    case ButtonAction::LoadLevel2:          return "LoadLevel2";
     case ButtonAction::LoadMainMenu:        return "LoadMainMenu";
     case ButtonAction::Quit:                return "Quit";
     case ButtonAction::OpenStateWindow:     return "OpenStateWindow";
@@ -1689,6 +1741,7 @@ std::string ButtonActionToString(ButtonAction action)
     case ButtonAction::ToggleAllDisplays:   return "ToggleAllDisplays";
     case ButtonAction::LoadSettings:        return "LoadSettings";
     case ButtonAction::LoadControls:        return "LoadControls";
+    case ButtonAction::AdvanceDialogue:     return "AdvanceDialogue";
     default:                                return "None";
     }
 }
@@ -1702,7 +1755,6 @@ std::string ButtonActionToString(ButtonAction action)
 ButtonAction StringToButtonAction(const std::string& s)
 {
     if (s == "LoadLevel1")          return ButtonAction::LoadLevel1;
-    if (s == "LoadLevel2")          return ButtonAction::LoadLevel2;
     if (s == "LoadMainMenu")        return ButtonAction::LoadMainMenu;
     if (s == "Quit")                return ButtonAction::Quit;
     if (s == "OpenStateWindow")     return ButtonAction::OpenStateWindow;
@@ -1712,6 +1764,7 @@ ButtonAction StringToButtonAction(const std::string& s)
     if (s == "ToggleAllDisplays")   return ButtonAction::ToggleAllDisplays;
     if (s == "LoadSettings")        return ButtonAction::LoadSettings;
     if (s == "LoadControls")        return ButtonAction::LoadControls;
+    if (s == "AdvanceDialogue")     return ButtonAction::AdvanceDialogue;
     return ButtonAction::None;
 }
 
@@ -1778,6 +1831,11 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
         btn.onClick = [this]() {
             SceneManager::Get().QueueLoadScene(FilePath::CONTROLS_FILE);
             SceneManager::Get().SetTransitionTime(0.f);
+            };
+        break;
+    case ButtonAction::AdvanceDialogue:
+        btn.onClick = [this]() {
+            HandleDialogueAdvance(true);
             };
         break;
     default:
@@ -2035,6 +2093,63 @@ void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartT
     if (comp->CheckIfTyping()) comp->StopTyping();
     comp->SetCurrentLineIndex(newIndex);
     if (restartTyping) comp->StartTyping();
+}
+
+/**
+ * @brief               Returns true only when there is visible dialogue and the line is fully visible
+ *                      and not typing.
+ * @param advance       If true, the dialogue box will advance to the next line if ready.
+ */
+bool GuiSystem::HandleDialogueAdvance(bool advance)
+{
+    if (SceneManager::Get().IsPaused() || SceneManager::Get().inEditMode)
+    {
+        return false;
+    }
+
+    for (auto& d : dialogues)
+    {
+        if (!d.isVisible) continue;
+
+        auto* comp = d.textComp ? d.textComp : d.owned.get();
+        if (!comp) return false;
+
+        const auto& lines = comp->GetLines();
+        if (lines.empty()) return false;
+
+        int idx = std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1);
+        comp->SetCurrentLineIndex(idx);
+
+        const bool typing = comp->CheckIfTyping();
+        const bool fullyVisible = (!typing) && (comp->GetVisibleChars() >= (int)lines[idx].size());
+
+        if (!advance) return fullyVisible;
+
+        if (typing)
+        {
+            comp->StopTyping();
+            return true;
+        }
+
+        if (!fullyVisible) return false;
+
+        if (idx + 1 < (int)lines.size())
+        {
+            comp->SetCurrentLineIndex(idx + 1);
+            comp->SetVisibleChars(0);
+            comp->SetTimeElapsed(0.f);
+            comp->StartTyping();
+        }
+        else
+        {
+            d.isVisible = false;
+            SetDialogueGate(false);
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 /**

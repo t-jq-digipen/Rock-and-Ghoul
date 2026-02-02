@@ -37,7 +37,6 @@ enum class ButtonAction
 {
     None,
     LoadLevel1,
-    LoadLevel2,
     LoadMainMenu,
     Quit,
     OpenStateWindow,
@@ -47,6 +46,7 @@ enum class ButtonAction
     ToggleAllDisplays,
     LoadSettings,
     LoadControls,
+    AdvanceDialogue,
     GetActionCount
 };
 
@@ -948,6 +948,8 @@ public:
     bool GetDialogueGate();
 
     void SetDialogueGate(bool gate);
+
+    bool HandleDialogueAdvance(bool advance);
 
 private:
 

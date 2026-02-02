@@ -23,7 +23,7 @@
                     "line": "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 5,
                     "line": "Spooky..."
                 },
                 {
@@ -31,11 +31,11 @@
                     "line": "Groooowl..."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 4,
                     "line": "MEGA SPOOKY!"
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 4,
                     "line": "I gotta find Ghoul, and fast!"
                 }
             ],
@@ -65,12 +65,20 @@
             "speakerBGs": [
                 "../Assets/UI_DialogueBox_Rock.png",
                 "../Assets/UI_DialogueBox_Ghoul.png",
-                "../Assets/UI_DialogueBox_Enemy.png"
+                "../Assets/UI_DialogueBox_Enemy.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png"
             ],
             "speakerProfiles": [
                 "../Assets/UI_RockDialogue_Happy.png",
                 "../Assets/UI_GhoulDialogue_Normal.png",
-                "../Assets/UI_EnemyDialogue_Normal.png"
+                "../Assets/UI_EnemyDialogue_Normal.png",
+                "../Assets/UI_RockDialogue_Angry.png",
+                "../Assets/UI_RockDialogue_Frightened.png",
+                "../Assets/UI_RockDialogue_Shocked.png",
+                "../Assets/UI_RockDialogue_Victory.png"
             ]
         },
         {
