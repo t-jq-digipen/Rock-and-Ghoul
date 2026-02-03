@@ -4,7 +4,7 @@
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
  * @co-author   Manfred Sim		   | manfred.sim@digipen.edu
- * @date	    30 NOV 2025
+ * @date	    28 JAN 2026
  *
  * @brief	Player System for handling player behaviour.
  *
@@ -718,38 +718,6 @@ namespace RockScript {
 
 	}
 
-	void ApplyElementToProjectile(Entity)
-	{
-
-		//Damage Component in future
-
-		switch (currentElement)
-		{
-		case Element::NONE:
-			break;
-
-		case Element::FIRE:
-			//Burn damage
-			//Burn lasts 3 sec
-			std::cout << "Fire applied: burn damage\n";
-			break;
-
-		case Element::LIGHTNING:
-			//Stun 5 sec
-			std::cout << "Lightning applied: stun 5 sec\n";
-			break;
-
-		case Element::WIND:
-			//Knocksback
-			std::cout << "Wind applied: knockback\n";
-			break;
-
-		case Element::ICE:
-			//Slow amount and duration
-			std::cout << "Ice applied: slow\n";
-			break;
-		}
-	}
 
 	void ActivateSpell(int slotIndex, Entity eID)
 	{
@@ -846,11 +814,19 @@ namespace RockScript {
 				Vec2 vel = phyComp.Get_Vel();
 				vel.x = -vel.x;
 				phyComp.Set_Vel(vel);
-				registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
+				if (registry.Has_Component<RenderComponent>(wave)) {
+					registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
+				}
 			}
 
 
 			std::cout << "Soundwave cast!\n";
+			if (wave != INVALID_ENTITY) {
+				CombatSystem::ApplyElementToProjectile(wave, CombatSystem::GetCurrentElement());
+			}
+			CombatSystem::SetCurrentElement(Element::NONE); // Reset element after use
+			std::cout << "Element: NONE\n";
+			// to start animation
 			wavetimer = 0.f;
 			break;
 		}
@@ -881,6 +857,11 @@ namespace RockScript {
 			}
 
 			std::cout << "AOE cast!\n";
+			if (aoeVisual != INVALID_ENTITY) {
+				CombatSystem::ApplyElementToProjectile(aoeVisual, CombatSystem::GetCurrentElement());
+			}
+			CombatSystem::SetCurrentElement(Element::NONE); // Reset element after use
+			std::cout << "Element: NONE\n";
 			aoetimer = 0.f;
 			break;
 		}
@@ -952,6 +933,9 @@ namespace RockScript {
 		// clear input buffer
 		inputBuffer.clear();
 
+		// clear active spells to prevent dangling references
+		activeSpells.clear();
+
 		// hide all arrow displays initially
 		UpdateVisualDisplays();
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
@@ -975,10 +959,6 @@ namespace RockScript {
 			{
 				Knockback(eID);
 			}
-			else if (e.key == GLFW_KEY_Q)
-			{
-				CycleElement();
-			}
 			else if (e.key == GLFW_KEY_P)  // Press P to see pool stats
 			{
 				std::cout << "\n=== Memory Pool Stats (Press P) ===\n";
@@ -999,7 +979,7 @@ namespace RockScript {
 			spell.charges = 0;
 		}
 
-		currentElement = Element::NONE;
+		CombatSystem::SetCurrentElement(Element::NONE);
 
 		MELEE_PROPERTIES.owner = eID;
 
@@ -1278,6 +1258,17 @@ namespace RockScript {
 	{
 		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID[e]);
 		subscriberID.erase(e);
+
+		// Clean up all active spells when script ends
+		Registry& registry = Registry::Get();
+		for (auto& spell : activeSpells) {
+			if (spell.ecsEntity != INVALID_ENTITY) {
+				registry.Remove_Entity(spell.ecsEntity);
+			}
+			PooledEntityFactory::Get().DestroyEntity(spell.poolEntity);
+		}
+		activeSpells.clear();
+
 		std::cout << "Rock script ended" << std::endl;
 	}
 } // end namespace RockScript

@@ -489,6 +489,110 @@
                     240.0,
                     160.0
                 ]
+            },
+            {
+                "ID": 26,
+                "centered": true,
+                "pos": [
+                    350.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Lightning.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 25,
+                "centered": true,
+                "pos": [
+                    345.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 27,
+                "centered": true,
+                "pos": [
+                    450.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 28,
+                "centered": true,
+                "pos": [
+                    455.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Fire.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 29,
+                "centered": true,
+                "pos": [
+                    545.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 30,
+                "centered": true,
+                "pos": [
+                    550.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Wind.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    210.0
+                ]
+            },
+            {
+                "ID": 31,
+                "centered": true,
+                "pos": [
+                    645.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 32,
+                "centered": true,
+                "pos": [
+                    650.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Ice.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    210.0
+                ]
             }
         ],
         "groups": [
@@ -511,6 +615,20 @@
                     9
                 ],
                 "name": "Stats"
+            },
+            {
+                "ID": 1,
+                "members": [
+                    32,
+                    31,
+                    30,
+                    29,
+                    28,
+                    27,
+                    26,
+                    25
+                ],
+                "name": "Elements"
             }
         ],
         "textboxes": [

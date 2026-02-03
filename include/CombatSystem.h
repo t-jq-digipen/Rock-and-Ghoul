@@ -10,7 +10,7 @@
  * combat mechanics such as hitboxes, hurtboxes, effect resolutions,
  * elements, etc.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright Â© 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -132,4 +132,9 @@ public:
 	void Initialize() override;
 	void Update(float dt) override;
 	void Shutdown() override;
+
+	// Update element UI slots based on current element
+    void UpdateElementUI();
+	// Apply an element status effect to an entity
+    void ApplyElementEffect(Entity target, Element element, Entity projectile = INVALID_ENTITY);
 };

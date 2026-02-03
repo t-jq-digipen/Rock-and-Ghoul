@@ -2,7 +2,7 @@
  * @file	    EnemySystem.cpp
  * @author	    Manfred Sim         | manfred.sim@digipen.edu
  * @co-author	Yasmin Tazi			| yasmin.t@digipen.edu
- * @date	    24 NOV 2025
+ * @date	    28 JAN 2026
  *
  * @brief	Enemy System for handling enemy behaviour.
  *
@@ -25,7 +25,7 @@
  * - Enemy subscribes to ProjectileHitEnemy trigger event, which
   * fires when a projectile collides with an enemy.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -40,10 +40,11 @@
 #include "SceneManager.h"
 #include "Enemy.h"
 #include "JsonLoad.h"
+#include "FilePath.h"
 #include <unordered_map>
 #include "CollisionManager.h"
-#include "FilePath.h"
 #include "PlayerSystem.h"
+#include "CombatSystem.h"
 
 static constexpr float DETECT_RADIUS = 300.f;
 static constexpr float LOSE_RADIUS = 360.f;
@@ -235,6 +236,16 @@ namespace EnemyAI
 			if (it == g_ai.end()) return;
 		}
 		auto& st = it->second;
+
+		// Check if enemy is stunned
+		if (Registry::Get().Has_Component<StatusEffectComponent>(eID)) {
+			auto& statusEffect = Registry::Get().Get_Component<StatusEffectComponent>(eID);
+			if (statusEffect.isStunned) {
+				// Stop movement while stunned
+				ApplyVelocity(eID, { 0.f, 0.f }, 0.f, false);
+				return;
+			}
+		}
 
 		// timers
 		st.t += dt;
@@ -762,11 +773,35 @@ void EnemySystem::Initialize()
 			ClearTarget();
 		}
 		});
+	// Initialize combat system (handles projectile hits and element effects)
+	CombatSystem::Initialize();
 }
 
 void EnemySystem::Update(float dt)
 {
 	(void)dt;
+	SceneManager& sm = SceneManager::Get();
+	// check if game paused
+	if (sm.IsPaused())
+	{
+		return;  // Don't update enemy movement or footsteps when paused
+	}
+
+	// Update element effects via CombatSystem
+	CombatSystem::UpdateElementEffects(m_registry, dt);
+
+	for (auto& [entity, comp] : m_registry.Get_ComponentMap<TagComponent>())
+	{
+		if (!m_registry.Has_Component<TransformComponent>(entity))
+			continue;
+		if (comp.tag == T_ENEMY)
+		{
+			// THIS IS AN ENEMY, DO ENEMY THINGS
+			//ChasePlayer(entity, EnemyAI::FindPlayer(), dt);
+			//RoamAround(entity, dt);
+			//ReturnToBase(entity, dt);
+		}
+	}
 }
 
 void EnemySystem::Shutdown()

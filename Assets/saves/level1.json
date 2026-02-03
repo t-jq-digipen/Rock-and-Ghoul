@@ -11,7 +11,7 @@
     "entities": [
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-61.66816711425781,\"aabb_maxY\":759.197509765625,\"aabb_minX\":-228.8801727294922,\"aabb_minY\":351.386474609375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":4}",
                 "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
@@ -489,6 +489,110 @@
                     240.0,
                     160.0
                 ]
+            },
+            {
+                "ID": 26,
+                "centered": true,
+                "pos": [
+                    350.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Lightning.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 25,
+                "centered": true,
+                "pos": [
+                    345.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 27,
+                "centered": true,
+                "pos": [
+                    450.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 28,
+                "centered": true,
+                "pos": [
+                    455.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Fire.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 29,
+                "centered": true,
+                "pos": [
+                    545.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 30,
+                "centered": true,
+                "pos": [
+                    550.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Wind.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    210.0
+                ]
+            },
+            {
+                "ID": 31,
+                "centered": true,
+                "pos": [
+                    645.0,
+                    805.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 32,
+                "centered": true,
+                "pos": [
+                    650.0,
+                    800.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Ice.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    210.0
+                ]
             }
         ],
         "groups": [
@@ -511,6 +615,20 @@
                     9
                 ],
                 "name": "Stats"
+            },
+            {
+                "ID": 1,
+                "members": [
+                    32,
+                    31,
+                    30,
+                    29,
+                    28,
+                    27,
+                    26,
+                    25
+                ],
+                "name": "Elements"
             }
         ],
         "textboxes": [

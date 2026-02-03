@@ -14,6 +14,38 @@ ProjectileRuntime::ProjectileRuntime(float spawntime, float lifetime, float expi
 }
 // variables
 
+// UI
+// ELEMENT INSIDE PLAYERSYSTEM.CPP 
+// Current selected element (static)
+Element currentElement = Element::NONE;
+
+void CombatSystem::UpdateElementUI()
+{
+	GuiSystem& gui = GuiSystem::Get();
+	auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
+
+	// Element icon IDs
+	const int LIGHTNING_ID = 26;
+	const int FIRE_ID = 28;
+	const int WIND_ID = 30;
+	const int ICE_ID = 32;
+
+	for (auto& display : displays) {
+		if (display.ID == LIGHTNING_ID) {
+			display.opacity = (currentElement == Element::LIGHTNING) ? 1.0f : 0.4f;
+		}
+		else if (display.ID == FIRE_ID) {
+			display.opacity = (currentElement == Element::FIRE) ? 1.0f : 0.4f;
+		}
+		else if (display.ID == WIND_ID) {
+			display.opacity = (currentElement == Element::WIND) ? 1.0f : 0.4f;
+		}
+		else if (display.ID == ICE_ID) {
+			display.opacity = (currentElement == Element::ICE) ? 1.0f : 0.4f;
+		}
+	}
+}
+
 
 void CombatSystem::ApplyDamage(Entity target, const AttackProperties& properties, Entity damageArea) {
 	if (properties.targetTag.tag != T_NONE) {
@@ -172,6 +204,88 @@ void CombatSystem::Initialize() {
 	);
 
 	// maybe assign player entity? player health stuff?
+}
+
+void CombatSystem::UpdateElementEffects(Registry& registry, float dt)
+{
+	// Update status effects on all entities with StatusEffectComponent
+	for (auto& [entity, statusEffect] : registry.Get_ComponentMap<StatusEffectComponent>())
+	{
+		if (statusEffect.activeEffect == Element::NONE) continue;
+
+		// Decrement effect timer
+		statusEffect.effectTimer -= dt;
+
+		// Handle element-specific updates
+		switch (statusEffect.activeEffect) {
+			case Element::FIRE:
+				// Burn damage over time (5 HP per second)
+				statusEffect.burnTickTimer += dt;
+				if (statusEffect.burnTickTimer >= 1.0f) {
+					statusEffect.burnTickTimer -= 1.0f;
+
+					if (registry.Has_Component<HealthComponent>(entity)) {
+						auto& health = registry.Get_Component<HealthComponent>(entity);
+						health.currhp -= 5.0f;
+						std::cout << "[BURN] Entity took 5 burn damage. HP: " << health.currhp << std::endl;
+
+						// Check if entity died from burn
+						if (health.currhp <= 0) {
+							std::cout << "[DEATH] Entity burned to death!" << std::endl;
+							registry.Remove_Entity(entity);
+							continue;
+						}
+					}
+				}
+				break;
+
+			case Element::LIGHTNING:
+				// Stun effect handled by checking isStunned flag in AI
+				break;
+
+			case Element::ICE:
+				// Slow effect already applied, just wait for timer
+				break;
+
+			case Element::WIND:
+				// Knockback is instant, no duration
+				break;
+
+			default:
+				break;
+		}
+
+		// Remove effect when timer expires
+		if (statusEffect.effectTimer <= 0.0f) {
+			switch (statusEffect.activeEffect) {
+				case Element::LIGHTNING:
+					statusEffect.isStunned = false;
+					std::cout << "[ELEMENT] LIGHTNING STUN EXPIRED" << std::endl;
+					break;
+
+				case Element::ICE:
+					// Restore original move speed
+					if (registry.Has_Component<Movement::MovementComponent>(entity)) {
+						auto& movement = registry.Get_Component<Movement::MovementComponent>(entity);
+						movement.SetMoveSpeed(statusEffect.originalMoveSpeed);
+						std::cout << "[ELEMENT] ICE SLOW EXPIRED" << std::endl;
+					}
+					break;
+
+				case Element::FIRE:
+					std::cout << "[ELEMENT] FIRE BURN EXPIRED" << std::endl;
+					break;
+
+				default:
+					break;
+			}
+
+			// Clear the effect
+			statusEffect.activeEffect = Element::NONE;
+			statusEffect.effectTimer = 0.0f;
+			statusEffect.burnTickTimer = 0.0f;
+		}
+	}
 }
 
 void CombatSystem::Update(float dt) {

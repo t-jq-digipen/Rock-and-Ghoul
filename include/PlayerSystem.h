@@ -1,7 +1,8 @@
 /* ========================================================
  * @file	    PlayerSystem.h
  * @author	    Tan Jun Quan | t.junquan@digipen.edu
- * @date	    29 SEP 2025
+ * @co-author   Yasmin Tazi  | yasmin.t@digipen.edu
+ * @date	    28 JAN 2026
  *
  * @brief	Player system for handling player behaviour.
  *
@@ -51,6 +52,7 @@ namespace RockScript {
 
     //    COUNT
     //};
+    // Element enum is now global in Component.h
 
     enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
 
@@ -60,6 +62,8 @@ namespace RockScript {
     inline void Update(Entity e, float dt);
 
     inline void End(Entity e);
+
+    void Knockback(Entity eID, bool left, float damage);
 }
 
 
