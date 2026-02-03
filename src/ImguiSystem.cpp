@@ -885,7 +885,7 @@ static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
 #pragma endregion WIDGETS
 // ========================================================
 
-
+static bool g_needAssetRefresh = true;
 void ImGuiSystem::OnFileDropped(const std::string& path)
 {
     namespace fs = std::filesystem;
@@ -996,7 +996,7 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         g_showAudioImportPopup = true;
         return;
     }
-
+    const std::string assetFolder = "../Assets/";
     if (ext == ".mp3" || ext == ".ogg" || ext == ".aac" || ext == ".flac")
     {
         g_audioErrorMessage = "Unsupported audio format: " + filename +
@@ -1004,7 +1004,26 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         g_showAudioErrorPopup = true;
         return;
     }
+    //std::string filename = fs::path(path).filename().string();
+    std::string destDir = "../Assets/";
+    if (ext == ".ttf" || ext == ".json" || ext == ".vert" || ext == ".frag")
+    {
+        std::string destPath = assetFolder + filename;
 
+        try {
+            // Check if directory exists just in case
+            if (!fs::exists(assetFolder)) fs::create_directories(assetFolder);
+
+            fs::copy_file(path, destPath, fs::copy_options::overwrite_existing);
+            std::cout << "[ImGui Drop] Imported " << ext << " to: " << destPath << "\n";
+
+            // Trigger the UI lists to rebuild
+            g_needAssetRefresh = true;
+        }
+        catch (const fs::filesystem_error& e) {
+            std::cerr << "[ImGui Drop] Copy failed: " << e.what() << std::endl;
+        }
+    }
 
 }
 
@@ -5222,6 +5241,15 @@ void ImGuiSystem::ShowAddRemoveComponents()
 }
 
 
+static const std::unordered_set<std::string> PROTECTED_ASSETS = {
+    "vertexSrc.vert", "fragmentSrc.frag",
+    "batch.vert",   "batch.frag", "PermanentMarker-Regular.ttf"
+    
+};
+
+static bool g_showProtectedFileError = false;
+static std::string g_protectedFileName;
+
 void ImGuiSystem::ShowAssetPreviewWindow()
 {
     ImGui::Text("Asset Preview Browser");
@@ -5713,12 +5741,12 @@ void ImGuiSystem::ShowAssetPreviewWindow()
         // ====================================================
         if (ImGui::BeginTabItem("Fonts & Other"))
         {
-            // Cached file lists — rebuilt on "Refresh"
             static std::vector<std::string> s_ttfFiles;
             static std::vector<std::string> s_jsonFiles;
             static std::vector<std::string> s_fragFiles;
             static std::vector<std::string> s_vertFiles;
             static bool s_fontsInitialised = false;
+            static bool deferredRefresh = false; // Flag to prevent mid-loop clearing
 
             auto rebuildFontFileLists = [&]()
                 {
@@ -5728,115 +5756,101 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                     s_vertFiles.clear();
 
                     const std::string assetFolder = "../Assets/";
-                    for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
-                    {
-                        if (!entry.is_regular_file()) continue;
+                    if (!std::filesystem::exists(assetFolder)) return;
 
-                        std::string ext = entry.path().extension().string();
-                        std::transform(ext.begin(), ext.end(), ext.begin(),
-                            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                    // Use directory_options to skip permission errors
+                    auto options = std::filesystem::directory_options::skip_permission_denied;
 
-                        std::string relPath = entry.path().generic_string();
+                    try {
+                        for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder, options))
+                        {
+                            if (!entry.is_regular_file()) continue;
 
-                        if (ext == ".ttf")  s_ttfFiles.push_back(relPath);
-                        else if (ext == ".json") s_jsonFiles.push_back(relPath);
-                        else if (ext == ".frag") s_fragFiles.push_back(relPath);
-                        else if (ext == ".vert") s_vertFiles.push_back(relPath);
+                            std::string ext = entry.path().extension().string();
+                            std::transform(ext.begin(), ext.end(), ext.begin(),
+                                [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+                            std::string relPath = entry.path().generic_string();
+
+                            if (ext == ".ttf")  s_ttfFiles.push_back(relPath);
+                            else if (ext == ".json") s_jsonFiles.push_back(relPath);
+                            else if (ext == ".frag") s_fragFiles.push_back(relPath);
+                            else if (ext == ".vert") s_vertFiles.push_back(relPath);
+                        }
+                        std::sort(s_ttfFiles.begin(), s_ttfFiles.end());
+                        std::sort(s_jsonFiles.begin(), s_jsonFiles.end());
+                        std::sort(s_fragFiles.begin(), s_fragFiles.end());
+                        std::sort(s_vertFiles.begin(), s_vertFiles.end());
+                    }
+                    catch (const std::exception& e) {
+                        std::cerr << "FS Error: " << e.what() << "\n";
                     }
 
-                    // Sort each list alphabetically for stable ordering
-                    std::sort(s_ttfFiles.begin(), s_ttfFiles.end());
-                    std::sort(s_jsonFiles.begin(), s_jsonFiles.end());
-                    std::sort(s_fragFiles.begin(), s_fragFiles.end());
-                    std::sort(s_vertFiles.begin(), s_vertFiles.end());
-
                     s_fontsInitialised = true;
+                    deferredRefresh = false;
                 };
 
-            if (!s_fontsInitialised) rebuildFontFileLists();
+            if (!s_fontsInitialised || deferredRefresh) rebuildFontFileLists();
 
-            if (ImGui::Button("Refresh"))
+            // Trigger the flag instead of calling the function directly
+            if (ImGui::Button("Refresh Assets"))
             {
-                rebuildFontFileLists();
+                deferredRefresh = true;
             }
             ImGui::SameLine();
-            ImGui::TextDisabled("Rescans Assets/ for .ttf .json .frag .vert");
+            ImGui::TextDisabled("Rescans Assets/ folder");
 
             ImGui::Separator();
 
-            // ---------- helper: pending-delete state for this tab ----------
-            static std::string  s_pendingDeleteOtherFile;
-            static bool         s_showDeleteOtherPopup = false;
+            static std::string s_pendingDeleteOtherFile;
+            static bool s_showDeleteOtherPopup = false;
 
-            // -----------------------------------------------------------------
-            // Reusable lambda: draws a collapsible section for one file type.
-            //   title      – header text (e.g. "Fonts (.ttf)")
-            //   files      – the vector to iterate
-            //   countLabel – short suffix shown in the header (e.g. "3 files")
-            // -----------------------------------------------------------------
             auto drawFileSection = [&](const char* title, std::vector<std::string>& files)
                 {
                     ImGui::PushID(title);
-
                     char headerBuf[128];
-                    std::snprintf(headerBuf, sizeof(headerBuf), "%s  (%d)", title, (int)files.size());
+                    std::snprintf(headerBuf, sizeof(headerBuf), "%s (%d)", title, (int)files.size());
 
                     if (ImGui::CollapsingHeader(headerBuf, ImGuiTreeNodeFlags_DefaultOpen))
                     {
-                        if (files.empty())
-                        {
-                            ImGui::Indent();
-                            ImGui::TextDisabled("None found.");
-                            ImGui::Unindent();
+                        if (files.empty()) {
+                            ImGui::TextDisabled("  None found.");
                         }
 
                         for (int idx = 0; idx < (int)files.size(); ++idx)
                         {
-                            ImGui::PushID(idx);   // now safe
+                            ImGui::PushID(idx);
+                            std::string filename = std::filesystem::path(files[idx]).filename().string();
 
-                            std::string filename =
-                                std::filesystem::path(files[idx]).filename().string();
+                            ImGui::Bullet();
+                            ImGui::Selectable(filename.c_str());
 
-                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 0.6f, 1.f));
-                            ImGui::Text("[%s]", filename.c_str());
-                            ImGui::PopStyleColor();
+                            if (ImGui::BeginPopupContextItem()) {
+                                // FAILSAFE CHECK
+                                bool isProtected = PROTECTED_ASSETS.count(filename);
 
-                            ImGui::Indent();
-                            ImGui::TextDisabled("Path: %s", files[idx].c_str());
-                            if (ImGui::BeginDragDropSource())
-                            {
-                                ImGui::SetDragDropPayload("ASSET_OTHER_FILE",
-                                    files[idx].c_str(),
-                                    files[idx].size() + 1);   // +1 for null terminator
-                                ImGui::Text("Drag %s", filename.c_str());
-                                ImGui::EndDragDropSource();
+                                if (isProtected) {
+                                    ImGui::BeginDisabled();
+                                    ImGui::MenuItem("Delete File (System Protected)");
+                                    ImGui::EndDisabled();
+                                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+                                        ImGui::SetTooltip("This file is required by the engine and cannot be deleted.");
+                                    }
+                                }
+                                else {
+                                    if (ImGui::MenuItem("Delete File")) {
+                                        s_pendingDeleteOtherFile = files[idx];
+                                        s_showDeleteOtherPopup = true;
+                                    }
+                                }
+                                ImGui::EndPopup();
                             }
-
-                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.1f, 1.f));
-                            bool wantDelete = false;
-                            if (ImGui::Button("Delete")) wantDelete = true;
-                            ImGui::PopStyleColor();
-
-                            ImGui::Unindent();
-                            ImGui::Separator();
-
-                            ImGui::PopID(); // idx
-
-                            if (wantDelete)
-                            {
-                                s_pendingDeleteOtherFile = files[idx];
-                                s_showDeleteOtherPopup = true;
-                                break;
-                            }
+                            ImGui::PopID();
                         }
                     }
-
-                    ImGui::PopID(); // title
+                    ImGui::PopID();
                 };
 
-            // -----------------------------------------------------------------
-            // Draw each section
-            // -----------------------------------------------------------------
             drawFileSection("Fonts (.ttf)", s_ttfFiles);
             drawFileSection("JSON configs", s_jsonFiles);
             drawFileSection("Fragment shaders", s_fragFiles);
@@ -6010,6 +6024,24 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 ImGui::CloseCurrentPopup();
             }
 
+            ImGui::EndPopup();
+        }
+        // Failsafe Warning Popup
+        if (g_showProtectedFileError) {
+            ImGui::OpenPopup("Protected File Warning");
+            g_showProtectedFileError = false;
+        }
+
+        if (ImGui::BeginPopupModal("Protected File Warning", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "CRITICAL ASSET PROTECTION");
+            ImGui::Separator();
+            ImGui::Text("The file '%s' is required for the engine to run.", g_protectedFileName.c_str());
+            ImGui::Text("Deleting shader/vertex files will cause the engine to crash on next load.");
+            ImGui::Separator();
+
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
             ImGui::EndPopup();
         }
 
