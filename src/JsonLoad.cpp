@@ -650,7 +650,18 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"jsonPath", dlg.jsonPath},
             {"sceneID", dlg.sceneID.empty() ? "0" : dlg.sceneID},
             {"lines", dlg.lines},
-            {"currentLineIndex", dlg.currentLineIndex}
+            {"currentLineIndex", dlg.currentLineIndex},
+            {"wrapWidth", dlg.wrapWidth},
+            {"textSpeed", dlg.textSpeed},
+
+            {"bgEnabled", dlg.bgEnabled},
+            {"bgSize", { dlg.bgSize.x, dlg.bgSize.y }},
+            {"bgRenderData", dlg.bgRenderData},
+
+            {"profileEnabled", dlg.profileEnabled},
+            {"profileSize", {dlg.profileSize.x, dlg.profileSize.y }},
+            {"profileOffset", {dlg.profileOffset.x, dlg.profileOffset.y }},
+            {"profileRenderData", dlg.profileRenderData}
         };
         j["gui"]["dialogues"].push_back(std::move(jd));
     }
@@ -781,6 +792,26 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                     for (const auto& ln : dlg["lines"]) d.lines.push_back(ln.get<std::string>());
                 }
                 d.currentLineIndex = dlg.value("currentLineIndex", 0);
+                d.textSpeed = dlg.value("textSpeed", d.textSpeed);
+                d.wrapWidth = dlg.value("wrapWidth", d.wrapWidth);
+
+                d.bgEnabled = dlg.value("bgEnabled", false);
+                if (dlg.contains("bgSize") && dlg["bgSize"].is_array())
+                {
+                    d.bgSize = { dlg["bgSize"][0], dlg["bgSize"][1] };
+                }
+                d.bgRenderData = dlg.value("bgRenderData", std::string("{}"));
+
+                d.profileEnabled = dlg.value("profileEnabled", false);
+                if (dlg.contains("profileSize") && dlg["profileSize"].is_array())
+                {
+                    d.profileSize = { dlg["profileSize"][0], dlg["profileSize"][1] };
+                }
+                if (dlg.contains("profileOffset") && dlg["profileOffset"].is_array())
+                {
+                    d.profileOffset = { dlg["profileOffset"][0], dlg["profileOffset"][1] };
+                }
+                d.profileRenderData = dlg.value("profileRenderData", std::string("{}"));
 
                 s.guiDialogues.push_back(std::move(d));
             }
@@ -981,6 +1012,17 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.textBox.centered = d.textBox.centered;
             sd.jsonPath = d.jsonPath;
             sd.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
+            sd.textSpeed = d.textSpeed;
+            sd.wrapWidth = d.wrapWidth;
+
+            sd.bgEnabled = d.bgEnabled;
+            sd.bgSize = d.bgBaseSize;
+            sd.bgRenderData = d.bgRenderData.Serialize();
+
+            sd.profileEnabled = d.profileEnabled;
+            sd.profileSize = d.profileBaseSize;
+            sd.profileOffset = d.profileOffset;
+            sd.profileRenderData = d.profileRenderData.Serialize();
 
             const TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
             if (comp)
@@ -1075,7 +1117,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         // Restore GUI buttons
         for (auto& b : scene.guiButtons) {
-            ButtonConfig cfg;
+            ButtonConfig cfg{};
             cfg.ID = b.ID;
             cfg.label = b.label;
             cfg.pos = b.pos;
@@ -1147,7 +1189,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         // Restore GUI TextBoxes
         for (auto& t : scene.guiTextboxes)
         {
-            TextBoxConfig cfg;
+            TextBoxConfig cfg{};
             cfg.ID = t.ID;
             cfg.text = t.text;
             cfg.pos = t.pos;
@@ -1174,6 +1216,20 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.textBox.centered = d.textBox.centered;
             cfg.textBox.isVisible = true;
 
+            cfg.wrapWidth = d.wrapWidth;
+            cfg.textSpeed = d.textSpeed;
+
+            // Background
+            cfg.bgEnabled = d.bgEnabled;
+            cfg.bgBaseSize = d.bgSize;
+            cfg.bgRenderData = UI_RenderData::DeSerialize(d.bgRenderData);
+
+            // Profile
+            cfg.profileEnabled = d.profileEnabled;
+            cfg.profileBaseSize = d.profileSize;
+            cfg.profileOffset = d.profileOffset;
+            cfg.profileRenderData = UI_RenderData::DeSerialize(d.profileRenderData);
+
             cfg.jsonPath = d.jsonPath;
             cfg.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
 
@@ -1188,7 +1244,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                 float& fontSize, Vec3& color)
                 {
                     outLines.clear();
-                    textSpeed = 30.0f;
+                    // textSpeed = 30.0f;
                     fontPath = "../Assets/fonts/Marker.ttf";
                     fontSize = 1.0f;
                     color = { 1.f, 1.f, 1.f };
@@ -1224,7 +1280,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                         }
                         if (outLines.empty()) outLines.push_back("");
 
-                        textSpeed = sc.value("textSpeed", 30.0f);
+                        textSpeed = sc.value("textSpeed", 60.f);
                         fontPath = sc.value("fontPath", std::string("../Assets/fonts/Marker.ttf"));
                         fontSize = sc.value("fontSize", 1.0f);
 
@@ -1242,19 +1298,21 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                     }
                 };
 
-            // Prefer saved snapshot; otherwise fallback to JSON by sceneID
+            // Load dialogue properties
             if (!d.lines.empty())
             {
                 comp->SetLines(d.lines);
                 int clamped = std::clamp(d.currentLineIndex, 0, (int)d.lines.size() - 1);
                 comp->SetCurrentLineIndex(clamped);
-                comp->SetIsTyping(false);        // editor idle by default
-                // You may call comp->StopTyping() if you want the full line visible immediately.
+                comp->SetIsTyping(false);
+
+                comp->SetTextSpeed(d.textSpeed);
+                if (!SceneManager::Get().inEditMode) comp->StartTyping();
             }
             else
             {
                 std::vector<std::string> lines;
-                float textSpeed = 30.f; std::string fontPath; float fontSize = 1.f; Vec3 color{};
+                float textSpeed = 60.f; std::string fontPath; float fontSize = 1.f; Vec3 color{};
                 loadLinesFromDialogueJson(cfg.sceneID, lines, textSpeed, fontPath, fontSize, color);
 
                 comp->SetLines(lines);
@@ -1276,7 +1334,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         // Restore GUI Displays
         for (auto& dp : scene.guiDisplays)
         {
-            DisplayConfig cfg;
+            DisplayConfig cfg{};
             cfg.ID = dp.ID;
             cfg.pos = dp.pos;
             cfg.basePos = dp.pos;

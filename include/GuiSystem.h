@@ -37,7 +37,6 @@ enum class ButtonAction
 {
     None,
     LoadLevel1,
-    LoadLevel2,
     LoadMainMenu,
     Quit,
     OpenStateWindow,
@@ -47,6 +46,7 @@ enum class ButtonAction
     ToggleAllDisplays,
     LoadSettings,
     LoadControls,
+    AdvanceDialogue,
     GetActionCount
 };
 
@@ -546,6 +546,21 @@ struct DialogueConfig {
     std::string sceneID = "0";
     bool isVisible = true;
     int ID = 0;
+
+    // New variables
+    float textSpeed = 60.f; // text typing speed
+    float wrapWidth = 1300.f; // max width of line before next line
+
+    // Dialogue box background UI settings
+    bool bgEnabled = true;
+    Vec2 bgBaseSize = { 1500.f, 300.f };
+    UI_RenderData bgRenderData;
+
+    // Dialogue box profile UI settings
+    bool profileEnabled = true;
+    Vec2 profileBaseSize = { 300.f, 300.f };
+    Vec2 profileOffset = { 0.f, 0.f };
+    UI_RenderData profileRenderData;
 };
 
 struct DisplayConfig
@@ -562,7 +577,7 @@ struct DisplayConfig
 };
 
 struct Button {
-    ButtonConfig cfg;
+    ButtonConfig cfg{};
     bool hovered = false;
     bool pressed = false;
 };
@@ -612,6 +627,8 @@ public:
         static GuiSystem instance;
         return instance;
     }
+
+    bool dialogueGate = true;
 
 /**
  * @brief   Initializes the GUI system and registers all button actions.
@@ -929,6 +946,11 @@ public:
 
     bool SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3);
 
+    bool GetDialogueGate();
+
+    void SetDialogueGate(bool gate);
+
+    bool HandleDialogueAdvance(bool advance);
 
     void SetTextBoxText(int textBoxID, const std::string& text);
     void ShowTextBox(int textBoxID);

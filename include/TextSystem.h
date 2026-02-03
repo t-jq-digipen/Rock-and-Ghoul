@@ -33,6 +33,9 @@ namespace TextSystem
 		std::vector<std::string> lines;
 		int currentLineIndex{};
 		float textSpeed{};
+		float wrapWidth{};
+		//bool customSpeaker{ false };
+		//std::string speakerName;
 		int speakerID{};
 		std::string fontPath;
 		float fontSize{ 0 };
@@ -58,15 +61,19 @@ namespace TextSystem
  * @param lines Vector of dialogue lines.
  * @param currentLineIndex Index of the current line.
  * @param textSpeed Speed at which text is revealed.
+ * @param wrapWidth Maximum width of rendering text before needing a newline.
+ * @param customSpeaker Whether the speaker name can be changed or not.
+ * @param speakerName Name of the speaker.
  * @param speakerID ID of the speaker.
  * @param fontPath Path to the font file.
  * @param fontSize Size of the font.
- * @param Typing Whether the text is currently being typed out.
+ * @param isTyping Whether the text is currently being typed out.
  * @param color Color of the text.
  */
 
 		TextComponent(std::vector<std::string> lines, int currentLineIndex,
-			float textSpeed, int speakerID, std::string fontPath, float fontSize, bool isTyping, Vec3 color);
+			float textSpeed, float wrapWidth, bool customSpeaker, std::string speakerName, int speakerID, 
+			std::string fontPath, float fontSize, bool isTyping, Vec3 color);
 
 /**
  * @brief	Copy constructor for TextComponent.
@@ -96,6 +103,13 @@ namespace TextSystem
  */
 
 		float GetTextSpeed() const noexcept;
+
+/**
+ * @brief Gets the wrap width.
+ * @return Maximum width of rendering text before needing a newline.
+ */
+
+		float GetWrapWidth() const noexcept;
 
 /**
  * @brief Gets the speaker ID.
@@ -133,12 +147,26 @@ namespace TextSystem
 		const Vec3& GetColor() const noexcept;
 
 /**
+ * @brief Gets the time elapsed of the text typing
+ * @return Reference to time elapsed.
+ */
+
+		float GetTimeElapsed() const noexcept;
+
+/**
  * @brief Gets the current line of text.
  * @param index Index of the line to retrieve.
  * @return Reference to the string at the specified index.
  */
 
 		const std::string& GetCurrentLine(int index) const noexcept;
+
+/**
+ * @brief Gets the current number of visible characters.
+ * @return Reference to the number of visible characters.
+ */
+
+		int GetVisibleChars() const noexcept;
 
 		// SETTERS
 
@@ -162,6 +190,13 @@ namespace TextSystem
  */
 
 		void SetTextSpeed(float speed);
+
+/**
+ * @brief Sets the wrap width.
+ * @param width Maximum width of rendering text before needing a newline.
+ */
+
+		void SetWrapWidth(float width);
 
 /**
  * @brief Sets the speaker ID.
@@ -197,6 +232,21 @@ namespace TextSystem
  */
 
 		void SetColor(Vec3 const& colorVec);
+
+
+/**
+ * @brief Sets the visible characters of the text.
+ * @param charCount Number of visible characters (from left to right of each line).
+ */
+
+		void SetVisibleChars(int charCount);
+
+/**
+ * @brief Sets the time elapsed for the text typing.
+ * @param charCount Time elapsed while typing the text.
+ */
+
+		void SetTimeElapsed(float time);
 
 		// TYPE TEXT CALL FUNCTIONS
 

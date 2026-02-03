@@ -146,8 +146,76 @@
     ],
     "fontConfig": "../Assets/fontAssets.json",
     "gui": {
-        "buttons": [],
-        "dialogues": [],
+        "buttons": [
+            {
+                "ID": 11,
+                "action": "None",
+                "actionName": "AdvanceDialogue",
+                "actionParams": "{}",
+                "label": "",
+                "pos": [
+                    1700.0,
+                    130.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_NextButton.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    50.0,
+                    50.0
+                ],
+                "soundType": 0
+            }
+        ],
+        "dialogues": [
+            {
+                "ID": 10,
+                "bgEnabled": true,
+                "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                "bgSize": [
+                    1500.0,
+                    300.0
+                ],
+                "currentLineIndex": 0,
+                "jsonPath": "../Assets/Dialogue.json",
+                "lines": [
+                    "Jam Out SG! We made it! We're gonna rock their socks off. Or whatever they say.",
+                    "Record deal, here we come.",
+                    "Crazy bummer that so many acts forfeited! I wouldn't be surprised if they pit US against each other for content.",
+                    "I'd like to see them try. (SMIRK)",
+                    "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star.",
+                    "Spooky...",
+                    "Groooowl...",
+                    "MEGA SPOOKY!",
+                    "I gotta find Ghoul, and fast!"
+                ],
+                "profileEnabled": true,
+                "profileOffset": [
+                    0.0,
+                    0.0
+                ],
+                "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Happy.png\\\"}\",\"type\":\"image\"}",
+                "profileSize": [
+                    300.0,
+                    300.0
+                ],
+                "sceneID": "0",
+                "textBox": {
+                    "centered": false,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "pos": [
+                        450.0,
+                        200.0
+                    ],
+                    "scale": 1.0,
+                    "text": ""
+                },
+                "textSpeed": 60.0,
+                "wrapWidth": 1300.0
+            }
+        ],
         "displays": [
             {
                 "ID": 4,

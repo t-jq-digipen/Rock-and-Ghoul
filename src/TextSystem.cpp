@@ -34,17 +34,19 @@ namespace TextSystem
  * @param lines Vector of dialogue lines.
  * @param currentLineIndex Index of the current line.
  * @param textSpeed Speed at which text is revealed.
+ * @param wrapWidth Maximum width of rendering text before needing a newline.
+ * @param customSpeaker Whether the speaker name can be changed or not.
+ * @param speakerName Name of the speaker.
  * @param speakerID ID of the speaker.
  * @param fontPath Path to the font file.
  * @param fontSize Size of the font.
- * @param Typing Whether the text is currently being typed out.
+ * @param isTyping Whether the text is currently being typed out.
  * @param color Color of the text.
  */
 
-	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float textSpeed, int speakerID, std::string fontPath, float fontSize, bool Typing, Vec3 color)
-		: lines{ lines }, currentLineIndex{ currentLineIndex }, textSpeed{ textSpeed }, speakerID{ speakerID }, fontPath{ fontPath }, fontSize{ fontSize }, isTyping{ Typing }, color {
-		color
-	} {
+	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float textSpeed, float wrapWidth, bool customSpeaker, std::string speakerName, int speakerID, std::string fontPath, float fontSize, bool Typing, Vec3 color)
+		: lines{ lines }, currentLineIndex{ currentLineIndex }, textSpeed{ textSpeed }, wrapWidth{ wrapWidth }, speakerID { speakerID }, fontPath{ fontPath }, fontSize{ fontSize }, isTyping{ Typing }, color{ color } 
+	{
 	}
 
 	// GETTERS
@@ -69,6 +71,13 @@ namespace TextSystem
  */
 
 	float TextComponent::GetTextSpeed() const noexcept { return textSpeed; }
+
+/**
+ * @brief Gets the wrap width.
+ * @return Maximum width of rendering text before needing a newline.
+ */
+
+	float TextComponent::GetWrapWidth() const noexcept { return wrapWidth; }
 
 /**
  * @brief Gets the speaker ID.
@@ -106,12 +115,26 @@ namespace TextSystem
 	const Vec3& TextComponent::GetColor() const noexcept { return color; }
 
 /**
+ * @brief Gets the time elapsed of the text typing
+ * @return Reference to time elapsed.
+ */
+
+	float TextComponent::GetTimeElapsed() const noexcept { return timeElapsed; }
+
+/**
  * @brief Gets the current line of text.
  * @param index Index of the line to retrieve.
  * @return Reference to the string at the specified index.
  */
 
 	const std::string& TextComponent::GetCurrentLine(int index) const noexcept { return lines[index]; }
+
+/**
+ * @brief Gets the current number of visible characters.
+ * @return Reference to the number of visible characters.
+ */
+
+	int TextComponent::GetVisibleChars() const noexcept { return visibleChars; }
 
 	// SETTERS
 
@@ -135,6 +158,13 @@ namespace TextSystem
  */
 
 	void TextComponent::SetTextSpeed(float speed) { textSpeed = speed; }
+
+/**
+ * @brief Sets the wrap width.
+ * @param width Maximum width of rendering text before needing a newline.
+ */
+
+	void TextComponent::SetWrapWidth(float width) { wrapWidth = width; }
 
 /**
  * @brief Sets the speaker ID.
@@ -172,6 +202,20 @@ namespace TextSystem
 	void TextComponent::SetColor(Vec3 const& colorVec) { color = colorVec; }
 
 /**
+ * @brief Sets the visible characters of the text.
+ * @param visibleChars Number of visible characters (from left to right of each line).
+ */
+
+	void TextComponent::SetVisibleChars(int charCount) { visibleChars = charCount; }
+
+/**
+ * @brief Sets the time elapsed for the text typing.
+ * @param charCount Time elapsed while typing the text.
+ */
+
+	void TextComponent::SetTimeElapsed(float time) { timeElapsed = time; }
+
+/**
  * @brief	Updates the typing animation for the text. 
  *			Advances the number of visible characters based on elapsed time and speed.
  *
@@ -183,14 +227,17 @@ namespace TextSystem
 	void UpdateTyping(TextComponent& txt, float dt, float speedMul)
 	{
 		if (!txt.isTyping) return;
+		dt = std::clamp(dt, 0.f, 1.f / 30.f);
+
 		const std::string& fullLine = txt.GetCurrentLine(txt.GetCurrentLineIndex());
-		if (fullLine.empty()) { txt.isTyping = false; txt.visibleChars = 0; return; }
+		if (fullLine.empty()) { txt.isTyping = false; txt.visibleChars = 0; txt.timeElapsed = 0.f; return; }
 
-		txt.timeElapsed += std::max(0.f, dt);
 		const float cps = std::max(0.f, txt.textSpeed) * std::max(0.f, speedMul);
-		const int target = (int)(txt.timeElapsed * cps);
 
-		if (target > txt.visibleChars) txt.visibleChars = target;
+		txt.timeElapsed += dt;
+
+		const int target = (int)(txt.timeElapsed * cps);
+		txt.visibleChars = std::min((int)fullLine.size(), std::max(txt.visibleChars, target));
 
 		if (txt.visibleChars >= (int)fullLine.size())
 		{
@@ -225,7 +272,7 @@ namespace TextSystem
 	{
 		// Default values
 		std::vector<std::string> lines;
-		float textSpeed = 30.f;
+		float textSpeed = 60.f;
 		Vec3 color = { 1.f, 1.f, 1.f };
 		std::string fontPath = "../Assets/fonts/Marker.ttf";
 		float fontSize = 1.f;

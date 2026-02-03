@@ -66,6 +66,7 @@ bool showFPS = false;
  * @param type  The UI render type to be determined.
  */
 void UI_RenderData::SetRenderType(UIRenderType type) {
+    if (data && data->GetType() == type) return;
     switch (type)
     {
     case UIRenderType::Shape:
@@ -542,6 +543,13 @@ void GuiSystem::Initialize() {
                 else if (b.ID == 3) b.isVisible = false;
             }
         });
+
+    // Advance dialogue to next line
+    RegisterAction("AdvanceDialogue",
+        [this](const json&)
+        {
+            HandleDialogueAdvance(true);
+        });
 }
 
 /**
@@ -664,6 +672,53 @@ bool GuiSystem::GetEditMode() const
 
 void GuiSystem::Update(float dt)
 {
+    SceneManager& sm = SceneManager::Get();
+
+    static float advanceBtnPosShift = 0.f;
+    static bool showAdvanceBtn = false;
+    static int speakerID = 0;
+
+    // Decide rendering from current line's speakerID
+    bool notRock = (speakerID == 1 || speakerID == 2);
+    const float profDir = notRock ? +1.f : -1.f; // +1 = profile on the right, -1 = profile on the left
+    const float posLeftShift = notRock ? -200.f : 0.f;
+
+    const float typingDt = sm.IsPaused() ? 0.f : dt;
+
+    // Toggle visibility of "AdvanceDialogue" button
+    for (auto& b : buttons)
+    {
+        if (b.actionName == "AdvanceDialogue")
+        {
+            b.isVisible = !sm.inEditMode && HandleDialogueAdvance(false);
+        }
+    }
+
+    SetDialogueGate(!sm.inEditMode && std::any_of(dialogues.begin(), dialogues.end(), [](auto& d) 
+    { 
+        return d.isVisible; 
+    }));
+
+    static bool prevInEdit = sm.inEditMode;
+    if (prevInEdit != sm.inEditMode)
+    {
+        for (auto& d : dialogues)
+        {
+            if (d.isVisible)
+            {
+                SetDialogueGate(true);
+                if (auto* comp = (d.textComp ? d.textComp : d.owned.get()))
+                {
+                    const auto& lines = comp->GetLines();
+                    if (lines.empty()) continue;
+                    comp->SetCurrentLineIndex(std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1));
+                    if (comp->GetTextSpeed() <= 0.f) comp->SetTextSpeed(60.f);
+                    comp->StartTyping();
+                }
+            }
+        }
+        prevInEdit = sm.inEditMode;
+    }
 
     //if (cutsceneActive) return;
     //Dont render UI when cutscene is ongoing
@@ -693,32 +748,50 @@ void GuiSystem::Update(float dt)
         showFPS = !showFPS;
     }
 
-    if (!editMode && spacePressed && !spaceHandled)
+    if (!sm.inEditMode && spacePressed && !spaceHandled)
     {
         for (auto& d : dialogues)
         {
             if (!d.isVisible) continue;
-            TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
+            auto* comp = d.textComp ? d.textComp : d.owned.get();
             if (!comp) continue;
 
-            if (comp->CheckIfTyping())
+            if (!sm.IsPaused())
             {
-                comp->StopTyping();
-            }
-            else
-            {
-                const auto& lines = comp->GetLines();
-                int idx = comp->GetCurrentLineIndex();
-                if (idx + 1 < static_cast<int>(lines.size()))
+                if (comp->CheckIfTyping())
                 {
-                    comp->SetCurrentLineIndex(idx + 1);
-                    comp->StartTyping();
+                    comp->StopTyping();
+                }
+                else
+                {
+                    const auto& lines = comp->GetLines();
+                    int idx = comp->GetCurrentLineIndex();
+                    if (idx + 1 < static_cast<int>(lines.size()))
+                    {
+                        comp->SetCurrentLineIndex(idx + 1);
+                        comp->StartTyping();
+                    }
+                    else
+                    {
+                        d.isVisible = false;
+                    }
                 }
             }
         }
         spaceHandled = true;
     }
     if (!spaceHeld) spaceHandled = false;
+
+    if (!prevInEdit)
+    {
+        for (auto& d : dialogues) if (d.isVisible)
+        {
+            if (auto* comp = d.textComp ? d.textComp : d.owned.get())
+            {
+                TextSystem::UpdateTyping(*comp, typingDt, 1.f);
+            }
+        }
+    }
 
     // Mouse (convert to GameView space if ImGui is active)
     Vec2 mouse = Input::GetMousePosition();
@@ -736,6 +809,62 @@ void GuiSystem::Update(float dt)
     const float scaleY = GLApp::height / defaultHeight;
     const float uiScale = std::min(scaleX, scaleY);
 
+    static json sDlgDoc;
+    static bool sDlgLoaded = false;
+    if (!sDlgLoaded)
+    {
+        try
+        {
+            std::ifstream ifs(FilePath::DIALOGUE);
+            if (ifs) { ifs >> sDlgDoc; sDlgLoaded = true; }
+        }
+        catch (...) { /* leave unloaded on error */ }
+    }
+
+    // Get speaker ID
+    auto getSpeakerID = [&](const json& doc, int sceneIdx, int lineIdx) -> int
+        {
+            if (!doc.contains("scenes") || !doc["scenes"].is_array()) return -1;
+            if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return -1;
+            const auto& sc = doc["scenes"][sceneIdx];
+            if (!sc.contains("script") || !sc["script"].is_array()) return -1;
+            const auto& script = sc["script"];
+            if (lineIdx < 0 || lineIdx >= (int)script.size()) return -1;
+            return script[lineIdx].value("speakerID", -1);
+        };
+
+    speakerID = 0;
+
+    if (sDlgLoaded)
+    {
+        for (auto& d : dialogues)
+        {
+            if (!d.isVisible) continue;
+            auto* comp = d.textComp ? d.textComp : d.owned.get();
+            if (!comp) break;
+
+            const auto& lines = comp->GetLines();
+            if (lines.empty()) break;
+
+            int idx = std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1);
+
+            int sceneIdxInt = 0;
+            if (!d.sceneID.empty())
+            {
+                try { sceneIdxInt = std::stoi(d.sceneID); }
+                catch (...) { sceneIdxInt = 0; }
+            }
+
+            if (sDlgDoc.contains("scenes") && sDlgDoc["scenes"].is_array())
+            {
+                int maxScene = (int)sDlgDoc["scenes"].size() - 1;
+                sceneIdxInt = std::clamp(sceneIdxInt, 0, std::max(0, maxScene));
+            }
+
+            speakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
+            break;
+        }
+    }
     if (!RenderSystem::GetLayerEnabledArray()[LAYER_UI])
     {
         render.useCamera = prevCam;
@@ -758,8 +887,16 @@ void GuiSystem::Update(float dt)
             cfg.size = cfg.baseSize * uiScale;
             cfg.textScale = cfg.baseTextScale * uiScale;
 
-            cfg.pos.x = cfg.basePos.x * scaleX;
-            cfg.pos.y = cfg.basePos.y * scaleY;
+            Vec2 base = cfg.basePos;
+
+            if (!sm.inEditMode && cfg.actionName == "AdvanceDialogue")
+            {
+                if (notRock) base.x += advanceBtnPosShift;
+            }
+            cfg.pos = { base.x * scaleX, base.y * scaleY };
+
+            // cfg.pos.x = cfg.basePos.x * scaleX;
+            // cfg.pos.y = cfg.basePos.y * scaleY;
 
             bool hover = false;
             if (cfg.m_renderData.GetRenderType() == UIRenderType::Shape &&
@@ -769,7 +906,8 @@ void GuiSystem::Update(float dt)
                 float dist = RG_Distance(mouse, cfg.pos);
                 hover = dist <= radius;
             }
-            else {
+            else 
+            {
                 hover = render.IsAreaTouched(mouse, cfg.pos, cfg.size.x, cfg.size.y);
             }
 
@@ -787,7 +925,8 @@ void GuiSystem::Update(float dt)
             render.DrawText(cfg.label, textX, textY, textScale, { 1, 1, 1 }, "Marker");
 
 #ifndef NO_IMGUI  //EDITORMACRO
-            if (!SceneManager::Get().inEditMode) {
+            if (!SceneManager::Get().inEditMode) 
+            {
 #endif
                 if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
                     if (audio) audio->PlayButtonSound(cfg.soundType);
@@ -796,6 +935,7 @@ void GuiSystem::Update(float dt)
                 }
 #ifndef NO_IMGUI //EDITORMACRO
             }
+
 #endif
         }; // end DRAW UI ELEMENTS PER TYPE
     // --------------------------------------------------
@@ -839,8 +979,6 @@ void GuiSystem::Update(float dt)
             d.textBox.pos.y = d.textBox.basePos.y * scaleY;
             d.textBox.scale = d.textBox.baseScale * uiScale;
 
-            SceneManager& sm = SceneManager::Get();
-
             // Resolve full line (for size), and visible string (typewriter or full)
             const auto& lines = comp->GetLines();
             if (lines.empty()) return;
@@ -859,34 +997,9 @@ void GuiSystem::Update(float dt)
             }
             else {
                 // In play mode: typewriter
-                TextSystem::UpdateTyping(*comp, dt, 1.f);
+                // TextSystem::UpdateTyping(*comp, dt, 1.f);
                 vis = comp->CheckIfTyping() ? TextSystem::GetVisibleText(*comp) : lines[idx];
             }
-
-            // Get speaker name
-            auto getSpeakerName = [&](const json& doc, int sceneIdx, int lineIdx) -> std::string
-                {
-                    if (!doc.contains("scenes") || !doc["scenes"].is_array()) return {};
-                    if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return {};
-
-                    const auto& sc = doc["scenes"][sceneIdx];
-                    if (!sc.contains("script") || !sc["script"].is_array()) return {};
-
-                    const auto& script = sc["script"];
-                    if (lineIdx < 0 || lineIdx >= (int)script.size()) return {};
-
-                    int speakerID = -1;
-                    if (script[lineIdx].contains("speakerID") && script[lineIdx]["speakerID"].is_number_integer())
-                        speakerID = script[lineIdx]["speakerID"].get<int>();
-                    if (speakerID < 0) return {};
-
-                    if (!sc.contains("speakers") || !sc["speakers"].is_array()) return {};
-                    const auto& speakers = sc["speakers"];
-                    if (speakerID >= 0 && speakerID < (int)speakers.size() && speakers[speakerID].is_string())
-                        return speakers[speakerID].get<std::string>();
-
-                    return {};
-                };
 
             static json sDlgDoc;
             static bool sDlgLoaded = false;
@@ -900,6 +1013,18 @@ void GuiSystem::Update(float dt)
                 catch (...) { /* leave unloaded on error */ }
             }
 
+            // Get speaker ID
+            auto getSpeakerID = [&](const json& doc, int sceneIdx, int lineIdx) -> int
+                {
+                    if (!doc.contains("scenes") || !doc["scenes"].is_array()) return -1;
+                    if (sceneIdx < 0 || sceneIdx >= (int)doc["scenes"].size()) return -1;
+                    const auto& sc = doc["scenes"][sceneIdx];
+                    if (!sc.contains("script") || !sc["script"].is_array()) return -1;
+                    const auto& script = sc["script"];
+                    if (lineIdx < 0 || lineIdx >= (int)script.size()) return -1;
+                    return script[lineIdx].value("speakerID", -1);
+                };
+
             int sceneIdxInt = 0;
             if (!d.sceneID.empty())
             {
@@ -907,18 +1032,69 @@ void GuiSystem::Update(float dt)
                 catch (...) { sceneIdxInt = 0; }
             }
 
-            std::string speakerName;
+            // std::string speakerName;
             if (sDlgLoaded && sDlgDoc.contains("scenes") && sDlgDoc["scenes"].is_array())
             {
                 int maxScene = (int)sDlgDoc["scenes"].size() - 1;
                 if (maxScene >= 0)
                 {
                     sceneIdxInt = std::max(0, std::min(sceneIdxInt, maxScene));
-                    speakerName = getSpeakerName(sDlgDoc, sceneIdxInt, idx);
                 }
             }
 
-            // Draw positions
+            // Speaker ID
+            speakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
+            static std::unordered_map<int, int> lastSpeakerAppliedByDlg;
+            static std::unordered_map<int, bool> autoSpeakerImagesByDlg;
+
+            if (!sm.inEditMode)
+            {
+                advanceBtnPosShift = notRock ? -300.f : 0.f;
+                showAdvanceBtn = HandleDialogueAdvance(false);
+            }
+
+            if (!lastSpeakerAppliedByDlg.contains(d.ID))
+            {
+                lastSpeakerAppliedByDlg[d.ID] = -1;
+            }
+
+            if (!autoSpeakerImagesByDlg.contains(d.ID))
+            {
+                autoSpeakerImagesByDlg[d.ID] = true;
+            }
+
+            int& lastSpeaker = lastSpeakerAppliedByDlg[d.ID];
+            bool& autoSpeakerImages = autoSpeakerImagesByDlg[d.ID];
+
+            if (autoSpeakerImages && speakerID >= 0 && speakerID != lastSpeaker)
+            {
+                // To determine background + profile to display depending on current speaker ID
+                auto SelectImage = [&](const std::string& path)
+                {
+                    UI_RenderData rd;
+                    rd.SetRenderType(UIRenderType::Image);
+                    rd.GetImageData().m_image = CreateImage(path.c_str());
+                    return rd;
+                };
+
+                const json& sc = sDlgDoc["scenes"][sceneIdxInt];
+
+                if (sc.contains("speakerBGs") && sc["speakerBGs"].is_array() &&
+                    speakerID < (int)sc["speakerBGs"].size() && sc["speakerBGs"][speakerID].is_string())
+                {
+                    d.bgRenderData = SelectImage(sc["speakerBGs"][speakerID].get<std::string>());
+                }
+
+                if (sc.contains("speakerProfiles") && sc["speakerProfiles"].is_array() &&
+                    speakerID < (int)sc["speakerProfiles"].size() && sc["speakerProfiles"][speakerID].is_string())
+                {
+                    d.profileRenderData = SelectImage(sc["speakerProfiles"][speakerID].get<std::string>());
+                }
+
+                lastSpeaker = speakerID;
+            }
+
+            // Draw text positions
             Colour3 drawColor = d.textBox.color;
             Vec2 fullSize = render.CalculateTextSize(fullLine, d.textBox.scale, "Marker");
             float drawX = d.textBox.pos.x;
@@ -929,13 +1105,11 @@ void GuiSystem::Update(float dt)
                 drawY -= fullSize.y * 0.5f;
             }
 
-            // Draw speaker name (no typewriter)
-            const float nameScale = d.textBox.scale * 0.9f;
             const float lineH = render.CalculateTextSize("A", d.textBox.scale, "Marker").y;
-            render.DrawText(speakerName, drawX, drawY + (lineH * 1.5f), nameScale, drawColor, "Marker");
+            //render.DrawText(speakerName, drawX, drawY + (lineH * 1.5f), nameScale, drawColor, "Marker");
 
             // Word-wrap visible text
-            const float maxWidth = (defaultWidth / 2) * uiScale;
+            const float maxWidth = ((d.wrapWidth > 0.f) ? d.wrapWidth : (defaultWidth / 2.f)) * uiScale;
             std::vector<std::string> wrappedLines;
             wrappedLines.reserve(8);
 
@@ -997,13 +1171,126 @@ void GuiSystem::Update(float dt)
             }
             if (!current.empty()) wrappedLines.push_back(current);
 
+            // Draw dialogue background
+            Vec2 bgScale = d.bgBaseSize * uiScale;
+            Vec2 bgCenter = { drawX + bgScale.x * 0.4f, drawY - bgScale.y * 0.1f };
+            if (d.bgEnabled)
+            {
+                Vec2 bgPos = { bgCenter.x + posLeftShift, bgCenter.y };
+                switch (d.bgRenderData.GetRenderType())
+                {
+                case UIRenderType::Shape:
+                {
+                    auto data = d.bgRenderData.GetShapeData();
+                    switch (data.shape)
+                    {
+                    case ButtonShape::Rectangle: render.DrawRect(bgPos, bgScale.x, bgScale.y, data.color); break;
+                    case ButtonShape::Circle:    render.DrawCircle(bgPos, std::min(bgScale.x, bgScale.y) * 0.5f, data.color, 48); break;
+                    case ButtonShape::Rounded:   render.DrawRoundedRect(bgPos, bgScale.x, bgScale.y, std::min(bgScale.x, bgScale.y) * 0.5f, data.color); break;
+                    }
+                } break;
+
+                case UIRenderType::CustomQuad:
+                {
+                    auto data = d.bgRenderData.GetQuadData();
+                    Vec2 tl{ bgPos.x - bgScale.x * 0.5f, bgPos.y + bgScale.y * 0.5f };
+                    Vec2 tr{ bgPos.x + bgScale.x * 0.5f, bgPos.y + bgScale.y * 0.5f };
+                    Vec2 br{ bgPos.x + bgScale.x * 0.5f, bgPos.y - bgScale.y * 0.5f };
+                    Vec2 bl{ bgPos.x - bgScale.x * 0.5f, bgPos.y - bgScale.y * 0.5f };
+                    render.DrawCustomQuad(tl, tr, br, bl, data.color);
+                } break;
+
+                case UIRenderType::Image:
+                {
+                    auto data = d.bgRenderData.GetImageData();
+                    render.DrawImageRotated(data.m_image, bgPos.x, bgPos.y, bgScale.x, bgScale.y, 0.f, 0.f);
+                } break;
+
+                case UIRenderType::ImageSheet:
+                {
+                    auto data = d.bgRenderData.GetImageSheetData();
+                    int tileW = data.m_image.widthPixels / data.total_cols;
+                    int tileH = data.m_image.heightPixels / data.total_rows;
+                    int col = data.frame_index.curr_col;
+                    int row = data.total_rows - 1 - data.frame_index.curr_row;
+                    float u0 = float(col * tileW), v0 = float(row * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(data.m_image, bgPos.x, bgPos.y, bgScale.x, bgScale.y, u0, v0, u1, v1, 0.f, 0.f);
+                } break;
+
+                default: break;
+                }
+            }
+
+            // Draw profile next to dialogue box
+            Vec2 profScale = d.profileBaseSize * uiScale;
+            Vec2 profCenter = bgCenter;
+            if (d.profileEnabled)
+            {
+                profCenter = 
+                { 
+                    bgCenter.x + posLeftShift + profDir * (bgScale.x * 0.5f + profScale.x * 0.5f) + d.profileOffset.x,
+                    bgCenter.y + d.profileOffset.y
+                };
+
+                switch (d.profileRenderData.GetRenderType())
+                {
+                case UIRenderType::Shape:
+                {
+                    auto data = d.profileRenderData.GetShapeData();
+                    switch (data.shape)
+                    {
+                    case ButtonShape::Rectangle: render.DrawRect(profCenter, profScale.x, profScale.y, data.color); break;
+                    case ButtonShape::Circle:    render.DrawCircle(profCenter, std::min(profScale.x, profScale.y) * 0.5f, data.color, 48); break;
+                    case ButtonShape::Rounded:   render.DrawRoundedRect(profCenter, profScale.x, profScale.y, std::min(profScale.x, profScale.y) * 0.5f, data.color); break;
+                    }
+                } break;
+
+                case UIRenderType::CustomQuad:
+                {
+                    auto data = d.profileRenderData.GetQuadData();
+                    Vec2 tl{ profCenter.x - profScale.x * 0.5f, profCenter.y + profScale.y * 0.5f };
+                    Vec2 tr{ profCenter.x + profScale.x * 0.5f, profCenter.y + profScale.y * 0.5f };
+                    Vec2 br{ profCenter.x + profScale.x * 0.5f, profCenter.y - profScale.y * 0.5f };
+                    Vec2 bl{ profCenter.x - profScale.x * 0.5f, profCenter.y - profScale.y * 0.5f };
+                    render.DrawCustomQuad(tl, tr, br, bl, data.color);
+                } break;
+
+                case UIRenderType::Image:
+                {
+                    auto data = d.profileRenderData.GetImageData();
+                    render.DrawImageRotated(data.m_image, profCenter.x, profCenter.y, profScale.x, profScale.y, 0.f, 0.f);
+                } break;
+
+                case UIRenderType::ImageSheet:
+                {
+                    auto data = d.profileRenderData.GetImageSheetData();
+                    int tileW = data.m_image.widthPixels / data.total_cols;
+                    int tileH = data.m_image.heightPixels / data.total_rows;
+                    int col = data.frame_index.curr_col;
+                    int row = data.total_rows - 1 - data.frame_index.curr_row;
+                    float u0 = float(col * tileW), v0 = float(row * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(data.m_image, profCenter.x, profCenter.y, profScale.x, profScale.y, u0, v0, u1, v1, 0.f, 0.f);
+                } break;
+
+                default: break;
+                }
+            }
+
+            // render.DrawText(speakerName, speakerX, speakerY, speakerScale, d.speakerNameColor, "Marker");
+
+            const float textPosLeftShift = notRock ? -275.f : 0.f;
+            float textX = (bgCenter.x - bgScale.x * 0.4f) + textPosLeftShift;
+
             // Render wrapped lines
             float yCursor = drawY;
             for (const auto& ln : wrappedLines)
             {
-                render.DrawText(ln, drawX, yCursor, d.textBox.scale, drawColor, "Marker");
+                render.DrawText(ln, textX, yCursor, d.textBox.scale, drawColor, "Marker");
                 yCursor -= lineH;
             }
+
         }; // end DRAW DIALOGUE
         // --------------------------------------------------
 
@@ -1471,7 +1758,6 @@ std::string ButtonActionToString(ButtonAction action)
     {
     case ButtonAction::None:                return "None";
     case ButtonAction::LoadLevel1:          return "LoadLevel1";
-    case ButtonAction::LoadLevel2:          return "LoadLevel2";
     case ButtonAction::LoadMainMenu:        return "LoadMainMenu";
     case ButtonAction::Quit:                return "Quit";
     case ButtonAction::OpenStateWindow:     return "OpenStateWindow";
@@ -1481,6 +1767,7 @@ std::string ButtonActionToString(ButtonAction action)
     case ButtonAction::ToggleAllDisplays:   return "ToggleAllDisplays";
     case ButtonAction::LoadSettings:        return "LoadSettings";
     case ButtonAction::LoadControls:        return "LoadControls";
+    case ButtonAction::AdvanceDialogue:     return "AdvanceDialogue";
     default:                                return "None";
     }
 }
@@ -1494,7 +1781,6 @@ std::string ButtonActionToString(ButtonAction action)
 ButtonAction StringToButtonAction(const std::string& s)
 {
     if (s == "LoadLevel1")          return ButtonAction::LoadLevel1;
-    if (s == "LoadLevel2")          return ButtonAction::LoadLevel2;
     if (s == "LoadMainMenu")        return ButtonAction::LoadMainMenu;
     if (s == "Quit")                return ButtonAction::Quit;
     if (s == "OpenStateWindow")     return ButtonAction::OpenStateWindow;
@@ -1504,6 +1790,7 @@ ButtonAction StringToButtonAction(const std::string& s)
     if (s == "ToggleAllDisplays")   return ButtonAction::ToggleAllDisplays;
     if (s == "LoadSettings")        return ButtonAction::LoadSettings;
     if (s == "LoadControls")        return ButtonAction::LoadControls;
+    if (s == "AdvanceDialogue")     return ButtonAction::AdvanceDialogue;
     return ButtonAction::None;
 }
 
@@ -1570,6 +1857,11 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
         btn.onClick = [this]() {
             SceneManager::Get().QueueLoadScene(FilePath::CONTROLS_FILE);
             SceneManager::Get().SetTransitionTime(0.f);
+            };
+        break;
+    case ButtonAction::AdvanceDialogue:
+        btn.onClick = [this]() {
+            HandleDialogueAdvance(true);
             };
         break;
     default:
@@ -1830,6 +2122,63 @@ void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartT
 }
 
 /**
+ * @brief               Returns true only when there is visible dialogue and the line is fully visible
+ *                      and not typing.
+ * @param advance       If true, the dialogue box will advance to the next line if ready.
+ */
+bool GuiSystem::HandleDialogueAdvance(bool advance)
+{
+    if (SceneManager::Get().IsPaused() || SceneManager::Get().inEditMode)
+    {
+        return false;
+    }
+
+    for (auto& d : dialogues)
+    {
+        if (!d.isVisible) continue;
+
+        auto* comp = d.textComp ? d.textComp : d.owned.get();
+        if (!comp) return false;
+
+        const auto& lines = comp->GetLines();
+        if (lines.empty()) return false;
+
+        int idx = std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1);
+        comp->SetCurrentLineIndex(idx);
+
+        const bool typing = comp->CheckIfTyping();
+        const bool fullyVisible = (!typing) && (comp->GetVisibleChars() >= (int)lines[idx].size());
+
+        if (!advance) return fullyVisible;
+
+        if (typing)
+        {
+            comp->StopTyping();
+            return true;
+        }
+
+        if (!fullyVisible) return false;
+
+        if (idx + 1 < (int)lines.size())
+        {
+            comp->SetCurrentLineIndex(idx + 1);
+            comp->SetVisibleChars(0);
+            comp->SetTimeElapsed(0.f);
+            comp->StartTyping();
+        }
+        else
+        {
+            d.isVisible = false;
+            SetDialogueGate(false);
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+/**
  * @brief   Builds a single draw list of all UI elements sorted by ascending ID.
  *          The resulting DrawItem vector is used in Update() to render UI in a stable order
  *          across all UI types: Buttons, TextBoxes, Dialogues and Displays.
@@ -2009,6 +2358,15 @@ bool GuiSystem::SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3) {
     return false;
 }
 
+bool GuiSystem::GetDialogueGate()
+{
+    return dialogueGate;
+}
+
+void GuiSystem::SetDialogueGate(bool gate)
+{
+    dialogueGate = gate;
+}
 
 void GuiSystem::SetTextBoxText(int textBoxID, const std::string& text)
 {

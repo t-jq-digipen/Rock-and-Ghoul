@@ -107,6 +107,7 @@
             }
         ],
         "dialogues": [],
+        "displays": [],
         "textboxes": []
     },
     "sceneName": "MainMenu",
