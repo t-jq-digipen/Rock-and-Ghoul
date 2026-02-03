@@ -192,6 +192,8 @@ struct LifetimeComponent {
 struct HealthComponent {
 	float currhp;
 	float maxhp;
+	bool willHit{ true };		// if will trigger hit effects
+	bool isVulnerable{ true };	// if can take damage
 
 	std::string Serialize() const {
 		json j = {

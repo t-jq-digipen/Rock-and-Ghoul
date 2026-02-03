@@ -50,6 +50,7 @@
 #include "PlayerSystem.h"
 #include "EnemySystem.h"
 #include "PhysicsSystem.h"
+#include "CombatSystem.h"
 
 #include "CollisionManager.h"
 
@@ -114,6 +115,7 @@ void CoreEngine::Initialize()
     AddUpdateSystem(new MovementSystem());
     AddUpdateSystem(new PlayerSystem());
     AddUpdateSystem(new EnemySystem());
+    AddUpdateSystem(&CombatSystem::Get());
     AddUpdateSystem(new PhysicsSystem());
 
 
@@ -185,6 +187,8 @@ void CoreEngine::Initialize()
 
     registry.Register_Component<RenderLayerComponent>("RenderLayer");
     std::cout << "REGISTRY | REGISTERED RENDERLAYER COMPONENT\n";
+
+
 
     // ----------------------------------------------------
     // Initialize all systems
@@ -342,7 +346,8 @@ void CoreEngine::Shutdown()
 
         if (s != &GuiSystem::Get() &&
             s != &LogicSystem::Get() &&
-            s != &MonoSystem::Get())
+            s != &MonoSystem::Get() &&
+            s != &CombatSystem::Get())
         {
             delete s;
         }

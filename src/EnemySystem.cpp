@@ -452,7 +452,6 @@ namespace EnemyAI
 	}
 }
 
-size_t SceneSubscriberID = -1;
 
 namespace SpiritMeleeAttack {
 
@@ -464,7 +463,6 @@ namespace SpiritMeleeAttack {
 
 	void HitPlayer(Entity owner, Entity player) {
 		// check if player is shielded or hit already
-		// bruh need to link to shield oops YASMINHELP
 
 
 		// knockback

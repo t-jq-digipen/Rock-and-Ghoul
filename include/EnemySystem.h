@@ -67,6 +67,8 @@ namespace SpiritScript {
 
 class EnemySystem : public ISystem
 {
+private:
+	size_t SceneSubscriberID{};
 public:
 	EnemySystem() {}
 	void Initialize() override;

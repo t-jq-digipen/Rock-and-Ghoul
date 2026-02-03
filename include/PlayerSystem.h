@@ -41,16 +41,16 @@ namespace RockScript {
 	// maybe wanna shift into combatsystem later
     void Knockback(Entity eID, bool left, float damage);
 
-    enum class Element : int
-    {
-        NONE = 0,
-        LIGHTNING,
-        FIRE,
-        WIND,
-        ICE,
+    //enum class Element : int
+    //{
+    //    NONE = 0,
+    //    LIGHTNING,
+    //    FIRE,
+    //    WIND,
+    //    ICE,
 
-        COUNT
-    };
+    //    COUNT
+    //};
 
     enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
 
@@ -65,7 +65,8 @@ namespace RockScript {
 
 class PlayerSystem : public ISystem {
 private:
-    //void WASD_Movement(Entity eID, float& dt);
+    size_t SceneSubscriberID{};
+
 
     void UpdateFootsteps(Entity eID, float dt);
     void PlayFootstep(Entity eID);
@@ -74,9 +75,9 @@ private:
     // static inline void NormalizeDiagonalMovement(float& x, float& y);
 
 public:
+    // player variable
+
     void Initialize() override;
     void Update(float dt) override;
-    void Shutdown() override {
-        std::cout << "PlayerSystem Shutdown!\n";
-    }
+    void Shutdown() override;
 };
