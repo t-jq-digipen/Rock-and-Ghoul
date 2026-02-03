@@ -159,7 +159,7 @@ void CoreEngine::Initialize()
     registry.Register_Component<ColliderComponent>("Collider", { "Transform" });
     std::cout << "REGISTRY | REGISTERED COLLIDER COMPONENT\n";
 
-    registry.Register_Component<AudioComponent>("Audio");
+    registry.Register_Component<AudioComponent>("AudioComponent");
     std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";
 
     registry.Register_Component<HealthComponent>("Health");
@@ -271,6 +271,8 @@ void CoreEngine::Run()
                     updateTimings[name] += ms;   // accumulate into stable entry
                 }
             }
+
+            Update_AudioComponents(fixedDt);
         }
 
 

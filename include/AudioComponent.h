@@ -23,6 +23,8 @@
 #pragma once
 #include <fmod.hpp>
 #include <string>
+#include <vector>
+#include <unordered_map>
 #include "Entity.h"
 #include "AudioCache.h"
 #include "DataDefs.h"
@@ -30,32 +32,23 @@
 
 using json = nlohmann::json;
 
-/**
- * @struct AudioComponent
- * @brief Component for attaching audio to entities with serialization support.
- */
 struct AudioComponent {
-    // Name from AudioCache (empty means none)
-    std::string soundName = "";        // Single sound effect name
-    std::string loopingSoundName = ""; // Looping sound name for ambient audio
+    // Vector of sound names (indices map to specific sounds)
+    std::vector<std::string> sounds;
 
-    // Playback state
-    FMOD::Channel* channel = nullptr;
-    FMOD::Channel* loopingChannel = nullptr;
-    bool isPlaying = false;
-    bool isLoopingPlaying = false;
+    // Active channels for each sound index
+    std::vector<FMOD::Channel*> channels;
+
+    // Playback state tracking
+    std::vector<bool> isPlaying;
 
     // Playback settings
-    bool autoPlay = false;        // Play sound on entity spawn
-    bool autoPlayLooping = false; // Play looping sound on spawn
-    bool spatial = false;         // Use 3D spatial positioning
-
-    // Volume control
-    float volume = 1.0f;          // Master volume from 0.0 - 1.0
+    bool spatial = false;
+    float volume = 1.0f;
 
     // Spatial audio settings
-    float minDistance = 1.0f;     // full volume
-    float maxDistance = 100.0f;   // silent
+    float minDistance = 1.0f;
+    float maxDistance = 100.0f;
 
     /**
      * @brief Default constructor
@@ -63,44 +56,39 @@ struct AudioComponent {
     AudioComponent() = default;
 
     /**
-     * @brief Constructor with sound name
-     * @param name Audio asset name from AudioCache
-     * @param autoplay Whether to play immediately on spawn
-     * @param vol Volume level (0.0 - 1.0)
-     */
-    AudioComponent(const std::string& name, bool autoplay = false, float vol = 1.0f)
-        : soundName(name), autoPlay(autoplay), volume(vol) {}
-
-    /**
-     * @brief Play the main sound effect
+     * @brief Play sound at specific index
+     * @param index Index in sounds vector
      * @param eID Entity ID (for spatial positioning)
      */
-    void PlaySound(Entity eID);
+    void PlaySound(size_t index, Entity eID);
 
     /**
-     * @brief Play the looping sound
-     * @param eID Entity ID (for spatial positioning)
+     * @brief Stop sound at specific index
+     * @param index Index in sounds vector
      */
-    void PlayLoopingSound(Entity eID);
+    void StopSound(size_t index);
 
     /**
-     * @brief Stop the main sound
+     * @brief Add a new sound to the component
+     * @param soundName Name of sound from AudioCache
+     * @return Index where sound was added
      */
-    void StopSound();
+    size_t AddSound(const std::string& soundName);
 
     /**
-     * @brief Stop the looping sound
+     * @brief Remove sound at index
+     * @param index Index to remove
      */
-    void StopLoopingSound();
+    void RemoveSound(size_t index);
 
     /**
-     * @brief Update spatial audio position (called per frame)
+     * @brief Update spatial audio position for all active sounds
      * @param eID Entity ID to get position from
      */
     void UpdateSpatialPosition(Entity eID);
 
     /**
-     * @brief Update playback state (checks if sounds finished)
+     * @brief Update playback state for all channels
      */
     void UpdatePlaybackState();
 
@@ -110,20 +98,10 @@ struct AudioComponent {
      */
     void SetVolume(float vol);
 
-    // ============================================================================
-    // REQUIRED ECS SERIALIZATION FUNCTIONS
-    // ============================================================================
-
-    /**
-     * @brief Serialize component to JSON string
-     * @return JSON string representation of component
-     */
+    // Serialization
     std::string Serialize() const {
         json j = {
-            {"soundName", soundName},
-            {"loopingSoundName", loopingSoundName},
-            {"autoPlay", autoPlay},
-            {"autoPlayLooping", autoPlayLooping},
+            {"sounds", sounds},
             {"spatial", spatial},
             {"volume", volume},
             {"minDistance", minDistance},
@@ -132,47 +110,38 @@ struct AudioComponent {
         return j.dump();
     }
 
-    /**
-     * @brief Deserialize component from JSON string
-     * @param eID Entity ID (unused but required by pattern)
-     * @param data JSON string containing component data
-     * @return Deserialized AudioComponent instance
-     */
     static AudioComponent DeSerialize(Entity eID, const std::string& data) {
-        (void)eID;  // Unused parameter
+        (void)eID;
 
         if (data.empty()) {
             return AudioComponent();
         }
 
         json j = json::parse(data);
-
         AudioComponent audio;
 
-        // Loading names of sounds, AudioCache::GetAsset() will validate at runtime
-        audio.soundName = j.value("soundName", "");
-        audio.loopingSoundName = j.value("loopingSoundName", "");
-
-        audio.autoPlay = j.value("autoPlay", false);
-        audio.autoPlayLooping = j.value("autoPlayLooping", false);
+        audio.sounds = j.value("sounds", std::vector<std::string>{});
         audio.spatial = j.value("spatial", false);
         audio.volume = j.value("volume", 1.0f);
         audio.minDistance = j.value("minDistance", 1.0f);
         audio.maxDistance = j.value("maxDistance", 100.0f);
 
+        // Initialize channels and playback state vectors
+        audio.channels.resize(audio.sounds.size(), nullptr);
+        audio.isPlaying.resize(audio.sounds.size(), false);
+
         return audio;
     }
 
-    /**
-     * @brief Get editor-compatible data for this component
-     * @return ComponentData with editor widgets
-     */
     Editor::ComponentData EditorData();
 };
 
-// ============================================================================
-// SYSTEM UPDATE FUNCTION (Called by AudioManager)
-// ============================================================================
+/**
+ * @brief Helper function to play sound on any entity with AudioComponent
+ * @param eID Entity ID
+ * @param index Sound index to play
+ */
+void PlayEntitySound(Entity eID, size_t index);
 
 /**
  * @brief Updates all AudioComponents in the registry
