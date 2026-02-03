@@ -146,14 +146,15 @@ void CombatSystem::RegisterProjectile(Entity projectile, const AttackProperties&
 
 void CombatSystem::Initialize() {
 	std::cout << "CombatSystem Initialized!\n";
+
 	sceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([&](const SceneLoadEvent& e) {
 		// Reset combat variables on game scene load
-		if (e.sceneType == SceneType::ST_GAME) {
+		//if (e.sceneType == SceneType::ST_GAME) {
 			g_attackProperties.clear();
 			toRemove.clear();
 			toDamageOverTime.clear();
 			g_projectileStates.clear();
-		}
+		//}
 		}
 	);
 

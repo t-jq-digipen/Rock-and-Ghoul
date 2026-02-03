@@ -1063,7 +1063,7 @@ void RenderSystem::Update(float dt) {
                 SceneManager::Get().SetCutscenePlaying(false);
                 gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
 
-                SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json") //wacky fix;
+                SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); //wacky fix;
 
 
             }  
