@@ -90,6 +90,9 @@ static bool         g_showAudioImportPopup = false;
 static std::string  g_pendingAudioSourcePath;   // full path from drag drop
 static int          g_pendingAudioCategory = 0; // 0=Music, 1=SFX, 2=UI
 
+static bool         g_showDeleteImagePopup = false;
+static std::string  g_pendingDeleteImageName;
+
 // ========================================================
 // Static Member Definitions
 // ========================================================
@@ -3436,6 +3439,7 @@ void ImGuiSystem::Update(float dt)
                 UndoSystem::Get().RecordAdd(e);
                 std::cout << "[Editor] Spawned image entity at (" << world.x << ", " << world.y << ")\n";
             }
+
             ImGui::EndDragDropTarget();
         }
         
@@ -4676,6 +4680,20 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         ImGui::Text("Drag %s", g_imageNames[i].c_str());
                         ImGui::EndDragDropSource();
                     }
+                    // Right-click context menu on image thumbnail
+                    ImGui::PushID((int)i);
+                    if (ImGui::BeginPopupContextItem("##ImgCtx"))
+                    {
+                        ImGui::Text("%s", g_imageNames[i].c_str());
+                        ImGui::Separator();
+                        if (ImGui::MenuItem("Delete Image"))
+                        {
+                            g_pendingDeleteImageName = g_imageNames[i];
+                            g_showDeleteImagePopup = true;
+                        }
+                        ImGui::EndPopup();
+                    }
+                    ImGui::PopID();
                     // filename
                     ImGui::TextWrapped("%s", g_imageNames[i].c_str());
                     ImGui::EndGroup();
@@ -4687,6 +4705,70 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                 ImGui::EndChild();
             }
+
+            // Delete image confirmation modal
+            if (g_showDeleteImagePopup)
+            {
+                ImGui::OpenPopup("Delete Image Confirmation");
+                g_showDeleteImagePopup = false;
+            }
+            if (ImGui::BeginPopupModal("Delete Image Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Are you sure you want to delete:\n%s ?", g_pendingDeleteImageName.c_str());
+                ImGui::Separator();
+
+                if (ImGui::Button("Yes, Delete", ImVec2(120, 0)))
+                {
+                    // search Assets (recursive) for the file by name and delete it
+                    namespace fs = std::filesystem;
+                    const std::string assetFolder = "../Assets/";
+                    bool deleted = false;
+                    for (auto& entry : fs::recursive_directory_iterator(assetFolder))
+                    {
+                        if (entry.is_regular_file() && entry.path().filename().string() == g_pendingDeleteImageName)
+                        {
+                            try
+                            {
+                                fs::remove(entry.path());
+                                std::cout << "[AssetBrowser] Deleted image: " << entry.path() << "\n";
+                                deleted = true;
+                            }
+                            catch (const std::exception& e)
+                            {
+                                std::cerr << "[AssetBrowser] Failed to delete: " << e.what() << "\n";
+                            }
+                            break;
+                        }
+                    }
+
+                    if (deleted)
+                    {
+                        // remove from thumbnail cache so it disappears immediately
+                        for (size_t j = 0; j < g_imageNames.size(); ++j)
+                        {
+                            if (g_imageNames[j] == g_pendingDeleteImageName)
+                            {
+                                g_imageNames.erase(g_imageNames.begin() + j);
+                                g_loadedThumbnails.erase(g_loadedThumbnails.begin() + j);
+                                break;
+                            }
+                        }
+                    }
+
+                    g_pendingDeleteImageName.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    g_pendingDeleteImageName.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+            
             if (showReplacePopup)
             {
                 ImGui::OpenPopup("Replace Existing Asset?");
@@ -4995,6 +5077,287 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 }
             }
 
+
+            ImGui::EndTabItem();
+        }
+
+        // ====================================================
+        // FONTS & OTHER FILES TAB
+        // ====================================================
+        if (ImGui::BeginTabItem("Fonts & Other"))
+        {
+            // Cached file lists — rebuilt on "Refresh"
+            static std::vector<std::string> s_ttfFiles;
+            static std::vector<std::string> s_jsonFiles;
+            static std::vector<std::string> s_fragFiles;
+            static std::vector<std::string> s_vertFiles;
+            static bool s_fontsInitialised = false;
+
+            auto rebuildFontFileLists = [&]()
+                {
+                    s_ttfFiles.clear();
+                    s_jsonFiles.clear();
+                    s_fragFiles.clear();
+                    s_vertFiles.clear();
+
+                    const std::string assetFolder = "../Assets/";
+                    for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
+                    {
+                        if (!entry.is_regular_file()) continue;
+
+                        std::string ext = entry.path().extension().string();
+                        std::transform(ext.begin(), ext.end(), ext.begin(),
+                            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+                        std::string relPath = entry.path().generic_string();
+
+                        if (ext == ".ttf")  s_ttfFiles.push_back(relPath);
+                        else if (ext == ".json") s_jsonFiles.push_back(relPath);
+                        else if (ext == ".frag") s_fragFiles.push_back(relPath);
+                        else if (ext == ".vert") s_vertFiles.push_back(relPath);
+                    }
+
+                    // Sort each list alphabetically for stable ordering
+                    std::sort(s_ttfFiles.begin(), s_ttfFiles.end());
+                    std::sort(s_jsonFiles.begin(), s_jsonFiles.end());
+                    std::sort(s_fragFiles.begin(), s_fragFiles.end());
+                    std::sort(s_vertFiles.begin(), s_vertFiles.end());
+
+                    s_fontsInitialised = true;
+                };
+
+            if (!s_fontsInitialised) rebuildFontFileLists();
+
+            if (ImGui::Button("Refresh"))
+            {
+                rebuildFontFileLists();
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("Rescans Assets/ for .ttf .json .frag .vert");
+
+            ImGui::Separator();
+
+            // ---------- helper: pending-delete state for this tab ----------
+            static std::string  s_pendingDeleteOtherFile;
+            static bool         s_showDeleteOtherPopup = false;
+
+            // -----------------------------------------------------------------
+            // Reusable lambda: draws a collapsible section for one file type.
+            //   title      – header text (e.g. "Fonts (.ttf)")
+            //   files      – the vector to iterate
+            //   countLabel – short suffix shown in the header (e.g. "3 files")
+            // -----------------------------------------------------------------
+            auto drawFileSection = [&](const char* title, std::vector<std::string>& files)
+                {
+                    ImGui::PushID(title);
+
+                    char headerBuf[128];
+                    std::snprintf(headerBuf, sizeof(headerBuf), "%s  (%d)", title, (int)files.size());
+
+                    if (ImGui::CollapsingHeader(headerBuf, ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        if (files.empty())
+                        {
+                            ImGui::Indent();
+                            ImGui::TextDisabled("None found.");
+                            ImGui::Unindent();
+                        }
+
+                        for (int idx = 0; idx < (int)files.size(); ++idx)
+                        {
+                            ImGui::PushID(idx);   // now safe
+
+                            std::string filename =
+                                std::filesystem::path(files[idx]).filename().string();
+
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 0.6f, 1.f));
+                            ImGui::Text("[%s]", filename.c_str());
+                            ImGui::PopStyleColor();
+
+                            ImGui::Indent();
+                            ImGui::TextDisabled("Path: %s", files[idx].c_str());
+                            if (ImGui::BeginDragDropSource())
+                            {
+                                ImGui::SetDragDropPayload("ASSET_OTHER_FILE",
+                                    files[idx].c_str(),
+                                    files[idx].size() + 1);   // +1 for null terminator
+                                ImGui::Text("Drag %s", filename.c_str());
+                                ImGui::EndDragDropSource();
+                            }
+
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.1f, 1.f));
+                            bool wantDelete = false;
+                            if (ImGui::Button("Delete")) wantDelete = true;
+                            ImGui::PopStyleColor();
+
+                            ImGui::Unindent();
+                            ImGui::Separator();
+
+                            ImGui::PopID(); // idx
+
+                            if (wantDelete)
+                            {
+                                s_pendingDeleteOtherFile = files[idx];
+                                s_showDeleteOtherPopup = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    ImGui::PopID(); // title
+                };
+
+            // -----------------------------------------------------------------
+            // Draw each section
+            // -----------------------------------------------------------------
+            drawFileSection("Fonts (.ttf)", s_ttfFiles);
+            drawFileSection("JSON configs", s_jsonFiles);
+            drawFileSection("Fragment shaders", s_fragFiles);
+            drawFileSection("Vertex shaders", s_vertFiles);
+
+            // -----------------------------------------------------------------
+            // Delete confirmation modal
+            // -----------------------------------------------------------------
+            if (s_showDeleteOtherPopup)
+            {
+                ImGui::OpenPopup("Delete File Confirmation");
+                s_showDeleteOtherPopup = false;
+            }
+
+            if (ImGui::BeginPopupModal("Delete File Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Are you sure you want to delete:\n%s ?", s_pendingDeleteOtherFile.c_str());
+                ImGui::Separator();
+
+                if (ImGui::Button("Yes, Delete", ImVec2(120, 0)))
+                {
+                    try
+                    {
+                        if (std::filesystem::exists(s_pendingDeleteOtherFile))
+                        {
+                            std::filesystem::remove(s_pendingDeleteOtherFile);
+                            std::cout << "[AssetBrowser] Deleted file: " << s_pendingDeleteOtherFile << "\n";
+                        }
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cerr << "[AssetBrowser] Failed to delete: " << e.what() << "\n";
+                    }
+
+                    s_pendingDeleteOtherFile.clear();
+                    // Rebuild lists so the deleted file disappears immediately
+                    rebuildFontFileLists();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    s_pendingDeleteOtherFile.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+
+            ImGui::EndTabItem();
+        }
+        // ====================================================
+       // RENDER LAYERS TAB
+       // ====================================================
+        if (ImGui::BeginTabItem("Render Layers"))
+        {
+            
+            // s_layerEnabled[i] maps 1-to-1 onto the RenderLayer enum:
+            //   0 = LAYER_BACKGROUND
+            //   1 = LAYER_GAMEOBJECT
+            //   2 = LAYER_FOREGROUND
+            //   3 = LAYER_UI
+            bool* layerEnabled = RenderSystem::GetLayerEnabledArray();
+
+            // Count entities per layer so the editor can show them
+            int counts[4] = { 0, 0, 0, 0 };
+            Registry& reg = Registry::Get();
+            for (auto& [entID, rc] : reg.Get_ComponentMap<RenderComponent>())
+            {
+                int idx = static_cast<int>(rc.GetRenderLayer());
+                if (idx >= 0 && idx < 4) counts[idx]++;
+            }
+            // GuiSystem UI lives outside RenderComponent add it into the UI count
+            {
+                auto& gui = GuiSystem::Get();
+                counts[LAYER_UI] += (int)gui.Buttons().size()
+                    + (int)gui.TextBoxes().size()
+                    + (int)gui.Dialogues().size()
+                    + (int)gui.Displays().size();
+            }
+            static const char* layerNames[4] = {
+                "Background",
+                "GameObject",
+                "Foreground",
+                "UI"
+            };
+
+
+            static const ImVec4 layerColours[4] = {
+                { 0.3f, 0.5f, 0.8f, 1.0f },   // blue-ish
+                { 0.3f, 0.7f, 0.3f, 1.0f },   // reen-ish
+                { 0.8f, 0.6f, 0.2f, 1.0f },   // orange-ish
+                { 0.7f, 0.3f, 0.7f, 1.0f }    // purple-ish
+            };
+
+            ImGui::SeparatorText("Layer Visibility");
+            ImGui::Spacing();
+
+            float panelW = ImGui::GetContentRegionAvail().x;
+
+            for (int i = 0; i < 4; ++i)
+            {
+                ImGui::PushID(i);
+
+                // Coloured label strip on the left
+                ImVec2 pos = ImGui::GetCursorScreenPos();
+                ImGui::GetWindowDrawList()->AddRectFilled(
+                    pos,
+                    ImVec2(pos.x + 6.0f, pos.y + ImGui::GetFrameHeight()),
+                    ImGui::ColorConvertFloat4ToU32(layerColours[i])
+                );
+                ImGui::SetCursorScreenPos(ImVec2(pos.x + 10.0f, pos.y));
+
+                // Checkbox
+                ImGui::Checkbox("##enable", &layerEnabled[i]);
+                ImGui::SameLine();
+
+                // Layer name
+                if (layerEnabled[i])
+                    ImGui::TextColored(layerColours[i], "%s", layerNames[i]);
+                else
+                    ImGui::TextDisabled("%s  (disabled)", layerNames[i]);
+
+                // Entity count on the right side
+                char countBuf[32];
+                snprintf(countBuf, sizeof(countBuf), "%d entit%s", counts[i], counts[i] == 1 ? "y" : "ies");
+                float countW = ImGui::CalcTextSize(countBuf).x;
+                ImGui::SameLine(panelW - countW - 4.0f);
+                ImGui::TextDisabled("%s", countBuf);
+
+                ImGui::PopID();
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // enable / disable all
+            if (ImGui::Button("Enable All"))
+            {
+                for (int i = 0; i < 4; ++i) layerEnabled[i] = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Disable All"))
+            {
+                for (int i = 0; i < 4; ++i) layerEnabled[i] = false;
+            }
 
             ImGui::EndTabItem();
         }

@@ -33,6 +33,8 @@
 #endif
 #include "SceneManager.h"
 #include <FilePath.h>
+#include "RenderSystem.h"
+//extern bool cutsceneActive;
 
 // Call Audio Manager for GuiSystem
 AudioManager* GuiSystem::audio = nullptr;
@@ -662,6 +664,24 @@ bool GuiSystem::GetEditMode() const
 
 void GuiSystem::Update(float dt)
 {
+
+    //if (cutsceneActive) return;
+    //Dont render UI when cutscene is ongoing
+    if (SceneManager::Get().IsCutscenePlaying())
+    {
+        return;
+    }
+
+   /* SceneManager& sm = SceneManager::Get();
+
+    const bool paused = !sm.IsPlaying(); // your current pause definition
+    const bool cutscene = sm.IsCutscenePlaying();
+
+    // Hide UI only during cutscene *while actually playing*
+    if (cutscene && !paused)
+        return;*/
+
+
     // --- SPACE advances dialogue when NOT editing ---
     static bool spaceHandled = false;
     const bool spacePressed = Input::IsKeyPressed(GLFW_KEY_SPACE);
@@ -715,6 +735,13 @@ void GuiSystem::Update(float dt)
     const float scaleX = GLApp::width / defaultWidth;
     const float scaleY = GLApp::height / defaultHeight;
     const float uiScale = std::min(scaleX, scaleY);
+
+    if (!RenderSystem::GetLayerEnabledArray()[LAYER_UI])
+    {
+        render.useCamera = prevCam;
+        return;
+    }
+
 
     // Build draw order: ALL UI elements sorted by ascending ID
     auto drawList = BuildSortedDrawList();
