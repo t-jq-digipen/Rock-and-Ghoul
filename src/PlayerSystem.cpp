@@ -364,7 +364,7 @@ namespace RockScript {
 		case Element::WIND: std::cout << "Element: WIND\n"; break;
 		case Element::ICE: std::cout << "Element: ICE\n"; break;
 		}*/
-
+		
 		switch (currentElement) {
 			case Element::NONE:
 				currentElement = Element::LIGHTNING;
@@ -798,6 +798,14 @@ namespace RockScript {
 
 			SOUNDWAVE_PROPERTIES.owner = newwave;
 			SOUNDWAVE_PROPERTIES.element = currentElement;
+
+			// Apply extra knockback for WIND element
+			if (currentElement == Element::WIND) {
+				SOUNDWAVE_PROPERTIES.knockbackForce = 500.f; // Strong wind knockback
+			} else {
+				SOUNDWAVE_PROPERTIES.knockbackForce = 100.f; // Base knockback for other elements
+			}
+
 			CombatSystem::Get().RegisterProjectile(newwave, SOUNDWAVE_PROPERTIES, SOUNDWAVE_RUNTIME);
 
 			if (!faceRight && registry.Has_Component<Physics::PhysicsComponent>(newwave)) {
@@ -820,12 +828,6 @@ namespace RockScript {
 			}
 
 
-			std::cout << "Soundwave cast!\n";
-			if (wave != INVALID_ENTITY) {
-				CombatSystem::ApplyElementToProjectile(wave, CombatSystem::GetCurrentElement());
-			}
-			CombatSystem::SetCurrentElement(Element::NONE); // Reset element after use
-			std::cout << "Element: NONE\n";
 			// to start animation
 			wavetimer = 0.f;
 			break;
@@ -856,12 +858,6 @@ namespace RockScript {
 				activeSpells.push_back(spelled);
 			}
 
-			std::cout << "AOE cast!\n";
-			if (aoeVisual != INVALID_ENTITY) {
-				CombatSystem::ApplyElementToProjectile(aoeVisual, CombatSystem::GetCurrentElement());
-			}
-			CombatSystem::SetCurrentElement(Element::NONE); // Reset element after use
-			std::cout << "Element: NONE\n";
 			aoetimer = 0.f;
 			break;
 		}
@@ -951,6 +947,10 @@ namespace RockScript {
 			{
 				Dash(eID);
 			}
+			else if (e.key == GLFW_KEY_Q)
+			{
+				CycleElement();
+			}
 			else if (e.key == GLFW_KEY_E)
 			{
 				Attack();
@@ -978,8 +978,6 @@ namespace RockScript {
 		{
 			spell.charges = 0;
 		}
-
-		CombatSystem::SetCurrentElement(Element::NONE);
 
 		MELEE_PROPERTIES.owner = eID;
 
@@ -1249,6 +1247,33 @@ namespace RockScript {
 
 			int state = (hpComp.currhp > 0.2f * hpComp.maxhp) ? 0 : 1;
 			UIsys.SetDisplaySheetState(stats.memberIDs[4], state);
+
+			//void PlayerSystem::UpdateElementUI()
+			{
+				GuiSystem& gui = GuiSystem::Get();
+				auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
+
+				// Element icon IDs
+				const int LIGHTNING_ID = 26;
+				const int FIRE_ID = 28;
+				const int WIND_ID = 30;
+				const int ICE_ID = 32;
+
+				for (auto& display : displays) {
+					if (display.ID == LIGHTNING_ID) {
+						display.opacity = (currentElement == Element::LIGHTNING) ? 1.0f : 0.4f;
+					}
+					else if (display.ID == FIRE_ID) {
+						display.opacity = (currentElement == Element::FIRE) ? 1.0f : 0.4f;
+					}
+					else if (display.ID == WIND_ID) {
+						display.opacity = (currentElement == Element::WIND) ? 1.0f : 0.4f;
+					}
+					else if (display.ID == ICE_ID) {
+						display.opacity = (currentElement == Element::ICE) ? 1.0f : 0.4f;
+					}
+				}
+			}
 
 			
 		}

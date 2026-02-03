@@ -389,7 +389,12 @@ namespace EnemyAI
 			}
 			else
 			{
-				ApplyVelocity(eID, to, CHASE_SPEED, true);
+				// Use MovementComponent speed (respects Ice slow effect)
+				float currentSpeed = CHASE_SPEED;
+				if (Registry::Get().Has_Component<Movement::MovementComponent>(eID)) {
+					currentSpeed = Registry::Get().Get_Component<Movement::MovementComponent>(eID).GetMoveSpeed();
+				}
+				ApplyVelocity(eID, to, currentSpeed, true);
 			}
 			break;
 		}
@@ -773,8 +778,7 @@ void EnemySystem::Initialize()
 			ClearTarget();
 		}
 		});
-	// Initialize combat system (handles projectile hits and element effects)
-	CombatSystem::Initialize();
+
 }
 
 void EnemySystem::Update(float dt)
@@ -786,9 +790,6 @@ void EnemySystem::Update(float dt)
 	{
 		return;  // Don't update enemy movement or footsteps when paused
 	}
-
-	// Update element effects via CombatSystem
-	CombatSystem::UpdateElementEffects(m_registry, dt);
 
 	for (auto& [entity, comp] : m_registry.Get_ComponentMap<TagComponent>())
 	{
