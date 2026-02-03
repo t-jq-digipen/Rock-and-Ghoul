@@ -1,23 +1,26 @@
 {
-  "sceneName": "Cutscene",
-  "sceneType": 1,
-
-  "backgrounds": [],
-  "bgmAssetName": "",
-
-  "cameraSpawn": [960.0, 540.0],
-  "cameraZoom": 1.0,
-  "worldMin": [0.0, 0.0],
-  "worldMax": [1920.0, 1080.0],
-
-  "entities": [],
-
-  "gui": {
-    "buttons": [],
-    "dialogues": [],
-    "textboxes": [],
-    "displays": []
-  },
-
-  "fontConfig": "../Assets/fontAssets.json"
+    "backgrounds": [],
+    "bgmAssetName": "level_1",
+    "cameraSpawn": [
+        960.0,
+        540.0
+    ],
+    "cameraZoom": 1.0,
+    "entities": [],
+    "fontConfig": "../Assets/fontAssets.json",
+    "gui": {
+        "buttons": [],
+        "dialogues": [],
+        "textboxes": []
+    },
+    "sceneName": "cut scene",
+    "sceneType": 1,
+    "worldMax": [
+        1920.0,
+        1080.0
+    ],
+    "worldMin": [
+        0.0,
+        0.0
+    ]
 }
