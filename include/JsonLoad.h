@@ -19,8 +19,13 @@
 #include <nlohmann/json.hpp>
 #include <optional>
 #include "Entity.h"
+#include "EventBus.h"
 
 using json = nlohmann::json;
+
+struct SceneLoadEvent : public IEvent {
+    SceneType sceneType;
+};
 
 /**
  * @class JsonLoad

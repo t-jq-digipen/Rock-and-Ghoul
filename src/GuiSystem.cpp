@@ -33,6 +33,8 @@
 #endif
 #include "SceneManager.h"
 #include <FilePath.h>
+#include "RenderSystem.h"
+//extern bool cutsceneActive;
 
 // Call Audio Manager for GuiSystem
 AudioManager* GuiSystem::audio = nullptr;
@@ -718,6 +720,23 @@ void GuiSystem::Update(float dt)
         prevInEdit = sm.inEditMode;
     }
 
+    //if (cutsceneActive) return;
+    //Dont render UI when cutscene is ongoing
+    if (SceneManager::Get().IsCutscenePlaying())
+    {
+        return;
+    }
+
+   /* SceneManager& sm = SceneManager::Get();
+
+    const bool paused = !sm.IsPlaying(); // your current pause definition
+    const bool cutscene = sm.IsCutscenePlaying();
+
+    // Hide UI only during cutscene *while actually playing*
+    if (cutscene && !paused)
+        return;*/
+
+
     // --- SPACE advances dialogue when NOT editing ---
     static bool spaceHandled = false;
     const bool spacePressed = Input::IsKeyPressed(GLFW_KEY_SPACE);
@@ -846,6 +865,12 @@ void GuiSystem::Update(float dt)
             break;
         }
     }
+    if (!RenderSystem::GetLayerEnabledArray()[LAYER_UI])
+    {
+        render.useCamera = prevCam;
+        return;
+    }
+
 
     // Build draw order: ALL UI elements sorted by ascending ID
     auto drawList = BuildSortedDrawList();
@@ -1321,7 +1346,8 @@ void GuiSystem::Update(float dt)
         case UIRenderType::Image:
         {
             auto data = dp.m_renderData.GetImageData();
-            render.DrawImageRotated(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, 0.f, 0.f);
+            float brightness = (dp.opacity - 1.0f) * 0.8f;  // opacity 1.0 = brightness 0, opacity 0.4 = brightness -0.48
+            render.DrawImageRotated(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, 0.f, brightness);
         } break;
 
         case UIRenderType::ImageSheet:
@@ -1333,8 +1359,8 @@ void GuiSystem::Update(float dt)
             int row = data.total_rows - 1 - data.frame_index.curr_row;
             float u0 = float(col * tileW), v0 = float(row * tileH);
             float u1 = u0 + tileW, v1 = v0 + tileH;
-
-            render.DrawImageSub(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, u0, v0, u1, v1, 0.f, 0.f);
+            float brightness = (dp.opacity - 1.0f) * 0.8f;  // opacity 1.0 = brightness 0, opacity 0.4 = brightness -0.48
+            render.DrawImageSub(data.m_image, dp.pos.x, dp.pos.y, dp.size.x, dp.size.y, u0, v0, u1, v1, 0.f, brightness);
         } break;
 
         default: break;
@@ -2340,4 +2366,40 @@ bool GuiSystem::GetDialogueGate()
 void GuiSystem::SetDialogueGate(bool gate)
 {
     dialogueGate = gate;
+}
+
+void GuiSystem::SetTextBoxText(int textBoxID, const std::string& text)
+{
+    for (auto& textbox : textboxes)
+    {
+        if (textbox.ID == textBoxID)
+        {
+            textbox.text = text;
+            return;
+        }
+    }
+}
+
+void GuiSystem::ShowTextBox(int textBoxID)
+{
+    for (auto& textbox : textboxes)
+    {
+        if (textbox.ID == textBoxID)
+        {
+            textbox.isVisible = true;
+            return;
+        }
+    }
+}
+
+void GuiSystem::HideTextBox(int textBoxID)
+{
+    for (auto& textbox : textboxes)
+    {
+        if (textbox.ID == textBoxID)
+        {
+            textbox.isVisible = false;
+            return;
+        }
+    }
 }

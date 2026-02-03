@@ -495,7 +495,7 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected, bo
                 event.eventName = colliderA.triggerEvent;
                 EventBus::Get().PushEvent<TriggerEvent>(event);
                 // Remove collider from trigger entity so it only fires once
-                m_registry.Remove_Component<ColliderComponent>(a);
+                //m_registry.Remove_Component<ColliderComponent>(a);
             }
             if (!colliderB.triggerEvent.empty()) {
                 TriggerEvent event;
@@ -504,7 +504,7 @@ void CollisionManager::CollisionActions(Entity a, Entity b, bool intersected, bo
                 event.eventName = colliderB.triggerEvent;
                 EventBus::Get().PushEvent<TriggerEvent>(event);
                 // Remove collider from trigger entity so it only fires once
-                m_registry.Remove_Component<ColliderComponent>(b);
+                //m_registry.Remove_Component<ColliderComponent>(b);
             }
         }
         return;

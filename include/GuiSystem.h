@@ -572,6 +572,7 @@ struct DisplayConfig
     bool centered = false;
     UI_RenderData m_renderData{};
     bool isVisible = true;
+    float opacity = 1.0f;
     int ID = 0;
 };
 
@@ -950,6 +951,10 @@ public:
     void SetDialogueGate(bool gate);
 
     bool HandleDialogueAdvance(bool advance);
+
+    void SetTextBoxText(int textBoxID, const std::string& text);
+    void ShowTextBox(int textBoxID);
+    void HideTextBox(int textBoxID);
 
 private:
 

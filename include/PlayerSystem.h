@@ -20,6 +20,7 @@
 #include "BehaviourFCT.h"   // BehaviourFCT
 #include <iostream>
 #include <unordered_map>
+#include "PooledEntityFactory.h"
 
 enum PlayerState : unsigned int {
     PS_IDLE,
@@ -37,6 +38,8 @@ namespace PlayerMove {
 }
 
 namespace RockScript {
+	// maybe wanna shift into combatsystem later
+    void Knockback(Entity eID, bool left, float damage);
 
     enum class Element : int
     {
@@ -51,7 +54,14 @@ namespace RockScript {
 
     enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
 
+
+    inline void Start(Entity e);
+
+    inline void Update(Entity e, float dt);
+
+    inline void End(Entity e);
 }
+
 
 class PlayerSystem : public ISystem {
 private:
@@ -60,7 +70,7 @@ private:
     void UpdateFootsteps(Entity eID, float dt);
     void PlayFootstep(Entity eID);
     // static inline Movement::InputDirection VelToDir(float x, float y);
-
+    std::vector<PooledEntity> activeProjectiles;
     // static inline void NormalizeDiagonalMovement(float& x, float& y);
 
 public:

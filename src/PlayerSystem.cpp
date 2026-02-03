@@ -147,11 +147,39 @@ namespace PlayerMove {
 
 namespace RockScript {
 	// Constants
+	// 
+	struct ActiveSpell {
+        Entity ecsEntity;        // Visual entity from JsonLoad
+        PooledEntity poolEntity; // Pool data for logic
+        float lifetime;
+    };
+    
+    static std::vector<ActiveSpell> activeSpells;
+	// IDs for arrow displays: [slot][direction]
+	// Slot 0 (leftmost): IDs 10-13 (up, down, left, right)
+	// Slot 1 (middle): IDs 14-17 (up, down, left, right)  
+	// Slot 2 (rightmost): IDs 18-21 (up, down, left, right)
+	static const int ARROW_DISPLAY_IDS[3][4] = {
+		{10, 11, 12, 13},  // Slot 0: UP, DOWN, LEFT, RIGHT
+		{14, 15, 16, 17},  // Slot 1: UP, DOWN, LEFT, RIGHT
+		{18, 19, 20, 21}   // Slot 2: UP, DOWN, LEFT, RIGHT
+	};
+
+	static const float VISUAL_DISPLAY_TIME = 2.0f;
+
+	struct InputVisual {
+		int direction;
+		float timeRemaining;
+		bool active;
+	};
+	static std::array<InputVisual, 3> visualBuffer;
 #pragma region CONSTANTS
 	constexpr float SWING_TIME = 0.5f;
 	constexpr float SOUNDWAVE_TIME = 0.5f;
 	constexpr float AOE_TIME = 1.f;
 	constexpr float SHIELD_DURATION = 5.f;
+	constexpr float DASH_INVULN_DURATION = 1.f;
+	constexpr float DASH_COOLDOWN = 2.f;
 
 	constexpr float STAGGER_DURATION = 1.f;
 #pragma endregion
@@ -159,6 +187,8 @@ namespace RockScript {
 	// Variables
 #pragma region VARIABLES
 	static float stunnedtimer = STAGGER_DURATION;
+
+	static float dashtimer = DASH_COOLDOWN;
 
 	static float meleetimer = SWING_TIME; // swing
 	static float aoetimer = AOE_TIME;
@@ -236,6 +266,8 @@ namespace RockScript {
 		GuiSystem& UIsys = GuiSystem::Get();
 		UIGroup& slots = UIsys.GetGroup("Spell Slots");
 		
+		static const int CHARGE_TEXT_IDS[3] = { 22, 23, 24 };
+
 		for (size_t i = 0; i < 3; i++)
 		{
 			// Empty
@@ -243,6 +275,8 @@ namespace RockScript {
 			{
 				UIsys.SetDisplaySheetState(slots.memberIDs[i], 0);
 				spellSlots[i].cooldown = 0.f;
+
+				UIsys.HideTextBox(CHARGE_TEXT_IDS[i]);
 			}
 			// Not empty
 			else
@@ -271,7 +305,9 @@ namespace RockScript {
 					break;
 				}
 				if (!UIsys.SetDisplaySheetState(slots.memberIDs[i], frame)) return;
-
+				std::string chargeText = std::to_string(spellSlots[i].charges) + "x";
+				UIsys.SetTextBoxText(CHARGE_TEXT_IDS[i], chargeText);
+				UIsys.ShowTextBox(CHARGE_TEXT_IDS[i]);
 				
 			}
 		}
@@ -318,7 +354,8 @@ namespace RockScript {
 		// dk if want to allow dash cancelling spells
 		ResetTimers();
 		shot = true;
-
+		dashtimer = 0.f;
+		
 		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID) || !Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) return;
 		auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
 		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
@@ -353,14 +390,180 @@ namespace RockScript {
 		physics.ApplyLinearImpulse(RG_Scale({ -1,0 }, DASH_IMPULSE));
 	}
 
+	void Knockback(Entity eID, bool left, float damage) {
+		if (shieldTimer < SHIELD_DURATION || stunnedtimer < STAGGER_DURATION || dashtimer < DASH_INVULN_DURATION) { return; } // no hit when shielded or already knocked back
+
+		auto& healthComp = Registry::Get().Get_Component<HealthComponent>(eID);
+		healthComp.currhp -= damage;
+
+		if (!Registry::Get().Has_Component<Physics::PhysicsComponent>(eID)) { return; }
+		auto& physics = Registry::Get().Get_Component<Physics::PhysicsComponent>(eID);
+		stunnedtimer = 0.f;
+		float directionx = left ? -1.f : 1.f;
+		faceRight = left;
+		physics.ApplyLinearImpulse(RG_Scale({ directionx,0 }, DASH_IMPULSE));
+	}
+
 	//Arrow key codes for easier reference
 	enum ArrowKey { UP = GLFW_KEY_UP, DOWN = GLFW_KEY_DOWN, LEFT = GLFW_KEY_LEFT, RIGHT = GLFW_KEY_RIGHT };
+	//map arrow key to array index
+	int GetDirectionIndex(int key) {
+		switch (key) {
+		case UP: return 0;
+		case DOWN: return 1;
+		case LEFT: return 2;
+		case RIGHT: return 3;
+		default: return -1;
+		}
+	}	
 
+	// possible next keys based on current input buffer
+	std::vector<int> GetPossibleNextKeys() {
+		std::vector<int> possibleKeys;
+
+		if (inputBuffer.empty()) {
+			possibleKeys.push_back(UP);    // Soundwave, AOE
+			possibleKeys.push_back(DOWN);  // Shield
+			possibleKeys.push_back(RIGHT); // Healing
+			return possibleKeys;
+		}
+
+		if (inputBuffer.size() == 1) {
+			if (inputBuffer[0] == UP) {
+				// After UP, can press DOWN (Soundwave) or LEFT (AOE)
+				possibleKeys.push_back(DOWN);
+				possibleKeys.push_back(LEFT);
+			}
+			else if (inputBuffer[0] == DOWN) {
+				// After DOWN, can press DOWN again (Shield)
+				possibleKeys.push_back(DOWN);
+			}
+			else if (inputBuffer[0] == RIGHT) {
+				// After RIGHT, can press UP (Healing)
+				possibleKeys.push_back(UP);
+			}
+		}
+		else if (inputBuffer.size() == 2) {
+			if (inputBuffer[0] == UP && inputBuffer[1] == LEFT) {
+				// UP, LEFT -> need DOWN for AOE
+				possibleKeys.push_back(DOWN);
+			}
+			else if (inputBuffer[0] == DOWN && inputBuffer[1] == DOWN) {
+				// DOWN, DOWN -> need RIGHT for Shield
+				possibleKeys.push_back(RIGHT);
+			}
+			else if (inputBuffer[0] == RIGHT && inputBuffer[1] == UP) {
+				// RIGHT, UP -> need RIGHT for Healing
+				possibleKeys.push_back(RIGHT);
+			}
+			// UP, DOWN completes immediately so wont hit size==2 for that
+		}
+
+		return possibleKeys;
+	}
+
+	// if a key press is valid
+	bool IsValidInput(int key) {
+		std::vector<int> validKeys = GetPossibleNextKeys();
+
+		// Check if the pressed key is in the list of valid next keys
+		for (int validKey : validKeys) {
+			if (key == validKey) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+	void UpdateVisualDisplays() {
+		GuiSystem& gui = GuiSystem::Get();
+
+		// Get mutable reference to displays
+		auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
+
+		// Hide all arrow displays first
+		for (int slot = 0; slot < 3; slot++) {
+			for (int dir = 0; dir < 4; dir++) {
+				int displayID = ARROW_DISPLAY_IDS[slot][dir];
+				for (auto& display : displays) {
+					if (display.ID == displayID) {
+						display.isVisible = false;
+						display.opacity = 1.0f;
+						break;
+					}
+				}
+			}
+		}
+		if (inputBuffer.empty()) {
+			return;
+		}
+		// show already pressed keys
+		int bufferSize = static_cast<int>(inputBuffer.size());
+		for (int i = 0; i < bufferSize && i < 3; i++) {
+			// i represents which key in sequence: 0=first, 1=second, 2=third
+			int key = inputBuffer[i];  // key from START of buffer
+
+			int dirIndex = GetDirectionIndex(key);
+			if (dirIndex == -1) continue;
+
+			// i as the slot index (0, 1, or 2 based on sequence position)
+			int displayID = ARROW_DISPLAY_IDS[i][dirIndex];
+
+			for (auto& display : displays) {
+				if (display.ID == displayID) {
+					display.isVisible = true;
+					display.opacity = 1.0f;
+					break;
+				}
+			}
+		}
+
+		// possible next keys in the next available slot
+		if (bufferSize < 3) {
+			std::vector<int> nextKeys = GetPossibleNextKeys();
+			// If there are no possible next keys, don't show anything
+			if (nextKeys.empty()) {
+				return;
+			}
+
+			// Next key will be at position bufferSize (0, 1, or 2)
+			int nextSlotIndex = bufferSize;
+
+			for (int nextKey : nextKeys) {
+				int dirIndex = GetDirectionIndex(nextKey);
+				if (dirIndex == -1) continue;
+
+				int displayID = ARROW_DISPLAY_IDS[nextSlotIndex][dirIndex];
+
+				for (auto& display : displays) {
+					if (display.ID == displayID) {
+						display.isVisible = true;
+						display.opacity = 1.5f;
+						break;
+					}
+				}
+			}
+		}
+	}
 
 	//Record key presses in buffer
 	void RecordInput(int key) {
+
+		if (!IsValidInput(key)) {
+			// invalid key clear everything and restart
+			std::cout << "Invalid input Clearing combo lol\n";
+			inputBuffer.clear();
+			UpdateVisualDisplays();  // hide all arrows
+			return;  //dont process key
+		}
+
 		inputBuffer.push_back(key);
-		if (inputBuffer.size() > MAX_COMBO) inputBuffer.erase(inputBuffer.begin()); //Keep max input sequence length
+
+		if (inputBuffer.size() > MAX_COMBO) inputBuffer.erase(inputBuffer.begin());
+
+		// update displays to show current buffer
+		UpdateVisualDisplays();
+
 		switch (key) {
 		case UP:    std::cout << "Arrow UP pressed\n"; break;
 		case DOWN:  std::cout << "Arrow DOWN pressed\n"; break;
@@ -370,77 +573,55 @@ namespace RockScript {
 		}
 	}
 
-	//Check Input sequence and execute respective actions
+
+	//check sequence and execute actions
 	void CheckCombos(Entity) {
 		if (inputBuffer.size() < 2) return;
 
 		//auto& registry = Registry::Get();
-
-		//Soundwave Spell
+		//Soundwave Spell (=Up, Down)
 		if (inputBuffer.size() >= 2 &&
 			inputBuffer[inputBuffer.size() - 2] == UP &&
 			inputBuffer[inputBuffer.size() - 1] == DOWN)
 		{
-			/*auto& trans = registry.Get_Component<TransformComponent>(eID);
-
-			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json",
-				trans.pos.x, trans.pos.y);
-
-			std::cout << "Projectile spawned at (" << trans.pos.x << ", " << trans.pos.y << ")\n";*/
-
-			AddSpellToSlot(SpellType::SOUNDWAVE, 5.f, 2);
-
+			AddSpellToSlot(SpellType::SOUNDWAVE, 2.f, 5);
 			inputBuffer.clear();
+			UpdateVisualDisplays();  // clear display after correct combo
 			return;
 		}
 
-		//AOE Spell
+		//AOE Spell (=Up, Left, Down)
 		if (inputBuffer.size() == 3 &&
 			inputBuffer[inputBuffer.size() - 3] == UP &&
 			inputBuffer[inputBuffer.size() - 2] == LEFT &&
 			inputBuffer[inputBuffer.size() - 1] == DOWN)
 		{
-			//auto& trans = registry.Get_Component<TransformComponent>(eID);
-			//JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json",
-			//	trans.pos.x, trans.pos.y + 5.f  // spawn above
-			//);
-
-			AddSpellToSlot(SpellType::AOE, 8.f, 1);
+			AddSpellToSlot(SpellType::AOE, 2.f, 1);
 			inputBuffer.clear();
+			UpdateVisualDisplays();  // clear display after correct combo
 			return;
 		}
 
-		//Shield Spell
+		//Shield Spell (=Down, Down, Right)
 		if (inputBuffer.size() == 3 &&
 			inputBuffer[inputBuffer.size() - 3] == DOWN &&
 			inputBuffer[inputBuffer.size() - 2] == DOWN &&
 			inputBuffer[inputBuffer.size() - 1] == RIGHT)
 		{
-			/*isVulnerable = false;
-			shieldTimer = 0.f;
-
-			std::cout << "Shield activated! Invulnerable: " << !isVulnerable << ", Timer: " << shieldTimer << "s\n";*/
-
-			AddSpellToSlot(SpellType::SHIELD, 10.f, 1);
-
+			AddSpellToSlot(SpellType::SHIELD, 2.f, 2);
 			inputBuffer.clear();
+			UpdateVisualDisplays();  // clear display after correct combo
 			return;
 		}
 
-		//Healing Spell
+		//Healing Spell (=Right, Up, Right)
 		if (inputBuffer.size() == 3 &&
 			inputBuffer[inputBuffer.size() - 3] == RIGHT &&
 			inputBuffer[inputBuffer.size() - 2] == UP &&
 			inputBuffer[inputBuffer.size() - 1] == RIGHT) {
-			/*if (registry.Has_Component<HealthComponent>(eID)) {
-				auto& health = registry.Get_Component<HealthComponent>(eID);
-				health.currhp += 10.f;
-				if (health.currhp > health.maxhp) health.currhp = health.maxhp;
-
-				std::cout << "Healing triggered! Current HP: " << health.currhp << "/" << health.maxhp << "\n";
-			}*/
-			AddSpellToSlot(SpellType::HEAL, 15.f, 1);
+			AddSpellToSlot(SpellType::HEAL, 2.f, 1);
 			inputBuffer.clear();
+			UpdateVisualDisplays();  // clear display after correct combo
 			return;
 		}
 	}
@@ -523,31 +704,76 @@ namespace RockScript {
 		{
 		case SpellType::SOUNDWAVE:
 		{
+			// ====================================================================
+			// LOAD TIME: Memory was already allocated at game startup
+			// RUNTIME: Programmer simply "books" memory from the pre-allocated pool
+			// NO malloc/new calls happen here just getting memory from the pool
+			// ====================================================================
+			// Create visual entity (for rendering/physics)
+			Entity wave = JsonLoad::LoadEntityFromFile(
+				FilePath::PREFABS_FOLDER + "SoundwaveFX.json",
+				trans.pos.x, trans.pos.y
+			);
 
-			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y);
-			Entity wave = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "SoundwaveFX.json", trans.pos.x, trans.pos.y);
-			if (!faceRight)
-			{
+			// Create pool entity using THE SAME FILE
+			float dirX = faceRight ? 1.0f : -1.0f;
+			PooledEntity poolWave = PooledEntityFactory::Get().CreateProjectile(
+				FilePath::PREFABS_FOLDER + "SoundwaveFX.json",  // SAME FILE!
+				trans.pos.x,
+				trans.pos.y,
+				dirX,
+				0.0f
+			);
+
+			// Link them together
+			if (poolWave.active) {
+				ActiveSpell spelled;
+				spelled.ecsEntity = wave;
+				spelled.poolEntity = poolWave;
+				spelled.lifetime = 2.0f;
+				activeSpells.push_back(spelled);
+			}
+
+			// Handle flipping
+			if (!faceRight && registry.Has_Component<Physics::PhysicsComponent>(wave)) {
 				Physics::PhysicsComponent& phyComp = registry.Get_Component<Physics::PhysicsComponent>(wave);
 				Vec2 vel = phyComp.Get_Vel();
 				vel.x = -vel.x;
 				phyComp.Set_Vel(vel);
 				registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
 			}
+
 			std::cout << "Soundwave cast!\n";
-			//ApplyElementToProjectile(proj);
-			// to start animation
 			wavetimer = 0.f;
 			break;
 		}
 		case SpellType::AOE:
 		{
-
-			//Entity proj = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", trans.pos.x, trans.pos.y + 5.f);
+			// Create visual entity (for rendering/physics)
 			float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
-			JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "AoeFX.json", posx, trans.pos.y + 400.f);
+			Entity aoeVisual = JsonLoad::LoadEntityFromFile(
+				FilePath::PREFABS_FOLDER + "AoeFX.json",
+				posx,
+				trans.pos.y + 400.f
+			);
+
+			// Create pool entity using THE SAME FILE
+			PooledEntity poolAOE = PooledEntityFactory::Get().CreateAOE(
+				FilePath::PREFABS_FOLDER + "AoeFX.json",
+				posx,
+				trans.pos.y + 400.f
+			);
+
+			// Link them together
+			if (poolAOE.active) {
+				ActiveSpell spelled;
+				spelled.ecsEntity = aoeVisual;
+				spelled.poolEntity = poolAOE;
+				spelled.lifetime = 1.5f; // AOE duration
+				activeSpells.push_back(spelled);
+			}
+
 			std::cout << "AOE cast!\n";
-			//ApplyElementToProjectile(proj);
 			aoetimer = 0.f;
 			break;
 		}
@@ -575,12 +801,23 @@ namespace RockScript {
 			}
 			break;
 		}
+
+
 	}
 
 	inline void Start(Entity eID)
 	{
 		std::cout << "Rock script started" << std::endl;
+		for (auto& visual : visualBuffer) {
+			visual.direction = 0;
+			visual.timeRemaining = 0.f;
+			visual.active = false;
+		}
+		// clear input buffer
+		inputBuffer.clear();
 
+		// hide all arrow displays initially
+		UpdateVisualDisplays();
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
 			//Record arrow keys
 			if (SceneManager::Get().IsPaused()) return;
@@ -605,6 +842,13 @@ namespace RockScript {
 			else if (e.key == GLFW_KEY_Q)
 			{
 				CycleElement();
+			}
+			else if (e.key == GLFW_KEY_P)  // Press P to see pool stats
+			{
+				std::cout << "\n=== Memory Pool Stats (Press P) ===\n";
+				GameMemoryManager::Get().PrintStats();
+				PooledEntityFactory::Get().PrintStats();
+				std::cout << "====================================\n\n";
 			}
 			if (e.key == GLFW_KEY_1)
 				ActivateSpell(0, eID);
@@ -639,7 +883,72 @@ namespace RockScript {
 
 	inline void Update(Entity eID, float dt) {
 		Registry& registry = Registry::Get();
+		// Update active spells
+		for (auto it = activeSpells.begin(); it != activeSpells.end();) {
+			it->lifetime -= dt;
 
+			// Check what type of spell this is
+			if (it->poolEntity.type == EntityType::PROJECTILE) {
+				// Get projectile pool data
+				ProjectileData* spellData = PooledEntityFactory::Get().GetPoolData<ProjectileData>(it->poolEntity);
+
+				if (spellData != nullptr) {
+					spellData->lifetime -= dt;
+
+					// DEBUG: Show projectile data
+					static float debugTimer = 0.0f;
+					debugTimer += dt;
+					if (debugTimer >= 0.5f) {
+						std::cout << "Soundwave from POOL - Lifetime: " << spellData->lifetime
+							<< "s, Damage: " << spellData->damage
+							<< ", Speed: " << spellData->velX << "\n";
+						debugTimer = 0.0f;
+					}
+
+					// Remove if expired
+					if (spellData->lifetime <= 0.0f || !spellData->active) {
+						std::cout << "Soundwave expired! Returning memory " << spellData << " to POOL for reuse.\n";
+
+
+						registry.Remove_Entity(it->ecsEntity);
+						PooledEntityFactory::Get().DestroyEntity(it->poolEntity);
+
+						it = activeSpells.erase(it);
+						continue;
+					}
+				}
+			}
+			else if (it->poolEntity.type == EntityType::AOE) {
+				// Get AOE pool data
+				AOEData* aoeData = PooledEntityFactory::Get().GetPoolData<AOEData>(it->poolEntity);
+
+				if (aoeData != nullptr) {
+					aoeData->duration -= dt;
+
+					// DEBUG: Show AOE data
+					static float debugTimerAOE = 0.0f;
+					debugTimerAOE += dt;
+					if (debugTimerAOE >= 0.5f) {
+						std::cout << "AOE from POOL - Duration: " << aoeData->duration
+							<< "s, Damage: " << aoeData->damage
+							<< ", Radius: " << aoeData->radius << "\n";
+						debugTimerAOE = 0.0f;
+					}
+
+					// Remove if expired
+					if (aoeData->duration <= 0.0f || !aoeData->active) {
+						std::cout << "AOE expired! Memory returned to POOL.\n";
+
+						registry.Remove_Entity(it->ecsEntity);
+						PooledEntityFactory::Get().DestroyEntity(it->poolEntity);
+
+						it = activeSpells.erase(it);
+						continue;
+					}
+				}
+			}
+			++it;
+		}
 		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
 
 		auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
@@ -649,6 +958,12 @@ namespace RockScript {
 
 		//Shield Timer
 		UpdateShield(dt, transComp.pos.x, transComp.pos.y);
+
+		//Dash Timer
+		if (dashtimer < DASH_COOLDOWN)
+		{
+			dashtimer += dt;
+		}
 
 		for (auto& spell : spellSlots)
 		{

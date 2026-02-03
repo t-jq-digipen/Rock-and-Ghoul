@@ -60,6 +60,8 @@
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
 #include "../src/rectpack2D/finders_interface.h"
+#include "GameMemoryManager.h"
+#include "PooledEntityFactory.h"
 CoreEngine::CoreEngine()
     : systems{}
     , timings{}
@@ -122,7 +124,11 @@ void CoreEngine::Initialize()
 #endif
     AddRenderSystem(&AudioManager::Get()); // audio updates in both editor and play mode
 
-    
+    std::cout << "Initializing memory pools...\n";
+    GameMemoryManager::Get().InitializePools();
+    PooledEntityFactory::Get().Initialize();
+    std::cout << "Memory pools ready!\n";
+
     std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
         << " at " << (void*)&GLApp::ptr_window << std::endl;
 

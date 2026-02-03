@@ -33,6 +33,18 @@
 #include "RenderComponent.h"
 #include "SceneManager.h"
 #include "SimpleAtlas.h"
+#include <iostream>
+
+//need this to prevent name mangling 
+extern "C" {
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h> //NOTE: if cant work, link it in properties->linker->input->additional dependecies
+#include <libavutil/imgutils.h>
+}
+
+static bool s_layerEnabled[4] = { true, true, true, true };
+bool* RenderSystem::GetLayerEnabledArray() { return s_layerEnabled; }
  // ---------------------------------------------
  // @brief Temporary struct for per-frame draw queue
  // ---------------------------------------------
@@ -44,10 +56,657 @@
 };*/
 
 
+//ffmpeg stuff to convert to RGBA
+/*SwsContext* sws = nullptr;
+uint8_t* dstData[4] = { nullptr, nullptr, nullptr, nullptr };
+int dstLinesize[4] = { 0, 0, 0, 0 };
+int dstW = 0, dstH = 0;
+AVPixelFormat lastSrcFmt = AV_PIX_FMT_NONE;
+
+
+//debug for ffmpeg
+auto PrintErr = [](int err) {
+    char buf[AV_ERROR_MAX_STRING_SIZE]{};
+    av_strerror(err, buf, sizeof(buf));
+    std::cout << buf;
+    };
+
+void TestOpenVideo() {
+
+    //OPEN GL variables
+    static GLuint videoTex = 0;
+    static bool texInited = false;
+
+    //FFmpeg varibles
+    AVFormatContext* pFormatContext = nullptr;
+    int result = avformat_open_input(
+        &pFormatContext,
+        "../Assets/Intro.mp4",
+        nullptr,
+        nullptr
+    );
+
+    //if successful print to console (sanity check)
+    if (result == 0) {
+        std::cout << "\n=====VIDEO MP4 DEBUG INFORMATION=====\nSuccessfully Opened video file\n";
+
+
+        //now get stream info
+        int info = avformat_find_stream_info(pFormatContext, nullptr);
+        if (info == 0) {
+            std::cout << "Successfully found stream info\n";
+        }
+
+        //Loop through streams
+        int videoStreamIndex = -1;
+
+        for (unsigned int i = 0; i < pFormatContext->nb_streams; i++) {
+            AVStream* stream = pFormatContext->streams[i];
+
+            if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+                videoStreamIndex = i;
+                break;
+            }
+        }
+
+        if (videoStreamIndex == -1) {
+            std::cout << "No video stream found\n";
+            return;
+        }
+
+        //sanity checkpoint (make sure it matches the mp4 resolution in assets)=================================
+        AVStream* videoStreamMeta = pFormatContext->streams[videoStreamIndex];
+
+        std::cout << "<SANITY CHECK> Video Resolution ( width x height): "
+            << videoStreamMeta->codecpar->width
+            << " x "
+            << videoStreamMeta->codecpar->height
+            << std::endl;
+
+
+        //next, we need find and open the decoder 
+        AVStream* videoStream = pFormatContext->streams[videoStreamIndex];
+        AVCodecParameters* codecParams = videoStream->codecpar;
+
+        const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
+
+        //hello, ffpmeg do u have a decoder for this codec ID? if no have the video cannot be decoded 
+        if (!codec) {
+            std::cout << "Unsupported codec\n";
+            return;
+        }
+
+        //if we have a decoder for it, ok, lets allocate a codec context
+        //This will hold the decoder state
+        AVCodecContext* codecCtx = avcodec_alloc_context3(codec);
+
+        if (!codecCtx) {
+            std::cout << "Failed to allocate codec context\n";
+            return;
+        }
+
+
+        //if successful, next we shall copy the stream params into the context
+        if (avcodec_parameters_to_context(codecCtx, codecParams) < 0) {
+            std::cout << "Failed to copy codec parameters\n";
+            return;
+        }
+
+        //After this, everything for the decoder is prepped and ready, we can open the decoder next
+        // and ready to decode packets
+        if (avcodec_open2(codecCtx, codec, nullptr) < 0) {
+            std::cout << "Failed to open decoder\n";
+            return;
+        }
+
+        //Now, we can read the packets from the stream and decode them into frames
+        //First, lets allocate memory for AVPacket and AVFrame
+        AVPacket* pPacket = av_packet_alloc();
+        AVFrame* pFrame = av_frame_alloc();
+
+        if (!pPacket || !pFrame) {
+            std::cout << "Failed to allocate AVPacket/AVFrame\n";
+            return;
+        }
+
+
+       
+
+        //Next, we do the decode loop to turn the packets into frames
+        while (av_read_frame(pFormatContext, pPacket) >= 0) {
+
+            // Only process packets from the video stream
+            if (pPacket->stream_index != videoStreamIndex) {
+                av_packet_unref(pPacket);
+                continue;
+            }
+
+            // Send the compressed packet to the decoder
+            int ret = avcodec_send_packet(codecCtx, pPacket);
+
+            // We can unref the packet right after sending, decoder will make its own copy
+            av_packet_unref(pPacket);
+
+            //Failed to send the packet to decoder
+            if (ret < 0) {
+                std::cout << "avcodec_send_packet failed: ";
+                PrintErr(ret);
+                std::cout << "\n";
+                break;
+            }
+
+
+            //flush (maybe need? comment out first, since it was causing issues)
+            //avcodec_send_packet(codecCtx, nullptr);
+            // Flush decoder at end-of-stream
+
+            // Receive as many frames as the decoder produces from that packet
+            while (true) {
+
+                ret = avcodec_receive_frame(codecCtx, pFrame);
+
+                //success
+                if (ret == 0) {
+                   
+                    //small test now to sanity check if its working
+                    //YAYYY, Prints gotcha 901 times, matches my test mp4 (30 seconds at 30 fps)
+                    //std::cout << "gotcha\n";
+
+                    // --- IMPORTANT: NEXT STEP LATER ---
+                    // We can do the manipulation of frames here, here is where we use the frames
+                    
+                
+                    // Convert this frame to RGBA (sws_scale) and upload to OpenGL.
+
+                    //Setup RGBA buffer and sws context and all
+                    AVPixelFormat srcFmt = (AVPixelFormat)pFrame->format;
+                    int w = pFrame->width;
+                    int h = pFrame->height;
+
+                    const char* fmtName = av_get_pix_fmt_name(srcFmt);
+
+
+
+                    // (Re)initialize sws + output buffer if needed
+                    if (!sws || w != dstW || h != dstH || srcFmt != lastSrcFmt) {
+
+                        // free old output buffer
+                        if (dstData[0]) {
+                            av_freep(&dstData[0]);           // frees buffer from av_image_alloc
+                            dstData[0] = nullptr;
+                        }
+
+                        // free old scaler
+                        if (sws) {
+                            sws_freeContext(sws);
+                            sws = nullptr;
+                        }
+
+                        dstW = w;
+                        dstH = h;
+                        lastSrcFmt = srcFmt;
+
+                        sws = sws_getContext(
+                            w, h, srcFmt,
+                            w, h, AV_PIX_FMT_RGBA,
+                            SWS_BILINEAR,
+                            nullptr, nullptr, nullptr
+                        );
+
+                        if (!sws) {
+                            std::cout << "sws_getContext FAILED\n";
+                            break; // don't return; let cleanup happen
+                        }
+
+                        int allocRet = av_image_alloc(dstData, dstLinesize, w, h, AV_PIX_FMT_RGBA, 1);
+                        if (allocRet < 0) {
+                            std::cout << "av_image_alloc FAILED: ";
+                            PrintErr(allocRet);
+                            std::cout << "\n";
+                            break;
+                        }
+
+                    }
+
+
+                    // Convert to RGBA fark
+                    int outH = sws_scale(
+                        sws,
+                        pFrame->data,
+                        pFrame->linesize,
+                        0,
+                        h,
+                        dstData,
+                        dstLinesize
+                    );
+
+
+                    if (outH <= 0) {
+                        std::cout << "sws_scale FAILED/returned " << outH << "\n";
+                        // keep going or break; your choice
+                        break;
+                    }
+
+
+
+                    //(UP NEXT)
+                    //Else... Next step will be OpenGL upload using dstData[0] and dstLinesize[0]
+                    // Now rgbaData contains w*h pixels in RGBA format.
+                    // Next step after this: upload rgbaData to an OpenGL texture.
+
+                    //Set up and init buffers once for the OpenGL
+                    if (!texInited) {
+                        glGenTextures(1, &videoTex);
+                        glBindTexture(GL_TEXTURE_2D, videoTex);
+
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+                        // Allocate GPU storage (no pixels yet)
+                        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+                        texInited = true;
+                    }
+
+
+                    //Bind textures
+                    glBindTexture(GL_TEXTURE_2D, videoTex);
+
+                    // Handle stride (dstLinesize[0] may include padding)
+                    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                    glPixelStorei(GL_UNPACK_ROW_LENGTH, dstLinesize[0] / 4); // RGBA = 4 bytes/pixel
+
+                    glTexSubImage2D(
+                        GL_TEXTURE_2D,
+                        0,
+                        0, 0,
+                        w, h,
+                        GL_RGBA,
+                        GL_UNSIGNED_BYTE,
+                        dstData[0]
+                    );
+
+                    // Reset to avoid affecting other texture uploads
+                    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+
+
+
+
+
+
+
+
+                    // When you're done using this frame's data, unref it:
+                    av_frame_unref(pFrame);
+                    continue;
+                }
+
+
+                if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                    // Decoder needs more packets before it can output more frames
+                    break;
+                }
+
+                // Any other negative value is an actual error, try to get detailed error to help with debug
+                std::cout << "avcodec_receive_frame error: ";
+                PrintErr(ret);
+                std::cout << "\n";
+                break;
+            }
+
+
+        }
+
+
+
+
+
+        //free the sws context and RGBA buffer 
+        if (dstData[0]) {
+            av_freep(&dstData[0]);
+        }
+        if (sws) {
+            sws_freeContext(sws);
+        }
+
+        //Clean up texture
+        if (videoTex) {
+            glDeleteTextures(1, &videoTex);
+            videoTex = 0;
+            texInited = false;
+        }
+
+
+        //Cleanup previously allocated mem, to prevent mem leaks (i hope is in the right place)
+        av_frame_free(&pFrame);
+        av_packet_free(&pPacket);
+
+        avcodec_free_context(&codecCtx);
+        avformat_close_input(&pFormatContext);
+
+
+    }
+
+    //specify error if cannot open video
+    else {
+        char errbuf[AV_ERROR_MAX_STRING_SIZE];
+        av_strerror(result, errbuf, sizeof(errbuf));
+        std::cout << "FFmpeg error: " << errbuf << std::endl;
+    }
+}*/
+
+//AVFormatContext* pFormatContext = avformat_alloc_context();
+
 Render& renderInstance = Render::GetInstance();
+
+//Reorganise cutscene stuff below
+struct CutscenePlayer {
+
+    // FFmpeg
+    AVFormatContext* fmt = nullptr;
+    AVCodecContext* dec = nullptr;
+    AVPacket* pkt = nullptr;
+    AVFrame* frm = nullptr;
+    int videoStreamIndex = -1;
+
+    // swscale + RGBA buffer
+    SwsContext* sws = nullptr;
+    uint8_t* dstData[4] = { nullptr };
+    int dstLinesize[4] = { 0 };
+    int w = 0, h = 0;
+    AVPixelFormat lastSrcFmt = AV_PIX_FMT_NONE;
+
+
+    // OpenGL
+    GLuint tex = 0;
+    bool texInited = false;
+
+    // Playback timing
+    // start with hardcode (i follow the intro2 mp4 fps, 24fps)
+    // see first if ltr on need use av_q2d(pFormatCtx->streams[videoStreamIndx]->r_frame_rate);
+    double fps = 24.0;        
+    double acc = 0.0;
+    bool finished = false;
+
+
+    bool Init(const char* path);
+    void Update(double dt);   // decode and upload as needed
+    void Render() const;            // draw texture
+    void Shutdown();    //cleanup all once cutscene sectuon is done
+
+};
+
+static CutscenePlayer gCutscene;
+//bool cutsceneActive;   // show cutscene instead of gameplay
+
+bool CutscenePlayer::Init(const char* path)
+{
+    // Clean any previous state just in case 
+    Shutdown();
+
+    //helper lambda that uses the error handling that ffmpeg supports
+    auto PrintErr = [](int err) {
+        char buf[AV_ERROR_MAX_STRING_SIZE]{};
+        av_strerror(err, buf, sizeof(buf));
+        std::cout << buf;
+        };
+
+    // Open container
+    int r = avformat_open_input(&fmt, path, nullptr, nullptr);
+    if (r < 0) {
+        std::cout << "avformat_open_input failed: ";
+        PrintErr(r);
+        std::cout << "\n";
+        return false;
+    }
+
+    // Read stream metadata (needed to locate streams/codecs)
+    r = avformat_find_stream_info(fmt, nullptr);
+    if (r < 0) {
+        std::cout << "avformat_find_stream_info failed: ";
+        PrintErr(r);
+        std::cout << "\n";
+        return false;
+    }
+
+    // Find the video stream index
+    videoStreamIndex = -1;
+    for (unsigned i = 0; i < fmt->nb_streams; ++i) {
+        AVStream* s = fmt->streams[i];
+        if (s && s->codecpar && s->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            videoStreamIndex = static_cast<int>(i);
+            break;
+        }
+    }
+
+    if (videoStreamIndex < 0) {
+        std::cout << "Init failed: no video stream found in " << path << "\n";
+        return false;
+    }
+
+    // Find decoder for that stream
+    AVCodecParameters* par = fmt->streams[videoStreamIndex]->codecpar;
+    const AVCodec* codec = avcodec_find_decoder(par->codec_id);
+    if (!codec) {
+        std::cout << "Init failed: unsupported codec id = " << par->codec_id << "\n";
+        return false;
+    }
+
+    // Create decoder context
+    dec = avcodec_alloc_context3(codec);
+    if (!dec) {
+        std::cout << "Init failed: avcodec_alloc_context3 returned null\n";
+        return false;
+    }
+
+    // Copy stream parameters into decoder context
+    r = avcodec_parameters_to_context(dec, par);
+    if (r < 0) {
+        std::cout << "avcodec_parameters_to_context failed: ";
+        PrintErr(r);
+        std::cout << "\n";
+        return false;
+    }
+
+    // Open decoder
+    r = avcodec_open2(dec, codec, nullptr);
+    if (r < 0) {
+        std::cout << "avcodec_open2 failed: ";
+        PrintErr(r);
+        std::cout << "\n";
+        return false;
+    }
+
+    // Allocate reusable packet + frame
+    pkt = av_packet_alloc();
+    frm = av_frame_alloc();
+    if (!pkt || !frm) {
+        std::cout << "Init failed: av_packet_alloc/av_frame_alloc returned null\n";
+        return false;
+    }
+
+    // print info sanity check for myself
+    std::cout << "[CUTSCENE INIT]: SUCCESS\n";
+    std::cout << "Path: " << path << "\n";
+    std::cout << "VideoStreamIndex: " << videoStreamIndex << "\n";
+    std::cout << "Codec: " << (codec->long_name ? codec->long_name : codec->name) << "\n";
+
+    finished = false;
+    texInited = false;
+
+    return true;
+}
+
+
+void CutscenePlayer::Update(double dt) {
+
+    if (finished) {
+        return;
+    }
+
+    acc += dt;
+    const double frameTime = 1.0 / fps;
+
+    while (acc >= frameTime) {
+        acc -= frameTime;
+
+        // decode exactly one frame and upload it
+        // loop reading packets until you get a frame
+        bool gotFrame = false;
+
+        while (!gotFrame) {
+
+            int r = av_read_frame(fmt, pkt);
+
+            if (r < 0) { 
+                finished = true; 
+                return; 
+            }
+
+            if (pkt->stream_index != videoStreamIndex) {
+                av_packet_unref(pkt);
+                continue;
+            }
+
+            r = avcodec_send_packet(dec, pkt);
+            av_packet_unref(pkt);
+
+            if (r < 0) { 
+                finished = true; 
+                return; 
+            }
+
+            while (true) {
+
+                r = avcodec_receive_frame(dec, frm);
+
+                if (r == 0) {
+                    gotFrame = true;
+
+                    // init sws/rgba/texture on first frame
+                    if (!texInited) {
+                        w = frm->width; h = frm->height;
+                        sws = sws_getContext(w, h, (AVPixelFormat)frm->format, w, h, AV_PIX_FMT_RGBA,
+                            SWS_BILINEAR, nullptr, nullptr, nullptr);
+                        av_image_alloc(dstData, dstLinesize, w, h, AV_PIX_FMT_RGBA, 1);
+
+                        glGenTextures(1, &tex);
+                        glBindTexture(GL_TEXTURE_2D, tex);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+                        texInited = true;
+
+
+                    }
+
+                    //sws_scale(sws, frm->data, frm->linesize, 0, h, dstData, dstLinesize);
+                    
+                    // need to flip the image, cause ffmpeg and opengl texture origin mismatch
+                    // flip vertically during conversion (FFmpeg top-left map to GL bottom-left)
+                    uint8_t* dstSlice[4] = { dstData[0], dstData[1], dstData[2], dstData[3] };
+                    int      dstStride[4] = { dstLinesize[0], dstLinesize[1], dstLinesize[2], dstLinesize[3] };
+
+                    // Start writing at last row, and walk upward by using negative stride
+                    dstSlice[0] = dstData[0] + (h - 1) * dstLinesize[0];
+                    dstStride[0] = -dstLinesize[0];
+
+                    sws_scale(sws, frm->data, frm->linesize, 0, h, dstSlice, dstStride);
+
+
+                    glBindTexture(GL_TEXTURE_2D, tex);
+                    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                    glPixelStorei(GL_UNPACK_ROW_LENGTH, dstLinesize[0] / 4);
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, dstData[0]);
+                    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+                   
+
+
+                    av_frame_unref(frm);
+                    break;
+                }
+
+                if (r == AVERROR(EAGAIN) || r == AVERROR_EOF) {
+                    break;
+                }
+
+                finished = true; 
+                return;
+
+            }
+        }
+    }
+}
+
+
+
+//draw texture every frame, put in render update?? idk uhhh
+void CutscenePlayer::Render() const {
+    if (!texInited) {
+        return;
+    }
+
+    renderInstance.DrawLetterboxedTexture(tex);
+}
+
+
+//cleanup for cutscene
+void CutscenePlayer::Shutdown() {
+    if (dstData[0]) {
+        av_freep(&dstData[0]);
+    }
+
+    if (sws) {
+        sws_freeContext(sws);
+    }
+
+    if (frm) {
+        av_frame_free(&frm);
+    }
+
+    if (pkt) {
+        av_packet_free(&pkt);
+    }
+
+    if (dec) {
+        avcodec_free_context(&dec);
+    }
+
+    if (fmt) {
+        avformat_close_input(&fmt);
+    }
+
+    if (tex) {
+        glDeleteTextures(1, &tex);
+    }
+
+    tex = 0;
+    texInited = false;
+}
+
+
+
+
+
+
+
+
+
+
+//Render& renderInstance = Render::GetInstance();
 std::vector<InstanceData> batch; //added for instancing
 static std::vector<GLuint> s_backgroundTextures;
 static std::vector<std::string> s_backgroundTexturePaths;
+
+
+
 
 // Pixels to units conversion, assigned values on initialization of rendersystem
 float RenderSystem::pixelsPerUnit;
@@ -204,6 +863,16 @@ void RenderSystem::Initialize() {
         std::cout << "  Size: " << sp.width << "x" << sp.height << "\n";
     }*/
 
+
+
+    //TestOpenVideo();
+
+    //CutscenePlayer gCutscene;
+    gCutscene.Init("../Assets/IntroCutscene.mp4");
+    //cutsceneActive = true;
+    //SceneManager::Get().SetCutscenePlaying(true);
+
+    
 }
 
 void RenderSystem::Update(float dt) {
@@ -215,6 +884,12 @@ void RenderSystem::Update(float dt) {
     Render& renderer = Render::GetInstance();
     
     bool camcheck = renderer.useCamera;
+
+ 
+
+   
+
+
 
 #ifndef NO_IMGUI
     if (ImGuiSystem::guiEnabled) {
@@ -293,6 +968,83 @@ void RenderSystem::Update(float dt) {
     }
     else // ST_GAME
     {
+
+        //beginning cutscene
+        //Only set it once to true
+        static bool startedCutscene = false;
+        if (SceneManager::Get().GetSceneType() == ST_GAME && !startedCutscene) {
+            SceneManager::Get().SetCutscenePlaying(true);
+            startedCutscene = true;
+        }
+
+        if (SceneManager::Get().IsCutscenePlaying())
+        {
+            //Decode/upload based on dt (progress playback)
+            /*if (!sm.IsPaused()) {
+                gCutscene.Update(dt);
+            }*/
+
+            #ifndef NO_IMGUI
+            if (ImGuiSystem::guiEnabled) {
+                renderer.BeginSceneCapture();                 // binds scene FBO + sets viewport
+                renderer.ClearBackground({ 0.f,0.f,0.f,1.f });  // clear scene FBO
+            }
+            else
+            #endif
+            {
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glViewport(0, 0, GLApp::width, GLApp::height);
+                renderer.ClearBackground({ 0.f,0.f,0.f,1.f });  // clear backbuffer
+            }
+
+
+            gCutscene.Update(dt);
+
+            //Present to the main framebuffer (NOT your scene FBO)
+            /*glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glViewport(0, 0, GLApp::width, GLApp::height);*/
+
+            // renderer.ApplyLetterboxViewport();
+
+            renderer.ClearBackground({ 0.f, 0.f, 0.f, 1.f });
+
+            // Draw the cutscene in a projection/state that won't be overwritten
+            // Important: avoid camera projection for this.
+            auto oldCam = renderer.useCamera;
+            renderer.useCamera = false;
+            renderer.SetProjectionType(ProjectionType::UI);
+
+            gCutscene.Render(); // calls DrawLetterboxedTexture(tex)
+
+            renderer.SetProjectionType(ProjectionType::WORLD);
+            renderer.useCamera = oldCam;
+
+
+            #ifndef NO_IMGUI
+            // If your pipeline expects EndSceneCapture() for the editor view, do it here:
+            if (ImGuiSystem::guiEnabled) {
+                renderer.EndSceneCapture();
+            }
+            #endif
+
+            //End condition
+            if (gCutscene.finished)
+            {
+                //cutsceneActive = false;
+                SceneManager::Get().SetCutscenePlaying(false);
+                gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
+            }
+
+            //static int once = 0;
+            //if (cutsceneActive && once++ % 60 == 0) std::cout << "CUTSCENE FRAME\n";
+
+            /*if (!sm.IsPaused()) {
+                return;
+            }*/
+
+            return; //IMPORTANT: don't run the rest of RenderSystem
+        }
+
         // Gameplay or editor: fullscreen world background
         for (GLuint tex : s_backgroundTextures)
         {
@@ -607,37 +1359,44 @@ void RenderSystem::Update(float dt) {
     //        }
     //    };
 
-    // Background (rendered behind game objects)
-    renderInstance.BeginBatch();
-    // DrawLayer(backgroundEntities);
-    drawLayer(bg_list);
-    renderInstance.EndBatch();
-    renderInstance.FlushBatch();
+   // Background (rendered behind game objects)
+    if (s_layerEnabled[LAYER_BACKGROUND])
+    {
+        renderInstance.BeginBatch();
+        drawLayer(bg_list);
+        renderInstance.EndBatch();
+        renderInstance.FlushBatch();
+    }
 
-    // Game objects
-    renderInstance.BeginBatch();
-    // DrawLayer(gameEntities);
-    drawLayer(go_list);
-    renderInstance.EndBatch();
-    renderInstance.FlushBatch();
+  // Game objects
+    if (s_layerEnabled[LAYER_GAMEOBJECT])
+    {
+        renderInstance.BeginBatch();
+        drawLayer(go_list);
+        renderInstance.EndBatch();
+        renderInstance.FlushBatch();
+    }
 
     // Foreground (rendered above game objects)
-    renderInstance.BeginBatch();
-    // DrawLayer(foregroundEntities);
-    drawLayer(fg_list);
-    renderInstance.EndBatch();
-    renderInstance.FlushBatch();
+    if (s_layerEnabled[LAYER_FOREGROUND])
+    {
+        renderInstance.BeginBatch();
+        drawLayer(fg_list);
+        renderInstance.EndBatch();
+        renderInstance.FlushBatch();
+    }
 
     // UI (rendered last, most in front)
-
-    renderInstance.SetProjectionType(ProjectionType::UI);
-    //renderer.useCamera = false;
-    renderInstance.BeginBatch();
-    // DrawLayer(uiEntities);
-    drawLayer(ui_list);
-    renderInstance.EndBatch();
-    renderInstance.FlushBatch();
+    if (s_layerEnabled[LAYER_UI])
+    {
+        renderInstance.SetProjectionType(ProjectionType::UI);
+        renderInstance.BeginBatch();
+        drawLayer(ui_list);
+        renderInstance.EndBatch();
+        renderInstance.FlushBatch();
+    }
     renderer.useCamera = camcheck;
+
 
     //Draw in the correct order
     /*DrawLayer(backgroundEntities);

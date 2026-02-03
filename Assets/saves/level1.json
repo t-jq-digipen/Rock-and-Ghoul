@@ -11,19 +11,19 @@
     "entities": [
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-61.66816711425781,\"aabb_maxY\":759.197509765625,\"aabb_minX\":-228.8801727294922,\"aabb_minY\":351.386474609375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-61.66816711425781,\"aabb_maxY\":759.197509765625,\"aabb_minX\":-228.8801727294922,\"aabb_minY\":351.386474609375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
@@ -120,9 +120,75 @@
                 "Collider": "{\"aabb_dimX\":136.69700622558594,\"aabb_dimY\":1000.0,\"aabb_maxX\":2073.5166015625,\"aabb_maxY\":1008.4601440429688,\"aabb_minX\":1936.8197021484375,\"aabb_minY\":8.46014404296875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":3}",
-                "Transform": "{\"posX\":2005.168212890625,\"posY\":508.46014404296875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":-38.22991943359375,\"posY\":757.911376953125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":2435.14208984375,\"aabb_dimY\":50.0,\"aabb_maxX\":2210.571044921875,\"aabb_maxY\":50.0,\"aabb_minX\":-224.57098388671875,\"aabb_minY\":0.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":993.0000610351563,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":2462.9189453125,\"aabb_dimY\":100.98699951171875,\"aabb_maxX\":2181.34619140625,\"aabb_maxY\":784.376708984375,\"aabb_minX\":-281.5728759765625,\"aabb_minY\":683.3896484375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":949.8865966796875,\"posY\":733.8831787109375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":466.52398681640625,\"aabb_dimY\":210.6439971923828,\"aabb_maxX\":1135.899169921875,\"aabb_maxY\":745.6759643554688,\"aabb_minX\":669.3751220703125,\"aabb_minY\":535.0319213867188,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":902.6371459960938,\"posY\":640.3539428710938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":308.79901123046875,\"aabb_dimY\":191.6739959716797,\"aabb_maxX\":579.60302734375,\"aabb_maxY\":807.872314453125,\"aabb_minX\":270.8039855957031,\"aabb_minY\":616.1983642578125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":425.2034912109375,\"posY\":712.0353393554688,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-61.66816711425781,\"aabb_maxY\":759.197509765625,\"aabb_minX\":-228.8801727294922,\"aabb_minY\":351.386474609375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":3}",
+                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
+                "Collider": "{\"aabb_dimX\":150.0,\"aabb_dimY\":150.0,\"aabb_maxX\":1154.0565185546875,\"aabb_maxY\":344.85186767578125,\"aabb_minX\":1004.0565185546875,\"aabb_minY\":194.85186767578125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":25.0,\\\\\\\"scaleY\\\\\\\":25.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_Spritesheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false}},\\\"totalCols\\\":6,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
+                "Transform": "{\"posX\":1079.0565185546875,\"posY\":269.85186767578125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Spirit"
         }
     ],
     "fontConfig": "../Assets/fontAssets.json",
@@ -202,21 +268,21 @@
                 "ID": 4,
                 "centered": true,
                 "pos": [
-                    550.0,
-                    70.0
+                    425.0,
+                    50.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_Guitar.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    1200.0,
-                    1200.0
+                    1000.0,
+                    1000.0
                 ]
             },
             {
                 "ID": 1,
                 "centered": true,
                 "pos": [
-                    850.0,
-                    225.0
+                    680.0,
+                    185.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"../Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
@@ -228,8 +294,8 @@
                 "ID": 2,
                 "centered": true,
                 "pos": [
-                    765.0,
-                    250.0
+                    615.0,
+                    205.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"../Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
@@ -241,8 +307,8 @@
                 "ID": 3,
                 "centered": true,
                 "pos": [
-                    680.0,
-                    275.0
+                    550.0,
+                    225.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"../Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
@@ -314,6 +380,162 @@
                     240.0,
                     160.0
                 ]
+            },
+            {
+                "ID": 10,
+                "centered": true,
+                "pos": [
+                    50.0,
+                    155.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 11,
+                "centered": true,
+                "pos": [
+                    50.0,
+                    155.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 12,
+                "centered": true,
+                "pos": [
+                    145.0,
+                    130.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 13,
+                "centered": true,
+                "pos": [
+                    50.0,
+                    155.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 14,
+                "centered": true,
+                "pos": [
+                    145.0,
+                    155.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 15,
+                "centered": true,
+                "pos": [
+                    145.0,
+                    155.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 16,
+                "centered": true,
+                "pos": [
+                    145.0,
+                    130.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 17,
+                "centered": true,
+                "pos": [
+                    50.0,
+                    155.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 18,
+                "centered": true,
+                "pos": [
+                    145.0,
+                    155.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 19,
+                "centered": true,
+                "pos": [
+                    250.0,
+                    130.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 20,
+                "centered": true,
+                "pos": [
+                    50.0,
+                    155.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
+            },
+            {
+                "ID": 21,
+                "centered": true,
+                "pos": [
+                    250.0,
+                    130.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    160.0
+                ]
             }
         ],
         "groups": [
@@ -338,7 +560,53 @@
                 "name": "Stats"
             }
         ],
-        "textboxes": []
+        "textboxes": [
+            {
+                "ID": 22,
+                "centered": false,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "pos": [
+                    547.2899780273438,
+                    272.52398681640625
+                ],
+                "scale": 0.7329999804496765,
+                "text": "0x"
+            },
+            {
+                "ID": 23,
+                "centered": false,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "pos": [
+                    610.093017578125,
+                    257.3840026855469
+                ],
+                "scale": 0.7329999804496765,
+                "text": "0x"
+            },
+            {
+                "ID": 24,
+                "centered": false,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "pos": [
+                    681.8690185546875,
+                    242.24200439453125
+                ],
+                "scale": 0.7329999804496765,
+                "text": "0x"
+            }
+        ]
     },
     "sceneName": "level1",
     "sceneType": 1,

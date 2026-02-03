@@ -90,6 +90,9 @@ static bool         g_showAudioImportPopup = false;
 static std::string  g_pendingAudioSourcePath;   // full path from drag drop
 static int          g_pendingAudioCategory = 0; // 0=Music, 1=SFX, 2=UI
 
+static bool         g_showDeleteImagePopup = false;
+static std::string  g_pendingDeleteImageName;
+
 // ========================================================
 // Static Member Definitions
 // ========================================================
@@ -115,6 +118,9 @@ static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
 // ========================================================
 namespace
 {
+
+    static Entity g_currentInspectorEntity = INVALID_ENTITY;
+
     //just a safety check
     void EnsureSelectionValid()
     {
@@ -618,7 +624,60 @@ inline float SmoothDampAngle(float current, float target, float factor)
 // Widget templates for component data
 // ========================================================
 #pragma region WIDGETS
+// Static variables to track transform edits for undo
+static Entity g_editingEntity = INVALID_ENTITY;
+static TransformComponent g_transformBeforeEdit;
+static bool g_transformEditStarted = false;
+static std::map<void*, float> g_floatValuesBefore;
 
+// Call this at the start of editing a transform component
+static void BeginTransformEdit(Entity entity)
+{
+    if (entity == INVALID_ENTITY) return;
+    Registry& reg = Registry::Get();
+    if (!reg.Has_Component<TransformComponent>(entity)) return;
+
+    g_editingEntity = entity;
+    g_transformBeforeEdit = reg.Get_Component<TransformComponent>(entity);
+    g_transformEditStarted = true;
+    g_floatValuesBefore.clear();
+}
+
+// Call this at the end of editing a transform component
+static void EndTransformEdit()
+{
+    if (!g_transformEditStarted || g_editingEntity == INVALID_ENTITY) return;
+
+    Registry& reg = Registry::Get();
+    if (!reg.Has_Component<TransformComponent>(g_editingEntity)) {
+        g_transformEditStarted = false;
+        return;
+    }
+
+    TransformComponent& current = reg.Get_Component<TransformComponent>(g_editingEntity);
+
+    // DEBUG OUTPUT
+    std::cout << "[Undo] Before: pos=(" << g_transformBeforeEdit.pos.x << "," << g_transformBeforeEdit.pos.y << ")\n";
+    std::cout << "[Undo] Current: pos=(" << current.pos.x << "," << current.pos.y << ")\n";
+
+    // Only record if something actually changed
+    if (!UndoSystem::StatesEqual(
+        UndoSystem::MakeState(g_transformBeforeEdit),
+        UndoSystem::MakeState(current)))
+    {
+        std::cout << "[Undo] States differ - recording!\n";
+        UndoSystem::Get().BeginModify(g_editingEntity, g_transformBeforeEdit);
+        UndoSystem::Get().EndModify(g_editingEntity, current);
+    }
+    else
+    {
+        std::cout << "[Undo] States equal - not recording\n";
+    }
+
+    g_transformEditStarted = false;
+    g_editingEntity = INVALID_ENTITY;
+    g_floatValuesBefore.clear();
+}
 // Checkbox | For bool
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
     if (!w.ref) return;
@@ -662,23 +721,154 @@ static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label)
 }
 
 
-// Int      | For int lol
-static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
-    if (!w.ref) return;
-    if (w.slider && w.min != w.max)
-        ImGui::SliderInt(label.c_str(), w.ref, w.min, w.max);
-    else
-        ImGui::InputInt(label.c_str(), w.ref);
+namespace {
+    // Per-widget undo tracking
+    struct WidgetUndoState {
+        float floatBefore = 0.0f;
+        int intBefore = 0;
+        Entity entity = INVALID_ENTITY;
+    };
+
+    static std::unordered_map<void*, WidgetUndoState> g_widgetUndoStates;
+
+    // Helper to check if we should record transform undo
+    bool ShouldRecordTransformUndo(Entity e, const std::string& fieldName) {
+        Registry& reg = Registry::Get();
+        if (e == INVALID_ENTITY) return false;
+        if (!reg.Has_Component<TransformComponent>(e)) return false;
+
+        // Only record for transform-related fields
+        return (fieldName == "Position" || fieldName == "Rotation" ||
+            fieldName == "Scale" || fieldName == "pos" ||
+            fieldName == "rot" || fieldName == "scale");
+    }
 }
 
-// Float    | For float lol
+// Float widget with undo support
 static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
     if (!w.ref) return;
+
+    Registry& reg = Registry::Get();
+    void* widgetID = w.ref;
+    Entity entity = g_currentInspectorEntity;
+
+    // ===== RENDER THE WIDGET FIRST =====
     if (w.slider && w.min != w.max)
         ImGui::SliderFloat(label.c_str(), w.ref, w.min, w.max);
     else
         ImGui::InputFloat(label.c_str(), w.ref);
+
+    // ===== NOW check if it just became active =====
+    if (ImGui::IsItemActivated()) {
+        WidgetUndoState& state = g_widgetUndoStates[widgetID];
+        state.floatBefore = *w.ref;
+        state.entity = entity;
+
+        // Only call BeginTransformEdit if hvnt already started editing this entity transform
+        if (ShouldRecordTransformUndo(entity, label) &&
+            reg.Has_Component<TransformComponent>(entity)) {
+
+            // if already editing this entity transform
+            if (g_editingEntity != entity || !g_transformEditStarted) {
+                BeginTransformEdit(entity);
+            }
+        }
+    }
+
+    // ===== RECORD UNDO ON DEACTIVATE =====
+    if (ImGui::IsItemDeactivatedAfterEdit()) {
+        auto it = g_widgetUndoStates.find(widgetID);
+        if (it != g_widgetUndoStates.end()) {
+            WidgetUndoState& state = it->second;
+
+            if (state.floatBefore != *w.ref && state.entity != INVALID_ENTITY) {
+                if (ShouldRecordTransformUndo(state.entity, label) &&
+                    reg.Has_Component<TransformComponent>(state.entity)) {
+
+                    // Only end if this was the widget that started it
+                    if (g_editingEntity == state.entity && g_transformEditStarted) {
+                        EndTransformEdit();
+                    }
+
+                    std::cout << "[Undo Widget] Recorded transform change: " << label
+                        << " from " << state.floatBefore << " to " << *w.ref << "\n";
+                }
+            }
+            g_widgetUndoStates.erase(it);
+        }
+    }
 }
+
+// Int widget with undo support
+static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
+    if (!w.ref) return;
+
+    Registry& reg = Registry::Get();
+    void* widgetID = w.ref;
+    Entity entity = g_currentInspectorEntity;
+
+    // ===== RENDER THE WIDGET FIRST =====
+    if (w.slider && w.min != w.max)
+        ImGui::SliderInt(label.c_str(), w.ref, w.min, w.max);
+    else
+        ImGui::InputInt(label.c_str(), w.ref);
+
+    // ===== NOW check if it just became active =====
+    if (ImGui::IsItemActivated()) {
+        WidgetUndoState& state = g_widgetUndoStates[widgetID];
+        state.intBefore = *w.ref;
+        state.entity = entity;
+
+        if (ShouldRecordTransformUndo(entity, label) &&
+            reg.Has_Component<TransformComponent>(entity)) {
+
+            // Check if we're already editing this entity's transform
+            if (g_editingEntity != entity || !g_transformEditStarted) {
+                BeginTransformEdit(entity);
+            }
+        }
+    }
+
+    // ===== RECORD UNDO ON DEACTIVATE =====
+    if (ImGui::IsItemDeactivatedAfterEdit()) {
+        auto it = g_widgetUndoStates.find(widgetID);
+        if (it != g_widgetUndoStates.end()) {
+            WidgetUndoState& state = it->second;
+
+            if (state.intBefore != *w.ref && state.entity != INVALID_ENTITY) {
+                if (ShouldRecordTransformUndo(state.entity, label) &&
+                    reg.Has_Component<TransformComponent>(state.entity)) {
+
+                    // Only end if this was the widget that started it
+                    if (g_editingEntity == state.entity && g_transformEditStarted) {
+                        EndTransformEdit();
+                    }
+
+                    std::cout << "[Undo Widget] Recorded transform change: " << label
+                        << " from " << state.intBefore << " to " << *w.ref << "\n";
+                }
+            }
+            g_widgetUndoStates.erase(it);
+        }
+    }
+}
+//// Int      | For int lol
+//static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
+//    if (!w.ref) return;
+//    if (w.slider && w.min != w.max)
+//        ImGui::SliderInt(label.c_str(), w.ref, w.min, w.max);
+//    else
+//        ImGui::InputInt(label.c_str(), w.ref);
+//}
+//
+//// Float    | For float lol
+//static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
+//    if (!w.ref) return;
+//    if (w.slider && w.min != w.max)
+//        ImGui::SliderFloat(label.c_str(), w.ref, w.min, w.max);
+//    else
+//        ImGui::InputFloat(label.c_str(), w.ref);
+//}
 
 // AnimatorFrames (SPECIFIC FOR ANIMATOR BC I CANNOT FIGURE OUT HOW TO MAKE IT PROPERLY might remove)
 static void MakeWidget(Editor::Widget_Animator& w, const std::string& label) {
@@ -785,7 +975,10 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         Entity ent = JsonLoad::LoadEntityFromFile(path, 300.f, 300.f);
         if (ent != INVALID_ENTITY)
         {
-            selectedEntity = ent;
+            // Register entity name so it can be found during prefab updates
+            std::filesystem::path filepath(path);
+            std::string prefabName = filepath.stem().string();
+            Registry::Get().Get_EntityNameMap()[ent] = prefabName;
             std::cout << "[ImGui Drop] Spawned prefab entity " << ent << std::endl;
         }
         else
@@ -2030,6 +2223,8 @@ void ImGuiSystem::Update(float dt)
                             t.text = buf;
                         }
                     }
+                    ImGui::Separator();
+                    ImGui::Checkbox("Visible", &t.isVisible);
 
                     // Transform
                     ImGui::Separator();
@@ -3871,6 +4066,7 @@ void ImGuiSystem::Update(float dt)
                 UndoSystem::Get().RecordAdd(e);
                 std::cout << "[Editor] Spawned image entity at (" << world.x << ", " << world.y << ")\n";
             }
+
             ImGui::EndDragDropTarget();
         }
         
@@ -3937,6 +4133,10 @@ void ImGuiSystem::Update(float dt)
                 {
                     selectedEntity = newEnt;
                     UndoSystem::Get().RecordAdd(newEnt);
+                    // Register entity name so it can be found during prefab updates
+                    std::filesystem::path path(pendingPrefabPath);
+                    std::string prefabName = path.stem().string();
+                    Registry::Get().Get_EntityNameMap()[newEnt] = prefabName;
                     std::cout << "[Editor] Spawned prefab at (" << worldX << ", " << worldY << ")\n";
                 }
                 else
@@ -4390,10 +4590,12 @@ void ImGuiSystem::ShowInspectorWindow()
     EnsureSelectionValid();
     if (selectedEntity == INVALID_ENTITY)
     {
+        g_currentInspectorEntity = INVALID_ENTITY;
         ImGui::Text("No entity selected");
         ImGui::Columns(1); //reset
         return;
     }
+    g_currentInspectorEntity = selectedEntity;
     ImGui::Text("Entity %d", selectedEntity);
     ImGui::Separator();
 
@@ -4885,6 +5087,60 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
+
+        else if (compName == "Transform")
+        {
+            if (ImGui::TreeNode(compName.c_str()))
+            {
+                TransformComponent& transform = m_registry.Get_Component<TransformComponent>(selectedEntity);
+
+                // Track editing state for the entire Transform component
+                static bool wasEditingTransform = false;
+                bool isEditingNow = false;
+
+                // For each transform widget
+                for (auto& [name, widgetVariant] : componentData.GetDataMap())
+                {
+                    ImGui::PushID(name.c_str());
+
+                    // Render the widget
+                    std::visit([&](auto& widget) {
+                        MakeWidget(widget, name);
+
+                        // Check if THIS widget is currently active (being edited)
+                        if (ImGui::IsItemActive()) {
+                            isEditingNow = true;
+                        }
+                        }, widgetVariant);
+
+                    ImGui::PopID();
+                }
+
+                // Handle undo recording at the component level
+                if (isEditingNow && !wasEditingTransform)
+                {
+                    // User just started editing ANY transform field
+                    BeginTransformEdit(selectedEntity);
+                }
+                else if (!isEditingNow && wasEditingTransform)
+                {
+                    // User just finished editing ALL transform fields
+                    EndTransformEdit();
+                }
+
+                wasEditingTransform = isEditingNow;
+
+                // Update collider if needed
+                if (selectedEntity != INVALID_ENTITY &&
+                    m_registry.Has_Component<ColliderComponent>(selectedEntity))
+                {
+                    auto& collider = m_registry.Get_Component<ColliderComponent>(selectedEntity);
+                    collider.UpdateHitboxes(transform.pos, transform.scale);
+                }
+
+                ImGui::TreePop();
+            }
+        }
         // Default data fields for other components
         else 
             if (ImGui::TreeNode(compName.c_str()))
@@ -5051,6 +5307,20 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         ImGui::Text("Drag %s", g_imageNames[i].c_str());
                         ImGui::EndDragDropSource();
                     }
+                    // Right-click context menu on image thumbnail
+                    ImGui::PushID((int)i);
+                    if (ImGui::BeginPopupContextItem("##ImgCtx"))
+                    {
+                        ImGui::Text("%s", g_imageNames[i].c_str());
+                        ImGui::Separator();
+                        if (ImGui::MenuItem("Delete Image"))
+                        {
+                            g_pendingDeleteImageName = g_imageNames[i];
+                            g_showDeleteImagePopup = true;
+                        }
+                        ImGui::EndPopup();
+                    }
+                    ImGui::PopID();
                     // filename
                     ImGui::TextWrapped("%s", g_imageNames[i].c_str());
                     ImGui::EndGroup();
@@ -5062,6 +5332,70 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                 ImGui::EndChild();
             }
+
+            // Delete image confirmation modal
+            if (g_showDeleteImagePopup)
+            {
+                ImGui::OpenPopup("Delete Image Confirmation");
+                g_showDeleteImagePopup = false;
+            }
+            if (ImGui::BeginPopupModal("Delete Image Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Are you sure you want to delete:\n%s ?", g_pendingDeleteImageName.c_str());
+                ImGui::Separator();
+
+                if (ImGui::Button("Yes, Delete", ImVec2(120, 0)))
+                {
+                    // search Assets (recursive) for the file by name and delete it
+                    namespace fs = std::filesystem;
+                    const std::string assetFolder = "../Assets/";
+                    bool deleted = false;
+                    for (auto& entry : fs::recursive_directory_iterator(assetFolder))
+                    {
+                        if (entry.is_regular_file() && entry.path().filename().string() == g_pendingDeleteImageName)
+                        {
+                            try
+                            {
+                                fs::remove(entry.path());
+                                std::cout << "[AssetBrowser] Deleted image: " << entry.path() << "\n";
+                                deleted = true;
+                            }
+                            catch (const std::exception& e)
+                            {
+                                std::cerr << "[AssetBrowser] Failed to delete: " << e.what() << "\n";
+                            }
+                            break;
+                        }
+                    }
+
+                    if (deleted)
+                    {
+                        // remove from thumbnail cache so it disappears immediately
+                        for (size_t j = 0; j < g_imageNames.size(); ++j)
+                        {
+                            if (g_imageNames[j] == g_pendingDeleteImageName)
+                            {
+                                g_imageNames.erase(g_imageNames.begin() + j);
+                                g_loadedThumbnails.erase(g_loadedThumbnails.begin() + j);
+                                break;
+                            }
+                        }
+                    }
+
+                    g_pendingDeleteImageName.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    g_pendingDeleteImageName.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+            
             if (showReplacePopup)
             {
                 ImGui::OpenPopup("Replace Existing Asset?");
@@ -5370,6 +5704,287 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 }
             }
 
+
+            ImGui::EndTabItem();
+        }
+
+        // ====================================================
+        // FONTS & OTHER FILES TAB
+        // ====================================================
+        if (ImGui::BeginTabItem("Fonts & Other"))
+        {
+            // Cached file lists — rebuilt on "Refresh"
+            static std::vector<std::string> s_ttfFiles;
+            static std::vector<std::string> s_jsonFiles;
+            static std::vector<std::string> s_fragFiles;
+            static std::vector<std::string> s_vertFiles;
+            static bool s_fontsInitialised = false;
+
+            auto rebuildFontFileLists = [&]()
+                {
+                    s_ttfFiles.clear();
+                    s_jsonFiles.clear();
+                    s_fragFiles.clear();
+                    s_vertFiles.clear();
+
+                    const std::string assetFolder = "../Assets/";
+                    for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
+                    {
+                        if (!entry.is_regular_file()) continue;
+
+                        std::string ext = entry.path().extension().string();
+                        std::transform(ext.begin(), ext.end(), ext.begin(),
+                            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+                        std::string relPath = entry.path().generic_string();
+
+                        if (ext == ".ttf")  s_ttfFiles.push_back(relPath);
+                        else if (ext == ".json") s_jsonFiles.push_back(relPath);
+                        else if (ext == ".frag") s_fragFiles.push_back(relPath);
+                        else if (ext == ".vert") s_vertFiles.push_back(relPath);
+                    }
+
+                    // Sort each list alphabetically for stable ordering
+                    std::sort(s_ttfFiles.begin(), s_ttfFiles.end());
+                    std::sort(s_jsonFiles.begin(), s_jsonFiles.end());
+                    std::sort(s_fragFiles.begin(), s_fragFiles.end());
+                    std::sort(s_vertFiles.begin(), s_vertFiles.end());
+
+                    s_fontsInitialised = true;
+                };
+
+            if (!s_fontsInitialised) rebuildFontFileLists();
+
+            if (ImGui::Button("Refresh"))
+            {
+                rebuildFontFileLists();
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("Rescans Assets/ for .ttf .json .frag .vert");
+
+            ImGui::Separator();
+
+            // ---------- helper: pending-delete state for this tab ----------
+            static std::string  s_pendingDeleteOtherFile;
+            static bool         s_showDeleteOtherPopup = false;
+
+            // -----------------------------------------------------------------
+            // Reusable lambda: draws a collapsible section for one file type.
+            //   title      – header text (e.g. "Fonts (.ttf)")
+            //   files      – the vector to iterate
+            //   countLabel – short suffix shown in the header (e.g. "3 files")
+            // -----------------------------------------------------------------
+            auto drawFileSection = [&](const char* title, std::vector<std::string>& files)
+                {
+                    ImGui::PushID(title);
+
+                    char headerBuf[128];
+                    std::snprintf(headerBuf, sizeof(headerBuf), "%s  (%d)", title, (int)files.size());
+
+                    if (ImGui::CollapsingHeader(headerBuf, ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        if (files.empty())
+                        {
+                            ImGui::Indent();
+                            ImGui::TextDisabled("None found.");
+                            ImGui::Unindent();
+                        }
+
+                        for (int idx = 0; idx < (int)files.size(); ++idx)
+                        {
+                            ImGui::PushID(idx);   // now safe
+
+                            std::string filename =
+                                std::filesystem::path(files[idx]).filename().string();
+
+                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 0.6f, 1.f));
+                            ImGui::Text("[%s]", filename.c_str());
+                            ImGui::PopStyleColor();
+
+                            ImGui::Indent();
+                            ImGui::TextDisabled("Path: %s", files[idx].c_str());
+                            if (ImGui::BeginDragDropSource())
+                            {
+                                ImGui::SetDragDropPayload("ASSET_OTHER_FILE",
+                                    files[idx].c_str(),
+                                    files[idx].size() + 1);   // +1 for null terminator
+                                ImGui::Text("Drag %s", filename.c_str());
+                                ImGui::EndDragDropSource();
+                            }
+
+                            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.3f, 0.1f, 1.f));
+                            bool wantDelete = false;
+                            if (ImGui::Button("Delete")) wantDelete = true;
+                            ImGui::PopStyleColor();
+
+                            ImGui::Unindent();
+                            ImGui::Separator();
+
+                            ImGui::PopID(); // idx
+
+                            if (wantDelete)
+                            {
+                                s_pendingDeleteOtherFile = files[idx];
+                                s_showDeleteOtherPopup = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    ImGui::PopID(); // title
+                };
+
+            // -----------------------------------------------------------------
+            // Draw each section
+            // -----------------------------------------------------------------
+            drawFileSection("Fonts (.ttf)", s_ttfFiles);
+            drawFileSection("JSON configs", s_jsonFiles);
+            drawFileSection("Fragment shaders", s_fragFiles);
+            drawFileSection("Vertex shaders", s_vertFiles);
+
+            // -----------------------------------------------------------------
+            // Delete confirmation modal
+            // -----------------------------------------------------------------
+            if (s_showDeleteOtherPopup)
+            {
+                ImGui::OpenPopup("Delete File Confirmation");
+                s_showDeleteOtherPopup = false;
+            }
+
+            if (ImGui::BeginPopupModal("Delete File Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Are you sure you want to delete:\n%s ?", s_pendingDeleteOtherFile.c_str());
+                ImGui::Separator();
+
+                if (ImGui::Button("Yes, Delete", ImVec2(120, 0)))
+                {
+                    try
+                    {
+                        if (std::filesystem::exists(s_pendingDeleteOtherFile))
+                        {
+                            std::filesystem::remove(s_pendingDeleteOtherFile);
+                            std::cout << "[AssetBrowser] Deleted file: " << s_pendingDeleteOtherFile << "\n";
+                        }
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cerr << "[AssetBrowser] Failed to delete: " << e.what() << "\n";
+                    }
+
+                    s_pendingDeleteOtherFile.clear();
+                    // Rebuild lists so the deleted file disappears immediately
+                    rebuildFontFileLists();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    s_pendingDeleteOtherFile.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+
+            ImGui::EndTabItem();
+        }
+        // ====================================================
+       // RENDER LAYERS TAB
+       // ====================================================
+        if (ImGui::BeginTabItem("Render Layers"))
+        {
+            
+            // s_layerEnabled[i] maps 1-to-1 onto the RenderLayer enum:
+            //   0 = LAYER_BACKGROUND
+            //   1 = LAYER_GAMEOBJECT
+            //   2 = LAYER_FOREGROUND
+            //   3 = LAYER_UI
+            bool* layerEnabled = RenderSystem::GetLayerEnabledArray();
+
+            // Count entities per layer so the editor can show them
+            int counts[4] = { 0, 0, 0, 0 };
+            Registry& reg = Registry::Get();
+            for (auto& [entID, rc] : reg.Get_ComponentMap<RenderComponent>())
+            {
+                int idx = static_cast<int>(rc.GetRenderLayer());
+                if (idx >= 0 && idx < 4) counts[idx]++;
+            }
+            // GuiSystem UI lives outside RenderComponent add it into the UI count
+            {
+                auto& gui = GuiSystem::Get();
+                counts[LAYER_UI] += (int)gui.Buttons().size()
+                    + (int)gui.TextBoxes().size()
+                    + (int)gui.Dialogues().size()
+                    + (int)gui.Displays().size();
+            }
+            static const char* layerNames[4] = {
+                "Background",
+                "GameObject",
+                "Foreground",
+                "UI"
+            };
+
+
+            static const ImVec4 layerColours[4] = {
+                { 0.3f, 0.5f, 0.8f, 1.0f },   // blue-ish
+                { 0.3f, 0.7f, 0.3f, 1.0f },   // reen-ish
+                { 0.8f, 0.6f, 0.2f, 1.0f },   // orange-ish
+                { 0.7f, 0.3f, 0.7f, 1.0f }    // purple-ish
+            };
+
+            ImGui::SeparatorText("Layer Visibility");
+            ImGui::Spacing();
+
+            float panelW = ImGui::GetContentRegionAvail().x;
+
+            for (int i = 0; i < 4; ++i)
+            {
+                ImGui::PushID(i);
+
+                // Coloured label strip on the left
+                ImVec2 pos = ImGui::GetCursorScreenPos();
+                ImGui::GetWindowDrawList()->AddRectFilled(
+                    pos,
+                    ImVec2(pos.x + 6.0f, pos.y + ImGui::GetFrameHeight()),
+                    ImGui::ColorConvertFloat4ToU32(layerColours[i])
+                );
+                ImGui::SetCursorScreenPos(ImVec2(pos.x + 10.0f, pos.y));
+
+                // Checkbox
+                ImGui::Checkbox("##enable", &layerEnabled[i]);
+                ImGui::SameLine();
+
+                // Layer name
+                if (layerEnabled[i])
+                    ImGui::TextColored(layerColours[i], "%s", layerNames[i]);
+                else
+                    ImGui::TextDisabled("%s  (disabled)", layerNames[i]);
+
+                // Entity count on the right side
+                char countBuf[32];
+                snprintf(countBuf, sizeof(countBuf), "%d entit%s", counts[i], counts[i] == 1 ? "y" : "ies");
+                float countW = ImGui::CalcTextSize(countBuf).x;
+                ImGui::SameLine(panelW - countW - 4.0f);
+                ImGui::TextDisabled("%s", countBuf);
+
+                ImGui::PopID();
+            }
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            // enable / disable all
+            if (ImGui::Button("Enable All"))
+            {
+                for (int i = 0; i < 4; ++i) layerEnabled[i] = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Disable All"))
+            {
+                for (int i = 0; i < 4; ++i) layerEnabled[i] = false;
+            }
 
             ImGui::EndTabItem();
         }
@@ -5867,15 +6482,13 @@ void ImGuiSystem::ShowPrefabControls()
                 auto& registry = Registry::Get();
                 auto& nameMap = registry.Get_EntityNameMap();
 
-                // use whatever name stored for this prefab
                 std::string targetName = pendingPrefabName;
                 std::string targetLower = targetName;
                 std::transform(targetLower.begin(), targetLower.end(), targetLower.begin(),
                     [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-                // collect all entities to replace
+                // Collect ALL entities that match the name
                 std::vector<Entity> replaceList;
-
                 for (auto& [entID, name] : nameMap)
                 {
                     std::string n = name;
@@ -5888,39 +6501,63 @@ void ImGuiSystem::ShowPrefabControls()
                     }
                 }
 
-                std::string prefabPath =
-                    FilePath::PREFABS_FOLDER + targetName + ".json";
 
-                //replace old entity
+
+                std::string prefabPath = FilePath::PREFABS_FOLDER + targetName + ".json";
+
+                // Replace old entities
                 for (Entity oldEnt : replaceList)
                 {
-                    // Copy old transform
+
+                    // Check if transform exists
                     if (!registry.Has_Component<TransformComponent>(oldEnt))
+                    {
+                     
                         continue;
+                    }
 
-                    TransformComponent oldT = registry.Get_Component<TransformComponent>(oldEnt);
+                    // Only preserve POSITION and optionally ROTATION from old entity
+                    TransformComponent oldTransform = registry.Get_Component<TransformComponent>(oldEnt);
 
-                    // remove old entity
+                    // Delete the old entity
                     registry.Remove_Entity(oldEnt);
 
-                    // spawn new one from prefab
-                    Entity newEnt = JsonLoad::LoadEntityFromFile(prefabPath, oldT.pos.x, oldT.pos.y);
+                    // Spawn new entity from prefab at OLD position
+                    Entity newEnt = JsonLoad::LoadEntityFromFile(prefabPath, oldTransform.pos.x, oldTransform.pos.y);
 
-                    if (!newEnt)    // failed to load prefab
+                    if (newEnt == INVALID_ENTITY)
+                    {
                         continue;
+                    }
 
-                    //scale + rotation
-                    auto& newT = registry.Get_Component<TransformComponent>(newEnt);
-                    newT.scale = oldT.scale;
-                    newT.rot = oldT.rot;
 
+                    // Verify new entity has transform
+                    if (!registry.Has_Component<TransformComponent>(newEnt))
+                    {
+                        continue;
+                    }
+
+                    // Get reference to new transform
+                    TransformComponent& newTransform = registry.Get_Component<TransformComponent>(newEnt);
+                    newTransform.rot = oldTransform.rot;
+
+
+                    // Update collider with NEW prefab scale
+                    if (registry.Has_Component<ColliderComponent>(newEnt))
+                    {
+                        auto& col = registry.Get_Component<ColliderComponent>(newEnt);
+                        col.UpdateHitboxes(newTransform.pos, newTransform.scale);
+                    }
+
+                    // Set the name
                     registry.Get_EntityNameMap()[newEnt] = targetName;
                 }
+
+                std::cout << "[Update Instances] Finished updating " << replaceList.size() << " instances" << std::endl;
 
                 ImGui::CloseCurrentPopup();
                 pendingPrefabName.clear();
             }
-
 
             ImGui::SameLine();
 
