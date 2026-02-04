@@ -452,7 +452,7 @@ namespace EnemyAI
 	}
 }
 
-size_t SceneSubscriberID = -1;
+size_t SceneSubscriberID = static_cast<size_t>(-1);
 
 namespace SpiritMeleeAttack {
 
@@ -475,7 +475,7 @@ namespace SpiritMeleeAttack {
 		bool left = playerTransform.pos.x < ownerTransform.pos.x;
 		RockScript::Knockback(player, left, MELEE_DAMAGE);
 
-		auto& physicsComp = Registry::Get().Get_Component<Physics::PhysicsComponent>(player);
+		// auto& physicsComp = Registry::Get().Get_Component<Physics::PhysicsComponent>(player);
 	}
 
 	std::unordered_map<Entity, AttackProperties> g_meleeProperties;
@@ -559,7 +559,7 @@ namespace SpiritScript {
 		}
 
 		auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
-		auto& transComp = registry.Get_Component<TransformComponent>(eID);
+		// auto& transComp = registry.Get_Component<TransformComponent>(eID);
 		auto& healthComp = registry.Get_Component<HealthComponent>(eID);
 
 		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);

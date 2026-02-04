@@ -62,7 +62,6 @@ namespace TextSystem
  * @param currentLineIndex Index of the current line.
  * @param textSpeed Speed at which text is revealed.
  * @param wrapWidth Maximum width of rendering text before needing a newline.
- * @param customSpeaker Whether the speaker name can be changed or not.
  * @param speakerName Name of the speaker.
  * @param speakerID ID of the speaker.
  * @param fontPath Path to the font file.
@@ -72,7 +71,7 @@ namespace TextSystem
  */
 
 		TextComponent(std::vector<std::string> lines, int currentLineIndex,
-			float textSpeed, float wrapWidth, bool customSpeaker, std::string speakerName, int speakerID, 
+			float textSpeed, float wrapWidth, std::string speakerName, int speakerID, 
 			std::string fontPath, float fontSize, bool isTyping, Vec3 color);
 
 /**

@@ -44,10 +44,10 @@
                     1650.0,
                     600.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_NewGame_Button.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkNewGame.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
-                    150.0
+                    140.0
                 ],
                 "soundType": 0
             },
@@ -61,10 +61,10 @@
                     1650.0,
                     450.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_SettingsButton.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkSettings.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
-                    150.0
+                    140.0
                 ],
                 "soundType": 0
             },
@@ -78,10 +78,10 @@
                     1650.0,
                     300.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_Controls.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkControls.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
-                    150.0
+                    140.0
                 ],
                 "soundType": 0
             },
@@ -93,15 +93,15 @@
                     "duration": 0.0,
                     "scene": "QuitGameOption"
                 },
-                "label": "QUIT GAME",
+                "label": "quit game",
                 "pos": [
                     1650.0,
                     150.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_QuitButton.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkContinue.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
-                    150.0
+                    140.0
                 ],
                 "soundType": 0
             }

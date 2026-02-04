@@ -18,7 +18,7 @@
           "duration": 0.0
         },
         "label": "",
-        "pos": [100.0, 1000.0],
+        "pos": [150.0, 950.0],
         "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlsPage_BackButton.png\\\"}\",\"type\":\"image\"}",
         "size": [200.0, 180.0],
         "soundType": 0
