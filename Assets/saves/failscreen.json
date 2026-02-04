@@ -1,6 +1,6 @@
 {
     "backgrounds": [
-        "../Assets/UI_FailedPage_Background.PNG"
+        "../Assets/UI_FailedPage_Background.JPG"
     ],
     "bgmAssetName": "level_1",
     "cameraSpawn": [
@@ -63,7 +63,7 @@
                     1300.0,
                     260.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_RedYesLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_PinkYesLogo.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     270.0,
                     180.0
@@ -76,7 +76,7 @@
                     1250.0,
                     160.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_RedNoLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_PinkNoLogo.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     200.0,
                     180.0
