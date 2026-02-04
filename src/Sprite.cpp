@@ -301,6 +301,7 @@ namespace Sprite {
 			anim_duration = frames.duration;
 			m_current_row = frames.row;
 			m_current_col = frames.col_start;
+			frames.willLoop = stateframe[state].willLoop;
 
 			UpdateUV();
 			ResetTimer();

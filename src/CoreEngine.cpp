@@ -50,6 +50,7 @@
 #include "PlayerSystem.h"
 #include "EnemySystem.h"
 #include "PhysicsSystem.h"
+#include "CombatSystem.h"
 
 #include "CollisionManager.h"
 
@@ -114,6 +115,7 @@ void CoreEngine::Initialize()
     AddUpdateSystem(new MovementSystem());
     AddUpdateSystem(new PlayerSystem());
     AddUpdateSystem(new EnemySystem());
+    AddUpdateSystem(&CombatSystem::Get());
     AddUpdateSystem(new PhysicsSystem());
 
 
@@ -157,7 +159,7 @@ void CoreEngine::Initialize()
     registry.Register_Component<ColliderComponent>("Collider", { "Transform" });
     std::cout << "REGISTRY | REGISTERED COLLIDER COMPONENT\n";
 
-    registry.Register_Component<AudioComponent>("Audio");
+    registry.Register_Component<AudioComponent>("AudioComponent");
     std::cout << "REGISTRY | REGISTERED AUDIO COMPONENT\n";
 
     registry.Register_Component<HealthComponent>("Health");
@@ -185,6 +187,12 @@ void CoreEngine::Initialize()
 
     registry.Register_Component<RenderLayerComponent>("RenderLayer");
     std::cout << "REGISTRY | REGISTERED RENDERLAYER COMPONENT\n";
+
+    registry.Register_Component<ElementComponent>("Element");
+    std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";
+
+    registry.Register_Component<StatusEffectComponent>("StatusEffect");
+    std::cout << "REGISTRY | REGISTERED STATUSEFFECT COMPONENT\n";
 
     // ----------------------------------------------------
     // Initialize all systems
@@ -267,6 +275,8 @@ void CoreEngine::Run()
                     updateTimings[name] += ms;   // accumulate into stable entry
                 }
             }
+
+            Update_AudioComponents(fixedDt);
         }
 
 
@@ -342,7 +352,8 @@ void CoreEngine::Shutdown()
 
         if (s != &GuiSystem::Get() &&
             s != &LogicSystem::Get() &&
-            s != &MonoSystem::Get())
+            s != &MonoSystem::Get() &&
+            s != &CombatSystem::Get())
         {
             delete s;
         }

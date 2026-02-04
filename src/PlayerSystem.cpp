@@ -4,7 +4,7 @@
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
  * @co-author   Manfred Sim		   | manfred.sim@digipen.edu
- * @date	    30 NOV 2025
+ * @date	    28 JAN 2026
  *
  * @brief	Player System for handling player behaviour.
  *
@@ -28,10 +28,11 @@
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
 #include "GuiSystem.h"
+#include "CombatSystem.h"
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
-constexpr float DASH_IMPULSE = 1000.f;   // Dash boost
+constexpr float DASH_IMPULSE = 2000.f;   // Dash boost
 
 
 // spatial footstep sfx
@@ -182,6 +183,19 @@ namespace RockScript {
 	constexpr float DASH_COOLDOWN = 2.f;
 
 	constexpr float STAGGER_DURATION = 1.f;
+
+	// MELEE
+	constexpr float MELEE_DAMAGE = 10.f;
+	constexpr float MELEE_KNOCKBACK = 500.f;
+	constexpr float MELEE_LIFETIME = 0.2f;
+	const Vec2		MELEE_HITBOX_SIZE{ 250.f, 250.f };
+	const Vec2		MELEE_HITBOX_OFFSET{ 100.f, 0.f };
+
+	// SOUNDWAVE
+	constexpr float SOUNDWAVE_DAMAGE	= 10.f;
+	constexpr float SOUNDWAVE_SPAWN		= 0.5f;
+	constexpr float SOUNDWAVE_LIFETIME	= 10.f;
+	constexpr float SOUNDWAVE_EXPIRE	= 0.5f;
 #pragma endregion
 
 	// Variables
@@ -203,12 +217,37 @@ namespace RockScript {
 
 	std::unordered_map<Entity, size_t> subscriberID;
 
-
 	static Element currentElement = Element::NONE; //Set default element to none
 
 	static bool faceRight = true;
 
 	Entity shieldy = INVALID_ENTITY;
+
+	AttackProperties MELEE_PROPERTIES{
+		INVALID_ENTITY,
+		TagComponent{ T_ENEMY },
+		MELEE_DAMAGE,
+		MELEE_KNOCKBACK,
+		Element::NONE,
+		MELEE_LIFETIME,
+		false
+	};
+
+	AttackProperties SOUNDWAVE_PROPERTIES{
+		INVALID_ENTITY,
+		TagComponent{ T_ENEMY },
+		SOUNDWAVE_DAMAGE,
+		0.f,
+		Element::NONE,
+		0.f,
+		false
+	};
+
+	const ProjectileRuntime SOUNDWAVE_RUNTIME(
+		SOUNDWAVE_SPAWN,
+		SOUNDWAVE_LIFETIME,
+		SOUNDWAVE_EXPIRE
+	);
 #pragma endregion
 
 
@@ -314,7 +353,7 @@ namespace RockScript {
 	}
 
 	void CycleElement() {
-		int index = static_cast<int>(currentElement);
+		/*int index = static_cast<int>(currentElement);
 		index = (index + 1) % static_cast<int>(Element::COUNT);
 		currentElement = static_cast<Element>(index);
 
@@ -324,6 +363,31 @@ namespace RockScript {
 		case Element::FIRE: std::cout << "Element: FIRE\n"; break;
 		case Element::WIND: std::cout << "Element: WIND\n"; break;
 		case Element::ICE: std::cout << "Element: ICE\n"; break;
+		}*/
+		
+		switch (currentElement) {
+			case Element::NONE:
+				currentElement = Element::LIGHTNING;
+				std::cout << "Element: LIGHTNING\n";
+				break;
+			case Element::LIGHTNING:
+				currentElement = Element::FIRE;
+				std::cout << "Element: FIRE\n";
+				break;
+			case Element::FIRE:
+				currentElement = Element::WIND;
+				std::cout << "Element: WIND\n";
+				break;
+			case Element::WIND:
+				currentElement = Element::ICE;
+				std::cout << "Element: ICE\n";
+				break;
+			case Element::ICE:
+				currentElement = Element::NONE;
+				std::cout << "Element: NONE\n";
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -627,12 +691,13 @@ namespace RockScript {
 	}
 
 	//Update shield state
-	void UpdateShield(float dt, float x, float y)
+	void UpdateShield(HealthComponent& health, float dt, float x, float y)
 	{
 
 		// Shield inactive
 		if (shieldTimer >= SHIELD_DURATION) {
 			isVulnerable = true;
+			health.isVulnerable = true;
 			return;
 			// shieldy = INVALID_ENTITY;
 		}
@@ -640,6 +705,7 @@ namespace RockScript {
 		// Update shield
 		shieldTimer += dt;
 		isVulnerable = false;
+		health.isVulnerable = false;
 		Registry& reg = Registry::Get();
 		if (reg.Has_Component<TransformComponent>(shieldy))
 		{
@@ -652,38 +718,6 @@ namespace RockScript {
 
 	}
 
-	void ApplyElementToProjectile(Entity)
-	{
-
-		//Damage Component in future
-
-		switch (currentElement)
-		{
-		case Element::NONE:
-			break;
-
-		case Element::FIRE:
-			//Burn damage
-			//Burn lasts 3 sec
-			std::cout << "Fire applied: burn damage\n";
-			break;
-
-		case Element::LIGHTNING:
-			//Stun 5 sec
-			std::cout << "Lightning applied: stun 5 sec\n";
-			break;
-
-		case Element::WIND:
-			//Knocksback
-			std::cout << "Wind applied: knockback\n";
-			break;
-
-		case Element::ICE:
-			//Slow amount and duration
-			std::cout << "Ice applied: slow\n";
-			break;
-		}
-	}
 
 	void ActivateSpell(int slotIndex, Entity eID)
 	{
@@ -734,16 +768,67 @@ namespace RockScript {
 				activeSpells.push_back(spelled);
 			}
 
+			// NEW SOUNDWAVE W ELEM
+			std::string soundwaveFile = "SoundWave_Normal.json";
+
+			if (currentElement != Element::NONE) {
+				switch (currentElement) {
+				case Element::FIRE:
+					soundwaveFile = "SoundWave_Fire.json";
+					break;
+				case Element::LIGHTNING:
+					soundwaveFile = "SoundWave_Lightning.json";
+					break;
+				case Element::WIND:
+					soundwaveFile = "SoundWave_Wind.json";
+					break;
+				case Element::ICE:
+					soundwaveFile = "SoundWave_Ice.json";
+					break;
+				default:
+					soundwaveFile = "SoundWave_Normal.json";
+					break;
+				}
+			}
+
+			Entity newwave = JsonLoad::LoadEntityFromFile(
+				FilePath::PREFABS_FOLDER + soundwaveFile,
+				trans.pos.x, trans.pos.y
+			);
+
+			SOUNDWAVE_PROPERTIES.owner = newwave;
+			SOUNDWAVE_PROPERTIES.element = currentElement;
+
+			// Apply extra knockback for WIND element
+			if (currentElement == Element::WIND) {
+				SOUNDWAVE_PROPERTIES.knockbackForce = 500.f; // Strong wind knockback
+			} else {
+				SOUNDWAVE_PROPERTIES.knockbackForce = 100.f; // Base knockback for other elements
+			}
+
+			CombatSystem::Get().RegisterProjectile(newwave, SOUNDWAVE_PROPERTIES, SOUNDWAVE_RUNTIME);
+
+			if (!faceRight && registry.Has_Component<Physics::PhysicsComponent>(newwave)) {
+				Physics::PhysicsComponent& phyComp = registry.Get_Component<Physics::PhysicsComponent>(newwave);
+				Vec2 vel = phyComp.Get_Vel();
+				vel.x = -vel.x;
+				phyComp.Set_Vel(vel);
+				registry.Get_Component<RenderComponent>(newwave).GetSpriteSheet().Sprite().SetFlipX(true);
+			}
+
 			// Handle flipping
 			if (!faceRight && registry.Has_Component<Physics::PhysicsComponent>(wave)) {
 				Physics::PhysicsComponent& phyComp = registry.Get_Component<Physics::PhysicsComponent>(wave);
 				Vec2 vel = phyComp.Get_Vel();
 				vel.x = -vel.x;
 				phyComp.Set_Vel(vel);
-				registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
+				if (registry.Has_Component<RenderComponent>(wave)) {
+					registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
+				}
 			}
 
-			std::cout << "Soundwave cast!\n";
+
+			// to start animation
 			wavetimer = 0.f;
 			break;
 		}
@@ -773,7 +858,6 @@ namespace RockScript {
 				activeSpells.push_back(spelled);
 			}
 
-			std::cout << "AOE cast!\n";
 			aoetimer = 0.f;
 			break;
 		}
@@ -805,6 +889,35 @@ namespace RockScript {
 
 	}
 
+	// To reset all player variables on scene load
+	void ResetPlayerVariables()
+	{
+		stunnedtimer = STAGGER_DURATION;
+
+		dashtimer = DASH_COOLDOWN;
+
+		meleetimer = SWING_TIME; // swing
+		aoetimer = AOE_TIME;
+		wavetimer = SOUNDWAVE_TIME;
+
+		activeSpells.clear();
+		inputBuffer.clear();
+		currentElement = Element::NONE;
+		for (auto& spell : spellSlots)
+		{
+			spell.charges = 0;
+			spell.currentCD = 0.f;
+		}
+		shot = false;
+
+		shieldTimer = 0.f; //Timer for shield invulnerability
+		shieldy = INVALID_ENTITY;
+
+		currentElement = Element::NONE; //Set default element to none
+
+		isVulnerable = true; //Is Rock vulnerable
+	}
+
 	inline void Start(Entity eID)
 	{
 		std::cout << "Rock script started" << std::endl;
@@ -815,6 +928,9 @@ namespace RockScript {
 		}
 		// clear input buffer
 		inputBuffer.clear();
+
+		// clear active spells to prevent dangling references
+		activeSpells.clear();
 
 		// hide all arrow displays initially
 		UpdateVisualDisplays();
@@ -831,6 +947,10 @@ namespace RockScript {
 			{
 				Dash(eID);
 			}
+			else if (e.key == GLFW_KEY_Q)
+			{
+				CycleElement();
+			}
 			else if (e.key == GLFW_KEY_E)
 			{
 				Attack();
@@ -838,10 +958,6 @@ namespace RockScript {
 			else if (e.key == GLFW_KEY_G)
 			{
 				Knockback(eID);
-			}
-			else if (e.key == GLFW_KEY_Q)
-			{
-				CycleElement();
 			}
 			else if (e.key == GLFW_KEY_P)  // Press P to see pool stats
 			{
@@ -863,8 +979,7 @@ namespace RockScript {
 			spell.charges = 0;
 		}
 
-		currentElement = Element::NONE;
-
+		MELEE_PROPERTIES.owner = eID;
 
 		ResetTimers();
 		shot = false;
@@ -876,6 +991,7 @@ namespace RockScript {
 		faceRight = true;
 
 		shieldy = INVALID_ENTITY;
+
 
 		AudioSystem::PlaySoundAt("player_spawnSound", 0.0f, 0.0f, 1.0f);
 
@@ -949,15 +1065,17 @@ namespace RockScript {
 			}
 			++it;
 		}
-		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID)) return;
+		if (!registry.Has_Component<Movement::MovementComponent>(eID) || !registry.Has_Component<Physics::PhysicsComponent>(eID) || !registry.Has_Component<HealthComponent>(eID)) return;
 
 		auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
 		//auto& physics = registry.Get_Component<Physics::PhysicsComponent>(eID);
 		auto& transComp = registry.Get_Component<TransformComponent>(eID);
 
+		auto& healthComp = registry.Get_Component<HealthComponent>(eID);
+
 
 		//Shield Timer
-		UpdateShield(dt, transComp.pos.x, transComp.pos.y);
+		UpdateShield(healthComp, dt, transComp.pos.x, transComp.pos.y);
 
 		//Dash Timer
 		if (dashtimer < DASH_COOLDOWN)
@@ -1030,29 +1148,47 @@ namespace RockScript {
 					footstepTimers[eID] = 0.0f;  // Reset timer
 				}
 			}
-		}
+		}	// end MOVEMENT
+		// ================================================================================
+		// STUNNED
+		// ================================================================================
 		else if (stunnedtimer < STAGGER_DURATION)
 		{
 			isVulnerable = false;
+			healthComp.isVulnerable = false;
 			moveComp.ResetFrameIntent();
 			stunnedtimer += dt;
 			animstate = (faceRight) ? 10 : 11;
-		}
+		}	// end STUNNED
+		// ================================================================================
+		// MELEE ATTACK
+		// ================================================================================
 		else if (meleetimer < SWING_TIME)
 		{
 			moveComp.ResetFrameIntent();
 			meleetimer += dt;
 			animstate = (faceRight) ? 4 : 5;
 
-			if (meleetimer >= 0.7f && !shot)
+			if (meleetimer >= 0.35f && !shot)
 			{
 				// need to summon hitbox
 				// auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
+				Vec2 offset = MELEE_HITBOX_OFFSET;
+				if (!faceRight) offset.x = -offset.x;
+
+				CombatSystem::Get().SpawnHitBox(
+					MELEE_PROPERTIES,
+					offset,
+					MELEE_HITBOX_SIZE
+				);
 				
 				// JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "projectile.json", transComp.pos.x, transComp.pos.y);
 				shot = true;
 			}
-		}
+		}	// end MELEE ATTACK
+		// ================================================================================
+		// SOUNDWAVE CAST
+		// ================================================================================
 		else if (wavetimer < SOUNDWAVE_TIME)
 		{
 			moveComp.ResetFrameIntent();
@@ -1064,13 +1200,16 @@ namespace RockScript {
 				// shoot soundwave
 				shot = true;
 			}
-		}
+		}	// end SOUNDWAVE CAST
+		// ================================================================================
+		// AOE CAST
+		// ================================================================================
 		else if (aoetimer < AOE_TIME)
 		{
 			moveComp.ResetFrameIntent();
 			aoetimer += dt;
 			animstate = (faceRight) ? 8 : 9;
-		}
+		}	// end AOE CAST
 
 		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
 		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
@@ -1109,6 +1248,33 @@ namespace RockScript {
 			int state = (hpComp.currhp > 0.2f * hpComp.maxhp) ? 0 : 1;
 			UIsys.SetDisplaySheetState(stats.memberIDs[4], state);
 
+			//void PlayerSystem::UpdateElementUI()
+			{
+				GuiSystem& gui = GuiSystem::Get();
+				auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
+
+				// Element icon IDs
+				const int LIGHTNING_ID = 26;
+				const int FIRE_ID = 28;
+				const int WIND_ID = 30;
+				const int ICE_ID = 32;
+
+				for (auto& display : displays) {
+					if (display.ID == LIGHTNING_ID) {
+						display.opacity = (currentElement == Element::LIGHTNING) ? 1.0f : 0.4f;
+					}
+					else if (display.ID == FIRE_ID) {
+						display.opacity = (currentElement == Element::FIRE) ? 1.0f : 0.4f;
+					}
+					else if (display.ID == WIND_ID) {
+						display.opacity = (currentElement == Element::WIND) ? 1.0f : 0.4f;
+					}
+					else if (display.ID == ICE_ID) {
+						display.opacity = (currentElement == Element::ICE) ? 1.0f : 0.4f;
+					}
+				}
+			}
+
 			
 		}
 	}
@@ -1117,6 +1283,17 @@ namespace RockScript {
 	{
 		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID[e]);
 		subscriberID.erase(e);
+
+		// Clean up all active spells when script ends
+		Registry& registry = Registry::Get();
+		for (auto& spell : activeSpells) {
+			if (spell.ecsEntity != INVALID_ENTITY) {
+				registry.Remove_Entity(spell.ecsEntity);
+			}
+			PooledEntityFactory::Get().DestroyEntity(spell.poolEntity);
+		}
+		activeSpells.clear();
+
 		std::cout << "Rock script ended" << std::endl;
 	}
 } // end namespace RockScript
@@ -1141,6 +1318,16 @@ void PlayerSystem::Initialize()
 		player.End = [](Entity e) { RockScript::End(e); };
 		LogicSystem::Get().RegisterScript("RockScript", player, ScriptID::ROCK_SCRIPT);
 	}
+
+
+	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
+			// Reset player variables on game scene load
+			if (e.sceneType == SceneType::ST_GAME) {
+				RockScript::ResetPlayerVariables();
+			}
+		}
+	);
+
 }
 
 void PlayerSystem::Update(float dt)
@@ -1165,6 +1352,13 @@ void PlayerSystem::Update(float dt)
 
 	//}
 }
+
+void PlayerSystem::Shutdown()
+{
+	EventBus::Get().Unsubscribe<SceneLoadEvent>(SceneSubscriberID);
+	std::cout << "PlayerSystem Shutdown!\n";
+}
+
 // ============================================================================
 // FOOTSTEP IMPLEMENTATION
 // ============================================================================

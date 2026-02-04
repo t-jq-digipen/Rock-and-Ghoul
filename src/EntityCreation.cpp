@@ -160,33 +160,21 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             //Registry::Get().Add_Component<RenderLayerComponent>(player, RenderLayerComponent{ LAYER_BACKGROUND });
             AudioComponent playerAudio;
-
-            // Look up asset by name via audiocache
-            AudioAsset* dieSound = AudioCache::GetAsset("player_die");
-            if (dieSound) {
-                playerAudio.soundName = dieSound->name;
-            }
-            else {
-                std::cerr << "WARNING: player_die audio asset not found!" << std::endl;
-                playerAudio.soundName = "";  // No sound
-            }
-
-            playerAudio.loopingSoundName = "";
-            playerAudio.autoPlay = false;
-            playerAudio.autoPlayLooping = false;
+            // JQ CHECK HERE
+            // Configure spatial properties
             playerAudio.spatial = true;
             playerAudio.volume = 0.8f;
             playerAudio.minDistance = 10.0f;
             playerAudio.maxDistance = 100.0f;
-            Registry::Get().Add_Component<AudioComponent>(player, playerAudio);
 
-            if (JsonLoad::SaveEntity(FilePath::PREFABS_FOLDER + "Rock.json", player)) {
-                std::cout << "Rock.json saved successfully" << std::endl;
-                generatedCount++;
-            }
-            else {
-                std::cerr << "Failed to save Rock.json" << std::endl;
-            }
+            // Add sounds using the vector-based system
+            playerAudio.AddSound("player_footstep_wood");  // Index 0 not working
+            playerAudio.AddSound("player_dodge");          // Index 1
+            playerAudio.AddSound("player_spawnSound");     // Index 2 not working
+            playerAudio.AddSound("guitar_strum_heavy");    // Index 3
+            // NO MORE TO CHECK
+
+            Registry::Get().Add_Component<AudioComponent>(player, playerAudio);
 
             Registry::Get().Remove_Entity(player);
         }

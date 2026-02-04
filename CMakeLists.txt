@@ -470,6 +470,9 @@ source_group("Game\\Game Logic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityCreation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityCreation.h
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/CombatSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CombatSystem.cpp
+
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EnemySystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EnemySystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Enemy.h
