@@ -137,13 +137,6 @@ struct AudioComponent {
 };
 
 /**
- * @brief Helper function to play sound on any entity with AudioComponent
- * @param eID Entity ID
- * @param index Sound index to play
- */
-void PlayEntitySound(Entity eID, size_t index);
-
-/**
  * @brief Updates all AudioComponents in the registry
  * @param dt Delta time (unused, but follows system pattern)
  */

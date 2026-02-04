@@ -1,7 +1,7 @@
 /* ========================================================
  * @file    AudioComponent.cpp
  * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
- * @date    4 NOV 2025
+ * @date    4 FEB 2026
  *
  * @brief   Implementation file for entity-based audio component system
  *
@@ -34,9 +34,11 @@
 using json = nlohmann::json;
 
 void AudioComponent::PlaySound(size_t index, Entity eID) {
-    // chceck exist? index
+    std::cout << "[AudioComponent::PlaySound] START - index: " << index << ", eID: " << eID << std::endl;
+
+    // check exist? index
     if (index >= sounds.size()) {
-        std::cerr << "[AudioComponent] Invalid sound index: " << index << std::endl;
+        std::cerr << "[AudioComponent] Invalid sound index: " << index << " (sounds.size=" << sounds.size() << ")" << std::endl;
         return;
     }
 
@@ -45,12 +47,16 @@ void AudioComponent::PlaySound(size_t index, Entity eID) {
         return;
     }
 
+    std::cout << "[AudioComponent] Playing sound: '" << sounds[index] << "'" << std::endl;
+
     // Ensure vectors are properly sized
     if (channels.size() <= index) {
         channels.resize(sounds.size(), nullptr);
+        std::cout << "[AudioComponent] Resized channels to " << sounds.size() << std::endl;
     }
     if (isPlaying.size() <= index) {
         isPlaying.resize(sounds.size(), false);
+        std::cout << "[AudioComponent] Resized isPlaying to " << sounds.size() << std::endl;
     }
 
     // Stop current sound at this index
@@ -59,23 +65,34 @@ void AudioComponent::PlaySound(size_t index, Entity eID) {
     // Get sound from cache
     FMOD::Sound* sound = AudioCache::GetSound(sounds[index]);
     if (!sound) {
-        std::cerr << "[AudioComponent] Failed to load sound: " << sounds[index] << std::endl;
+        std::cerr << "[AudioComponent] Failed to load sound from cache: " << sounds[index] << std::endl;
         return;
     }
 
-    // Play with spatial audio or normal THIS DOESNT F WORD WORK
+    std::cout << "[AudioComponent] Sound loaded from cache successfully" << std::endl;
+    std::cout << "[AudioComponent] Spatial: " << spatial << std::endl;
+
+    // Play with spatial audio or normal
     if (spatial && Registry::Get().Has_Component<TransformComponent>(eID)) {
         auto& transform = Registry::Get().Get_Component<TransformComponent>(eID);
+        std::cout << "[AudioComponent] Playing SPATIAL at (" << transform.pos.x << ", " << transform.pos.y << ")" << std::endl;
         channels[index] = AudioSystem::PlaySoundAt(sounds[index], transform.pos.x, transform.pos.y, volume);
+        std::cout << "[AudioComponent] Spatial channel: " << (channels[index] ? "SUCCESS" : "NULL") << std::endl;
     }
     else {
+        std::cout << "[AudioComponent] Playing NON-SPATIAL (spatial=" << spatial << ")" << std::endl;
         channels[index] = AudioSystem::PlaySoundGetChannel(sound, false);
         if (channels[index]) {
             channels[index]->setVolume(volume);
+            std::cout << "[AudioComponent] Non-spatial SUCCESS, volume set to " << volume << std::endl;
+        }
+        else {
+            std::cout << "[AudioComponent] Non-spatial FAILED - channel is NULL!" << std::endl;
         }
     }
 
     isPlaying[index] = (channels[index] != nullptr);
+    std::cout << "[AudioComponent] PlaySound END - isPlaying[" << index << "] = " << isPlaying[index] << std::endl;
 }
 
 void AudioComponent::StopSound(size_t index) {
