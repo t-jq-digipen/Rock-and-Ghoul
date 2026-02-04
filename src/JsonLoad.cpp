@@ -972,6 +972,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             // save thru rendersystem
             scene.backgroundTextures.push_back(RenderSystem::GetCutscenePath());
             scene.backgroundTextures.push_back(std::to_string(RenderSystem::GetCutsceneFPS()));
+            scene.backgroundTextures.push_back(RenderSystem::GetNextScene());
         }
         else
         {
@@ -1130,7 +1131,8 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         else
         {
 			RenderSystem::SetCutscenePath(scene.backgroundTextures.empty() ? "" : scene.backgroundTextures[0]);
-            // Rendersystem will init cutscene separately through event subscription
+            RenderSystem::SetCutsceneFPS(scene.backgroundTextures.empty() ? 24.0 : std::stod(scene.backgroundTextures[1]));
+            RenderSystem::SetNextScene(scene.backgroundTextures.empty() ? "" : scene.backgroundTextures[2]);
         }
 
         // Load fonts

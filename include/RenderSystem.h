@@ -44,6 +44,8 @@ public:
     static std::string GetCutscenePath();
     static void SetCutsceneFPS(double fps);
 	static double GetCutsceneFPS();
+    static void SetNextScene(const std::string& path);
+    static std::string GetNextScene();
 
     static float pixelsPerUnit;
     static float unitsPerPixel;

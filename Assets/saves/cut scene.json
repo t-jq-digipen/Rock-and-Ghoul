@@ -1,7 +1,8 @@
 {
     "backgrounds": [
         "../Assets/IntroCutscene.mp4",
-        "24.000000"
+        "24.000000",
+        "level1"
     ],
     "bgmAssetName": "",
     "cameraSpawn": [

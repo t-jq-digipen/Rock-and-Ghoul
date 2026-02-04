@@ -4312,6 +4312,11 @@ void ImGuiSystem::ShowSceneBrowser()
     static std::vector<std::string> sceneFiles;
     static bool needRefresh = true;
 
+    // for cutscene
+    static std::string nextSceneName;
+    static int selectedNextScene = -1;
+    static std::string lastSceneName;
+
     //refresh button
     if (ImGui::Button("Refresh Scenes"))
     {
@@ -4407,11 +4412,11 @@ void ImGuiSystem::ShowSceneBrowser()
     }
 
     // Buttons
+    // LOAD SCENE
     if (ImGui::Button("Load Scene") && selectedScene >= 0)
     {
         std::string sceneName = sceneFiles[selectedScene];        // "Level2"
         std::string path = sceneFolder + sceneName + ".json";     //  "../Assets/saves/Level2.json"
-
 
         // Always return to editor mode when loading scenes
         //sm.EnterEditMode();
@@ -4425,8 +4430,7 @@ void ImGuiSystem::ShowSceneBrowser()
         std::cout << "[Editor] Loaded scene: " << path << "\n";
     }
 
-
-
+    // SAVE SCENE
     ImGui::SameLine();
     if (ImGui::Button("Save Current Scene") && selectedScene >= 0)
     {
@@ -4440,7 +4444,7 @@ void ImGuiSystem::ShowSceneBrowser()
         std::cout << "[Editor] Saved scene: " << path << "\n";
     }
 
-    //new scene
+    // NEW SCENE
     static char newSceneName[64] = "";
     ImGui::InputText("New Scene Name", newSceneName, IM_ARRAYSIZE(newSceneName));
     if (ImGui::Button("Create New Scene"))
@@ -4481,16 +4485,17 @@ void ImGuiSystem::ShowSceneBrowser()
     // - Scene type
     // - World size
     // ------------------------------------------------------------
+#pragma region WORLD SETTINGS
     ImGui::SeparatorText("World settings");
 
-    static const char* sceneTypes[] = { "Menu", "Game", "Cutscene"};
+    static const char* sceneTypes[] = { "Menu", "Game", "Cutscene" };
     int currType = static_cast<int>(SceneManager::Get().GetSceneType());
     if (ImGui::Combo("Scene Type", &currType, sceneTypes, IM_ARRAYSIZE(sceneTypes)))
     {
         SceneManager::Get().SetSceneType(static_cast<SceneType>(currType));
     }
 
-    if (currType == ST_MENU || currType == ST_CUTSCENE) { ImGui::BeginDisabled(); }
+    if (currType == ST_GAME) { ImGui::BeginDisabled(); }
     ImGui::InputFloat2("Size", &sceneSize.x);
     if (ImGui::Button("Set size"))
     {
@@ -4503,12 +4508,14 @@ void ImGuiSystem::ShowSceneBrowser()
         }
         cam.SetBounds(sceneMin, sceneMax);
     }
+#pragma endregion                                       WORLD SETTINGS
     // ------------------------------------------------------------
 
     // CAMERA SETTINGS
     // - Camera spawn position and zoom
-    // - Reset to cente
+    // - Reset to center
     // ------------------------------------------------------------
+#pragma region CAMERA SETTINGS
     ImGui::SeparatorText("Camera spawn settings");
     // Spawn position
     ImGui::InputFloat2("Position", &camSpawnPos.x);
@@ -4527,13 +4534,15 @@ void ImGuiSystem::ShowSceneBrowser()
         cam.SetZoom(camSpawnZoom);
         cam.SetPosition(camSpawnPos);
     }
-
-    if (currType == ST_MENU || currType == ST_CUTSCENE) { ImGui::EndDisabled(); }
+    if (currType == ST_GAME) { ImGui::EndDisabled(); }
+#pragma endregion                                     CAMERA SETTINGS
     // ------------------------------------------------------------
 
     // BACKGROUND MUSIC
     // - Music bound
     // - Fade out timing
+    // ------------------------------------------------------------
+#pragma region BGM
     ImGui::SeparatorText("Background Music");
     std::string bgmName = sm.GetCurrentSceneBGM();
     static int selectedTrack = 0;
@@ -4546,7 +4555,9 @@ void ImGuiSystem::ShowSceneBrowser()
         {
             musicTrackList.push_back(asset.name.c_str());
             if (asset.name == bgmName)
-            { selectedTrack = static_cast<int>(musicTrackList.size())-1; }
+            {
+                selectedTrack = static_cast<int>(musicTrackList.size()) - 1;
+            }
         }
     }
 
@@ -4556,6 +4567,63 @@ void ImGuiSystem::ShowSceneBrowser()
         std::string trackName = musicTrackList[selectedTrack];
         sm.SetCurrentSceneBGM(trackName);
     }
+#pragma endregion                                                             BGM
+    // ------------------------------------------------------------
+
+    // CUTSCENE STUFF
+    // - FPS
+    // - Next Scene?
+#pragma region CUTSCENE
+    // ------------------------------------------------------------
+    if (currType == ST_CUTSCENE){
+        ImGui::SeparatorText("Cutscene Settings");
+
+        // FPS
+        int fps = static_cast<int>(RenderSystem::GetCutsceneFPS());
+        if (ImGui::InputInt("FPS", &fps))
+        {
+            RenderSystem::SetCutsceneFPS(static_cast<double>(fps));
+        }
+
+        // Next Scene
+        std::string nextScene = RenderSystem::GetNextScene();
+        static int selectedNextScene = -1;
+
+        if (!sceneFiles.empty())
+        {
+            // Build items
+            std::vector<const char*> sceneItems;
+            sceneItems.reserve(sceneFiles.size());
+            for (auto& s : sceneFiles)
+                sceneItems.push_back(s.c_str());
+
+
+            for (int i = 0; i < (int)sceneFiles.size(); ++i) {
+                if (sceneFiles[i] == nextScene) {
+                    selectedNextScene = i;
+                }
+            }
+
+            if (selectedNextScene < 0)
+                selectedNextScene = 0;
+
+            if (ImGui::Combo("Next Scene", &selectedNextScene,
+                sceneItems.data(),
+                static_cast<int>(sceneItems.size())))
+            {
+                RenderSystem::SetNextScene(sceneFiles[selectedNextScene]);
+            }
+        }
+        else
+        {
+            ImGui::TextDisabled("No scenes available");
+        }
+
+
+    }
+#pragma endregion                                          CUTSCENE
+    // ------------------------------------------------------------
+
     ImGui::Columns(1);
 }
 

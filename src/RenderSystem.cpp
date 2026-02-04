@@ -432,6 +432,7 @@ struct CutscenePlayer {
     double acc = 0.0;
     bool finished = false;
 
+    std::string nextScene = "";
 
     bool Init(const char* path);
     void Update(double dt);   // decode and upload as needed
@@ -697,6 +698,7 @@ void CutscenePlayer::Shutdown() {
 
     tex = 0;
     texInited = false;
+    //nextScene = "";
 }
 
 static std::string s_cutscenePath{}; // Static cutscene path
@@ -749,6 +751,14 @@ double RenderSystem::GetCutsceneFPS() {
 void RenderSystem::ClearBackgroundTextures() {
     s_backgroundTextures.clear();
     s_backgroundTexturePaths.clear();
+}
+
+void RenderSystem::SetNextScene(const std::string& path) {
+    gCutscene.nextScene = path;
+}
+
+std::string RenderSystem::GetNextScene() {
+    return gCutscene.nextScene;
 }
 
 //extern Camera mainCamera;
@@ -1056,7 +1066,7 @@ void RenderSystem::Update(float dt) {
             SceneManager::Get().SetCutscenePlaying(false);
             gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
 
-            SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); //wacky fix;
+            SceneManager::Get().QueueLoadScene("../Assets/saves/" + GetNextScene() + ".json"); //wacky fix;
         }
         for (GLuint tex : s_backgroundTextures)
         {
