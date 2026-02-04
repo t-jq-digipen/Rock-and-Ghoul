@@ -224,6 +224,41 @@ struct HealthComponent {
 	}
 };
 
+struct HealthBarComponent {
+	float width = 100.f;
+	float height = 25.f;
+	float yOffset = 20.f;
+
+	std::string Serialize() const {
+		json j = {
+			{"width", width},
+			{"height", height},
+			{"yOffset", yOffset}
+		};
+		return j.dump();
+	}
+
+	static HealthBarComponent DeSerialize(Entity, const std::string& data) {
+		if (data.empty()) {
+			return HealthBarComponent();
+		}
+		json j = json::parse(data);
+		HealthBarComponent temp;
+		temp.width = j.value("width", 100.f);
+		temp.height = j.value("height", 25.f);
+		temp.yOffset = j.value("yOffset", 20.f);
+		return temp;
+	}
+
+	Editor::ComponentData EditorData() {
+		Editor::ComponentData ret("HealthBar");
+		ret.Add_Data("width", Editor::Widget_Float{ &width });
+		ret.Add_Data("height", Editor::Widget_Float{ &height });
+		ret.Add_Data("yOffset", Editor::Widget_Float{ &yOffset });
+		return ret;
+	}
+};
+
 enum C_TagID {
 	T_NONE,
 	T_PLAYER,

@@ -1,7 +1,7 @@
 {
-  "Enemymask": [ "Enemy", "Projectile", "Wall" ],
-  "Playermask": [ "Wall" ],
-  "Projectilemask": [ "Enemy" ],
+  "Enemymask": [ "Projectile", "Wall" ],
+  "Playermask": [ "Projectile", "Wall" ],
+  "Projectilemask": [ "Player", "Enemy" ],
   "Wallmask": [ "Player", "Enemy", "Projectile", "Wall" ],
   "layers": [ "Player", "Enemy", "Projectile", "Wall" ]
 }

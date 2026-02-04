@@ -87,6 +87,7 @@ void CombatSystem::ApplyDamage(Entity target, const AttackProperties& properties
 		return;
 	}
 	else {
+		// target vulnerable, apply damage and stagger!
 		if (health.isVulnerable) {
 			if (properties.damageOverTime) {
 				// apply damage over time
@@ -96,21 +97,30 @@ void CombatSystem::ApplyDamage(Entity target, const AttackProperties& properties
 			else {
 				// apply instant damage and stagger
 				health.currhp -= properties.damage;
-				// how to stagger, now all in playersystem :/
+
+				combatants[target].toStagger = true;
 			}
 		}
+
 		// remove the damage area if instant
 		if (!properties.damageOverTime) {
 			toRemove.push_back(damageArea);
 		}
 	}
 
+
+	float knockbackForce = properties.knockbackForce;
 	if (properties.element != Element::NONE) {
 		// Apply the element effect to the target
 		ApplyElementEffect(target, properties.element);
+
+		if (properties.element == Element::WIND) {
+			// Increase knockback for wind element
+			knockbackForce += 400.0f;
+		}
 	}
 
-	if (properties.knockbackForce > 0.f && m_registry.Has_Component<Physics::PhysicsComponent>(target) && properties.owner != INVALID_ENTITY) {
+	if (knockbackForce > 0.f && m_registry.Has_Component<Physics::PhysicsComponent>(target) && properties.owner != INVALID_ENTITY) {
 		// get dir from attacker to target
 		TransformComponent& targetTransform = m_registry.Get_Component<TransformComponent>(target);
 		TransformComponent& ownerTransform = m_registry.Get_Component<TransformComponent>(properties.owner);
@@ -119,7 +129,7 @@ void CombatSystem::ApplyDamage(Entity target, const AttackProperties& properties
 		// apply knockback
 
 		Physics::PhysicsComponent& physics = m_registry.Get_Component<Physics::PhysicsComponent>(target);
-		Vec2 knockbackImpulse = RG_Scale(dir, properties.knockbackForce);
+		Vec2 knockbackImpulse = RG_Scale(dir, knockbackForce);
 		physics.ApplyLinearImpulse(knockbackImpulse);
 	}
 
@@ -171,36 +181,6 @@ void CombatSystem::RegisterProjectile(Entity projectile, const AttackProperties&
 	g_projectileStates[projectile] = runtime;
 }
 
-
-void CombatSystem::Initialize() {
-	std::cout << "CombatSystem Initialized!\n";
-
-	sceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([&](const SceneLoadEvent&) {
-		// Reset combat variables on game scene load
-		//if (e.sceneType == SceneType::ST_GAME) {
-			g_attackProperties.clear();
-			toRemove.clear();
-			toDamageOverTime.clear();
-			g_projectileStates.clear();
-		//}
-		}
-	);
-
-	triggerSubscriberID = EventBus::Get().Subscribe<TriggerEvent>([&](const TriggerEvent& e) {
-		if (e.eventName != "DamageAreaHit") return;
-		Entity damageArea = e.trigger;
-		Entity target = e.other;
-		if (!g_attackProperties.contains(damageArea)) {
-			// no attack properties found for this damage area
-			return;
-		}
-		const AttackProperties& properties = g_attackProperties[damageArea];
-		ApplyDamage(target, properties, damageArea);
-		}
-	);
-
-	// maybe assign player entity? player health stuff?
-}
 
 void CombatSystem::UpdateElementEffects(float dt)
 {
@@ -285,6 +265,89 @@ void CombatSystem::UpdateElementEffects(float dt)
 	}
 }
 
+void CombatSystem::RegisterCombatant(Entity eID) {
+	if (!combatants.contains(eID)) {
+		combatants[eID] = CombatantProperties{};
+	}
+}
+
+void CombatSystem::RemoveCombatant(Entity eID) {
+	combatants.erase(eID);
+}
+
+bool CombatSystem::IsCombatantStaggered(Entity eID) {
+	if (combatants.contains(eID)) {
+		return combatants[eID].toStagger;
+	}
+	return false;
+}
+
+void CombatSystem::SetCombatantStagger(Entity eID, bool stagger) {
+	if (combatants.contains(eID)) {
+		combatants[eID].toStagger = stagger;
+	}
+}
+
+
+void DrawHealthBar(Vec2 pos, float width, float height, float ratio)
+{
+	Colour3 bg = { .2, 0, 0 };
+	Colour3 fg = { .6, 0, 0 };
+
+	// Background
+	Render& renderer = Render::GetInstance();
+	renderer.DrawRect(
+		{ pos.x, pos.y },
+		width,
+		height,
+		bg
+	);
+
+	// Foreground
+	float fgWidth = width * ratio;
+
+	float left = pos.x - width * 0.5f;
+	float centerX = left + fgWidth * 0.5f;
+
+	renderer.DrawRect(
+		{centerX, pos.y},
+		fgWidth,
+		height,
+		fg
+	);
+}
+
+void CombatSystem::Initialize() {
+	std::cout << "CombatSystem Initialized!\n";
+
+	sceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([&](const SceneLoadEvent&) {
+		// Reset combat variables on game scene load
+		//if (e.sceneType == SceneType::ST_GAME) {
+		g_attackProperties.clear();
+		toRemove.clear();
+		toDamageOverTime.clear();
+		g_projectileStates.clear();
+		combatants.clear();
+		//}
+		}
+	);
+
+	triggerSubscriberID = EventBus::Get().Subscribe<TriggerEvent>([&](const TriggerEvent& e) {
+		if (e.eventName != "DamageAreaHit") return;
+		Entity damageArea = e.trigger;
+		Entity target = e.other;
+		if (!g_attackProperties.contains(damageArea)) {
+			// no attack properties found for this damage area
+			return;
+		}
+		const AttackProperties& properties = g_attackProperties[damageArea];
+		ApplyDamage(target, properties, damageArea);
+		}
+	);
+
+	// maybe assign player entity? player health stuff?
+}
+
 void CombatSystem::Update(float dt) {
 	// check for DoT effects?
 	if (!toDamageOverTime.empty())
@@ -356,6 +419,7 @@ void CombatSystem::Update(float dt) {
 			}
 			else
 			{
+				g_projectileStates[eID].state = PROJECTILE_ACTIVE;
 				g_projectileStates[eID].stateTime = g_projectileStates[eID].lifetime; // force proj to die next update
 				m_registry.Remove_Component<ColliderComponent>(eID);
 			}
@@ -371,6 +435,7 @@ void CombatSystem::Update(float dt) {
 }
 
 void CombatSystem::Shutdown() {
+	combatants.clear();
 	g_attackProperties.clear();
 	toRemove.clear();
 	toDamageOverTime.clear();

@@ -237,7 +237,7 @@ namespace RockScript {
 		INVALID_ENTITY,
 		TagComponent{ T_ENEMY },
 		SOUNDWAVE_DAMAGE,
-		0.f,
+		50.f,
 		Element::NONE,
 		0.f,
 		false
@@ -706,6 +706,7 @@ namespace RockScript {
 		shieldTimer += dt;
 		isVulnerable = false;
 		health.isVulnerable = false;
+		
 		Registry& reg = Registry::Get();
 		if (reg.Has_Component<TransformComponent>(shieldy))
 		{
@@ -738,35 +739,36 @@ namespace RockScript {
 		{
 		case SpellType::SOUNDWAVE:
 		{
+
+#pragma region MEMPOOL TEST?
 			// ====================================================================
 			// LOAD TIME: Memory was already allocated at game startup
 			// RUNTIME: Programmer simply "books" memory from the pre-allocated pool
 			// NO malloc/new calls happen here just getting memory from the pool
 			// ====================================================================
 			// Create visual entity (for rendering/physics)
-			Entity wave = JsonLoad::LoadEntityFromFile(
-				FilePath::PREFABS_FOLDER + "SoundwaveFX.json",
-				trans.pos.x, trans.pos.y
-			);
 
-			// Create pool entity using THE SAME FILE
-			float dirX = faceRight ? 1.0f : -1.0f;
-			PooledEntity poolWave = PooledEntityFactory::Get().CreateProjectile(
-				FilePath::PREFABS_FOLDER + "SoundwaveFX.json",  // SAME FILE!
-				trans.pos.x,
-				trans.pos.y,
-				dirX,
-				0.0f
-			);
+			//// Create pool entity using THE SAME FILE
+			//float dirX = faceRight ? 1.0f : -1.0f;
+			//PooledEntity poolWave = PooledEntityFactory::Get().CreateProjectile(
+			//	FilePath::PREFABS_FOLDER + "SoundwaveFX.json",  // SAME FILE!
+			//	trans.pos.x,
+			//	trans.pos.y,
+			//	dirX,
+			//	0.0f
+			//);
 
-			// Link them together
-			if (poolWave.active) {
-				ActiveSpell spelled;
-				spelled.ecsEntity = wave;
-				spelled.poolEntity = poolWave;
-				spelled.lifetime = 2.0f;
-				activeSpells.push_back(spelled);
-			}
+			//// Link them together
+			//if (poolWave.active) {
+			//	ActiveSpell spelled;
+			//	spelled.ecsEntity = wave;
+			//	spelled.poolEntity = poolWave;
+			//	spelled.lifetime = 2.0f;
+			//	activeSpells.push_back(spelled);
+			//}
+
+#pragma endregion
+
 
 			// NEW SOUNDWAVE W ELEM
 			std::string soundwaveFile = "SoundWave_Normal.json";
@@ -791,41 +793,25 @@ namespace RockScript {
 				}
 			}
 
-			Entity newwave = JsonLoad::LoadEntityFromFile(
+			Entity wave = JsonLoad::LoadEntityFromFile(
 				FilePath::PREFABS_FOLDER + soundwaveFile,
 				trans.pos.x, trans.pos.y
 			);
 
-			SOUNDWAVE_PROPERTIES.owner = newwave;
+			SOUNDWAVE_PROPERTIES.owner = wave;
 			SOUNDWAVE_PROPERTIES.element = currentElement;
 
-			// Apply extra knockback for WIND element
-			if (currentElement == Element::WIND) {
-				SOUNDWAVE_PROPERTIES.knockbackForce = 500.f; // Strong wind knockback
-			} else {
-				SOUNDWAVE_PROPERTIES.knockbackForce = 100.f; // Base knockback for other elements
-			}
+			CombatSystem::Get().RegisterProjectile(wave, SOUNDWAVE_PROPERTIES, SOUNDWAVE_RUNTIME);
 
-			CombatSystem::Get().RegisterProjectile(newwave, SOUNDWAVE_PROPERTIES, SOUNDWAVE_RUNTIME);
-
-			if (!faceRight && registry.Has_Component<Physics::PhysicsComponent>(newwave)) {
-				Physics::PhysicsComponent& phyComp = registry.Get_Component<Physics::PhysicsComponent>(newwave);
-				Vec2 vel = phyComp.Get_Vel();
-				vel.x = -vel.x;
-				phyComp.Set_Vel(vel);
-				registry.Get_Component<RenderComponent>(newwave).GetSpriteSheet().Sprite().SetFlipX(true);
-			}
-
-			// Handle flipping
 			if (!faceRight && registry.Has_Component<Physics::PhysicsComponent>(wave)) {
 				Physics::PhysicsComponent& phyComp = registry.Get_Component<Physics::PhysicsComponent>(wave);
 				Vec2 vel = phyComp.Get_Vel();
 				vel.x = -vel.x;
 				phyComp.Set_Vel(vel);
-				if (registry.Has_Component<RenderComponent>(wave)) {
-					registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
-				}
+				registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
 			}
+
+			// Handle flipping
 
 
 			// to start animation
@@ -1049,6 +1035,8 @@ namespace RockScript {
 
 		AudioSystem::PlaySoundAt("player_spawnSound", 0.0f, 0.0f, 1.0f);
 
+		CombatSystem::Get().RegisterCombatant(eID);
+
 	}
 
 	inline void Update(Entity eID, float dt) {
@@ -1177,6 +1165,11 @@ namespace RockScript {
 		if (dashtimer < DASH_COOLDOWN)
 		{
 			dashtimer += dt;
+			healthComp.willHit = false;
+		}
+		else
+		{
+			healthComp.willHit = true;
 		}
 
 		for (auto& spell : spellSlots)
@@ -1186,6 +1179,11 @@ namespace RockScript {
 
 		AssignSlots();
 
+		// Check stun
+		if (CombatSystem::Get().IsCombatantStaggered(eID)) {
+			CombatSystem::Get().SetCombatantStagger(eID, false);
+			stunnedtimer = 0.f;
+		}
 
 
 		int animstate = (faceRight) ? 0 : 1; //idle
@@ -1325,6 +1323,11 @@ namespace RockScript {
 
 			hpComp.currhp = std::clamp(hpComp.currhp, 0.f, hpComp.maxhp);
 
+			if (hpComp.currhp <= 0.f)
+			{
+				SceneManager::Get().QueueLoadScene("../Assets/saves/failscreen.json");
+			}
+
 
 
 			
@@ -1389,6 +1392,7 @@ namespace RockScript {
 		}
 		activeSpells.clear();
 
+		CombatSystem::Get().RemoveCombatant(e);
 		std::cout << "Rock script ended" << std::endl;
 	}
 } // end namespace RockScript

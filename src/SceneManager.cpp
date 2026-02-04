@@ -61,7 +61,7 @@ void SceneManager::QueueLoadScene(const std::string& path)
 void SceneManager::Update(float dt, float, int)
 {
     
-    if (Input::IsKeyPressed(GLFW_KEY_ESCAPE) && IsPlaying()) {
+    if (Input::IsKeyPressed(GLFW_KEY_ESCAPE) && IsPlaying() && sceneType != ST_CUTSCENE) {
         TogglePause();
         std::cout << (IsPaused() ? "[SceneManager] Game paused\n" : "[SceneManager] Game resumed\n");
     }

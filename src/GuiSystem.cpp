@@ -795,6 +795,15 @@ void GuiSystem::Update(float dt)
         prevInEdit = sm.inEditMode;
     }
 
+
+    if (sm.GetSceneType() == ST_CUTSCENE)
+    {
+        if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+        {
+            sm.QueueLoadScene("../Assets/saves/" + RenderSystem::GetNextScene() + ".json");
+        }
+    }
+
     //if (cutsceneActive) return;
     //Dont render UI when cutscene is ongoing
     if (SceneManager::Get().IsCutscenePlaying())
@@ -1525,7 +1534,7 @@ void GuiSystem::Update(float dt)
         {
             hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 350 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hovercontrol ? 0.2f : 0.f;
-            Image btnimg = CreateImage("../Assets/UI_MainMenu_NewGame_Button.png");
+            Image btnimg = CreateImage("../Assets/UI_MainMenu_DarkControls.PNG");
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 350.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
             const Vec2 baseTitlePos = { 960.f * scaleX, 350.f * scaleY};
@@ -1540,7 +1549,7 @@ void GuiSystem::Update(float dt)
         {
             hoverexit = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 550 * scaleY}, 400 * scaleX, 190 * scaleY));
             float brightness = hoverexit ? 0.2f : 0.f;
-            Image btnimg = CreateImage("../Assets/UI_MainMenu_QuitButton.png");
+            Image btnimg = CreateImage("../Assets/UI_MainMenu_DarkQuit.PNG");
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 550.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
             const Vec2 baseTitlePos = { 960.f * scaleX, 550.f * scaleY };
@@ -1556,7 +1565,7 @@ void GuiSystem::Update(float dt)
         {
             hoverresume = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 750 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hoverresume ? 0.2f : 0.f;
-            Image btnimg = CreateImage("../Assets/UI_MainMenu_NewGame_Button.png");
+            Image btnimg = CreateImage("../Assets/UI_MainMenu_DarkNewGame.PNG");
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 750.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
             const Vec2 baseTitlePos = { 960.f * scaleX, 750.f * scaleY };
