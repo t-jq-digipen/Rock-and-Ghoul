@@ -1,25 +1,29 @@
 {
-  "sceneName": "Cutscene",
-  "sceneType": 2,
-
-  "backgrounds": [
-    "../Assets/IntroCutscene.mp4"
-  ],
-  "bgmAssetName": "",
-
-  "cameraSpawn": [960.0, 540.0],
-  "cameraZoom": 1.0,
-  "worldMin": [0.0, 0.0],
-  "worldMax": [1920.0, 1080.0],
-
-  "entities": [],
-
-  "gui": {
-    "buttons": [],
-    "dialogues": [],
-    "textboxes": [],
-    "displays": []
-  },
-
-  "fontConfig": "../Assets/fontAssets.json"
+    "backgrounds": [
+        "../Assets/IntroCutscene.mp4",
+        "24.000000"
+    ],
+    "bgmAssetName": "",
+    "cameraSpawn": [
+        0.0,
+        0.0
+    ],
+    "cameraZoom": 1.0,
+    "entities": [],
+    "fontConfig": "../Assets/fontAssets.json",
+    "gui": {
+        "buttons": [],
+        "dialogues": [],
+        "textboxes": []
+    },
+    "sceneName": "cut scene",
+    "sceneType": 2,
+    "worldMax": [
+        1920.0,
+        1080.0
+    ],
+    "worldMin": [
+        0.0,
+        0.0
+    ]
 }

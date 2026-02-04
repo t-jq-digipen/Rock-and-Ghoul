@@ -738,6 +738,14 @@ std::string RenderSystem::GetCutscenePath() {
 	return s_cutscenePath;
 }
 
+void RenderSystem::SetCutsceneFPS(double fps) {
+    gCutscene.fps = (fps);
+}
+
+double RenderSystem::GetCutsceneFPS() {
+    return (gCutscene.fps);
+}
+
 void RenderSystem::ClearBackgroundTextures() {
     s_backgroundTextures.clear();
     s_backgroundTexturePaths.clear();

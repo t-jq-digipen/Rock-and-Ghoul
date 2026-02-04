@@ -4490,7 +4490,7 @@ void ImGuiSystem::ShowSceneBrowser()
         SceneManager::Get().SetSceneType(static_cast<SceneType>(currType));
     }
 
-    if (currType == ST_MENU) { ImGui::BeginDisabled(); }
+    if (currType == ST_MENU || currType == ST_CUTSCENE) { ImGui::BeginDisabled(); }
     ImGui::InputFloat2("Size", &sceneSize.x);
     if (ImGui::Button("Set size"))
     {
@@ -4528,7 +4528,7 @@ void ImGuiSystem::ShowSceneBrowser()
         cam.SetPosition(camSpawnPos);
     }
 
-    if (currType == ST_MENU) { ImGui::EndDisabled(); }
+    if (currType == ST_MENU || currType == ST_CUTSCENE) { ImGui::EndDisabled(); }
     // ------------------------------------------------------------
 
     // BACKGROUND MUSIC

@@ -971,6 +971,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         {
             // save thru rendersystem
             scene.backgroundTextures.push_back(RenderSystem::GetCutscenePath());
+            scene.backgroundTextures.push_back(std::to_string(RenderSystem::GetCutsceneFPS()));
         }
         else
         {
