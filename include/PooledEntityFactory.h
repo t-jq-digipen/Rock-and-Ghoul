@@ -14,7 +14,7 @@
  * 4. Track entity in pool for cleanup
  *
  *
- * Copyright © 2026 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -130,8 +130,8 @@ public:
     PooledEntity CreateProjectile(const std::string& prefabPath, float x, float y, float dirX, float dirY);
     PooledEntity CreateAOE(const std::string& prefabPath, float x, float y);
     PooledEntity CreateShield(const std::string& prefabPath, float x, float y);
-    /*PooledEntity CreateParticle(const std::string& prefabPath, float x, float y, float velX, float velY);
-    PooledEntity CreateEnemy(const std::string& prefabPath, float x, float y);*/
+    PooledEntity CreateParticle(const std::string& prefabPath, float x, float y, float velX, float velY);
+    // PooledEntity CreateEnemy(const std::string& prefabPath, float x, float y);
 
     // Destroy pooled entity (returns memory to pool)
     void DestroyEntity(PooledEntity& entity);
@@ -172,9 +172,9 @@ private:
         float x, float y, float dirX, float dirY);
     void ApplyPrefabToAOE(AOEData* aoe, const PrefabConfig& config, float x, float y);
     void ApplyPrefabToShield(ShieldData* shield, const PrefabConfig& config, float x, float y);
-    /*void ApplyPrefabToParticle(ParticleData* particle, const PrefabConfig& config,
+    void ApplyPrefabToParticle(ParticleData* particle, const PrefabConfig& config,
         float x, float y, float velX, float velY);
-    void ApplyPrefabToEnemy(EnemyData* enemy, const PrefabConfig& config, float x, float y);*/
+    // void ApplyPrefabToEnemy(EnemyData* enemy, const PrefabConfig& config, float x, float y);
 };
 
 
@@ -420,6 +420,45 @@ inline void PooledEntityFactory::ApplyPrefabToShield(
     // If you want shield health, add it to ShieldData struct first
     shield->duration = config.lifetime > 0 ? config.lifetime : 5.0f;
     shield->active = true;
+}
+
+inline PooledEntity PooledEntityFactory::CreateParticle(
+    const std::string& prefabPath,
+    float x, float y,
+    float velX, float velY)
+{
+    PrefabConfig config;
+    if (!LoadPrefabConfig(prefabPath, config)) {
+        return PooledEntity();
+    }
+
+    ParticleData* particle = GameMemoryManager::Get().AllocateParticle();
+    if (particle == nullptr) {
+        std::cerr << "[PooledEntityFactory] Particle pool exhausted!\n";
+        return PooledEntity();
+    }
+
+    ApplyPrefabToParticle(particle, config, x, y, velX, velY);
+    activeEntityCounts[EntityType::PARTICLE]++;
+
+    std::cout << "[PooledEntityFactory] Created particle from " << prefabPath << "\n";
+    return PooledEntity(0, EntityType::PARTICLE, particle);
+}
+
+inline void PooledEntityFactory::ApplyPrefabToParticle(
+    ParticleData* particle,
+    const PrefabConfig& config,
+    float x, float y,
+    float velX, float velY)
+{
+    particle->posX = x;
+    particle->posY = y;
+    particle->velX = velX;
+    particle->velY = velY;
+    particle->lifetime = config.lifetime > 0 ? config.lifetime : 2.0f;
+    particle->scaleX = config.scaleX;
+    particle->scaleY = config.scaleY;
+    particle->active = true;
 }
 
 inline void PooledEntityFactory::DestroyEntity(PooledEntity& entity) {
