@@ -468,7 +468,6 @@ namespace EnemyAI
 	}
 }
 
-size_t SceneSubscriberID = static_cast<size_t>(-1);
 
 namespace SpiritMeleeAttack {
 

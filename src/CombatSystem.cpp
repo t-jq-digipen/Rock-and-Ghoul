@@ -313,7 +313,6 @@ void CombatSystem::Update(float dt) {
 			}
 			break;
 		case PROJECTILE_ACTIVE:
-			std::cout << "spriteloop: " << m_registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().GetLoop() << '\n';
 			projState.stateTime += dt;
 			if (projState.stateTime >= projState.lifetime) {
 				// transition to end state
