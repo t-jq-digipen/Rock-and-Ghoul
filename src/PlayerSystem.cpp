@@ -862,28 +862,82 @@ namespace RockScript {
 			break;
 		}
 		case SpellType::SHIELD:
-
+		{
 			RockScript::isVulnerable = false;
 			RockScript::shieldTimer = 0.f;
-			// to start animation
 			wavetimer = 0.f;
 			std::cout << "Shield activated!\n";
-			if (shieldy != INVALID_ENTITY) registry.Remove_Entity(shieldy);
-			shieldy = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "ShieldFX.json", trans.pos.x, trans.pos.y);
-			
-			break;
-		case SpellType::HEAL:
 
+			// Clean up old shield if exists
+			if (shieldy != INVALID_ENTITY) {
+				registry.Remove_Entity(shieldy);
+			}
+
+			// Create visual entity
+			shieldy = JsonLoad::LoadEntityFromFile(
+				FilePath::PREFABS_FOLDER + "ShieldFX.json",
+				trans.pos.x,
+				trans.pos.y
+			);
+
+			// Create pool entity for shield data
+			PooledEntity poolShield = PooledEntityFactory::Get().CreateShield(
+				FilePath::PREFABS_FOLDER + "ShieldFX.json",
+				trans.pos.x,
+				trans.pos.y
+			);
+
+			// Link them together and track
+			if (poolShield.active) {
+				ActiveSpell spelled;
+				spelled.ecsEntity = shieldy;
+				spelled.poolEntity = poolShield;
+				spelled.lifetime = SHIELD_DURATION;
+				activeSpells.push_back(spelled);
+				std::cout << "[Shield] Memory allocated from pool\n";
+			}
+
+			break;
+		}
+		case SpellType::HEAL:
+		{
 			if (registry.Has_Component<HealthComponent>(eID)) {
 				auto& health = registry.Get_Component<HealthComponent>(eID);
 				health.currhp += 10.f;
 				if (health.currhp > health.maxhp) health.currhp = health.maxhp;
 				std::cout << "Heal cast! HP: " << health.currhp << "/" << health.maxhp << "\n";
-				JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "HealFX.json", trans.pos.x, trans.pos.y + 5.f);
+
+				// Create visual entity
+				Entity healVisual = JsonLoad::LoadEntityFromFile(
+					FilePath::PREFABS_FOLDER + "HealFX.json",
+					trans.pos.x,
+					trans.pos.y + 5.f
+				);
+
+				// Create pool entity for particle effect
+				PooledEntity poolHeal = PooledEntityFactory::Get().CreateParticle(
+					FilePath::PREFABS_FOLDER + "HealFX.json",
+					trans.pos.x,
+					trans.pos.y + 5.f,
+					0.0f,  // No horizontal velocity
+					0.0f   // No vertical velocity
+				);
+
+				// Link them together and track
+				if (poolHeal.active) {
+					ActiveSpell spelled;
+					spelled.ecsEntity = healVisual;
+					spelled.poolEntity = poolHeal;
+					spelled.lifetime = 2.0f; // Heal effect duration
+					activeSpells.push_back(spelled);
+					std::cout << "[Heal] Memory allocated from particle pool\n";
+				}
+
 				// to start animation
 				wavetimer = 0.f;
 			}
 			break;
+		}
 		}
 
 
@@ -1056,6 +1110,48 @@ namespace RockScript {
 						std::cout << "AOE expired! Memory returned to POOL.\n";
 
 						registry.Remove_Entity(it->ecsEntity);
+						PooledEntityFactory::Get().DestroyEntity(it->poolEntity);
+
+						it = activeSpells.erase(it);
+						continue;
+					}
+				}
+			}
+			else if (it->poolEntity.type == EntityType::SHIELD) {
+				// Get Shield pool data
+				ShieldData* shieldData = PooledEntityFactory::Get().GetPoolData<ShieldData>(it->poolEntity);
+
+				if (shieldData != nullptr) {
+					shieldData->duration -= dt;
+
+					// Remove if expired
+					if (shieldData->duration <= 0.0f || !shieldData->active) {
+						std::cout << "Shield expired! Memory returned to POOL.\n";
+
+						if (it->ecsEntity != INVALID_ENTITY) {
+							registry.Remove_Entity(it->ecsEntity);
+						}
+						PooledEntityFactory::Get().DestroyEntity(it->poolEntity);
+
+						it = activeSpells.erase(it);
+						continue;
+					}
+				}
+			}
+			else if (it->poolEntity.type == EntityType::PARTICLE) {
+				// Get Particle pool data
+				ParticleData* particleData = PooledEntityFactory::Get().GetPoolData<ParticleData>(it->poolEntity);
+
+				if (particleData != nullptr) {
+					particleData->lifetime -= dt;
+
+					// Remove if expired
+					if (particleData->lifetime <= 0.0f || !particleData->active) {
+						std::cout << "Particle (Heal) expired! Memory returned to POOL.\n";
+
+						if (it->ecsEntity != INVALID_ENTITY) {
+							registry.Remove_Entity(it->ecsEntity);
+						}
 						PooledEntityFactory::Get().DestroyEntity(it->poolEntity);
 
 						it = activeSpells.erase(it);
