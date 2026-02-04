@@ -1001,18 +1001,6 @@ void GuiSystem::Update(float dt)
                 vis = comp->CheckIfTyping() ? TextSystem::GetVisibleText(*comp) : lines[idx];
             }
 
-            static json sDlgDoc;
-            static bool sDlgLoaded = false;
-            if (!sDlgLoaded)
-            {
-                try
-                {
-                    std::ifstream ifs(FilePath::DIALOGUE);
-                    if (ifs) { ifs >> sDlgDoc; sDlgLoaded = true; }
-                }
-                catch (...) { /* leave unloaded on error */ }
-            }
-
             // Get speaker ID
             auto getSpeakerID = [&](const json& doc, int sceneIdx, int lineIdx) -> int
                 {
