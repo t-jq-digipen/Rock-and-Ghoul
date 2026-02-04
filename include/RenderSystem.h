@@ -36,6 +36,7 @@ public:
 
     static void AddBackgroundTexture(GLuint texID, const std::string& path);
     static std::vector<std::string> GetBackgroundTexturePaths();
+	static void SetCutscenePath(const std::string& path);
     static void ClearBackgroundTextures();
     static bool* GetLayerEnabledArray();
 

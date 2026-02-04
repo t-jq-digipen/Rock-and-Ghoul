@@ -33,6 +33,7 @@
 #include "RenderComponent.h"
 #include "SceneManager.h"
 #include "SimpleAtlas.h"
+#include "JsonLoad.h"
 #include <iostream>
 
 //need this to prevent name mangling 
@@ -661,26 +662,33 @@ void CutscenePlayer::Render() const {
 void CutscenePlayer::Shutdown() {
     if (dstData[0]) {
         av_freep(&dstData[0]);
+        dstData[0] = nullptr;
+		dstLinesize[0] = 0;
     }
 
     if (sws) {
         sws_freeContext(sws);
+        sws = nullptr;
     }
 
     if (frm) {
         av_frame_free(&frm);
+        frm = nullptr;
     }
 
     if (pkt) {
         av_packet_free(&pkt);
+        pkt = nullptr;
     }
 
     if (dec) {
         avcodec_free_context(&dec);
+        dec = nullptr;
     }
 
     if (fmt) {
         avformat_close_input(&fmt);
+        fmt = nullptr;
     }
 
     if (tex) {
@@ -691,6 +699,7 @@ void CutscenePlayer::Shutdown() {
     texInited = false;
 }
 
+static std::string s_cutscenePath{}; // Static cutscene path
 
 
 
@@ -719,6 +728,10 @@ void RenderSystem::AddBackgroundTexture(GLuint tex, const std::string& path) {
 
 std::vector<std::string> RenderSystem::GetBackgroundTexturePaths() {
     return s_backgroundTexturePaths;
+}
+
+void RenderSystem::SetCutscenePath(const std::string& path) {
+    s_cutscenePath = path;
 }
 
 void RenderSystem::ClearBackgroundTextures() {
@@ -842,6 +855,16 @@ void RenderSystem::Initialize() {
     pixelsPerUnit = 100.f;
     unitsPerPixel = 1.f / pixelsPerUnit;
 
+    EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
+        if (e.sceneType == ST_CUTSCENE) {
+            gCutscene.Init(s_cutscenePath.c_str());
+        }
+        else {
+            gCutscene.Shutdown();
+        }
+		}
+    );
+
     //atlas testing below 
     /*SimpleAtlas atlas;
     SimpleAtlasBuilder builder;
@@ -868,7 +891,7 @@ void RenderSystem::Initialize() {
     //TestOpenVideo();
 
     //CutscenePlayer gCutscene;
-    gCutscene.Init("../Assets/IntroCutscene.mp4");
+    //gCutscene.Init("../Assets/IntroCutscene.mp4");
     //cutsceneActive = true;
     //SceneManager::Get().SetCutscenePlaying(true);
 
@@ -956,8 +979,12 @@ void RenderSystem::Update(float dt) {
     //    }
     //}
 
-    if (SceneManager::Get().GetSceneType() == ST_MENU)
+    switch (SceneManager::Get().GetSceneType())
     {
+    case ST_MENU:
+    {
+
+
         // Letterboxed menu background
         renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
 
@@ -966,77 +993,29 @@ void RenderSystem::Update(float dt) {
             renderer.DrawLetterboxedTexture(tex);
         }
     }
-    else // ST_GAME
+        break; // end ST_MENU
+
+    case ST_GAME:
     {
-
-        //beginning cutscene
-        //Only set it once to true
-        static bool startedCutscene = false;
-        if (SceneManager::Get().GetSceneType() == ST_GAME && !startedCutscene) {
-            SceneManager::Get().SetCutscenePlaying(true);
-            startedCutscene = true;
-        }
-        /*
-        if (SceneManager::Get().IsCutscenePlaying())
-        {
-
-            #ifndef NO_IMGUI
-            if (ImGuiSystem::guiEnabled) {
-                renderer.BeginSceneCapture();                 // binds scene FBO + sets viewport
-                renderer.ClearBackground({ 0.f,0.f,0.f,1.f });  // clear scene FBO
-            }
-            else
-            #endif
-            {
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                glViewport(0, 0, GLApp::width, GLApp::height);
-                renderer.ClearBackground({ 0.f,0.f,0.f,1.f });  // clear backbuffer
-            }
-
-
-            gCutscene.Update(dt);
-
-            // renderer.ApplyLetterboxViewport();
-
-            renderer.ClearBackground({ 0.f, 0.f, 0.f, 1.f });
-
-            // Draw the cutscene in a projection/state that won't be overwritten
-            // Important: avoid camera projection for this.
-            auto oldCam = renderer.useCamera;
-            renderer.useCamera = false;
-            renderer.SetProjectionType(ProjectionType::UI);
-
-            gCutscene.Render(); // calls DrawLetterboxedTexture(tex)
-
-            renderer.SetProjectionType(ProjectionType::WORLD);
-            renderer.useCamera = oldCam;
-
-
-            #ifndef NO_IMGUI
-            // If your pipeline expects EndSceneCapture() for the editor view, do it here:
-            if (ImGuiSystem::guiEnabled) {
-                renderer.EndSceneCapture();
-            }
-            #endif
-
-            //End condition
-            if (gCutscene.finished)
-            {
-                //cutsceneActive = false;
-                SceneManager::Get().SetCutscenePlaying(false);
-                gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
-
-            }
-
-            return; //IMPORTANT: don't run the rest of RenderSystem
-        }*/
-
         bool captureScene = false;
 #ifndef NO_IMGUI
         captureScene = ImGuiSystem::guiEnabled;
 #endif
+        for (GLuint tex : s_backgroundTextures)
+        {
+            renderer.DrawFullscreenTexture(tex, true);
+        }
+    }
+        break; // end ST_GAME
 
-        if (sm.IsCutscenePlaying()) {
+    case ST_CUTSCENE:
+    {
+        bool captureScene = false;
+#ifndef NO_IMGUI
+        captureScene = ImGuiSystem::guiEnabled;
+#endif
+        if (!gCutscene.finished)
+        {
             gCutscene.Update(dt);
 
             if (captureScene) {
@@ -1056,28 +1035,149 @@ void RenderSystem::Update(float dt) {
             renderer.SetProjectionType(ProjectionType::UI);
             gCutscene.Render();
 
-
-            if (gCutscene.finished)
-            {
-                //cutsceneActive = false;
-                SceneManager::Get().SetCutscenePlaying(false);
-                gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
-
-                SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); //wacky fix;
-
-
-            }  
-
             return;
         }
+        else
+        {
+            //cutsceneActive = false;
+            SceneManager::Get().SetCutscenePlaying(false);
+            gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
 
-
-        // Gameplay or editor: fullscreen world background
+            SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); //wacky fix;
+        }
         for (GLuint tex : s_backgroundTextures)
         {
             renderer.DrawFullscreenTexture(tex, true);
         }
     }
+		break; // end ST_CUTSCENE
+
+    default:
+        break;
+    }           // end switch scene type
+
+//    if (SceneManager::Get().GetSceneType() == ST_MENU)
+//    {
+//        // Letterboxed menu background
+//        renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
+//
+//        for (GLuint tex : s_backgroundTextures)
+//        {
+//            renderer.DrawLetterboxedTexture(tex);
+//        }
+//    }
+//    else // ST_GAME
+//    {
+//
+//        //beginning cutscene
+//        //Only set it once to true
+//        static bool startedCutscene = false;
+//        if (SceneManager::Get().GetSceneType() == ST_GAME && !startedCutscene) {
+//            SceneManager::Get().SetCutscenePlaying(true);
+//            startedCutscene = true;
+//        }
+//        /*
+//        if (SceneManager::Get().IsCutscenePlaying())
+//        {
+//
+//            #ifndef NO_IMGUI
+//            if (ImGuiSystem::guiEnabled) {
+//                renderer.BeginSceneCapture();                 // binds scene FBO + sets viewport
+//                renderer.ClearBackground({ 0.f,0.f,0.f,1.f });  // clear scene FBO
+//            }
+//            else
+//            #endif
+//            {
+//                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//                glViewport(0, 0, GLApp::width, GLApp::height);
+//                renderer.ClearBackground({ 0.f,0.f,0.f,1.f });  // clear backbuffer
+//            }
+//
+//
+//            gCutscene.Update(dt);
+//
+//            // renderer.ApplyLetterboxViewport();
+//
+//            renderer.ClearBackground({ 0.f, 0.f, 0.f, 1.f });
+//
+//            // Draw the cutscene in a projection/state that won't be overwritten
+//            // Important: avoid camera projection for this.
+//            auto oldCam = renderer.useCamera;
+//            renderer.useCamera = false;
+//            renderer.SetProjectionType(ProjectionType::UI);
+//
+//            gCutscene.Render(); // calls DrawLetterboxedTexture(tex)
+//
+//            renderer.SetProjectionType(ProjectionType::WORLD);
+//            renderer.useCamera = oldCam;
+//
+//
+//            #ifndef NO_IMGUI
+//            // If your pipeline expects EndSceneCapture() for the editor view, do it here:
+//            if (ImGuiSystem::guiEnabled) {
+//                renderer.EndSceneCapture();
+//            }
+//            #endif
+//
+//            //End condition
+//            if (gCutscene.finished)
+//            {
+//                //cutsceneActive = false;
+//                SceneManager::Get().SetCutscenePlaying(false);
+//                gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
+//
+//            }
+//
+//            return; //IMPORTANT: don't run the rest of RenderSystem
+//        }*/
+//
+//        bool captureScene = false;
+//#ifndef NO_IMGUI
+//        captureScene = ImGuiSystem::guiEnabled;
+//#endif
+//
+//        if (sm.IsCutscenePlaying()) {
+//            //gCutscene.Update(dt);
+//
+//            //if (captureScene) {
+//            //    renderer.BeginSceneCapture();        // binds scene FBO
+//            //    renderer.ClearBackground({ 0,0,0,1 });
+//            //    renderer.useCamera = false;
+//            //    renderer.SetProjectionType(ProjectionType::UI);
+//            //    gCutscene.Render();
+//            //    renderer.EndSceneCapture();
+//            //}
+//
+//            //// draw to the real screen too
+//            //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//            //glViewport(0, 0, GLApp::width, GLApp::height);
+//            //renderer.ClearBackground({ 0,0,0,1 });
+//            //renderer.useCamera = false;
+//            //renderer.SetProjectionType(ProjectionType::UI);
+//            //gCutscene.Render();
+//
+//
+//            //if (gCutscene.finished)
+//            //{
+//            //    //cutsceneActive = false;
+//            //    SceneManager::Get().SetCutscenePlaying(false);
+//            //    gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
+//
+//            //    SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); //wacky fix;
+//
+//
+//            //}  
+//
+//            //return;
+//        }
+//
+//
+//        // Gameplay or editor: fullscreen world background
+//        for (GLuint tex : s_backgroundTextures)
+//        {
+//            renderer.DrawFullscreenTexture(tex, true);
+//        }
+//    }
 
    
 

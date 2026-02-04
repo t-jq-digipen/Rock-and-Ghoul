@@ -72,7 +72,8 @@ struct SavedPhysics {
  */
 enum SceneType {
     ST_MENU,
-    ST_GAME
+    ST_GAME,
+    ST_CUTSCENE
 };
 
 /**

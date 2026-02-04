@@ -1,8 +1,10 @@
 {
   "sceneName": "Cutscene",
-  "sceneType": 1,
+  "sceneType": 2,
 
-  "backgrounds": [],
+  "backgrounds": [
+    "../Assets/IntroCutscene.mp4"
+  ],
   "bgmAssetName": "",
 
   "cameraSpawn": [960.0, 540.0],

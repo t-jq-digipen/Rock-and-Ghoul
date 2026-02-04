@@ -1231,26 +1231,25 @@ namespace RockScript {
 
 
 
-			GuiSystem& UIsys = GuiSystem::Get();
-			UIGroup& stats = UIsys.GetGroup("Stats");
+			
+			UIGroup& stats = gui.GetGroup("Stats");
 			
 			Vec2 v0, v1, v2, v3;
 			// Get background quad
-			UIsys.GetDisplayQuad(stats.memberIDs[1], v0, v1, v2, v3);
+			gui.GetDisplayQuad(stats.memberIDs[1], v0, v1, v2, v3);
 			// Calculate position for new quad
 			float amount = hpComp.currhp / hpComp.maxhp;
 
 			Vec2 newV1 = v0 + (v1 - v0) * amount;   // bottom right moves left
 			Vec2 newV2 = v3 + (v2 - v3) * amount;   // top right moves left
 
-			UIsys.SetDisplayQuad(stats.memberIDs[2], v0, newV1, newV2, v3);
+			gui.SetDisplayQuad(stats.memberIDs[2], v0, newV1, newV2, v3);
 
 			int state = (hpComp.currhp > 0.2f * hpComp.maxhp) ? 0 : 1;
-			UIsys.SetDisplaySheetState(stats.memberIDs[4], state);
+			gui.SetDisplaySheetState(stats.memberIDs[4], state);
 
 			//void PlayerSystem::UpdateElementUI()
 			{
-				GuiSystem& gui = GuiSystem::Get();
 				auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
 
 				// Element icon IDs

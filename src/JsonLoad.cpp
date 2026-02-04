@@ -710,6 +710,14 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
  */
 void JsonLoad::from_json(const json& j, SavedScene& s) {
     s.sceneName = j["sceneName"];
+
+    if (j.contains("sceneType")) {
+        s.sceneType = static_cast<SceneType>(j["sceneType"]);
+    }
+    else {
+        s.sceneType = ST_MENU;
+    }
+
     s.entities.clear();
     if (j.contains("bgmAssetName")) {
         s.bgmAssetName = j["bgmAssetName"];
@@ -905,12 +913,6 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
         cam.SetBounds(s.camSettings.worldMin, s.camSettings.worldMax);
     }
 
-    if (j.contains("sceneType")) {
-        s.sceneType = static_cast<SceneType>(j["sceneType"]);
-    }
-    else {
-        s.sceneType = ST_MENU;
-    }
 
 
 }
@@ -964,6 +966,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
     try {
         SavedScene scene;
         scene.sceneName = sceneName;
+        scene.sceneType = SceneManager::Get().GetSceneType();
         scene.backgroundTextures = RenderSystem::GetBackgroundTexturePaths();
         scene.fontConfigPath = "../Assets/fontAssets.json";
 
@@ -1060,7 +1063,6 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         std::cout << "Total entities saved: " << entityCount << std::endl;
 
         scene.camSettings = camSettings;
-        scene.sceneType = SceneManager::Get().GetSceneType();
 
         json j;
         to_json(j, scene);
@@ -1098,6 +1100,8 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         SceneManager::Get().SetSceneType(scene.sceneType);
 
+
+
         // Load entities
         for (const auto& savedEntity : scene.entities) {
             Registry::Get().Load_Entity(savedEntity);
@@ -1105,11 +1109,19 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         // Load backgrounds
         RenderSystem::ClearBackgroundTextures();
-        for (auto& path : scene.backgroundTextures) {
-            GLuint tex = Render::GetInstance().LoadTexture(path);
-            if (tex) {
-                RenderSystem::AddBackgroundTexture(tex, path);
+        if (scene.sceneType != ST_CUTSCENE)
+        {
+            for (auto& path : scene.backgroundTextures) {
+                GLuint tex = Render::GetInstance().LoadTexture(path);
+                if (tex) {
+                    RenderSystem::AddBackgroundTexture(tex, path);
+                }
             }
+        }
+        else
+        {
+			RenderSystem::SetCutscenePath(scene.backgroundTextures.empty() ? "" : scene.backgroundTextures[0]);
+            // Rendersystem will init cutscene separately through event subscription
         }
 
         // Load fonts
@@ -1364,6 +1376,11 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         {
             GuiSystem::Get().CallAction("ControlsPage1", j.object());
         }
+
+        if (scene.sceneType == ST_CUTSCENE)
+        {
+            // start cutscene
+		}
 
         SceneLoadEvent event;
 		event.sceneType = scene.sceneType;
