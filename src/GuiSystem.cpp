@@ -1671,6 +1671,11 @@ void GuiSystem::Update(float dt)
 
 
     }
+    else
+    {
+        opencontrol = false;
+        controlpage = 0;
+    }
 
 #ifndef NO_IMGUI
     }

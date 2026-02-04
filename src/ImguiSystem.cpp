@@ -4483,7 +4483,7 @@ void ImGuiSystem::ShowSceneBrowser()
     // ------------------------------------------------------------
     ImGui::SeparatorText("World settings");
 
-    static const char* sceneTypes[] = { "Menu", "Game" };
+    static const char* sceneTypes[] = { "Menu", "Game", "Cutscene"};
     int currType = static_cast<int>(SceneManager::Get().GetSceneType());
     if (ImGui::Combo("Scene Type", &currType, sceneTypes, IM_ARRAYSIZE(sceneTypes)))
     {

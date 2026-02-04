@@ -734,6 +734,10 @@ void RenderSystem::SetCutscenePath(const std::string& path) {
     s_cutscenePath = path;
 }
 
+std::string RenderSystem::GetCutscenePath() {
+	return s_cutscenePath;
+}
+
 void RenderSystem::ClearBackgroundTextures() {
     s_backgroundTextures.clear();
     s_backgroundTexturePaths.clear();
@@ -984,7 +988,7 @@ void RenderSystem::Update(float dt) {
     case ST_MENU:
     {
 
-
+        renderer.useCamera = false;
         // Letterboxed menu background
         renderer.ClearBackground({ 0.0f, 0.0f, 0.0f, 1.0f });
 
@@ -1001,6 +1005,7 @@ void RenderSystem::Update(float dt) {
 #ifndef NO_IMGUI
         captureScene = ImGuiSystem::guiEnabled;
 #endif
+        renderer.useCamera = true;
         for (GLuint tex : s_backgroundTextures)
         {
             renderer.DrawFullscreenTexture(tex, true);

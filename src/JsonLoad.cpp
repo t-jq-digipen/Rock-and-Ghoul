@@ -967,7 +967,15 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         SavedScene scene;
         scene.sceneName = sceneName;
         scene.sceneType = SceneManager::Get().GetSceneType();
-        scene.backgroundTextures = RenderSystem::GetBackgroundTexturePaths();
+        if (scene.sceneType == ST_CUTSCENE)
+        {
+            // save thru rendersystem
+            scene.backgroundTextures.push_back(RenderSystem::GetCutscenePath());
+        }
+        else
+        {
+            scene.backgroundTextures = RenderSystem::GetBackgroundTexturePaths();
+        }
         scene.fontConfigPath = "../Assets/fontAssets.json";
 
         // PRESERVE BGM PLEASE
