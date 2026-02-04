@@ -936,7 +936,7 @@ namespace RockScript {
 		UpdateVisualDisplays();
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
 			//Record arrow keys
-			if (SceneManager::Get().IsPaused()) return;
+			if (SceneManager::Get().IsPaused() || GuiSystem::Get().GetDialogueGate()) return;
 
 			if (e.key == UP || e.key == DOWN || e.key == LEFT || e.key == RIGHT)
 			{

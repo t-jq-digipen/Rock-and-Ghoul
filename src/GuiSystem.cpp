@@ -1001,18 +1001,6 @@ void GuiSystem::Update(float dt)
                 vis = comp->CheckIfTyping() ? TextSystem::GetVisibleText(*comp) : lines[idx];
             }
 
-            static json sDlgDoc;
-            static bool sDlgLoaded = false;
-            if (!sDlgLoaded)
-            {
-                try
-                {
-                    std::ifstream ifs(FilePath::DIALOGUE);
-                    if (ifs) { ifs >> sDlgDoc; sDlgLoaded = true; }
-                }
-                catch (...) { /* leave unloaded on error */ }
-            }
-
             // Get speaker ID
             auto getSpeakerID = [&](const json& doc, int sceneIdx, int lineIdx) -> int
                 {
@@ -1417,6 +1405,7 @@ void GuiSystem::Update(float dt)
 
     static bool opencontrol = false;
     static int controlpage = 0;
+    static float baseTextScale = 0.f;
     // Pause menu
     if (SceneManager::Get().IsPaused())
     {
@@ -1426,7 +1415,6 @@ void GuiSystem::Update(float dt)
         // const float scaleY = GLApp::height / defaultH;
         // const float uiScale = std::min(scaleX, scaleY);
         // Title text (scaled like UI text)
-        float baseTextScale = 1.0f;
         const float textScale = baseTextScale * uiScale;
         Render& renderer = Render::GetInstance();
         if (!opencontrol)
@@ -1440,14 +1428,15 @@ void GuiSystem::Update(float dt)
         bool hovercontrol = false;
         bool hoverexit = false;
         bool hoverresume = false;
+        baseTextScale = 1.f;
 
         {
-            hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX,400 * scaleY }, 400 * scaleX, 190 * scaleY));
+            hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 350 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hovercontrol ? 0.2f : 0.f;
             Image btnimg = CreateImage("../Assets/UI_MainMenu_NewGame_Button.png");
-            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 400.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
+            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 350.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
-            const Vec2 baseTitlePos = { 960.f * scaleX, 400.f * scaleY};
+            const Vec2 baseTitlePos = { 960.f * scaleX, 350.f * scaleY};
             const std::string title = "how to play";
             Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
             float textX = baseTitlePos.x - textSize.x * 0.5f;
@@ -1457,13 +1446,13 @@ void GuiSystem::Update(float dt)
         }
 
         {
-            hoverexit = (renderer.IsAreaTouched(mouse, { 960 * scaleX,600 * scaleY}, 400 * scaleX, 190 * scaleY));
+            hoverexit = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 550 * scaleY}, 400 * scaleX, 190 * scaleY));
             float brightness = hoverexit ? 0.2f : 0.f;
             Image btnimg = CreateImage("../Assets/UI_MainMenu_QuitButton.png");
-            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 600.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
+            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 550.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
-            const Vec2 baseTitlePos = { 960.f * scaleX, 600.f * scaleY };
-            const std::string title = "QUIT GAME";
+            const Vec2 baseTitlePos = { 960.f * scaleX, 550.f * scaleY };
+            const std::string title = "QUIT";
             Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
             float textX = baseTitlePos.x - textSize.x * 0.5f;
             float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
@@ -1473,13 +1462,13 @@ void GuiSystem::Update(float dt)
 
 
         {
-            hoverresume = (renderer.IsAreaTouched(mouse, { 960 * scaleX,800 * scaleY }, 400 * scaleX, 190 * scaleY));
+            hoverresume = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 750 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hoverresume ? 0.2f : 0.f;
             Image btnimg = CreateImage("../Assets/UI_MainMenu_NewGame_Button.png");
-            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 800.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
+            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 750.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
-            const Vec2 baseTitlePos = { 960.f * scaleX, 800.f * scaleY };
-            const std::string title = "RESUME GAME";
+            const Vec2 baseTitlePos = { 960.f * scaleX, 750.f * scaleY };
+            const std::string title = "RESUME";
             Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
             float textX = baseTitlePos.x - textSize.x * 0.5f;
             float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
@@ -1529,12 +1518,13 @@ void GuiSystem::Update(float dt)
             if (controlpage == 0)
             {
                 {
-                    const Vec2 baseTitlePos = { 960.f * scaleX, 900.f * scaleY };
+                    const Vec2 baseTitlePos = { 780.f * scaleX, 900.f * scaleY };
                     const std::string title = "CONTROLS";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
                     // float textX = baseTitlePos.x - textSize.x * .8f;
                     // float textY = baseTitlePos.y - textSize.y * .8f + textSize.y * 0.15f;
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    float titleTextScale = textScale / 0.8f * 1.5f;
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, titleTextScale, { 1,1,1 }, "Marker");
                 }
 
                 {
@@ -1621,6 +1611,16 @@ void GuiSystem::Update(float dt)
             }
             else 
             {
+                {
+                    const Vec2 baseTitlePos = { 780.f * scaleX, 900.f * scaleY };
+                    const std::string title = "CONTROLS";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    // float textX = baseTitlePos.x - textSize.x * .8f;
+                    // float textY = baseTitlePos.y - textSize.y * .8f + textSize.y * 0.15f;
+                    float titleTextScale = textScale / 0.8f * 1.5f;
+                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, titleTextScale, { 1,1,1 }, "Marker");
+                }
+
                 {
                     const Vec2 baseTitlePos = { 700.f * scaleX, 650.f * scaleY };
                     const std::string title = "Song List:";
