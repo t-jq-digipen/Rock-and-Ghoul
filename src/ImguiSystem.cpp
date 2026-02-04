@@ -4588,6 +4588,14 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                             sm.inEditMode = false;
                             previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
                             sm.inEditMode = wasEdit;
+
+                            // Disable looping for preview playback
+                            if (previewChannel)
+                            {
+                                previewChannel->setMode(FMOD_LOOP_OFF);
+                            }
+
+                            sm.inEditMode = wasEdit;
                         }
                     }
                     ImGui::PopStyleColor();
@@ -4652,6 +4660,14 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                             sm.inEditMode = false;
                             previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
                             sm.inEditMode = wasEdit;
+
+                            // Disable looping for preview playback
+                            if (previewChannel)
+                            {
+                                previewChannel->setMode(FMOD_LOOP_OFF);
+                            }
+
+                            sm.inEditMode = wasEdit;
                         }
                     }
                     ImGui::PopStyleColor();
@@ -4712,6 +4728,14 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                             bool wasEdit = sm.inEditMode;
                             sm.inEditMode = false;
                             previewChannel = AudioSystem::PlaySoundGetChannel(snd, false);
+                            sm.inEditMode = wasEdit;
+
+                            // Disable looping for preview playback
+                            if (previewChannel)
+                            {
+                                previewChannel->setMode(FMOD_LOOP_OFF);
+                            }
+
                             sm.inEditMode = wasEdit;
                         }
                     }

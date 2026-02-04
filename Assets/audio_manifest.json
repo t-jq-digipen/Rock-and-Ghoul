@@ -1,87 +1,161 @@
 {
   "music": {
     "main_menu": {
-      "path": "../Assets/audio/music/mainmenu.wav",
+      "path": "../Assets/audio/BGM/mainmenu.wav",
       "loop": true,
       "group": "Music"
     },
     "level_1": {
-      "path": "../Assets/audio/music/level1.wav",
+      "path": "../Assets/audio/BGM/level1.wav",
+      "loop": true,
+      "group": "Music"
+    },
+    "boss_fight": {
+      "path": "../Assets/audio/BGM/Rock n Ghoul - Boss Idea_01_ROUGH.wav",
+      "loop": true,
+      "group": "Music"
+    },
+    "roomtone_level_1": {
+      "path": "../Assets/audio/BGM/Ambience/Room1.wav",
+      "loop": true,
+      "group": "Music"
+    },
+    "roomtone_level_2": {
+      "path": "../Assets/audio/BGM/Ambience/Room2.wav",
+      "loop": true,
+      "group": "Music"
+    },
+    "roomtone_boss": {
+      "path": "../Assets/audio/BGM/Ambience/SCI-FI-AMBIENCE.wav",
+      "loop": true,
+      "group": "Music"
+    },
+    "BG_applause": {
+      "path": "../Assets/audio/BGM/Ambience/APPLAUSE.wav",
       "loop": true,
       "group": "Music"
     }
   },
   "sfx": {
     "guitar_element_fire": {
-      "path": "../Assets/audio/sfx/guitar/Fire.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Fire.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_burning_item": {
-      "path": "../Assets/audio/sfx/guitar/Burning.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Burning.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_exploding_item": {
-      "path": "../Assets/audio/sfx/guitar/Fire Explosion.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Fire Explosion.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_electric": {
-      "path": "../Assets/audio/sfx/guitar/Electricity.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Electricity.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_ice": {
-      "path": "../Assets/audio/sfx/guitar/Ice.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Ice.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_element_frozen_item": {
-      "path": "../Assets/audio/sfx/guitar/Frozen.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Frozen.wav",
       "loop": true,
       "group": "SFX",
       "spatial": false
     },
     "guitar_element_wind": {
-      "path": "../Assets/audio/sfx/guitar/Wind.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Wind.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
     "guitar_strum_heavy": {
-      "path": "../Assets/audio/sfx/guitar/Heavy Electric Guitar.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Heavy Electric Guitar.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "guitar_strum": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar Riff.mp3",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "guitar_note_1": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var1.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "guitar_note_2": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var2.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "guitar_note_3": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var3.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "guitar_note_4": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var4.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "guitar_note_5": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var5.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "guitar_note_6": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var6.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "guitar_note_7": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var7.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "player_dodge": {
-      "path": "../Assets/audio/sfx/player/Dodge.wav",
+      "path": "../Assets/audio/SFX/Player/Movement/Dodge.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "player_die": {
-      "path": "../Assets/audio/sfx/player/Rock Dies.wav",
+      "path": "../Assets/audio/SFX/Player/Movement/Rock Dies.wav",
       "loop": true,
       "group": "SFX",
       "spatial": true
     },
-    "player_spawnSound": {
-      "path": "../Assets/audio/sfx/player/Bring it on.wav",
+
+    "player_footstep_wood": {
+      "path": "../Assets/audio/SFX/Player/Movement/Walking on Wood.wav",
       "loop": false,
       "group": "SFX",
       "spatial": true,
       "minDistance": 100.0,
       "maxDistance": 2000.0
     },
-    "player_footstep_wood": {
-      "path": "../Assets/audio/sfx/player/Walking on Wood.wav",
+      "player_spawnSound": {
+      "path": "../Assets/audio/SFX/Player/VO/Bring it on.wav",
       "loop": false,
       "group": "SFX",
       "spatial": true,
@@ -91,17 +165,17 @@
   },
   "ui": {
     "button_play": {
-      "path": "../Assets/audio/ui/playclick.mp3",
+      "path": "../Assets/audio/SFX/UI/playclick.mp3",
       "loop": false,
       "group": "UI"
     },
     "button_quit": {
-      "path": "../Assets/audio/ui/quitclick.mp3",
+      "path": "../Assets/audio/SFX/UI/quitclick.mp3",
       "loop": false,
       "group": "UI"
     },
     "ui_click": {
-      "path": "../Assets/audio/ui/UI Click.wav",
+      "path": "../Assets/audio/SFX/UI/UI Click.wav",
       "loop": false,
       "group": "UI"
     }
