@@ -155,7 +155,12 @@ namespace RockScript {
 		SFX_FOOTSTEP = 0,
 		SFX_DODGE = 1,
 		SFX_SPAWN = 2,
-		SFX_GUITAR_STRUM = 3
+		SFX_GUITAR_STRUM = 3,
+		SFX_ELEMENT_FIRE = 4,
+		SFX_ELEMENT_ELECTRIC = 5,
+		SFX_ELEMENT_ICE = 6,
+		SFX_ELEMENT_WIND = 7,
+		SFX_ELEMENT_EXPLOSION = 8  // for fire AOE impact
 	};
 	// store player entity ID so all functions can access it; FOR SPATIAL AUDIO.. if it isn't spatial it just isnt used
 	static Entity playerEntityID = INVALID_ENTITY;
@@ -243,6 +248,27 @@ namespace RockScript {
 	std::unordered_map<Entity, size_t> subscriberID;
 
 	static Element currentElement = Element::NONE; //Set default element to none
+
+	// HELPER FUNCTION TO PLAY ELEMENTAL SOUNDS
+	inline void PlayElementalSound() {
+		switch (currentElement) {
+		case Element::FIRE:
+			PlayAudio(SFX_ELEMENT_FIRE);
+			break;
+		case Element::LIGHTNING:
+			PlayAudio(SFX_ELEMENT_ELECTRIC);
+			break;
+		case Element::ICE:
+			PlayAudio(SFX_ELEMENT_ICE);
+			break;
+		case Element::WIND:
+			PlayAudio(SFX_ELEMENT_WIND);
+			break;
+		default:
+			// they call em the base case
+			break;
+		}
+	}
 
 	static bool faceRight = true;
 
@@ -771,6 +797,10 @@ namespace RockScript {
 		auto& trans = registry.Get_Component<TransformComponent>(eID);
 
 		PlayAudio(SFX_GUITAR_STRUM);
+		// play elemental sound if element is active hohohoho
+		if (currentElement != Element::NONE) {
+			PlayElementalSound();
+		}
 		switch (spell.type)
 		{
 		case SpellType::SOUNDWAVE:
@@ -1038,10 +1068,16 @@ namespace RockScript {
 			audioComp.maxDistance = 1000.0f;
 
 			// Add sounds in specific order
-			audioComp.AddSound("player_footstep_wood");   // index 0
-			audioComp.AddSound("player_dodge");           // index 1
-			audioComp.AddSound("player_spawnSound");      // index 2
-			audioComp.AddSound("guitar_strum_heavy");     // index 3
+			audioComp.AddSound("player_footstep_wood");			// index nada
+			audioComp.AddSound("player_dodge");					// index 1
+			audioComp.AddSound("player_spawnSound");			// index 2
+			audioComp.AddSound("guitar_strum_heavy");			// index 3
+			audioComp.AddSound("guitar_element_fire");          // index 4 - SFX_ELEMENT_FIRE
+			audioComp.AddSound("guitar_element_electric");      // index 5 - SFX_ELEMENT_ELECTRIC
+			audioComp.AddSound("guitar_element_ice");           // index 6 - SFX_ELEMENT_ICE
+			audioComp.AddSound("guitar_element_wind");          // index 7 - SFX_ELEMENT_WIND
+			audioComp.AddSound("guitar_element_exploding_item");// index 8 - SFX_ELEMENT_EXPLOSION
+
 
 			Registry::Get().Add_Component(eID, audioComp);
 		}
