@@ -41,7 +41,7 @@ AudioManager* GuiSystem::audio = nullptr;
 
 // Settings
 // Master Volume (min 0.f, max 1.f)
-static float settingsVolume = 1.f;
+static float settingsVolume = 0.5f;
 
 // Step size for volume up/down actions
 static const float volStep = 0.05f;
@@ -348,11 +348,8 @@ void GuiSystem::SetAudioManager(AudioManager* audioMgr) {
  */
 static void ApplyNewVolume(float v)
 {
-    FMOD::Channel* ch = AudioManager::Get().GetCurrentMusicChannel();
-    if (ch)
-    {
-        ch->setVolume(std::clamp(v, 0.f, 1.f));
-    }
+    // Set da master volume in AudioManager
+    AudioManager::Get().SetMasterVolume(v);
 }
 
 /**
@@ -461,6 +458,8 @@ void GuiSystem::Initialize() {
             }
 
             settingsVolume = newVolume01;
+            AudioManager::Get().SetMasterVolume(settingsVolume); // sets master volume than channel vol
+
             if (GuiSystem::audio)
             {
                 ApplyNewVolume(settingsVolume);
@@ -474,6 +473,8 @@ void GuiSystem::Initialize() {
         [](const json&)
         {
             settingsVolume = std::clamp(settingsVolume - volStep, 0.f, 1.f);
+            AudioManager::Get().SetMasterVolume(settingsVolume); // sets master volume than channel vol
+
             if (GuiSystem::audio) ApplyNewVolume(settingsVolume);
 
             auto& gui = GuiSystem::Get();
@@ -511,6 +512,8 @@ void GuiSystem::Initialize() {
         [](const json&)
         {
             settingsVolume = std::clamp(settingsVolume + volStep, 0.f, 1.f);
+            AudioManager::Get().SetMasterVolume(settingsVolume); // sets master volume than channel vol
+
             if (GuiSystem::audio) ApplyNewVolume(settingsVolume);
 
             auto& gui = GuiSystem::Get();

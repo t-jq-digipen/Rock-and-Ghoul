@@ -413,14 +413,14 @@ void AudioManager::UpdateFade(float dt) {
     float t = fadeTime / fadeDuration;
     if (t > 1.0f) t = 1.0f;
 
-    // Fade out current music
+    // Fade out using BOTH volume
     if (currentChannel) {
-        float newVolume = musicVol * (1.0f - t);
+        float newVolume = musicVol * masterVolume * (1.0f - t);
         currentChannel->setVolume(newVolume);
     }
 
     if (t >= 1.0f) {
-        // Fade out complete - stop old music
+        // Fade out complete aka stop old music
         if (currentChannel) {
             currentChannel->stop();
             currentChannel = nullptr;
@@ -468,26 +468,20 @@ void AudioManager::TransitionToBGM(const std::string& bgmAssetName, float durati
  * @param bgmAssetName The name of the BGM asset in AudioCache.
  * @param duration Unused parameter (kept for API compatibility).
  */
-void AudioManager::StartBGM(const std::string& bgmAssetName) { // works sometimes
+void AudioManager::StartBGM(const std::string& bgmAssetName) {
     if (bgmAssetName.empty()) return;
 
     FMOD::Sound* bgm = AudioCache::GetSound(bgmAssetName);
-    if (!bgm) {
-        return;
-    }
+    if (!bgm) return;
 
-    // Clear any active fade state
     fadeActive = false;
     fadeTime = 0.0f;
     pendingBGM = "";
 
-    // Start playing PAUSED, set volume, then unpause
-    currentChannel = PlayGetChannel(bgm, true);  // true = start paused
+    currentChannel = PlayGetChannel(bgm, true);
     if (currentChannel) {
-        // Set volume while paused to like counteract ramping
-        currentChannel->setVolume(musicVol);
-
-        // unpause to start playback at full volume
+        // Apply BOTH base musicVol AND masterVolume
+        currentChannel->setVolume(musicVol * masterVolume);
         currentChannel->setPaused(false);
     }
 }

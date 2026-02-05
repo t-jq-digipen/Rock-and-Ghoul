@@ -231,9 +231,20 @@ public:
      */
     FMOD::Channel* GetCurrentMusicChannel() const { return currentChannel; }
 
+    void SetMasterVolume(float vol) {
+        masterVolume = std::clamp(vol, 0.f, 1.f);
+        // Update current channel immediately
+        if (currentChannel) {
+            currentChannel->setVolume(musicVol * masterVolume);
+        }
+    }
+
+    float GetMasterVolume() const { return masterVolume; }
+
 private:
     // Volume control
     float musicVol = 0.1f;
+    float masterVolume = 1.0f;  // Master volume from settings
 
     // Channel management
     FMOD::Channel* currentChannel = nullptr;
