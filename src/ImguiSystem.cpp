@@ -3,7 +3,7 @@
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
  * @co-author   Manfred Sim        | manfred.sim@digipen.edu
- * @date        06 NOV 2025
+ * @date        06 FEB 2026
  *
  * 
  * Implements the ImGuiSystem, which provides the in-game editor
