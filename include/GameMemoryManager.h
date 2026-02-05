@@ -65,10 +65,11 @@ struct AOEData {
     float duration;
     int damage;
     bool active;
+    int element;  // Element type (Element::NONE, FIRE, ICE, etc.)
 
     AOEData()
         : posX(0), posY(0), radius(0), duration(0)
-        , damage(0), active(false) {
+        , damage(0), active(false), element(0) {
     }
 };
 

@@ -288,8 +288,10 @@ namespace EnemyAI
 		if (Registry::Get().Has_Component<StatusEffectComponent>(eID)) {
 			auto& statusEffect = Registry::Get().Get_Component<StatusEffectComponent>(eID);
 			if (statusEffect.isStunned) {
-				// Stop movement while stunned
-				ApplyVelocity(eID, { 0.f, 0.f }, 0.f, false);
+				// Clear movement direction so MovementSystem applies 0 velocity
+				auto& moveComp = Registry::Get().Get_Component<Movement::MovementComponent>(eID);
+				moveComp.SetMovementDirection({ 0.f, 0.f });
+				// Skip AI so it doesn't override
 				return;
 			}
 		}
@@ -565,10 +567,24 @@ namespace SpiritScript {
 		// registry
 		Registry& registry = Registry::Get();
 
+		// Check if spirit is stunned
+		if (registry.Has_Component<StatusEffectComponent>(eID)) {
+			auto& statusEffect = registry.Get_Component<StatusEffectComponent>(eID);
+			if (statusEffect.isStunned) {
+				// Clear movement direction so MovementSystem applies 0 velocity
+				if (registry.Has_Component<Movement::MovementComponent>(eID)) {
+					auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
+					moveComp.SetMovementDirection({ 0.f, 0.f });
+				}
+				// Skip AI so it doesn't override
+				return;
+			}
+		}
+
 		if (!registry.Has_Component<Movement::MovementComponent>(eID) ||
 			!registry.Has_Component<TransformComponent>(eID) ||
 			!registry.Has_Component<HealthComponent>(eID) ||
-			!registry.Has_Component<RenderComponent>(eID)) 
+			!registry.Has_Component<RenderComponent>(eID))
 		{
 			// missing required components
 			return;

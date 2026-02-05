@@ -196,6 +196,11 @@ namespace RockScript {
 	constexpr float SOUNDWAVE_SPAWN		= 0.5f;
 	constexpr float SOUNDWAVE_LIFETIME	= 10.f;
 	constexpr float SOUNDWAVE_EXPIRE	= 0.5f;
+
+	// AOE
+	constexpr float AOE_DAMAGE = 25.f;
+	constexpr float AOE_KNOCKBACK = 200.f;
+	constexpr float AOE_RADIUS = 150.f;
 #pragma endregion
 
 	// Variables
@@ -208,6 +213,7 @@ namespace RockScript {
 	static float aoetimer = AOE_TIME;
 	static float wavetimer = SOUNDWAVE_TIME;
 	static bool shot = false;
+	static bool aoeHitboxSpawned = false;
 
 	//INPUT SEQUENCE SYSTEM
 	static std::vector<int> inputBuffer; //Stores arrow key presses
@@ -238,6 +244,16 @@ namespace RockScript {
 		TagComponent{ T_ENEMY },
 		SOUNDWAVE_DAMAGE,
 		50.f,
+		Element::NONE,
+		0.f,
+		false
+	};
+
+	AttackProperties AOE_PROPERTIES{
+		INVALID_ENTITY,
+		TagComponent{ T_ENEMY },
+		AOE_DAMAGE,
+		AOE_KNOCKBACK,
 		Element::NONE,
 		0.f,
 		false
@@ -410,6 +426,7 @@ namespace RockScript {
 		meleetimer = SWING_TIME;
 		aoetimer = AOE_TIME;
 		wavetimer = SOUNDWAVE_TIME;
+		aoeHitboxSpawned = false;
 	}
 
 
@@ -820,27 +837,55 @@ namespace RockScript {
 		}
 		case SpellType::AOE:
 		{
-			// Create visual entity (for rendering/physics)
+			std::string aoeFile = "AoeFX.json";
+
+			if (currentElement != Element::NONE) {
+				switch (currentElement) {
+				case Element::FIRE:
+					aoeFile = "AoeFX_Fire.json";
+					break;
+				case Element::ICE:
+					aoeFile = "AoeFX_Ice.json";
+					break;
+				case Element::LIGHTNING:
+					aoeFile = "AoeFX_Lightning.json";
+					break;
+				case Element::WIND:
+					aoeFile = "AoeFX_Wind.json";
+					break;
+				default:
+					aoeFile = "AoeFX.json";
+					break;
+				}
+			}
+
+			// Create visual entity (spawns above, will crash down)
 			float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
 			Entity aoeVisual = JsonLoad::LoadEntityFromFile(
-				FilePath::PREFABS_FOLDER + "AoeFX.json",
+				FilePath::PREFABS_FOLDER + aoeFile,
 				posx,
 				trans.pos.y + 400.f
 			);
 
 			// Create pool entity using THE SAME FILE
 			PooledEntity poolAOE = PooledEntityFactory::Get().CreateAOE(
-				FilePath::PREFABS_FOLDER + "AoeFX.json",
+				FilePath::PREFABS_FOLDER + aoeFile,
 				posx,
 				trans.pos.y + 400.f
 			);
 
-			// Link them together
+			// Link them together for visual tracking
 			if (poolAOE.active) {
+				// Set element for pool data
+				AOEData* aoeData = PooledEntityFactory::Get().GetPoolData<AOEData>(poolAOE);
+				if (aoeData != nullptr) {
+					aoeData->element = static_cast<int>(currentElement);
+				}
+
 				ActiveSpell spelled;
 				spelled.ecsEntity = aoeVisual;
 				spelled.poolEntity = poolAOE;
-				spelled.lifetime = 1.5f; // AOE duration
+				spelled.lifetime = 1.5f; // AOE visual duration
 				activeSpells.push_back(spelled);
 			}
 
@@ -939,6 +984,7 @@ namespace RockScript {
 		meleetimer = SWING_TIME; // swing
 		aoetimer = AOE_TIME;
 		wavetimer = SOUNDWAVE_TIME;
+		aoeHitboxSpawned = false;
 
 		activeSpells.clear();
 		inputBuffer.clear();
@@ -1303,7 +1349,38 @@ namespace RockScript {
 			moveComp.ResetFrameIntent();
 			aoetimer += dt;
 			animstate = (faceRight) ? 8 : 9;
+
+			// Spawn AOE hitbox after delay (when crash happens)
+			if (aoetimer >= 0.4f && !aoeHitboxSpawned)
+			{
+				// Get transform component
+				auto& trans = registry.Get_Component<TransformComponent>(eID);
+
+				// Spawn hitbox at ground level
+				float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
+				Vec2 aoeOffset = { posx - trans.pos.x, -100.f };  // Lower down a bit
+				Vec2 aoeSize = { AOE_RADIUS * 3.f, AOE_RADIUS * 2.f };  // Wider
+
+				AOE_PROPERTIES.owner = eID;
+				AOE_PROPERTIES.element = currentElement;
+				AOE_PROPERTIES.lifetime = 0.2f;
+
+				CombatSystem::Get().SpawnHitBox(
+					AOE_PROPERTIES,
+					aoeOffset,
+					aoeSize
+				);
+
+				aoeHitboxSpawned = true;
+			}
 		}	// end AOE CAST
+		else
+		{
+			// Reset flag when AOE animation completes
+			if (aoeHitboxSpawned) {
+				aoeHitboxSpawned = false;
+			}
+		}
 
 		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
 		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
