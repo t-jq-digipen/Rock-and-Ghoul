@@ -1,5 +1,6 @@
 {
     "components": {
+        "AudioComponent": "{\"sounds\":[\"player_footstep_wood\",\"player_dodge\",\"player_spawnSound\",\"guitar_strum_heavy\"],\"spatial\":true,\"volume\":1.0,\"minDistance\":50.0,\"maxDistance\":1000.0}",
         "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
         "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":250.0,\"aabb_maxX\":614.7235717773438,\"aabb_maxY\":571.609619140625,\"aabb_minX\":414.72357177734375,\"aabb_minY\":321.609619140625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"triggerEvent\":\"\"}",
         "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
