@@ -92,6 +92,7 @@ bool AudioSystem::Init() {
 void AudioSystem::LoadDefaultButtonSounds() {
     RegisterButtonSound(ButtonType::PLAY, AudioCache::GetSound("button_play"));
     RegisterButtonSound(ButtonType::QUIT, AudioCache::GetSound("button_quit"));
+    RegisterButtonSound(ButtonType::CLICK, AudioCache::GetSound("ui_click"));
 }
 
 /**

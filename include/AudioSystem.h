@@ -231,14 +231,27 @@ public:
      */
     FMOD::Channel* GetCurrentMusicChannel() const { return currentChannel; }
 
+    /**
+     * @brief Sets the master volume for all audio.
+     *
+     * Updates the master volume level and applies it immediately to the currently
+     * playing music channel. The volume is clamped between 0.0 (silent) and 1.0 (full volume).
+     *
+     * @param vol The desired master volume level (0.0 to 1.0).
+     */
     void SetMasterVolume(float vol) {
         masterVolume = std::clamp(vol, 0.f, 1.f);
-        // Update current channel immediately
+        // update current channel NOW
         if (currentChannel) {
             currentChannel->setVolume(musicVol * masterVolume);
         }
     }
 
+    /**
+     * @brief Gets the current master volume level.
+     *
+     * @return float The current master volume (0.0 to 1.0).
+     */
     float GetMasterVolume() const { return masterVolume; }
 
 private:
