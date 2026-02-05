@@ -59,11 +59,11 @@ bool AudioSystem::Init() {
         return false;
     }
 
-    // Disable volume ramping for instant volume changes
+    // DISABLE VOLUME RAMPING..WORKS SOMETIMES?
     FMOD_ADVANCEDSETTINGS advancedSettings;
     memset(&advancedSettings, 0, sizeof(FMOD_ADVANCEDSETTINGS));
     advancedSettings.cbSize = sizeof(FMOD_ADVANCEDSETTINGS);
-    advancedSettings.vol0virtualvol = 0.0f;  // Disable virtual voice volume ramping
+    advancedSettings.vol0virtualvol = 0.0f;
 
     result = mSystem->setAdvancedSettings(&advancedSettings);
     if (result != FMOD_OK) {
@@ -80,7 +80,6 @@ bool AudioSystem::Init() {
     // Load the default button click sounds
     LoadDefaultButtonSounds();
 
-    std::cout << "FMOD Audio initialized successfully!" << std::endl;
     return true;
 }
 
@@ -118,8 +117,6 @@ void AudioSystem::PlayButtonSound(ButtonType type) {
         }
     }
     else {
-        std::cerr << "Warning: Button sound not found for type " << static_cast<int>(type) << std::endl;
-
         // hail mary: play PLAY sound if the requested type isn't found
         if (type != ButtonType::PLAY) {
             auto playIt = buttonSounds.find(ButtonType::PLAY);
@@ -160,10 +157,8 @@ void AudioSystem::RegisterButtonSound(ButtonType type, const std::string& soundP
  * @param sound Pointer to an already loaded FMOD::Sound object.
  */
 void AudioSystem::RegisterButtonSound(ButtonType type, FMOD::Sound* sound) {
-
     if (sound) {
         buttonSounds[type] = sound;
-        std::cout << "Registered button sound for type " << static_cast<int>(type) << std::endl;
     }
 }
 
@@ -248,7 +243,6 @@ void AudioSystem::PlaySound(FMOD::Sound* sound) {
 
     // DON'T PLAY AUDIO IN EDIT MODE
     if (SceneManager::Get().IsInEditMode()) {
-        std::cout << "[AudioSystem] Blocked sound playback (in edit mode)\n";
         return;
     }
 
@@ -284,7 +278,6 @@ void AudioSystem::StopAll() {
 
     if (result == FMOD_OK && masterGroup) {
         masterGroup->stop();
-        std::cout << "[AudioSystem] Stopped all channels\n";
     }
 }
 
@@ -304,7 +297,6 @@ FMOD::Channel* AudioSystem::PlaySoundGetChannel(FMOD::Sound* sound, bool paused)
 
     // DON'T PLAY AUDIO IN EDIT MODE
     if (SceneManager::Get().IsInEditMode()) {
-        std::cout << "[AudioSystem] Blocked sound playback (in edit mode)\n";
         return nullptr;
     }
 
@@ -384,24 +376,19 @@ void AudioSystem::SetChannelPaused(FMOD::Channel* channel, bool paused) {
  */
 void AudioManager::Initialize() {
     // Initialize AudioCache
-    std::cout << "\n=== TESTING AUDIOCACHE ===" << std::endl;
     if (!AudioCache::Initialize("../Assets/audio_manifest.json")) {
         std::cerr << "AudioCache failed to initialize!" << std::endl;
     }
-    std::cout << "=== AUDIOCACHE TEST COMPLETE ===\n" << std::endl;
 
     AudioSystem::Init();
     AudioSystem::Configure2DSpatialAudio();
     AudioSystem::SetListenerPosition(0.0f, 0.0f);
 
-    std::cout << "\n[AudioManager] Loading init bank..." << std::endl;
     AudioCache::LoadBank("init");
 
     // Preload music tracks
     mainMenuMusic = AudioCache::GetSound("main_menu");
     level1Music = AudioCache::GetSound("level_1");
-
-    std::cout << "[AudioManager] Music preloaded (will play when entering play mode)\n";
 
     // Initialize fade state
     fadeActive = false;
@@ -409,7 +396,6 @@ void AudioManager::Initialize() {
     pendingBGM = "";
 
     GuiSystem::SetAudioManager(this);
-    std::cout << "[AudioManager] GuiSystem audio manager set\n";
 }
 
 /**
@@ -440,17 +426,14 @@ void AudioManager::UpdateFade(float dt) {
             currentChannel = nullptr;
         }
 
-        // Start new music instantly at full volume (no fade in)
+        // Start new music using StartBGM (which handles paused start properly)
         if (!pendingBGM.empty()) {
-            FMOD::Sound* newBGM = AudioCache::GetSound(pendingBGM);
-            if (newBGM) {
-                currentChannel = PlayGetChannel(newBGM, false);
-                if (currentChannel) {
-                    currentChannel->setVolume(musicVol);
-                }
-            }
+            // Save the pending BGM before clearing it
+            std::string nextBGM = pendingBGM;
             pendingBGM = "";
-            std::cout << "[AudioManager] Music transition complete\n";
+
+            // Use StartBGM which handles the paused-unpause technique
+            StartBGM(nextBGM);
         }
 
         // Reset fade state
@@ -474,8 +457,6 @@ void AudioManager::TransitionToBGM(const std::string& bgmAssetName, float durati
     fadeTime = 0.0f;
     fadeActive = true;
     pendingBGM = bgmAssetName;
-
-    std::cout << "[AudioManager] Starting music transition to: " << bgmAssetName << "\n";
 }
 
 /**
@@ -491,22 +472,25 @@ void AudioManager::StartBGM(const std::string& bgmAssetName) {
     if (bgmAssetName.empty()) return;
 
     FMOD::Sound* bgm = AudioCache::GetSound(bgmAssetName);
-    if (!bgm) return;
+    if (!bgm) {
+        return;
+    }
 
     // Clear any active fade state
     fadeActive = false;
     fadeTime = 0.0f;
     pendingBGM = "";
 
-    // Start playing at full volume
-    currentChannel = PlayGetChannel(bgm, false);
+    // *** Start playing PAUSED, set volume, then unpause ***
+    currentChannel = PlayGetChannel(bgm, true);  // true = start paused
     if (currentChannel) {
+        // Set volume while paused (no ramping)
         currentChannel->setVolume(musicVol);
+
+        // Now unpause to start playback at full volume
+        currentChannel->setPaused(false);
     }
-
-    std::cout << "[AudioManager] Started BGM: " << bgmAssetName << "\n";
 }
-
 /**
  * @brief Fades out and stops current music.
  *
@@ -521,8 +505,6 @@ void AudioManager::FadeOutAndStop(float duration) {
     fadeTime = 0.0f;
     fadeActive = true;
     pendingBGM = "";  // Empty means just stop, don't play new music
-
-    std::cout << "[AudioManager] Fading out music\n";
 }
 
 
@@ -544,8 +526,6 @@ void AudioManager::PauseMusic() {
         // Pause the channel
         currentChannel->setPaused(true);
         musicPaused = true;
-
-        std::cout << "[AudioManager] Music paused at position: " << pausedPosition << "ms" << std::endl;
     }
 }
 
@@ -558,8 +538,6 @@ void AudioManager::ResumeMusic() {
     // Resume from paused position
     currentChannel->setPaused(false);
     musicPaused = false;
-
-    std::cout << "[AudioManager] Music resumed from position: " << pausedPosition << "ms" << std::endl;
 }
 
 /**
@@ -570,7 +548,6 @@ void AudioManager::Shutdown() {
     if (currentChannel) {
         currentChannel->stop();
         currentChannel = nullptr;
-        std::cout << "[AudioManager] Current channel stopped\n";
     }
 
     // clear references to sounds in cache
@@ -720,16 +697,12 @@ void AudioManager::UpdateListenerToCamera() {
  * @param dt Delta time in seconds.
  */
 
-void AudioManager::Update(float) {
-    //(void)dt;
+void AudioManager::Update(float dt) {
     // Update listener to follow camera every frame
     UpdateListenerToCamera();
 
     // Update FMOD system
     AudioSystem::Update();
-
-    // update all audio components
-    //Update_AudioComponents(dt);
 
     SceneManager& sm = SceneManager::Get();
 
@@ -741,9 +714,6 @@ void AudioManager::Update(float) {
 
     // ENTERING PLAY MODE (edit → play)
     if (!sm.IsInEditMode() && wasInEditMode) {
-        std::cout << "[AudioManager] Entering PLAY MODE\n";
-
-        // CRITICAL: Clear any leftover fade state from edit mode FIRST
         fadeActive = false;
         fadeTime = 0.0f;
         pendingBGM = "";
@@ -751,32 +721,23 @@ void AudioManager::Update(float) {
         std::string bgmAssetName = sm.GetCurrentSceneBGM();
 
         if (!bgmAssetName.empty()) {
-            // Start music instantly at full volume (no fade in)
             StartBGM(bgmAssetName);
-        }
-        else {
-            std::cout << "[AudioManager] No BGM for this scene\n";
         }
 
         lastBGM = bgmAssetName;
         lastScene = sm.GetCurrentSceneName();
 
         wasInEditMode = sm.IsInEditMode();
-        // IMPORTANT: Return early to skip UpdateFade this frame
         return;
     }
 
     // ENTERING EDIT MODE (play to edit)
     if (sm.IsInEditMode() && !wasInEditMode) {
-        std::cout << "[AudioManager] Entering EDIT MODE - stopping music instantly\n";
-
-        // Stop music immediately (can't fade in edit mode since dt=0)
         if (currentChannel) {
             currentChannel->stop();
             currentChannel = nullptr;
         }
 
-        // Clear fade state
         fadeActive = false;
         fadeTime = 0.0f;
         pendingBGM = "";
@@ -797,53 +758,80 @@ void AudioManager::Update(float) {
         std::string currentBGM = sm.GetCurrentSceneBGM();
         std::string currentScene = sm.GetCurrentSceneName();
 
-        // Get transition progress (0.0 = start of fade, 1.0 = fully faded)
         float transitionProgress = sm.GetTransitionProgress();
 
-        // Track if we just finished transitioning
         static bool wasTransitioning = false;
-        static bool waitingForSceneLoad = false;
         bool isTransitioning = (transitionProgress > 0.0f && transitionProgress < 1.0f);
 
-        // If we're in a transition (progress > 0 and < 1), fade out BGM volume
+        // If we're in a transition, fade out BGM volume
         if (isTransitioning) {
             if (currentChannel) {
-                // Fade volume from full (1.0) to silent (0.0)
                 float fadeOutVolume = musicVol * (1.0f - transitionProgress);
                 currentChannel->setVolume(fadeOutVolume);
             }
             wasTransitioning = true;
         }
 
-        // Transition just completed - stop music and wait for scene to load
-        if (wasTransitioning && !isTransitioning && transitionProgress >= 1.0f && !waitingForSceneLoad) {
+        // Transition completed - DON'T start music immediately, wait for fade to finish
+        if (wasTransitioning && !isTransitioning) {
             // Stop old music
             if (currentChannel) {
                 currentChannel->stop();
                 currentChannel = nullptr;
             }
 
-            wasTransitioning = false;
-            waitingForSceneLoad = true;
-        }
-
-        // Scene has loaded (BGM changed) - start new music
-        if (waitingForSceneLoad && currentBGM != lastBGM) {
-            // Start new BGM immediately at full volume (no fade in)
-            if (!currentBGM.empty()) {
-                StartBGM(currentBGM);
-
-                // Ensure volume is set to full after StartBGM
-                if (currentChannel) {
-                    currentChannel->setVolume(musicVol);
-                }
+            // Queue the new BGM to start after audio fade completes
+            // If new scene has BGM, transition to it
+            if (!currentBGM.empty() && currentBGM != lastBGM) {
+                // Set a very short fade (0.5s) so music starts quickly after screen fade
+                TransitionToBGM(currentBGM, 0.5f);
+            }
+            // If new scene has no BGM, just clear state
+            else if (currentBGM.empty()) {
+                fadeActive = false;
+                fadeTime = 0.0f;
+                pendingBGM = "";
             }
 
             lastBGM = currentBGM;
             lastScene = currentScene;
-            waitingForSceneLoad = false;
+            wasTransitioning = false;
+        }
+
+        // Scene changed without transition (e.g., cutscene auto-transition)
+        if (!isTransitioning && !wasTransitioning && currentScene != lastScene) {
+            // Check if BGM changed
+            if (currentBGM != lastBGM) {
+                // If current scene has no BGM, fade out
+                if (currentBGM.empty() && currentChannel) {
+                    FadeOutAndStop(1.0f);
+                }
+                // If we have BGM and it's different, ALWAYS fade between them
+                else if (!currentBGM.empty()) {
+                    // Fade from old to new music
+                    if (currentChannel && !lastBGM.empty()) {
+                        TransitionToBGM(currentBGM, 1.0f);  // 1 second fade
+                    }
+                    // No music playing, just start new BGM
+                    else {
+                        // Clear fade state
+                        fadeActive = false;
+                        fadeTime = 0.0f;
+                        pendingBGM = "";
+
+                        StartBGM(currentBGM);
+                    }
+                }
+
+                lastBGM = currentBGM;
+            }
+
+            lastScene = currentScene;
         }
     }
+
+    // *** Process fades LAST, after all scene logic ***
+    UpdateFade(dt);
 }
 
 // ============================================================================
@@ -862,8 +850,6 @@ void AudioManager::Update(float) {
  */
 void AudioSystem::Configure2DSpatialAudio() {
     if (!mSystem) return;
-
-    std::cout << "[AudioSystem] Configuring 2D spatial audio..." << std::endl;
 
     // Set 3D settings for 2D spatial audio
     // Parameters: doppler scale (0.0 for 2D), distance factor, rolloff scale
@@ -891,8 +877,6 @@ void AudioSystem::Configure2DSpatialAudio() {
         std::cerr << "[AudioSystem] Failed to set listener attributes!" << std::endl;
         return;
     }
-
-    std::cout << "[AudioSystem] 2D spatial audio configured successfully" << std::endl;
 }
 
 /**
@@ -951,7 +935,6 @@ FMOD::Channel* AudioSystem::PlaySoundAt(const std::string& assetName, float x, f
 
     // DON'T PLAY AUDIO IN EDIT MODE
     if (SceneManager::Get().IsInEditMode()) {
-        std::cout << "[AudioSystem] Blocked spatial sound playback (in edit mode)\n";
         return nullptr;
     }
 
@@ -967,7 +950,7 @@ FMOD::Channel* AudioSystem::PlaySoundAt(const std::string& assetName, float x, f
         return nullptr;
     }
 
-    // Get the loaded sound
+    // Get  loaded sound
     FMOD::Sound* sound = AudioCache::GetSound(assetName);
     if (!sound) {
         std::cerr << "[AudioSystem] Failed to get sound: " << assetName << std::endl;
@@ -980,7 +963,7 @@ FMOD::Channel* AudioSystem::PlaySoundAt(const std::string& assetName, float x, f
     }
 
     // For spatial sounds, set up 3D positioning
-    // Play the sound (start paused so we can set 3D attributes first)
+    // Play the sound from pasued
     FMOD::Channel* channel = nullptr;
     FMOD_RESULT result = mSystem->playSound(sound, nullptr, true, &channel);
 

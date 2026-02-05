@@ -6,12 +6,12 @@
       "group": "Music"
     },
     "level_1": {
-      "path": "../Assets/audio/BGM/level1.wav",
+      "path": "../Assets/audio/BGM/Rock n Ghoul - Boss Idea_01_ROUGH.wav",
       "loop": true,
       "group": "Music"
     },
-    "boss_fight": {
-      "path": "../Assets/audio/BGM/Rock n Ghoul - Boss Idea_01_ROUGH.wav",
+    "cutscene_music": {
+      "path": "../Assets/audio/BGM/level1.wav",
       "loop": true,
       "group": "Music"
     },

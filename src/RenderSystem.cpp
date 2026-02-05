@@ -26,6 +26,7 @@
 #include "RenderSystem.h"
 #include "Render.h"
 #include "Animator.h"
+#include "AudioSystem.h"
 #include <Camera.h>
 #include "LogicSystem.h"
 #include "CollisionManager.h"
@@ -1038,12 +1039,18 @@ void RenderSystem::Update(float dt) {
 #ifndef NO_IMGUI
         captureScene = ImGuiSystem::guiEnabled;
 #endif
+
+        // TRACK FADE-OUT STATE FOR CUTSCENE MUSIC TO FADE OUT
+        static bool cutsceneFadingOut = false;
+        static double fadeOutTimer = 0.0;
+        static const double FADE_OUT_DURATION = 2.0; // 2 second fade
+
         if (!gCutscene.finished)
         {
             gCutscene.Update(dt);
 
             if (captureScene) {
-                renderer.BeginSceneCapture();        // binds scene FBO
+                renderer.BeginSceneCapture();
                 renderer.ClearBackground({ 0,0,0,1 });
                 renderer.useCamera = false;
                 renderer.SetProjectionType(ProjectionType::UI);
@@ -1063,18 +1070,62 @@ void RenderSystem::Update(float dt) {
         }
         else
         {
-            //cutsceneActive = false;
-            SceneManager::Get().SetCutscenePlaying(false);
-            gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
+            // start audio fade-out WHEN CUTSCENE OVER
+            if (!cutsceneFadingOut) {
+                std::cout << "[RenderSystem] Cutscene finished, starting audio fade-out\n";
 
-            SceneManager::Get().QueueLoadScene("../Assets/saves/" + GetNextScene() + ".json"); //wacky fix;
+                // Trigger audio fade-out in AudioManager
+                AudioManager::Get().FadeOutAndStop(FADE_OUT_DURATION);
+
+                cutsceneFadingOut = true;
+                fadeOutTimer = 0.0;
+            }
+
+            // WAIT for fade-out to complete
+            if (cutsceneFadingOut) {
+                fadeOutTimer += dt;
+
+                // KEEP rendering the last frame of the cutscene while fading
+                if (captureScene) {
+                    renderer.BeginSceneCapture();
+                    renderer.ClearBackground({ 0,0,0,1 });
+                    renderer.useCamera = false;
+                    renderer.SetProjectionType(ProjectionType::UI);
+                    gCutscene.Render();
+                    renderer.EndSceneCapture();
+                }
+
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glViewport(0, 0, GLApp::width, GLApp::height);
+                renderer.ClearBackground({ 0,0,0,1 });
+                renderer.useCamera = false;
+                renderer.SetProjectionType(ProjectionType::UI);
+                gCutscene.Render();
+
+                // FADE COMPLETE, LOAD NEXT SCENE
+                if (fadeOutTimer >= FADE_OUT_DURATION) {
+                    std::cout << "[RenderSystem] Fade-out complete, loading next scene\n";
+
+                    SceneManager::Get().SetCutscenePlaying(false);
+                    gCutscene.Shutdown();
+
+                    // reset fade
+                    cutsceneFadingOut = false;
+                    fadeOutTimer = 0.0;
+
+                    SceneManager::Get().QueueLoadScene("../Assets/saves/" + GetNextScene() + ".json");
+                }
+
+                return;
+            }
         }
+
         for (GLuint tex : s_backgroundTextures)
         {
             renderer.DrawFullscreenTexture(tex, true);
         }
     }
-		break; // end ST_CUTSCENE
+    break; // end ST_CUTSCENE
 
     default:
         break;
