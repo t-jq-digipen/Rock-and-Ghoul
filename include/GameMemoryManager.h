@@ -129,21 +129,21 @@ public:
             << (ENEMY_OBJECTS_PER_PAGE * ENEMY_MAX_PAGES) << " total)\n";*/
 
         // Calculate initial memory
-        size_t initialMemory =
-            sizeof(ProjectileData) * PROJECTILE_OBJECTS_PER_PAGE +
-            sizeof(AOEData) * AOE_OBJECTS_PER_PAGE +
-            sizeof(ShieldData) * SHIELD_OBJECTS_PER_PAGE +
-            sizeof(ParticleData) * PARTICLE_OBJECTS_PER_PAGE +
-            sizeof(EnemyData) * ENEMY_OBJECTS_PER_PAGE;
+        //size_t initialMemory =
+        //    sizeof(ProjectileData) * PROJECTILE_OBJECTS_PER_PAGE +
+        //    sizeof(AOEData) * AOE_OBJECTS_PER_PAGE +
+        //    sizeof(ShieldData) * SHIELD_OBJECTS_PER_PAGE +
+        //    sizeof(ParticleData) * PARTICLE_OBJECTS_PER_PAGE +
+        //    sizeof(EnemyData) * ENEMY_OBJECTS_PER_PAGE;
 
 
-        //  maximum possible memory
-        size_t maxMemory =
-            sizeof(ProjectileData) * PROJECTILE_OBJECTS_PER_PAGE * PROJECTILE_MAX_PAGES +
-            sizeof(AOEData) * AOE_OBJECTS_PER_PAGE * AOE_MAX_PAGES +
-            sizeof(ShieldData) * SHIELD_OBJECTS_PER_PAGE * SHIELD_MAX_PAGES +
-            sizeof(ParticleData) * PARTICLE_OBJECTS_PER_PAGE * PARTICLE_MAX_PAGES +
-            sizeof(EnemyData) * ENEMY_OBJECTS_PER_PAGE * ENEMY_MAX_PAGES;
+        ////  maximum possible memory
+        //size_t maxMemory =
+        //    sizeof(ProjectileData) * PROJECTILE_OBJECTS_PER_PAGE * PROJECTILE_MAX_PAGES +
+        //    sizeof(AOEData) * AOE_OBJECTS_PER_PAGE * AOE_MAX_PAGES +
+        //    sizeof(ShieldData) * SHIELD_OBJECTS_PER_PAGE * SHIELD_MAX_PAGES +
+        //    sizeof(ParticleData) * PARTICLE_OBJECTS_PER_PAGE * PARTICLE_MAX_PAGES +
+        //    sizeof(EnemyData) * ENEMY_OBJECTS_PER_PAGE * ENEMY_MAX_PAGES;
 
 
         std::cout << "\nDynamic memory pools ready\n";
