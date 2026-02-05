@@ -30,7 +30,9 @@ enum class ScriptID : unsigned int {
     PLAYER,
     CAMERA_TRACK,
     ROCK_SCRIPT,
-    MAINMENU_BG
+    MAINMENU_BG,
+    SPIRIT,
+    SPIRITMELEE
 };
 
 /**

@@ -41,7 +41,7 @@ void PhysicsSystem::Update(float dt) {
 
     static int debugCounter = 0;
     if (++debugCounter % 60 == 0) {
-        std::cout << "[PhysicsSystem] Update called, dt=" << dt << std::endl;
+       // std::cout << "[PhysicsSystem] Update called, dt=" << dt << std::endl;
     }
 
     // Step 1: Move entities with physics

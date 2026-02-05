@@ -1,12 +1,12 @@
 {
     "components": {
         "Behaviour": "{\"scripts\":[\"ManfredEnemy\"]}",
-        "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":200.0,\"aabb_maxX\":130.05003356933594,\"aabb_maxY\":300.95977783203125,\"aabb_minX\":30.050033569335938,\"aabb_minY\":100.95976257324219,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+        "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":200.0,\"aabb_maxX\":1248.1488037109375,\"aabb_maxY\":600.0,\"aabb_minX\":1148.1488037109375,\"aabb_minY\":400.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
         "Movement": "{\"moveSpeed\":400.0,\"moveType\":1}",
         "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.5,\"velX\":0.0,\"velY\":0.0}",
         "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":10.0,\\\"scaleY\\\":10.0,\\\"texturePath\\\":\\\"../Assets/Ghoul_2048px.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
-        "Tag": "{\"tagID\":1}",
-        "Transform": "{\"posX\":80.05003356933594,\"posY\":200.9597625732422,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+        "Tag": "{\"tagID\":2}",
+        "Transform": "{\"posX\":1198.1488037109375,\"posY\":500.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
     },
     "name": "ghoul"
 }

@@ -81,13 +81,13 @@ public:
     void EndModify(Entity e, const TransformComponent& after);
 
     void Undo();
-
+    static TransformState MakeState(const TransformComponent& t);
+    static bool StatesEqual(const TransformState& a, const TransformState& b);
 private:
     UndoSystem() = default;
 
     void PushAction(const Action& a);
-    static TransformState MakeState(const TransformComponent& t);
-    static bool StatesEqual(const TransformState& a, const TransformState& b);
+
 
 private:
     std::vector<Action> m_stack;

@@ -72,7 +72,8 @@ struct SavedPhysics {
  */
 enum SceneType {
     ST_MENU,
-    ST_GAME
+    ST_GAME,
+    ST_CUTSCENE
 };
 
 /**
@@ -118,6 +119,18 @@ struct SavedScene {
         std::string sceneID = "0";
         std::vector<std::string> lines;
         int currentLineIndex = 0;
+
+        float textSpeed;
+        float wrapWidth;
+
+        bool bgEnabled = true;
+        Vec2 bgSize = { 1500.f, 300.f };
+        std::string bgRenderData{ "{}" };
+
+        bool profileEnabled = true;
+        Vec2 profileSize = { 200.f, 200.f };
+        Vec2 profileOffset = { 0.f, 0.f };
+        std::string profileRenderData{ "{}" };
     };
     std::vector<SavedDialogue> guiDialogues;
 
@@ -272,12 +285,17 @@ namespace Editor {
 
         }
     };
+    struct UndoContext {
+        Entity entity = INVALID_ENTITY;
+        bool enabled = false;
+    };
 
     struct Widget_Int {
         int* ref = nullptr;
         bool slider = false;
         int min = 0;
         int max = 0;
+        Entity ownerEntity = INVALID_ENTITY;
 
     };
 
@@ -286,6 +304,7 @@ namespace Editor {
         bool slider = false;
         float min = 0.f;
         float max = 0.f;
+        Entity ownerEntity = INVALID_ENTITY;
 
     };
 

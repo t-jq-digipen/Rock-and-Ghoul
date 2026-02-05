@@ -77,6 +77,11 @@ public:
     void SetTransitionTime(float duration) { sceneFadeDuration = duration; }
     float GetTransitionProgress() const { return (sceneFadeDuration == 0.f) ? 1.f : sceneTransitionTime / sceneFadeDuration; }
 
+    //Global flag for the cutscenes
+    bool IsCutscenePlaying() const { return m_cutscenePlaying; }
+    void SetCutscenePlaying(bool v) { m_cutscenePlaying = v; }
+
+
 private:
     SceneManager() = default;
 
@@ -87,4 +92,5 @@ private:
     float sceneTransitionTime = 0.f; // goes from 1.f to 0.f
     float sceneFadeDuration = 0.f;
     SceneType sceneType = ST_MENU;
+    bool m_cutscenePlaying = false;
 };

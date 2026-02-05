@@ -23,7 +23,7 @@
                     "line": "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 5,
                     "line": "Spooky..."
                 },
                 {
@@ -31,15 +31,24 @@
                     "line": "Groooowl..."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 4,
                     "line": "MEGA SPOOKY!"
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 4,
                     "line": "I gotta find Ghoul, and fast!"
                 }
             ],
-            "textSpeed": 30.0,
+            "textSpeed": 60.0,
+            "wrapWidth": 1300.0,
+            "customSpeaker": false,
+            "customSpeakerName": "Beberd",
+            "speakerUI": {
+                "pos": [300.0, 150.0],
+                "scale": 1.2,
+                "color": [0.0, 0.0, 0.0],
+                "centered": false
+            },
             "speakers": [
                 "Rock",
                 "Ghoul",
@@ -52,7 +61,25 @@
                 0.0,
                 0.0
             ],
-            "sceneID": "0"
+            "sceneID": "0",
+            "speakerBGs": [
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png",
+                "../Assets/UI_DialogueBox_Enemy.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png"
+            ],
+            "speakerProfiles": [
+                "../Assets/UI_RockDialogue_Happy.png",
+                "../Assets/UI_GhoulDialogue_Normal.png",
+                "../Assets/UI_EnemyDialogue_Normal.png",
+                "../Assets/UI_RockDialogue_Angry.png",
+                "../Assets/UI_RockDialogue_Frightened.png",
+                "../Assets/UI_RockDialogue_Shocked.png",
+                "../Assets/UI_RockDialogue_Victory.png"
+            ]
         },
         {
           "script": [
@@ -93,7 +120,16 @@
                     "line": "Alright spirit, game on!"
                 }
           ],
-            "textSpeed": 30.0,
+            "textSpeed": 60.0,
+            "wrapWidth": 1300.0,
+            "customSpeaker": false,
+            "customSpeakerName": "Beberd",
+            "speakerUI": {
+                "pos": [300.0, 150.0],
+                "scale": 1.2,
+                "color": [0.0, 0.0, 0.0],
+                "centered": false
+            },
             "speakers": [
                 "Rock",
                 "Ghoul",
@@ -106,7 +142,17 @@
                 0.0,
                 0.0
             ],
-            "sceneID": "1"
+            "sceneID": "1",
+            "speakerBGs": [
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png",
+                "../Assets/UI_DialogueBox_Enemy.png"
+            ],
+            "speakerProfiles": [
+                "../Assets/UI_RockDialogue_Happy.png",
+                "../Assets/UI_GhoulDialogue_Normal.png",
+                "../Assets/UI_EnemyDialogue_Normal.png"
+            ]
         },
         {
           "script": [
@@ -147,7 +193,16 @@
                     "line": "W-wait, hold o-."
                 }
           ],
-            "textSpeed": 30.0,
+            "textSpeed": 60.0,
+            "wrapWidth": 1300.0,
+            "customSpeaker": false,
+            "customSpeakerName": "Beberd",
+            "speakerUI": {
+                "pos": [300.0, 150.0],
+                "scale": 1.2,
+                "color": [0.0, 0.0, 0.0],
+                "centered": false
+            },
             "speakers": [
                 "Rock",
                 "Ghoul",
@@ -160,7 +215,17 @@
                 0.0,
                 0.0
             ],
-            "sceneID": "2"
+            "sceneID": "2",
+            "speakerBGs": [
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png",
+                "../Assets/UI_DialogueBox_Enemy.png"
+            ],
+            "speakerProfiles": [
+                "../Assets/UI_RockDialogue_Happy.png",
+                "../Assets/UI_GhoulDialogue_Normal.png",
+                "../Assets/UI_EnemyDialogue_Normal.png"
+            ]
         },
         {
           "script": [
@@ -209,7 +274,16 @@
                     "line": "[She strums a single melancholic note.]"
                 }                
           ],
-            "textSpeed": 30.0,
+            "textSpeed": 60.0,
+            "wrapWidth": 1300.0,
+            "customSpeaker": false,
+            "customSpeakerName": "Beberd",
+            "speakerUI": {
+                "pos": [300.0, 150.0],
+                "scale": 1.2,
+                "color": [0.0, 0.0, 0.0],
+                "centered": false
+            },
             "speakers": [
                 "Rock",
                 "Ghoul",
@@ -222,7 +296,17 @@
                 0.0,
                 0.0
             ],
-            "sceneID": "3"
+            "sceneID": "3",
+            "speakerBGs": [
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png",
+                "../Assets/UI_DialogueBox_Enemy.png"
+            ],
+            "speakerProfiles": [
+                "../Assets/UI_RockDialogue_Happy.png",
+                "../Assets/UI_GhoulDialogue_Normal.png",
+                "../Assets/UI_EnemyDialogue_Normal.png"
+            ]
         }
     ]
 }

@@ -37,6 +37,15 @@ public:
     static void AddBackgroundTexture(GLuint texID, const std::string& path);
     static std::vector<std::string> GetBackgroundTexturePaths();
     static void ClearBackgroundTextures();
+    static bool* GetLayerEnabledArray();
+
+    // Cutscene
+    static void SetCutscenePath(const std::string& path);
+    static std::string GetCutscenePath();
+    static void SetCutsceneFPS(double fps);
+	static double GetCutsceneFPS();
+    static void SetNextScene(const std::string& path);
+    static std::string GetNextScene();
 
     static float pixelsPerUnit;
     static float unitsPerPixel;

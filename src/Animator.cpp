@@ -23,7 +23,7 @@
 
 bool ActiveFrames::operator==(const ActiveFrames& rhs) const
 {
-	return (this->row == rhs.row && this->col_start == rhs.col_start && this->col_end == rhs.col_end && this->duration == rhs.duration);
+	return (this->row == rhs.row && this->col_start == rhs.col_start && this->col_end == rhs.col_end && this->duration == rhs.duration && this->willLoop == rhs.willLoop);
 }
 
 namespace Animator {

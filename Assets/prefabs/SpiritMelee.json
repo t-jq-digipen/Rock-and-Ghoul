@@ -1,0 +1,9 @@
+{
+    "components": {
+        "Behaviour": "{\"scripts\":[\"SpiritMeleeScript\"]}",
+        "Collider": "{\"aabb_dimX\":150.0,\"aabb_dimY\":150.0,\"aabb_maxX\":1042.22119140625,\"aabb_maxY\":363.63714599609375,\"aabb_minX\":892.22119140625,\"aabb_minY\":213.63714599609375,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Projectile\",\"triggerEvent\":\"\"}",
+        "Lifetime": "{\"age\":0.0,\"lifetime\":0.20000000298023224}",
+        "Transform": "{\"posX\":967.22119140625,\"posY\":288.63714599609375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+    },
+    "name": "SpiritMelee"
+}

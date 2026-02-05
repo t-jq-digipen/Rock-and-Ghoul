@@ -207,8 +207,32 @@ add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
 )
 
 
+# =========================
+# FFmpeg
+# =========================
+set(FFMPEG_DIR "${CMAKE_SOURCE_DIR}/deps/FFmpeg")
+
+add_library(ffmpeg INTERFACE)
+
+target_include_directories(ffmpeg INTERFACE
+    "${FFMPEG_DIR}/include"
+)
+
+target_link_libraries(ffmpeg INTERFACE
+    "${FFMPEG_DIR}/lib/avcodec.lib"
+    "${FFMPEG_DIR}/lib/avformat.lib"
+    "${FFMPEG_DIR}/lib/avutil.lib"
+    "${FFMPEG_DIR}/lib/swscale.lib"
+)
 
 
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ffmpeg)
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${FFMPEG_DIR}/bin"
+    "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>"
+)
 
 
 
@@ -412,12 +436,16 @@ source_group("others" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementSystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/TextSystem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/TextSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MemoryPool.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameMemoryManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/PooledEntityFactory.h
     
 )
 
 source_group("others\\EventBus" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EventBus.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EventBus.h
+
 )
 source_group("Game\\Main Menu" FILES 
    )
@@ -441,6 +469,9 @@ source_group("Game\\Game Logic" FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityCreation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityCreation.h
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/CombatSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CombatSystem.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/EnemySystem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/EnemySystem.cpp

@@ -50,6 +50,7 @@
 #include "PlayerSystem.h"
 #include "EnemySystem.h"
 #include "PhysicsSystem.h"
+#include "CombatSystem.h"
 
 #include "CollisionManager.h"
 
@@ -60,6 +61,8 @@
 #include "MonoScriptComponent.h"
 #include "SceneManager.h"
 #include "../src/rectpack2D/finders_interface.h"
+#include "GameMemoryManager.h"
+#include "PooledEntityFactory.h"
 CoreEngine::CoreEngine()
     : systems{}
     , timings{}
@@ -112,6 +115,7 @@ void CoreEngine::Initialize()
     AddUpdateSystem(new MovementSystem());
     AddUpdateSystem(new PlayerSystem());
     AddUpdateSystem(new EnemySystem());
+    AddUpdateSystem(&CombatSystem::Get());
     AddUpdateSystem(new PhysicsSystem());
 
 
@@ -122,7 +126,11 @@ void CoreEngine::Initialize()
 #endif
     AddRenderSystem(&AudioManager::Get()); // audio updates in both editor and play mode
 
-    
+    std::cout << "Initializing memory pools...\n";
+    GameMemoryManager::Get().InitializePools();
+    PooledEntityFactory::Get().Initialize();
+    std::cout << "Memory pools ready!\n";
+
     std::cout << "[ImGui] GLApp::ptr_window = " << GLApp::ptr_window
         << " at " << (void*)&GLApp::ptr_window << std::endl;
 
@@ -179,6 +187,12 @@ void CoreEngine::Initialize()
 
     registry.Register_Component<RenderLayerComponent>("RenderLayer");
     std::cout << "REGISTRY | REGISTERED RENDERLAYER COMPONENT\n";
+
+    registry.Register_Component<ElementComponent>("Element");
+    std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";
+
+    registry.Register_Component<StatusEffectComponent>("StatusEffect");
+    std::cout << "REGISTRY | REGISTERED STATUSEFFECT COMPONENT\n";
 
     // ----------------------------------------------------
     // Initialize all systems
@@ -338,7 +352,8 @@ void CoreEngine::Shutdown()
 
         if (s != &GuiSystem::Get() &&
             s != &LogicSystem::Get() &&
-            s != &MonoSystem::Get())
+            s != &MonoSystem::Get() &&
+            s != &CombatSystem::Get())
         {
             delete s;
         }
