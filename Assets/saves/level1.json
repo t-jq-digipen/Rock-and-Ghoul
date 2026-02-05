@@ -200,7 +200,10 @@
                     "Spooky...",
                     "Groooowl...",
                     "MEGA SPOOKY!",
-                    "I gotta find Ghoul, and fast!"
+                    "I gotta find Ghoul, and fast!",
+                    "But first, I gotta fight off...whatever these are...",
+                    "I get the feeling they won't let me get past if I don't do something about these creeps...",
+                    "Alright then, let's rock this out! BRING IT ON!!!"
                 ],
                 "profileEnabled": true,
                 "profileOffset": [
@@ -227,7 +230,7 @@
                     "scale": 1.0,
                     "text": ""
                 },
-                "textSpeed": 60.0,
+                "textSpeed": 30.0,
                 "wrapWidth": 1300.0
             }
         ],

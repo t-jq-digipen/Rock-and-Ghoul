@@ -1446,7 +1446,7 @@ void ImGuiSystem::Update(float dt)
                     d.sceneID = "0";
                     d.ID = nextID();
                     d.owned = std::make_shared<TextSystem::TextComponent>();
-                    d.textSpeed = 60.f;
+                    d.textSpeed = 30.f;
                     d.wrapWidth = 1300.f;
                     if (d.owned) 
                     {
@@ -2434,7 +2434,7 @@ void ImGuiSystem::Update(float dt)
                             comp->SetCurrentLineIndex(0);
                             comp->SetIsTyping(false);
 
-                            comp->SetTextSpeed(sc.value("textSpeed", 30.0f));
+                            comp->SetTextSpeed(sc.value("textSpeed", 60.f));
                             comp->SetFontPath(sc.value("fontPath", std::string("../Assets/fonts/Marker.ttf")));
                             comp->SetFontSize(sc.value("fontSize", 1.0f));
 
