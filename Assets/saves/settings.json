@@ -17,6 +17,7 @@
                 "action": "None",
                 "actionName": "VolDown",
                 "actionParams": "{}",
+                "isVisible": true,
                 "label": "",
                 "pos": [
                     280.0,
@@ -34,6 +35,7 @@
                 "action": "None",
                 "actionName": "VolUp",
                 "actionParams": "{}",
+                "isVisible": true,
                 "label": "",
                 "pos": [
                     1120.0,
@@ -51,6 +53,7 @@
                 "action": "None",
                 "actionName": "SaveSettings",
                 "actionParams": "{}",
+                "isVisible": true,
                 "label": "SAVE",
                 "pos": [
                     660.0,
@@ -71,6 +74,7 @@
                     "duration": 0.0,
                     "scene": "MainMenu"
                 },
+                "isVisible": true,
                 "label": "",
                 "pos": [
                     660.0,
@@ -89,6 +93,7 @@
             {
                 "ID": 6,
                 "centered": true,
+                "isVisible": true,
                 "pos": [
                     700.0,
                     600.0
@@ -102,6 +107,7 @@
             {
                 "ID": 7,
                 "centered": true,
+                "isVisible": true,
                 "pos": [
                     700.0,
                     600.0
@@ -122,6 +128,7 @@
                     1.0,
                     1.0
                 ],
+                "isVisible": true,
                 "pos": [
                     760.0,
                     800.0
@@ -133,6 +140,9 @@
     },
     "sceneName": "settings",
     "sceneType": 0,
+    "settings": {
+        "volume": 0.0
+    },
     "worldMax": [
         1920.0,
         1080.0
