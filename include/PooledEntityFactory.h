@@ -148,6 +148,11 @@ public:
     size_t GetActiveEntityCount(EntityType type) const;
     void PrintStats() const;
 
+    
+    void IncrementEntityCount(EntityType type) {
+        activeEntityCounts[type]++;
+    }
+
 private:
     PooledEntityFactory() = default;
     ~PooledEntityFactory() = default;

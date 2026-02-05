@@ -214,10 +214,24 @@ void CombatSystem::RegisterProjectile(Entity projectile, const AttackProperties&
 		PooledEntity poolEntity(projectile, EntityType::PROJECTILE, poolData);
 		g_projectilePoolData[projectile] = poolEntity;
 
+		// Track count for stats
+		PooledEntityFactory::Get().IncrementEntityCount(EntityType::PROJECTILE);
+
 		std::cout << "[CombatSystem] Projectile " << projectile << " memory allocated from pool at " << poolData << "\n";
 	}
 }
 
+void CombatSystem::CleanupProjectilePoolData(Entity projectile) {
+	// Return pool memory when entity is removed externally LifetimeComponent in Physics
+	if (g_projectilePoolData.contains(projectile)) {
+		PooledEntityFactory::Get().DestroyEntity(g_projectilePoolData[projectile]);
+		g_projectilePoolData.erase(projectile);
+		std::cout << "[CombatSystem] Projectile " << projectile << " pool memory cleaned up (external removal)\n";
+	}
+	
+	g_attackProperties.erase(projectile);
+	g_projectileStates.erase(projectile);
+}
 
 void CombatSystem::UpdateElementEffects(float dt)
 {

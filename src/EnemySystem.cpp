@@ -753,7 +753,7 @@ namespace SpiritScript {
 					Vec2 dir = playerPos - selfPos;
 					dir = RG_Normalize(dir);
 					float angleRad = std::atan2(dir.y, dir.x);
-					float angleDeg = angleRad * (180.0f / RG_PI);
+					// angleDeg = angleRad * (180.0f / RG_PI);
 					spitTrans.rot = angleRad;
 
 					dir = RG_Scale(dir, PROJECTILE_SPEED);
