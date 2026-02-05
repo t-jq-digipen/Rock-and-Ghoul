@@ -787,7 +787,7 @@ void GuiSystem::Update(float dt)
                     const auto& lines = comp->GetLines();
                     if (lines.empty()) continue;
                     comp->SetCurrentLineIndex(std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1));
-                    if (comp->GetTextSpeed() <= 0.f) comp->SetTextSpeed(60.f);
+                    if (comp->GetTextSpeed() <= 0.f) comp->SetTextSpeed(30.f);
                     comp->StartTyping();
                 }
             }

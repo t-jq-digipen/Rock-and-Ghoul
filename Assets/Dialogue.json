@@ -37,6 +37,18 @@
                 {
                     "speakerID": 4,
                     "line": "I gotta find Ghoul, and fast!"
+                },
+                {
+                    "speakerID": 5,
+                    "line": "But first, I gotta fight off...whatever these are..."
+                },
+                {
+                    "speakerID": 4,
+                    "line": "I get the feeling they won't let me get past if I don't do something about these creeps..."
+                },
+                {
+                    "speakerID": 3,
+                    "line": "Alright then, let's rock this out! BRING IT ON!!!"
                 }
             ],
             "textSpeed": 60.0,

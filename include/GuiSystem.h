@@ -548,7 +548,7 @@ struct DialogueConfig {
     int ID = 0;
 
     // New variables
-    float textSpeed = 60.f; // text typing speed
+    float textSpeed = 30.f; // text typing speed
     float wrapWidth = 1300.f; // max width of line before next line
 
     // Dialogue box background UI settings

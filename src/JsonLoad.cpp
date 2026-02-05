@@ -1280,7 +1280,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                         }
                         if (outLines.empty()) outLines.push_back("");
 
-                        textSpeed = sc.value("textSpeed", 60.f);
+                        textSpeed = sc.value("textSpeed", 30.f);
                         fontPath = sc.value("fontPath", std::string("../Assets/fonts/Marker.ttf"));
                         fontSize = sc.value("fontSize", 1.0f);
 
