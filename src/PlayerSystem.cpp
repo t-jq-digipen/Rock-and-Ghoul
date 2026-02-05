@@ -19,6 +19,7 @@
 #include "PlayerSystem.h"
 #include "Registry.h"
 #include "Audio.h"
+#include "AudioComponent.h"
 #include "CoreEngine.h" // to check pause state for music
 #include "LogicSystem.h"
 #include "JsonLoad.h"
@@ -149,6 +150,29 @@ namespace PlayerMove {
 namespace RockScript {
 	// Constants
 	// 
+
+	enum PlayerSounds { // audio indices
+		SFX_FOOTSTEP = 0,
+		SFX_DODGE = 1,
+		SFX_SPAWN = 2,
+		SFX_GUITAR_STRUM = 3,
+		SFX_ELEMENT_FIRE = 4,
+		SFX_ELEMENT_ELECTRIC = 5,
+		SFX_ELEMENT_ICE = 6,
+		SFX_ELEMENT_WIND = 7,
+		SFX_ELEMENT_EXPLOSION = 8  // for fire AOE impact
+	};
+	// store player entity ID so all functions can access it; FOR SPATIAL AUDIO.. if it isn't spatial it just isnt used
+	static Entity playerEntityID = INVALID_ENTITY;
+
+	// HELPER FUNCTION TO PLAY AUDIOCOMP
+	inline void PlayAudio(PlayerSounds soundIndex) {
+		if (Registry::Get().Has_Component<AudioComponent>(playerEntityID)) {
+			auto& audioComp = Registry::Get().Get_Component<AudioComponent>(playerEntityID);
+			audioComp.PlaySound(soundIndex, playerEntityID);
+		}
+	}
+
 	struct ActiveSpell {
         Entity ecsEntity;        // Visual entity from JsonLoad
         PooledEntity poolEntity; // Pool data for logic
@@ -196,6 +220,11 @@ namespace RockScript {
 	constexpr float SOUNDWAVE_SPAWN		= 0.5f;
 	constexpr float SOUNDWAVE_LIFETIME	= 10.f;
 	constexpr float SOUNDWAVE_EXPIRE	= 0.5f;
+
+	// AOE
+	constexpr float AOE_DAMAGE = 25.f;
+	constexpr float AOE_KNOCKBACK = 200.f;
+	constexpr float AOE_RADIUS = 150.f;
 #pragma endregion
 
 	// Variables
@@ -208,6 +237,7 @@ namespace RockScript {
 	static float aoetimer = AOE_TIME;
 	static float wavetimer = SOUNDWAVE_TIME;
 	static bool shot = false;
+	static bool aoeHitboxSpawned = false;
 
 	//INPUT SEQUENCE SYSTEM
 	static std::vector<int> inputBuffer; //Stores arrow key presses
@@ -218,6 +248,27 @@ namespace RockScript {
 	std::unordered_map<Entity, size_t> subscriberID;
 
 	static Element currentElement = Element::NONE; //Set default element to none
+
+	// HELPER FUNCTION TO PLAY ELEMENTAL SOUNDS
+	inline void PlayElementalSound() {
+		switch (currentElement) {
+		case Element::FIRE:
+			PlayAudio(SFX_ELEMENT_FIRE);
+			break;
+		case Element::LIGHTNING:
+			PlayAudio(SFX_ELEMENT_ELECTRIC);
+			break;
+		case Element::ICE:
+			PlayAudio(SFX_ELEMENT_ICE);
+			break;
+		case Element::WIND:
+			PlayAudio(SFX_ELEMENT_WIND);
+			break;
+		default:
+			// they call em the base case
+			break;
+		}
+	}
 
 	static bool faceRight = true;
 
@@ -238,6 +289,16 @@ namespace RockScript {
 		TagComponent{ T_ENEMY },
 		SOUNDWAVE_DAMAGE,
 		50.f,
+		Element::NONE,
+		0.f,
+		false
+	};
+
+	AttackProperties AOE_PROPERTIES{
+		INVALID_ENTITY,
+		TagComponent{ T_ENEMY },
+		AOE_DAMAGE,
+		AOE_KNOCKBACK,
 		Element::NONE,
 		0.f,
 		false
@@ -410,6 +471,7 @@ namespace RockScript {
 		meleetimer = SWING_TIME;
 		aoetimer = AOE_TIME;
 		wavetimer = SOUNDWAVE_TIME;
+		aoeHitboxSpawned = false;
 	}
 
 
@@ -440,7 +502,7 @@ namespace RockScript {
 	void Attack() {
 		if (IsBusy()) { return; }
 
-		AudioSystem::PlaySoundAt("player_dodge", 0.0f, 0.0f, 1.0f);
+		PlayAudio(SFX_DODGE);
 		meleetimer = 0.f;
 		shot = false;
 	}
@@ -734,7 +796,11 @@ namespace RockScript {
 		auto& registry = Registry::Get();
 		auto& trans = registry.Get_Component<TransformComponent>(eID);
 
-		AudioSystem::PlaySoundAt("guitar_strum_heavy", 0.0f, 0.0f, 1.0f);
+		PlayAudio(SFX_GUITAR_STRUM);
+		// play elemental sound if element is active hohohoho
+		if (currentElement != Element::NONE) {
+			PlayElementalSound();
+		}
 		switch (spell.type)
 		{
 		case SpellType::SOUNDWAVE:
@@ -790,27 +856,55 @@ namespace RockScript {
 		}
 		case SpellType::AOE:
 		{
-			// Create visual entity (for rendering/physics)
+			std::string aoeFile = "AoeFX.json";
+
+			if (currentElement != Element::NONE) {
+				switch (currentElement) {
+				case Element::FIRE:
+					aoeFile = "AoeFX_Fire.json";
+					break;
+				case Element::ICE:
+					aoeFile = "AoeFX_Ice.json";
+					break;
+				case Element::LIGHTNING:
+					aoeFile = "AoeFX_Lightning.json";
+					break;
+				case Element::WIND:
+					aoeFile = "AoeFX_Wind.json";
+					break;
+				default:
+					aoeFile = "AoeFX.json";
+					break;
+				}
+			}
+
+			// Create visual entity (spawns above, will crash down)
 			float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
 			Entity aoeVisual = JsonLoad::LoadEntityFromFile(
-				FilePath::PREFABS_FOLDER + "AoeFX.json",
+				FilePath::PREFABS_FOLDER + aoeFile,
 				posx,
 				trans.pos.y + 400.f
 			);
 
 			// Create pool entity using THE SAME FILE
 			PooledEntity poolAOE = PooledEntityFactory::Get().CreateAOE(
-				FilePath::PREFABS_FOLDER + "AoeFX.json",
+				FilePath::PREFABS_FOLDER + aoeFile,
 				posx,
 				trans.pos.y + 400.f
 			);
 
-			// Link them together
+			// Link them together for visual tracking
 			if (poolAOE.active) {
+				// Set element for pool data
+				AOEData* aoeData = PooledEntityFactory::Get().GetPoolData<AOEData>(poolAOE);
+				if (aoeData != nullptr) {
+					aoeData->element = static_cast<int>(currentElement);
+				}
+
 				ActiveSpell spelled;
 				spelled.ecsEntity = aoeVisual;
 				spelled.poolEntity = poolAOE;
-				spelled.lifetime = 1.5f; // AOE duration
+				spelled.lifetime = 1.5f; // AOE visual duration
 				activeSpells.push_back(spelled);
 			}
 
@@ -909,6 +1003,7 @@ namespace RockScript {
 		meleetimer = SWING_TIME; // swing
 		aoetimer = AOE_TIME;
 		wavetimer = SOUNDWAVE_TIME;
+		aoeHitboxSpawned = false;
 
 		activeSpells.clear();
 		inputBuffer.clear();
@@ -931,6 +1026,31 @@ namespace RockScript {
 	inline void Start(Entity eID)
 	{
 		std::cout << "Rock script started" << std::endl;
+
+		playerEntityID = eID; // for audcomp to work
+
+		// add audcomp
+		if (!Registry::Get().Has_Component<AudioComponent>(eID)) {
+			AudioComponent audioComp;
+			audioComp.spatial = true;
+			audioComp.volume = 1.0f;
+			audioComp.minDistance = 50.0f;
+			audioComp.maxDistance = 1000.0f;
+
+			// Add sounds in specific order
+			audioComp.AddSound("player_footstep_wood");			// index nada
+			audioComp.AddSound("player_dodge");					// index 1
+			audioComp.AddSound("player_spawnSound");			// index 2
+			audioComp.AddSound("guitar_strum_heavy");			// index 3
+			audioComp.AddSound("guitar_element_fire");          // index 4 - SFX_ELEMENT_FIRE
+			audioComp.AddSound("guitar_element_electric");      // index 5 - SFX_ELEMENT_ELECTRIC
+			audioComp.AddSound("guitar_element_ice");           // index 6 - SFX_ELEMENT_ICE
+			audioComp.AddSound("guitar_element_wind");          // index 7 - SFX_ELEMENT_WIND
+			audioComp.AddSound("guitar_element_exploding_item");// index 8 - SFX_ELEMENT_EXPLOSION
+
+
+			Registry::Get().Add_Component(eID, audioComp);
+		}
 		for (auto& visual : visualBuffer) {
 			visual.direction = 0;
 			visual.timeRemaining = 0.f;
@@ -1003,7 +1123,7 @@ namespace RockScript {
 		shieldy = INVALID_ENTITY;
 
 
-		AudioSystem::PlaySoundAt("player_spawnSound", 0.0f, 0.0f, 1.0f);
+		PlayAudio(SFX_SPAWN);
 
 		CombatSystem::Get().RegisterCombatant(eID);
 
@@ -1203,12 +1323,7 @@ namespace RockScript {
 				if (footstepTimers[eID] >= footstepInterval) {
 
 					// Play footstep sound at player position using spatial audio
-					AudioSystem::PlaySoundAt(
-						"player_footstep_wood",
-						transComp.pos.x,
-						transComp.pos.y,
-						1.0f
-					);
+					PlayAudio(SFX_FOOTSTEP);
 					footstepTimers[eID] = 0.0f;  // Reset timer
 				}
 			}
@@ -1273,7 +1388,38 @@ namespace RockScript {
 			moveComp.ResetFrameIntent();
 			aoetimer += dt;
 			animstate = (faceRight) ? 8 : 9;
+
+			// Spawn AOE hitbox after delay (when crash happens)
+			if (aoetimer >= 0.4f && !aoeHitboxSpawned)
+			{
+				// Get transform component
+				auto& trans = registry.Get_Component<TransformComponent>(eID);
+
+				// Spawn hitbox at ground level
+				float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
+				Vec2 aoeOffset = { posx - trans.pos.x, -100.f };  // Lower down a bit
+				Vec2 aoeSize = { AOE_RADIUS * 3.f, AOE_RADIUS * 2.f };  // Wider
+
+				AOE_PROPERTIES.owner = eID;
+				AOE_PROPERTIES.element = currentElement;
+				AOE_PROPERTIES.lifetime = 0.2f;
+
+				CombatSystem::Get().SpawnHitBox(
+					AOE_PROPERTIES,
+					aoeOffset,
+					aoeSize
+				);
+
+				aoeHitboxSpawned = true;
+			}
 		}	// end AOE CAST
+		else
+		{
+			// Reset flag when AOE animation completes
+			if (aoeHitboxSpawned) {
+				aoeHitboxSpawned = false;
+			}
+		}
 
 		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
 		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
@@ -1426,83 +1572,4 @@ void PlayerSystem::Shutdown()
 {
 	EventBus::Get().Unsubscribe<SceneLoadEvent>(SceneSubscriberID);
 	std::cout << "PlayerSystem Shutdown!\n";
-}
-
-// ============================================================================
-// FOOTSTEP IMPLEMENTATION
-// ============================================================================
-
-void PlayerSystem::UpdateFootsteps(Entity eID, float dt) {
-	// Check if player is moving by checking input
-	bool isMoving = false;
-
-	//if (m_registry.Has_Component<InputComponent>(eID)) {
-	//	auto& input = m_registry.Get_Component<InputComponent>(eID);
-
-	//	// Check movement keys based on control scheme
-	//	switch (input.scheme) {
-	//	case CS_WASD:
-	//		isMoving = Input::IsKeyHeld(GLFW_KEY_W) ||
-	//			Input::IsKeyHeld(GLFW_KEY_A) ||
-	//			Input::IsKeyHeld(GLFW_KEY_S) ||
-	//			Input::IsKeyHeld(GLFW_KEY_D);
-	//		break;
-
-	//	case CS_IJKL:
-	//		isMoving = Input::IsKeyHeld(GLFW_KEY_I) ||
-	//			Input::IsKeyHeld(GLFW_KEY_J) ||
-	//			Input::IsKeyHeld(GLFW_KEY_K) ||
-	//			Input::IsKeyHeld(GLFW_KEY_L);
-	//		break;
-
-	//	case CS_ARROWS:
-	//		isMoving = Input::IsKeyHeld(GLFW_KEY_UP) ||
-	//			Input::IsKeyHeld(GLFW_KEY_LEFT) ||
-	//			Input::IsKeyHeld(GLFW_KEY_DOWN) ||
-	//			Input::IsKeyHeld(GLFW_KEY_RIGHT);
-	//		break;
-	//	}
-	//}
-	//else {
-	//	return;
-	//}
-
-	// DEBUG: Print movement state once per second
-	static float debugTimer = 0.0f;
-	debugTimer += dt;
-	if (debugTimer >= 1.0f) {
-		debugTimer = 0.0f;
-	}
-
-	// Reset timer when not moving
-	if (!isMoving) {
-		footstepTimers[eID] = 0.0f;
-		return;
-	}
-
-	// Increment timer
-	footstepTimers[eID] += dt;
-
-	// Play footstep when timer exceeds interval
-	if (footstepTimers[eID] >= footstepInterval) {
-		PlayFootstep(eID);
-		footstepTimers[eID] = 0.0f;  // Reset timer
-	}
-}
-
-void PlayerSystem::PlayFootstep(Entity eID) {
-	// Get player position from transform
-	if (!m_registry.Has_Component<TransformComponent>(eID)) {
-		return;
-	}
-
-	auto& transform = m_registry.Get_Component<TransformComponent>(eID);
-
-	// Play footstep sound at player position using spatial audio
-	AudioSystem::PlaySoundAt(
-		"player_footstep_wood",
-		transform.pos.x,
-		transform.pos.y,
-		1.0f
-	);
 }

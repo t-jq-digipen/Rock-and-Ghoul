@@ -44,10 +44,11 @@ void CombatSystem::ApplyElementEffect(Entity target, Element element) {
 
 	case Element::ICE:
 		statusComp.effectTimer = 3.0f;  // Slow for 3 seconds
-		// Store original speed and apply slow
+		// Store base speed and apply slow
 		if (m_registry.Has_Component<Movement::MovementComponent>(target)) {
 			auto& movement = m_registry.Get_Component<Movement::MovementComponent>(target);
-			statusComp.originalMoveSpeed = movement.GetMoveSpeed();
+			float currentSpeed = movement.GetMoveSpeed();
+			statusComp.originalMoveSpeed = (currentSpeed > 0.f) ? currentSpeed : 300.f;
 			movement.SetMoveSpeed(statusComp.originalMoveSpeed * 0.5f); // 50% slow
 			std::cout << "[ELEMENT] Applied ICE effect to Entity " << target << " (3s slow, speed: "
 			          << statusComp.originalMoveSpeed << " -> " << (statusComp.originalMoveSpeed * 0.5f) << ")" << std::endl;

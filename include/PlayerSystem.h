@@ -71,8 +71,6 @@ class PlayerSystem : public ISystem {
 private:
     size_t SceneSubscriberID{};
 
-    void UpdateFootsteps(Entity eID, float dt);
-    void PlayFootstep(Entity eID);
     // static inline Movement::InputDirection VelToDir(float x, float y);
     std::vector<PooledEntity> activeProjectiles;
     // static inline void NormalizeDiagonalMovement(float& x, float& y);

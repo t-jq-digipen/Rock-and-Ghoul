@@ -39,9 +39,11 @@
   "sfx": {
     "guitar_element_fire": {
       "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Fire.wav",
-      "loop": true,
+      "loop": false,
       "group": "SFX",
-      "spatial": true
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 1000.0
     },
     "guitar_element_burning_item": {
       "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Burning.wav",
@@ -51,33 +53,41 @@
     },
     "guitar_element_exploding_item": {
       "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Fire Explosion.wav",
-      "loop": true,
+      "loop": false,
       "group": "SFX",
-      "spatial": true
+      "spatial": true,
+      "minDistance": 150.0,
+      "maxDistance": 1500.0
     },
     "guitar_element_electric": {
       "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Electricity.wav",
-      "loop": true,
+      "loop": false,
       "group": "SFX",
-      "spatial": true
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 1000.0
     },
     "guitar_element_ice": {
       "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Ice.wav",
-      "loop": true,
+      "loop": false,
       "group": "SFX",
-      "spatial": true
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 1000.0
     },
     "guitar_element_frozen_item": {
       "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Frozen.wav",
-      "loop": true,
+      "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "guitar_element_wind": {
       "path": "../Assets/audio/SFX/Player/Guitar/Elemental Attack/Wind.wav",
-      "loop": true,
+      "loop": false,
       "group": "SFX",
-      "spatial": true
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 1000.0
     },
     "guitar_strum_heavy": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Heavy Electric Guitar.wav",
@@ -133,6 +143,30 @@
       "group": "SFX",
       "spatial": false
     },
+    "pluck1": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck1.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "pluck2": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck2.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "pluck3": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck3.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "pluck4": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck4.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
     "player_dodge": {
       "path": "../Assets/audio/SFX/Player/Movement/Dodge.wav",
       "loop": false,
@@ -141,11 +175,10 @@
     },
     "player_die": {
       "path": "../Assets/audio/SFX/Player/Movement/Rock Dies.wav",
-      "loop": true,
+      "loop": false,
       "group": "SFX",
       "spatial": true
     },
-
     "player_footstep_wood": {
       "path": "../Assets/audio/SFX/Player/Movement/Walking on Wood.wav",
       "loop": false,
@@ -154,7 +187,7 @@
       "minDistance": 100.0,
       "maxDistance": 2000.0
     },
-      "player_spawnSound": {
+    "player_spawnSound": {
       "path": "../Assets/audio/SFX/Player/VO/Bring it on.wav",
       "loop": false,
       "group": "SFX",
@@ -190,7 +223,13 @@
       "level_1",
       "player_footstep_wood",
       "player_dodge",
-      "player_spawnSound"
+      "player_spawnSound",
+      "guitar_element_fire",
+      "guitar_element_electric",
+      "guitar_element_ice",
+      "guitar_element_wind",
+      "guitar_element_exploding_item",
+      "guitar_strum_heavy"
     ]
   }
 }
