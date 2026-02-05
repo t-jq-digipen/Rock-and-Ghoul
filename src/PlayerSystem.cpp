@@ -19,6 +19,7 @@
 #include "PlayerSystem.h"
 #include "Registry.h"
 #include "Audio.h"
+#include "AudioComponent.h"
 #include "CoreEngine.h" // to check pause state for music
 #include "LogicSystem.h"
 #include "JsonLoad.h"
@@ -149,6 +150,24 @@ namespace PlayerMove {
 namespace RockScript {
 	// Constants
 	// 
+
+	enum PlayerSounds { // audio indices
+		SFX_FOOTSTEP = 0,
+		SFX_DODGE = 1,
+		SFX_SPAWN = 2,
+		SFX_GUITAR_STRUM = 3
+	};
+	// store player entity ID so all functions can access it; FOR SPATIAL AUDIO.. if it isn't spatial it just isnt used
+	static Entity playerEntityID = INVALID_ENTITY;
+
+	// HELPER FUNCTION TO PLAY AUDIOCOMP
+	inline void PlayAudio(PlayerSounds soundIndex) {
+		if (Registry::Get().Has_Component<AudioComponent>(playerEntityID)) {
+			auto& audioComp = Registry::Get().Get_Component<AudioComponent>(playerEntityID);
+			audioComp.PlaySound(soundIndex, playerEntityID);
+		}
+	}
+
 	struct ActiveSpell {
         Entity ecsEntity;        // Visual entity from JsonLoad
         PooledEntity poolEntity; // Pool data for logic
@@ -457,7 +476,7 @@ namespace RockScript {
 	void Attack() {
 		if (IsBusy()) { return; }
 
-		AudioSystem::PlaySoundAt("player_dodge", 0.0f, 0.0f, 1.0f);
+		PlayAudio(SFX_DODGE);
 		meleetimer = 0.f;
 		shot = false;
 	}
@@ -751,7 +770,7 @@ namespace RockScript {
 		auto& registry = Registry::Get();
 		auto& trans = registry.Get_Component<TransformComponent>(eID);
 
-		AudioSystem::PlaySoundAt("guitar_strum_heavy", 0.0f, 0.0f, 1.0f);
+		PlayAudio(SFX_GUITAR_STRUM);
 		switch (spell.type)
 		{
 		case SpellType::SOUNDWAVE:
@@ -1007,6 +1026,25 @@ namespace RockScript {
 	inline void Start(Entity eID)
 	{
 		std::cout << "Rock script started" << std::endl;
+
+		playerEntityID = eID; // for audcomp to work
+
+		// add audcomp
+		if (!Registry::Get().Has_Component<AudioComponent>(eID)) {
+			AudioComponent audioComp;
+			audioComp.spatial = true;
+			audioComp.volume = 1.0f;
+			audioComp.minDistance = 50.0f;
+			audioComp.maxDistance = 1000.0f;
+
+			// Add sounds in specific order
+			audioComp.AddSound("player_footstep_wood");   // index 0
+			audioComp.AddSound("player_dodge");           // index 1
+			audioComp.AddSound("player_spawnSound");      // index 2
+			audioComp.AddSound("guitar_strum_heavy");     // index 3
+
+			Registry::Get().Add_Component(eID, audioComp);
+		}
 		for (auto& visual : visualBuffer) {
 			visual.direction = 0;
 			visual.timeRemaining = 0.f;
@@ -1079,7 +1117,7 @@ namespace RockScript {
 		shieldy = INVALID_ENTITY;
 
 
-		AudioSystem::PlaySoundAt("player_spawnSound", 0.0f, 0.0f, 1.0f);
+		PlayAudio(SFX_SPAWN);
 
 		CombatSystem::Get().RegisterCombatant(eID);
 
@@ -1279,12 +1317,7 @@ namespace RockScript {
 				if (footstepTimers[eID] >= footstepInterval) {
 
 					// Play footstep sound at player position using spatial audio
-					AudioSystem::PlaySoundAt(
-						"player_footstep_wood",
-						transComp.pos.x,
-						transComp.pos.y,
-						1.0f
-					);
+					PlayAudio(SFX_FOOTSTEP);
 					footstepTimers[eID] = 0.0f;  // Reset timer
 				}
 			}
@@ -1533,83 +1566,4 @@ void PlayerSystem::Shutdown()
 {
 	EventBus::Get().Unsubscribe<SceneLoadEvent>(SceneSubscriberID);
 	std::cout << "PlayerSystem Shutdown!\n";
-}
-
-// ============================================================================
-// FOOTSTEP IMPLEMENTATION
-// ============================================================================
-
-void PlayerSystem::UpdateFootsteps(Entity eID, float dt) {
-	// Check if player is moving by checking input
-	bool isMoving = false;
-
-	//if (m_registry.Has_Component<InputComponent>(eID)) {
-	//	auto& input = m_registry.Get_Component<InputComponent>(eID);
-
-	//	// Check movement keys based on control scheme
-	//	switch (input.scheme) {
-	//	case CS_WASD:
-	//		isMoving = Input::IsKeyHeld(GLFW_KEY_W) ||
-	//			Input::IsKeyHeld(GLFW_KEY_A) ||
-	//			Input::IsKeyHeld(GLFW_KEY_S) ||
-	//			Input::IsKeyHeld(GLFW_KEY_D);
-	//		break;
-
-	//	case CS_IJKL:
-	//		isMoving = Input::IsKeyHeld(GLFW_KEY_I) ||
-	//			Input::IsKeyHeld(GLFW_KEY_J) ||
-	//			Input::IsKeyHeld(GLFW_KEY_K) ||
-	//			Input::IsKeyHeld(GLFW_KEY_L);
-	//		break;
-
-	//	case CS_ARROWS:
-	//		isMoving = Input::IsKeyHeld(GLFW_KEY_UP) ||
-	//			Input::IsKeyHeld(GLFW_KEY_LEFT) ||
-	//			Input::IsKeyHeld(GLFW_KEY_DOWN) ||
-	//			Input::IsKeyHeld(GLFW_KEY_RIGHT);
-	//		break;
-	//	}
-	//}
-	//else {
-	//	return;
-	//}
-
-	// DEBUG: Print movement state once per second
-	static float debugTimer = 0.0f;
-	debugTimer += dt;
-	if (debugTimer >= 1.0f) {
-		debugTimer = 0.0f;
-	}
-
-	// Reset timer when not moving
-	if (!isMoving) {
-		footstepTimers[eID] = 0.0f;
-		return;
-	}
-
-	// Increment timer
-	footstepTimers[eID] += dt;
-
-	// Play footstep when timer exceeds interval
-	if (footstepTimers[eID] >= footstepInterval) {
-		PlayFootstep(eID);
-		footstepTimers[eID] = 0.0f;  // Reset timer
-	}
-}
-
-void PlayerSystem::PlayFootstep(Entity eID) {
-	// Get player position from transform
-	if (!m_registry.Has_Component<TransformComponent>(eID)) {
-		return;
-	}
-
-	auto& transform = m_registry.Get_Component<TransformComponent>(eID);
-
-	// Play footstep sound at player position using spatial audio
-	AudioSystem::PlaySoundAt(
-		"player_footstep_wood",
-		transform.pos.x,
-		transform.pos.y,
-		1.0f
-	);
 }

@@ -133,6 +133,30 @@
       "group": "SFX",
       "spatial": false
     },
+    "pluck1": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck1.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "pluck2": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck2.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "pluck3": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck3.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "pluck4": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck4.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
     "player_dodge": {
       "path": "../Assets/audio/SFX/Player/Movement/Dodge.wav",
       "loop": false,
