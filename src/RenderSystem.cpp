@@ -34,6 +34,7 @@
 #include "SceneManager.h"
 #include "SimpleAtlas.h"
 #include "JsonLoad.h"
+#include "CombatSystem.h"
 #include <iostream>
 
 //need this to prevent name mangling 
@@ -1532,6 +1533,18 @@ void RenderSystem::Update(float dt) {
     {
         renderInstance.BeginBatch();
         drawLayer(fg_list);
+        for (auto& [eID, hpBar] : m_registry.Get_ComponentMap<HealthBarComponent>())
+        {
+            auto& health = m_registry.Get_Component<HealthComponent>(eID);
+            auto& transform = m_registry.Get_Component<TransformComponent>(eID);
+
+            if (health.currhp <= 0.f) continue;
+
+            float ratio = health.currhp / health.maxhp;
+
+            Vec2 pos = transform.pos + Vec2{ 0.f, hpBar.yOffset };
+            DrawHealthBar(pos, hpBar.width, hpBar.height, ratio);
+        }
         renderInstance.EndBatch();
         renderInstance.FlushBatch();
     }

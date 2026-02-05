@@ -12,6 +12,13 @@
     "entities": [
         {
             "components": {
+                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
+                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "MainMenu_Rock&Ghoul"
+        },
+        {
+            "components": {
                 "Behaviour": "{\"scripts\":[\"Movey\"]}",
                 "Movement": "{\"moveSpeed\":50.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
@@ -19,13 +26,6 @@
                 "Transform": "{\"posX\":1682.5478515625,\"posY\":-177.76971435546875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "MainMenu_Dots"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"../Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
-                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "MainMenu_Rock&Ghoul"
         }
     ],
     "fontConfig": "../Assets/fontAssets.json",
@@ -44,7 +44,7 @@
                     1650.0,
                     600.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_NewGame_Button.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkNewGame.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     150.0
@@ -56,12 +56,12 @@
                 "action": "None",
                 "actionName": "LoadSettings",
                 "actionParams": "{}",
-                "label": "SETTINGS",
+                "label": "settings",
                 "pos": [
                     1650.0,
                     450.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_SettingsButton.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkSettings.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     150.0
@@ -78,7 +78,7 @@
                     1650.0,
                     300.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_Controls.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkControls.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     150.0
@@ -90,12 +90,12 @@
                 "action": "None",
                 "actionName": "Quit",
                 "actionParams": "",
-                "label": "QUIT GAME",
+                "label": "QUIT GAME ",
                 "pos": [
                     1650.0,
                     150.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_QuitButton.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkQuit.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     150.0
@@ -112,7 +112,7 @@
                     960.0,
                     600.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_QuitButton.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkQuit.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     189.47369384765625
@@ -132,7 +132,7 @@
                     960.0,
                     400.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_NewGame_Button.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkNewGame.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     189.47369384765625

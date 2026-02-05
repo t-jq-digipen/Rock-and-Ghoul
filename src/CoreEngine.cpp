@@ -165,6 +165,9 @@ void CoreEngine::Initialize()
     registry.Register_Component<HealthComponent>("Health");
     std::cout << "REGISTRY | REGISTERED HEALTH COMPONENT\n";
 
+    registry.Register_Component<HealthBarComponent>("HealthBar", {"Health"});
+    std::cout << "REGISTRY | REGISTERED HEALTHBAR COMPONENT\n";
+
     //registry.Register_Component<InputComponent>("Input");
     //std::cout << "REGISTRY | REGISTERED INPUT COMPONENT\n";
 

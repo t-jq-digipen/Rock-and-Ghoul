@@ -756,7 +756,8 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
     if (w.slider && w.min != w.max)
         ImGui::SliderFloat(label.c_str(), w.ref, w.min, w.max);
     else
-        ImGui::InputFloat(label.c_str(), w.ref);
+        //ImGui::InputFloat(label.c_str(), w.ref);
+        ImGui::DragFloat(label.c_str(), w.ref, 0.1f);
 
     // ===== NOW check if it just became active =====
     if (ImGui::IsItemActivated()) {
@@ -4331,10 +4332,6 @@ void ImGuiSystem::ShowSceneBrowser()
     static std::vector<std::string> sceneFiles;
     static bool needRefresh = true;
 
-    // for cutscene
-    static std::string nextSceneName;
-    static int selectedNextScene = -1;
-    static std::string lastSceneName;
 
     //refresh button
     if (ImGui::Button("Refresh Scenes"))
@@ -4514,7 +4511,7 @@ void ImGuiSystem::ShowSceneBrowser()
         SceneManager::Get().SetSceneType(static_cast<SceneType>(currType));
     }
 
-    if (currType == ST_GAME) { ImGui::BeginDisabled(); }
+    if (currType != ST_GAME) { ImGui::BeginDisabled(); }
     ImGui::InputFloat2("Size", &sceneSize.x);
     if (ImGui::Button("Set size"))
     {
@@ -4553,7 +4550,7 @@ void ImGuiSystem::ShowSceneBrowser()
         cam.SetZoom(camSpawnZoom);
         cam.SetPosition(camSpawnPos);
     }
-    if (currType == ST_GAME) { ImGui::EndDisabled(); }
+    if (currType != ST_GAME) { ImGui::EndDisabled(); }
 #pragma endregion                                     CAMERA SETTINGS
     // ------------------------------------------------------------
 

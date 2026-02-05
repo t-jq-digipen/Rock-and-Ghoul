@@ -193,6 +193,12 @@ namespace ProjectileScript {
 	void End(Entity e);
 }
 
+struct CombatantProperties {
+	bool toStagger{ false };
+};
+
+void DrawHealthBar(Vec2 pos, float width, float height, float ratio);
+
 class CombatSystem : public ISystem {
 private:
 	CombatSystem() = default;
@@ -212,7 +218,9 @@ private:
 	// Holds attack properties for damage areas
 	std::unordered_map<Entity, AttackProperties> g_attackProperties{};
 	std::unordered_map<Entity, ProjectileRuntime> g_projectileStates{};
-	std::vector<Entity> toRemove{};			// to handle removing instant damage
+	std::vector<Entity> toRemove{};			// to handle removing instant damage areas
+
+	std::unordered_map<Entity, CombatantProperties> combatants{};  //hardcode first :( make it nice next time
 	std::unordered_map<Entity, float> toDamageOverTime{};
 
 	size_t sceneSubscriberID{ 0 };
@@ -225,6 +233,12 @@ public:
 
 	void SpawnHitBox(const AttackProperties& properties, const Vec2& pos_offset, const Vec2& size);
 	void RegisterProjectile(Entity projectile, const AttackProperties& properties, const ProjectileRuntime& runtime);
+
+	void RegisterCombatant(Entity eID);
+	void RemoveCombatant(Entity eID);
+
+	bool IsCombatantStaggered(Entity eID);
+	void SetCombatantStagger(Entity eID, bool stagger);
 
 	void Initialize() override;
 	void Update(float dt) override;

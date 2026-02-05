@@ -46,8 +46,9 @@
 #include "PlayerSystem.h"
 #include "CombatSystem.h"
 
-static constexpr float DETECT_RADIUS = 300.f;
+static constexpr float DETECT_RADIUS = 400.f;
 static constexpr float LOSE_RADIUS = 360.f;
+static constexpr float MAX_SHOOT_RANGE = 600.f;
 static constexpr float STOP_DISTANCE = 8.f;
 
 static constexpr float ROAM_SINE_SPEED = 2.f;
@@ -58,19 +59,65 @@ static constexpr float ROAM_EPS = 0.5f;
 static constexpr float CHASE_SPEED = 300.f;
 static constexpr float RETURN_SPEED = 600.f;
 
-static constexpr float MELEE_RANGE = 150.f;
-static constexpr float MELEE_COOLDOWN = 0.8f;
-static constexpr float MELEE_WINDUP = 0.65f;
-static constexpr float MELEE_DURATION = 1.f;
-static constexpr float MELEE_DAMAGE = 10.f;
+static constexpr float SPIRIT_MELEE_RANGE = 200.f;
+static const Vec2	   SPIRIT_MELEE_HITBOX_SIZE = { 250.f, 250.f };
+static constexpr float SPIRIT_MELEE_COOLDOWN = 0.8f;
+static constexpr float SPIRIT_MELEE_WINDUP = 0.65f;
+static constexpr float SPIRIT_MELEE_DURATION = 1.f;
+static constexpr float SPIRIT_MELEE_DAMAGE = 10.f;
+static constexpr float SPIRIT_MELEE_LIFETIME = 0.2f;
+static constexpr float SPIRIT_MELEE_KNOCKBACK = 500.f;
 
+AttackProperties SPIRIT_MELEE_PROPERTIES{
+	INVALID_ENTITY,
+	TagComponent{T_PLAYER},
+	SPIRIT_MELEE_DAMAGE,
+	2000.f,
+	Element::NONE,
+	SPIRIT_MELEE_LIFETIME,
+	false
+};
+
+static constexpr float SPIRIT_RANGED_WINDUP = 0.75f;
+static constexpr float SPIRIT_RANGED_DURATION = 1.f;
+static constexpr float SPIRIT_PROJECTILE_DAMAGE = 10.f;
+static constexpr float SPIRIT_PROJECTILE_LIFETIME = 10.f;
+static constexpr float SPIRIT_PROJECTILE_SPAWN = 0.1f;
+static constexpr float SPIRIT_PROJECTILE_EXPIRE = 0.5f;
+
+AttackProperties SPIRIT_PROJECTILE_PROPERTIES{
+	INVALID_ENTITY,
+	TagComponent{T_PLAYER},
+	SPIRIT_PROJECTILE_DAMAGE,
+	100.f,
+	Element::NONE,
+	SPIRIT_PROJECTILE_LIFETIME,
+	false
+};
+
+const ProjectileRuntime SPIRIT_PROJECTILE_RUNTIME(
+	SPIRIT_PROJECTILE_SPAWN,
+	SPIRIT_PROJECTILE_LIFETIME,
+	SPIRIT_PROJECTILE_EXPIRE
+);
 
 static constexpr float SHOOT_RANGE = 240.f;
 static constexpr float SHOOT_COOLDOWN = 1.2f;
 static constexpr float PROJECTILE_SPEED = 600.f;
 
-static constexpr float DEATH_DURATION = 1.0f;
+static constexpr float SPIRIT_DEATH_DURATION = 1.0f;
+
 static constexpr int ANIM_DEATH_STATE = 2;
+static constexpr int ANIM_STAGGER_STATE = 3;
+
+enum SPIRIT_ANIM_STATE : unsigned int
+{
+	IDLE = 0,
+	MELEE = 1,
+	DEATH = 2,
+	STAGGER = 3,
+	RANGED = 4,
+};
 
 Entity targetPlayer = INVALID_ENTITY;
 
@@ -272,7 +319,7 @@ namespace EnemyAI
 
 
 		// attack range
-		const float atkRange = (st.attackMode == AttackMode::MELEE_ONLY) ? MELEE_RANGE : SHOOT_RANGE;
+		const float atkRange = (st.attackMode == AttackMode::MELEE_ONLY) ? SPIRIT_MELEE_RANGE : SHOOT_RANGE;
 		const float atkSq = atkRange * atkRange;
 		if (hasPlayer)
 		{
@@ -407,7 +454,7 @@ namespace EnemyAI
 
 			if (!st.hitQueued)
 			{
-				st.windup = MELEE_WINDUP;
+				st.windup = SPIRIT_MELEE_WINDUP;
 				st.hitQueued = true;
 			}
 
@@ -420,7 +467,7 @@ namespace EnemyAI
 					if (st.attackMode == AttackMode::MELEE_ONLY)
 					{
 						ApplyMeleeDamage(eID, player);
-						st.cooldown = MELEE_COOLDOWN;
+						st.cooldown = SPIRIT_MELEE_COOLDOWN;
 						st.didAttack = true;
 					}
 					else
@@ -469,52 +516,7 @@ namespace EnemyAI
 }
 
 
-namespace SpiritMeleeAttack {
 
-
-	struct AttackProperties {
-		size_t subscriberID{};
-		Entity owner{};
-	};
-
-	void HitPlayer(Entity owner, Entity player) {
-		// check if player is shielded or hit already
-
-
-		// knockback
-		// direction
-		auto& ownerTransform = Registry::Get().Get_Component<TransformComponent>(owner);
-		auto& playerTransform = Registry::Get().Get_Component<TransformComponent>(player);
-
-		bool left = playerTransform.pos.x < ownerTransform.pos.x;
-		RockScript::Knockback(player, left, MELEE_DAMAGE);
-
-		//auto& physicsComp = Registry::Get().Get_Component<Physics::PhysicsComponent>(player);
-	}
-
-	std::unordered_map<Entity, AttackProperties> g_meleeProperties;
-
-	inline void Start(Entity eID) {
-		g_meleeProperties[eID].subscriberID = EventBus::Get().Subscribe<TriggerEvent>([eID](const TriggerEvent& e) {
-			// idk how to name it yet lol
-			// if (e.eventName != "SpiritMeleeHit") return;
-
-			if (e.other != targetPlayer || e.trigger != eID) return;
-
-			HitPlayer(g_meleeProperties[eID].owner, targetPlayer);
-			Registry::Get().Remove_Component<ColliderComponent>(e.trigger);
-			}
-		);
-	}
-	inline void Update(Entity, float) {
-
-	}
-	inline void End(Entity eID) {
-
-		EventBus::Get().Unsubscribe<TriggerEvent>(g_meleeProperties[eID].subscriberID);
-		g_meleeProperties.erase(eID);
-	}
-}
 
 void AssignTarget() {
 	for (auto& [entity, comp] : Registry::Get().Get_ComponentMap<TagComponent>())
@@ -573,7 +575,7 @@ namespace SpiritScript {
 		}
 
 		auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
-		//auto& transComp = registry.Get_Component<TransformComponent>(eID);
+		// auto& transComp = registry.Get_Component<TransformComponent>(eID);
 		auto& healthComp = registry.Get_Component<HealthComponent>(eID);
 
 		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
@@ -581,20 +583,22 @@ namespace SpiritScript {
 
 		SpiritRuntime& spiritLogic = g_spirits[eID];
 
+
+
 		if (healthComp.currhp <= 0.f) {
 			// spirit state not dead yet
 			if (spiritLogic.state != SpiritState::SPIRIT_DEAD) {
 				spiritLogic.state = SpiritState::SPIRIT_DEAD;
 				spiritLogic.stateTime = 0.f;
 				spriteSheet.SetState(2);
-				registry.Add_Component<LifetimeComponent>(eID, LifetimeComponent{ 0.f, DEATH_DURATION });
+				registry.Add_Component<LifetimeComponent>(eID, LifetimeComponent{ 0.f, SPIRIT_DEATH_DURATION });
 				moveComp.ResetFrameIntent();
 			}
 			else // spirit is dead 
 			{
 				spiritLogic.stateTime += dt;
 				spriteSheet.SetState(2);
-				//if (spiritLogic.stateTime >= DEATH_DURATION) {
+				//if (spiritLogic.stateTime >= SPIRIT_DEATH_DURATION) {
 				//	// remove spirit entity
 				//	//g_spirits.erase(eID);
 				//}
@@ -615,11 +619,17 @@ namespace SpiritScript {
 		spriteSheet.Sprite().SetFlipX(faceRight);
 		
 
-		//spriteSheet.SetState(animstate);
+		// get hit lol
+		if (CombatSystem::Get().IsCombatantStaggered(eID)) {
+			// stagger this fella
+			spiritLogic.state = SpiritState::SPIRIT_HIT;
+			spiritLogic.stateTime = 0.f;
+			CombatSystem::Get().SetCombatantStagger(eID, false);
+		}
 
 		if (spiritLogic.state == SpiritState::SPIRIT_IDLE) {
 
-			spriteSheet.SetState(0);
+			spriteSheet.SetState(SPIRIT_ANIM_STATE::IDLE);
 			float dPlayerSq = std::numeric_limits<float>::infinity();
 			dPlayerSq = DistSq(selfPos, playerPos);
 			float detectSq = DETECT_RADIUS * DETECT_RADIUS;
@@ -633,6 +643,8 @@ namespace SpiritScript {
 				return;
 			}
 
+
+
 		}
 
 
@@ -641,7 +653,7 @@ namespace SpiritScript {
 		{
 		case SpiritState::SPIRIT_CHASE:
 		{
-			spriteSheet.SetState(0);
+			spriteSheet.SetState(SPIRIT_ANIM_STATE::IDLE);
 			moveComp.ResetFrameIntent();
 			Vec2 moveDir = RG_Normalize(directionToPlayer);
 			moveComp.SetIsMoving(true);
@@ -649,7 +661,7 @@ namespace SpiritScript {
 
 			// if close enough, time to smack
 			float dPlayerSq = DistSq(selfPos, playerPos);
-			float meleeSq = MELEE_RANGE * MELEE_RANGE;
+			float meleeSq = SPIRIT_MELEE_RANGE * SPIRIT_MELEE_RANGE;
 			if (dPlayerSq <= meleeSq) {
 				spiritLogic.willAttack = true;
 				spiritLogic.stateTime = 0.f;
@@ -661,20 +673,28 @@ namespace SpiritScript {
 
 		case SpiritState::SPIRIT_MELEE:
 		{
-			spriteSheet.SetState(1);
+			spriteSheet.SetState(SPIRIT_ANIM_STATE::MELEE);
 			spiritLogic.stateTime += dt;
 
-			if (spiritLogic.stateTime >= MELEE_WINDUP && spiritLogic.willAttack) {
+			if (spiritLogic.stateTime >= SPIRIT_MELEE_WINDUP && spiritLogic.willAttack) {
 				spiritLogic.willAttack = false;
-				// spawn the hitbox
-				// spawn prefab here
-				Entity meleeHitbox = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "SpiritMelee.json", selfPos.x, selfPos.y);
-				ColliderComponent& colliderComp = Registry::Get().Get_Component<ColliderComponent>(meleeHitbox);
-				colliderComp.triggerEvent = "SpiritMeleeHit";
-				SpiritMeleeAttack::g_meleeProperties[meleeHitbox].owner = eID;
+
+				Vec2 offset = { 0.f, 0.f };
+				if (faceRight) {
+					offset.x += SPIRIT_MELEE_RANGE / 2.f;
+				}
+				else {
+					offset.x -= SPIRIT_MELEE_RANGE / 2.f;
+				}
+				SPIRIT_MELEE_PROPERTIES.owner = eID;
+				CombatSystem::Get().SpawnHitBox(
+					SPIRIT_MELEE_PROPERTIES,
+					offset,
+					SPIRIT_MELEE_HITBOX_SIZE
+				);
 			}
 
-			if (spiritLogic.stateTime >= MELEE_DURATION) {
+			if (spiritLogic.stateTime >= SPIRIT_MELEE_DURATION) {
 				spiritLogic.stateTime = 0.f;
 				spiritLogic.state = SpiritState::SPIRIT_ESCAPE;
 				moveComp.ResetFrameIntent();
@@ -687,11 +707,12 @@ namespace SpiritScript {
 		case SpiritState::SPIRIT_ESCAPE:
 		{
 			spiritLogic.stateTime += dt;
-			spriteSheet.SetState(0);
+			spriteSheet.SetState(SPIRIT_ANIM_STATE::IDLE);
 			Vec2 moveDir = RG_Normalize(directionToPlayer);
 			moveDir.x = -moveDir.x;
 			moveDir.y = -moveDir.y;
 			moveComp.SetIsMoving(true);
+			if (DistSq(selfPos, playerPos) > MAX_SHOOT_RANGE * MAX_SHOOT_RANGE) moveDir.x = -moveDir.x;
 			moveComp.SetMovementDirection(moveDir);
 
 			if (spiritLogic.stateTime >= 1.5f) {
@@ -699,7 +720,7 @@ namespace SpiritScript {
 				spiritLogic.willAttack = true;
 
 				spiritLogic.stateTime = 0.f;
-				spiritLogic.state = SpiritState::SPIRIT_CHASE;
+				spiritLogic.state = healthComp.maxhp > 50.f ? SpiritState::SPIRIT_CHASE : SpiritState::SPIRIT_RANGE;
 				moveComp.ResetFrameIntent();
 			}
 		}
@@ -708,23 +729,58 @@ namespace SpiritScript {
 
 		case SpiritState::SPIRIT_RANGE:
 		{
+			spriteSheet.SetState(SPIRIT_ANIM_STATE::RANGED);
 			spiritLogic.stateTime += dt;
-			// for now just set back to chase lol it shouldnt go to range yet
-			spiritLogic.stateTime = 0.f;
-			spiritLogic.state = SpiritState::SPIRIT_CHASE;
+
+
+			if (spiritLogic.stateTime >= SPIRIT_RANGED_WINDUP && spiritLogic.willAttack) {
+				spiritLogic.willAttack = false;
+
+				Entity spit = JsonLoad::LoadEntityFromFile(
+					FilePath::PREFABS_FOLDER + "SpiritSpit.json",
+					selfPos.x, selfPos.y
+				);
+
+				// if dont have smth wrong with the prefab... but just to prevent crash
+				if (registry.Has_Component<Physics::PhysicsComponent>(spit))
+				{
+					TransformComponent& spitTrans = registry.Get_Component<TransformComponent>(spit);
+					Physics::PhysicsComponent& spitPhy = registry.Get_Component<Physics::PhysicsComponent>(spit);
+					// make projectile
+					Vec2 dir = playerPos - selfPos;
+					dir = RG_Normalize(dir);
+					float angleRad = std::atan2(dir.y, dir.x);
+					float angleDeg = angleRad * (180.0f / RG_PI);
+					spitTrans.rot = angleRad;
+					
+					dir = RG_Scale(dir, PROJECTILE_SPEED);
+					spitPhy.Set_Vel(dir);
+				}
+
+				SPIRIT_PROJECTILE_PROPERTIES.owner = spit;
+
+				CombatSystem::Get().RegisterProjectile(spit, SPIRIT_PROJECTILE_PROPERTIES, SPIRIT_PROJECTILE_RUNTIME);
+
+			}
+
+			if (spiritLogic.stateTime >= SPIRIT_MELEE_DURATION) {
+				spiritLogic.stateTime = 0.f;
+				spiritLogic.state = SpiritState::SPIRIT_ESCAPE;
+				moveComp.ResetFrameIntent();
+			}
 		}
 		break;
 		// end case SPIRIT_RANGE
 
 		case SpiritState::SPIRIT_HIT:
 		{
-			spriteSheet.SetState(3);
+			spriteSheet.SetState(SPIRIT_ANIM_STATE::STAGGER);
 			spiritLogic.stateTime += dt;
 
 			spiritLogic.willAttack = false;
 			if (spiritLogic.stateTime >= 0.5f) {
-				spiritLogic.stateTime = 0.f;
-				spiritLogic.state = SpiritState::SPIRIT_CHASE;
+				spiritLogic.stateTime = 1.f;
+				spiritLogic.state = SpiritState::SPIRIT_ESCAPE;
 				moveComp.ResetFrameIntent();
 			}
 
@@ -761,12 +817,6 @@ void EnemySystem::Initialize()
 	spirit.End = [](Entity e) { SpiritScript::End(e); };
 	LogicSystem::Get().RegisterScript("SpiritScript", spirit, ScriptID::SPIRIT);
 
-	BehaviourFCT spiritMelee;
-	
-	spirit.Init = [](Entity e) { SpiritMeleeAttack::Start(e); };
-	spirit.Update = [](Entity e, float dt) { SpiritMeleeAttack::Update(e, dt); };
-	spirit.End = [](Entity e) { SpiritMeleeAttack::End(e); };
-	LogicSystem::Get().RegisterScript("SpiritMeleeScript", spirit, ScriptID::SPIRITMELEE);
 
 	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
 		// on scene load, wipe spirits and assign target player

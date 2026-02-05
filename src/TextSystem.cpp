@@ -44,7 +44,7 @@ namespace TextSystem
  * @param color Color of the text.
  */
 
-	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float textSpeed, float wrapWidth, bool customSpeaker, std::string speakerName, int speakerID, std::string fontPath, float fontSize, bool Typing, Vec3 color)
+	TextComponent::TextComponent(std::vector<std::string> lines, int currentLineIndex, float textSpeed, float wrapWidth, std::string, int speakerID, std::string fontPath, float fontSize, bool Typing, Vec3 color)
 		: lines{ lines }, currentLineIndex{ currentLineIndex }, textSpeed{ textSpeed }, wrapWidth{ wrapWidth }, speakerID { speakerID }, fontPath{ fontPath }, fontSize{ fontSize }, isTyping{ Typing }, color{ color } 
 	{
 	}

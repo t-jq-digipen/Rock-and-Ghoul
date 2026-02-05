@@ -1,0 +1,97 @@
+{
+    "backgrounds": [
+        "../Assets/UI_FailedPage_Background.JPG"
+    ],
+    "bgmAssetName": "level_1",
+    "cameraSpawn": [
+        0.0,
+        0.0
+    ],
+    "cameraZoom": 1.0,
+    "entities": [],
+    "fontConfig": "../Assets/fontAssets.json",
+    "gui": {
+        "buttons": [
+            {
+                "ID": 1,
+                "action": "None",
+                "actionName": "LoadScene",
+                "actionParams": {
+                    "duration": 0.5,
+                    "scene": "level1"
+                },
+                "label": "",
+                "pos": [
+                    1300.0,
+                    260.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_PinkYesLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    250.0,
+                    180.0
+                ],
+                "soundType": 0
+            },
+            {
+                "ID": 3,
+                "action": "None",
+                "actionName": "LoadScene",
+                "actionParams": {
+                    "duration": 0.5,
+                    "scene": "MainMenu"
+                },
+                "label": "",
+                "pos": [
+                    1250.0,
+                    145.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_PinkNoLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    200.0,
+                    180.0
+                ],
+                "soundType": 0
+            }
+        ],
+        "dialogues": [],
+        "displays": [
+            {
+                "ID": 2,
+                "centered": true,
+                "pos": [
+                    1280.0,
+                    270.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_YesLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    270.0,
+                    180.0
+                ]
+            },
+            {
+                "ID": 4,
+                "centered": true,
+                "pos": [
+                    1230.0,
+                    155.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_NoLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    200.0,
+                    180.0
+                ]
+            }
+        ],
+        "textboxes": []
+    },
+    "sceneName": "failscreen",
+    "sceneType": 0,
+    "worldMax": [
+        1920.0,
+        1080.0
+    ],
+    "worldMin": [
+        0.0,
+        0.0
+    ]
+}

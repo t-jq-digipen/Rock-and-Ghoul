@@ -47,10 +47,10 @@ static float settingsVolume = 1.f;
 static const float volStep = 0.05f;
 
 // ID for the display ID as loaded from the settings scene
-static const int settingsBarFillID = 7; // to match display ID in settings.json
+static const int settingsBarFillID = 6; // to match display ID in settings.json
 
 // Maximum width of the settings volume bar fill
-static const float settingsBarMaxW = 1000.f;
+static const float settingsBarMaxW = 600.f;
 
 // Flag to sync settings volume bar fill size after scene loads
 bool settingsNeedSync = false;
@@ -421,14 +421,6 @@ void GuiSystem::Initialize() {
             catch (...) {
             }
 
-            settingsVolume = newVolume01;
-            if (GuiSystem::audio)
-            {
-                ApplyNewVolume(settingsVolume);
-            }
-
-            settingsNeedSync = true;
-
             auto& gui = GuiSystem::Get();
             if (settingsNeedSync)
             {
@@ -437,11 +429,44 @@ void GuiSystem::Initialize() {
                     if (v.ID == settingsBarFillID)
                     {
                         v.baseSize.x = settingsBarMaxW * settingsVolume;
+
+                        // keep quad anchored to the left (only if this fill is a quad)
+                        if (v.m_renderData.GetRenderType() == UIRenderType::CustomQuad)
+                        {
+                            auto& q = v.m_renderData.GetQuadData();
+
+                            // treat current quad as an AABB (axis-aligned)
+                            const float leftX = std::min(std::min(q.v0.x, q.v1.x), std::min(q.v2.x, q.v3.x));
+                            const float rightX = std::max(std::max(q.v0.x, q.v1.x), std::max(q.v2.x, q.v3.x));
+                            const float topY = std::max(std::max(q.v0.y, q.v1.y), std::max(q.v2.y, q.v3.y));
+                            const float botY = std::min(std::min(q.v0.y, q.v1.y), std::min(q.v2.y, q.v3.y));
+
+                            (void)rightX; // silence unused if you want; not required
+
+                            const float newRightX = leftX + v.baseSize.x;
+
+                            gui.SetDisplayQuad(v.ID,
+                                { leftX,     botY },   // v0
+                                { newRightX, botY },   // v1
+                                { newRightX, topY },   // v2
+                                { leftX,     topY }    // v3
+                            );
+                        }
+
+                        // keep size in sync (your renderer uses baseSize->size elsewhere)
                         v.size.x = v.baseSize.x;
                         break;
                     }
                 }
             }
+
+            settingsVolume = newVolume01;
+            if (GuiSystem::audio)
+            {
+                ApplyNewVolume(settingsVolume);
+            }
+
+            settingsNeedSync = true;
         });
 
     // Decrease volume
@@ -453,7 +478,32 @@ void GuiSystem::Initialize() {
 
             auto& gui = GuiSystem::Get();
             for (auto& v : gui.Displays())
-                if (v.ID == settingsBarFillID) { v.baseSize.x = settingsBarMaxW * settingsVolume; break; }
+            {
+                if (v.ID != settingsBarFillID) continue;
+
+                v.baseSize.x = settingsBarMaxW * settingsVolume;
+
+                if (v.m_renderData.GetRenderType() == UIRenderType::CustomQuad)
+                {
+                    auto& q = v.m_renderData.GetQuadData();
+
+                    const float leftX = std::min(std::min(q.v0.x, q.v1.x), std::min(q.v2.x, q.v3.x));
+                    const float topY = std::max(std::max(q.v0.y, q.v1.y), std::max(q.v2.y, q.v3.y));
+                    const float botY = std::min(std::min(q.v0.y, q.v1.y), std::min(q.v2.y, q.v3.y));
+
+                    const float newRightX = leftX + v.baseSize.x;
+
+                    gui.SetDisplayQuad(v.ID,
+                        { leftX,     botY },
+                        { newRightX, botY },
+                        { newRightX, topY },
+                        { leftX,     topY }
+                    );
+                }
+
+                v.size.x = v.baseSize.x;
+                break;
+            }
         });
 
     // Increase volume
@@ -465,7 +515,32 @@ void GuiSystem::Initialize() {
 
             auto& gui = GuiSystem::Get();
             for (auto& v : gui.Displays())
-                if (v.ID == settingsBarFillID) { v.baseSize.x = settingsBarMaxW * settingsVolume; break; }
+            {
+                if (v.ID != settingsBarFillID) continue;
+
+                v.baseSize.x = settingsBarMaxW * settingsVolume;
+
+                if (v.m_renderData.GetRenderType() == UIRenderType::CustomQuad)
+                {
+                    auto& q = v.m_renderData.GetQuadData();
+
+                    const float leftX = std::min(std::min(q.v0.x, q.v1.x), std::min(q.v2.x, q.v3.x));
+                    const float topY = std::max(std::max(q.v0.y, q.v1.y), std::max(q.v2.y, q.v3.y));
+                    const float botY = std::min(std::min(q.v0.y, q.v1.y), std::min(q.v2.y, q.v3.y));
+
+                    const float newRightX = leftX + v.baseSize.x;
+
+                    gui.SetDisplayQuad(v.ID,
+                        { leftX,     botY },
+                        { newRightX, botY },
+                        { newRightX, topY },
+                        { leftX,     topY }
+                    );
+                }
+
+                v.size.x = v.baseSize.x;
+                break;
+            }
         });
 
     // Persist volume back to settings.json
@@ -718,6 +793,15 @@ void GuiSystem::Update(float dt)
             }
         }
         prevInEdit = sm.inEditMode;
+    }
+
+
+    if (sm.GetSceneType() == ST_CUTSCENE)
+    {
+        if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+        {
+            sm.QueueLoadScene("../Assets/saves/" + RenderSystem::GetNextScene() + ".json");
+        }
     }
 
     //if (cutsceneActive) return;
@@ -1365,6 +1449,23 @@ void GuiSystem::Update(float dt)
             {
                 dp.baseSize.x = settingsBarMaxW * settingsVolume;
                 dp.size.x = dp.baseSize.x;
+
+                if (dp.m_renderData.GetRenderType() == UIRenderType::CustomQuad)
+                {
+                    auto& q = dp.m_renderData.GetQuadData();
+
+                    Vec2 v0 = q.v0;
+                    Vec2 v1 = q.v1;
+                    Vec2 v2 = q.v2;
+                    Vec2 v3 = q.v3;
+
+                    float amount = std::clamp(settingsVolume, 0.f, 1.f);
+
+                    Vec2 newV1 = v0 + (v1 - v0) * amount;
+                    Vec2 newV2 = v3 + (v2 - v3) * amount;
+
+                    SetDisplayQuad(dp.ID, v0, newV1, newV2, v3);
+                }
                 settingsNeedSync = false;
                 break;
             }
@@ -1433,7 +1534,7 @@ void GuiSystem::Update(float dt)
         {
             hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 350 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hovercontrol ? 0.2f : 0.f;
-            Image btnimg = CreateImage("../Assets/UI_MainMenu_NewGame_Button.png");
+            Image btnimg = CreateImage("../Assets/UI_MainMenu_DarkControls.PNG");
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 350.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
             const Vec2 baseTitlePos = { 960.f * scaleX, 350.f * scaleY};
@@ -1448,7 +1549,7 @@ void GuiSystem::Update(float dt)
         {
             hoverexit = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 550 * scaleY}, 400 * scaleX, 190 * scaleY));
             float brightness = hoverexit ? 0.2f : 0.f;
-            Image btnimg = CreateImage("../Assets/UI_MainMenu_QuitButton.png");
+            Image btnimg = CreateImage("../Assets/UI_MainMenu_DarkQuit.PNG");
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 550.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
             const Vec2 baseTitlePos = { 960.f * scaleX, 550.f * scaleY };
@@ -1464,7 +1565,7 @@ void GuiSystem::Update(float dt)
         {
             hoverresume = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 750 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hoverresume ? 0.2f : 0.f;
-            Image btnimg = CreateImage("../Assets/UI_MainMenu_NewGame_Button.png");
+            Image btnimg = CreateImage("../Assets/UI_MainMenu_DarkNewGame.PNG");
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 750.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
             const Vec2 baseTitlePos = { 960.f * scaleX, 750.f * scaleY };
@@ -1503,11 +1604,11 @@ void GuiSystem::Update(float dt)
             baseTextScale = 0.8f;
 
 
-            bool hoverleave = (renderer.IsAreaTouched(mouse, { 100 * scaleX,1000 * scaleY }, 200 * scaleX, 180 * scaleY));
+            bool hoverleave = (renderer.IsAreaTouched(mouse, { 150 * scaleX, 950 * scaleY }, 200 * scaleX, 180 * scaleY));
             {
                 Image exitbtn = CreateImage("../Assets/UI_ControlsPage_BackButton.png");
                 float brightness = hoverleave ? 0.2f : 0.f;
-                renderer.DrawImageRotated(exitbtn, 100.f * scaleX, 1000.f * scaleY, 200.f * scaleX, 180.f * scaleY, 0.f, brightness);
+                renderer.DrawImageRotated(exitbtn, 150.f * scaleX, 950.f * scaleY, 200.f * scaleX, 180.f * scaleY, 0.f, brightness);
             }
             if (hoverleave && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
             {
