@@ -3,6 +3,10 @@
 #include "JsonLoad.h"
 #include "CollisionManager.h"
 #include "GuiSystem.h"
+#include "PooledEntityFactory.h"
+
+// MEMORY POOLLLLLLLL: Map projectile Entity to its PooledEntity for cleanup
+static std::unordered_map<Entity, PooledEntity> g_projectilePoolData;
 
 // properties?
 ProjectileRuntime::ProjectileRuntime(float spawntime, float lifetime, float expiretime) : 
@@ -179,6 +183,39 @@ void CombatSystem::RegisterProjectile(Entity projectile, const AttackProperties&
 
 	g_attackProperties[projectile] = properties;
 	g_projectileStates[projectile] = runtime;
+
+
+	// booking mem from pool
+	TransformComponent& trans = m_registry.Get_Component<TransformComponent>(projectile);
+	float dirX = 0.0f, dirY = 0.0f;
+
+	// Get velocity direction if physics component exists
+	if (m_registry.Has_Component<Physics::PhysicsComponent>(projectile)) {
+		Physics::PhysicsComponent& phys = m_registry.Get_Component<Physics::PhysicsComponent>(projectile);
+		Vec2 vel = phys.Get_Vel();
+		float speed = std::sqrt(vel.x * vel.x + vel.y * vel.y);
+		if (speed > 0.0f) {
+			dirX = vel.x / speed;
+			dirY = vel.y / speed;
+		}
+	}
+
+	ProjectileData* poolData = GameMemoryManager::Get().AllocateProjectile();
+	if (poolData != nullptr) {
+		poolData->posX = trans.pos.x;
+		poolData->posY = trans.pos.y;
+		poolData->velX = dirX;
+		poolData->velY = dirY;
+		poolData->lifetime = runtime.lifetime;
+		poolData->damage = properties.damage;
+		poolData->active = true;
+
+		// Store mapping for cleanup later
+		PooledEntity poolEntity(projectile, EntityType::PROJECTILE, poolData);
+		g_projectilePoolData[projectile] = poolEntity;
+
+		std::cout << "[CombatSystem] Projectile " << projectile << " memory allocated from pool at " << poolData << "\n";
+	}
 }
 
 
@@ -328,6 +365,14 @@ void CombatSystem::Initialize() {
 		toDamageOverTime.clear();
 		g_projectileStates.clear();
 		combatants.clear();
+
+		
+		// MEMORY POOL: Return all projectile memory to pool on scene change
+		for (auto& [eID, poolEntity] : g_projectilePoolData) {
+			PooledEntityFactory::Get().DestroyEntity(poolEntity);
+		}
+		g_projectilePoolData.clear();
+		std::cout << "[CombatSystem] Scene changed - all projectile memory returned to pool\n";
 		//}
 		}
 	);
@@ -416,6 +461,13 @@ void CombatSystem::Update(float dt) {
 			if (g_projectileStates[eID].state == PROJECTILE_END) {
 				// already in end state, just remove
 				g_projectileStates.erase(eID);
+
+				// MEMORY POOL: Return projectile memory to pool for reuse
+				if (g_projectilePoolData.contains(eID)) {
+					PooledEntityFactory::Get().DestroyEntity(g_projectilePoolData[eID]);
+					std::cout << "[CombatSystem] Projectile " << eID << " memory returned to pool\n";
+					g_projectilePoolData.erase(eID);
+				}
 			}
 			else
 			{
@@ -426,6 +478,12 @@ void CombatSystem::Update(float dt) {
 		}
 		else
 		{
+			// MEMORY POOL: Return memory to pool even if not in projectile states
+			if (g_projectilePoolData.contains(eID)) {
+				PooledEntityFactory::Get().DestroyEntity(g_projectilePoolData[eID]);
+				std::cout << "[CombatSystem] Projectile " << eID << " memory returned to pool\n";
+				g_projectilePoolData.erase(eID);
+			}
 			m_registry.Remove_Entity(eID);
 		}
 	}
@@ -440,6 +498,14 @@ void CombatSystem::Shutdown() {
 	toRemove.clear();
 	toDamageOverTime.clear();
 	g_projectileStates.clear();
+
+	//shutdown duh
+	for (auto& [eID, poolEntity] : g_projectilePoolData) {
+		PooledEntityFactory::Get().DestroyEntity(poolEntity);
+	}
+	g_projectilePoolData.clear();
+	std::cout << "[CombatSystem] All projectile memory returned to pool\n";
+
 	std::cout << "CombatSystem Shutdown!\n";
 	EventBus::Get().Unsubscribe<SceneLoadEvent>(sceneSubscriberID);
 	EventBus::Get().Unsubscribe<TriggerEvent>(triggerSubscriberID);

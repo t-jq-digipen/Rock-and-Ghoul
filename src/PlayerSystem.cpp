@@ -739,38 +739,9 @@ namespace RockScript {
 		{
 		case SpellType::SOUNDWAVE:
 		{
+			//CombatSystem handles the full lifecycle
 
-#pragma region MEMPOOL TEST?
-			// ====================================================================
-			// LOAD TIME: Memory was already allocated at game startup
-			// RUNTIME: Programmer simply "books" memory from the pre-allocated pool
-			// NO malloc/new calls happen here just getting memory from the pool
-			// ====================================================================
-			// Create visual entity (for rendering/physics)
-
-			//// Create pool entity using THE SAME FILE
-			//float dirX = faceRight ? 1.0f : -1.0f;
-			//PooledEntity poolWave = PooledEntityFactory::Get().CreateProjectile(
-			//	FilePath::PREFABS_FOLDER + "SoundwaveFX.json",  // SAME FILE!
-			//	trans.pos.x,
-			//	trans.pos.y,
-			//	dirX,
-			//	0.0f
-			//);
-
-			//// Link them together
-			//if (poolWave.active) {
-			//	ActiveSpell spelled;
-			//	spelled.ecsEntity = wave;
-			//	spelled.poolEntity = poolWave;
-			//	spelled.lifetime = 2.0f;
-			//	activeSpells.push_back(spelled);
-			//}
-
-#pragma endregion
-
-
-			// NEW SOUNDWAVE W ELEM
+			// Determine soundwave file based on current element
 			std::string soundwaveFile = "SoundWave_Normal.json";
 
 			if (currentElement != Element::NONE) {
@@ -793,16 +764,18 @@ namespace RockScript {
 				}
 			}
 
+			// Create visual entity (for rendering/physics)
 			Entity wave = JsonLoad::LoadEntityFromFile(
 				FilePath::PREFABS_FOLDER + soundwaveFile,
 				trans.pos.x, trans.pos.y
 			);
 
+			// Register with combat system
 			SOUNDWAVE_PROPERTIES.owner = wave;
 			SOUNDWAVE_PROPERTIES.element = currentElement;
-
 			CombatSystem::Get().RegisterProjectile(wave, SOUNDWAVE_PROPERTIES, SOUNDWAVE_RUNTIME);
 
+			// Handle flipping
 			if (!faceRight && registry.Has_Component<Physics::PhysicsComponent>(wave)) {
 				Physics::PhysicsComponent& phyComp = registry.Get_Component<Physics::PhysicsComponent>(wave);
 				Vec2 vel = phyComp.Get_Vel();
@@ -810,9 +783,6 @@ namespace RockScript {
 				phyComp.Set_Vel(vel);
 				registry.Get_Component<RenderComponent>(wave).GetSpriteSheet().Sprite().SetFlipX(true);
 			}
-
-			// Handle flipping
-
 
 			// to start animation
 			wavetimer = 0.f;
