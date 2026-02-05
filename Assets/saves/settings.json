@@ -27,7 +27,7 @@
                     250.0,
                     250.0
                 ],
-                "soundType": 0
+                "soundType": 2
             },
             {
                 "ID": 2,
@@ -44,7 +44,7 @@
                     250.0,
                     250.0
                 ],
-                "soundType": 0
+                "soundType": 2
             },
             {
                 "ID": 3,
@@ -81,7 +81,7 @@
                     200.0,
                     180.0
                 ],
-                "soundType": 0
+                "soundType": 2
             }
         ],
         "dialogues": [],

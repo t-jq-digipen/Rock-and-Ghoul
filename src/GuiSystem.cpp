@@ -370,6 +370,14 @@ void GuiSystem::Initialize() {
 
     // Register button actions
 
+    // Blank
+    RegisterAction("None",
+        [](const json&)
+        {
+            // do nothing
+        }
+        );
+
     // Go to another scene!
     RegisterAction("LoadScene",
         [](const json& p)
