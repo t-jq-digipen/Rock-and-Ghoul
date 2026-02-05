@@ -6239,11 +6239,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                 // Coloured label strip on the left
                 ImVec2 pos = ImGui::GetCursorScreenPos();
-                ImGui::GetWindowDrawList()->AddRectFilled(
-                    pos,
-                    ImVec2(pos.x + 6.0f, pos.y + ImGui::GetFrameHeight()),
-                    ImGui::ColorConvertFloat4ToU32(layerColours[i])
-                );
+                ImGui::GetWindowDrawList()->AddRectFilled( pos, ImVec2(pos.x + 6.0f, pos.y + ImGui::GetFrameHeight()),ImGui::ColorConvertFloat4ToU32(layerColours[i]));
                 ImGui::SetCursorScreenPos(ImVec2(pos.x + 10.0f, pos.y));
 
                 // Checkbox
