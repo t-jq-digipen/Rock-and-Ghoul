@@ -208,7 +208,7 @@ void CombatSystem::RegisterProjectile(Entity projectile, const AttackProperties&
 		poolData->velX = dirX;
 		poolData->velY = dirY;
 		poolData->lifetime = runtime.lifetime;
-		poolData->damage = properties.damage;
+		poolData->damage = static_cast<int>(properties.damage);
 		poolData->active = true;
 
 		// Store mapping for cleanup later
@@ -343,8 +343,8 @@ void CombatSystem::SetCombatantStagger(Entity eID, bool stagger) {
 
 void DrawHealthBar(Vec2 pos, float width, float height, float ratio)
 {
-	Colour3 bg = { .2, 0, 0 };
-	Colour3 fg = { .6, 0, 0 };
+	Colour3 bg = { .2f, 0.f, 0.f };
+	Colour3 fg = { .6f, 0.f, 0.f };
 
 	// Background
 	Render& renderer = Render::GetInstance();
