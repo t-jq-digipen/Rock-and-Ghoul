@@ -49,7 +49,8 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 0
+                "soundType": 0,
+                "isVisible": true
             },
             {
                 "ID": 2,
@@ -66,7 +67,8 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 0
+                "soundType": 0,
+                "isVisible": true
             },
             {
                 "ID": 3,
@@ -83,7 +85,8 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 0
+                "soundType": 0,
+                "isVisible": true
             },
             {
                 "ID": 4,
@@ -103,7 +106,8 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 0
+                "soundType": 0,
+                "isVisible": true
             }
         ],
         "dialogues": [],

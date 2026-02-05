@@ -618,7 +618,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"action", btn.action},
             {"actionName", btn.actionName},
             {"actionParams", btn.actionParams},
-            {"soundType", btn.soundType }
+            {"soundType", btn.soundType },
+            {"isVisible", btn.isVisible}
             });
     }
 
@@ -630,7 +631,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"pos", {txt.pos.x, txt.pos.y}},
             {"scale", txt.scale},
             {"color", {txt.color.r, txt.color.g, txt.color.b}},
-            {"centered", txt.centered}
+            {"centered", txt.centered},
+            {"isVisible", txt.isVisible}
         });
     }
 
@@ -642,7 +644,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"pos", {tb.pos.x, tb.pos.y}},
             {"scale", tb.scale},
             {"color", {tb.color.r, tb.color.g, tb.color.b}},
-            {"centered", tb.centered}
+            {"centered", tb.centered},
+            {"isVisible", tb.isVisible}
         };
         json jd = {
             {"ID", dlg.ID},
@@ -661,7 +664,9 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"profileEnabled", dlg.profileEnabled},
             {"profileSize", {dlg.profileSize.x, dlg.profileSize.y }},
             {"profileOffset", {dlg.profileOffset.x, dlg.profileOffset.y }},
-            {"profileRenderData", dlg.profileRenderData}
+            {"profileRenderData", dlg.profileRenderData},
+
+            {"isVisible", dlg.isVisible}
         };
         j["gui"]["dialogues"].push_back(std::move(jd));
     }
@@ -673,7 +678,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"pos", {dp.pos.x, dp.pos.y}},
             {"size", {dp.size.x, dp.size.y}},
             {"renderData", dp.renderData},
-            {"centered", dp.centered}
+            {"centered", dp.centered},
+            {"isVisible", dp.isVisible}
         });
     }
 
@@ -753,6 +759,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 //b.shape = btn["shape"];
                 b.action = btn.value("action", "");
                 b.soundType = btn.value("soundType", 0);
+                b.isVisible = btn["isVisible"];
                 s.guiButtons.push_back(b);
             }
         }
@@ -766,6 +773,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 t.scale = txt["scale"];
                 t.color = { txt["color"][0], txt["color"][1], txt["color"][2] };
                 t.centered = { txt["centered"] };
+                t.isVisible = txt["isVisible"];
                 s.guiTextboxes.push_back(t);
             }
         }
@@ -812,6 +820,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                     d.profileOffset = { dlg["profileOffset"][0], dlg["profileOffset"][1] };
                 }
                 d.profileRenderData = dlg.value("profileRenderData", std::string("{}"));
+                d.isVisible = dlg["isVisible"];
 
                 s.guiDialogues.push_back(std::move(d));
             }
@@ -830,6 +839,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                     d.renderData = dp["renderData"];
                 }
                 d.centered = { dp["centered"] };
+                d.isVisible = dp["isVisible"];
 
                 s.guiDisplays.push_back(std::move(d));
             }
@@ -1134,6 +1144,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.actionName = b.actionName;
             cfg.actionParams = b.actionParams;
             cfg.soundType = static_cast<AudioSystem::ButtonType>(b.soundType);
+            cfg.isVisible = b.isVisible;
 
             if (b.action == "LoadLevel1") {
                 cfg.onClick = []() { SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); };
@@ -1198,6 +1209,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.baseScale = t.scale;
             cfg.color = t.color;
             cfg.centered = t.centered;
+            cfg.isVisible = t.isVisible;
             GuiSystem::Get().AddTextBox(cfg);
         }
 
@@ -1232,6 +1244,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
             cfg.jsonPath = d.jsonPath;
             cfg.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
+            cfg.isVisible = d.isVisible;
 
             // Always create a runtime TextComponent we can hydrate
             cfg.owned = std::make_shared<TextSystem::TextComponent>();
@@ -1341,6 +1354,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.size = dp.size;
             cfg.baseSize = dp.size;
             cfg.centered = dp.centered;
+            cfg.isVisible = dp.isVisible;
             if (!dp.renderData.empty())
             {
                 cfg.m_renderData = UI_RenderData::DeSerialize(dp.renderData);

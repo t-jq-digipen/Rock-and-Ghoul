@@ -584,17 +584,24 @@ void GuiSystem::Initialize() {
             auto& gui = GuiSystem::Get();
             auto& tbs = gui.TextBoxes();
             auto& btns = gui.Buttons();
+            auto& dps = gui.Displays();
 
             for (auto& tb : tbs)
             {
-                if (tb.ID >= 5 && tb.ID <= 14) tb.isVisible = true;
-                else if (tb.ID >= 15) tb.isVisible = false;
+                if (tb.ID >= 5 && tb.ID <= 23) tb.isVisible = true;
+                else if (tb.ID >= 24) tb.isVisible = false;
             }
 
             for (auto& b : btns)
             {
                 if (b.ID == 2)      b.isVisible = false;
                 else if (b.ID == 3) b.isVisible = true;
+            }
+
+            for (auto& dp : dps)
+            {
+                if (dp.ID >= 5 && dp.ID <= 23) dp.isVisible = true;
+                else if (dp.ID >= 24) dp.isVisible = false;
             }
         });
 
@@ -605,17 +612,24 @@ void GuiSystem::Initialize() {
             auto& gui = GuiSystem::Get();
             auto& tbs = gui.TextBoxes();
             auto& btns = gui.Buttons();
+            auto& dps = gui.Displays();
 
             for (auto& tb : tbs)
             {
-                if (tb.ID >= 5 && tb.ID <= 14) tb.isVisible = false;
-                else if (tb.ID >= 15) tb.isVisible = true;
+                if (tb.ID >= 5 && tb.ID <= 23) tb.isVisible = false;
+                else if (tb.ID >= 24) tb.isVisible = true;
             }
 
             for (auto& b : btns)
             {
                 if (b.ID == 2)      b.isVisible = true;
                 else if (b.ID == 3) b.isVisible = false;
+            }
+
+            for (auto& dp : dps)
+            {
+                if (dp.ID >= 5 && dp.ID <= 23) dp.isVisible = false;
+                else if (dp.ID >= 24) dp.isVisible = true;
             }
         });
 
@@ -1520,7 +1534,7 @@ void GuiSystem::Update(float dt)
         bool hovercontrol = false;
         bool hoverexit = false;
         bool hoverresume = false;
-        baseTextScale = 1.f;
+        baseTextScale = 0.8f;
 
         {
             hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 350 * scaleY }, 400 * scaleX, 190 * scaleY));
@@ -1592,8 +1606,6 @@ void GuiSystem::Update(float dt)
         {
             Image pagebg = CreateImage("../Assets/UI_ControlsPage_Background.PNG");
             renderer.DrawImageRotated(pagebg, 960.f * scaleX, 540.f * scaleY, 1920.f * scaleX, 1080.f * scaleY);
-            baseTextScale = 0.8f;
-
 
             bool hoverleave = (renderer.IsAreaTouched(mouse, { 150 * scaleX, 950 * scaleY }, 200 * scaleX, 180 * scaleY));
             {
@@ -1610,84 +1622,147 @@ void GuiSystem::Update(float dt)
             if (controlpage == 0)
             {
                 {
-                    const Vec2 baseTitlePos = { 780.f * scaleX, 900.f * scaleY };
+                    const Vec2 baseTitlePos = { 900.f * scaleX, 1000.f * scaleY };
                     const std::string title = "CONTROLS";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    // float textX = baseTitlePos.x - textSize.x * .8f;
-                    // float textY = baseTitlePos.y - textSize.y * .8f + textSize.y * 0.15f;
-                    float titleTextScale = textScale / 0.8f * 1.5f;
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, titleTextScale, { 1,1,1 }, "Marker");
+                    float textX = baseTitlePos.x - textSize.x * 0.5f;
+                    float textY = baseTitlePos.y - textSize.y * 0.5f;
+                    render.DrawText(title, textX, textY, 1.2f, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 200.f * scaleX, 650.f * scaleY };
-                    const std::string title = "W - Move Up";
+                    const Vec2 baseTitlePos = { 600.f * scaleX, 850.f * scaleY };
+                    const std::string title = "MOVEMENT";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    float textX = baseTitlePos.x - textSize.x * 0.5f;
+                    float textY = baseTitlePos.y - textSize.y * 0.5f;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 200.f * scaleX, 600.f * scaleY };
-                    const std::string title = "S - Move Down";
-                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    Image wasd = CreateImage("../Assets/UI_ControlPage_WASDBlue.png");
+                    renderer.DrawImageRotated(wasd, 600.f * scaleX, 700.f * scaleY, 240.f * scaleX, 160.f * scaleY, 0.f, 0.f);
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 200.f * scaleX, 550.f * scaleY };
-                    const std::string title = "A - Move Left";
+                    const Vec2 baseTitlePos = { 1200.f * scaleX, 850.f * scaleY };
+                    const std::string title = "SPELL INPUT SEQUENCE";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    float textX = baseTitlePos.x - textSize.x * 0.5f;
+                    float textY = baseTitlePos.y - textSize.y * 0.5f;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 200.f * scaleX, 500.f * scaleY };
-                    const std::string title = "D - Move Right";
-                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    Image arrowK = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    renderer.DrawImageRotated(arrowK, 1200.f * scaleX, 700.f * scaleY, 240.f * scaleX, 160.f * scaleY, 0.f, 0.f);
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 200.f * scaleX, 450.f * scaleY };
-                    const std::string title = "Shift - Dash/Dodge";
+                    const Vec2 baseTitlePos = { 1200.f * scaleX, 500.f * scaleY };
+                    const std::string title = "USE SONG SLOTS";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    float textX = baseTitlePos.x - textSize.x * 0.5f;
+                    float textY = baseTitlePos.y - textSize.y * 0.5f;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 800.f * scaleX, 650.f * scaleY };
-                    const std::string title = "Arrow Keys - Spell Input Sequence";
+                    const Vec2 baseTitlePos = { 1060.f * scaleX, 340.f * scaleY };
+                    const std::string title = "1";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    float textX = baseTitlePos.x - textSize.x * 0.5f;
+                    float textY = baseTitlePos.y - textSize.y * 0.5f;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 800.f * scaleX, 600.f * scaleY };
-                    const std::string title = "1 / 2 / 3 - Use Song Slot 1-2-3";
-                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    Image no1 = CreateImage("../Assets/UI_ControlPage_No1Blue.png");
+                    renderer.DrawImageRotated(no1, 1060.f * scaleX, 420.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 800.f * scaleX, 550.f * scaleY };
-                    const std::string title = "Q - Cycle Through Element";
+                    const Vec2 baseTitlePos = { 1200.f * scaleX, 340.f * scaleY };
+                    const std::string title = "2";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    float textX = baseTitlePos.x - textSize.x * 0.5f;
+                    float textY = baseTitlePos.y - textSize.y * 0.5f;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 800.f * scaleX, 500.f * scaleY };
-                    const std::string title = "E - Melee Attack";
-                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    Image no2 = CreateImage("../Assets/UI_ControlPage_No2Blue.png");
+                    renderer.DrawImageRotated(no2, 1200.f * scaleX, 420.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 800.f * scaleX, 450.f * scaleY };
-                    const std::string title = "ESC - Pause/Resume Game";
+                    const Vec2 baseTitlePos = { 1340.f * scaleX, 340.f * scaleY };
+                    const std::string title = "3";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    float textX = baseTitlePos.x - textSize.x * 0.5f;
+                    float textY = baseTitlePos.y - textSize.y * 0.5f;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+                }
 
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                {
+                    Image no3 = CreateImage("../Assets/UI_ControlPage_No3Blue.png");
+                    renderer.DrawImageRotated(no3, 1340.f * scaleX, 420.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 500.f * scaleX, 490.f * scaleY };
+                    const std::string title = "- DASH / DODGE";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    float textX = baseTitlePos.x;
+                    float textY = baseTitlePos.y;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    Image shift = CreateImage("../Assets/UI_ControlPage_ShiftBlue.png");
+                    renderer.DrawImageRotated(shift, 400.f * scaleX, 500.f * scaleY, 140.f * scaleX, 80.f * scaleY, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 500.f * scaleX, 390.f * scaleY };
+                    const std::string title = "- MELEE ATTACK";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    float textX = baseTitlePos.x;
+                    float textY = baseTitlePos.y;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    Image e = CreateImage("../Assets/UI_ControlPage_EBlue.png");
+                    renderer.DrawImageRotated(e, 400.f * scaleX, 400.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 500.f * scaleX, 290.f * scaleY };
+                    const std::string title = "- SWITCH ELEMENTS";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    float textX = baseTitlePos.x;
+                    float textY = baseTitlePos.y;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    Image q = CreateImage("../Assets/UI_ControlPage_QBlue.png");
+                    renderer.DrawImageRotated(q, 400.f * scaleX, 300.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 500.f * scaleX, 190.f * scaleY };
+                    const std::string title = "- PAUSE / RESUME GAME";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    float textX = baseTitlePos.x;
+                    float textY = baseTitlePos.y;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    Image esc = CreateImage("../Assets/UI_ControlPage_EscapeBlue.png");
+                    renderer.DrawImageRotated(esc, 400.f * scaleX, 200.f * scaleY, 100.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
                 bool hoverpage = (renderer.IsAreaTouched(mouse, { 120 * scaleX,150 * scaleY }, 180 * scaleX, 150 * scaleY));
@@ -1704,48 +1779,198 @@ void GuiSystem::Update(float dt)
             else 
             {
                 {
-                    const Vec2 baseTitlePos = { 780.f * scaleX, 900.f * scaleY };
+                    const Vec2 baseTitlePos = { 900.f * scaleX, 1000.f * scaleY };
                     const std::string title = "CONTROLS";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    // float textX = baseTitlePos.x - textSize.x * .8f;
-                    // float textY = baseTitlePos.y - textSize.y * .8f + textSize.y * 0.15f;
-                    float titleTextScale = textScale / 0.8f * 1.5f;
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, titleTextScale, { 1,1,1 }, "Marker");
+                    float textX = baseTitlePos.x - textSize.x * 0.5f;
+                    float textY = baseTitlePos.y - textSize.y * 0.5f;
+                    render.DrawText(title, textX, textY, 1.2f, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 700.f * scaleX, 650.f * scaleY };
-                    const std::string title = "Song List:";
+                    const Vec2 baseTitlePos = { 960.f * scaleX, 800.f * scaleY };
+                    const std::string title = "SONG LIST (INPUT SEQUENCES)";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    float textX = baseTitlePos.x - textSize.x * 0.5f;
+                    float textY = baseTitlePos.y - textSize.y * 0.5f;
+                    render.DrawText(title, textX, textY, 1.f, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 700.f * scaleX, 600.f * scaleY };
-                    const std::string title = "Soundwave Attack -> Up, Down";
+                    const Vec2 baseTitlePos = { 500.f * scaleX, 630.f * scaleY };
+                    const std::string title = "SHOCKWAVE";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    float textX = baseTitlePos.x;
+                    float textY = baseTitlePos.y;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 700.f * scaleX, 550.f * scaleY };
-                    const std::string title = "AOE Attack -> Up, Left, Down";
-                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    Image esc = CreateImage("../Assets/shockwave.png");
+                    renderer.DrawImageRotated(esc, 380.f * scaleX, 640.f * scaleY, 100.f * scaleX, 100.f * scaleY, 0.f, 0.f);
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 700.f * scaleX, 500.f * scaleY };
-                    const std::string title = "Shield -> Down, Down, Right";
-                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    const Vec2 baseImagePos = { 960.f * scaleX, 640.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image up = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = up.widthPixels / 3;
+                    int tileH = up.heightPixels / 2;
+                    float u0 = float(1 * tileW), v0 = float(1 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(up, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
                 }
 
                 {
-                    const Vec2 baseTitlePos = { 700.f * scaleX, 450.f * scaleY };
-                    const std::string title = "Healing -> Right, Up, Right";
+                    const Vec2 baseImagePos = { 1120.f * scaleX, 640.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image down = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = down.widthPixels / 3;
+                    int tileH = down.heightPixels / 2;
+                    float u0 = float(1 * tileW), v0 = float(0 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(down, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 500.f * scaleX, 490.f * scaleY };
+                    const std::string title = "AOE ATTACK";
                     Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-                    render.DrawText(title, baseTitlePos.x, baseTitlePos.y, textScale, { 1,1,1 }, "Marker");
+                    float textX = baseTitlePos.x;
+                    float textY = baseTitlePos.y;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    Image esc = CreateImage("../Assets/aoe.png");
+                    renderer.DrawImageRotated(esc, 380.f * scaleX, 500.f * scaleY, 100.f * scaleX, 100.f * scaleY, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseImagePos = { 960.f * scaleX, 500.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image up = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = up.widthPixels / 3;
+                    int tileH = up.heightPixels / 2;
+                    float u0 = float(1 * tileW), v0 = float(1 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(up, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseImagePos = { 1120.f * scaleX, 500.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image left = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = left.widthPixels / 3;
+                    int tileH = left.heightPixels / 2;
+                    float u0 = float(0 * tileW), v0 = float(0 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(left, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseImagePos = { 1280.f * scaleX, 500.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image down = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = down.widthPixels / 3;
+                    int tileH = down.heightPixels / 2;
+                    float u0 = float(1 * tileW), v0 = float(0 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(down, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 500.f * scaleX, 350.f * scaleY };
+                    const std::string title = "SHIELD";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    float textX = baseTitlePos.x;
+                    float textY = baseTitlePos.y;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    Image esc = CreateImage("../Assets/barrier.png");
+                    renderer.DrawImageRotated(esc, 380.f * scaleX, 360.f * scaleY, 100.f * scaleX, 100.f * scaleY, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseImagePos = { 960.f * scaleX, 360.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image down = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = down.widthPixels / 3;
+                    int tileH = down.heightPixels / 2;
+                    float u0 = float(1 * tileW), v0 = float(0 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(down, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseImagePos = { 1120.f * scaleX, 360.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image down = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = down.widthPixels / 3;
+                    int tileH = down.heightPixels / 2;
+                    float u0 = float(1 * tileW), v0 = float(0 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(down, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseImagePos = { 1280.f * scaleX, 360.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image right = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = right.widthPixels / 3;
+                    int tileH = right.heightPixels / 2;
+                    float u0 = float(2 * tileW), v0 = float(0 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(right, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseTitlePos = { 500.f * scaleX, 210.f * scaleY };
+                    const std::string title = "HEALING";
+                    Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
+                    float textX = baseTitlePos.x;
+                    float textY = baseTitlePos.y;
+                    render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
+                }
+
+                {
+                    Image esc = CreateImage("../Assets/heal.png");
+                    renderer.DrawImageRotated(esc, 380.f * scaleX, 220.f * scaleY, 100.f * scaleX, 100.f * scaleY, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseImagePos = { 960.f * scaleX, 220.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image right = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = right.widthPixels / 3;
+                    int tileH = right.heightPixels / 2;
+                    float u0 = float(2 * tileW), v0 = float(0 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(right, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseImagePos = { 1120.f * scaleX, 220.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image up = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = up.widthPixels / 3;
+                    int tileH = up.heightPixels / 2;
+                    float u0 = float(1 * tileW), v0 = float(1 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(up, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
+                }
+
+                {
+                    const Vec2 baseImagePos = { 1280.f * scaleX, 220.f * scaleY };
+                    const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
+                    Image right = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    int tileW = right.widthPixels / 3;
+                    int tileH = right.heightPixels / 2;
+                    float u0 = float(2 * tileW), v0 = float(0 * tileH);
+                    float u1 = u0 + tileW, v1 = v0 + tileH;
+                    render.DrawImageSub(right, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
                 }
 
                 bool hoverpage = (renderer.IsAreaTouched(mouse, { 120 * scaleX,200 * scaleY }, 180 * scaleX, 150 * scaleY));

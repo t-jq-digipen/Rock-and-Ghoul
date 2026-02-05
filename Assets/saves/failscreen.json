@@ -31,7 +31,8 @@
                     250.0,
                     180.0
                 ],
-                "soundType": 0
+                "soundType": 0,
+                "isVisible": true
             },
             {
                 "ID": 4,
@@ -51,7 +52,8 @@
                     200.0,
                     180.0
                 ],
-                "soundType": 0
+                "soundType": 0,
+                "isVisible": true
             }
         ],
         "dialogues": [],
@@ -67,7 +69,8 @@
                 "size": [
                     270.0,
                     180.0
-                ]
+                ],
+                "isVisible": true
             },
             {
                 "ID": 2,
@@ -80,7 +83,8 @@
                 "size": [
                     200.0,
                     180.0
-                ]
+                ],
+                "isVisible": true
             }
         ],
         "textboxes": []

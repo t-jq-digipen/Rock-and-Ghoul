@@ -98,6 +98,7 @@ struct SavedScene {
         std::string actionName{"{}"};
         json actionParams{"{}"};
         int soundType = 0; // default to PLAY(0)
+        bool isVisible;
     };
     std::vector<SavedButton> guiButtons;
 
@@ -108,6 +109,7 @@ struct SavedScene {
         float scale;
         Colour3 color;
         bool centered;
+        bool isVisible;
     };
     std::vector<SavedTextBox> guiTextboxes;
 
@@ -130,6 +132,8 @@ struct SavedScene {
         Vec2 profileSize = { 200.f, 200.f };
         Vec2 profileOffset = { 0.f, 0.f };
         std::string profileRenderData{ "{}" };
+        
+        bool isVisible;
     };
     std::vector<SavedDialogue> guiDialogues;
 
@@ -139,6 +143,7 @@ struct SavedScene {
         Vec2 size;
         bool centered;
         std::string renderData;
+        bool isVisible;
     };
     std::vector<SavedDisplay> guiDisplays;
 
@@ -147,7 +152,7 @@ struct SavedScene {
         float zoom;
         Vec2 worldMin;
         Vec2 worldMax;
-
+        
         SavedCamera();
     };
 

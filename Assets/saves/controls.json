@@ -21,7 +21,8 @@
         "pos": [150.0, 950.0],
         "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlsPage_BackButton.png\\\"}\",\"type\":\"image\"}",
         "size": [200.0, 180.0],
-        "soundType": 0
+        "soundType": 0,
+        "isVisible": true
       },
       {
         "ID": 2,
@@ -32,7 +33,8 @@
         "pos": [120.0, 100.0],
         "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlsPage_BackwardsPageLogo.png\\\"}\",\"type\":\"image\"}",
         "size": [180.0, 150.0],
-        "soundType": 0
+        "soundType": 0,
+        "isVisible": true
       },
       {
         "ID": 3,
@@ -43,141 +45,351 @@
         "pos": [120.0, 200.0],
         "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlsPage_ForwardPageLogo.png\\\"}\",\"type\":\"image\"}",
         "size": [180.0, 150.0],
-        "soundType": 0
+        "soundType": 0,
+        "isVisible": true
       }
     ],
     "textboxes": [
       {
         "ID": 4,
         "text": "CONTROLS",
-        "pos": [960.0, 900.0],
-        "scale": 1.5,
+        "pos": [960.0, 1000.0],
+        "scale": 1.2,
         "color": [1.0, 1.0, 1.0],
-        "centered": true
+        "centered": true,
+        "isVisible": true
       },
       {
         "ID": 5,
-        "text": "W - Move Up",
-        "pos": [200.0, 650.0],
+        "text": "MOVEMENT",
+        "pos": [600.0, 850.0],
         "scale": 0.8,
         "color": [1.0, 1.0, 1.0],
-        "centered": false
-      },
-      {
-        "ID": 6,
-        "text": "S - Move Down",
-        "pos": [200.0, 600.0],
-        "scale": 0.8,
-        "color": [1.0, 1.0, 1.0],
-        "centered": false
+        "centered": true,
+        "isVisible": true
       },
       {
         "ID": 7,
-        "text": "A - Move Left",
-        "pos": [200.0, 550.0],
+        "text": "SPELL INPUT SEQUENCE",
+        "pos": [1200.0, 850.0],
         "scale": 0.8,
         "color": [1.0, 1.0, 1.0],
-        "centered": false
-      },
-      {
-        "ID": 8,
-        "text": "D - Move Right",
-        "pos": [200.0, 500.0],
-        "scale": 0.8,
-        "color": [1.0, 1.0, 1.0],
-        "centered": false
+        "centered": true,
+        "isVisible": true
       },
       {
         "ID": 9,
-        "text": "Shift - Dash/Dodge",
-        "pos": [200.0, 450.0],
+        "text": "USE SONG SLOTS",
+        "pos": [1200.0, 500.0],
         "scale": 0.8,
         "color": [1.0, 1.0, 1.0],
-        "centered": false
-      },
-      {
-        "ID": 10,
-        "text": "Arrow Keys - Spell Input Sequence",
-        "pos": [800.0, 650.0],
-        "scale": 0.8,
-        "color": [1.0, 1.0, 1.0],
-        "centered": false
+        "centered": true,
+        "isVisible": true
       },
       {
         "ID": 11,
-        "text": "1 / 2 / 3 - Use Song Slot 1-2-3",
-        "pos": [800.0, 600.0],
+        "text": "1",
+        "pos": [1060.0, 340.0],
         "scale": 0.8,
         "color": [1.0, 1.0, 1.0],
-        "centered": false
-      },
-      {
-        "ID": 12,
-        "text": "Q - Cycle Through Element",
-        "pos": [800.0, 550.0],
-        "scale": 0.8,
-        "color": [1.0, 1.0, 1.0],
-        "centered": false
+        "centered": true,
+        "isVisible": true
       },
       {
         "ID": 13,
-        "text": "E - Melee Attack",
-        "pos": [800.0, 500.0],
+        "text": "2",
+        "pos": [1200.0, 340.0],
         "scale": 0.8,
         "color": [1.0, 1.0, 1.0],
-        "centered": false
-      },
-      {
-        "ID": 14,
-        "text": "ESC - Pause/Resume Game",
-        "pos": [800.0, 450.0],
-        "scale": 0.8,
-        "color": [1.0, 1.0, 1.0],
-        "centered": false
+        "centered": true,
+        "isVisible": true
       },
       {
         "ID": 15,
-        "text": "Song List:",
-        "pos": [700.0, 650.0],
+        "text": "3",
+        "pos": [1340.0, 340.0],
         "scale": 0.8,
         "color": [1.0, 1.0, 1.0],
-        "centered": false
-      },
-      {
-        "ID": 16,
-        "text": "Soundwave Attack -> Up, Down",
-        "pos": [700.0, 600.0],
-        "scale": 0.8,
-        "color": [1.0, 1.0, 1.0],
-        "centered": false
+        "centered": true,
+        "isVisible": true
       },
       {
         "ID": 17,
-        "text": "AOE Attack -> Up, Left, Down",
-        "pos": [700.0, 550.0],
+        "text": "- DASH / DODGE",
+        "pos": [500.0, 490.0],
         "scale": 0.8,
         "color": [1.0, 1.0, 1.0],
-        "centered": false
-      },
-      {
-        "ID": 18,
-        "text": "Shield -> Down, Down, Right",
-        "pos": [700.0, 500.0],
-        "scale": 0.8,
-        "color": [1.0, 1.0, 1.0],
-        "centered": false
+        "centered": false,
+        "isVisible": true
       },
       {
         "ID": 19,
-        "text": "Healing -> Right, Up, Right",
-        "pos": [700.0, 450.0],
+        "text": "- MELEE ATTACK",
+        "pos": [500.0, 390.0],
         "scale": 0.8,
         "color": [1.0, 1.0, 1.0],
-        "centered": false
-      }
+        "centered": false,
+        "isVisible": true
+      },
+      {
+        "ID": 21,
+        "text": "- SWITCH ELEMENTS",
+        "pos": [500.0, 290.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false,
+        "isVisible": true
+      },
+      {
+        "ID": 23,
+        "text": "- PAUSE / RESUME GAME",
+        "pos": [500.0, 190.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false,
+        "isVisible": true
+      },
+      {
+        "ID": 24,
+        "text": "SONG LIST (INPUT SEQUENCES)",
+        "pos": [960.0, 800.0],
+        "scale": 1.0,
+        "color": [1.0, 1.0, 1.0],
+        "centered": true,
+        "isVisible": true
+      },
+      {
+        "ID": 25,
+        "text": "SHOCKWAVE",
+        "pos": [500.0, 630.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false,
+        "isVisible": false
+      },
+      {
+        "ID": 26,
+        "text": "AOE ATTACK",
+        "pos": [500.0, 490.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false,
+        "isVisible": false
+      },
+      {
+        "ID": 27,
+        "text": "SHIELD",
+        "pos": [500.0, 350.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false,
+        "isVisible": false
+      },
+      {
+        "ID": 28,
+        "text": "HEALING",
+        "pos": [500.0, 210.0],
+        "scale": 0.8,
+        "color": [1.0, 1.0, 1.0],
+        "centered": false,
+        "isVisible": false
+      }      
     ],
     "dialogues": [],
-    "displays": []
+    "displays": [
+      {
+        "ID": 6,
+        "centered": true,
+        "pos": [600.0, 700.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_WASDBlue.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [240.0, 160.0],
+        "isVisible": true
+      },
+      {
+        "ID": 8,
+        "centered": true,
+        "pos": [1200.0, 700.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [240.0, 160.0],
+        "isVisible": true
+      },
+      {
+        "ID": 10,
+        "centered": true,
+        "pos": [1060.0, 420.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_No1Blue.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [80.0, 80.0],
+        "isVisible": true
+      },
+      {
+        "ID": 12,
+        "centered": true,
+        "pos": [1200.0, 420.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_No2Blue.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [80.0, 80.0],
+        "isVisible": true
+      },
+      {
+        "ID": 14,
+        "centered": true,
+        "pos": [1340.0, 420.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_No3Blue.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [80.0, 80.0],
+        "isVisible": true
+      },
+      {
+        "ID": 16,
+        "centered": true,
+        "pos": [400.0, 500.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ShiftBlue.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [140.0, 80.0],
+        "isVisible": true
+      },
+      {
+        "ID": 18,
+        "centered": true,
+        "pos": [400.0, 400.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_EBlue.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [80.0, 80.0],
+        "isVisible": true
+      },
+      {
+        "ID": 20,
+        "centered": true,
+        "pos": [400.0, 300.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_QBlue.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [80.0, 80.0],
+        "isVisible": true
+      },
+      {
+        "ID": 22,
+        "centered": true,
+        "pos": [400.0, 200.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_EscapeBlue.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [100.0, 80.0],
+        "isVisible": true
+      },
+      {
+        "ID": 29,
+        "centered": true,
+        "pos": [960.0, 640.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 30,
+        "centered": true,
+        "pos": [1120.0, 640.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 31,
+        "centered": true,
+        "pos": [960.0, 500.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 32,
+        "centered": true,
+        "pos": [1120.0, 500.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 33,
+        "centered": true,
+        "pos": [1280.0, 500.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 34,
+        "centered": true,
+        "pos": [960.0, 360.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 35,
+        "centered": true,
+        "pos": [1120.0, 360.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 36,
+        "centered": true,
+        "pos": [1280.0, 360.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 37,
+        "centered": true,
+        "pos": [960.0, 220.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 38,
+        "centered": true,
+        "pos": [1120.0, 220.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 39,
+        "centered": true,
+        "pos": [1280.0, 220.0],
+        "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 40,
+        "centered": true,
+        "pos": [380.0, 640.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/shockwave.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 41,
+        "centered": true,
+        "pos": [380.0, 500.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/aoe.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 42,
+        "centered": true,
+        "pos": [380.0, 360.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/barrier.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      },
+      {
+        "ID": 43,
+        "centered": true,
+        "pos": [380.0, 220.0],
+        "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/heal.PNG\\\"}\",\"type\":\"image\"}",
+        "size": [100.0, 100.0],
+        "isVisible": true
+      }
+    ]
   },
   "sceneName": "Controls",
   "sceneType": 0,
