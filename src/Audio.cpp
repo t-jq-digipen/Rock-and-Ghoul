@@ -1,7 +1,7 @@
 /* ========================================================
  * @file    Audio.cpp
  * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
- * @date    26 SEP 2025
+ * @date    5 FEB 2025
  *
  * @brief   Implementation file for AudioSystem and AudioManager classes
  *
@@ -460,7 +460,7 @@ void AudioManager::TransitionToBGM(const std::string& bgmAssetName, float durati
 }
 
 /**
- * @brief Starts playing BGM instantly at full volume (no fade in).
+ * @brief Starts playing BGM instantly at full volume.
  *
  * This function is used when entering play mode. The music starts immediately
  * without any fade-in effect.
@@ -468,7 +468,7 @@ void AudioManager::TransitionToBGM(const std::string& bgmAssetName, float durati
  * @param bgmAssetName The name of the BGM asset in AudioCache.
  * @param duration Unused parameter (kept for API compatibility).
  */
-void AudioManager::StartBGM(const std::string& bgmAssetName) {
+void AudioManager::StartBGM(const std::string& bgmAssetName) { // works sometimes
     if (bgmAssetName.empty()) return;
 
     FMOD::Sound* bgm = AudioCache::GetSound(bgmAssetName);
@@ -481,16 +481,17 @@ void AudioManager::StartBGM(const std::string& bgmAssetName) {
     fadeTime = 0.0f;
     pendingBGM = "";
 
-    // *** Start playing PAUSED, set volume, then unpause ***
+    // Start playing PAUSED, set volume, then unpause
     currentChannel = PlayGetChannel(bgm, true);  // true = start paused
     if (currentChannel) {
-        // Set volume while paused (no ramping)
+        // Set volume while paused to like counteract ramping
         currentChannel->setVolume(musicVol);
 
-        // Now unpause to start playback at full volume
+        // unpause to start playback at full volume
         currentChannel->setPaused(false);
     }
 }
+
 /**
  * @brief Fades out and stops current music.
  *
@@ -504,7 +505,7 @@ void AudioManager::FadeOutAndStop(float duration) {
     fadeDuration = duration;
     fadeTime = 0.0f;
     fadeActive = true;
-    pendingBGM = "";  // Empty means just stop, don't play new music
+    pendingBGM = "";  // just stop, don't play new music
 }
 
 
