@@ -66,7 +66,7 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 0
+                "soundType": 2
             },
             {
                 "ID": 3,
@@ -83,7 +83,7 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 0
+                "soundType": 2
             },
             {
                 "ID": 4,
@@ -103,7 +103,7 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 0
+                "soundType": 1
             }
         ],
         "dialogues": [],

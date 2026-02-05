@@ -145,7 +145,8 @@ public:
     enum class ButtonType {
         PLAY,    ///< Play button sound effect
         QUIT,    ///< Quit button sound effect
-        CLICK    ///< Any UI clicks
+        CLICK,   ///< Any UI clicks
+        COUNT    ///< For ImGui
     };
 
     /**

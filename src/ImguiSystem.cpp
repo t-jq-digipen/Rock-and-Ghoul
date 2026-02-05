@@ -1003,7 +1003,7 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         return;
     }
     const std::string assetFolder = "../Assets/";
-    if (ext == ".mp3" || ext == ".ogg" || ext == ".aac" || ext == ".flac")
+    if (ext == "." || ext == ".ogg" || ext == ".aac" || ext == ".flac")
     {
         g_audioErrorMessage = "Unsupported audio format: " + filename +
             "\n\nOnly .wav files are allowed for import.";
@@ -1946,6 +1946,20 @@ void ImGuiSystem::Update(float dt)
                                 b.actionParams["duration"] = currDuration;
                             }
                             ImGui::Unindent();
+                        }
+                    }
+                    ImGui::Separator();
+                    // Button sound
+                    {
+                        static const char* ButtonSoundLabels[] = {
+                            "Play",
+                            "Quit",
+                            "Click"
+                        };
+                        int currentSound = static_cast<int>(b.soundType);
+                        if (ImGui::Combo("Button Sound", &currentSound, ButtonSoundLabels, static_cast<int>(AudioSystem::ButtonType::COUNT)))
+                        {
+                            b.soundType = static_cast<AudioSystem::ButtonType>(currentSound);
                         }
                     }
                     ImGui::Separator();
