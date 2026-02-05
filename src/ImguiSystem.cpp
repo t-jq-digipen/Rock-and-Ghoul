@@ -93,6 +93,11 @@ static int          g_pendingAudioCategory = 0; // 0=Music, 1=SFX, 2=UI
 static bool         g_showDeleteImagePopup = false;
 static std::string  g_pendingDeleteImageName;
 
+// Video tab
+static std::vector<std::string> g_videoNames;
+static bool         g_showDeleteVideoPopup = false;
+static std::string  g_pendingDeleteVideoName;
+
 // ========================================================
 // Static Member Definitions
 // ========================================================
@@ -1005,6 +1010,26 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         g_showAudioErrorPopup = true;
         return;
     }
+
+    // video (.mp4)
+    if (ext == ".mp4")
+    {
+        std::string destPath = "../Assets/" + filename;
+        try {
+            if (!fs::exists("../Assets/")) fs::create_directories("../Assets/");
+            fs::copy_file(path, destPath, fs::copy_options::overwrite_existing);
+            std::cout << "[ImGui Drop] Imported video: " << destPath << "\n";
+
+            // Add to video list immediately
+            g_videoNames.push_back(filename);
+            std::sort(g_videoNames.begin(), g_videoNames.end());
+        }
+        catch (const fs::filesystem_error& e) {
+            std::cerr << "[ImGui Drop] Video copy failed: " << e.what() << std::endl;
+        }
+        return;
+    }
+
     //std::string filename = fs::path(path).filename().string();
     std::string destDir = "../Assets/";
     if (ext == ".ttf" || ext == ".json" || ext == ".vert" || ext == ".frag")
@@ -5319,15 +5344,6 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 {
     ImGui::Text("Asset Preview Browser");
     ImGui::Separator();
-    if (ImGui::Button("Refresh"))
-    {
-        RefreshImageAssets();
-
-    
-
-    }
-    ImGui::SameLine();
-    ImGui::TextDisabled("Reloads asset folder");
 
     if (ImGui::BeginTabBar("AssetsTabs"))
     {
@@ -5337,6 +5353,15 @@ void ImGuiSystem::ShowAssetPreviewWindow()
         if (ImGui::BeginTabItem("Images"))
         {
             static bool initialized = false;
+
+            if (ImGui::Button("Refresh Images"))
+            {
+                RefreshImageAssets();
+                initialized = true;
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("Rescans Assets/ for images");
+            ImGui::Separator();
 
             if (!initialized)
             {
@@ -5593,6 +5618,14 @@ void ImGuiSystem::ShowAssetPreviewWindow()
             static std::unordered_map<std::string, AudioAsset> audioList;
             auto& all = audioList;
 
+            if (ImGui::Button("Refresh Audio"))
+            {
+                audioList = RefreshAudioAssets();
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("Rescans audio manifest");
+            ImGui::Separator();
+
             //refresh each frame when add/removed
             audioList = AudioCache::GetAllAssets();
 
@@ -5821,6 +5854,165 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 }
             }
 
+
+            ImGui::EndTabItem();
+        }
+
+        // ====================================================
+        // VIDEO TAB
+        // ====================================================
+        if (ImGui::BeginTabItem("Video"))
+        {
+            static bool videoInitialized = false;
+
+            auto refreshVideoList = [&]()
+                {
+                    g_videoNames.clear();
+                    const std::string assetFolder = "../Assets/";
+                    if (!std::filesystem::exists(assetFolder)) return;
+
+                    auto options = std::filesystem::directory_options::skip_permission_denied;
+                    try {
+                        for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder, options))
+                        {
+                            if (!entry.is_regular_file()) continue;
+
+                            std::string ext = entry.path().extension().string();
+                            std::transform(ext.begin(), ext.end(), ext.begin(),
+                                [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+                            if (ext == ".mp4")
+                            {
+                                g_videoNames.push_back(entry.path().filename().string());
+                            }
+                        }
+                        std::sort(g_videoNames.begin(), g_videoNames.end());
+                    }
+                    catch (const std::exception& e) {
+                        std::cerr << "[AssetBrowser] Video scan error: " << e.what() << "\n";
+                    }
+                    videoInitialized = true;
+                };
+
+            if (!videoInitialized)
+            {
+                refreshVideoList();
+            }
+
+            if (ImGui::Button("Refresh Video List"))
+            {
+                refreshVideoList();
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("Refresh for .mp4 files");
+
+            ImGui::Separator();
+
+            ImGui::BeginChild("VideoScroll", ImVec2(0, 0), true);
+
+            if (g_videoNames.empty())
+            {
+                ImGui::TextDisabled("No .mp4 files found in Assets folder.");
+            }
+            else
+            {
+                for (size_t i = 0; i < g_videoNames.size(); ++i)
+                {
+                    ImGui::PushID(static_cast<int>(i));
+
+                    ImGui::Bullet();
+                    ImGui::Selectable(g_videoNames[i].c_str());
+
+                    // Drag and drop source
+                    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+                    {
+                        const std::string fullPath = "../Assets/" + g_videoNames[i];
+                        ImGui::SetDragDropPayload("ASSET_VIDEO", fullPath.c_str(), fullPath.size() + 1);
+                        ImGui::Text("Drag %s", g_videoNames[i].c_str());
+                        ImGui::EndDragDropSource();
+                    }
+
+                    // Right-click context menu for delete
+                    if (ImGui::BeginPopupContextItem("##VideoCtx"))
+                    {
+                        ImGui::Text("%s", g_videoNames[i].c_str());
+                        ImGui::Separator();
+                        if (ImGui::MenuItem("Delete Video"))
+                        {
+                            g_pendingDeleteVideoName = g_videoNames[i];
+                            g_showDeleteVideoPopup = true;
+                        }
+                        ImGui::EndPopup();
+                    }
+
+                    ImGui::PopID();
+                }
+            }
+
+            ImGui::EndChild();
+
+            // Delete video confirmation modal
+            if (g_showDeleteVideoPopup)
+            {
+                ImGui::OpenPopup("Delete Video Confirmation");
+                g_showDeleteVideoPopup = false;
+            }
+
+            if (ImGui::BeginPopupModal("Delete Video Confirmation", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Are you sure you want to delete:\n%s ?", g_pendingDeleteVideoName.c_str());
+                ImGui::Separator();
+
+                if (ImGui::Button("Yes, Delete", ImVec2(120, 0)))
+                {
+                    namespace fs = std::filesystem;
+                    const std::string assetFolder = "../Assets/";
+                    bool deleted = false;
+
+                    for (auto& entry : fs::recursive_directory_iterator(assetFolder))
+                    {
+                        if (entry.is_regular_file() && entry.path().filename().string() == g_pendingDeleteVideoName)
+                        {
+                            try
+                            {
+                                fs::remove(entry.path());
+                                std::cout << "[AssetBrowser] Deleted video: " << entry.path() << "\n";
+                                deleted = true;
+                            }
+                            catch (const std::exception& e)
+                            {
+                                std::cerr << "[AssetBrowser] Failed to delete video: " << e.what() << "\n";
+                            }
+                            break;
+                        }
+                    }
+
+                    if (deleted)
+                    {
+                        // Remove from video list so it disappears immediately
+                        for (size_t j = 0; j < g_videoNames.size(); ++j)
+                        {
+                            if (g_videoNames[j] == g_pendingDeleteVideoName)
+                            {
+                                g_videoNames.erase(g_videoNames.begin() + j);
+                                break;
+                            }
+                        }
+                    }
+
+                    g_pendingDeleteVideoName.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    g_pendingDeleteVideoName.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
 
             ImGui::EndTabItem();
         }
