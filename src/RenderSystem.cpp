@@ -736,6 +736,15 @@ std::vector<std::string> RenderSystem::GetBackgroundTexturePaths() {
 
 void RenderSystem::SetCutscenePath(const std::string& path) {
     s_cutscenePath = path;
+    // If a cutscene is currently loaded, reinit with the new video
+    if (gCutscene.fmt) {
+        if (!gCutscene.Init(s_cutscenePath.c_str())) {
+            // make sure everything is cleaned up so Update dont crash
+            gCutscene.Shutdown();
+            gCutscene.finished = true;
+        }
+        gCutscene.acc = 0.0;
+    }
 }
 
 std::string RenderSystem::GetCutscenePath() {
