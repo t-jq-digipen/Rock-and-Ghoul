@@ -38,7 +38,7 @@
                 "action": "None",
                 "actionName": "ControlsPage1",
                 "actionParams": "{}",
-                "isVisible": true,
+                "isVisible": false,
                 "label": "",
                 "pos": [
                     120.0,
@@ -201,7 +201,7 @@
             {
                 "ID": 29,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     960.0,
                     640.0
@@ -215,7 +215,7 @@
             {
                 "ID": 30,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     1120.0,
                     640.0
@@ -229,7 +229,7 @@
             {
                 "ID": 31,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     960.0,
                     500.0
@@ -243,7 +243,7 @@
             {
                 "ID": 32,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     1120.0,
                     500.0
@@ -257,7 +257,7 @@
             {
                 "ID": 33,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     1280.0,
                     500.0
@@ -271,7 +271,7 @@
             {
                 "ID": 34,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     960.0,
                     360.0
@@ -285,7 +285,7 @@
             {
                 "ID": 35,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     1120.0,
                     360.0
@@ -299,7 +299,7 @@
             {
                 "ID": 36,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     1280.0,
                     360.0
@@ -313,7 +313,7 @@
             {
                 "ID": 37,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     960.0,
                     220.0
@@ -327,7 +327,7 @@
             {
                 "ID": 38,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     1120.0,
                     220.0
@@ -341,7 +341,7 @@
             {
                 "ID": 39,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     1280.0,
                     220.0
@@ -355,7 +355,7 @@
             {
                 "ID": 40,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     380.0,
                     640.0
@@ -369,7 +369,7 @@
             {
                 "ID": 41,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     380.0,
                     500.0
@@ -383,7 +383,7 @@
             {
                 "ID": 42,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     380.0,
                     360.0
@@ -397,7 +397,7 @@
             {
                 "ID": 43,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     380.0,
                     220.0
@@ -407,6 +407,35 @@
                     100.0,
                     100.0
                 ]
+            }
+        ],
+        "groups": [
+            {
+                "ID": 1,
+                "members": [
+                    2,
+                    24,
+                    25,
+                    26,
+                    27,
+                    28,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41,
+                    42,
+                    43
+                ],
+                "name": "Page 2"
             }
         ],
         "textboxes": [
@@ -594,7 +623,7 @@
                     1.0,
                     1.0
                 ],
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     960.0,
                     800.0
@@ -610,7 +639,7 @@
                     1.0,
                     1.0
                 ],
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     500.0,
                     630.0
@@ -626,7 +655,7 @@
                     1.0,
                     1.0
                 ],
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     500.0,
                     490.0
@@ -642,7 +671,7 @@
                     1.0,
                     1.0
                 ],
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     500.0,
                     350.0
@@ -658,7 +687,7 @@
                     1.0,
                     1.0
                 ],
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     500.0,
                     210.0

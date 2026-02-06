@@ -879,6 +879,8 @@ void GuiSystem::Update(float dt)
                     {
                         comp->SetCurrentLineIndex(idx + 1);
                         comp->StartTyping();
+                        AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK);
+                            
                     }
                     else
                     {

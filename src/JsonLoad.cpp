@@ -1009,6 +1009,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sb.actionName = b.actionName;
             sb.actionParams = b.actionParams;
             sb.soundType = static_cast<int>(b.soundType);
+            sb.isVisible = b.isVisible;
             scene.guiButtons.push_back(sb);
         }
         // GUI TextBoxes
@@ -1021,6 +1022,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             st.scale = t.baseScale;
             st.color = t.color;
             st.centered = t.centered;
+            st.isVisible = t.isVisible;
             scene.guiTextboxes.push_back(st);
         }
         // GUI Dialogues
@@ -1047,6 +1049,8 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.profileOffset = d.profileOffset;
             sd.profileRenderData = d.profileRenderData.Serialize();
 
+            sd.isVisible = d.isVisible;
+
             const TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
             if (comp)
             {
@@ -1065,6 +1069,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.size = dp.baseSize;
             sd.renderData = dp.m_renderData.Serialize();
             sd.centered = dp.centered;
+            sd.isVisible = dp.isVisible;
             scene.guiDisplays.push_back(std::move(sd));
         }
         // Get all alive entities

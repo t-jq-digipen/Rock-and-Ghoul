@@ -32,7 +32,8 @@ enum class ScriptID : unsigned int {
     ROCK_SCRIPT,
     MAINMENU_BG,
     SPIRIT,
-    SPIRITMELEE
+    SPIRITMELEE,
+    PORTAL
 };
 
 /**

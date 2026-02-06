@@ -199,6 +199,7 @@ struct CombatantProperties {
 
 void DrawHealthBar(Vec2 pos, float width, float height, float ratio);
 
+
 class CombatSystem : public ISystem {
 private:
 	CombatSystem() = default;
@@ -239,6 +240,7 @@ public:
 
 	void RegisterCombatant(Entity eID);
 	void RemoveCombatant(Entity eID);
+	int GetCombatantCount();
 
 	bool IsCombatantStaggered(Entity eID);
 	void SetCombatantStagger(Entity eID, bool stagger);

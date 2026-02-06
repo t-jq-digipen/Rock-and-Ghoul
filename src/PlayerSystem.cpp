@@ -684,6 +684,7 @@ namespace RockScript {
 			std::cout << "Invalid input Clearing combo lol\n";
 			inputBuffer.clear();
 			UpdateVisualDisplays();  // hide all arrows
+			// ARI PLUCK SOUND FAIL HERE
 			return;  //dont process key
 		}
 

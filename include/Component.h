@@ -431,37 +431,43 @@ enum ControlScheme {
 	CS_ARROWS
 };
 
-//struct InputComponent {
-//	ControlScheme scheme = CS_WASD;
-//
-//	std::string Serialize() const {
-//		json j = {
-//			{"scheme", static_cast<int>(scheme)}
-//		};
-//		return j.dump();
-//	}
-//
-//	static InputComponent DeSerialize(Entity eID, const std::string& data) {
-//		(void)eID;
-//		if (data.empty()) {
-//			return InputComponent();
-//		}
-//		json j = json::parse(data);
-//		InputComponent temp;
-//		temp.scheme = static_cast<ControlScheme>(static_cast<int>(j["scheme"]));
-//		return temp;
-//	}
-//
-//	Editor::ComponentData EditorData() {
-//		Editor::ComponentData ret("Input");
-//		Editor::Widget_Dropdown dropdown;
-//		dropdown.ref = reinterpret_cast<unsigned int*>(&scheme);
-//		dropdown.Add_Option("WASD", static_cast<unsigned int>(CS_WASD));
-//		dropdown.Add_Option("IJKL", static_cast<unsigned int>(CS_IJKL));
-//		dropdown.Add_Option("Arrows", static_cast<unsigned int>(CS_ARROWS));
-//
-//		ret.Add_Data("Scheme",  dropdown );
-//
-//		return ret;
-//	}
-//};
+enum PortalState : unsigned int {
+	LOCKED = 0,
+	OPEN = 1,
+	ACTIVE = 2,
+};
+
+
+struct PortalComponent {
+	PortalState state = PortalState::LOCKED;
+	std::string nextScene = "";
+
+	std::string Serialize() const {
+		json j = {
+			{"state", state},
+			{"scene", nextScene}
+		};
+		return j.dump();
+	}
+
+	static PortalComponent DeSerialize(Entity, const std::string& data) {
+		if (data.empty()) return PortalComponent{};
+		json j = json::parse(data);
+		PortalComponent temp;
+		temp.state = j.value("state", PortalState::LOCKED);
+		temp.nextScene = j.value("scene", "../Assets/saves/MainMenu.json");
+		return temp;
+	}
+
+	Editor::ComponentData EditorData() {
+		Editor::ComponentData ret("Portal");
+		Editor::Widget_Dropdown dropdown;
+		dropdown.ref = reinterpret_cast<unsigned int*>(&state);
+		dropdown.Add_Option("Locked", PortalState::LOCKED);
+		dropdown.Add_Option("Open", PortalState::OPEN);
+		dropdown.Add_Option("Active", PortalState::ACTIVE);
+		ret.Add_Data("State", dropdown);
+		return ret;
+	}
+
+};

@@ -4,6 +4,7 @@
 #include "CollisionManager.h"
 #include "GuiSystem.h"
 #include "PooledEntityFactory.h"
+#include "LogicSystem.h"
 
 // MEMORY POOLLLLLLLL: Map projectile Entity to its PooledEntity for cleanup
 static std::unordered_map<Entity, PooledEntity> g_projectilePoolData;
@@ -327,6 +328,10 @@ void CombatSystem::RemoveCombatant(Entity eID) {
 	combatants.erase(eID);
 }
 
+int CombatSystem::GetCombatantCount() {
+	return combatants.size();
+}
+
 bool CombatSystem::IsCombatantStaggered(Entity eID) {
 	if (combatants.contains(eID)) {
 		return combatants[eID].toStagger;
@@ -404,6 +409,8 @@ void CombatSystem::Initialize() {
 		ApplyDamage(target, properties, damageArea);
 		}
 	);
+
+	
 
 	// maybe assign player entity? player health stuff?
 }
@@ -504,6 +511,27 @@ void CombatSystem::Update(float dt) {
 	}
 	toRemove.clear();
 	UpdateElementEffects(dt);
+
+	// check portal
+	for (auto& [eID, portal] : m_registry.Get_ComponentMap<PortalComponent>())
+	{
+		// locked
+		if (GetCombatantCount() > 1) { portal.state = PortalState::LOCKED; }
+		else // Combatants 1 or less, only player ba 
+		{
+			// check coll
+			if (1)
+			{
+				portal.state = PortalState::ACTIVE;
+			}
+			else
+			{
+				portal.state = PortalState::OPEN;
+			}
+		}
+
+		m_registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(portal.state);
+	}
 
 }
 

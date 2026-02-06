@@ -197,6 +197,9 @@ void CoreEngine::Initialize()
     registry.Register_Component<StatusEffectComponent>("StatusEffect");
     std::cout << "REGISTRY | REGISTERED STATUSEFFECT COMPONENT\n";
 
+    registry.Register_Component<PortalComponent>("Portal", {"Render", "Collider"});
+    std::cout << "REGISTRY | REGISTERED PORTAL COMPONENT\n";
+
     // ----------------------------------------------------
     // Initialize all systems
     // ----------------------------------------------------
