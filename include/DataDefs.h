@@ -87,6 +87,11 @@ struct SavedScene {
     std::string fontConfigPath;
     std::string bgmAssetName;  // name of BGM asset from AudioCache i.e. "main_menu", "level_1"
 
+/**
+ * @struct SavedButton
+ * @brief Serializable button and its properties.
+ */
+
     struct SavedButton {
         int ID = 0;
         std::string label;
@@ -103,6 +108,11 @@ struct SavedScene {
     };
     std::vector<SavedButton> guiButtons;
 
+/**
+ * @struct SavedTextBox
+ * @brief Serializable textbox and its properties.
+ */
+
     struct SavedTextBox {
         int ID = 0;
         std::string text;
@@ -113,6 +123,11 @@ struct SavedScene {
         bool isVisible;
     };
     std::vector<SavedTextBox> guiTextboxes;
+
+/**
+ * @struct SavedDialogue
+ * @brief Serializable dialogue box and its properties.
+ */
 
     struct SavedDialogue {
         int ID = 0;
@@ -138,6 +153,11 @@ struct SavedScene {
     };
     std::vector<SavedDialogue> guiDialogues;
 
+/**
+ * @struct SavedDisplay
+ * @brief Serializable display and its properties.
+ */
+
     struct SavedDisplay {
         int ID = 0;
         Vec2 pos;
@@ -147,6 +167,11 @@ struct SavedScene {
         bool isVisible;
     };
     std::vector<SavedDisplay> guiDisplays;
+
+/**
+ * @struct SavedCamera
+ * @brief In-game camera configuration settings.
+ */
 
     struct SavedCamera {
         Vec2 pos;
@@ -183,11 +208,21 @@ struct GameSettings {
     GameSettings() : volume(1.0f), resolutionWidth(1920), resolutionHeight(1080), fullscreen(false) {}
 };
 
+/**
+ * @enum RenderType
+ * @brief Type of display to render.
+ */
+
 enum RenderType {
     RT_SHAPE,
     RT_IMAGE,
     RT_SPRITESHEET
 };
+
+/**
+ * @enum RenderLayer
+ * @brief Type of layer to render.
+ */
 
 enum RenderLayer {
     LAYER_BACKGROUND,

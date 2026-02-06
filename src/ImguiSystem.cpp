@@ -1345,6 +1345,7 @@ void ImGuiSystem::Update(float dt)
         int numDisp = (int)displays.size();
         int total = numBtn + numTxt + numDlg + numDisp;
 
+        // Total count of UI elements
         auto totalCount = [&]()
             {
                 return (int)buttons.size() + (int)textboxes.size() + (int)dialogues.size() + (int)displays.size();
@@ -2486,6 +2487,8 @@ void ImGuiSystem::Update(float dt)
                     ImGui::SliderFloat("scale", &d.textBox.baseScale, 0.1f, 10.f, "%.3f");
 
                     float col[3] = { d.textBox.color.r, d.textBox.color.g, d.textBox.color.b };
+
+                    // Text Color
                     if (ImGui::ColorEdit3("Text Color", col))
                     {
                         d.textBox.color = { col[0], col[1], col[2] };
@@ -2493,7 +2496,10 @@ void ImGuiSystem::Update(float dt)
                         colorOverriden = true;
                     }
 
+                    // Textbox Wrap Width
                     ImGui::SliderFloat("Wrap Width", &d.wrapWidth, 0.f, 1920.f, "%.3f");
+
+                    // Text Typing Speed
                     float spd = comp->GetTextSpeed();
                     if (ImGui::SliderFloat("Text Speed", &spd, 0.f, 200.f, "%.3f"))
                     {
@@ -2526,15 +2532,6 @@ void ImGuiSystem::Update(float dt)
                             d.sceneID = sceneIDs.empty() ? "0" : sceneIDs[activeSceneIdx];
                         }
                     }
-
-
-                    //auto clamp01 = [](float v) { return std::clamp(v, 0.f, 1.f); };
-                    //d.speakerNameBasePos = d.textBox.basePos + d.speakerPosOffset;
-                    //d.speakerNameBaseScale = d.textBox.baseScale * d.speakerScaleMul;
-                    //d.speakerNameColor = { clamp01(d.textBox.color.r + d.speakerColorOffset.r),
-                    //                        clamp01(d.textBox.color.g + d.speakerColorOffset.g),
-                    //                        clamp01(d.textBox.color.b + d.speakerColorOffset.b) };
-                    //d.speakerNameCentered = d.textBox.centered ^ d.speakerCenteredOverride;
 
                     // Lines
                     ImGui::SeparatorText("Lines");
@@ -2579,48 +2576,6 @@ void ImGuiSystem::Update(float dt)
                     {
                         ImGui::TextDisabled("No TextComponent attached!");
                     }
-
-                    // SPEAKER LABEL SETTINGS
-
-                    //ImGui::SeparatorText("Speaker Name");
-                    //ImGui::Checkbox("Custom Speaker?", &d.customSpeaker);
-                    //if (d.customSpeaker)
-                    //{
-                    //    char buf[64]; std::snprintf(buf, sizeof(buf), "%s", d.customSpeakerName.c_str());
-                    //    if (ImGui::InputText("Speaker Name", buf, IM_ARRAYSIZE(buf)))
-                    //    {
-                    //        d.customSpeakerName = buf;
-                    //    }
-                    //}
-
-                    //// --- Speaker label (edit offsets so it keeps following the box) ---
-                    //Vec2 sp = d.textBox.basePos + d.speakerPosOffset;
-                    //if (ImGui::SliderFloat("Pos X", &sp.x, 0.f, 1920.f)) d.speakerPosOffset.x = sp.x - d.textBox.basePos.x;
-                    //if (ImGui::SliderFloat("Pos Y", &sp.y, 0.f, 1080.f)) d.speakerPosOffset.y = sp.y - d.textBox.basePos.y;
-
-                    //float ss = d.textBox.baseScale * d.speakerScaleMul;
-                    //if (ImGui::SliderFloat("Scale", &ss, 0.1f, 10.f, "%.3f"))
-                    //    d.speakerScaleMul = (d.textBox.baseScale != 0.f) ? (ss / d.textBox.baseScale) : 1.f;
-
-                    //float sc[3] = {
-                    //    clamp01(d.textBox.color.r + d.speakerColorOffset.r),
-                    //    clamp01(d.textBox.color.g + d.speakerColorOffset.g),
-                    //    clamp01(d.textBox.color.b + d.speakerColorOffset.b)
-                    //};
-                    //if (ImGui::ColorEdit3("Color", sc))
-                    //    d.speakerColorOffset = { sc[0] - d.textBox.color.r, sc[1] - d.textBox.color.g, sc[2] - d.textBox.color.b };
-
-                    //bool sCent = d.textBox.centered ^ d.speakerCenteredOverride;
-                    //if (ImGui::Checkbox("Centered?", &sCent))
-                    //    d.speakerCenteredOverride = (sCent != d.textBox.centered);
-
-                    //if (ImGui::Button("Reset Label Settings"))
-                    //{
-                    //    d.speakerPosOffset = { 0.f, 60.f };
-                    //    d.speakerScaleMul = 1.f;
-                    //    d.speakerColorOffset = { 0.f, 0.f, 0.f };
-                    //    d.speakerCenteredOverride = false;
-                    //}
 
                     // DIALOGUE BACKGROUND
 
