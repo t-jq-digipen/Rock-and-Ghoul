@@ -900,9 +900,9 @@ public:
     std::unordered_map<std::string, ActionFunction>& GetActionMap() { return actionRegistry; }
 
 /**
- * @brief   Reseeds the next UI element ID from the maximum existing ID plus one.
- *          Scans all buttons, textboxes, dialogues and displays.
- *          Used when loading scenes to keep IDs globally unique.
+ * @brief       Reseeds the next UI element ID from the maximum existing ID plus one.
+ *              Scans all buttons, textboxes, dialogues and displays.
+ *              Used when loading scenes to keep IDs globally unique.
  */
 
     void ReseedNextUIID();
@@ -910,7 +910,8 @@ public:
 /**
  * @brief       Returns a reference to a UIGroup by name.
  * @param name  Group name to search for.
- * @return      UIGroup& Reference to the matching group.
+ * @return      UIGroup& Reference to the matching group, otherwise throws std::out_of_range
+ *              exception if no group with the given name is found.
  */
 
     std::vector<UIGroup>& GetGroups() { return m_groups; }
@@ -942,18 +943,72 @@ public:
 
     bool SetDisplaySheetState(int uiID, unsigned int frame);
 
+/**
+ * @brief           Returns the quad vertices for a display element by UI ID.
+ * @param ID        The display element identifier.
+ * @param v0        Reference to store the first vertex.
+ * @param v1        Reference to store the second vertex.
+ * @param v2        Reference to store the third vertex.
+ * @param v3        Reference to store the fourth vertex.
+ * @return          True if the quad was found and vertices were set, otherwise false.
+ */
+
     bool GetDisplayQuad(int ID, Vec2& v0, Vec2& v1, Vec2& v2, Vec2& v3);
+
+/**
+ * @brief           Sets the quad vertices for a display element by UI ID.
+ * @param ID        The display element identifier.
+ * @param v0        The first vertex.
+ * @param v1        The second vertex.
+ * @param v2        The third vertex.
+ * @param v3        The fourth vertex.
+ * @return          True if the quad was successfully set, false otherwise.
+ */
 
     bool SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3);
 
+/**
+ * @brief           Gets the current state of the dialogue gate.
+ * @return          True if the dialogue gate is open, false otherwise.
+ */
+
     bool GetDialogueGate();
 
+/**
+ * @brief           Sets the state of the dialogue gate.
+ * @param gate      True to open the dialogue gate, false to close it.
+ */
+    
     void SetDialogueGate(bool gate);
+
+/**
+ * @brief           Handles advancing the dialogue based on the given flag.
+ * @param advance   True to advance the dialogue, otherwise false.
+ * @return          True if the dialogue was advanced, otherwise false.
+ */
 
     bool HandleDialogueAdvance(bool advance);
 
+/**
+ * @brief           Sets the text for a specific text box.
+ * @param textBoxID The identifier of the text box.
+ * @param text      The text to set.
+ */
+
     void SetTextBoxText(int textBoxID, const std::string& text);
+
+/**
+ * @brief           Shows the specified text box.
+ * @param textBoxID The identifier of the text box to show.
+ */
+
     void ShowTextBox(int textBoxID);
+
+/**
+ * @brief           Hides the specified text box.
+ * @param textBoxID The identifier of the text box to hide.
+ */
+
     void HideTextBox(int textBoxID);
 
 private:
@@ -976,10 +1031,10 @@ private:
     };
 
 /**
- * @brief   Builds a single draw list of all UI elements sorted by ascending ID.
- *          The resulting DrawItem vector is used in Update() to render UI in a stable order
- *          across all UI types: Buttons, TextBoxes, Dialogues and Displays.
- * @return  Sorted list of drawable UI references.
+ * @brief           Builds a single draw list of all UI elements sorted by ascending ID.
+ *                  The resulting DrawItem vector is used in Update() to render UI in a stable order
+ *                  across all UI types: Buttons, TextBoxes, Dialogues and Displays.
+ * @return out      Sorted list of drawable UI references.
  */
 
     std::vector<DrawItem> BuildSortedDrawList() const;
