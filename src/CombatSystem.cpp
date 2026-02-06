@@ -5,6 +5,7 @@
 #include "GuiSystem.h"
 #include "PooledEntityFactory.h"
 #include "LogicSystem.h"
+#include "SceneManager.h"
 
 // MEMORY POOLLLLLLLL: Map projectile Entity to its PooledEntity for cleanup
 static std::unordered_map<Entity, PooledEntity> g_projectilePoolData;
@@ -531,6 +532,12 @@ void CombatSystem::Update(float dt) {
 		}
 
 		m_registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(portal.state);
+
+		if (portal.state == PortalState::ACTIVE && Input::IsKeyPressed(GLFW_KEY_SPACE))
+		{
+			// go next scene
+			SceneManager::Get().QueueLoadScene(portal.nextScene);
+		}
 	}
 
 }

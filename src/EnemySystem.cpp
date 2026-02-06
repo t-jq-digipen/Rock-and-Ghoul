@@ -556,6 +556,7 @@ namespace SpiritScript {
 	// Register spirit runtime and assign target player
 	inline void Start(Entity eID) {
 		std::cout << "Spirit script started for entity " << eID << std::endl;
+		CombatSystem::Get().RegisterCombatant(eID);
 		g_spirits[eID] = SpiritRuntime();
 	}
 
@@ -815,7 +816,7 @@ namespace SpiritScript {
 	inline void End(Entity eID) {
 		std::cout << "Spirit script ended for entity " << eID << std::endl;
 		g_spirits.erase(eID);
-		
+		CombatSystem::Get().RemoveCombatant(eID);
 	}
 }
 

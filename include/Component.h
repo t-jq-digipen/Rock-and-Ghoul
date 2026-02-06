@@ -440,7 +440,7 @@ enum PortalState : unsigned int {
 
 struct PortalComponent {
 	PortalState state = PortalState::LOCKED;
-	std::string nextScene = "";
+	std::string nextScene = "../Assets/saves/MainMenu.json";
 
 	std::string Serialize() const {
 		json j = {
