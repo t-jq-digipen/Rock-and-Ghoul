@@ -6,6 +6,7 @@
 #include "PooledEntityFactory.h"
 #include "LogicSystem.h"
 #include "SceneManager.h"
+#include "PlayerSystem.h"
 
 // MEMORY POOLLLLLLLL: Map projectile Entity to its PooledEntity for cleanup
 static std::unordered_map<Entity, PooledEntity> g_projectilePoolData;
@@ -387,6 +388,8 @@ void CombatSystem::Initialize() {
 		g_projectileStates.clear();
 		combatants.clear();
 
+		playerEntity = PlayerSystem::FindPlayer();
+		activePortal = INVALID_ENTITY;
 		
 		// MEMORY POOL: Return all projectile memory to pool on scene change
 		for (auto& [eID, poolEntity] : g_projectilePoolData) {
@@ -396,18 +399,28 @@ void CombatSystem::Initialize() {
 		std::cout << "[CombatSystem] Scene changed - all projectile memory returned to pool\n";
 		//}
 		}
+
 	);
 
 	triggerSubscriberID = EventBus::Get().Subscribe<TriggerEvent>([&](const TriggerEvent& e) {
-		if (e.eventName != "DamageAreaHit") return;
-		Entity damageArea = e.trigger;
-		Entity target = e.other;
-		if (!g_attackProperties.contains(damageArea)) {
-			// no attack properties found for this damage area
-			return;
+		if (e.eventName == "DamageAreaHit")
+		{
+			Entity damageArea = e.trigger;
+			Entity target = e.other;
+			if (!g_attackProperties.contains(damageArea)) {
+				// no attack properties found for this damage area
+				return;
+			}
+			const AttackProperties& properties = g_attackProperties[damageArea];
+			ApplyDamage(target, properties, damageArea);
 		}
-		const AttackProperties& properties = g_attackProperties[damageArea];
-		ApplyDamage(target, properties, damageArea);
+		else if (e.eventName == "TouchPortal")
+		{
+			if (e.other == playerEntity)
+			{
+				activePortal = e.trigger;
+			}
+		}
 		}
 	);
 
@@ -517,28 +530,26 @@ void CombatSystem::Update(float dt) {
 	for (auto& [eID, portal] : m_registry.Get_ComponentMap<PortalComponent>())
 	{
 		// locked
-		if (GetCombatantCount() > 1) { portal.state = PortalState::LOCKED; }
+		if (GetCombatantCount() > 1) 
+		{ 
+			portal.state = PortalState::LOCKED; 
+		}
 		else // Combatants 1 or less, only player ba 
 		{
-			// check coll
-			if (1)
-			{
-				portal.state = PortalState::ACTIVE;
-			}
-			else
-			{
-				portal.state = PortalState::OPEN;
-			}
+			portal.state = (eID == activePortal) ? PortalState::ACTIVE : PortalState::OPEN;
 		}
 
 		m_registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(portal.state);
 
-		if (portal.state == PortalState::ACTIVE && Input::IsKeyPressed(GLFW_KEY_SPACE))
+		if (portal.state == PortalState::ACTIVE )
 		{
-			// go next scene
+			if (Input::IsKeyPressed(GLFW_KEY_SPACE))
 			SceneManager::Get().QueueLoadScene(portal.nextScene);
 		}
+
+
 	}
+	activePortal = INVALID_ENTITY;
 
 }
 

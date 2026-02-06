@@ -224,6 +224,9 @@ private:
 	std::unordered_map<Entity, CombatantProperties> combatants{};  //hardcode first :( make it nice next time
 	std::unordered_map<Entity, float> toDamageOverTime{};
 
+	Entity playerEntity = INVALID_ENTITY;
+	Entity activePortal = INVALID_ENTITY;
+
 	size_t sceneSubscriberID{ 0 };
 	size_t triggerSubscriberID{ 0 };
 

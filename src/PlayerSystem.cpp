@@ -1534,6 +1534,14 @@ namespace RockScript {
 	}
 } // end namespace RockScript
 
+Entity PlayerSystem::FindPlayer() {
+	for (auto& [entity, comp] : Registry::Get().Get_ComponentMap<TagComponent>())
+	{
+		if (comp.tag == T_PLAYER)
+			return entity;
+	}
+	return INVALID_ENTITY;
+}
 
 void PlayerSystem::Initialize()
 {
