@@ -3,7 +3,7 @@
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
  * @co-author   Manfred Sim        | manfred.sim@digipen.edu
- * @date        06 NOV 2025
+ * @date        06 FEB 2026
  *
  * 
  * Implements the ImGuiSystem, which provides the in-game editor
@@ -727,7 +727,7 @@ static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label)
 
 
 namespace {
-    // Per-widget undo tracking
+    // undo tracking
     struct WidgetUndoState {
         float floatBefore = 0.0f;
         int intBefore = 0;
@@ -736,20 +736,20 @@ namespace {
 
     static std::unordered_map<void*, WidgetUndoState> g_widgetUndoStates;
 
-    // Helper to check if we should record transform undo
+    //if should record transform undo
     bool ShouldRecordTransformUndo(Entity e, const std::string& fieldName) {
         Registry& reg = Registry::Get();
         if (e == INVALID_ENTITY) return false;
         if (!reg.Has_Component<TransformComponent>(e)) return false;
 
-        // Only record for transform-related fields
+        //  transform
         return (fieldName == "Position" || fieldName == "Rotation" ||
             fieldName == "Scale" || fieldName == "pos" ||
             fieldName == "rot" || fieldName == "scale");
     }
 }
 
-// Float widget with undo support
+// Float    | For float lol
 static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
     if (!w.ref) return;
 
@@ -757,14 +757,14 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
     void* widgetID = w.ref;
     Entity entity = g_currentInspectorEntity;
 
-    // ===== RENDER THE WIDGET FIRST =====
+    
     if (w.slider && w.min != w.max)
         ImGui::SliderFloat(label.c_str(), w.ref, w.min, w.max);
     else
         //ImGui::InputFloat(label.c_str(), w.ref);
         ImGui::DragFloat(label.c_str(), w.ref, 0.1f);
 
-    // ===== NOW check if it just became active =====
+  
     if (ImGui::IsItemActivated()) {
         WidgetUndoState& state = g_widgetUndoStates[widgetID];
         state.floatBefore = *w.ref;
@@ -781,7 +781,7 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
         }
     }
 
-    // ===== RECORD UNDO ON DEACTIVATE =====
+   
     if (ImGui::IsItemDeactivatedAfterEdit()) {
         auto it = g_widgetUndoStates.find(widgetID);
         if (it != g_widgetUndoStates.end()) {
@@ -791,13 +791,11 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
                 if (ShouldRecordTransformUndo(state.entity, label) &&
                     reg.Has_Component<TransformComponent>(state.entity)) {
 
-                    // Only end if this was the widget that started it
+                    
                     if (g_editingEntity == state.entity && g_transformEditStarted) {
                         EndTransformEdit();
                     }
 
-                    std::cout << "[Undo Widget] Recorded transform change: " << label
-                        << " from " << state.floatBefore << " to " << *w.ref << "\n";
                 }
             }
             g_widgetUndoStates.erase(it);
@@ -805,7 +803,7 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
     }
 }
 
-// Int widget with undo support
+// Int
 static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
     if (!w.ref) return;
 
@@ -813,13 +811,13 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
     void* widgetID = w.ref;
     Entity entity = g_currentInspectorEntity;
 
-    // ===== RENDER THE WIDGET FIRST =====
+
     if (w.slider && w.min != w.max)
         ImGui::SliderInt(label.c_str(), w.ref, w.min, w.max);
     else
         ImGui::InputInt(label.c_str(), w.ref);
 
-    // ===== NOW check if it just became active =====
+  
     if (ImGui::IsItemActivated()) {
         WidgetUndoState& state = g_widgetUndoStates[widgetID];
         state.intBefore = *w.ref;
@@ -828,14 +826,13 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
         if (ShouldRecordTransformUndo(entity, label) &&
             reg.Has_Component<TransformComponent>(entity)) {
 
-            // Check if we're already editing this entity's transform
+            
             if (g_editingEntity != entity || !g_transformEditStarted) {
                 BeginTransformEdit(entity);
             }
         }
     }
 
-    // ===== RECORD UNDO ON DEACTIVATE =====
     if (ImGui::IsItemDeactivatedAfterEdit()) {
         auto it = g_widgetUndoStates.find(widgetID);
         if (it != g_widgetUndoStates.end()) {
@@ -850,8 +847,7 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
                         EndTransformEdit();
                     }
 
-                    std::cout << "[Undo Widget] Recorded transform change: " << label
-                        << " from " << state.intBefore << " to " << *w.ref << "\n";
+                  
                 }
             }
             g_widgetUndoStates.erase(it);
@@ -5226,11 +5222,11 @@ void ImGuiSystem::ShowInspectorWindow()
                 {
                     ImGui::PushID(name.c_str());
 
-                    // Render the widget
+                    
                     std::visit([&](auto& widget) {
                         MakeWidget(widget, name);
 
-                        // Check if THIS widget is currently active (being edited)
+                        // Check if is currently being edited
                         if (ImGui::IsItemActive()) {
                             isEditingNow = true;
                         }
@@ -5239,21 +5235,21 @@ void ImGuiSystem::ShowInspectorWindow()
                     ImGui::PopID();
                 }
 
-                // Handle undo recording at the component level
+            
                 if (isEditingNow && !wasEditingTransform)
                 {
-                    // User just started editing ANY transform field
+                    
                     BeginTransformEdit(selectedEntity);
                 }
                 else if (!isEditingNow && wasEditingTransform)
                 {
-                    // User just finished editing ALL transform fields
+                    
                     EndTransformEdit();
                 }
 
                 wasEditingTransform = isEditingNow;
 
-                // Update collider if needed
+                // collider
                 if (selectedEntity != INVALID_ENTITY &&
                     m_registry.Has_Component<ColliderComponent>(selectedEntity))
                 {
@@ -5439,7 +5435,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         ImGui::Text("Drag %s", g_imageNames[i].c_str());
                         ImGui::EndDragDropSource();
                     }
-                    // Right-click context menu on image thumbnail
+                    // right click on image thumbnail
                     ImGui::PushID((int)i);
                     if (ImGui::BeginPopupContextItem("##ImgCtx"))
                     {
@@ -5478,7 +5474,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                 if (ImGui::Button("Yes, Delete", ImVec2(120, 0)))
                 {
-                    // search Assets (recursive) for the file by name and delete it
+                    // search Assets for the file by name and delete it
                     namespace fs = std::filesystem;
                     const std::string assetFolder = "../Assets/";
                     bool deleted = false;
@@ -6253,11 +6249,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                 // Coloured label strip on the left
                 ImVec2 pos = ImGui::GetCursorScreenPos();
-                ImGui::GetWindowDrawList()->AddRectFilled(
-                    pos,
-                    ImVec2(pos.x + 6.0f, pos.y + ImGui::GetFrameHeight()),
-                    ImGui::ColorConvertFloat4ToU32(layerColours[i])
-                );
+                ImGui::GetWindowDrawList()->AddRectFilled( pos, ImVec2(pos.x + 6.0f, pos.y + ImGui::GetFrameHeight()),ImGui::ColorConvertFloat4ToU32(layerColours[i]));
                 ImGui::SetCursorScreenPos(ImVec2(pos.x + 10.0f, pos.y));
 
                 // Checkbox

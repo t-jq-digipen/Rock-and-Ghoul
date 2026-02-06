@@ -25,7 +25,7 @@
  * - Enemy subscribes to ProjectileHitEnemy trigger event, which
   * fires when a projectile collides with an enemy.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -752,10 +752,13 @@ namespace SpiritScript {
 			if (spiritLogic.stateTime >= SPIRIT_RANGED_WINDUP && spiritLogic.willAttack) {
 				spiritLogic.willAttack = false;
 
+				//same as soundwav
+				// Create visual entity (for rendering/physics)
 				Entity spit = JsonLoad::LoadEntityFromFile(
 					FilePath::PREFABS_FOLDER + "SpiritSpit.json",
 					selfPos.x, selfPos.y
 				);
+
 
 				// if dont have smth wrong with the prefab... but just to prevent crash
 				if (registry.Has_Component<Physics::PhysicsComponent>(spit))
@@ -766,17 +769,15 @@ namespace SpiritScript {
 					Vec2 dir = playerPos - selfPos;
 					dir = RG_Normalize(dir);
 					float angleRad = std::atan2(dir.y, dir.x);
-					float angleDeg = angleRad * (180.0f / RG_PI);
+					// angleDeg = angleRad * (180.0f / RG_PI);
 					spitTrans.rot = angleRad;
-					
+
 					dir = RG_Scale(dir, PROJECTILE_SPEED);
 					spitPhy.Set_Vel(dir);
 				}
 
 				SPIRIT_PROJECTILE_PROPERTIES.owner = spit;
-
 				CombatSystem::Get().RegisterProjectile(spit, SPIRIT_PROJECTILE_PROPERTIES, SPIRIT_PROJECTILE_RUNTIME);
-
 			}
 
 			if (spiritLogic.stateTime >= SPIRIT_MELEE_DURATION) {
@@ -837,6 +838,7 @@ void EnemySystem::Initialize()
 	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
 		// on scene load, wipe spirits and assign target player
 		g_spirits.clear();
+
 		if (e.sceneType == SceneType::ST_GAME) {
 			AssignTarget();
 		}

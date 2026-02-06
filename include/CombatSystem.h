@@ -234,6 +234,9 @@ public:
 	void SpawnHitBox(const AttackProperties& properties, const Vec2& pos_offset, const Vec2& size);
 	void RegisterProjectile(Entity projectile, const AttackProperties& properties, const ProjectileRuntime& runtime);
 
+	
+	void CleanupProjectilePoolData(Entity projectile);
+
 	void RegisterCombatant(Entity eID);
 	void RemoveCombatant(Entity eID);
 
