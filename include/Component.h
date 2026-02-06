@@ -190,8 +190,8 @@ struct LifetimeComponent {
 };
 
 struct HealthComponent {
-	float currhp = 0.0f;
-	float maxhp = 0.0f;
+	float currhp{};
+	float maxhp{};
 	bool willHit{ true };		// if will trigger hit effects
 	bool isVulnerable{ true };	// if can take damage
 
