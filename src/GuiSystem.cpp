@@ -1828,8 +1828,8 @@ void GuiSystem::Update(float dt)
                 }
 
                 {
-                    Image esc = CreateImage("../Assets/shockwave.png");
-                    renderer.DrawImageRotated(esc, 380.f * scaleX, 640.f * scaleY, 100.f * scaleX, 100.f * scaleY, 0.f, 0.f);
+                    Image esc = CreateImage("../Assets/UI_ControlPage_Soundwave.png");
+                    renderer.DrawImageRotated(esc, 380.f * scaleX, 640.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
                 {
@@ -1864,8 +1864,8 @@ void GuiSystem::Update(float dt)
                 }
 
                 {
-                    Image esc = CreateImage("../Assets/aoe.png");
-                    renderer.DrawImageRotated(esc, 380.f * scaleX, 500.f * scaleY, 100.f * scaleX, 100.f * scaleY, 0.f, 0.f);
+                    Image esc = CreateImage("../Assets/UI_ControlPage_AOEAttack.png");
+                    renderer.DrawImageRotated(esc, 380.f * scaleX, 500.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
                 {
@@ -1911,8 +1911,8 @@ void GuiSystem::Update(float dt)
                 }
 
                 {
-                    Image esc = CreateImage("../Assets/barrier.png");
-                    renderer.DrawImageRotated(esc, 380.f * scaleX, 360.f * scaleY, 100.f * scaleX, 100.f * scaleY, 0.f, 0.f);
+                    Image esc = CreateImage("../Assets/UI_ControlPage_Shield.png");
+                    renderer.DrawImageRotated(esc, 380.f * scaleX, 360.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
                 {
@@ -1958,8 +1958,8 @@ void GuiSystem::Update(float dt)
                 }
 
                 {
-                    Image esc = CreateImage("../Assets/heal.png");
-                    renderer.DrawImageRotated(esc, 380.f * scaleX, 220.f * scaleY, 100.f * scaleX, 100.f * scaleY, 0.f, 0.f);
+                    Image esc = CreateImage("../Assets/UI_ControlPage_Healing.png");
+                    renderer.DrawImageRotated(esc, 380.f * scaleX, 220.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
                 {
