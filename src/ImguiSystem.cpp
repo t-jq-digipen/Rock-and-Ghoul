@@ -4443,6 +4443,8 @@ void ImGuiSystem::ShowSceneBrowser()
                 std::string filePath = sceneFolder + pendingDeleteScene + ".json";
                 std::filesystem::remove(filePath);
                 std::cout << "[Editor] Deleted scene: " << filePath << "\n";
+                needRefresh = true;
+                selectedScene = -1;
             }
             catch (const std::exception& e)
             {
@@ -4634,6 +4636,70 @@ void ImGuiSystem::ShowSceneBrowser()
         if (ImGui::InputInt("FPS", &fps))
         {
             RenderSystem::SetCutsceneFPS(static_cast<double>(fps));
+        }
+
+        // Video selector
+        {
+            //mp4 files in assset browser
+            if (g_videoNames.empty())
+            {
+                const std::string assetFolder = "../Assets/";
+                if (std::filesystem::exists(assetFolder))
+                {
+                    auto options = std::filesystem::directory_options::skip_permission_denied;
+                    try {
+                        for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder, options))
+                        {
+                            if (!entry.is_regular_file()) continue;
+                            std::string ext = entry.path().extension().string();
+                            std::transform(ext.begin(), ext.end(), ext.begin(),
+                                [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                            if (ext == ".mp4")
+                                g_videoNames.push_back(entry.path().filename().string());
+                        }
+                        std::sort(g_videoNames.begin(), g_videoNames.end());
+                    }
+                    catch (...) {}
+                }
+            }
+
+            std::string currentVideo = RenderSystem::GetCutscenePath();
+            static int selectedVideo = -1;
+
+            if (!g_videoNames.empty())
+            {
+                std::vector<const char*> videoItems;
+                videoItems.reserve(g_videoNames.size());
+                for (auto& v : g_videoNames)
+                    videoItems.push_back(v.c_str());
+
+                // selection with current cutscene path
+                // "../Assets/file.mp4" -> g_videoName is jst th ename lol
+                std::string currentFilename = currentVideo;
+                auto pos = currentFilename.find_last_of("/\\");
+                if (pos != std::string::npos)
+                    currentFilename = currentFilename.substr(pos + 1);
+
+                for (int i = 0; i < (int)g_videoNames.size(); ++i) {
+                    if (g_videoNames[i] == currentFilename) {
+                        selectedVideo = i;
+                    }
+                }
+
+                if (selectedVideo < 0)
+                    selectedVideo = 0;
+
+                if (ImGui::Combo("Video", &selectedVideo,
+                    videoItems.data(),
+                    static_cast<int>(videoItems.size())))
+                {
+                    RenderSystem::SetCutscenePath("../Assets/" + g_videoNames[selectedVideo]);
+                }
+            }
+            else
+            {
+                ImGui::TextDisabled("No videos found");
+            }
         }
 
         // Next Scene
