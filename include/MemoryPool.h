@@ -11,7 +11,7 @@
  * - Fixed-size block allocation for diff types
  * - Free list management for deallocated blocks
  *
- * Copyright © 2026 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -43,7 +43,7 @@ struct MemoryPage {
     alignas(T) uint8_t memory[sizeof(T) * ObjectsPerPage];  // raw mem block https://global.php.cn/faq/1796879898.html
     MemoryPage* next;  // Link to next page in page list
 
-    MemoryPage() : next(nullptr) {}
+    MemoryPage() : memory{}, next(nullptr) {}
 };
 
 /**

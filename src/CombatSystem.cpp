@@ -331,7 +331,7 @@ void CombatSystem::RemoveCombatant(Entity eID) {
 }
 
 int CombatSystem::GetCombatantCount() {
-	return combatants.size();
+	return static_cast<int>(combatants.size());
 }
 
 bool CombatSystem::IsCombatantStaggered(Entity eID) {
