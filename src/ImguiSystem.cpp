@@ -6009,7 +6009,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                     }
 
                     // Right-click context menu for delete
-                    if (ImGui::BeginPopupContextItem("##VideoCtx"))
+                    if (ImGui::BeginPopupContextItem())
                     {
                         ImGui::Text("%s", g_videoNames[i].c_str());
                         ImGui::Separator();
