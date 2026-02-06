@@ -530,11 +530,11 @@ void CombatSystem::Update(float dt) {
 	for (auto& [eID, portal] : m_registry.Get_ComponentMap<PortalComponent>())
 	{
 		// locked
-		if (GetCombatantCount() > 1) 
-		{ 
-			portal.state = PortalState::LOCKED; 
+		if (GetCombatantCount() > 1)
+		{
+			portal.state = PortalState::LOCKED;
 		}
-		else // Combatants 1 or less, only player ba 
+		else // Combatants 1 or less, only player ba
 		{
 			portal.state = (eID == activePortal) ? PortalState::ACTIVE : PortalState::OPEN;
 		}
@@ -543,8 +543,8 @@ void CombatSystem::Update(float dt) {
 
 		if (portal.state == PortalState::ACTIVE )
 		{
-			if (Input::IsKeyPressed(GLFW_KEY_SPACE))
-			SceneManager::Get().QueueLoadScene(portal.nextScene);
+			if (Input::IsKeyPressed(GLFW_KEY_SPACE) || Input::IsKeyHeld(GLFW_KEY_SPACE))
+				SceneManager::Get().QueueLoadScene(portal.nextScene);
 		}
 
 
