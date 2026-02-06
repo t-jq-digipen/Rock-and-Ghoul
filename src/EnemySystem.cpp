@@ -229,13 +229,11 @@ static inline Entity FindPlayer()
 static inline void ApplyMeleeDamage(Entity enemy, Entity target)
 {
 	(void)enemy; (void)target;
-	std::cout << "[ENEMY] Melee hit target!\n";
 }
 
 static inline void SpawnEnemyProjectile(Entity enemy, Vec2 pos, Vec2 dir, float speed)
 {
 	(void)enemy; (void)pos; (void)dir; (void)speed;
-	std::cout << "[ENEMY] Shot projectile!\n";
 }
 
 static inline AttackMode DecideAttackMode(Entity e)

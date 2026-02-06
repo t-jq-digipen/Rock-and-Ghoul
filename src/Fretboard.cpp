@@ -88,11 +88,6 @@ Vec2 FretBoard::CalculateNotePosition(int stringIndex, int segmentIndex) {
 
 // spawning note
 void FretBoard::SpellMenu() {
-    std::cout << "~~~~ CHOOSE YOUR SPELL ~~~~\n";
-    std::cout << "Input spell number: \n";
-    for (int i{ 0 }; i < 4; i++) {
-        std::cout << (i + 1) << ". " << spellList[i].name << "\n";
-    }
     currSpellState = SELECTION;
 }
 
@@ -122,7 +117,6 @@ void FretBoard::StartSpell(int spellIndex) {
 
 void FretBoard::NextNote() {
     if (currNoteIndex >= currSpell.length) {
-        std::cout << "SPELL COMPLETE! " << currSpell.name << " WAS CAST!!! YIPPEEEE \n\n";
         if (std::strcmp(currSpell.name, "BARRIER") == 0) {
             spellManager.GiveSpell(spellManager.barrierTex);
         }
@@ -160,15 +154,6 @@ void FretBoard::NextNote() {
     currNote.circle.pos.y = arrowPositions[posIndex].y;
     currNote.circle.rad = 20.0f;
     currNote.isActive = true;
-    std::cout << "\nARROW KEY: ";
-
-    switch (requiredDirection) {
-    case 1: std::cout << " ^ "; break;
-    case 2: std::cout << " > "; break;
-    case 3: std::cout << " v "; break;
-    case 4: std::cout << " < "; break;
-    }
-    std::cout << "\n";
 }
 
 void FretBoard::HandleSpellCasting() {
@@ -224,14 +209,12 @@ void FretBoard::HandleSpellCasting() {
     }
 
     if (correct) {
-        std::cout << "NICE! ";
         currNote.isActive = false;
         currNoteIndex++;
 
         NextNote();
     }
     else {
-        std::cout << "WRONG :( ";
         currNoteIndex = 0;
         currNote.isActive = false;
 

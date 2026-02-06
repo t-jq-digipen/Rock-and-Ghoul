@@ -1,18 +1,33 @@
 /* ========================================================
- * @file	    CombatSystem.h
- * @author      Yasmin Tazi        | yasmin.t@digipen.edu
- * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
- * @date	    29 JAN 2026
- *
- * @brief	Combat system for ROCK AND GHOUL.
- *
- * This file defines the CombatSystem class responsible for
- * combat mechanics such as hitboxes, hurtboxes, effect resolutions,
- * elements, etc.
- *
- * Copyright © 2025 DigiPen, All rights reserved.
- * ========================================================
- */
+   * @file        CombatSystem.h
+   * @author      Yasmin Tazi        | yasmin.t@digipen.edu
+   * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
+   * @date        06 FEB 2026
+   *
+   * @brief       Combat System header
+   *
+   * This file defines the CombatSystem class and related
+   * components responsible for combat mechanics including
+   * damage calculation, elemental effects, projectile states,
+   * status effects, and health management.
+   *
+   * Key Components:
+   * - Element enum: Defines available elemental types
+   * - ElementComponent: Stores element type and base damage
+   * - StatusEffectComponent: Tracks active effects and timers
+   * - ProjectileRuntime: Manages projectile lifecycle states
+   * - CombatSystem: Main system for combat logic updates
+   *
+   * Element Types:
+   * - NONE: No elemental effect
+   * - LIGHTNING: Stun effect
+   * - FIRE: Damage over time (burn)
+   * - WIND: Knockback force
+   * - ICE: Movement speed reduction
+   *
+   * Copyright © 2025 DigiPen, All rights reserved.
+   * ========================================================
+   */
 #pragma once
 #include "System.h"
 #include "Registry.h"
