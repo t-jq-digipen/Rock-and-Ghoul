@@ -25,7 +25,7 @@
    * - WIND: Knockback force
    * - ICE: Movement speed reduction
    *
-   * Copyright © 2025 DigiPen, All rights reserved.
+   * Copyright © 2026 DigiPen, All rights reserved.
    * ========================================================
    */
 #pragma once

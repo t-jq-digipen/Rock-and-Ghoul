@@ -34,7 +34,7 @@
  * - WIND: Applies knockback force on impact
  * - LIGHTNING: Stuns target, preventing movement for duration
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright © 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 

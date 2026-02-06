@@ -18,7 +18,7 @@
  * - Editor Camera: Provides a free-camera overview for navigating the level during editing.
  * - UI Editor: Allows editing, adding, duplicating, deleting, and saving UI entities and groups.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright © 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 

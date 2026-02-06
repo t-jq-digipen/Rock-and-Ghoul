@@ -25,7 +25,7 @@
  * - Enemy subscribes to ProjectileHitEnemy trigger event, which
   * fires when a projectile collides with an enemy.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright © 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 
