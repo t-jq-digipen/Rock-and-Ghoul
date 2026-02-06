@@ -5326,8 +5326,67 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
+        // Custom data fields for Portal component
+        else if (compName == "Portal")
+        {
+            PortalComponent& portal = m_registry.Get_Component<PortalComponent>(selectedEntity);
+            if (ImGui::TreeNode(compName.c_str()))
+            {
+                for (auto& [name, widgetVariant] : componentData.GetDataMap())
+                {
+                    ImGui::PushID(name.c_str());
+                    std::visit([&](auto& widget)
+                        { MakeWidget(widget, name); }, widgetVariant);
+                    ImGui::PopID();
+                }
+
+                // Scene selector dropdown
+                {
+                    namespace fs = std::filesystem;
+                    const std::string sceneFolder = "../Assets/saves/";
+
+                    std::vector<std::string> sceneFiles;
+                    if (fs::exists(sceneFolder))
+                    {
+                        for (auto& entry : fs::directory_iterator(sceneFolder))
+                        {
+                            if (entry.path().extension() == ".json" && entry.path().stem().string() != "temp")
+                            {
+                                sceneFiles.push_back(entry.path().stem().string());
+                            }
+                        }
+                    }
+
+                    std::vector<const char*> sceneFilePtr;
+                    sceneFilePtr.reserve(sceneFiles.size());
+                    for (auto& file : sceneFiles)
+                    {
+                        sceneFilePtr.push_back(file.c_str());
+                    }
+
+                    // Find currently selected scene idx
+                    int selectedScene = -1;
+                    std::string currSceneStem = fs::path(portal.nextScene).stem().string();
+                    for (size_t i = 0; i < sceneFiles.size(); i++)
+                    {
+                        if (currSceneStem == sceneFiles[i])
+                        {
+                            selectedScene = static_cast<int>(i);
+                            break;
+                        }
+                    }
+
+                    if (ImGui::Combo("Scene", &selectedScene, sceneFilePtr.data(), static_cast<int>(sceneFilePtr.size())))
+                    {
+                        portal.nextScene = sceneFolder + sceneFilePtr[selectedScene] + ".json";
+                    }
+                }
+
+                ImGui::TreePop();
+            }
+        }
         // Default data fields for other components
-        else 
+        else
             if (ImGui::TreeNode(compName.c_str()))
             {
                 for (auto& [name, widgetVariant] : componentData.GetDataMap())
