@@ -160,7 +160,11 @@ namespace RockScript {
 		SFX_ELEMENT_ELECTRIC = 5,
 		SFX_ELEMENT_ICE = 6,
 		SFX_ELEMENT_WIND = 7,
-		SFX_ELEMENT_EXPLOSION = 8  // for fire AOE impact
+		SFX_ELEMENT_EXPLOSION = 8,  // for fire AOE impact
+		SFX_PLUCK1,
+		SFX_PLUCK2,
+		SFX_PLUCK3,
+		SFX_PLUCK4
 	};
 	// store player entity ID so all functions can access it; FOR SPATIAL AUDIO.. if it isn't spatial it just isnt used
 	static Entity playerEntityID = INVALID_ENTITY;
@@ -691,10 +695,22 @@ namespace RockScript {
 		UpdateVisualDisplays();
 
 		switch (key) {
-		case UP:    std::cout << "Arrow UP pressed\n"; break;
-		case DOWN:  std::cout << "Arrow DOWN pressed\n"; break;
-		case LEFT:  std::cout << "Arrow LEFT pressed\n"; break;
-		case RIGHT: std::cout << "Arrow RIGHT pressed\n"; break;
+		case UP:    
+			std::cout << "Arrow UP pressed\n"; 
+			PlayAudio(SFX_PLUCK1);
+			break; // end UP
+		case DOWN:  
+			std::cout << "Arrow DOWN pressed\n";
+			PlayAudio(SFX_PLUCK2);
+			break; // end DOWN
+		case LEFT:  
+			std::cout << "Arrow LEFT pressed\n";
+			PlayAudio(SFX_PLUCK3);
+			break; // end LEFT
+		case RIGHT: 
+			std::cout << "Arrow RIGHT pressed\n";
+			PlayAudio(SFX_PLUCK4);
+			break; // end RIGHT
 		default: break;
 		}
 	}
@@ -1068,15 +1084,19 @@ namespace RockScript {
 			audioComp.maxDistance = 1000.0f;
 
 			// Add sounds in specific order
-			audioComp.AddSound("player_footstep_wood");			// index nada
-			audioComp.AddSound("player_dodge");					// index 1
-			audioComp.AddSound("player_spawnSound");			// index 2
-			audioComp.AddSound("guitar_strum_heavy");			// index 3
-			audioComp.AddSound("guitar_element_fire");          // index 4 - SFX_ELEMENT_FIRE
-			audioComp.AddSound("guitar_element_electric");      // index 5 - SFX_ELEMENT_ELECTRIC
-			audioComp.AddSound("guitar_element_ice");           // index 6 - SFX_ELEMENT_ICE
-			audioComp.AddSound("guitar_element_wind");          // index 7 - SFX_ELEMENT_WIND
-			audioComp.AddSound("guitar_element_exploding_item");// index 8 - SFX_ELEMENT_EXPLOSION
+			audioComp.AddSound("player_footstep_wood");			  // index nada
+			audioComp.AddSound("player_dodge");					  // index 1
+			audioComp.AddSound("player_spawnSound");			  // index 2
+			audioComp.AddSound("guitar_strum_heavy");			  // index 3
+			audioComp.AddSound("guitar_element_fire");           // index 4  - SFX_ELEMENT_FIRE
+			audioComp.AddSound("guitar_element_electric");       // index 5  - SFX_ELEMENT_ELECTRIC
+			audioComp.AddSound("guitar_element_ice");            // index 6  - SFX_ELEMENT_ICE
+			audioComp.AddSound("guitar_element_wind");           // index 7  - SFX_ELEMENT_WIND
+			audioComp.AddSound("guitar_element_exploding_item"); // index 8  - SFX_ELEMENT_EXPLOSION
+			audioComp.AddSound("pluck1");                        // index 9  - SFX_PLUCK1
+			audioComp.AddSound("pluck2");                        // index 10 - SFX_PLUCK2
+			audioComp.AddSound("pluck3");                        // index 11 - SFX_PLUCK3
+			audioComp.AddSound("pluck4");                        // index 12 - SFX_PLUCK4
 
 
 			Registry::Get().Add_Component(eID, audioComp);
@@ -1114,10 +1134,6 @@ namespace RockScript {
 			else if (e.key == GLFW_KEY_E)
 			{
 				Attack();
-			}
-			else if (e.key == GLFW_KEY_G)
-			{
-				Knockback(eID);
 			}
 			else if (e.key == GLFW_KEY_P)  // Press P to see pool stats
 			{
@@ -1303,6 +1319,7 @@ namespace RockScript {
 		if (CombatSystem::Get().IsCombatantStaggered(eID)) {
 			CombatSystem::Get().SetCombatantStagger(eID, false);
 			stunnedtimer = 0.f;
+			ResetTimers();
 		}
 
 

@@ -767,7 +767,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 //b.shape = btn["shape"];
                 b.action = btn.value("action", "");
                 b.soundType = btn.value("soundType", 0);
-                b.isVisible = btn["isVisible"];
+                b.isVisible = btn.value("isVisible", true);
                 s.guiButtons.push_back(b);
             }
         }
@@ -781,7 +781,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 t.scale = txt["scale"];
                 t.color = { txt["color"][0], txt["color"][1], txt["color"][2] };
                 t.centered = { txt["centered"] };
-                t.isVisible = txt["isVisible"];
+                t.isVisible = txt.value("isVisible", true);
                 s.guiTextboxes.push_back(t);
             }
         }
@@ -828,7 +828,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                     d.profileOffset = { dlg["profileOffset"][0], dlg["profileOffset"][1] };
                 }
                 d.profileRenderData = dlg.value("profileRenderData", std::string("{}"));
-                d.isVisible = dlg["isVisible"];
+                d.isVisible = dlg.value("isVisible", true);
 
                 s.guiDialogues.push_back(std::move(d));
             }
@@ -847,7 +847,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                     d.renderData = dp["renderData"];
                 }
                 d.centered = { dp["centered"] };
-                d.isVisible = dp["isVisible"];
+                d.isVisible = dp.value("isVisible", true);
 
                 s.guiDisplays.push_back(std::move(d));
             }

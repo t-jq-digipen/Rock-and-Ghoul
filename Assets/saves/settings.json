@@ -10,6 +10,7 @@
     "cameraZoom": 1.0,
     "entities": [],
     "fontConfig": "../Assets/fontAssets.json",
+    "fullscreen": true,
     "gui": {
         "buttons": [
             {
@@ -138,10 +139,12 @@
             }
         ]
     },
+    "resolutionHeight": 1080,
+    "resolutionWidth": 1920,
     "sceneName": "settings",
     "sceneType": 0,
     "settings": {
-        "volume": 0.0
+        "volume": 50.0
     },
     "worldMax": [
         1920.0,

@@ -39,6 +39,7 @@
                     "duration": 2.0,
                     "scene": "cut scene"
                 },
+                "isVisible": true,
                 "label": "PLAY",
                 "pos": [
                     1650.0,
@@ -49,14 +50,14 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 0,
-                "isVisible": true
+                "soundType": 0
             },
             {
                 "ID": 2,
                 "action": "None",
                 "actionName": "LoadSettings",
                 "actionParams": "{}",
+                "isVisible": true,
                 "label": "settings",
                 "pos": [
                     1650.0,
@@ -67,8 +68,7 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 2,
-                "isVisible": true
+                "soundType": 2
             },
             {
                 "ID": 3,
@@ -78,6 +78,7 @@
                     "duration": 0.0,
                     "scene": "controls"
                 },
+                "isVisible": true,
                 "label": "how to play",
                 "pos": [
                     1650.0,
@@ -88,8 +89,7 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 2,
-                "isVisible": true
+                "soundType": 2
             },
             {
                 "ID": 4,
@@ -99,6 +99,7 @@
                     "duration": 0.0,
                     "scene": "QuitGameOption"
                 },
+                "isVisible": true,
                 "label": "quit game",
                 "pos": [
                     1650.0,
@@ -109,8 +110,7 @@
                     400.0,
                     140.0
                 ],
-                "soundType": 1,
-                "isVisible": true
+                "soundType": 1
             }
         ],
         "dialogues": [],
