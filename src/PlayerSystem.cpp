@@ -164,7 +164,8 @@ namespace RockScript {
 		SFX_PLUCK1,
 		SFX_PLUCK2,
 		SFX_PLUCK3,
-		SFX_PLUCK4
+		SFX_PLUCK4,
+		SFX_TWANG1
 	};
 	// store player entity ID so all functions can access it; FOR SPATIAL AUDIO.. if it isn't spatial it just isnt used
 	static Entity playerEntityID = INVALID_ENTITY;
@@ -685,6 +686,7 @@ namespace RockScript {
 			inputBuffer.clear();
 			UpdateVisualDisplays();  // hide all arrows
 			// ARI PLUCK SOUND FAIL HERE
+			PlayAudio(SFX_TWANG1);
 			return;  //dont process key
 		}
 
@@ -1068,6 +1070,7 @@ namespace RockScript {
 			audioComp.AddSound("pluck2");                        // index 10 - SFX_PLUCK2
 			audioComp.AddSound("pluck3");                        // index 11 - SFX_PLUCK3
 			audioComp.AddSound("pluck4");                        // index 12 - SFX_PLUCK4
+			audioComp.AddSound("twang1");						 // index 13 - SFX_TWANG1
 
 
 			Registry::Get().Add_Component(eID, audioComp);
