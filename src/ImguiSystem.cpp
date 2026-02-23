@@ -771,15 +771,35 @@ namespace {
     static std::unordered_map<void*, WidgetUndoState> g_widgetUndoStates;
 
     //if should record transform undo
-    bool ShouldRecordTransformUndo(Entity e, const std::string& fieldName) {
+    // Only returns true when the field name matches a TransformComponent field AND
+    // the ref pointer actually lives inside the entity's TransformComponent.
+    // This prevents sprite/spritesheet "Rotation" fields from being misidentified
+    // as TransformComponent rotations, which would silently discard the undo action.
+    bool ShouldRecordTransformUndo(Entity e, const std::string& fieldName, void* ref = nullptr) {
         Registry& reg = Registry::Get();
         if (e == INVALID_ENTITY) return false;
         if (!reg.Has_Component<TransformComponent>(e)) return false;
 
-        //  transform
-        return (fieldName == "Position" || fieldName == "Rotation" ||
-            fieldName == "Scale" || fieldName == "pos" ||
-            fieldName == "rot" || fieldName == "scale");
+        // Quick name filter first
+        bool nameMatch = (fieldName == "posX" || fieldName == "posY" ||
+                          fieldName == "scaleX" || fieldName == "scaleY" ||
+                          fieldName == "Rotation" ||
+                          fieldName == "Position" || fieldName == "Scale" ||
+                          fieldName == "pos" || fieldName == "rot" || fieldName == "scale");
+        if (!nameMatch) return false;
+
+        // If a ref pointer was supplied, verify it sits inside the actual
+        // TransformComponent to distinguish e.g. sprite "Rotation" from transform "Rotation".
+        if (ref != nullptr)
+        {
+            const TransformComponent& tc = reg.Get_Component<TransformComponent>(e);
+            const char* tcBegin = reinterpret_cast<const char*>(&tc);
+            const char* tcEnd   = tcBegin + sizeof(TransformComponent);
+            const char* refPtr  = reinterpret_cast<const char*>(ref);
+            if (refPtr < tcBegin || refPtr >= tcEnd) return false;
+        }
+
+        return true;
     }
 }
 
@@ -802,7 +822,7 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
         state.entity = entity;
 
         // Begin transform snapshot if this field belongs to the Transform component
-        if (ShouldRecordTransformUndo(entity, label) &&
+        if (ShouldRecordTransformUndo(entity, label, widgetID) &&
             reg.Has_Component<TransformComponent>(entity)) {
             if (g_editingEntity != entity || !g_transformEditStarted) {
                 BeginTransformEdit(entity);
@@ -816,7 +836,7 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
             WidgetUndoState& state = it->second;
 
             if (state.floatBefore != *w.ref && state.entity != INVALID_ENTITY) {
-                if (ShouldRecordTransformUndo(state.entity, label) &&
+                if (ShouldRecordTransformUndo(state.entity, label, widgetID) &&
                     reg.Has_Component<TransformComponent>(state.entity)) {
                     // Transform fields: use the grouped transform undo
                     if (g_editingEntity == state.entity && g_transformEditStarted) {
@@ -857,7 +877,7 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
         state.intBefore = *w.ref;
         state.entity = entity;
 
-        if (ShouldRecordTransformUndo(entity, label) &&
+        if (ShouldRecordTransformUndo(entity, label, widgetID) &&
             reg.Has_Component<TransformComponent>(entity)) {
             if (g_editingEntity != entity || !g_transformEditStarted) {
                 BeginTransformEdit(entity);
@@ -871,7 +891,7 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
             WidgetUndoState& state = it->second;
 
             if (state.intBefore != *w.ref && state.entity != INVALID_ENTITY) {
-                if (ShouldRecordTransformUndo(state.entity, label) &&
+                if (ShouldRecordTransformUndo(state.entity, label, widgetID) &&
                     reg.Has_Component<TransformComponent>(state.entity)) {
                     if (g_editingEntity == state.entity && g_transformEditStarted) {
                         EndTransformEdit();
@@ -1441,17 +1461,23 @@ void ImGuiSystem::Update(float dt)
             {
                 if (addTypeIdx == 0) // Button
                 {
+                    auto btnsBefore = buttons; // snapshot for undo
                     ButtonConfig b;
                     b.label = "New Button " + std::to_string((int)buttons.size() + 1);
                     b.pos = { 960, 540 };
                     b.size = { 200, 100 };
-                    //b.color = { 0.4f, 0.7f, 0.9f };
                     b.textScale = 1.0f;
                     b.basePos = b.pos; b.baseSize = b.size; b.baseTextScale = b.textScale;
                     b.action = ButtonAction::None;
                     b.ID = nextID();
                     gui.BindButtonAction(b);
                     buttons.push_back(b);
+                    auto btnsAfter = buttons;
+                    UndoSystem::Get().RecordComponentChange(
+                        [btnsBefore]() { GuiSystem::Get().Buttons() = btnsBefore; },
+                        [btnsAfter]()  { GuiSystem::Get().Buttons() = btnsAfter;  },
+                        "UI Add Button"
+                    );
 
                     // select the new one
                     uiSelectedType = SelectedType::Button;
@@ -1459,6 +1485,7 @@ void ImGuiSystem::Update(float dt)
                 }
                 else if (addTypeIdx == 1) // TextBox
                 {
+                    auto txtsBefore = textboxes; // snapshot for undo
                     TextBoxConfig t;
                     t.text = "New Text " + std::to_string((int)textboxes.size() + 1);
                     t.pos = { 960, 600 };
@@ -1467,6 +1494,12 @@ void ImGuiSystem::Update(float dt)
                     t.basePos = t.pos; t.baseScale = t.scale;
                     t.ID = nextID();
                     textboxes.push_back(t);
+                    auto txtsAfter = textboxes;
+                    UndoSystem::Get().RecordComponentChange(
+                        [txtsBefore]() { GuiSystem::Get().TextBoxes() = txtsBefore; },
+                        [txtsAfter]()  { GuiSystem::Get().TextBoxes() = txtsAfter;  },
+                        "UI Add TextBox"
+                    );
 
                     uiSelectedType = SelectedType::TextBox;
                     uiSelectedIndex = localToGlobal(SelectedType::TextBox, (int)textboxes.size() - 1);
@@ -1508,6 +1541,7 @@ void ImGuiSystem::Update(float dt)
                 }
                 else if (addTypeIdx == 3) // Display
                 {
+                    auto dispsBefore = displays; // snapshot for undo
                     DisplayConfig dp;
                     dp.basePos = dp.pos = { 960, 540 };
                     dp.baseSize = dp.size = { 240, 160 };
@@ -1519,6 +1553,12 @@ void ImGuiSystem::Update(float dt)
                     shp.color = { 0.3f, 0.5f, 0.8f };
                     dp.ID = nextID();
                     displays.push_back(dp);
+                    auto dispsAfter = displays;
+                    UndoSystem::Get().RecordComponentChange(
+                        [dispsBefore]() { GuiSystem::Get().Displays() = dispsBefore; },
+                        [dispsAfter]()  { GuiSystem::Get().Displays() = dispsAfter;  },
+                        "UI Add Display"
+                    );
 
                     uiSelectedType = SelectedType::Display;
                     uiSelectedIndex = localToGlobal(SelectedType::Display, (int)displays.size() - 1);
@@ -1548,19 +1588,33 @@ void ImGuiSystem::Update(float dt)
             globalToLocal(uiSelectedIndex, type, lIdx);
             if (type == SelectedType::Button && lIdx >= 0 && lIdx < (int)buttons.size())
             {
+                auto btnsBefore = buttons;
                 ButtonConfig src = buttons[lIdx];
                 src.ID = nextID();                   // new ID
                 src.label += " (Copy)";
                 buttons.push_back(src);
+                auto btnsAfter = buttons;
+                UndoSystem::Get().RecordComponentChange(
+                    [btnsBefore]() { GuiSystem::Get().Buttons() = btnsBefore; },
+                    [btnsAfter]()  { GuiSystem::Get().Buttons() = btnsAfter;  },
+                    "UI Clone Button"
+                );
                 uiSelectedType = SelectedType::Button;
                 uiSelectedIndex = localToGlobal(SelectedType::Button, (int)buttons.size() - 1);
             }
             else if (type == SelectedType::TextBox && lIdx >= 0 && lIdx < (int)textboxes.size())
             {
+                auto txtsBefore = textboxes;
                 TextBoxConfig src = textboxes[lIdx];
                 src.ID = nextID();                   // new ID
                 src.text += " (Copy)";
                 textboxes.push_back(src);
+                auto txtsAfter = textboxes;
+                UndoSystem::Get().RecordComponentChange(
+                    [txtsBefore]() { GuiSystem::Get().TextBoxes() = txtsBefore; },
+                    [txtsAfter]()  { GuiSystem::Get().TextBoxes() = txtsAfter;  },
+                    "UI Clone TextBox"
+                );
                 uiSelectedType = SelectedType::TextBox;
                 uiSelectedIndex = localToGlobal(SelectedType::TextBox, (int)textboxes.size() - 1);
             }
@@ -1606,9 +1660,16 @@ void ImGuiSystem::Update(float dt)
             }
             else if (type == SelectedType::Display && lIdx >= 0 && lIdx < (int)displays.size())
             {
+                auto dispsBefore = displays;
                 DisplayConfig src = displays[lIdx];
                 src.ID = nextID();
                 displays.push_back(src);
+                auto dispsAfter = displays;
+                UndoSystem::Get().RecordComponentChange(
+                    [dispsBefore]() { GuiSystem::Get().Displays() = dispsBefore; },
+                    [dispsAfter]()  { GuiSystem::Get().Displays() = dispsAfter;  },
+                    "UI Clone Display"
+                );
                 uiSelectedType = SelectedType::Display;
                 uiSelectedIndex = localToGlobal(SelectedType::Display, (int)displays.size() - 1);
             }
@@ -1625,14 +1686,28 @@ void ImGuiSystem::Update(float dt)
             {
                 if (lIdx >= 0 && lIdx < (int)buttons.size())
                 {
+                    auto btnsBefore = buttons;
                     buttons.erase(buttons.begin() + lIdx);
+                    auto btnsAfter = buttons;
+                    UndoSystem::Get().RecordComponentChange(
+                        [btnsBefore]() { GuiSystem::Get().Buttons() = btnsBefore; },
+                        [btnsAfter]()  { GuiSystem::Get().Buttons() = btnsAfter;  },
+                        "UI Delete Button"
+                    );
                 }
             }
             else if (type == SelectedType::TextBox)
             {
                 if (lIdx >= 0 && lIdx < (int)textboxes.size())
                 {
+                    auto txtsBefore = textboxes;
                     textboxes.erase(textboxes.begin() + lIdx);
+                    auto txtsAfter = textboxes;
+                    UndoSystem::Get().RecordComponentChange(
+                        [txtsBefore]() { GuiSystem::Get().TextBoxes() = txtsBefore; },
+                        [txtsAfter]()  { GuiSystem::Get().TextBoxes() = txtsAfter;  },
+                        "UI Delete TextBox"
+                    );
                 }
             }
             else if (type == SelectedType::Dialogue)
@@ -1649,7 +1724,14 @@ void ImGuiSystem::Update(float dt)
             {
                 if (lIdx >= 0 && lIdx < (int)displays.size())
                 {
+                    auto dispsBefore = displays;
                     displays.erase(displays.begin() + lIdx);
+                    auto dispsAfter = displays;
+                    UndoSystem::Get().RecordComponentChange(
+                        [dispsBefore]() { GuiSystem::Get().Displays() = dispsBefore; },
+                        [dispsAfter]()  { GuiSystem::Get().Displays() = dispsAfter;  },
+                        "UI Delete Display"
+                    );
                 }
             }
             // Reset selection
@@ -1834,7 +1916,7 @@ void ImGuiSystem::Update(float dt)
 
         // UI Properties Window for selected UI entity
         ImGui::SeparatorText("UI Properties");
-        ImGui::BeginChild("Properties", ImVec2(0, 300), true);
+        ImGui::BeginChild("Properties", ImVec2(0, 0), true); // 0 height = fill remaining space
 
         if (uiSelectedIndex < 0 || uiSelectedType == SelectedType::None)
         {
@@ -1868,11 +1950,27 @@ void ImGuiSystem::Update(float dt)
 
                     // Label
                     {
+                        static std::string uiBtnLabelBefore;
                         char buf[128];
                         std::snprintf(buf, sizeof(buf), "%s", b.label.c_str());
                         if (ImGui::InputText("Label", buf, IM_ARRAYSIZE(buf)))
                         {
                             b.label = buf;
+                        }
+                        if (ImGui::IsItemActivated())
+                        {
+                            // capture the label value at the moment the field becomes focused
+                            uiBtnLabelBefore = b.label;
+                        }
+                        if (ImGui::IsItemDeactivatedAfterEdit() && uiBtnLabelBefore != b.label)
+                        {
+                            int idx = selectedLocal;
+                            std::string before = uiBtnLabelBefore;
+                            std::string after  = b.label;
+                            UndoSystem::Get().RecordComponentChange(
+                                [idx, before]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) btns[idx].label = before; },
+                                [idx, after ]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) btns[idx].label = after;  },
+                                "UI.Button.label");
                         }
                     }
                     ImGui::Separator();
@@ -1896,10 +1994,18 @@ void ImGuiSystem::Update(float dt)
                         int actionCount = (int)(sizeof(actionNames) / sizeof(actionNames[0]));
                         int curr = (int)b.action;
                         curr = (curr >= 0 && curr < actionCount) ? curr : 0;
+                        int actionBefore = curr;
                         if (ImGui::Combo("Action", &curr, actionNames, actionCount))
                         {
+                            int idx    = selectedLocal;
+                            int before = actionBefore;
+                            int after  = curr;
                             b.action = (ButtonAction)curr;
                             GuiSystem::Get().BindButtonAction(b);
+                            UndoSystem::Get().RecordComponentChange(
+                                [idx, before]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) { btns[idx].action = (ButtonAction)before; GuiSystem::Get().BindButtonAction(btns[idx]); } },
+                                [idx, after ]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) { btns[idx].action = (ButtonAction)after;  GuiSystem::Get().BindButtonAction(btns[idx]); } },
+                                "UI.Button.action");
                         }
                     }
                     ImGui::Separator();
@@ -1924,8 +2030,16 @@ void ImGuiSystem::Update(float dt)
 
                         if (ImGui::Combo("ClickAction", &selected, actionNames.data(), static_cast<int>(actionNames.size())))
                         {
-                            b.actionName = actionNames[selected];
+                            int                idx           = selectedLocal;
+                            std::string        nameBefore    = b.actionName;
+                            nlohmann::json     paramsBefore  = b.actionParams;
+                            std::string        nameAfter     = actionNames[selected];
+                            b.actionName = nameAfter;
                             b.actionParams.clear();
+                            UndoSystem::Get().RecordComponentChange(
+                                [idx, nameBefore, paramsBefore]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) { btns[idx].actionName = nameBefore; btns[idx].actionParams = paramsBefore; } },
+                                [idx, nameAfter ]()              { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) { btns[idx].actionName = nameAfter;  btns[idx].actionParams.clear(); } },
+                                "UI.Button.clickAction");
                         }
 
                         if (b.actionName == "LoadScene")
@@ -1998,9 +2112,17 @@ void ImGuiSystem::Update(float dt)
                             "Click"
                         };
                         int currentSound = static_cast<int>(b.soundType);
+                        int soundBefore  = currentSound;
                         if (ImGui::Combo("Button Sound", &currentSound, ButtonSoundLabels, static_cast<int>(AudioSystem::ButtonType::COUNT)))
                         {
+                            int idx    = selectedLocal;
+                            int before = soundBefore;
+                            int after  = currentSound;
                             b.soundType = static_cast<AudioSystem::ButtonType>(currentSound);
+                            UndoSystem::Get().RecordComponentChange(
+                                [idx, before]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) btns[idx].soundType = static_cast<AudioSystem::ButtonType>(before); },
+                                [idx, after ]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) btns[idx].soundType = static_cast<AudioSystem::ButtonType>(after);  },
+                                "UI.Button.soundType");
                         }
                     }
                     ImGui::Separator();
@@ -2090,7 +2212,15 @@ void ImGuiSystem::Update(float dt)
                             // Image texture
                             if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), static_cast<int>(imgOptions.size())))
                             {
-                                img = CreateImage(imgOptions[selected]);
+                                int   idx       = selectedLocal;
+                                Image imgBefore = img;
+                                std::string nameAfter = imgOptions[selected];
+                                img = CreateImage(nameAfter);
+                                Image imgAfter = img;
+                                UndoSystem::Get().RecordComponentChange(
+                                    [idx, imgBefore]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) btns[idx].m_renderData.GetImageData().m_image = imgBefore; },
+                                    [idx, imgAfter ]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) btns[idx].m_renderData.GetImageData().m_image = imgAfter;  },
+                                    "UI.Button.image.textureID");
                             }
 
                             // display
@@ -2151,7 +2281,15 @@ void ImGuiSystem::Update(float dt)
                             // Image texture
                             if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), static_cast<int>(imgOptions.size())))
                             {
-                                img = CreateImage(imgOptions[selected]);
+                                int   idx       = selectedLocal;
+                                Image imgBefore = img;
+                                std::string nameAfter = imgOptions[selected];
+                                img = CreateImage(nameAfter);
+                                Image imgAfter = img;
+                                UndoSystem::Get().RecordComponentChange(
+                                    [idx, imgBefore]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) btns[idx].m_renderData.GetImageSheetData().m_image = imgBefore; },
+                                    [idx, imgAfter ]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) btns[idx].m_renderData.GetImageSheetData().m_image = imgAfter;  },
+                                    "UI.Button.imageSheet.textureID");
                             }
 
                             // display
@@ -2288,18 +2426,58 @@ void ImGuiSystem::Update(float dt)
                     // Position / Size / Text scale
                     {
                         ImGui::SeparatorText("Transform");
-                        ImGui::InputFloat("posX", &b.basePos.x, 0.1f);
-                        ImGui::InputFloat("posY", &b.basePos.y, 0.1f);
-                        ImGui::InputFloat("sizeX", &b.baseSize.x, 0.1f);
-                        ImGui::InputFloat("sizeY", &b.baseSize.y, 0.1f);
-                        ImGui::InputFloat("textScale", &b.baseTextScale, 0.1f);
+                        // Helper macro-style lambda to add an undoable DragFloat row
+                        // Using static maps keyed by pointer to store per-field "before" value
+                        static std::unordered_map<float*, float> uiBtnFloatBefore;
+
+                        auto UIDragFloat = [&](const char* lbl, float* val, float speed = 1.f) {
+                            ImGui::DragFloat(lbl, val, speed);
+                            if (ImGui::IsItemActivated())       uiBtnFloatBefore[val] = *val;
+                            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                                auto it = uiBtnFloatBefore.find(val);
+                                if (it != uiBtnFloatBefore.end()) {
+                                    float before = it->second;
+                                    float after  = *val;
+                                    if (before != after) {
+                                        float* ref = val;
+                                        UndoSystem::Get().RecordComponentChange(
+                                            [ref,before](){*ref=before;},
+                                            [ref,after]() {*ref=after; }, lbl);
+                                    }
+                                    uiBtnFloatBefore.erase(it);
+                                }
+                            }
+                        };
+
+                        UIDragFloat("posX",      &b.basePos.x,     1.f);
+                        UIDragFloat("posY",      &b.basePos.y,     1.f);
+                        UIDragFloat("sizeX",     &b.baseSize.x,    1.f);
+                        UIDragFloat("sizeY",     &b.baseSize.y,    1.f);
+                        UIDragFloat("textScale", &b.baseTextScale, 0.01f);
+
+                        // Visible toggle
+                        bool visBefore = b.isVisible;
+                        ImGui::Checkbox("Visible", &b.isVisible);
+                        if (visBefore != b.isVisible) {
+                            bool visAfter = b.isVisible; bool* vref = &b.isVisible;
+                            UndoSystem::Get().RecordComponentChange(
+                                [vref,visBefore](){*vref=visBefore;},
+                                [vref,visAfter]() {*vref=visAfter; },"UI.Button.visible");
+                        }
                     }
                     ImGui::Separator();
 
                     // Delete Button
                     if (ImGui::Button("Delete This Button"))
                     {
+                        auto btnsBefore = buttons;
                         buttons.erase(buttons.begin() + selectedLocal);
+                        auto btnsAfter = buttons;
+                        UndoSystem::Get().RecordComponentChange(
+                            [btnsBefore]() { GuiSystem::Get().Buttons() = btnsBefore; },
+                            [btnsAfter]()  { GuiSystem::Get().Buttons() = btnsAfter;  },
+                            "UI Delete Button (inline)"
+                        );
                         uiSelectedIndex = -1;
                         uiSelectedType = SelectedType::None;
                         clampSelectionAfterErase();
@@ -2318,34 +2496,92 @@ void ImGuiSystem::Update(float dt)
                     // Text
                     {
                         char buf[256];
+                        std::string textBefore = t.text;
                         std::snprintf(buf, sizeof(buf), "%s", t.text.c_str());
                         if (ImGui::InputText("Text", buf, IM_ARRAYSIZE(buf))) {
                             t.text = buf;
                         }
+                        if (ImGui::IsItemDeactivatedAfterEdit() && textBefore != t.text) {
+                            std::string after = t.text;
+                            std::string* ref = &t.text;
+                            UndoSystem::Get().RecordComponentChange(
+                                [ref, textBefore]() { *ref = textBefore; },
+                                [ref, after]()      { *ref = after;      },
+                                "UI.TextBox.text");
+                        }
                     }
                     ImGui::Separator();
-                    ImGui::Checkbox("Visible", &t.isVisible);
+                    // Visible checkbox
+                    { bool before = t.isVisible;
+                      ImGui::Checkbox("Visible", &t.isVisible);
+                      if (before != t.isVisible) {
+                          bool after = t.isVisible;
+                          bool* ref = &t.isVisible;
+                          UndoSystem::Get().RecordComponentChange([ref,before](){*ref=before;},[ref,after](){*ref=after;},"UI.TextBox.visible"); } }
 
                     // Transform
                     ImGui::Separator();
                     ImGui::Text("Transform");
-                    ImGui::SliderFloat("posX", &t.basePos.x, 0.f, 1920.f);
-                    ImGui::SliderFloat("posY", &t.basePos.y, 0.f, 1080.f);
-                    ImGui::SliderFloat("scale", &t.baseScale, 0.1f, 100.f);
+                    {
+                        static std::unordered_map<float*, float> uiTxtFloatBefore;
+                        auto UISliderFloat = [&](const char* lbl, float* val, float mn, float mx) {
+                            ImGui::DragFloat(lbl, val, 1.f, mn, mx);
+                            if (ImGui::IsItemActivated())       uiTxtFloatBefore[val] = *val;
+                            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                                auto it = uiTxtFloatBefore.find(val);
+                                if (it != uiTxtFloatBefore.end()) {
+                                    float before = it->second; float after = *val;
+                                    if (before != after) {
+                                        float* ref = val;
+                                        UndoSystem::Get().RecordComponentChange(
+                                            [ref,before](){*ref=before;},
+                                            [ref,after]() {*ref=after; }, lbl);
+                                    }
+                                    uiTxtFloatBefore.erase(it);
+                                }
+                            }
+                        };
+                        UISliderFloat("posX",  &t.basePos.x, 0.f, 1920.f);
+                        UISliderFloat("posY",  &t.basePos.y, 0.f, 1080.f);
+                        UISliderFloat("scale", &t.baseScale, 0.1f, 100.f);
+                    }
 
                     // Color
                     ImGui::Separator();
                     ImGui::Text("Color");
-                    float col[3] = { t.color.r, t.color.g, t.color.b };
-                    if (ImGui::ColorEdit3("Text Color", col)) {
-                        t.color.r = col[0]; t.color.g = col[1]; t.color.b = col[2];
+                    {
+                        static Colour3 colEditBefore{};
+                        float col[3] = { t.color.r, t.color.g, t.color.b };
+                        if (ImGui::IsItemActivated()) { colEditBefore = t.color; }
+                        if (ImGui::ColorEdit3("Text Color", col)) {
+                            t.color.r = col[0]; t.color.g = col[1]; t.color.b = col[2];
+                        }
+                        if (ImGui::IsItemActivated()) { colEditBefore = t.color; }
+                        if (ImGui::IsItemDeactivatedAfterEdit()) {
+                            Colour3 colAfter = t.color;
+                            if (colEditBefore.r != colAfter.r || colEditBefore.g != colAfter.g || colEditBefore.b != colAfter.b) {
+                                Colour3 colBefore = colEditBefore;
+                                Colour3* ref = &t.color;
+                                UndoSystem::Get().RecordComponentChange(
+                                    [ref, colBefore]() { *ref = colBefore; },
+                                    [ref, colAfter]()  { *ref = colAfter;  },
+                                    "UI.TextBox.color");
+                            }
+                        }
                     }
 
                     ImGui::Separator();
 
                     // Delete TextBox
                     if (ImGui::Button("Delete This Text")) {
+                        auto txtsBefore = textboxes;
                         textboxes.erase(textboxes.begin() + selectedLocal);
+                        auto txtsAfter = textboxes;
+                        UndoSystem::Get().RecordComponentChange(
+                            [txtsBefore]() { GuiSystem::Get().TextBoxes() = txtsBefore; },
+                            [txtsAfter]()  { GuiSystem::Get().TextBoxes() = txtsAfter;  },
+                            "UI Delete TextBox (inline)"
+                        );
                         uiSelectedIndex = -1;
                         uiSelectedType = SelectedType::None;
                         clampSelectionAfterErase();
@@ -3190,11 +3426,34 @@ void ImGuiSystem::Update(float dt)
                     // Transform
                     {
                         ImGui::SeparatorText("Transform");
-                        ImGui::InputFloat("posX", &dp.basePos.x, 0.1f);
-                        ImGui::InputFloat("posY", &dp.basePos.y, 0.1f);
-                        ImGui::InputFloat("sizeX", &dp.baseSize.x, 0.1f);
-                        ImGui::InputFloat("sizeY", &dp.baseSize.y, 0.1f);
-                        ImGui::Checkbox("Centered", &dp.centered);
+                        static std::unordered_map<float*, float> uiDispFloatBefore;
+                        auto UIDragFloatDisp = [&](const char* lbl, float* val, float speed = 1.f) {
+                            ImGui::DragFloat(lbl, val, speed);
+                            if (ImGui::IsItemActivated())       uiDispFloatBefore[val] = *val;
+                            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                                auto it = uiDispFloatBefore.find(val);
+                                if (it != uiDispFloatBefore.end()) {
+                                    float before = it->second; float after = *val;
+                                    if (before != after) {
+                                        float* ref = val;
+                                        UndoSystem::Get().RecordComponentChange(
+                                            [ref,before](){*ref=before;},
+                                            [ref,after]() {*ref=after; }, lbl);
+                                    }
+                                    uiDispFloatBefore.erase(it);
+                                }
+                            }
+                        };
+                        UIDragFloatDisp("posX",  &dp.basePos.x);
+                        UIDragFloatDisp("posY",  &dp.basePos.y);
+                        UIDragFloatDisp("sizeX", &dp.baseSize.x);
+                        UIDragFloatDisp("sizeY", &dp.baseSize.y);
+
+                        { bool before = dp.centered;
+                          ImGui::Checkbox("Centered", &dp.centered);
+                          if (before != dp.centered) {
+                              bool after = dp.centered; bool* ref = &dp.centered;
+                              UndoSystem::Get().RecordComponentChange([ref,before](){*ref=before;},[ref,after](){*ref=after;},"UI.Display.centered"); } }
                     }
 
                     // Render
@@ -3441,7 +3700,14 @@ void ImGuiSystem::Update(float dt)
                     // Delete Display
                     if (ImGui::Button("Delete This Display"))
                     {
+                        auto dispsBefore = displays;
                         displays.erase(displays.begin() + selectedLocal);
+                        auto dispsAfter = displays;
+                        UndoSystem::Get().RecordComponentChange(
+                            [dispsBefore]() { GuiSystem::Get().Displays() = dispsBefore; },
+                            [dispsAfter]()  { GuiSystem::Get().Displays() = dispsAfter;  },
+                            "UI Delete Display (inline)"
+                        );
                         uiSelectedIndex = -1;
                         uiSelectedType = SelectedType::None;
                         clampSelectionAfterErase();
