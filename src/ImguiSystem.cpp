@@ -686,18 +686,42 @@ static void EndTransformEdit()
 // Checkbox | For bool
 static void MakeWidget(Editor::Widget_Checkmark& w, const std::string& label) {
     if (!w.ref) return;
-    ImGui::Checkbox(label.c_str(), w.ref);
+    bool valueBefore = *w.ref;
+    if (ImGui::Checkbox(label.c_str(), w.ref)) {
+        bool valueAfter = *w.ref;
+        if (valueBefore != valueAfter) {
+            bool* ref = w.ref;
+            UndoSystem::Get().RecordComponentChange(
+                [ref, valueBefore]() { *ref = valueBefore; },
+                [ref, valueAfter]()  { *ref = valueAfter;  },
+                label
+            );
+        }
+    }
 }
 
 // Text     | For string
 static void MakeWidget(Editor::Widget_String& w, const std::string& label) {
     if (!w.ref) return;
     char buf[128];
+    std::string valueBefore = *w.ref;
     //copy string to buffer
-    strncpy(buf, w.ref->c_str(), sizeof(buf));
+    strncpy(buf, w.ref->c_str(), sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = '\0';
     if (ImGui::InputText(label.c_str(), buf, IM_ARRAYSIZE(buf))) {
         //copy text back 2 string
         *w.ref = buf;
+    }
+    if (ImGui::IsItemDeactivatedAfterEdit()) {
+        std::string valueAfter = *w.ref;
+        if (valueBefore != valueAfter) {
+            std::string* ref = w.ref;
+            UndoSystem::Get().RecordComponentChange(
+                [ref, valueBefore]() { *ref = valueBefore; },
+                [ref, valueAfter]()  { *ref = valueAfter;  },
+                label
+            );
+        }
     }
 }
 
@@ -720,8 +744,18 @@ static void MakeWidget(Editor::Widget_Dropdown& w, const std::string& label)
         }
     }
 
+    unsigned int valueBefore = *w.ref;
     if (ImGui::Combo(label.c_str(), &currentIndex, items.data(), (int)items.size())) {
-        *w.ref = w.enumMap[w.options[currentIndex]];
+        unsigned int valueAfter = w.enumMap[w.options[currentIndex]];
+        *w.ref = valueAfter;
+        if (valueBefore != valueAfter) {
+            unsigned int* ref = w.ref;
+            UndoSystem::Get().RecordComponentChange(
+                [ref, valueBefore]() { *ref = valueBefore; },
+                [ref, valueAfter]()  { *ref = valueAfter;  },
+                label
+            );
+        }
     }
 }
 
@@ -757,31 +791,25 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
     void* widgetID = w.ref;
     Entity entity = g_currentInspectorEntity;
 
-    
     if (w.slider && w.min != w.max)
         ImGui::SliderFloat(label.c_str(), w.ref, w.min, w.max);
     else
-        //ImGui::InputFloat(label.c_str(), w.ref);
         ImGui::DragFloat(label.c_str(), w.ref, 0.1f);
 
-  
     if (ImGui::IsItemActivated()) {
         WidgetUndoState& state = g_widgetUndoStates[widgetID];
         state.floatBefore = *w.ref;
         state.entity = entity;
 
-        // Only call BeginTransformEdit if hvnt already started editing this entity transform
+        // Begin transform snapshot if this field belongs to the Transform component
         if (ShouldRecordTransformUndo(entity, label) &&
             reg.Has_Component<TransformComponent>(entity)) {
-
-            // if already editing this entity transform
             if (g_editingEntity != entity || !g_transformEditStarted) {
                 BeginTransformEdit(entity);
             }
         }
     }
 
-   
     if (ImGui::IsItemDeactivatedAfterEdit()) {
         auto it = g_widgetUndoStates.find(widgetID);
         if (it != g_widgetUndoStates.end()) {
@@ -790,12 +818,20 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
             if (state.floatBefore != *w.ref && state.entity != INVALID_ENTITY) {
                 if (ShouldRecordTransformUndo(state.entity, label) &&
                     reg.Has_Component<TransformComponent>(state.entity)) {
-
-                    
+                    // Transform fields: use the grouped transform undo
                     if (g_editingEntity == state.entity && g_transformEditStarted) {
                         EndTransformEdit();
                     }
-
+                } else {
+                    // Non-transform float field: record a generic ComponentProperty action
+                    float* ref        = w.ref;
+                    float  valBefore  = state.floatBefore;
+                    float  valAfter   = *w.ref;
+                    UndoSystem::Get().RecordComponentChange(
+                        [ref, valBefore]() { *ref = valBefore; },
+                        [ref, valAfter]()  { *ref = valAfter;  },
+                        label
+                    );
                 }
             }
             g_widgetUndoStates.erase(it);
@@ -811,13 +847,11 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
     void* widgetID = w.ref;
     Entity entity = g_currentInspectorEntity;
 
-
     if (w.slider && w.min != w.max)
         ImGui::SliderInt(label.c_str(), w.ref, w.min, w.max);
     else
         ImGui::InputInt(label.c_str(), w.ref);
 
-  
     if (ImGui::IsItemActivated()) {
         WidgetUndoState& state = g_widgetUndoStates[widgetID];
         state.intBefore = *w.ref;
@@ -825,8 +859,6 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
 
         if (ShouldRecordTransformUndo(entity, label) &&
             reg.Has_Component<TransformComponent>(entity)) {
-
-            
             if (g_editingEntity != entity || !g_transformEditStarted) {
                 BeginTransformEdit(entity);
             }
@@ -841,13 +873,19 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
             if (state.intBefore != *w.ref && state.entity != INVALID_ENTITY) {
                 if (ShouldRecordTransformUndo(state.entity, label) &&
                     reg.Has_Component<TransformComponent>(state.entity)) {
-
-                    // Only end if this was the widget that started it
                     if (g_editingEntity == state.entity && g_transformEditStarted) {
                         EndTransformEdit();
                     }
-
-                  
+                } else {
+                    // Non-transform int field: record a generic ComponentProperty action
+                    int* ref      = w.ref;
+                    int  valBefore = state.intBefore;
+                    int  valAfter  = *w.ref;
+                    UndoSystem::Get().RecordComponentChange(
+                        [ref, valBefore]() { *ref = valBefore; },
+                        [ref, valAfter]()  { *ref = valAfter;  },
+                        label
+                    );
                 }
             }
             g_widgetUndoStates.erase(it);
@@ -1108,10 +1146,17 @@ void ImGuiSystem::Update(float dt)
     {
         ImGuiIO& io = ImGui::GetIO();
 
-        // Ctrl+Z
+        // Ctrl+Z  — Undo
         if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z))
         {
             UndoSystem::Get().Undo();
+            EnsureSelectionValid();
+        }
+
+        // Ctrl+Y  — Redo
+        if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Y))
+        {
+            UndoSystem::Get().Redo();
             EnsureSelectionValid();
         }
     }
