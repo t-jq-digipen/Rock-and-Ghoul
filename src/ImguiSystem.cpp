@@ -118,6 +118,11 @@ Vec2   ImGuiSystem::sceneSize = { GLApp::VIRTUAL_W, GLApp::VIRTUAL_H };
 
 static ImGuizmo::OPERATION gizmoOperation = ImGuizmo::TRANSLATE;
 static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
+
+// UI gizmo state – shared between UI Editor and Game View panels
+static SelectedType g_uiGizmoSelType  = SelectedType::None;
+static int          g_uiGizmoSelLocal = -1;
+
 // ========================================================
 // Anonymous Namespace
 // ========================================================
@@ -519,6 +524,210 @@ void DrawSelectionOutline(Entity e, ImVec2 cursor, float w, float h)
     //outline
     dl->AddRect(tl, br, IM_COL32(0, 255, 255, 255), 0.0f, 0, 2.0f);
 
+}
+
+// Converts a UI base-space position (0..VIRTUAL_W, 0..VIRTUAL_H, Y up) to Game View panel screen coords.
+static ImVec2 UIBaseToPanel(float ux, float uy, ImVec2 panelPos, float panelW, float panelH)
+{
+    float vw = (float)GLApp::VIRTUAL_W;
+    float vh = (float)GLApp::VIRTUAL_H;
+    float px = panelPos.x + (ux / vw) * panelW;
+    float py = panelPos.y + (1.f - uy / vh) * panelH;
+    return { px, py };
+}
+
+
+// Draws a translate gizmo over the selected UI element in the Game View.
+// Uses direct mouse hit-testing so it works on top of ImGui::Image.
+// Returns true while the element is being dragged.
+// outDragStartPos receives the position at the moment the drag began (valid when return is true).
+static bool DrawUIGizmo(ImVec2 panelPos, float panelW, float panelH,
+                        Vec2& basePos, Vec2* baseSize,
+                        bool isCentered, Vec2& outDragStartPos, Vec2& outDragStartSize)
+{
+    // Center in UI space
+    float cx = basePos.x;
+    float cy = basePos.y;
+    if (baseSize && !isCentered)
+    {
+        cx += baseSize->x * 0.5f;
+        cy -= baseSize->y * 0.5f;
+    }
+
+    ImVec2 center = UIBaseToPanel(cx, cy, panelPos, panelW, panelH);
+
+    // Bounding rect corners in panel space
+    ImVec2 tl{}, br{};
+    if (baseSize)
+    {
+        float halfW = baseSize->x * 0.5f;
+        float halfH = baseSize->y * 0.5f;
+        tl = UIBaseToPanel(cx - halfW, cy + halfH, panelPos, panelW, panelH);
+        br = UIBaseToPanel(cx + halfW, cy - halfH, panelPos, panelW, panelH);
+    }
+
+    ImDrawList* dl    = ImGui::GetWindowDrawList();
+    ImGuiIO&    io    = ImGui::GetIO();
+    ImVec2      mouse = io.MousePos;
+
+    const float HR = 6.f; // resize handle half-size
+    const float MR = 8.f; // move handle radius
+
+    // ── drag state ─────────────────────────────────────────────────────────
+    // dragMode: 0=none, 1=move, 2..9=resize handle index
+    static int    s_dragMode       = 0;
+    static ImVec2 s_dragStartMouse = {};
+    static Vec2   s_dragStartPos   = {};
+    static Vec2   s_dragStartSize  = {};
+    bool moved = false;
+
+    // ── resize handles (only when baseSize exists) ──────────────────────────
+    // 8 handles: corners TL,TR,BR,BL then edge midpoints T,R,B,L
+    // handle positions and cursors
+    struct ResizeHandle {
+        ImVec2 pos;
+        ImGuiMouseCursor cursor;
+        // How this handle affects pos/size on drag (in UI space, Y-up)
+        // signX/signY: which direction this edge moves (+1 or -1 or 0)
+        // affects pos (centre stays opposite edge fixed)
+        int affectPosX, affectPosY; // -1,0,+1
+        int affectSizeX, affectSizeY;
+    };
+
+    bool anyResizeHovered = false;
+    bool anyResizeDragging = (s_dragMode >= 2);
+
+    if (baseSize)
+    {
+        ImVec2 tm = { (tl.x + br.x) * 0.5f, tl.y };
+        ImVec2 bm = { (tl.x + br.x) * 0.5f, br.y };
+        ImVec2 ml = { tl.x, (tl.y + br.y) * 0.5f };
+        ImVec2 mr = { br.x, (tl.y + br.y) * 0.5f };
+
+        // {panel pos, cursor, affectPosX, affectPosY, affectSizeX, affectSizeY}
+        ResizeHandle handles[8] = {
+            { tl,                      ImGuiMouseCursor_ResizeNWSE, -1, +1, -1, +1 }, // TL corner
+            { {br.x, tl.y},            ImGuiMouseCursor_ResizeNESW, +1, +1, +1, +1 }, // TR corner
+            { br,                      ImGuiMouseCursor_ResizeNWSE, +1, -1, +1, -1 }, // BR corner
+            { {tl.x, br.y},            ImGuiMouseCursor_ResizeNESW, -1, -1, -1, -1 }, // BL corner
+            { tm,                      ImGuiMouseCursor_ResizeNS,    0, +1,  0, +1 }, // Top edge
+            { mr,                      ImGuiMouseCursor_ResizeEW,   +1,  0, +1,  0 }, // Right edge
+            { bm,                      ImGuiMouseCursor_ResizeNS,    0, -1,  0, -1 }, // Bottom edge
+            { ml,                      ImGuiMouseCursor_ResizeEW,   -1,  0, -1,  0 }, // Left edge
+        };
+
+        for (int i = 0; i < 8; ++i)
+        {
+            ImVec2 hp = handles[i].pos;
+            bool hov = (mouse.x >= hp.x - HR && mouse.x <= hp.x + HR &&
+                        mouse.y >= hp.y - HR && mouse.y <= hp.y + HR);
+
+            if (hov) anyResizeHovered = true;
+
+            // Start resize drag
+            if (hov && io.MouseClicked[0] && s_dragMode == 0)
+            {
+                s_dragMode       = 2 + i;
+                s_dragStartMouse = mouse;
+                s_dragStartPos   = basePos;
+                s_dragStartSize  = *baseSize;
+            }
+
+            // Active resize drag
+            if (s_dragMode == 2 + i && io.MouseDown[0])
+            {
+                const auto& h = handles[i];
+                float dmx =  (mouse.x - s_dragStartMouse.x) / panelW * (float)GLApp::VIRTUAL_W;
+                float dmy = -(mouse.y - s_dragStartMouse.y) / panelH * (float)GLApp::VIRTUAL_H;
+
+                // Size change: each edge expands outward
+                float dsX = h.affectSizeX * dmx;
+                float dsY = h.affectSizeY * dmy;
+                float newW = std::max(10.f, s_dragStartSize.x + dsX);
+                float newH = std::max(10.f, s_dragStartSize.y + dsY);
+
+                // Keep the opposite edge fixed: centre shifts by half the size change
+                float actualDsX = newW - s_dragStartSize.x;
+                float actualDsY = newH - s_dragStartSize.y;
+                baseSize->x = newW;
+                baseSize->y = newH;
+
+                // Shift pos so the anchored edge stays put
+                basePos.x = s_dragStartPos.x + h.affectPosX * actualDsX * 0.5f;
+                basePos.y = s_dragStartPos.y + h.affectPosY * actualDsY * 0.5f;
+
+                moved = true;
+            }
+            else if (s_dragMode == 2 + i && !io.MouseDown[0])
+            {
+                s_dragMode = 0;
+            }
+
+            if (hov || s_dragMode == 2 + i)
+                ImGui::SetMouseCursor(handles[i].cursor);
+
+            // Draw handle square
+            ImU32 hcol = (hov || s_dragMode == 2 + i) ? IM_COL32(255,255,80,255) : IM_COL32(255,255,255,220);
+            dl->AddRectFilled({ hp.x - HR, hp.y - HR }, { hp.x + HR, hp.y + HR }, hcol);
+            dl->AddRect      ({ hp.x - HR, hp.y - HR }, { hp.x + HR, hp.y + HR }, IM_COL32(80,80,80,255));
+        }
+    }
+
+    // ── move drag (body) ────────────────────────────────────────────────────
+    bool inBounds = false;
+    if (baseSize)
+        inBounds = (mouse.x >= tl.x && mouse.x <= br.x && mouse.y >= tl.y && mouse.y <= br.y);
+    else
+    {
+        float d2 = (mouse.x-center.x)*(mouse.x-center.x) + (mouse.y-center.y)*(mouse.y-center.y);
+        inBounds = d2 <= MR * MR * 4.f;
+    }
+
+    // Only start move if not on a resize handle
+    bool canStartMove = inBounds && !anyResizeHovered && !anyResizeDragging;
+    if (canStartMove && io.MouseClicked[0] && s_dragMode == 0)
+    {
+        s_dragMode       = 1;
+        s_dragStartMouse = mouse;
+        s_dragStartPos   = basePos;
+    }
+
+    outDragStartPos  = s_dragStartPos;
+    outDragStartSize = s_dragStartSize;
+
+    if (s_dragMode == 1)
+    {
+        if (io.MouseDown[0])
+        {
+            float dx =  (mouse.x - s_dragStartMouse.x) / panelW * (float)GLApp::VIRTUAL_W;
+            float dy = -(mouse.y - s_dragStartMouse.y) / panelH * (float)GLApp::VIRTUAL_H;
+            basePos.x = s_dragStartPos.x + dx;
+            basePos.y = s_dragStartPos.y + dy;
+            moved = true;
+        }
+        else
+        {
+            s_dragMode = 0;
+        }
+    }
+
+    if ((inBounds && !anyResizeHovered) || s_dragMode == 1)
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+
+    // ── draw ────────────────────────────────────────────────────────────────
+    if (baseSize)
+    {
+        dl->AddRect(tl, br, IM_COL32(255, 165, 0, 60),  0.f, 0, 6.f);
+        dl->AddRect(tl, br, IM_COL32(255, 165, 0, 255), 0.f, 0, 2.f);
+    }
+
+    // Centre dot
+    ImU32 dotCol = (s_dragMode == 1 || (inBounds && !anyResizeHovered))
+                 ? IM_COL32(255, 255, 80, 255) : IM_COL32(255, 200, 0, 200);
+    dl->AddCircleFilled(center, MR, dotCol);
+    dl->AddCircle      (center, MR, IM_COL32(255,255,255,255), 16, 2.f);
+
+    return moved;
 }
 
 Entity PickEntityAtWorldPos(const Vec2& world)
@@ -1737,6 +1946,8 @@ void ImGuiSystem::Update(float dt)
             // Reset selection
             uiSelectedType = SelectedType::None;
             uiSelectedIndex = -1;
+            g_uiGizmoSelType  = SelectedType::None;
+            g_uiGizmoSelLocal = -1;
         }
 
         ImGui::Separator();
@@ -1818,13 +2029,13 @@ void ImGuiSystem::Update(float dt)
             }
 
             bool selected = (r.type == curSelType && r.local == curSelLocal);
-            if (ImGui::Selectable(label.c_str(), selected)) 
+            if (ImGui::Selectable(label.c_str(), selected))
             {
                 uiSelectedType = r.type;
                 uiSelectedIndex = localToGlobal(r.type, r.local);
 
                 // Re-arm dialogue typing on selection
-                if (r.type == SelectedType::Dialogue) 
+                if (r.type == SelectedType::Dialogue)
                 {
                     auto& d = dialogues[r.local];
                     auto* tc = d.textComp ? d.textComp : d.owned.get();
@@ -1832,6 +2043,10 @@ void ImGuiSystem::Update(float dt)
                 }
                 curSelType = r.type;
                 curSelLocal = r.local;
+
+                // sync gizmo selection
+                g_uiGizmoSelType  = r.type;
+                g_uiGizmoSelLocal = r.local;
             }
         }
         ImGui::EndChild();
@@ -4218,6 +4433,123 @@ void ImGuiSystem::Update(float dt)
 
         DrawSelectionOutline(selectedEntity, cursor, newWidth, newHeight);
 
+        // UI gizmo – overlay for selected UI element (translate handle)
+        if (!isPlaying && g_uiGizmoSelType != SelectedType::None && g_uiGizmoSelLocal >= 0)
+        {
+            auto& gui = GuiSystem::Get();
+
+            Vec2* pBasePos  = nullptr;
+            Vec2* pBaseSize = nullptr;
+            bool  centered  = false;
+
+            if (g_uiGizmoSelType == SelectedType::Button)
+            {
+                auto& btns = gui.Buttons();
+                if (g_uiGizmoSelLocal < (int)btns.size())
+                {
+                    pBasePos  = &btns[g_uiGizmoSelLocal].basePos;
+                    pBaseSize = &btns[g_uiGizmoSelLocal].baseSize;
+                    centered  = true;
+                }
+            }
+            else if (g_uiGizmoSelType == SelectedType::Display)
+            {
+                auto& disps = gui.Displays();
+                if (g_uiGizmoSelLocal < (int)disps.size())
+                {
+                    pBasePos  = &disps[g_uiGizmoSelLocal].basePos;
+                    pBaseSize = &disps[g_uiGizmoSelLocal].baseSize;
+                    centered  = disps[g_uiGizmoSelLocal].centered;
+                }
+            }
+            else if (g_uiGizmoSelType == SelectedType::TextBox)
+            {
+                auto& txts = gui.TextBoxes();
+                if (g_uiGizmoSelLocal < (int)txts.size())
+                {
+                    pBasePos  = &txts[g_uiGizmoSelLocal].basePos;
+                    pBaseSize = nullptr; // text has no size box
+                    centered  = true;
+                }
+            }
+            else if (g_uiGizmoSelType == SelectedType::Dialogue)
+            {
+                auto& dlgs = gui.Dialogues();
+                if (g_uiGizmoSelLocal < (int)dlgs.size())
+                {
+                    pBasePos  = &dlgs[g_uiGizmoSelLocal].textBox.basePos;
+                    pBaseSize = nullptr;
+                    centered  = true;
+                }
+            }
+
+            if (pBasePos)
+            {
+                static Vec2         s_uiGizmoPosBeforeDrag{};
+                static Vec2         s_uiGizmoSizeBeforeDrag{};
+                static bool         s_uiGizmoDragStarted = false;
+                static SelectedType s_uiGizmoDragType    = SelectedType::None;
+                static int          s_uiGizmoDragLocal   = -1;
+
+                Vec2 gizmoDragStartPos{}, gizmoDragStartSize{};
+                bool moved = DrawUIGizmo(cursor, newWidth, newHeight, *pBasePos, pBaseSize, centered, gizmoDragStartPos, gizmoDragStartSize);
+
+                // Capture "before" on the first frame of a drag
+                if (moved && !s_uiGizmoDragStarted)
+                {
+                    s_uiGizmoPosBeforeDrag  = gizmoDragStartPos;
+                    s_uiGizmoSizeBeforeDrag = gizmoDragStartSize;
+                    s_uiGizmoDragType       = g_uiGizmoSelType;
+                    s_uiGizmoDragLocal      = g_uiGizmoSelLocal;
+                    s_uiGizmoDragStarted    = true;
+                }
+
+                // Drag ended – record undo
+                if (s_uiGizmoDragStarted && !ImGui::GetIO().MouseDown[0])
+                {
+                    Vec2         afterPos  = *pBasePos;
+                    Vec2         afterSize = pBaseSize ? *pBaseSize : Vec2{};
+                    Vec2         beforePos = s_uiGizmoPosBeforeDrag;
+                    Vec2         beforeSize= s_uiGizmoSizeBeforeDrag;
+                    SelectedType selType   = s_uiGizmoDragType;
+                    int          selIdx    = s_uiGizmoDragLocal;
+
+                    auto getPosSize = [selType, selIdx](Vec2** outPos, Vec2** outSize) {
+                        auto& g = GuiSystem::Get();
+                        if (selType == SelectedType::Button && selIdx < (int)g.Buttons().size())
+                            { *outPos = &g.Buttons()[selIdx].basePos; *outSize = &g.Buttons()[selIdx].baseSize; return; }
+                        if (selType == SelectedType::Display && selIdx < (int)g.Displays().size())
+                            { *outPos = &g.Displays()[selIdx].basePos; *outSize = &g.Displays()[selIdx].baseSize; return; }
+                        if (selType == SelectedType::TextBox && selIdx < (int)g.TextBoxes().size())
+                            { *outPos = &g.TextBoxes()[selIdx].basePos; *outSize = nullptr; return; }
+                        if (selType == SelectedType::Dialogue && selIdx < (int)g.Dialogues().size())
+                            { *outPos = &g.Dialogues()[selIdx].textBox.basePos; *outSize = nullptr; return; }
+                        *outPos = nullptr; *outSize = nullptr;
+                    };
+
+                    bool posChanged  = (beforePos.x  != afterPos.x  || beforePos.y  != afterPos.y);
+                    bool sizeChanged = (beforeSize.x != afterSize.x || beforeSize.y != afterSize.y);
+                    if (posChanged || sizeChanged)
+                    {
+                        UndoSystem::Get().RecordComponentChange(
+                            [beforePos, beforeSize, getPosSize]() {
+                                Vec2 *p, *s; getPosSize(&p, &s);
+                                if (p) *p = beforePos;
+                                if (s) *s = beforeSize;
+                            },
+                            [afterPos, afterSize, getPosSize]() {
+                                Vec2 *p, *s; getPosSize(&p, &s);
+                                if (p) *p = afterPos;
+                                if (s) *s = afterSize;
+                            },
+                            "UI Gizmo"
+                        );
+                    }
+                    s_uiGizmoDragStarted = false;
+                }
+            }
+        }
+
         //gizmooooo
         ImGuizmo::BeginFrame();
         ImGuizmo::SetOrthographic(false);
@@ -4320,13 +4652,11 @@ void ImGuiSystem::Update(float dt)
         {
             if (!ImGuizmo::IsUsing())
             {
-                // mouse position to world position
                 ImVec2 mousePos = ImGui::GetMousePos();
 
                 ImVec2 imgMin = cursor;
                 ImVec2 imgMax = ImVec2(cursor.x + newWidth, cursor.y + newHeight);
 
-                //if the mouse is actually inside the scene preview rectangle
                 if (mousePos.x >= imgMin.x && mousePos.x <= imgMax.x && mousePos.y >= imgMin.y && mousePos.y <= imgMax.y)
                 {
                     //conversion again
