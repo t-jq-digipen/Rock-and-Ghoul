@@ -11,19 +11,19 @@
     "entities": [
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-162.97792053222656,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-330.18994140625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-162.97792053222656,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-330.18994140625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
@@ -169,14 +169,40 @@
         },
         {
             "components": {
-                "Behaviour": "{\"scripts\":[]}",
+                "Behaviour": "{\"scripts\":[\"ObstacleScript\"]}",
+                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":1255.8583984375,\"aabb_maxY\":416.7079772949219,\"aabb_minX\":1255.8583984375,\"aabb_minY\":416.7079772949219,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":125.0,\"yOffset\":150.0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":0.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":25.0,\\\\\\\"scaleY\\\\\\\":25.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Speaker_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":1,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":1255.8583984375,\"posY\":416.7079772949219,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0000001192092896}"
+            },
+            "name": "Speaker"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"ObstacleScript\"]}",
                 "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":1000.0,\"aabb_maxY\":400.0,\"aabb_minX\":1000.0,\"aabb_minY\":400.0,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
                 "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
                 "HealthBar": "{\"height\":25.0,\"width\":125.0,\"yOffset\":150.0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":0.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":25.0,\\\"scaleY\\\":25.0,\\\"texturePath\\\":\\\"../Assets/Interactable_Asset_Speaker.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":25.0,\\\\\\\"scaleY\\\\\\\":25.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Speaker_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":1,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
                 "Tag": "{\"tagID\":2}",
                 "Transform": "{\"posX\":1000.0,\"posY\":400.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0000001192092896}"
+            },
+            "name": "Speaker"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"ObstacleScript\"]}",
+                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":776.07080078125,\"aabb_maxY\":412.8849792480469,\"aabb_minX\":776.07080078125,\"aabb_minY\":412.8849792480469,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":125.0,\"yOffset\":150.0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":0.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":25.0,\\\\\\\"scaleY\\\\\\\":25.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Speaker_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":1,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":776.07080078125,\"posY\":412.8849792480469,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0000001192092896}"
             },
             "name": "Speaker"
         }
