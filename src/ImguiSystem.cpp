@@ -537,8 +537,7 @@ static ImVec2 UIBaseToPanel(float ux, float uy, ImVec2 panelPos, float panelW, f
 }
 
 
-// Draws a translate gizmo over the selected UI element in the Game View.
-// Uses direct mouse hit-testing so it works on top of ImGui::Image.
+// Draws a translate gizmo over UI element in the Game View.
 // Returns true while the element is being dragged.
 // outDragStartPos receives the position at the moment the drag began (valid when return is true).
 static bool DrawUIGizmo(ImVec2 panelPos, float panelW, float panelH,
@@ -574,7 +573,7 @@ static bool DrawUIGizmo(ImVec2 panelPos, float panelW, float panelH,
     const float MR = 8.f; // move handle radius
 
     // ── drag state ─────────────────────────────────────────────────────────
-    // dragMode: 0=none, 1=move, 2..9=resize handle index
+    // dragMode: 0=none, 1=move, 2-9=resize handle index
     static int    s_dragMode       = 0;
     static ImVec2 s_dragStartMouse = {};
     static Vec2   s_dragStartPos   = {};
