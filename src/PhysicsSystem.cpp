@@ -29,6 +29,13 @@
 extern FrameRateController frameRate;
 static CollisionManager collisionManager;
 
+
+std::vector<Entity> expired{};
+
+void QueueRemove(Entity eID) {
+    expired.push_back(eID);
+}
+
 // EntityManager& em;
 //ComponentManager<TransformComponent>& transformManager;
 //ComponentManager<PhysicsComponent>& physicsManager;
@@ -37,6 +44,7 @@ void PhysicsSystem::Initialize() {
 
     CollisionLayerManager::Get().LoadCollisionSettings();
 }
+
 void PhysicsSystem::Update(float dt) {
     // dt is now fixedDt that is passed from CoreEngine
 
@@ -66,7 +74,6 @@ void PhysicsSystem::Update(float dt) {
         }
     }
 
-    std::vector<Entity> expired{};
     for (auto& [entID, lifeComp] : m_registry.Get_ComponentMap<LifetimeComponent>())
     {
         lifeComp.age += dt;
@@ -81,6 +88,7 @@ void PhysicsSystem::Update(float dt) {
         CombatSystem::Get().CleanupProjectilePoolData(eID);
         m_registry.Remove_Entity(eID);
     }
+    expired.clear();
 
     // Collili checks!!(or different place?)
     // Collili reaction!!!
@@ -88,6 +96,7 @@ void PhysicsSystem::Update(float dt) {
     collisionManager.CheckCollisions();
     collisionManager.ProcessEvents();
 }
+
 void PhysicsSystem::Shutdown() {
     std::cout << "PhysicsSystem Shutdown!\n";
 }

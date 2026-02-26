@@ -26,6 +26,7 @@
 
 #pragma once
 #include "System.h"
+#include "CombatSystem.h"
 
 // Set enemy AI behavior
 enum EnemyState : unsigned int
@@ -39,6 +40,9 @@ enum EnemyState : unsigned int
 	E_STAGGERED,
 	E_RETURNING
 };
+
+bool HasBarrier(Entity eID);
+bool BreakBarrier(Entity eID, Element element);
 
 namespace EnemyAI {
 

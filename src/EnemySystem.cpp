@@ -45,6 +45,7 @@
 #include "CollisionManager.h"
 #include "PlayerSystem.h"
 #include "CombatSystem.h"
+#include "PhysicsSystem.h"
 
 static constexpr float DETECT_RADIUS = 400.f;
 static constexpr float LOSE_RADIUS = 360.f;
@@ -169,7 +170,78 @@ struct EnemyRuntime
 };
 
 
+struct ElemBarrier
+{
+	Entity barrierEntity = INVALID_ENTITY;
+	Element element = Element::NONE;
+	bool active = true;
+};
+
 static std::unordered_map<Entity, EnemyRuntime> g_ai;
+static std::unordered_map<Entity, ElemBarrier> g_elemBarriers{};
+std::vector<Entity> toRemoveBarriers{};
+
+Entity CreateBarrier(Entity eID, Element elem)
+{
+	std::string filepath;
+
+	switch (elem)
+	{
+	case Element::FIRE:
+		filepath = FilePath::PREFABS_FOLDER + "Barrier_Fire.json";
+		break;
+
+	case Element::ICE:
+		filepath = FilePath::PREFABS_FOLDER + "Barrier_Ice.json";
+		break;
+
+	case Element::LIGHTNING:
+		filepath = FilePath::PREFABS_FOLDER + "Barrier_Lightning.json";
+		break;
+
+	case Element::WIND:
+		filepath = FilePath::PREFABS_FOLDER + "Barrier_Wind.json";
+		break;
+
+	default:
+		std::cout << "Invalid element for barrier creation!\n";
+		return INVALID_ENTITY;
+	}
+
+	const TransformComponent& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
+	Entity barrier = JsonLoad::LoadEntityFromFile(filepath, transComp.pos.x, transComp.pos.y-0.1f);
+
+	return barrier;
+}
+
+bool HasBarrier(Entity eID)
+{
+	if (g_elemBarriers.find(eID) == g_elemBarriers.end())
+		return false;
+
+	if (!g_elemBarriers[eID].active)
+		return false;
+
+	return true;
+}
+
+bool BreakBarrier(Entity eID, Element elem)
+{
+	// should already exist, should only call this after checking if HasBarrier(Entity) is true
+
+	if (elem == Element::NONE)
+		return false;
+
+	ElemBarrier& barrier = g_elemBarriers[eID];
+	
+	if (!barrier.active || barrier.element != elem)
+		return false;
+
+	// Queue remove barrier, let system destroy later
+	barrier.active = false;
+	Registry::Get().Remove_Component<ElementComponent>(eID);
+	return true;
+}
 
 static inline bool HasTransform(Entity e)
 {
@@ -558,6 +630,18 @@ namespace SpiritScript {
 		std::cout << "Spirit script started for entity " << eID << std::endl;
 		CombatSystem::Get().RegisterCombatant(eID);
 		g_spirits[eID] = SpiritRuntime();
+
+		if (Registry::Get().Has_Component<ElementComponent>(eID)) {
+			auto& elemComp = Registry::Get().Get_Component<ElementComponent>(eID);
+			auto& transformComp = Registry::Get().Get_Component<TransformComponent>(eID);
+
+			Entity barrier = CreateBarrier(eID, elemComp.element);
+
+			if (barrier != INVALID_ENTITY) {
+				g_elemBarriers[eID] = ElemBarrier{ barrier, elemComp.element, true };
+			}
+
+		}
 	}
 
 	inline void Update(Entity eID, float dt) {
@@ -703,9 +787,11 @@ namespace SpiritScript {
 				else {
 					offset.x -= SPIRIT_MELEE_RANGE / 2.f;
 				}
-				SPIRIT_MELEE_PROPERTIES.owner = eID;
+
+				AttackProperties props = SPIRIT_MELEE_PROPERTIES;
+				props.owner = eID;
 				CombatSystem::Get().SpawnHitBox(
-					SPIRIT_MELEE_PROPERTIES,
+					props,
 					offset,
 					SPIRIT_MELEE_HITBOX_SIZE
 				);
@@ -777,8 +863,9 @@ namespace SpiritScript {
 					spitPhy.Set_Vel(dir);
 				}
 
-				SPIRIT_PROJECTILE_PROPERTIES.owner = spit;
-				CombatSystem::Get().RegisterProjectile(spit, SPIRIT_PROJECTILE_PROPERTIES, SPIRIT_PROJECTILE_RUNTIME);
+				AttackProperties props = SPIRIT_PROJECTILE_PROPERTIES;
+				props.owner = spit;
+				CombatSystem::Get().RegisterProjectile(spit, props, SPIRIT_PROJECTILE_RUNTIME);
 			}
 
 			if (spiritLogic.stateTime >= SPIRIT_MELEE_DURATION) {
@@ -816,7 +903,38 @@ namespace SpiritScript {
 	inline void End(Entity eID) {
 		std::cout << "Spirit script ended for entity " << eID << std::endl;
 		g_spirits.erase(eID);
+		if (HasBarrier(eID)) {
+			g_elemBarriers[eID].active = false;
+		}
 		CombatSystem::Get().RemoveCombatant(eID);
+	}
+}
+
+
+void UpdateBarriers()
+{
+	for (auto& [owner, barrier] : g_elemBarriers)
+	{
+		// If owner dead or barrier inactive, remove
+		if (!Registry::Get().Has_Component<TransformComponent>(owner) || !barrier.active || !Registry::Get().Has_Component<TransformComponent>(barrier.barrierEntity))
+		{
+			toRemoveBarriers.push_back(owner);
+			continue;
+		}
+
+		// update position
+		Vec2 ownerPos = GetPos(owner);
+		Registry::Get().Get_Component<TransformComponent>(barrier.barrierEntity).pos = { ownerPos.x, ownerPos.y - 0.1f };
+	}
+
+	if (!toRemoveBarriers.empty())
+	{
+		for (Entity e : toRemoveBarriers)
+		{
+			Registry::Get().Remove_Entity(g_elemBarriers[e].barrierEntity);
+			g_elemBarriers.erase(e);
+		}
+		toRemoveBarriers.clear();
 	}
 }
 
@@ -839,7 +957,7 @@ void EnemySystem::Initialize()
 	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
 		// on scene load, wipe spirits and assign target player
 		g_spirits.clear();
-
+		g_elemBarriers.clear();
 		if (e.sceneType == SceneType::ST_GAME) {
 			AssignTarget();
 		}
@@ -872,6 +990,8 @@ void EnemySystem::Update(float dt)
 			//ReturnToBase(entity, dt);
 		}
 	}
+
+	UpdateBarriers();
 }
 
 void EnemySystem::Shutdown()

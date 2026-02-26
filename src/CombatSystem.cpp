@@ -7,6 +7,7 @@
 #include "LogicSystem.h"
 #include "SceneManager.h"
 #include "PlayerSystem.h"
+#include "EnemySystem.h"
 
 // MEMORY POOLLLLLLLL: Map projectile Entity to its PooledEntity for cleanup
 static std::unordered_map<Entity, PooledEntity> g_projectilePoolData;
@@ -90,13 +91,32 @@ void CombatSystem::ApplyDamage(Entity target, const AttackProperties& properties
 
 	HealthComponent& health = m_registry.Get_Component<HealthComponent>(target);
 
+	bool vulnerable = health.isVulnerable;
+
+	// Check elem barrier
+	if (HasBarrier(target))
+	{
+		if (!BreakBarrier(target, properties.element))
+		{
+			//return; // barrier not broken, skip!
+			vulnerable = false;
+		}
+	}
+
+
 	if (!health.willHit) {
 		// target is invulnerable, skip this target
 		return;
 	}
 	else {
+
+		// remove the damage area if instant
+		if (!properties.damageOverTime) {
+			toRemove.push_back(damageArea);
+		}
+
 		// target vulnerable, apply damage and stagger!
-		if (health.isVulnerable) {
+		if (vulnerable) {
 			if (properties.damageOverTime) {
 				// apply damage over time
 				toDamageOverTime[target] += properties.damage;
@@ -109,13 +129,11 @@ void CombatSystem::ApplyDamage(Entity target, const AttackProperties& properties
 				combatants[target].toStagger = true;
 			}
 		}
-
-		// remove the damage area if instant
-		if (!properties.damageOverTime) {
-			toRemove.push_back(damageArea);
+		else // target not vulnerable, skip rest of knockback and element effects
+		{
+			return;
 		}
 	}
-
 
 	float knockbackForce = properties.knockbackForce;
 	if (properties.element != Element::NONE) {
