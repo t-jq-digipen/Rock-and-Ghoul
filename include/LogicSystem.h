@@ -33,7 +33,8 @@ enum class ScriptID : unsigned int {
     MAINMENU_BG,
     SPIRIT,
     SPIRITMELEE,
-    PORTAL
+    PORTAL,
+    OBSTACLE
 };
 
 /**

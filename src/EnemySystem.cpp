@@ -25,7 +25,7 @@
  * - Enemy subscribes to ProjectileHitEnemy trigger event, which
   * fires when a projectile collides with an enemy.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright © 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -301,13 +301,11 @@ static inline Entity FindPlayer()
 static inline void ApplyMeleeDamage(Entity enemy, Entity target)
 {
 	(void)enemy; (void)target;
-	std::cout << "[ENEMY] Melee hit target!\n";
 }
 
 static inline void SpawnEnemyProjectile(Entity enemy, Vec2 pos, Vec2 dir, float speed)
 {
 	(void)enemy; (void)pos; (void)dir; (void)speed;
-	std::cout << "[ENEMY] Shot projectile!\n";
 }
 
 static inline AttackMode DecideAttackMode(Entity e)
@@ -910,6 +908,191 @@ namespace SpiritScript {
 	}
 }
 
+// =======================================================
+// FOR ENVIRONMENTAL OBSTACLES (e.g. speakers)
+
+enum OBSTACLE_ANIM_STATE : unsigned int
+{
+	OBS_IDLE = 0,
+	OBS_BURN,
+	OBS_EXPLODE
+};
+
+static constexpr float OBSTACLE_DEATH_LIFETIME = 0.05f;
+static constexpr float OBSTACLE_EXPLOSION_DURATION = 0.6f;
+
+struct ObstacleRuntime
+{
+	ObstacleState state{ ObstacleState::OBSTACLE_IDLE };
+	float stateTime{ 0.f };
+};
+
+static std::unordered_map<Entity, ObstacleRuntime> g_obstacles;
+
+// =======================================================
+
+// Ensure that obstacle stays still
+static inline void MakeObstacleStationary(Entity eID)
+{
+	Registry& registry = Registry::Get();
+	if (!registry.Has_Component<Movement::MovementComponent>(eID))
+		return;
+
+	auto& mv = registry.Get_Component<Movement::MovementComponent>(eID);
+	mv.ResetFrameIntent();
+	mv.SetIsMoving(false);
+	mv.SetMovementDirection({ 0.f, 0.f });
+	mv.SetMoveSpeed(0.f);
+}
+
+// Set obstacle spritesheet
+static inline void SetObstacleAnim(Entity eID, int row, int col = 0, bool topDownRow = true)
+{
+	Registry& registry = Registry::Get();
+	if (!registry.Has_Component<RenderComponent>(eID))
+	{
+		return;
+	}
+
+	auto& rc = registry.Get_Component<RenderComponent>(eID);
+	auto& sheet = rc.GetSpriteSheet();
+	sheet.Sprite().Update_ImageSize();
+	
+	int internalRow = row;
+	//if (topDownRow)
+	//{
+	//	const int totalRows = sheet.GetTotalRows();
+	//	internalRow = (totalRows - 1) - row;
+	//}
+
+	if (internalRow < 0) internalRow = 0;
+	if (internalRow >= sheet.GetTotalRows()) internalRow = sheet.GetTotalRows() - 1;
+	if (col < 0) col = 0;
+	if (col >= sheet.GetTotalCols()) col = sheet.GetTotalCols() - 1;
+
+	const unsigned int currState = static_cast<unsigned int>(sheet.GetCurrentState());
+	sheet.EditFrames(internalRow, col, col, 0.f, false);
+	sheet.SetState(currState);
+
+	const auto& img = sheet.Sprite().Get_Image();
+	sheet.UpdateUV(img.widthPixels, img.heightPixels);
+}
+
+// Set obstacle death lifetime once before deletion
+static inline void DeactivateObstacle(Entity eID)
+{
+	Registry& registry = Registry::Get();
+	if (registry.Has_Component<LifetimeComponent>(eID))
+	{
+		registry.Get_Component<LifetimeComponent>(eID) = LifetimeComponent{ 0.f, OBSTACLE_DEATH_LIFETIME };
+		return;
+	}
+
+	registry.Add_Component<LifetimeComponent>(eID, LifetimeComponent{ 0.f, OBSTACLE_DEATH_LIFETIME });
+}
+
+namespace ObstacleScript
+{
+	inline void Start(Entity eID)
+	{
+		g_obstacles[eID] = ObstacleRuntime{};
+		MakeObstacleStationary(eID);
+		SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_IDLE);
+	}
+
+	inline void Update(Entity eID, float dt)
+	{
+		(void)dt;
+
+		Registry& registry = Registry::Get();
+
+		if (!registry.Has_Component<HealthComponent>(eID))
+			return;
+
+		auto& rt = g_obstacles[eID];
+		auto& hp = registry.Get_Component<HealthComponent>(eID);
+
+		MakeObstacleStationary(eID);
+
+		// Check if obstacle is burning
+		const bool isBurning = 
+			registry.Has_Component<StatusEffectComponent>(eID) && 
+			registry.Get_Component<StatusEffectComponent>(eID).activeEffect == Element::FIRE;
+
+		switch (rt.state)
+		{
+		case ObstacleState::OBSTACLE_IDLE:
+		{
+			SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_IDLE);
+
+			if (isBurning)
+			{
+				rt.state = ObstacleState::OBSTACLE_BURNING;
+				rt.stateTime = 0.f;
+				break;
+			}
+
+			if (hp.currhp <= 0.f)
+			{
+				hp.currhp = 0.f;
+				rt.state = ObstacleState::OBSTACLE_DESTROYED;
+				rt.stateTime = 0.f;
+				DeactivateObstacle(eID);
+			}
+			break;
+		}
+
+		case ObstacleState::OBSTACLE_BURNING:
+		{
+			SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_BURN);
+
+			if (!isBurning && hp.currhp > 0.f)
+			{
+				rt.state = ObstacleState::OBSTACLE_IDLE;
+				rt.stateTime = 0.f;
+				break;
+			}
+
+			if (hp.currhp <= 0.f)
+			{
+				hp.currhp = 0.f;
+				rt.state = ObstacleState::OBSTACLE_EXPLODE;
+				rt.stateTime = 0.f;
+			}
+			break;
+		}
+
+		case ObstacleState::OBSTACLE_EXPLODE:
+		{
+			SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_EXPLODE);
+			rt.stateTime += std::max(0.f, dt);
+			if (rt.stateTime >= OBSTACLE_EXPLOSION_DURATION)
+			{
+				rt.state = ObstacleState::OBSTACLE_DESTROYED;
+				rt.stateTime = 0.f;
+				DeactivateObstacle(eID);
+			}
+			break;
+		}
+
+		case ObstacleState::OBSTACLE_DESTROYED:
+		{
+			break;
+		}
+		default:
+		{
+			// No-op: obstacle is already scheduled for removal / deactivated.
+			break;
+		}
+		}
+	}
+
+	inline void End(Entity eID)
+	{
+		g_obstacles.erase(eID);
+	}
+}
+
 
 void UpdateBarriers()
 {
@@ -953,11 +1136,18 @@ void EnemySystem::Initialize()
 	spirit.End = [](Entity e) { SpiritScript::End(e); };
 	LogicSystem::Get().RegisterScript("SpiritScript", spirit, ScriptID::SPIRIT);
 
+	BehaviourFCT obstacle;
+	obstacle.Init = [](Entity e) { ObstacleScript::Start(e); };
+	obstacle.Update = [](Entity e, float dt) { ObstacleScript::Update(e, dt); };
+	obstacle.End = [](Entity e) { ObstacleScript::End(e); };
+	LogicSystem::Get().RegisterScript("ObstacleScript", obstacle, ScriptID::OBSTACLE);
 
 	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
 		// on scene load, wipe spirits and assign target player
 		g_spirits.clear();
 		g_elemBarriers.clear();
+		g_obstacles.clear();
+
 		if (e.sceneType == SceneType::ST_GAME) {
 			AssignTarget();
 		}

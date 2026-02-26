@@ -11,7 +11,7 @@
  * - Fixed-size block allocation for diff types
  * - Free list management for deallocated blocks
  *
- * Copyright � 2026 DigiPen, All rights reserved.
+ * Copyright © 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 

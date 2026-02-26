@@ -1,8 +1,9 @@
 /* ========================================================
  * @file        GuiSystem.cpp
- * @author      Manfred Sim | manfred.sim@digipen.edu
- * @co-author	Tan Jun Quan | t.junquan@digipen.edu
- * @date        30 OCT 2025
+ * @author      Manfred Sim        | manfred.sim@digipen.edu
+ * @co-author	Tan Jun Quan       | t.junquan@digipen.edu
+ * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @date        06 FEB 2026
  *
  * @brief
  *
@@ -362,6 +363,8 @@ static void ApplyNewVolume(float v)
  */
 
 void GuiSystem::Initialize() {
+
+    // Clear all pre-existing UI vectors
     buttons.clear();
     textboxes.clear();
     dialogues.clear();
@@ -767,6 +770,7 @@ bool GuiSystem::GetEditMode() const
  *              - Converts mouse coords into game-view space
  *              - Builds draw order and render all UI elements (buttons, textboxes, dialogues, displays)
  *              - Applies transition overlay and state window rendering
+ *              - Renders in-game pause menu on ESC and controls page if accessed
  * @param dt    Delta time in seconds since last frame.
  */
 
@@ -774,8 +778,11 @@ void GuiSystem::Update(float dt)
 {
     SceneManager& sm = SceneManager::Get();
 
+    // Advance dialogue button
     static float advanceBtnPosShift = 0.f;
     static bool showAdvanceBtn = false;
+
+    // Speaker ID
     static int speakerID = 0;
 
     // Decide rendering from current line's speakerID
@@ -783,6 +790,7 @@ void GuiSystem::Update(float dt)
     const float profDir = notRock ? +1.f : -1.f; // +1 = profile on the right, -1 = profile on the left
     const float posLeftShift = notRock ? -200.f : 0.f;
 
+    // Typing delta-time
     const float typingDt = sm.IsPaused() ? 0.f : dt;
 
     // Toggle visibility of "AdvanceDialogue" button
@@ -846,7 +854,7 @@ void GuiSystem::Update(float dt)
         return;*/
 
 
-    // --- SPACE advances dialogue when NOT editing ---
+    // --- SPACE advances dialogue when NOT in edit mode ---
     static bool spaceHandled = false;
     const bool spacePressed = Input::IsKeyPressed(GLFW_KEY_SPACE);
     const bool spaceHeld = Input::IsKeyHeld(GLFW_KEY_SPACE);
@@ -857,6 +865,7 @@ void GuiSystem::Update(float dt)
         showFPS = !showFPS;
     }
 
+    // Logic to handle dialogue advancement with SPACE
     if (!sm.inEditMode && spacePressed && !spaceHandled)
     {
         for (auto& d : dialogues)
@@ -893,6 +902,7 @@ void GuiSystem::Update(float dt)
     }
     if (!spaceHeld) spaceHandled = false;
 
+    // Update typing logic when appropriate
     if (!prevInEdit)
     {
         for (auto& d : dialogues) if (d.isVisible)
@@ -946,6 +956,7 @@ void GuiSystem::Update(float dt)
 
     speakerID = 0;
 
+    // Get dialogue lines
     if (sDlgLoaded)
     {
         for (auto& d : dialogues)
@@ -1534,23 +1545,23 @@ void GuiSystem::Update(float dt)
     static bool opencontrol = false;
     static int controlpage = 0;
     static float baseTextScale = 0.f;
-    // Pause menu
+
+    // When gameplay is paused
+
     if (SceneManager::Get().IsPaused())
     {
-        // const float defaultW = 1920.f;
-        // const float defaultH = 1080.f;
-        // const float scaleX = GLApp::width / defaultW;
-        // const float scaleY = GLApp::height / defaultH;
-        // const float uiScale = std::min(scaleX, scaleY);
         // Title text (scaled like UI text)
         const float textScale = baseTextScale * uiScale;
         Render& renderer = Render::GetInstance();
+
+        // PAUSE MENU
         if (!opencontrol)
         {
 
-
+        // Background overlay
         renderer.DrawRect({ 960.f * scaleX, 540.f * scaleY }, 3000.f * scaleX, 2000.f * scaleY, { 0.f,0.f,0.f }, 0.f, 0.5f);
 
+        // Menu background
         Image img = CreateImage("../Assets/UI_ExitPanel.PNG");
         renderer.DrawImageRotated(img, 960 * scaleX, 540 * scaleY, 1000 * scaleX, 1000 * scaleY);
         bool hovercontrol = false;
@@ -1558,6 +1569,7 @@ void GuiSystem::Update(float dt)
         bool hoverresume = false;
         baseTextScale = 0.8f;
 
+        // How to play button
         {
             hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 350 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hovercontrol ? 0.2f : 0.f;
@@ -1573,6 +1585,7 @@ void GuiSystem::Update(float dt)
 
         }
 
+        // Quit button
         {
             hoverexit = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 550 * scaleY}, 400 * scaleX, 190 * scaleY));
             float brightness = hoverexit ? 0.2f : 0.f;
@@ -1588,7 +1601,7 @@ void GuiSystem::Update(float dt)
 
         }
 
-
+        // Resume button
         {
             hoverresume = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 750 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hoverresume ? 0.2f : 0.f;
@@ -1605,44 +1618,55 @@ void GuiSystem::Update(float dt)
         }
 
 
-
+        // Click to open controls page
         if (hovercontrol && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             opencontrol = true;
             controlpage = 0;
         }
 
+        // Click to exit to main menu
         if (hoverexit && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
             SceneManager::Get().SetTransitionTime(2.f);
         }
 
+        // Click to resume game level
         if (hoverresume && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             SceneManager::Get().TogglePause();
         }
 
         }
+
+        // CONTROLS PAGE (Accessed from pause menu)
         else
         {
+            // Menu Background
             Image pagebg = CreateImage("../Assets/UI_ControlsPage_Background.PNG");
             renderer.DrawImageRotated(pagebg, 960.f * scaleX, 540.f * scaleY, 1920.f * scaleX, 1080.f * scaleY);
 
+
+            // Back Button
             bool hoverleave = (renderer.IsAreaTouched(mouse, { 150 * scaleX, 950 * scaleY }, 200 * scaleX, 180 * scaleY));
             {
                 Image exitbtn = CreateImage("../Assets/UI_ControlsPage_BackButton.png");
                 float brightness = hoverleave ? 0.2f : 0.f;
                 renderer.DrawImageRotated(exitbtn, 150.f * scaleX, 950.f * scaleY, 200.f * scaleX, 180.f * scaleY, 0.f, brightness);
             }
+
+            // Click to exit controls page / return to pause menu
             if (hoverleave && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
             {
                 controlpage = 0;
                 opencontrol = false;
             }
 
+            // Controls Page 1
             if (controlpage == 0)
             {
+                // Controls Label
                 {
                     const Vec2 baseTitlePos = { 900.f * scaleX, 1000.f * scaleY };
                     const std::string title = "CONTROLS";
@@ -1652,6 +1676,7 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, 1.2f, { 1,1,1 }, "Marker");
                 }
 
+                // Movement Label
                 {
                     const Vec2 baseTitlePos = { 600.f * scaleX, 850.f * scaleY };
                     const std::string title = "MOVEMENT";
@@ -1661,11 +1686,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // WASD Keys - Movement
                 {
                     Image wasd = CreateImage("../Assets/UI_ControlPage_WASDBlue.png");
                     renderer.DrawImageRotated(wasd, 600.f * scaleX, 700.f * scaleY, 240.f * scaleX, 160.f * scaleY, 0.f, 0.f);
                 }
 
+                // Spell Input Sequence Label
                 {
                     const Vec2 baseTitlePos = { 1200.f * scaleX, 850.f * scaleY };
                     const std::string title = "SPELL INPUT SEQUENCE";
@@ -1675,11 +1702,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // Arrow Keys - Spell Input Sequence
                 {
                     Image arrowK = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
                     renderer.DrawImageRotated(arrowK, 1200.f * scaleX, 700.f * scaleY, 240.f * scaleX, 160.f * scaleY, 0.f, 0.f);
                 }
 
+                // Use Song Slots Label
                 {
                     const Vec2 baseTitlePos = { 1200.f * scaleX, 500.f * scaleY };
                     const std::string title = "USE SONG SLOTS";
@@ -1689,6 +1718,7 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // Song "1" Label
                 {
                     const Vec2 baseTitlePos = { 1060.f * scaleX, 340.f * scaleY };
                     const std::string title = "1";
@@ -1698,11 +1728,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // Num Key 1 - Use Song "1"
                 {
                     Image no1 = CreateImage("../Assets/UI_ControlPage_No1Blue.png");
                     renderer.DrawImageRotated(no1, 1060.f * scaleX, 420.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
+                // Song "2" Label
                 {
                     const Vec2 baseTitlePos = { 1200.f * scaleX, 340.f * scaleY };
                     const std::string title = "2";
@@ -1712,11 +1744,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // Num Key 2 - Use Song "2"
                 {
                     Image no2 = CreateImage("../Assets/UI_ControlPage_No2Blue.png");
                     renderer.DrawImageRotated(no2, 1200.f * scaleX, 420.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
+                // Song "3" Label
                 {
                     const Vec2 baseTitlePos = { 1340.f * scaleX, 340.f * scaleY };
                     const std::string title = "3";
@@ -1726,11 +1760,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // Num Key 3 - Use Song "3"
                 {
                     Image no3 = CreateImage("../Assets/UI_ControlPage_No3Blue.png");
                     renderer.DrawImageRotated(no3, 1340.f * scaleX, 420.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
+                // Dash / Dodge Label
                 {
                     const Vec2 baseTitlePos = { 500.f * scaleX, 490.f * scaleY };
                     const std::string title = "- DASH / DODGE";
@@ -1740,11 +1776,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // Shift - Dash / Dodge
                 {
                     Image shift = CreateImage("../Assets/UI_ControlPage_ShiftBlue.png");
                     renderer.DrawImageRotated(shift, 400.f * scaleX, 500.f * scaleY, 140.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
+                // Melee Attack Label
                 {
                     const Vec2 baseTitlePos = { 500.f * scaleX, 390.f * scaleY };
                     const std::string title = "- MELEE ATTACK";
@@ -1754,11 +1792,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // E - Use Melee Attack
                 {
                     Image e = CreateImage("../Assets/UI_ControlPage_EBlue.png");
                     renderer.DrawImageRotated(e, 400.f * scaleX, 400.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
+                // Cycle Through Elements Label
                 {
                     const Vec2 baseTitlePos = { 500.f * scaleX, 290.f * scaleY };
                     const std::string title = "- SWITCH ELEMENTS";
@@ -1768,11 +1808,14 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // Q - Cycle Through Elements
                 {
                     Image q = CreateImage("../Assets/UI_ControlPage_QBlue.png");
                     renderer.DrawImageRotated(q, 400.f * scaleX, 300.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
+
+                // Pause / Resume Game Label
                 {
                     const Vec2 baseTitlePos = { 500.f * scaleX, 190.f * scaleY };
                     const std::string title = "- PAUSE / RESUME GAME";
@@ -1782,17 +1825,21 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // ESC - Pause / Resume Game
                 {
                     Image esc = CreateImage("../Assets/UI_ControlPage_EscapeBlue.png");
                     renderer.DrawImageRotated(esc, 400.f * scaleX, 200.f * scaleY, 100.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
+                // Go To Controls Page 2 Button
                 bool hoverpage = (renderer.IsAreaTouched(mouse, { 120 * scaleX,150 * scaleY }, 180 * scaleX, 150 * scaleY));
                 {
                     Image pgbtn = CreateImage("../Assets/UI_ControlsPage_ForwardPageLogo.png");
                     float brightness = hoverpage ? 0.2f : 0.f;
                     renderer.DrawImageRotated(pgbtn, 120.f * scaleX, 100 * scaleY, 180.f * scaleX, 150.f * scaleY, 0.f, brightness);
                 }
+
+                // Click to go to controls page 2
                 if (hoverpage && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
                 {
                     controlpage = 1;
@@ -1800,6 +1847,7 @@ void GuiSystem::Update(float dt)
             }
             else 
             {
+                // Controls Label
                 {
                     const Vec2 baseTitlePos = { 900.f * scaleX, 1000.f * scaleY };
                     const std::string title = "CONTROLS";
@@ -1809,6 +1857,7 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, 1.2f, { 1,1,1 }, "Marker");
                 }
 
+                // Song List Label
                 {
                     const Vec2 baseTitlePos = { 960.f * scaleX, 800.f * scaleY };
                     const std::string title = "SONG LIST (INPUT SEQUENCES)";
@@ -1818,6 +1867,7 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, 1.f, { 1,1,1 }, "Marker");
                 }
 
+                // Shockwave Label
                 {
                     const Vec2 baseTitlePos = { 500.f * scaleX, 630.f * scaleY };
                     const std::string title = "SHOCKWAVE";
@@ -1827,11 +1877,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // Shockwave Icon
                 {
                     Image esc = CreateImage("../Assets/UI_ControlPage_Soundwave.png");
                     renderer.DrawImageRotated(esc, 380.f * scaleX, 640.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
+                // Shockwave Input Sequence: Up --> Down
                 {
                     const Vec2 baseImagePos = { 960.f * scaleX, 640.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
@@ -1854,6 +1906,7 @@ void GuiSystem::Update(float dt)
                     render.DrawImageSub(down, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
                 }
 
+                // AOE Attack Label
                 {
                     const Vec2 baseTitlePos = { 500.f * scaleX, 490.f * scaleY };
                     const std::string title = "AOE ATTACK";
@@ -1863,11 +1916,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // AOE Attack Icon
                 {
                     Image esc = CreateImage("../Assets/UI_ControlPage_AOEAttack.png");
                     renderer.DrawImageRotated(esc, 380.f * scaleX, 500.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
+                // AOE Attack Input Sequence: UP --> LEFT --> DOWN
                 {
                     const Vec2 baseImagePos = { 960.f * scaleX, 500.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
@@ -1901,6 +1956,7 @@ void GuiSystem::Update(float dt)
                     render.DrawImageSub(down, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
                 }
 
+                // Shield Label
                 {
                     const Vec2 baseTitlePos = { 500.f * scaleX, 350.f * scaleY };
                     const std::string title = "SHIELD";
@@ -1910,11 +1966,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // Shield Icon
                 {
                     Image esc = CreateImage("../Assets/UI_ControlPage_Shield.png");
                     renderer.DrawImageRotated(esc, 380.f * scaleX, 360.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
+                // Shield Input Sequence: DOWN --> DOWN --> RIGHT
                 {
                     const Vec2 baseImagePos = { 960.f * scaleX, 360.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
@@ -1948,6 +2006,7 @@ void GuiSystem::Update(float dt)
                     render.DrawImageSub(right, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
                 }
 
+                // Healing Label
                 {
                     const Vec2 baseTitlePos = { 500.f * scaleX, 210.f * scaleY };
                     const std::string title = "HEALING";
@@ -1957,11 +2016,13 @@ void GuiSystem::Update(float dt)
                     render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
                 }
 
+                // Healing Icon
                 {
                     Image esc = CreateImage("../Assets/UI_ControlPage_Healing.png");
                     renderer.DrawImageRotated(esc, 380.f * scaleX, 220.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
+                // Healing Input Sequence: RIGHT --> UP --> RIGHT
                 {
                     const Vec2 baseImagePos = { 960.f * scaleX, 220.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
@@ -1995,12 +2056,15 @@ void GuiSystem::Update(float dt)
                     render.DrawImageSub(right, baseImagePos.x, baseImagePos.y, baseImageSize.x, baseImageSize.y, u0, v0, u1, v1, 0.f, 0.f);
                 }
 
+                // Go To Controls Page 1 Button
                 bool hoverpage = (renderer.IsAreaTouched(mouse, { 120 * scaleX,200 * scaleY }, 180 * scaleX, 150 * scaleY));
                 {
                     Image pgbtn = CreateImage("../Assets/UI_ControlsPage_BackwardsPageLogo.png");
                     float brightness = hoverpage ? 0.2f : 0.f;
                     renderer.DrawImageRotated(pgbtn, 120.f * scaleX, 200.f * scaleY, 180.f * scaleX, 150.f * scaleY, 0.f, brightness);
                 }
+
+                // Click to go to controls page 1
                 if (hoverpage && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
                 {
                     controlpage = 0;
@@ -2019,16 +2083,10 @@ void GuiSystem::Update(float dt)
 #ifndef NO_IMGUI
     }
 #endif
-
+    // Display FPS in game viewport (press F3 to show/hide FPS)
     if (showFPS)
     {
         double framesdisplay = CoreEngine::GetInstance().GetFPS();
-        // const float defaultW = 1920.f;
-        // const float defaultH = 1080.f;
-        // const float scaleX = GLApp::width / defaultW;
-        // const float scaleY = GLApp::height / defaultH;
-        // float uiScale = std::min(scaleX, scaleY);
-        // Title text (scaled like UI text)
         float baseTextScale = 1.0f;
         const float textScale = baseTextScale * uiScale;
         render.DrawText("FPS: " + std::to_string(framesdisplay), 50.f, 50.f, textScale, { 1,1,1 }, "Marker");
@@ -2043,7 +2101,8 @@ void GuiSystem::Update(float dt)
             render.DrawRect(pos, (float)GLApp::width, (float)GLApp::height, { 0.f,0.f,0.f }, 0.0f, t);
         }
     }
-    // restore camera back to world
+
+    // Restore camera back to world
     render.useCamera = prevCam;
 }
 
@@ -2466,10 +2525,11 @@ void GuiSystem::SetDialogueLine(DialogueConfig& dlg, int newIndex, bool restartT
 }
 
 /**
- * @brief               Returns true only when there is visible dialogue and the line is fully visible
- *                      and not typing.
- * @param advance       If true, the dialogue box will advance to the next line if ready.
+ * @brief           Handles advancing the dialogue based on the given flag.
+ * @param advance   True to advance the dialogue, otherwise false.
+ * @return          True if the dialogue was advanced, otherwise false.
  */
+
 bool GuiSystem::HandleDialogueAdvance(bool advance)
 {
     if (SceneManager::Get().IsPaused() || SceneManager::Get().inEditMode)
@@ -2523,10 +2583,10 @@ bool GuiSystem::HandleDialogueAdvance(bool advance)
 }
 
 /**
- * @brief   Builds a single draw list of all UI elements sorted by ascending ID.
- *          The resulting DrawItem vector is used in Update() to render UI in a stable order
- *          across all UI types: Buttons, TextBoxes, Dialogues and Displays.
- * @return  Sorted list of drawable UI references.
+ * @brief           Builds a single draw list of all UI elements sorted by ascending ID.
+ *                  The resulting DrawItem vector is used in Update() to render UI in a stable order
+ *                  across all UI types: Buttons, TextBoxes, Dialogues and Displays.
+ * @return out      Sorted list of drawable UI references.
  */
 
 std::vector<GuiSystem::DrawItem> GuiSystem::BuildSortedDrawList() const
@@ -2540,8 +2600,8 @@ std::vector<GuiSystem::DrawItem> GuiSystem::BuildSortedDrawList() const
     for (int i = 0; i < (int)displays.size(); ++i) out.push_back({ SelectedType::Display, i, displays[i].ID });
 
     std::sort(out.begin(), out.end(), [](const DrawItem& a, const DrawItem& b) {
-        if (a.ID != b.ID)   return a.ID < b.ID;                 // Ascending by ID
-        if (a.type != b.type) return (int)a.type < (int)b.type;   // Stable across types
+        if (a.ID != b.ID)   return a.ID < b.ID;                     // Ascending by ID
+        if (a.type != b.type) return (int)a.type < (int)b.type;     // Stable across types
         return a.index < b.index;
     });
 
@@ -2594,10 +2654,11 @@ bool GuiSystem::CallAction(const std::string& name, const nlohmann::json& params
 }
 
 // For UI editor
+
 /**
- * @brief   Reseeds the next UI element ID from the maximum existing ID plus one.
- *          Scans all buttons, textboxes, dialogues and displays.
- *          Used when loading scenes to keep IDs globally unique.
+ * @brief       Reseeds the next UI element ID from the maximum existing ID plus one.
+ *              Scans all buttons, textboxes, dialogues and displays.
+ *              Used when loading scenes to keep IDs globally unique.
  */
 void GuiSystem::ReseedNextUIID()
 {
@@ -2612,11 +2673,10 @@ void GuiSystem::ReseedNextUIID()
 /**
  * @brief       Returns a reference to a UIGroup by name.
  * @param name  Group name to search for.
- * @return      UIGroup& Reference to the matching group.
+ * @return      UIGroup& Reference to the matching group, otherwise throws std::out_of_range
+ *              exception if no group with the given name is found.
  */
 
-// Returns a reference to the UIGroup with the given name.
-// Throws std::out_of_range if no group with the given name is found.
 UIGroup& GuiSystem::GetGroup(const std::string& name) 
 {
     for (UIGroup& group : m_groups) 
@@ -2658,6 +2718,15 @@ bool GuiSystem::SetDisplaySheetState(int ID, unsigned int frame)
     return false;
 }
 
+/**
+ * @brief           Returns the quad vertices for a display element by UI ID.
+ * @param ID        The display element identifier.
+ * @param v0        Reference to store the first vertex.
+ * @param v1        Reference to store the second vertex.
+ * @param v2        Reference to store the third vertex.
+ * @param v3        Reference to store the fourth vertex.
+ * @return          True if the quad was found and vertices were set, otherwise false.
+ */
 
 bool GuiSystem::GetDisplayQuad(int ID, Vec2& v0, Vec2& v1, Vec2& v2, Vec2& v3) {
     for (auto& display : displays)
@@ -2679,6 +2748,16 @@ bool GuiSystem::GetDisplayQuad(int ID, Vec2& v0, Vec2& v1, Vec2& v2, Vec2& v3) {
     }
     return false;
 }
+
+/**
+ * @brief           Sets the quad vertices for a display element by UI ID.
+ * @param ID        The display element identifier.
+ * @param v0        The first vertex.
+ * @param v1        The second vertex.
+ * @param v2        The third vertex.
+ * @param v3        The fourth vertex.
+ * @return          True if the quad was successfully set, false otherwise.
+ */
 
 bool GuiSystem::SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3) {
     for (auto& display : displays)
@@ -2702,15 +2781,31 @@ bool GuiSystem::SetDisplayQuad(int ID, Vec2 v0, Vec2 v1, Vec2 v2, Vec2 v3) {
     return false;
 }
 
+/**
+ * @brief           Gets the current state of the dialogue gate.
+ * @return          True if the dialogue gate is open, false otherwise.
+ */
+
 bool GuiSystem::GetDialogueGate()
 {
     return dialogueGate;
 }
 
+/**
+ * @brief           Sets the state of the dialogue gate.
+ * @param gate      True to open the dialogue gate, false to close it.
+ */
+
 void GuiSystem::SetDialogueGate(bool gate)
 {
     dialogueGate = gate;
 }
+
+/**
+ * @brief           Sets the text for a specific text box.
+ * @param textBoxID The identifier of the text box.
+ * @param text      The text to set.
+ */
 
 void GuiSystem::SetTextBoxText(int textBoxID, const std::string& text)
 {
@@ -2724,6 +2819,11 @@ void GuiSystem::SetTextBoxText(int textBoxID, const std::string& text)
     }
 }
 
+/**
+ * @brief           Shows the specified text box.
+ * @param textBoxID The identifier of the text box to show.
+ */
+
 void GuiSystem::ShowTextBox(int textBoxID)
 {
     for (auto& textbox : textboxes)
@@ -2735,6 +2835,11 @@ void GuiSystem::ShowTextBox(int textBoxID)
         }
     }
 }
+
+/**
+ * @brief           Hides the specified text box.
+ * @param textBoxID The identifier of the text box to hide.
+ */
 
 void GuiSystem::HideTextBox(int textBoxID)
 {

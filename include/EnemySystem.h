@@ -69,6 +69,19 @@ namespace SpiritScript {
 	inline void End(Entity eID);
 }
 
+enum ObstacleState : unsigned int {
+	OBSTACLE_IDLE,
+	OBSTACLE_BURNING,
+	OBSTACLE_EXPLODE,
+	OBSTACLE_DESTROYED
+};
+
+namespace ObstacleScript {
+	inline void Start(Entity eID);
+	inline void Update(Entity eID, float dt);
+	inline void End(Entity eID);
+}
+
 class EnemySystem : public ISystem
 {
 private:

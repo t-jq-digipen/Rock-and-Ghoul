@@ -10,7 +10,7 @@
  * - Enemy projectiles
 
  *
- * Copyright � 2026 DigiPen, All rights reserved.
+ * Copyright © 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 

@@ -1,3 +1,43 @@
+/* ========================================================
+ * @file        CombatSystem.cpp
+ * @author      Yasmin Tazi        | yasmin.t@digipen.edu
+ * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
+ * @date        06 FEB 2026
+ *
+ * @brief       Combat System implementation.
+ *
+ * This file implements the CombatSystem class responsible for
+ * managing all combat-related mechanics in the game including
+ * damage calculations, elemental effects, projectile management,
+ * and status effect processing.
+ *
+ * Current Implemented Combat Features:
+ * - Element System: Manages FIRE, ICE, WIND, LIGHTNING elements
+ *   with unique effects (burn DoT, slow, knockback, stun).
+ * - Projectile Management: Handles projectile lifecycle states
+ *   (SPAWN, ACTIVE, END) with spawn delays, active durations,
+ *   and cleanup through memory pooling.
+ * - Status Effects: Applies and updates elemental status effects
+ *   on entities including burn ticks, movement speed modifiers,
+ *   and stun mechanics.
+ * - Damage System: Calculates and applies damage to entities
+ *   with health components, handles entity death and cleanup.
+ * - AOE Attacks: Supports area-of-effect damage with elemental
+ *   modifiers and hit detection.
+ * - Memory Pool Integration: Uses PooledEntityFactory for
+ *   efficient projectile spawning and cleanup, tracking
+ *   Entity-to-PooledEntity mappings for proper resource management.
+ *
+ * Element Effect Details:
+ * - FIRE: Burns target for 5s, dealing 0.2 damage per 0.5s tick
+ * - ICE: Slows target by 50% for 3 seconds
+ * - WIND: Applies knockback force on impact
+ * - LIGHTNING: Stuns target, preventing movement for duration
+ *
+ * Copyright © 2026 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #include "CombatSystem.h"
 #include "EventBus.h"
 #include "JsonLoad.h"
@@ -43,7 +83,6 @@ void CombatSystem::ApplyElementEffect(Entity target, Element element) {
 	case Element::FIRE:
 		statusComp.effectTimer = 5.0f;  // Burn for 5 seconds
 		statusComp.burnTickTimer = 0.0f;
-		std::cout << "[ELEMENT] Applied FIRE effect to Entity " << target << " (5s burn)" << std::endl;
 		break;
 
 	case Element::ICE:
@@ -54,20 +93,16 @@ void CombatSystem::ApplyElementEffect(Entity target, Element element) {
 			float currentSpeed = movement.GetMoveSpeed();
 			statusComp.originalMoveSpeed = (currentSpeed > 0.f) ? currentSpeed : 300.f;
 			movement.SetMoveSpeed(statusComp.originalMoveSpeed * 0.5f); // 50% slow
-			std::cout << "[ELEMENT] Applied ICE effect to Entity " << target << " (3s slow, speed: "
-			          << statusComp.originalMoveSpeed << " -> " << (statusComp.originalMoveSpeed * 0.5f) << ")" << std::endl;
 		}
 		break;
 
 	case Element::LIGHTNING:
 		statusComp.effectTimer = 2.0f;  // Stun for 2 seconds
 		statusComp.isStunned = true;
-		std::cout << "[ELEMENT] Applied LIGHTNING effect to Entity " << target << " (2s stun)" << std::endl;
 		break;
 
 	case Element::WIND:
 		statusComp.effectTimer = 0.0f;  // Instant knockback
-		std::cout << "[ELEMENT] Applied WIND effect to Entity " << target << " (instant)" << std::endl;
 		break;
 
 	default:
@@ -276,12 +311,9 @@ void CombatSystem::UpdateElementEffects(float dt)
 					if (m_registry.Has_Component<HealthComponent>(entity)) {
 						auto& health = m_registry.Get_Component<HealthComponent>(entity);
 						health.currhp -= 5.0f;
-						std::cout << "[BURNING] Entity " << entity << " is on fire! Took 5 damage. HP: "
-						          << health.currhp << " (" << statusEffect.effectTimer << "s remaining)" << std::endl;
 
 						// Check if entity died from burn
 						if (health.currhp <= 0) {
-							std::cout << "[DEATH] Entity " << entity << " burned to death!" << std::endl;
 							
 						}
 					}
@@ -309,7 +341,6 @@ void CombatSystem::UpdateElementEffects(float dt)
 			switch (statusEffect.activeEffect) {
 				case Element::LIGHTNING:
 					statusEffect.isStunned = false;
-					std::cout << "[ELEMENT] LIGHTNING STUN EXPIRED" << std::endl;
 					// REMOVE STATUS EFFECT COMPONENT FROM QUEUE OR SMTH 
 					break;
 
@@ -318,12 +349,10 @@ void CombatSystem::UpdateElementEffects(float dt)
 					if (m_registry.Has_Component<Movement::MovementComponent>(entity)) {
 						auto& movement = m_registry.Get_Component<Movement::MovementComponent>(entity);
 						movement.SetMoveSpeed(statusEffect.originalMoveSpeed);
-						std::cout << "[ELEMENT] ICE SLOW EXPIRED" << std::endl;
 					}
 					break;
 
 				case Element::FIRE:
-					std::cout << "[ELEMENT] FIRE BURN EXPIRED" << std::endl;
 					break;
 
 				default:
