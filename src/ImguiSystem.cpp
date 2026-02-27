@@ -123,6 +123,11 @@ static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
 static SelectedType g_uiGizmoSelType  = SelectedType::None;
 static int          g_uiGizmoSelLocal = -1;
 
+// true only while the UI Editor tab is the visible/active tab in its dock
+static bool g_uiEditorTabActive  = false;
+// tracks previous-frame state so we can detect the moment of switching
+static bool s_uiTabWasActive     = false;
+
 // ========================================================
 // Anonymous Namespace
 // ========================================================
@@ -689,6 +694,7 @@ static bool DrawUIGizmo(ImVec2 panelPos, float panelW, float panelH,
         s_dragMode       = 1;
         s_dragStartMouse = mouse;
         s_dragStartPos   = basePos;
+        if (baseSize) s_dragStartSize = *baseSize; // capture current size so undo restores it correctly
     }
 
     outDragStartPos  = s_dragStartPos;
@@ -1586,7 +1592,13 @@ void ImGuiSystem::Update(float dt)
  * The window is only rendered if the UI Editor is enabled.
  */
 
+    g_uiEditorTabActive = false;
     if (ImGui::Begin("UI Editor", nullptr)) {
+        g_uiEditorTabActive = true;
+        // deselect any entity the moment the user switches to the UI Editor tab
+        if (!s_uiTabWasActive)
+            ImGuiSystem::selectedEntity = INVALID_ENTITY;
+
         if (/* */!sm.inEditMode) ImGui::BeginDisabled();
 
         auto& gui = GuiSystem::Get();
@@ -2653,10 +2665,22 @@ void ImGuiSystem::Update(float dt)
                                     float before = it->second;
                                     float after  = *val;
                                     if (before != after) {
-                                        float* ref = val;
+                                        // Capture index + byte offset so undo/redo is safe
+                                        // even if the buttons vector is reallocated later.
+                                        int idx = selectedLocal;
+                                        ptrdiff_t off = reinterpret_cast<char*>(val)
+                                                      - reinterpret_cast<char*>(&buttons[idx]);
                                         UndoSystem::Get().RecordComponentChange(
-                                            [ref,before](){*ref=before;},
-                                            [ref,after]() {*ref=after; }, lbl);
+                                            [idx, before, off]() {
+                                                auto& btns = GuiSystem::Get().Buttons();
+                                                if (idx < (int)btns.size())
+                                                    *reinterpret_cast<float*>(reinterpret_cast<char*>(&btns[idx]) + off) = before;
+                                            },
+                                            [idx, after,  off]() {
+                                                auto& btns = GuiSystem::Get().Buttons();
+                                                if (idx < (int)btns.size())
+                                                    *reinterpret_cast<float*>(reinterpret_cast<char*>(&btns[idx]) + off) = after;
+                                            }, lbl);
                                     }
                                     uiBtnFloatBefore.erase(it);
                                 }
@@ -3649,10 +3673,22 @@ void ImGuiSystem::Update(float dt)
                                 if (it != uiDispFloatBefore.end()) {
                                     float before = it->second; float after = *val;
                                     if (before != after) {
-                                        float* ref = val;
+                                        // Capture index + byte offset so undo/redo is safe
+                                        // even if the displays vector is reallocated later.
+                                        int idx = selectedLocal;
+                                        ptrdiff_t off = reinterpret_cast<char*>(val)
+                                                      - reinterpret_cast<char*>(&displays[idx]);
                                         UndoSystem::Get().RecordComponentChange(
-                                            [ref,before](){*ref=before;},
-                                            [ref,after]() {*ref=after; }, lbl);
+                                            [idx, before, off]() {
+                                                auto& disps = GuiSystem::Get().Displays();
+                                                if (idx < (int)disps.size())
+                                                    *reinterpret_cast<float*>(reinterpret_cast<char*>(&disps[idx]) + off) = before;
+                                            },
+                                            [idx, after, off]() {
+                                                auto& disps = GuiSystem::Get().Displays();
+                                                if (idx < (int)disps.size())
+                                                    *reinterpret_cast<float*>(reinterpret_cast<char*>(&disps[idx]) + off) = after;
+                                            }, lbl);
                                     }
                                     uiDispFloatBefore.erase(it);
                                 }
@@ -3745,7 +3781,15 @@ void ImGuiSystem::Update(float dt)
                             }
                             if (ImGui::Combo("Texture", &selected, imgOptions.data(), (int)imgOptions.size()))
                             {
+                                Image imgBefore = img;
                                 img = CreateImage(imgOptions[selected]);
+                                Image imgAfter = img;
+                                int idx = selectedLocal;
+                                UndoSystem::Get().RecordComponentChange(
+                                    [idx, imgBefore]() { auto& disps = GuiSystem::Get().Displays(); if (idx < (int)disps.size()) disps[idx].m_renderData.GetImageData().m_image = imgBefore; },
+                                    [idx, imgAfter ]() { auto& disps = GuiSystem::Get().Displays(); if (idx < (int)disps.size()) disps[idx].m_renderData.GetImageData().m_image = imgAfter;  },
+                                    "UI.Display.image.textureID"
+                                );
                             }
 
                             {
@@ -3784,7 +3828,15 @@ void ImGuiSystem::Update(float dt)
                             }
                             if (ImGui::Combo("Texture Drawn", &selected, imgOptions.data(), (int)imgOptions.size()))
                             {
+                                Image imgBefore = img;
                                 img = CreateImage(imgOptions[selected]);
+                                Image imgAfter = img;
+                                int idx = selectedLocal;
+                                UndoSystem::Get().RecordComponentChange(
+                                    [idx, imgBefore]() { auto& disps = GuiSystem::Get().Displays(); if (idx < (int)disps.size()) disps[idx].m_renderData.GetImageSheetData().m_image = imgBefore; },
+                                    [idx, imgAfter ]() { auto& disps = GuiSystem::Get().Displays(); if (idx < (int)disps.size()) disps[idx].m_renderData.GetImageSheetData().m_image = imgAfter;  },
+                                    "UI.Display.imageSheet.textureID"
+                                );
                             }
 
                             // display
@@ -4395,6 +4447,13 @@ void ImGuiSystem::Update(float dt)
     }
 
     ImGui::End();
+    // deselect the UI gizmo the moment the user switches away from the UI Editor tab
+    if (s_uiTabWasActive && !g_uiEditorTabActive)
+    {
+        g_uiGizmoSelType  = SelectedType::None;
+        g_uiGizmoSelLocal = -1;
+    }
+    s_uiTabWasActive = g_uiEditorTabActive; // update for next-frame transition detection
 
     if (ImGui::Begin("Assets")) {
         if ( !sm.inEditMode) ImGui::BeginDisabled();
@@ -4550,6 +4609,9 @@ void ImGuiSystem::Update(float dt)
         }
 
         //gizmooooo
+        Registry& reg = Registry::Get();
+        if (!g_uiEditorTabActive)
+        {
         ImGuizmo::BeginFrame();
         ImGuizmo::SetOrthographic(false);
         ImGuizmo::SetDrawlist();
@@ -4557,7 +4619,6 @@ void ImGuiSystem::Update(float dt)
 
         static glm::vec3 lastScale(1.0f);
         static bool wasGizmoUsing = false;
-        Registry& reg = Registry::Get();
         if (selectedEntity != INVALID_ENTITY &&
             reg.Has_Component<TransformComponent>(selectedEntity))
         {
@@ -4644,6 +4705,7 @@ void ImGuiSystem::Update(float dt)
             //track prev frame state
             wasGizmoUsing = isUsingNow;
         }
+        } // end !g_uiEditorTabActive
 
 
 
