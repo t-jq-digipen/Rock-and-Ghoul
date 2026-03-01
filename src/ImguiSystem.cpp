@@ -7324,10 +7324,10 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
             //               viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + (worldHeight * camZoom) / 2 };
 
             ImVec2 min = { viewportPos.x + (camOffset.x * scale) - (GLApp::VIRTUAL_W * camZoom) / 2,
-                           viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) - (GLApp::VIRTUAL_H * camZoom) / 2 };
+                           viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) - (GLApp::VIRTUAL_H * camZoom) / 2 };
 
             ImVec2 max = { viewportPos.x + (camOffset.x * scale) + (GLApp::VIRTUAL_W * camZoom) / 2,
-                           viewportPos.y + (GLApp::VIRTUAL_H * scale) - (camOffset.y * scale) + (GLApp::VIRTUAL_H * camZoom) / 2 };
+                           viewportPos.y + (worldHeight * scale) - (camOffset.y * scale) + (GLApp::VIRTUAL_H * camZoom) / 2 };
 
             bool inside = (mousePos.x >= min.x && mousePos.x <= max.x &&
                 mousePos.y >= min.y && mousePos.y <= max.y);
@@ -7349,10 +7349,10 @@ void ImGuiSystem::ShowEntityCamera(ImVec2 viewportPos, ImVec2 viewportSize)
     {
         Vec2 entPos = transform.pos;
 
-        // Convert world → viewport (flip Y to top-left origin)
+        // Convert world to viewport (flip Y to top-left origin)
         Vec2 screenPos;
-        screenPos.x = offset.x + entPos.x * scale;
-        screenPos.y = offset.y + (worldHeight - entPos.y) * scale;
+        screenPos.x = offset.x + (entPos.x - sceneMin.x) * scale;
+        screenPos.y = offset.y + (worldHeight - (entPos.y - sceneMin.y)) * scale;
 
         Vec2 half{ 25.f * scale, 25.f * scale };
 
