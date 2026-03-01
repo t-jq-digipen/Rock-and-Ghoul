@@ -1328,8 +1328,9 @@ void ImGuiSystem::InitializeImGui() {
 
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); //imgui i/o settings
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; //enable keyboard nav in imgui
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    //enable Docking
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     //enable keyboard nav in imgui
+    io.ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;  //don't suppress app keyboard input
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         //enable Docking
 
     ImGui::StyleColorsDark(); //dark themed lol
     ImGui_ImplGlfw_InitForOpenGL(GLApp::ptr_window, true);

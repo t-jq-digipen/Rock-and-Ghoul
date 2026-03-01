@@ -1048,6 +1048,7 @@ private:
 
     bool editMode{ false };
     int selectedIndex = -1;
+    int focusedButtonIndex = -1;   // keyboard-navigation focus
     enum class SelectedType selectedType = SelectedType::None;
 
     GameViewRect m_gameViewRect;

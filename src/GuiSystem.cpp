@@ -994,6 +994,52 @@ void GuiSystem::Update(float dt)
     }
 
 
+    // Keyboard navigation for buttons (arrow keys = move, enter = click)
+    if (!sm.inEditMode)
+    {
+        //list of currently visible button indices
+        std::vector<int> visibleBtns;
+        for (int i = 0; i < (int)buttons.size(); ++i)
+            if (buttons[i].isVisible) visibleBtns.push_back(i);
+
+        if (!visibleBtns.empty())
+        {
+            const bool navNext  = Input::IsKeyPressed(GLFW_KEY_DOWN)  || Input::IsKeyPressed(GLFW_KEY_RIGHT);
+            const bool navPrev  = Input::IsKeyPressed(GLFW_KEY_UP)    || Input::IsKeyPressed(GLFW_KEY_LEFT);
+            const bool navEnter = Input::IsKeyPressed(GLFW_KEY_ENTER) || Input::IsKeyPressed(GLFW_KEY_KP_ENTER);
+
+            if (navNext || navPrev)
+            {
+                // Find where focusedButtonIndex sits in the list
+                int cur = -1;
+                for (int vi = 0; vi < (int)visibleBtns.size(); ++vi)
+                    if (visibleBtns[vi] == focusedButtonIndex) { cur = vi; break; }
+
+                // if nothing focused yet, land on first or last
+                if (cur == -1)
+                    cur = navNext ? 0 : (int)visibleBtns.size() - 1;
+                else
+                    cur = navNext ? (cur + 1) % (int)visibleBtns.size() : (cur - 1 + (int)visibleBtns.size()) % (int)visibleBtns.size();
+
+                focusedButtonIndex = visibleBtns[cur];
+            }
+
+            if (navEnter && focusedButtonIndex >= 0 && focusedButtonIndex < (int)buttons.size() && buttons[focusedButtonIndex].isVisible)
+            {
+                auto& cfg = buttons[focusedButtonIndex];
+                if (audio) audio->PlayButtonSound(cfg.soundType);
+                if (cfg.onClick) cfg.onClick();
+                if (cfg.actionName != "") CallAction(cfg.actionName, cfg.actionParams);
+            }
+        }
+
+        // Drop keyboard focus when the mouse moves
+        static Vec2 lastMouse{ -1.f, -1.f };
+        if (std::abs(mouse.x - lastMouse.x) > 1.f || std::abs(mouse.y - lastMouse.y) > 1.f)
+            focusedButtonIndex = -1;
+        lastMouse = mouse;
+    }
+
     // Build draw order: ALL UI elements sorted by ascending ID
     auto drawList = BuildSortedDrawList();
 
@@ -1033,8 +1079,24 @@ void GuiSystem::Update(float dt)
                 hover = render.IsAreaTouched(mouse, cfg.pos, cfg.size.x, cfg.size.y);
             }
 
-            // New unified renderer
-            cfg.DrawButton(hover);
+            bool focused = (i == focusedButtonIndex);
+            cfg.DrawButton(hover || focused);
+
+            // Draw a white outline around focused button
+            if (focused)
+            {
+                float ox = cfg.size.x * 0.5f + 4.f * uiScale;
+                float oy = cfg.size.y * 0.5f + 4.f * uiScale;
+                Vec2 tl{ cfg.pos.x - ox, cfg.pos.y + oy };
+                Vec2 tr{ cfg.pos.x + ox, cfg.pos.y + oy };
+                Vec2 bl{ cfg.pos.x - ox, cfg.pos.y - oy };
+                Vec2 br{ cfg.pos.x + ox, cfg.pos.y - oy };
+                Colour3 white{ 1.f, 1.f, 1.f };
+                render.DrawLine(tl, tr, white);
+                render.DrawLine(tr, br, white);
+                render.DrawLine(br, bl, white);
+                render.DrawLine(bl, tl, white);
+            }
 
             const float textScale = cfg.textScale;
             Vec2 textSize = render.CalculateTextSize(cfg.label, textScale, "Marker");
@@ -2209,6 +2271,7 @@ void GuiSystem::Clear()
     displays.clear();
     m_groups.clear();
     nextUIID = 1;
+    focusedButtonIndex = -1;
 }
 
 /**
