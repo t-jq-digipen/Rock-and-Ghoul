@@ -5783,11 +5783,20 @@ void ImGuiSystem::ShowInspectorWindow()
                 if (ImGui::Button(AddLabel.c_str()))
                 {
                     behaviourComp.AddScript(selectedScript);
+                    BehaviourComponent* behaveComp = &behaviourComp;
+                    std::string scriptName = selectedScript;
+                    UndoSystem::Get().RecordComponentChange(
+                        [behaveComp, scriptName]() { behaveComp->RemoveScript(scriptName); },
+                        [behaveComp, scriptName]() { behaveComp->AddScript(scriptName); },
+                        "Behaviour.AddScript"
+                    );
                 }
                 if (disable) ImGui::EndDisabled();
 
                 ImGui::SeparatorText("Registered Scripts:");
                 int id = 0;
+                ScriptID scriptToRemove{};
+                bool removeRequested = false;
                 for (ScriptID sID : behaviourComp.scriptIDList)
                 {
                     ImGui::PushID(id++);
@@ -5796,9 +5805,22 @@ void ImGuiSystem::ShowInspectorWindow()
                     ImGui::SameLine();
                     if (ImGui::SmallButton("Remove"))
                     {
-                        behaviourComp.RemoveScript(sID);
+                        scriptToRemove = sID;
+                        removeRequested = true;
                     }
                     ImGui::PopID();
+                }
+                if (removeRequested)
+                {
+                    std::string scriptName = map.find(scriptToRemove)->second;
+                    behaviourComp.RemoveScript(scriptToRemove);
+                    BehaviourComponent* behaveComp = &behaviourComp;
+                    ScriptID removedID = scriptToRemove;
+                    UndoSystem::Get().RecordComponentChange(
+                        [behaveComp, scriptName]() { behaveComp->AddScript(scriptName); },
+                        [behaveComp, removedID]()  { behaveComp->RemoveScript(removedID); },
+                        "Behaviour.RemoveScript"
+                    );
                 }
 
                 ImGui::TreePop();
