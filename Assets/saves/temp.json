@@ -114,6 +114,7 @@
             }
         ],
         "dialogues": [],
+        "displays": [],
         "textboxes": []
     },
     "sceneName": "temp",

@@ -1081,6 +1081,11 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
     void* widgetID = w.ref;
     Entity entity = g_currentInspectorEntity;
 
+    // Capture before ImGui call: +/- buttons update the value AND fire
+    // IsItemActivated in the same frame, so reading *w.ref after the call
+    // would give the already-modified value as the "before" state.
+    int valueBefore = *w.ref;
+
     if (w.slider && w.min != w.max)
         ImGui::SliderInt(label.c_str(), w.ref, w.min, w.max);
     else
@@ -1088,7 +1093,7 @@ static void MakeWidget(Editor::Widget_Int& w, const std::string& label) {
 
     if (ImGui::IsItemActivated()) {
         WidgetUndoState& state = g_widgetUndoStates[widgetID];
-        state.intBefore = *w.ref;
+        state.intBefore = valueBefore;
         state.entity = entity;
 
         if (ShouldRecordTransformUndo(entity, label, widgetID) &&
@@ -5643,21 +5648,85 @@ void ImGuiSystem::ShowInspectorWindow()
                     }
                     spritesheet.SetState(spritesheet.GetCurrentState());
 
-                    Editor::Widget_Int widgetrow(&temp.row, true, 0, spritesheet.GetTotalRows());
-                    Editor::Widget_Int widgetcolstart(&temp.col_start, true, 0, spritesheet.GetTotalCols()-1);
-                    Editor::Widget_Int widgetcolend(&temp.col_end, true, temp.col_start, spritesheet.GetTotalCols()-1);
-                    Editor::Widget_Float widgetduration(&temp.duration);
-                    Editor::Widget_Checkmark widgetloop(&temp.willLoop);
-                    //ImGui::PushItemWidth(displaySize.x/4);
-                    MakeWidget(widgetrow, "row");
-                    //ImGui::SameLine();
-                    MakeWidget(widgetcolstart, "first col");
-                    //ImGui::SameLine();
-                    MakeWidget(widgetcolend, "last col");
-                    //ImGui::PopItemWidth();
-                    MakeWidget(widgetduration, "duration");
-                    
-                    MakeWidget(widgetloop, "loop");
+                    // Frame fields — undo must write to stateframe[capturedState] directly.
+                    // Writing only to frames.* is not enough because SetState() (line above)
+                    // overwrites frames from stateframe every inspector frame, cancelling undo.
+                    {
+                        Sprite::SpriteSheet* ss = &spritesheet;
+                        unsigned int capturedState = spritesheet.GetCurrentState();
+
+                        static std::unordered_map<void*, int>   frameIntBefore;
+                        static std::unordered_map<void*, float> frameFloatBefore;
+
+                        // beforeValue = value read BEFORE the ImGui call (true pre-edit value).
+                        // This matters for sliders: ImGui may move the handle on the press
+                        // frame itself, so reading field after SliderInt gives the wrong before-value.
+                        auto recordIntUndo = [ss, capturedState](int beforeValue, int& field, auto acc, const char* desc) {
+                            if (ImGui::IsItemActivated()) frameIntBefore[&field] = beforeValue;
+                            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                                auto it = frameIntBefore.find(&field);
+                                if (it != frameIntBefore.end()) {
+                                    int oldValue = it->second, newValue = field;
+                                    frameIntBefore.erase(it);
+                                    if (oldValue != newValue)
+                                        UndoSystem::Get().RecordComponentChange(
+                                            [ss, capturedState, oldValue, acc]() { acc(ss->GetStateFrames()[capturedState]) = oldValue; },
+                                            [ss, capturedState, newValue, acc]() { acc(ss->GetStateFrames()[capturedState]) = newValue; },
+                                            desc);
+                                }
+                            }
+                        };
+
+                        auto recordFloatUndo = [ss, capturedState](float beforeValue, float& field, auto acc, const char* desc) {
+                            if (ImGui::IsItemActivated()) frameFloatBefore[&field] = beforeValue;
+                            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                                auto it = frameFloatBefore.find(&field);
+                                if (it != frameFloatBefore.end()) {
+                                    float oldValue = it->second, newValue = field;
+                                    frameFloatBefore.erase(it);
+                                    if (oldValue != newValue)
+                                        UndoSystem::Get().RecordComponentChange(
+                                            [ss, capturedState, oldValue, acc]() { acc(ss->GetStateFrames()[capturedState]) = oldValue; },
+                                            [ss, capturedState, newValue, acc]() { acc(ss->GetStateFrames()[capturedState]) = newValue; },
+                                            desc);
+                                }
+                            }
+                        };
+
+                        int oldRow = temp.row;
+                        ImGui::SliderInt("row", &temp.row, 0, spritesheet.GetTotalRows());
+                        recordIntUndo(oldRow, temp.row,
+                            [](ActiveFrames& f) -> int& { return f.row; },
+                            "spritesheet.row");
+
+                        int oldColStart = temp.col_start;
+                        ImGui::SliderInt("first col", &temp.col_start, 0, spritesheet.GetTotalCols() - 1);
+                        recordIntUndo(oldColStart, temp.col_start,
+                            [](ActiveFrames& f) -> int& { return f.col_start; },
+                            "spritesheet.first_col");
+
+                        int oldColEnd = temp.col_end;
+                        ImGui::SliderInt("last col", &temp.col_end, temp.col_start, spritesheet.GetTotalCols() - 1);
+                        recordIntUndo(oldColEnd, temp.col_end,
+                            [](ActiveFrames& f) -> int& { return f.col_end; },
+                            "spritesheet.last_col");
+
+                        float oldDuration = temp.duration;
+                        ImGui::DragFloat("duration", &temp.duration, 0.1f);
+                        recordFloatUndo(oldDuration, temp.duration,
+                            [](ActiveFrames& f) -> float& { return f.duration; },
+                            "spritesheet.duration");
+
+                        bool oldLoop = temp.willLoop;
+                        ImGui::Checkbox("loop", &temp.willLoop);
+                        if (oldLoop != temp.willLoop) {
+                            bool oldValue = oldLoop, newValue = temp.willLoop;
+                            UndoSystem::Get().RecordComponentChange(
+                                [ss, capturedState, oldValue]() { ss->GetStateFrames()[capturedState].willLoop = oldValue; },
+                                [ss, capturedState, newValue]() { ss->GetStateFrames()[capturedState].willLoop = newValue; },
+                                "spritesheet.loop");
+                        }
+                    }
 
                     ImGui::Separator();
                     if (ImGui::SmallButton("Add State"))
