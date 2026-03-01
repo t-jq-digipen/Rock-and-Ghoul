@@ -37,6 +37,7 @@
 #include "JsonLoad.h"
 #include "FileIO.h"
 #include "FilePath.h"
+#include "RenderSystem.h"
 
  // Spatial grid for broad-phase optimization
 static SpatialGrid spatialGrid(150.0f); // Cell size tuned for typical entity size
@@ -523,11 +524,18 @@ void CollisionManager::CheckCollisions() {
     // Clear and rebuild spatial grid
     spatialGrid.Clear();
 
+    const bool* layerEnabled = RenderSystem::GetLayerEnabledArray();
+
     // BROAD PHASE: Build spatial grid
     for (auto& [entity, collider] : colliders) {
         if (!collider.IsActive() || !m_registry.Has_Component<TransformComponent>(entity)) {
             continue;
         }
+
+        // skip entities whose render layer is disabled
+        if (m_registry.Has_Component<RenderComponent>(entity) &&
+            !layerEnabled[m_registry.Get_Component<RenderComponent>(entity).GetRenderLayer()])
+            continue;
 
         auto& trans = m_registry.Get_Component<TransformComponent>(entity);
         collider.UpdateHitboxes(trans.pos, trans.scale);

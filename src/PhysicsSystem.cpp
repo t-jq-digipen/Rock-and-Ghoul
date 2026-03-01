@@ -25,6 +25,7 @@
 #include "Physics.h"
 #include "CombatSystem.h"
 #include "FrameRateController.h"
+#include "RenderSystem.h"
  // extern reference to frame rate controller from CoreEngine
 extern FrameRateController frameRate;
 static CollisionManager collisionManager;
@@ -53,9 +54,16 @@ void PhysicsSystem::Update(float dt) {
        // std::cout << "[PhysicsSystem] Update called, dt=" << dt << std::endl;
     }
 
+    const bool* layerEnabled = RenderSystem::GetLayerEnabledArray();
+
     // Step 1: Move entities with physics
     for (auto& [entID, phyComp] : m_registry.Get_ComponentMap<Physics::PhysicsComponent>())
     {
+        // skip entities whose render layer is disabled
+        if (m_registry.Has_Component<RenderComponent>(entID) &&
+            !layerEnabled[m_registry.Get_Component<RenderComponent>(entID).GetRenderLayer()])
+            continue;
+
         // Get transform component to multiply by fixed dt
         TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
         // Update physics component using fixed dt
@@ -68,6 +76,11 @@ void PhysicsSystem::Update(float dt) {
     // Step 2: Update collider hitboxes after all transforms moved
     for (auto& [entID, collider] : m_registry.Get_ComponentMap<ColliderComponent>())
     {
+        // skip entities whose render layer is disabled
+        if (m_registry.Has_Component<RenderComponent>(entID) &&
+            !layerEnabled[m_registry.Get_Component<RenderComponent>(entID).GetRenderLayer()])
+            continue;
+
         if (m_registry.Has_Component<TransformComponent>(entID)) {
             TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
             collider.UpdateHitboxes(transComp.pos, transComp.scale);
@@ -76,6 +89,11 @@ void PhysicsSystem::Update(float dt) {
 
     for (auto& [entID, lifeComp] : m_registry.Get_ComponentMap<LifetimeComponent>())
     {
+        // skip entities whose render layer is disabled (pause lifetime while hidden)
+        if (m_registry.Has_Component<RenderComponent>(entID) &&
+            !layerEnabled[m_registry.Get_Component<RenderComponent>(entID).GetRenderLayer()])
+            continue;
+
         lifeComp.age += dt;
         if (lifeComp.age >= lifeComp.lifetime)
         {

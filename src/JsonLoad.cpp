@@ -599,7 +599,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
          {"gui", {
              {"buttons", json::array()},
              {"textboxes", json::array()},
-             {"dialogues", json::array()}
+             {"dialogues", json::array()},
+             {"displays", json::array()}
          }},
         {"entities", json::array()}
 
@@ -750,7 +751,10 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 b.ID = btn.value("ID", fallbackID++);
                 b.label = btn["label"];
                 b.pos = { btn["pos"][0], btn["pos"][1] };
-                b.size = { btn["size"][0], btn["size"][1] };
+                if (btn.contains("size") && btn["size"].is_array() && btn["size"].size() >= 2)
+                    b.size = { btn["size"][0], btn["size"][1] };
+                else
+                    b.size = { 200.f, 100.f }; // default button size
                 //b.color = { btn["color"][0], btn["color"][1], btn["color"][2] };
                 if (btn.contains("renderData"))
                 {
@@ -841,7 +845,10 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 SavedScene::SavedDisplay d;
                 d.ID = dp.value("ID", fallbackID++);
                 d.pos = { dp["pos"][0], dp["pos"][1] };
-                d.size = { dp["size"][0], dp["size"][1] };
+                if (dp.contains("size") && dp["size"].is_array() && dp["size"].size() >= 2)
+                    d.size = { dp["size"][0], dp["size"][1] };
+                else
+                    d.size = { 240.f, 160.f }; // default display size
                 if (dp.contains("renderData"))
                 {
                     d.renderData = dp["renderData"];

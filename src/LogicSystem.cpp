@@ -11,9 +11,9 @@
  * that contain a BehaviourComponent and executes their behaviour functions each frame.
 
  * Each BehaviourComponent maintains a list of script IDs
- * that correspond to registered logic routines stored in system’s behaviour map.
+ * that correspond to registered logic routines stored in systemï¿½s behaviour map.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ======================================================== 
  */
 
@@ -23,6 +23,8 @@
 #include <iostream>
 #include "CoreEngine.h"
 #include "SceneManager.h"
+#include "Component.h"
+#include "RenderSystem.h"
 //extern GSM gsm;
 
 void LogicSystem::Initialize()
@@ -43,9 +45,16 @@ void LogicSystem::Update(float dt)
     if (!sm.IsPlaying())
         return;
 
+    const bool* layerEnabled = RenderSystem::GetLayerEnabledArray();
+
     //each entity with a behaviour component
     for (auto& [entity, bc] : m_registry.Get_ComponentMap<BehaviourComponent>())
     {
+        // skip entities whose render layer is disabled
+        if (m_registry.Has_Component<RenderComponent>(entity) &&
+            !layerEnabled[m_registry.Get_Component<RenderComponent>(entity).GetRenderLayer()])
+            continue;
+
         for (ScriptID scriptID : bc.scriptIDList)
         {
             //find name from id
