@@ -170,7 +170,7 @@
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"ObstacleScript\"]}",
-                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":1255.8583984375,\"aabb_maxY\":416.7079772949219,\"aabb_minX\":1255.8583984375,\"aabb_minY\":416.7079772949219,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":125.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1318.3583984375,\"aabb_maxY\":541.7080078125,\"aabb_minX\":1193.3583984375,\"aabb_minY\":291.70794677734375,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
                 "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
                 "HealthBar": "{\"height\":25.0,\"width\":125.0,\"yOffset\":150.0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":0.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
@@ -183,7 +183,7 @@
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"ObstacleScript\"]}",
-                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":1000.0,\"aabb_maxY\":400.0,\"aabb_minX\":1000.0,\"aabb_minY\":400.0,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":125.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1062.5,\"aabb_maxY\":525.0,\"aabb_minX\":937.5,\"aabb_minY\":275.0,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
                 "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
                 "HealthBar": "{\"height\":25.0,\"width\":125.0,\"yOffset\":150.0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":0.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
@@ -196,7 +196,7 @@
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"ObstacleScript\"]}",
-                "Collider": "{\"aabb_dimX\":0.0,\"aabb_dimY\":0.0,\"aabb_maxX\":776.07080078125,\"aabb_maxY\":412.8849792480469,\"aabb_minX\":776.07080078125,\"aabb_minY\":412.8849792480469,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":125.0,\"aabb_dimY\":250.0,\"aabb_maxX\":838.57080078125,\"aabb_maxY\":537.885009765625,\"aabb_minX\":713.57080078125,\"aabb_minY\":287.88494873046875,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
                 "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
                 "HealthBar": "{\"height\":25.0,\"width\":125.0,\"yOffset\":150.0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":0.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
@@ -691,6 +691,216 @@
                     240.0,
                     210.0
                 ]
+            },
+            {
+                "ID": 34,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1400.0,
+                    970.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_Soundwave.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    180.0,
+                    180.0
+                ]
+            },
+            {
+                "ID": 35,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1400.0,
+                    910.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_AOEAttack.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    180.0,
+                    180.0
+                ]
+            },
+            {
+                "ID": 36,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1400.0,
+                    850.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_Shield.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    180.0,
+                    180.0
+                ]
+            },
+            {
+                "ID": 37,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1400.0,
+                    790.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_Healing.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    180.0,
+                    180.0
+                ]
+            },
+            {
+                "ID": 38,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1480.0,
+                    975.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 39,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1560.0,
+                    975.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 40,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1480.0,
+                    915.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 41,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1560.0,
+                    915.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 42,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1640.0,
+                    915.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 43,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1480.0,
+                    855.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 44,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1560.0,
+                    855.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 45,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1640.0,
+                    855.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 46,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1480.0,
+                    795.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 47,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1560.0,
+                    795.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 48,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1640.0,
+                    795.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
             }
         ],
         "groups": [
@@ -727,6 +937,67 @@
                     25
                 ],
                 "name": "Elements"
+            },
+            {
+                "ID": 1,
+                "members": [
+                    34,
+                    38,
+                    39
+                ],
+                "name": "Soundwave Input"
+            },
+            {
+                "ID": 2,
+                "members": [
+                    35,
+                    40,
+                    41,
+                    42
+                ],
+                "name": "AOE Input"
+            },
+            {
+                "ID": 3,
+                "members": [
+                    36,
+                    43,
+                    44,
+                    45
+                ],
+                "name": "Shield Input"
+            },
+            {
+                "ID": 4,
+                "members": [
+                    37,
+                    46,
+                    47,
+                    48
+                ],
+                "name": "Healing Input"
+            },
+            {
+                "ID": 5,
+                "members": [
+                    34,
+                    35,
+                    36,
+                    37,
+                    38,
+                    39,
+                    40,
+                    41,
+                    42,
+                    43,
+                    44,
+                    45,
+                    46,
+                    47,
+                    48,
+                    49
+                ],
+                "name": "Song Input List"
             }
         ],
         "textboxes": [
@@ -777,6 +1048,38 @@
                 ],
                 "scale": 0.7329999804496765,
                 "text": "0x"
+            },
+            {
+                "ID": 33,
+                "centered": false,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "isVisible": false,
+                "pos": [
+                    750.0,
+                    350.0
+                ],
+                "scale": 1.0,
+                "text": "PRESS ESC TO SKIP"
+            },
+            {
+                "ID": 49,
+                "centered": false,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "isVisible": true,
+                "pos": [
+                    1380.0,
+                    1020.0
+                ],
+                "scale": 0.6,
+                "text": "SONG LIST:"
             }
         ]
     },
