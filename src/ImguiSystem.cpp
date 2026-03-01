@@ -4444,7 +4444,8 @@ void ImGuiSystem::Update(float dt)
         // show it
         ImGui::Image((ImTextureID)(intptr_t)texID, ImVec2(newWidth, newHeight), ImVec2(0, 1), ImVec2(1, 0));
 
-        DrawSelectionOutline(selectedEntity, cursor, newWidth, newHeight);
+        if (!g_uiEditorTabActive)
+            DrawSelectionOutline(selectedEntity, cursor, newWidth, newHeight);
 
         // UI gizmo – overlay for selected UI element (translate handle)
         if (!isPlaying && g_uiGizmoSelType != SelectedType::None && g_uiGizmoSelLocal >= 0)
