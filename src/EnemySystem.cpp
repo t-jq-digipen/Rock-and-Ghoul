@@ -959,12 +959,6 @@ static inline void SetObstacleAnim(Entity eID, int row, int col = 0, bool topDow
 	sheet.Sprite().Update_ImageSize();
 	
 	int internalRow = row;
-	//if (topDownRow)
-	//{
-	//	const int totalRows = sheet.GetTotalRows();
-	//	internalRow = (totalRows - 1) - row;
-	//}
-
 	if (internalRow < 0) internalRow = 0;
 	if (internalRow >= sheet.GetTotalRows()) internalRow = sheet.GetTotalRows() - 1;
 	if (col < 0) col = 0;
@@ -1012,7 +1006,7 @@ namespace ObstacleScript
 		auto& rt = g_obstacles[eID];
 		auto& hp = registry.Get_Component<HealthComponent>(eID);
 
-		MakeObstacleStationary(eID);
+		// MakeObstacleStationary(eID);
 
 		// Check if obstacle is burning
 		const bool isBurning = 

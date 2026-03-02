@@ -186,7 +186,11 @@ void CombatSystem::ApplyDamage(Entity target, const AttackProperties& properties
 				// apply instant damage and stagger
 				health.currhp -= properties.damage;
 
-				combatants[target].toStagger = true;
+				auto it = combatants.find(target);
+				if (it != combatants.end())
+				{
+					it->second.toStagger = true;
+				}
 			}
 		}
 		else // target not vulnerable, skip rest of knockback and element effects
