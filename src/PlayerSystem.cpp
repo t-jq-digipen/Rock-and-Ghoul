@@ -986,7 +986,7 @@ namespace RockScript {
 				spelled.lifetime = 1.5f; // AOE visual duration
 				activeSpells.push_back(spelled);
 			}
-
+			aoeHitboxSpawned = false;
 			aoetimer = 0.f;
 			break;
 		}
@@ -1430,6 +1430,7 @@ namespace RockScript {
 				}
 			}
 		}	// end MOVEMENT
+
 		// ================================================================================
 		// STUNNED
 		// ================================================================================
@@ -1441,6 +1442,7 @@ namespace RockScript {
 			stunnedtimer += dt;
 			animstate = (faceRight) ? 10 : 11;
 		}	// end STUNNED
+
 		// ================================================================================
 		// MELEE ATTACK
 		// ================================================================================
@@ -1467,6 +1469,7 @@ namespace RockScript {
 				shot = true;
 			}
 		}	// end MELEE ATTACK
+
 		// ================================================================================
 		// SOUNDWAVE CAST
 		// ================================================================================
@@ -1482,6 +1485,7 @@ namespace RockScript {
 				shot = true;
 			}
 		}	// end SOUNDWAVE CAST
+
 		// ================================================================================
 		// AOE CAST
 		// ================================================================================
@@ -1515,13 +1519,6 @@ namespace RockScript {
 				aoeHitboxSpawned = true;
 			}
 		}	// end AOE CAST
-		else
-		{
-			// Reset flag when AOE animation completes
-			if (aoeHitboxSpawned) {
-				aoeHitboxSpawned = false;
-			}
-		}
 
 		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
 		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
@@ -1530,6 +1527,7 @@ namespace RockScript {
 
 		spriteSheet.SetState(animstate);
 
+		// Healthbar
 		if (registry.Has_Component<HealthComponent>(eID))
 		{
 			HealthComponent& hpComp = registry.Get_Component<HealthComponent>(eID);
@@ -1553,14 +1551,14 @@ namespace RockScript {
 			
 			Vec2 v0, v1, v2, v3;
 			// Get background quad
-			gui.GetDisplayQuad(stats.memberIDs[1], v0, v1, v2, v3);
+			gui.GetDisplayQuad(stats.memberIDs[0], v0, v1, v2, v3);
 			// Calculate position for new quad
 			float amount = hpComp.currhp / hpComp.maxhp;
 
 			Vec2 newV1 = v0 + (v1 - v0) * amount;   // bottom right moves left
 			Vec2 newV2 = v3 + (v2 - v3) * amount;   // top right moves left
 
-			gui.SetDisplayQuad(stats.memberIDs[2], v0, newV1, newV2, v3);
+			gui.SetDisplayQuad(stats.memberIDs[1], v0, newV1, newV2, v3);
 
 			int state = (hpComp.currhp > 0.2f * hpComp.maxhp) ? 0 : 1;
 			gui.SetDisplaySheetState(stats.memberIDs[4], state);
