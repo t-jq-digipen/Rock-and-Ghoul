@@ -4,7 +4,7 @@
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
  * @co-author   Manfred Sim		   | manfred.sim@digipen.edu
- * @date	    06 FEB 2026
+ * @date	    01 MAR 2026
  *
  * @brief	Player System for handling player behaviour.
  *
@@ -254,6 +254,15 @@ namespace RockScript {
 
 	static Element currentElement = Element::NONE; //Set default element to none
 
+	// Element cooldown system
+	constexpr float ELEMENT_COOLDOWN = 5.0f; // Cooldown duration for elements
+	static std::unordered_map<Element, float> elementCooldowns = {
+		{Element::FIRE, 0.0f},
+		{Element::LIGHTNING, 0.0f},
+		{Element::ICE, 0.0f},
+		{Element::WIND, 0.0f}
+	};
+
 	// HELPER FUNCTION TO PLAY ELEMENTAL SOUNDS
 	inline void PlayElementalSound() {
 		switch (currentElement) {
@@ -354,16 +363,36 @@ namespace RockScript {
 
 	void AddSpellToSlot(SpellType type, float cooldown, int charges)
 	{
-		for (auto& slot : spellSlots)
+		// Check if all slots are full
+		bool allFull = true;
+		for (const auto& slot : spellSlots)
 		{
-			if (slot.charges <= 0) //Empty slot
-			{
-				slot = Spell(type, cooldown, charges);
-				std::cout << "Added spell to slot! Type: " << static_cast<int>(type) << "\n";
-				return;
+			if (slot.charges <= 0) {
+				allFull = false;
+				break;
 			}
 		}
-		std::cout << "All spell slots full! Cannot add spell.\n";
+		// If all spell slots are taken
+		if (allFull) {
+			// Push back existing spells (queue)
+			// Slot 0 -> Slot 1, Slot 1 -> Slot 2, Slot 2 deleted
+			spellSlots[2] = spellSlots[1];  // Slot 2 <- Slot 1 (old slot 2 deleted)
+			spellSlots[1] = spellSlots[0];  // Slot 1 <- Slot 0
+
+			// Add new spell to slot 0
+			spellSlots[0] = Spell(type, cooldown, charges);
+		}
+		else {
+			// Find first empty slot
+			for (auto& slot : spellSlots)
+			{
+				if (slot.charges <= 0) //Empty slot
+				{
+					slot = Spell(type, cooldown, charges);
+					return;
+				}
+			}
+		}
 	}
 
 	void AssignSlots()
@@ -419,38 +448,69 @@ namespace RockScript {
 	}
 
 	void CycleElement() {
-		/*int index = static_cast<int>(currentElement);
-		index = (index + 1) % static_cast<int>(Element::COUNT);
-		currentElement = static_cast<Element>(index);
+		// Cycle through elements, skipping those on cooldown
+		Element startElement = currentElement;
+		int attempts = 0;
+		const int MAX_ATTEMPTS = 5; // Prevent infinite loop
 
-		switch (currentElement) {
-		case Element::NONE: std::cout << "Element: NONE\n"; break;
-		case Element::LIGHTNING: std::cout << "Element: LIGHTNING\n"; break;
-		case Element::FIRE: std::cout << "Element: FIRE\n"; break;
-		case Element::WIND: std::cout << "Element: WIND\n"; break;
-		case Element::ICE: std::cout << "Element: ICE\n"; break;
-		}*/
-		
+		do {
+			switch (currentElement) {
+				case Element::NONE:
+					currentElement = Element::LIGHTNING;
+					break;
+				case Element::LIGHTNING:
+					currentElement = Element::FIRE;
+					break;
+				case Element::FIRE:
+					currentElement = Element::WIND;
+					break;
+				case Element::WIND:
+					currentElement = Element::ICE;
+					break;
+				case Element::ICE:
+					currentElement = Element::NONE;
+					break;
+				default:
+					break;
+			}
+			attempts++;
+
+			// If we've looped back to NONE or found an element not on cooldown, we're done
+			if (currentElement == Element::NONE ||
+			    elementCooldowns[currentElement] <= 0.0f ||
+			    attempts >= MAX_ATTEMPTS) {
+				break;
+			}
+		} while (currentElement != startElement);
+
+		// Print the selected element
 		switch (currentElement) {
 			case Element::NONE:
-				currentElement = Element::LIGHTNING;
-				std::cout << "Element: LIGHTNING\n";
+				std::cout << "Element: NONE\n";
 				break;
 			case Element::LIGHTNING:
-				currentElement = Element::FIRE;
-				std::cout << "Element: FIRE\n";
+				std::cout << "Element: LIGHTNING";
+				if (elementCooldowns[Element::LIGHTNING] > 0.0f)
+					std::cout << " (Cooldown: " << elementCooldowns[Element::LIGHTNING] << "s)";
+				std::cout << "\n";
 				break;
 			case Element::FIRE:
-				currentElement = Element::WIND;
-				std::cout << "Element: WIND\n";
+				std::cout << "Element: FIRE";
+				if (elementCooldowns[Element::FIRE] > 0.0f)
+					std::cout << " (Cooldown: " << elementCooldowns[Element::FIRE] << "s)";
+				std::cout << "\n";
 				break;
 			case Element::WIND:
-				currentElement = Element::ICE;
-				std::cout << "Element: ICE\n";
+				std::cout << "Element: WIND";
+				if (elementCooldowns[Element::WIND] > 0.0f)
+					std::cout << " (Cooldown: " << elementCooldowns[Element::WIND] << "s)";
+				std::cout << "\n";
 				break;
 			case Element::ICE:
-				currentElement = Element::NONE;
-				std::cout << "Element: NONE\n";
+				std::cout << "Element: ICE";
+				if (elementCooldowns[Element::ICE] > 0.0f)
+					std::cout << " (Cooldown: " << elementCooldowns[Element::ICE] << "s)";
+				std::cout << "\n";
 				break;
 			default:
 				break;
@@ -481,7 +541,7 @@ namespace RockScript {
 
 
 	void Dash(Entity eID) {
-		if (IsBusy()) { return; }
+		if (IsBusy() || dashtimer < DASH_COOLDOWN) { return; }
 		// dk if want to allow dash cancelling spells
 		ResetTimers();
 		shot = true;
@@ -1009,6 +1069,12 @@ namespace RockScript {
 		}
 		}
 
+		// If spell was cast with an element, put that element on cooldown and reset to NONE
+		if (currentElement != Element::NONE) {
+			elementCooldowns[currentElement] = ELEMENT_COOLDOWN;
+			std::cout << "Element " << static_cast<int>(currentElement) << " on cooldown for " << ELEMENT_COOLDOWN << "s\n";
+			currentElement = Element::NONE;
+		}
 
 	}
 
@@ -1038,6 +1104,12 @@ namespace RockScript {
 		shieldy = INVALID_ENTITY;
 
 		currentElement = Element::NONE; //Set default element to none
+
+		// Reset element cooldowns
+		for (auto& [element, cooldown] : elementCooldowns)
+		{
+			cooldown = 0.0f;
+		}
 
 		isVulnerable = true; //Is Rock vulnerable
 	}
@@ -1285,6 +1357,15 @@ namespace RockScript {
 		for (auto& spell : spellSlots)
 		{
 			spell.Update(dt);
+		}
+
+		// Update element cooldowns
+		for (auto& [element, cooldown] : elementCooldowns)
+		{
+			if (cooldown > 0.0f) {
+				cooldown -= dt;
+				if (cooldown < 0.0f) cooldown = 0.0f;
+			}
 		}
 
 		AssignSlots();
