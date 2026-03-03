@@ -62,9 +62,9 @@
 #include "ImGuizmo.h"
 #include "UndoSystem.h"
 
- // ========================================================
- // File-Local Static Variables (Editor State)
- // ========================================================
+// ========================================================
+// File-Local Static Variables (Editor State)
+// ========================================================
 
 static bool isPlacingPrefab = false; //the mouse prefab spawner
 static bool isDraggingEntity = false; //drag handles
@@ -1602,6 +1602,7 @@ void ImGuiSystem::Update(float dt)
                     AudioCache::Initialize(AUDIO_MANIFEST_PATH);
                 JsonLoad::ClearAllEntities();
                 GuiSystem::Get().Clear();
+                RenderSystem::ClearBackgroundTextures();
                 SceneManager::Get().EnterEditMode();
                 // Load first scene if it already exists
                 if (std::filesystem::exists(FilePath::LEVEL1_SCENE))
@@ -1746,6 +1747,7 @@ void ImGuiSystem::Update(float dt)
                 AudioCache::Initialize(AUDIO_MANIFEST_PATH);
             JsonLoad::ClearAllEntities();
             GuiSystem::Get().Clear();
+            RenderSystem::ClearBackgroundTextures();
             SceneManager::Get().EnterEditMode();
 
             if (!s_selectedOpenScene.empty())
