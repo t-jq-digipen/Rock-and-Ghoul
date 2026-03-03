@@ -36,6 +36,7 @@
 // RockAndGhoul game-specific systems
 #include "PlayerSystem.h"
 #include "EnemySystem.h"
+#include "CombatSystem.h"
 
 void EnableMemoryLeakChecking(int breakAlloc = -1)
 {
@@ -114,12 +115,12 @@ int main() {
             //    return -1;
             //}
             CoreEngine& engine = CoreEngine::GetInstance();
-            //Render& renderer = Render::GetInstance();
 
-            // Create audio manager
-            //AudioManager* audio = new AudioManager();
-            //engine.AddSystem(audio);
-            //MainMenu::SetAudioManager(audio); // BUTTON CLICK SOUND
+            // Register RockAndGhoul-specific systems before Initialize().
+            // These run between MovementSystem and PhysicsSystem.
+            engine.RegisterGameSystem(new PlayerSystem());
+            engine.RegisterGameSystem(new EnemySystem());
+            engine.RegisterGameSystem(&CombatSystem::Get(), false); // singleton — don't delete
 
             // initialize all systems (FMOD, OpenGL, etc.)
             engine.Initialize();

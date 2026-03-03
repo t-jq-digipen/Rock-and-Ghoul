@@ -10,7 +10,7 @@
  * managing game loop, along with system management and
  * Game State Manager (GSM) integration.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -49,6 +49,15 @@ class CoreEngine {
 
     std::unordered_map<std::string, double> updateTimings;
     std::unordered_map<std::string, double> renderTimings;
+
+    // Game specific systems registered before Initialize() in RegisterGameSystem()
+    struct GameSystemEntry { 
+        ISystem* sys; 
+        bool ownsMemory; 
+    
+    };
+    std::vector<GameSystemEntry> m_pendingGameSystems;
+
     // Systems (e.g physics/render/transform yada yada)
     CoreEngine();
 public:
@@ -65,6 +74,12 @@ public:
 
     // Adds systems to the Core Engine
     void AddSystem(ISystem* sys);
+
+    // Call before Initialize() to inject game specific update systems.
+    // They run between MovementSystem and PhysicsSystem.
+    //   engine.RegisterGameSystem(new PlayerSystem());          // engine owns + deletes
+    //   engine.RegisterGameSystem(&CombatSystem::Get(), false); // singleton, don't delete
+    void RegisterGameSystem(ISystem* sys, bool ownsMemory = true);
 
     // Initialize the Core Engine
     void Initialize();

@@ -424,6 +424,10 @@ void DrawHealthBar(Vec2 pos, float width, float height, float ratio)
 void CombatSystem::Initialize() {
 	std::cout << "CombatSystem Initialized!\n";
 
+	// Register RockAndGhoul components that belong to this system
+	Registry::Get().Register_Component<ElementComponent>("Element");
+	Registry::Get().Register_Component<StatusEffectComponent>("StatusEffect");
+
 	sceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([&](const SceneLoadEvent&) {
 		// Reset combat variables on game scene load
 		//if (e.sceneType == SceneType::ST_GAME) {

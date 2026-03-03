@@ -11,7 +11,7 @@
  * unique ScriptID and registered into the LogicSystem behaviour map.
 
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ======================================================== */
 
 
@@ -19,6 +19,10 @@
 #include "LogicSystem.h"
 #include "Component.h"
 #include "Registry.h"
+#include "Input.h"
+#include "Movement.h"
+#include <GLFW/glfw3.h>
+#include <cmath>
 #include <iostream>
 
 // ============================================
@@ -41,7 +45,7 @@ namespace GhoulScript
      * @brief Rotates the entity at 45 degrees per second.
      *
      * Retrieves the TransformComponent and updates its rotation value
-     * each frame. Keeps the rotation angle clamped between 0–360 degrees.
+     * each frame. Keeps the rotation angle clamped between 0ï¿½360 degrees.
      *
      */
     inline void Update(Entity gob, float dt)
@@ -195,6 +199,51 @@ namespace MainMenuMover {
 
 
 // ============================================
+// BASIC PLAYER INPUT SCRIPT
+// ============================================
+// Generic WASD / arrow-key â†’ MovementComponent script.
+// Safe for any game â€” does NOT touch animation states.
+// Attach this to any entity that has a MovementComponent
+// and you want the player to control with WASD / arrows.
+namespace BasicPlayerScript
+{
+    inline void Start(Entity) {}
+
+    inline void Update(Entity eID, float)
+    {
+        Registry& registry = Registry::Get();
+        if (!registry.Has_Component<Movement::MovementComponent>(eID)) return;
+        auto& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
+
+        bool up    = Input::IsKeyHeld(GLFW_KEY_W) || Input::IsKeyHeld(GLFW_KEY_UP);
+        bool down  = Input::IsKeyHeld(GLFW_KEY_S) || Input::IsKeyHeld(GLFW_KEY_DOWN);
+        bool left  = Input::IsKeyHeld(GLFW_KEY_A) || Input::IsKeyHeld(GLFW_KEY_LEFT);
+        bool right = Input::IsKeyHeld(GLFW_KEY_D) || Input::IsKeyHeld(GLFW_KEY_RIGHT);
+
+        float fx = (right ? 1.f : 0.f) - (left ? 1.f : 0.f);
+        float fy = (up    ? 1.f : 0.f) - (down ? 1.f : 0.f);
+
+        // Normalise so diagonal isn't faster
+        float len = sqrtf(fx * fx + fy * fy);
+        if (len > 0.f) { fx /= len; fy /= len; }
+
+        const bool moving = (len > 0.f);
+        moveComp.SetIsMoving(moving);
+        moveComp.SetMovementDirection({ fx, fy });
+
+        // Primary direction for any system that needs a cardinal facing
+        Movement::InputDirection primary = Movement::MOVE_NONE;
+        if      (up)    primary = Movement::MOVE_UP;
+        else if (down)  primary = Movement::MOVE_DOWN;
+        else if (left)  primary = Movement::MOVE_LEFT;
+        else if (right) primary = Movement::MOVE_RIGHT;
+        moveComp.SetInputDirection(primary);
+    }
+
+    inline void End(Entity) {}
+}
+
+// ============================================
 // REGISTER ALL SCRIPTS
 // ============================================
 inline void RegisterAllGameScripts()
@@ -225,6 +274,12 @@ inline void RegisterAllGameScripts()
         patrol.End = [](Entity e) { PatrolEnemyScript::End(e); };
         logicSys.RegisterScript("ManfredEnemy", patrol, ScriptID::PATROL_ENEMY);
 
+        // Generic WASD movement â€” works in any game project
+        BehaviourFCT basicPlayer;
+        basicPlayer.Init   = [](Entity e)           { BasicPlayerScript::Start(e); };
+        basicPlayer.Update = [](Entity e, float dt) { BasicPlayerScript::Update(e, dt); };
+        basicPlayer.End    = [](Entity e)            { BasicPlayerScript::End(e); };
+        logicSys.RegisterScript("BasicPlayerInput", basicPlayer, ScriptID::BASIC_PLAYER_INPUT);
     }
 
 }

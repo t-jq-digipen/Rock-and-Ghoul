@@ -6081,15 +6081,21 @@ void ImGuiSystem::ShowInspectorWindow()
                 LogicSystem& logicSys = LogicSystem::Get();
                 auto& map = logicSys.GetIDToNameMap();
 
-                if (logicSys.GetIDToNameMap().empty()) return;
+                if (logicSys.GetIDToNameMap().empty())
+                {
+                    ImGui::TextDisabled("No scripts registered.");
+                    ImGui::TreePop();
+                    return;
+                }
 
                 std::vector<const char*> items;
                 size_t optSize = logicSys.GetIDToNameMap().size();
                 items.reserve(optSize);
                 for (auto& [scriptname, scriptID] : logicSys.GetNameToIDMap()) items.push_back(scriptname.c_str());
-                // find index of current value
 
                 static int currentIndex = 0;
+                // Clamp index in case the script list shrank (e.g. after switching games)
+                if (currentIndex >= (int)items.size()) currentIndex = 0;
 
                 std::string selectedScript(items[currentIndex]);
 

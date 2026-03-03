@@ -48,10 +48,8 @@
 #include <nlohmann/json.hpp>
 #include "RenderSystem.h"
 #include "GuiSystem.h"
-#include "PlayerSystem.h"
-#include "EnemySystem.h"
 #include "PhysicsSystem.h"
-#include "CombatSystem.h"
+#include <unordered_set>
 
 #include "CollisionManager.h"
 
@@ -94,6 +92,11 @@ void CoreEngine::AddSystem(ISystem* sys)
     systems.push_back(sys);
 }
 
+void CoreEngine::RegisterGameSystem(ISystem* sys, bool ownsMemory)
+{
+    m_pendingGameSystems.push_back({ sys, ownsMemory });
+}
+
 void CoreEngine::Initialize()
 {
     // ----------------------------------------------------
@@ -114,9 +117,11 @@ void CoreEngine::Initialize()
     AddUpdateSystem(&MonoSystem::Get());
     // AddUpdateSystem(&AudioManager::Get());
     AddUpdateSystem(new MovementSystem());
-    AddUpdateSystem(new PlayerSystem());
-    AddUpdateSystem(new EnemySystem());
-    AddUpdateSystem(&CombatSystem::Get());
+
+    // Game specific systems registered in RegisterGameSystem() before Initialize()
+    for (auto& entry : m_pendingGameSystems)
+        AddUpdateSystem(entry.sys);
+
     AddUpdateSystem(new PhysicsSystem());
 
 
@@ -192,11 +197,8 @@ void CoreEngine::Initialize()
     registry.Register_Component<RenderLayerComponent>("RenderLayer");
     std::cout << "REGISTRY | REGISTERED RENDERLAYER COMPONENT\n";
 
-    registry.Register_Component<ElementComponent>("Element");
-    std::cout << "REGISTRY | REGISTERED ELEMENT COMPONENT\n";
-
-    registry.Register_Component<StatusEffectComponent>("StatusEffect");
-    std::cout << "REGISTRY | REGISTERED STATUSEFFECT COMPONENT\n";
+    // ElementComponent and StatusEffectComponent
+    // moved to CombatSystem::Initialize()
 
     registry.Register_Component<PortalComponent>("Portal", {"Render", "Collider"});
     std::cout << "REGISTRY | REGISTERED PORTAL COMPONENT\n";
@@ -351,19 +353,22 @@ void CoreEngine::Shutdown()
     GLApp::gameInitialized = false;
     //SceneManager::Get().UnloadCurrentScene();
     Registry::Get().Remove_AllEntities();
+    // set of systems we must NOT delete (engine singletons + game singletons)
+    std::unordered_set<ISystem*> noDelete = {
+        &GuiSystem::Get(),
+        &LogicSystem::Get(),
+        &MonoSystem::Get()
+    };
+    for (auto& entry : m_pendingGameSystems)
+        if (!entry.ownsMemory) noDelete.insert(entry.sys);
+
     // Shut down update systems in reverse
     for (int i = (int)updateSystems.size() - 1; i >= 0; --i)
     {
         ISystem* s = updateSystems[i];
         s->Shutdown();
-
-        if (s != &GuiSystem::Get() &&
-            s != &LogicSystem::Get() &&
-            s != &MonoSystem::Get() &&
-            s != &CombatSystem::Get())
-        {
+        if (noDelete.find(s) == noDelete.end())
             delete s;
-        }
     }
 
     // Shut down render systems in reverse

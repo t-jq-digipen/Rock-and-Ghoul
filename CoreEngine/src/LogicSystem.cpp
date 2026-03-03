@@ -25,11 +25,14 @@
 #include "SceneManager.h"
 #include "Component.h"
 #include "RenderSystem.h"
+#include "GameScripts.h"
 //extern GSM gsm;
 
 void LogicSystem::Initialize()
 {
     std::cout << "[LogicSystem] Initialized" << std::endl;
+    // Register all engine-level C++ behaviour scripts hm
+    RegisterAllGameScripts();
 }
 
 void LogicSystem::Update(float dt)

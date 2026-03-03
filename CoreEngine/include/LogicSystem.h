@@ -11,9 +11,9 @@
  * that contain a BehaviourComponent and executes their behaviour functions each frame.
 
  * Each BehaviourComponent maintains a list of script IDs
- * that correspond to registered logic routines stored in system’s behaviour map.
+ * that correspond to registered logic routines stored in system behaviour map.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -34,7 +34,8 @@ enum class ScriptID : unsigned int {
     SPIRIT,
     SPIRITMELEE,
     PORTAL,
-    OBSTACLE
+    OBSTACLE,
+    BASIC_PLAYER_INPUT //trying to put wasd
 };
 
 /**
