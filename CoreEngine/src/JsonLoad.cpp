@@ -17,6 +17,7 @@
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
+#include "FilePath.h"
 #include "JsonLoad.h"
 #include "FileIO.h"
 #include "Registry.h"
@@ -995,7 +996,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
         {
             scene.backgroundTextures = RenderSystem::GetBackgroundTexturePaths();
         }
-        scene.fontConfigPath = "../Assets/fontAssets.json";
+        scene.fontConfigPath = (FilePath::ASSETS_FOLDER + "fontAssets.json");
 
         // PRESERVE BGM PLEASE
         scene.bgmAssetName = SceneManager::Get().GetCurrentSceneBGM();
@@ -1152,13 +1153,13 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
         }
         else
         {
-			RenderSystem::SetCutscenePath(scene.backgroundTextures.empty() ? "" : scene.backgroundTextures[0]);
+			RenderSystem::SetCutscenePath(scene.backgroundTextures.empty() ? "" : FilePath::Resolve(scene.backgroundTextures[0]));
             RenderSystem::SetCutsceneFPS(scene.backgroundTextures.empty() ? 24.0 : std::stod(scene.backgroundTextures[1]));
             RenderSystem::SetNextScene(scene.backgroundTextures.empty() ? "" : scene.backgroundTextures[2]);
         }
 
         // Load fonts
-        Render::GetInstance().LoadFontAssetsFromJSON("../Assets/fontAssets.json");
+        Render::GetInstance().LoadFontAssetsFromJSON((FilePath::ASSETS_FOLDER + "fontAssets.json"));
 
         // Restore GUI buttons
         for (auto& b : scene.guiButtons) {
@@ -1182,7 +1183,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.isVisible = b.isVisible;
 
             if (b.action == "LoadLevel1") {
-                cfg.onClick = []() { SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); };
+                cfg.onClick = []() { SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/level1.json")); };
             }
             else if (b.action == "Quit") {
                 cfg.onClick = []() {
@@ -1207,17 +1208,17 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             }
             else if (b.action == "LoadMainMenu") {
                 cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
+                    SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/MainMenu.json"));
                     };
             }
             else if (b.action == "LoadSettings") {
                 cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene("../Assets/others/settings.json");
+                    SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "others/settings.json"));
                     };
             }
             else if (b.action == "LoadControls") {
                 cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene("../Assets/others/controls.json");
+                    SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "others/controls.json"));
                     };
             }
             else if (b.action == "OpenStateWindow") {
@@ -1293,7 +1294,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                 {
                     outLines.clear();
                     // textSpeed = 30.0f;
-                    fontPath = "../Assets/fonts/Marker.ttf";
+                    fontPath = (FilePath::ASSETS_FOLDER + "fonts/Marker.ttf");
                     fontSize = 1.0f;
                     color = { 1.f, 1.f, 1.f };
 
@@ -1329,7 +1330,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                         if (outLines.empty()) outLines.push_back("");
 
                         textSpeed = sc.value("textSpeed", 30.f);
-                        fontPath = sc.value("fontPath", std::string("../Assets/fonts/Marker.ttf"));
+                        fontPath = sc.value("fontPath", std::string((FilePath::ASSETS_FOLDER + "fonts/Marker.ttf")));
                         fontSize = sc.value("fontSize", 1.0f);
 
                         if (sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3)

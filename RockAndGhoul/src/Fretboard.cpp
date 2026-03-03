@@ -11,6 +11,7 @@
  * ========================================================
  */
 
+#include "FilePath.h"
 #include "Fretboard.h"
 #include <cstdlib>  // rand()
 #include <ctime>    // random number generator seed
@@ -253,10 +254,10 @@ void FretBoard::Draw(Render& renderer) {
 }
 
 void FretBoard::LoadTextures() {
-    arrowUpTex = Render::GetInstance().LoadTexture("../Assets/up.png");
-    arrowRightTex = Render::GetInstance().LoadTexture("../Assets/right.png");
-    arrowDownTex = Render::GetInstance().LoadTexture("../Assets/down.png");
-    arrowLeftTex = Render::GetInstance().LoadTexture("../Assets/left.png");
+    arrowUpTex = Render::GetInstance().LoadTexture((FilePath::ASSETS_FOLDER + "up.png"));
+    arrowRightTex = Render::GetInstance().LoadTexture((FilePath::ASSETS_FOLDER + "right.png"));
+    arrowDownTex = Render::GetInstance().LoadTexture((FilePath::ASSETS_FOLDER + "down.png"));
+    arrowLeftTex = Render::GetInstance().LoadTexture((FilePath::ASSETS_FOLDER + "left.png"));
 }
 FretBoard::~FretBoard() {
     // Unload all spell button textures

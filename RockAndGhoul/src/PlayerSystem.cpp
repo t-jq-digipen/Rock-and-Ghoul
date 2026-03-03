@@ -1462,7 +1462,7 @@ namespace RockScript {
 
 			if (hpComp.currhp <= 0.f)
 			{
-				SceneManager::Get().QueueLoadScene("../Assets/saves/failscreen.json");
+				SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/failscreen.json"));
 			}
 
 

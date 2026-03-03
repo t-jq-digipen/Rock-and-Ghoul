@@ -833,7 +833,7 @@ void GuiSystem::Update(float dt)
     {
         if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
         {
-            sm.QueueLoadScene("../Assets/saves/" + RenderSystem::GetNextScene() + ".json");
+            sm.QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/") + RenderSystem::GetNextScene() + ".json");
         }
     }
 
@@ -1624,7 +1624,7 @@ void GuiSystem::Update(float dt)
         renderer.DrawRect({ 960.f * scaleX, 540.f * scaleY }, 3000.f * scaleX, 2000.f * scaleY, { 0.f,0.f,0.f }, 0.f, 0.5f);
 
         // Menu background
-        Image img = CreateImage("../Assets/UI_ExitPanel.PNG");
+        Image img = CreateImage((FilePath::ASSETS_FOLDER + "UI_ExitPanel.PNG"));
         renderer.DrawImageRotated(img, 960 * scaleX, 540 * scaleY, 1000 * scaleX, 1000 * scaleY);
         bool hovercontrol = false;
         bool hoverexit = false;
@@ -1635,7 +1635,7 @@ void GuiSystem::Update(float dt)
         {
             hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 350 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hovercontrol ? 0.2f : 0.f;
-            Image btnimg = CreateImage("../Assets/UI_MainMenu_DarkControls.PNG");
+            Image btnimg = CreateImage((FilePath::ASSETS_FOLDER + "UI_MainMenu_DarkControls.PNG"));
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 350.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
             const Vec2 baseTitlePos = { 960.f * scaleX, 350.f * scaleY};
@@ -1651,7 +1651,7 @@ void GuiSystem::Update(float dt)
         {
             hoverexit = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 550 * scaleY}, 400 * scaleX, 190 * scaleY));
             float brightness = hoverexit ? 0.2f : 0.f;
-            Image btnimg = CreateImage("../Assets/UI_MainMenu_DarkQuit.PNG");
+            Image btnimg = CreateImage((FilePath::ASSETS_FOLDER + "UI_MainMenu_DarkQuit.PNG"));
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 550.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
             const Vec2 baseTitlePos = { 960.f * scaleX, 550.f * scaleY };
@@ -1667,7 +1667,7 @@ void GuiSystem::Update(float dt)
         {
             hoverresume = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 750 * scaleY }, 400 * scaleX, 190 * scaleY));
             float brightness = hoverresume ? 0.2f : 0.f;
-            Image btnimg = CreateImage("../Assets/UI_MainMenu_DarkNewGame.PNG");
+            Image btnimg = CreateImage((FilePath::ASSETS_FOLDER + "UI_MainMenu_DarkNewGame.PNG"));
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 750.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
 
             const Vec2 baseTitlePos = { 960.f * scaleX, 750.f * scaleY };
@@ -1690,7 +1690,7 @@ void GuiSystem::Update(float dt)
         // Click to exit to main menu
         if (hoverexit && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
+            SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/MainMenu.json"));
             SceneManager::Get().SetTransitionTime(2.f);
         }
 
@@ -1706,14 +1706,14 @@ void GuiSystem::Update(float dt)
         else
         {
             // Menu Background
-            Image pagebg = CreateImage("../Assets/UI_ControlsPage_Background.PNG");
+            Image pagebg = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlsPage_Background.PNG"));
             renderer.DrawImageRotated(pagebg, 960.f * scaleX, 540.f * scaleY, 1920.f * scaleX, 1080.f * scaleY);
 
 
             // Back Button
             bool hoverleave = (renderer.IsAreaTouched(mouse, { 150 * scaleX, 950 * scaleY }, 200 * scaleX, 180 * scaleY));
             {
-                Image exitbtn = CreateImage("../Assets/UI_ControlsPage_BackButton.png");
+                Image exitbtn = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlsPage_BackButton.png"));
                 float brightness = hoverleave ? 0.2f : 0.f;
                 renderer.DrawImageRotated(exitbtn, 150.f * scaleX, 950.f * scaleY, 200.f * scaleX, 180.f * scaleY, 0.f, brightness);
             }
@@ -1750,7 +1750,7 @@ void GuiSystem::Update(float dt)
 
                 // WASD Keys - Movement
                 {
-                    Image wasd = CreateImage("../Assets/UI_ControlPage_WASDBlue.png");
+                    Image wasd = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_WASDBlue.png"));
                     renderer.DrawImageRotated(wasd, 600.f * scaleX, 700.f * scaleY, 240.f * scaleX, 160.f * scaleY, 0.f, 0.f);
                 }
 
@@ -1766,7 +1766,7 @@ void GuiSystem::Update(float dt)
 
                 // Arrow Keys - Spell Input Sequence
                 {
-                    Image arrowK = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image arrowK = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     renderer.DrawImageRotated(arrowK, 1200.f * scaleX, 700.f * scaleY, 240.f * scaleX, 160.f * scaleY, 0.f, 0.f);
                 }
 
@@ -1792,7 +1792,7 @@ void GuiSystem::Update(float dt)
 
                 // Num Key 1 - Use Song "1"
                 {
-                    Image no1 = CreateImage("../Assets/UI_ControlPage_No1Blue.png");
+                    Image no1 = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_No1Blue.png"));
                     renderer.DrawImageRotated(no1, 1060.f * scaleX, 420.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
@@ -1808,7 +1808,7 @@ void GuiSystem::Update(float dt)
 
                 // Num Key 2 - Use Song "2"
                 {
-                    Image no2 = CreateImage("../Assets/UI_ControlPage_No2Blue.png");
+                    Image no2 = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_No2Blue.png"));
                     renderer.DrawImageRotated(no2, 1200.f * scaleX, 420.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
@@ -1824,7 +1824,7 @@ void GuiSystem::Update(float dt)
 
                 // Num Key 3 - Use Song "3"
                 {
-                    Image no3 = CreateImage("../Assets/UI_ControlPage_No3Blue.png");
+                    Image no3 = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_No3Blue.png"));
                     renderer.DrawImageRotated(no3, 1340.f * scaleX, 420.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
@@ -1840,7 +1840,7 @@ void GuiSystem::Update(float dt)
 
                 // Shift - Dash / Dodge
                 {
-                    Image shift = CreateImage("../Assets/UI_ControlPage_ShiftBlue.png");
+                    Image shift = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ShiftBlue.png"));
                     renderer.DrawImageRotated(shift, 400.f * scaleX, 500.f * scaleY, 140.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
@@ -1856,7 +1856,7 @@ void GuiSystem::Update(float dt)
 
                 // E - Use Melee Attack
                 {
-                    Image e = CreateImage("../Assets/UI_ControlPage_EBlue.png");
+                    Image e = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_EBlue.png"));
                     renderer.DrawImageRotated(e, 400.f * scaleX, 400.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
@@ -1872,7 +1872,7 @@ void GuiSystem::Update(float dt)
 
                 // Q - Cycle Through Elements
                 {
-                    Image q = CreateImage("../Assets/UI_ControlPage_QBlue.png");
+                    Image q = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_QBlue.png"));
                     renderer.DrawImageRotated(q, 400.f * scaleX, 300.f * scaleY, 80.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
@@ -1889,14 +1889,14 @@ void GuiSystem::Update(float dt)
 
                 // ESC - Pause / Resume Game
                 {
-                    Image esc = CreateImage("../Assets/UI_ControlPage_EscapeBlue.png");
+                    Image esc = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_EscapeBlue.png"));
                     renderer.DrawImageRotated(esc, 400.f * scaleX, 200.f * scaleY, 100.f * scaleX, 80.f * scaleY, 0.f, 0.f);
                 }
 
                 // Go To Controls Page 2 Button
                 bool hoverpage = (renderer.IsAreaTouched(mouse, { 120 * scaleX,150 * scaleY }, 180 * scaleX, 150 * scaleY));
                 {
-                    Image pgbtn = CreateImage("../Assets/UI_ControlsPage_ForwardPageLogo.png");
+                    Image pgbtn = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlsPage_ForwardPageLogo.png"));
                     float brightness = hoverpage ? 0.2f : 0.f;
                     renderer.DrawImageRotated(pgbtn, 120.f * scaleX, 100 * scaleY, 180.f * scaleX, 150.f * scaleY, 0.f, brightness);
                 }
@@ -1941,7 +1941,7 @@ void GuiSystem::Update(float dt)
 
                 // Shockwave Icon
                 {
-                    Image esc = CreateImage("../Assets/UI_ControlPage_Soundwave.png");
+                    Image esc = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_Soundwave.png"));
                     renderer.DrawImageRotated(esc, 380.f * scaleX, 640.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
@@ -1949,7 +1949,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 960.f * scaleX, 640.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image up = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image up = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = up.widthPixels / 3;
                     int tileH = up.heightPixels / 2;
                     float u0 = float(1 * tileW), v0 = float(1 * tileH);
@@ -1960,7 +1960,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 1120.f * scaleX, 640.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image down = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image down = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = down.widthPixels / 3;
                     int tileH = down.heightPixels / 2;
                     float u0 = float(1 * tileW), v0 = float(0 * tileH);
@@ -1980,7 +1980,7 @@ void GuiSystem::Update(float dt)
 
                 // AOE Attack Icon
                 {
-                    Image esc = CreateImage("../Assets/UI_ControlPage_AOEAttack.png");
+                    Image esc = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_AOEAttack.png"));
                     renderer.DrawImageRotated(esc, 380.f * scaleX, 500.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
@@ -1988,7 +1988,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 960.f * scaleX, 500.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image up = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image up = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = up.widthPixels / 3;
                     int tileH = up.heightPixels / 2;
                     float u0 = float(1 * tileW), v0 = float(1 * tileH);
@@ -1999,7 +1999,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 1120.f * scaleX, 500.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image left = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image left = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = left.widthPixels / 3;
                     int tileH = left.heightPixels / 2;
                     float u0 = float(0 * tileW), v0 = float(0 * tileH);
@@ -2010,7 +2010,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 1280.f * scaleX, 500.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image down = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image down = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = down.widthPixels / 3;
                     int tileH = down.heightPixels / 2;
                     float u0 = float(1 * tileW), v0 = float(0 * tileH);
@@ -2030,7 +2030,7 @@ void GuiSystem::Update(float dt)
 
                 // Shield Icon
                 {
-                    Image esc = CreateImage("../Assets/UI_ControlPage_Shield.png");
+                    Image esc = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_Shield.png"));
                     renderer.DrawImageRotated(esc, 380.f * scaleX, 360.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
@@ -2038,7 +2038,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 960.f * scaleX, 360.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image down = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image down = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = down.widthPixels / 3;
                     int tileH = down.heightPixels / 2;
                     float u0 = float(1 * tileW), v0 = float(0 * tileH);
@@ -2049,7 +2049,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 1120.f * scaleX, 360.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image down = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image down = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = down.widthPixels / 3;
                     int tileH = down.heightPixels / 2;
                     float u0 = float(1 * tileW), v0 = float(0 * tileH);
@@ -2060,7 +2060,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 1280.f * scaleX, 360.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image right = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image right = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = right.widthPixels / 3;
                     int tileH = right.heightPixels / 2;
                     float u0 = float(2 * tileW), v0 = float(0 * tileH);
@@ -2080,7 +2080,7 @@ void GuiSystem::Update(float dt)
 
                 // Healing Icon
                 {
-                    Image esc = CreateImage("../Assets/UI_ControlPage_Healing.png");
+                    Image esc = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_Healing.png"));
                     renderer.DrawImageRotated(esc, 380.f * scaleX, 220.f * scaleY, 400.f * scaleX, 400.f * scaleY, 0.f, 0.f);
                 }
 
@@ -2088,7 +2088,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 960.f * scaleX, 220.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image right = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image right = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = right.widthPixels / 3;
                     int tileH = right.heightPixels / 2;
                     float u0 = float(2 * tileW), v0 = float(0 * tileH);
@@ -2099,7 +2099,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 1120.f * scaleX, 220.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image up = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image up = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = up.widthPixels / 3;
                     int tileH = up.heightPixels / 2;
                     float u0 = float(1 * tileW), v0 = float(1 * tileH);
@@ -2110,7 +2110,7 @@ void GuiSystem::Update(float dt)
                 {
                     const Vec2 baseImagePos = { 1280.f * scaleX, 220.f * scaleY };
                     const Vec2 baseImageSize = { 100.f * scaleX, 100.f * scaleY };
-                    Image right = CreateImage("../Assets/UI_ControlPage_ArrowKBlue.png");
+                    Image right = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlPage_ArrowKBlue.png"));
                     int tileW = right.widthPixels / 3;
                     int tileH = right.heightPixels / 2;
                     float u0 = float(2 * tileW), v0 = float(0 * tileH);
@@ -2121,7 +2121,7 @@ void GuiSystem::Update(float dt)
                 // Go To Controls Page 1 Button
                 bool hoverpage = (renderer.IsAreaTouched(mouse, { 120 * scaleX,200 * scaleY }, 180 * scaleX, 150 * scaleY));
                 {
-                    Image pgbtn = CreateImage("../Assets/UI_ControlsPage_BackwardsPageLogo.png");
+                    Image pgbtn = CreateImage((FilePath::ASSETS_FOLDER + "UI_ControlsPage_BackwardsPageLogo.png"));
                     float brightness = hoverpage ? 0.2f : 0.f;
                     renderer.DrawImageRotated(pgbtn, 120.f * scaleX, 200.f * scaleY, 180.f * scaleX, 150.f * scaleY, 0.f, brightness);
                 }
@@ -2300,13 +2300,13 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
         break;
     case ButtonAction::LoadLevel1:
         btn.onClick = [this]() {
-            SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json");
+            SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/level1.json"));
             SceneManager::Get().SetTransitionTime(2.f);
             };
         break;
     case ButtonAction::LoadMainMenu:
         btn.onClick = [this]() {
-            SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
+            SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/MainMenu.json"));
             SceneManager::Get().SetTransitionTime(0.f);
             };
         break;

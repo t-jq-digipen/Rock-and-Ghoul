@@ -27,6 +27,7 @@
  */
 
 
+#include "FilePath.h"
 #include "SceneManager.h"
 #include "JsonLoad.h"
 #include "RenderSystem.h"
@@ -104,7 +105,7 @@ void SceneManager::Update(float dt, float, int)
             cam.SetMode(Camera::Mode::GAME);*/
 
             auto p = std::filesystem::path(path);
-            tempScenePath = "../Assets/saves/temp.json";
+            tempScenePath = (FilePath::ASSETS_FOLDER + "saves/temp.json");
             // ApplySceneDefaults();
             // EnterPlayMode();
             std::cout << "[SceneManager] Loaded scene: " << path << "\n";

@@ -42,6 +42,7 @@
 #include <list>
 #include "Remath.h"
 #include "Render.h"
+#include "FilePath.h"
 #include "Collision.h"
 #include "Entity.h"
 
@@ -440,7 +441,7 @@ enum PortalState : unsigned int {
 
 struct PortalComponent {
 	PortalState state = PortalState::LOCKED;
-	std::string nextScene = "../Assets/saves/MainMenu.json";
+	std::string nextScene = (FilePath::ASSETS_FOLDER + "saves/MainMenu.json");
 
 	std::string Serialize() const {
 		json j = {
@@ -455,7 +456,7 @@ struct PortalComponent {
 		json j = json::parse(data);
 		PortalComponent temp;
 		temp.state = j.value("state", PortalState::LOCKED);
-		temp.nextScene = j.value("scene", "../Assets/saves/MainMenu.json");
+		temp.nextScene = j.value("scene", (FilePath::ASSETS_FOLDER + "saves/MainMenu.json"));
 		return temp;
 	}
 

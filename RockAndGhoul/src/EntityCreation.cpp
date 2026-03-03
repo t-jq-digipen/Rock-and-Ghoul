@@ -151,7 +151,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             Registry::Get().Add_Component<TagComponent>(player, TagComponent{ T_PLAYER });
             
 
-            Image img = CreateImage("../Assets/Rock_FightingPose_2048px.png");
+            Image img = CreateImage((FilePath::ASSETS_FOLDER + "Rock_FightingPose_2048px.png"));
             //Registry::Get().Add_Component<Sprite::SpriteComponent>(player, Sprite::SpriteComponent{ img, {.1f,.1f} });
 
             Registry::Get().Add_Component<HealthComponent>(player, HealthComponent{ 100.f, 100.f });
@@ -205,7 +205,7 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             Registry::Get().Add_Component<TagComponent>(waffle, TagComponent{ T_OBJECT });
 
-            Image imgtemp = CreateImage("../Assets/Waffle_Sprites.png");
+            Image imgtemp = CreateImage((FilePath::ASSETS_FOLDER + "Waffle_Sprites.png"));
            // Registry::Get().Add_Component<Sprite::SpriteComponent>(waffle, Sprite::SpriteComponent{ imgtemp, {100.f,100.f }, true });
             Registry::Get().Add_Component<Movement::MovementComponent>(waffle, Movement::MovementComponent{ 500.f, Movement::MOVE_NONE, {0.f, 0.f}, Movement::MOVE_POSITION, false });
             // CRITICAL: Ensure imageWidth and imageHeight are set correctly!

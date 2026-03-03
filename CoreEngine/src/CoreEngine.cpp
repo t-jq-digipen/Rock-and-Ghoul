@@ -26,6 +26,7 @@
  * ========================================================
  */
 
+#include "FilePath.h"
 #include "CoreEngine.h"
 #include "System.h"
 #include "glapp.h"
@@ -213,7 +214,7 @@ void CoreEngine::Initialize()
     SceneManager& sm = SceneManager::Get();
 
     // Load your default scene (main menu)
-    sm.LoadScene("../Assets/saves/MainMenu.json");
+    sm.LoadScene((FilePath::ASSETS_FOLDER + "saves/MainMenu.json"));
 
     // Legacy GSM init – can be removed once all GSM users are gone
     //gsm.Init(GameState::GS_MAIN_MENU);

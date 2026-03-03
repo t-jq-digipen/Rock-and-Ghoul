@@ -22,12 +22,13 @@
  * - Ensures scene loading happens only at safe points in the frame.
  * - Restores default scene camera and renderer settings.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
 #include <string>
 #include "DataDefs.h"
+#include "FilePath.h"
 
 
 class SceneManager
@@ -86,7 +87,7 @@ private:
     SceneManager() = default;
 
     std::string currentScenePath;      // Which .json is currently loaded
-    std::string tempScenePath = "../Assets/saves/temp.json";
+    std::string tempScenePath = (FilePath::ASSETS_FOLDER + "saves/temp.json");
     std::string currentSceneBGM;  // BGM asset name for current scene
     std::string pendingScene = "";
     float sceneTransitionTime = 0.f; // goes from 1.f to 0.f

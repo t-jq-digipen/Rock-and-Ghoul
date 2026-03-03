@@ -11,12 +11,13 @@
  * (music, sfx, ui, ambience). The cache implements a bank system for batch
  * loading/unloading of related audio assets.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "AudioCache.h"
 #include "Audio.h"
 #include "FileIO.h"
+#include "FilePath.h"
 #include <iostream>
 #include <nlohmann/json.hpp>
 
@@ -96,7 +97,7 @@ bool AudioCache::ParseManifest(const std::string& manifestPath) {
                 AudioAsset asset;
                 asset.name = assetName;
                 asset.id = nextID++;  // Assign ID and increment for next asset
-                asset.path = assetData["path"];
+                asset.path = FilePath::Resolve(assetData["path"].get<std::string>());
                 asset.loop = assetData["loop"];
                 asset.group = assetData["group"];
 

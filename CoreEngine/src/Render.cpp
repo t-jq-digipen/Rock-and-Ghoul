@@ -25,6 +25,7 @@
  * ========================================================
  */
 
+#include "FilePath.h"
 #include "Render.h"
 #include "glapp.h"
 #include <iostream>
@@ -145,13 +146,13 @@ void Render::Init() {
 
     // Shaders
     shaderProgram = CreateProgramFromFiles(
-        "../Assets/vertexSrc.vert",
-        "../Assets/fragmentSrc.frag"
+        (FilePath::ASSETS_FOLDER + "vertexSrc.vert"),
+        (FilePath::ASSETS_FOLDER + "fragmentSrc.frag")
     );
 
     /*InstanceShaderProgram = CreateProgramFromFiles(
-        "../Assets/InstanceVertexSrc.vert",  // try use a new vertex shader for instancing , cus it needs per-instance attributes
-        "../Assets/fragmentSrc.frag"
+        (FilePath::ASSETS_FOLDER + "InstanceVertexSrc.vert"),  // try use a new vertex shader for instancing , cus it needs per-instance attributes
+        (FilePath::ASSETS_FOLDER + "fragmentSrc.frag")
     );*/
 
 
@@ -536,9 +537,11 @@ void Render::DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, cons
 
 
 GLuint Render::LoadTexture(const std::string& path) {
+    // Resolve legacy "../Assets/..." paths from old JSON files
+    const std::string resolvedPath = FilePath::Resolve(path);
 
     // Check if texture already exists
-    auto it = textureCache.find(path);
+    auto it = textureCache.find(resolvedPath);
     if (it != textureCache.end()) {
         //std::cout << "Found in cache: " << path << " ID: " << it->second << std::endl;
         return it->second; // Return cached texture
@@ -546,12 +549,12 @@ GLuint Render::LoadTexture(const std::string& path) {
 
     int width, height, channels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-   /* std::cout << "Loading texture: " << path
+    unsigned char* data = stbi_load(resolvedPath.c_str(), &width, &height, &channels, 0);
+   /* std::cout << "Loading texture: " << resolvedPath
         << " (" << width << "x" << height
         << ", channels=" << channels << ")" << std::endl;*/
     if (!data) {
-        std::cerr << "Failed to load texture: " << path << std::endl;
+        std::cerr << "Failed to load texture: " << resolvedPath << std::endl;
         throw std::runtime_error("Unable to load texture\n");
         return 0;
     }
@@ -578,8 +581,8 @@ GLuint Render::LoadTexture(const std::string& path) {
     stbi_image_free(data);
 
     // Cache it
-    textureCache[path] = textureID;
-    pathCache[textureID] = path;
+    textureCache[resolvedPath] = textureID;
+    pathCache[textureID] = resolvedPath;
 
     return textureID;
 }
@@ -978,7 +981,7 @@ void Render::DrawRectInstanced(const std::vector<InstanceData>& instances, const
     }
 
     //to myself: (gonna prob put in a cache or smth similar to image for rubrics (support multiple font types)
-    if (FT_New_Face(ft, "../Assets/PermanentMarker-Regular.ttf", 0, &face)) { //for now, direct path is placed in here, danny's font
+    if (FT_New_Face(ft, (FilePath::ASSETS_FOLDER + "PermanentMarker-Regular.ttf").c_str(), 0, &face)) { //for now, direct path is placed in here, danny's font
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
         cleanupFT();
         return;
@@ -1531,11 +1534,11 @@ std::unordered_map<std::string, GLuint> Render::LoadImageAssetsFromJSON(const st
         std::string alias;
 
         if (entry.is_string()) {
-            path = entry.get<std::string>();
+            path = FilePath::Resolve(entry.get<std::string>());
             alias = path; // fallback use path as key if alias not provided
         }
         else if (entry.is_object()) {
-            path = entry.value("path", "");
+            path = FilePath::Resolve(entry.value("path", ""));
             alias = entry.value("alias", path);
         }
 
@@ -1598,7 +1601,7 @@ std::unordered_map<std::string, Font> Render::LoadFontAssetsFromJSON(const std::
         }
 
         std::string fontName = entry["name"].get<std::string>();
-        std::string fontPath = entry["path"].get<std::string>();
+        std::string fontPath = FilePath::Resolve(entry["path"].get<std::string>());
         int fontSize = entry["size"].get<int>();
 
         if (LoadFont(fontPath, fontSize, fontName)) {
@@ -1715,7 +1718,7 @@ void Render::InitBatch()
     glBindVertexArray(0);
 
     //Shader program for batches
-    batchShader = CreateProgramFromFiles("../Assets/batch.vert", "../Assets/batch.frag"); //remember add this new files and correct path
+    batchShader = CreateProgramFromFiles((FilePath::ASSETS_FOLDER + "batch.vert"), (FilePath::ASSETS_FOLDER + "batch.frag")); //remember add this new files and correct path
 
     //CPU buffer reserve mem
     batchCPUBuffer.reserve(MaxVertices);

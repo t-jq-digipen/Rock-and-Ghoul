@@ -18,6 +18,7 @@
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
+#include "FilePath.h"
 #include "Audio.h"
 #include "AudioSystem.h"
 #include "AudioCache.h"
@@ -377,7 +378,7 @@ void AudioSystem::SetChannelPaused(FMOD::Channel* channel, bool paused) {
  */
 void AudioManager::Initialize() {
     // Initialize AudioCache
-    if (!AudioCache::Initialize("../Assets/audio_manifest.json")) {
+    if (!AudioCache::Initialize((FilePath::ASSETS_FOLDER + "audio_manifest.json"))) {
         std::cerr << "AudioCache failed to initialize!" << std::endl;
     }
 

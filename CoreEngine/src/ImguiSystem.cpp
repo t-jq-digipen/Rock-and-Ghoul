@@ -84,7 +84,7 @@ static std::vector<std::string> g_imageNames;
 //g_imageNames[0] = "player.png"
 
 static FMOD::Channel* previewChannel = nullptr; //audio preview channel and tracking
-static const std::string AUDIO_MANIFEST_PATH = "../Assets/audio_manifest.json";
+static const std::string AUDIO_MANIFEST_PATH = (FilePath::ASSETS_FOLDER + "audio_manifest.json");
 // drag drop audio import
 static bool         g_showAudioImportPopup = false;
 static std::string  g_pendingAudioSourcePath;   // full path from drag drop
@@ -152,7 +152,7 @@ namespace
         g_loadedThumbnails.clear();
         g_imageNames.clear();
 
-        const std::string assetFolder = "../Assets/";
+        const std::string assetFolder = (FilePath::ASSETS_FOLDER + "");
         //loops through all files and folders in the asset directory subdirectories
         for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
         {
@@ -402,7 +402,7 @@ void ImportAudioFile(const std::string& srcPathStr)
         return;
     }
 
-    const std::string audioRoot = "../Assets/audio/";
+    const std::string audioRoot = (FilePath::ASSETS_FOLDER + "audio/");
     if (!fs::exists(audioRoot))
         fs::create_directories(audioRoot);
 
@@ -421,7 +421,7 @@ void ImportAudioFile(const std::string& srcPathStr)
     // manifest key n path
     std::string key = MakeAudioKeyFromFilename(filename);
 
-    // "../Assets/audio/<filename>"
+    // (FilePath::ASSETS_FOLDER + "audio/<filename>")
     std::string relPath = destPath.generic_string();
 
     //default
@@ -1189,7 +1189,7 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
     if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
     {
         std::string src = path; //where file at
-        std::string destDir = "../Assets/";
+        std::string destDir = (FilePath::ASSETS_FOLDER + "");
         std::string destPath = destDir + fs::path(src).filename().string();
         // make sure the folder exists
         if (!fs::exists(destDir))
@@ -1275,7 +1275,7 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
         g_showAudioImportPopup = true;
         return;
     }
-    const std::string assetFolder = "../Assets/";
+    const std::string assetFolder = (FilePath::ASSETS_FOLDER + "");
     if (ext == "." || ext == ".ogg" || ext == ".aac" || ext == ".flac")
     {
         g_audioErrorMessage = "Unsupported audio format: " + filename +
@@ -1287,9 +1287,9 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
     // video (.mp4)
     if (ext == ".mp4")
     {
-        std::string destPath = "../Assets/" + filename;
+        std::string destPath = (FilePath::ASSETS_FOLDER + "") + filename;
         try {
-            if (!fs::exists("../Assets/")) fs::create_directories("../Assets/");
+            if (!fs::exists((FilePath::ASSETS_FOLDER + ""))) fs::create_directories((FilePath::ASSETS_FOLDER + ""));
             fs::copy_file(path, destPath, fs::copy_options::overwrite_existing);
             std::cout << "[ImGui Drop] Imported video: " << destPath << "\n";
 
@@ -1304,7 +1304,7 @@ void ImGuiSystem::OnFileDropped(const std::string& path)
     }
 
     //std::string filename = fs::path(path).filename().string();
-    std::string destDir = "../Assets/";
+    std::string destDir = (FilePath::ASSETS_FOLDER + "");
     if (ext == ".ttf" || ext == ".json" || ext == ".vert" || ext == ".frag")
     {
         std::string destPath = assetFolder + filename;
@@ -2292,7 +2292,7 @@ void ImGuiSystem::Update(float dt)
                             // Scene param
                             int selectedScene = -1;
                             std::vector<std::string> sceneFiles;
-                            const std::string sceneFolder = "../Assets/saves/";
+                            const std::string sceneFolder = (FilePath::ASSETS_FOLDER + "saves/");
 
                             sceneFiles.clear();
 
@@ -2957,7 +2957,7 @@ void ImGuiSystem::Update(float dt)
                             comp->SetIsTyping(false);
 
                             comp->SetTextSpeed(sc.value("textSpeed", 60.f));
-                            comp->SetFontPath(sc.value("fontPath", std::string("../Assets/fonts/Marker.ttf")));
+                            comp->SetFontPath(sc.value("fontPath", std::string((FilePath::ASSETS_FOLDER + "fonts/Marker.ttf"))));
                             comp->SetFontSize(sc.value("fontSize", 1.0f));
 
                             if (applyColor && sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3)
@@ -5023,7 +5023,7 @@ void ImGuiSystem::ShowSceneBrowser()
     ImGui::SeparatorText("Scene Management");
     //same as earlier thing
     namespace fs = std::filesystem;
-    const std::string sceneFolder = "../Assets/saves/";
+    const std::string sceneFolder = (FilePath::ASSETS_FOLDER + "saves/");
 
     if (!fs::exists(sceneFolder))
         fs::create_directories(sceneFolder);
@@ -5133,7 +5133,7 @@ void ImGuiSystem::ShowSceneBrowser()
     if (ImGui::Button("Load Scene") && selectedScene >= 0)
     {
         std::string sceneName = sceneFiles[selectedScene];        // "Level2"
-        std::string path = sceneFolder + sceneName + ".json";     //  "../Assets/saves/Level2.json"
+        std::string path = sceneFolder + sceneName + ".json";     //  (FilePath::ASSETS_FOLDER + "saves/Level2.json")
 
         // Always return to editor mode when loading scenes
         //sm.EnterEditMode();
@@ -5307,7 +5307,7 @@ void ImGuiSystem::ShowSceneBrowser()
             //mp4 files in assset browser
             if (g_videoNames.empty())
             {
-                const std::string assetFolder = "../Assets/";
+                const std::string assetFolder = (FilePath::ASSETS_FOLDER + "");
                 if (std::filesystem::exists(assetFolder))
                 {
                     auto options = std::filesystem::directory_options::skip_permission_denied;
@@ -5338,7 +5338,7 @@ void ImGuiSystem::ShowSceneBrowser()
                     videoItems.push_back(v.c_str());
 
                 // selection with current cutscene path
-                // "../Assets/file.mp4" -> g_videoName is jst th ename lol
+                // (FilePath::ASSETS_FOLDER + "file.mp4") -> g_videoName is jst th ename lol
                 std::string currentFilename = currentVideo;
                 auto pos = currentFilename.find_last_of("/\\");
                 if (pos != std::string::npos)
@@ -5357,7 +5357,7 @@ void ImGuiSystem::ShowSceneBrowser()
                     videoItems.data(),
                     static_cast<int>(videoItems.size())))
                 {
-                    RenderSystem::SetCutscenePath("../Assets/" + g_videoNames[selectedVideo]);
+                    RenderSystem::SetCutscenePath((FilePath::ASSETS_FOLDER + "") + g_videoNames[selectedVideo]);
                 }
             }
             else
@@ -6093,7 +6093,7 @@ void ImGuiSystem::ShowInspectorWindow()
                 // Scene selector dropdown
                 {
                     namespace fs = std::filesystem;
-                    const std::string sceneFolder = "../Assets/saves/";
+                    const std::string sceneFolder = (FilePath::ASSETS_FOLDER + "saves/");
 
                     std::vector<std::string> sceneFiles;
                     if (fs::exists(sceneFolder))
@@ -6253,7 +6253,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 g_loadedThumbnails.clear();
                 g_imageNames.clear();
 
-                const std::string assetFolder = "../Assets/";
+                const std::string assetFolder = (FilePath::ASSETS_FOLDER + "");
                 //same as earlier loop thru all
                 for (auto& entry : std::filesystem::recursive_directory_iterator(assetFolder))
                 {
@@ -6305,7 +6305,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
 
                     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
                     {
-                        const std::string fullPath = "../Assets/" + g_imageNames[i];
+                        const std::string fullPath = (FilePath::ASSETS_FOLDER + "") + g_imageNames[i];
                         ImGui::SetDragDropPayload("ASSET_IMAGE", fullPath.c_str(), fullPath.size() + 1);
                         ImGui::Text("Drag %s", g_imageNames[i].c_str());
                         ImGui::EndDragDropSource();
@@ -6351,7 +6351,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 {
                     // search Assets for the file by name and delete it
                     namespace fs = std::filesystem;
-                    const std::string assetFolder = "../Assets/";
+                    const std::string assetFolder = (FilePath::ASSETS_FOLDER + "");
                     bool deleted = false;
                     for (auto& entry : fs::recursive_directory_iterator(assetFolder))
                     {
@@ -6415,7 +6415,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                     try {
                         namespace fs = std::filesystem;
 
-                        const std::string assetFolder = "../Assets/";
+                        const std::string assetFolder = (FilePath::ASSETS_FOLDER + "");
                         const std::string newName = fs::path(pendingImportPath).filename().string(); // Luke2023.jpg
                         const std::string newStem = fs::path(pendingImportPath).stem().string();     // Luke2023
                         const std::string destNewPath = assetFolder + newName;
@@ -6753,7 +6753,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
             auto refreshVideoList = [&]()
                 {
                     g_videoNames.clear();
-                    const std::string assetFolder = "../Assets/";
+                    const std::string assetFolder = (FilePath::ASSETS_FOLDER + "");
                     if (!std::filesystem::exists(assetFolder)) return;
 
                     auto options = std::filesystem::directory_options::skip_permission_denied;
@@ -6811,7 +6811,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                     // Drag and drop source
                     if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
                     {
-                        const std::string fullPath = "../Assets/" + g_videoNames[i];
+                        const std::string fullPath = (FilePath::ASSETS_FOLDER + "") + g_videoNames[i];
                         ImGui::SetDragDropPayload("ASSET_VIDEO", fullPath.c_str(), fullPath.size() + 1);
                         ImGui::Text("Drag %s", g_videoNames[i].c_str());
                         ImGui::EndDragDropSource();
@@ -6851,7 +6851,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                 if (ImGui::Button("Yes, Delete", ImVec2(120, 0)))
                 {
                     namespace fs = std::filesystem;
-                    const std::string assetFolder = "../Assets/";
+                    const std::string assetFolder = (FilePath::ASSETS_FOLDER + "");
                     bool deleted = false;
 
                     for (auto& entry : fs::recursive_directory_iterator(assetFolder))
@@ -6921,7 +6921,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                     s_fragFiles.clear();
                     s_vertFiles.clear();
 
-                    const std::string assetFolder = "../Assets/";
+                    const std::string assetFolder = (FilePath::ASSETS_FOLDER + "");
                     if (!std::filesystem::exists(assetFolder)) return;
 
                     // Use directory_options to skip permission errors
@@ -7286,7 +7286,7 @@ void ImGuiSystem::ShowAssetPreviewWindow()
                         }
                     }
                     //copy file into folder
-                    std::string destDir = "../Assets/audio/" + subdir + "/";
+                    std::string destDir = (FilePath::ASSETS_FOLDER + "audio/") + subdir + "/";
                     if (!fs::exists(destDir))
                         fs::create_directories(destDir);
 

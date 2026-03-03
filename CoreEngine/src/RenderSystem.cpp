@@ -23,6 +23,7 @@
  * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
+#include "FilePath.h"
 #include "RenderSystem.h"
 #include "Render.h"
 #include "Animator.h"
@@ -84,7 +85,7 @@ void TestOpenVideo() {
     AVFormatContext* pFormatContext = nullptr;
     int result = avformat_open_input(
         &pFormatContext,
-        "../Assets/Intro.mp4",
+        (FilePath::ASSETS_FOLDER + "Intro.mp4"),
         nullptr,
         nullptr
     );
@@ -547,7 +548,7 @@ bool CutscenePlayer::Init(const char* path)
 
 void CutscenePlayer::Update(double dt) {
 
-    if (finished) {
+    if (finished || !fmt) {
         return;
     }
 
@@ -890,7 +891,10 @@ void RenderSystem::Initialize() {
 
     EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
         if (e.sceneType == ST_CUTSCENE) {
-            gCutscene.Init(s_cutscenePath.c_str());
+            if (!gCutscene.Init(s_cutscenePath.c_str())) {
+                gCutscene.Shutdown();
+                gCutscene.finished = true;
+            }
         }
         else {
             gCutscene.Shutdown();
@@ -902,9 +906,9 @@ void RenderSystem::Initialize() {
     /*SimpleAtlas atlas;
     SimpleAtlasBuilder builder;
 
-    builder.addImage("rock", "../Assets/Rock_2048px.png");
-    builder.addImage("rock_fight", "../Assets/Rock_FightingPose_2048px.png");
-    builder.addImage("ghoul", "../Assets/Ghoul_2048px.png");
+    builder.addImage("rock", (FilePath::ASSETS_FOLDER + "Rock_2048px.png"));
+    builder.addImage("rock_fight", (FilePath::ASSETS_FOLDER + "Rock_FightingPose_2048px.png"));
+    builder.addImage("ghoul", (FilePath::ASSETS_FOLDER + "Ghoul_2048px.png"));
     builder.build(atlas, 4000);
 
     std::cout << "\n=== ATLAS BUILD RESULT ===\n";
@@ -924,7 +928,7 @@ void RenderSystem::Initialize() {
     //TestOpenVideo();
 
     //CutscenePlayer gCutscene;
-    //gCutscene.Init("../Assets/IntroCutscene.mp4");
+    //gCutscene.Init((FilePath::ASSETS_FOLDER + "IntroCutscene.mp4"));
     //cutsceneActive = true;
     //SceneManager::Get().SetCutscenePlaying(true);
 
@@ -1122,7 +1126,7 @@ void RenderSystem::Update(float dt) {
                     cutsceneFadingOut = false;
                     fadeOutTimer = 0.0;
 
-                    SceneManager::Get().QueueLoadScene("../Assets/saves/" + GetNextScene() + ".json");
+                    SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/") + GetNextScene() + ".json");
                 }
 
                 return;
@@ -1247,7 +1251,7 @@ void RenderSystem::Update(float dt) {
 //            //    SceneManager::Get().SetCutscenePlaying(false);
 //            //    gCutscene.Shutdown(); // or keep texture if you want fade-out etc.
 //
-//            //    SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); //wacky fix;
+//            //    SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/level1.json")); //wacky fix;
 //
 //
 //            //}  

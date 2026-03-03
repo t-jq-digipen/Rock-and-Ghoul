@@ -63,6 +63,10 @@ void EnableMemoryLeakChecking(int breakAlloc = -1)
 }
 
 int main() {
+    // Set the active game folder FIRST so all FilePath members are valid.
+    // For a new game project, change this to its folder name e.g. "MySecondGame".
+    FilePath::SetGameRoot("RockAndGhoul");
+
     // Load settings from file FIRST (before creating window)
     auto settingsOpt = JsonLoad::LoadSettings(FilePath::SETTINGS_FILE);
 

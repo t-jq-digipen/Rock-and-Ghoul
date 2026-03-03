@@ -14,7 +14,7 @@
  *
  * This mirrors the LogicSystem + BehaviourComponent pattern.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -22,6 +22,7 @@
 #include <string>
 #include <unordered_map>
 #include <filesystem>
+#include "FilePath.h"
 
 #include "System.h"
 #include "MonoManager.h"
@@ -41,7 +42,7 @@ enum class MonoScriptID : unsigned int
 };
 
 
-// Forward declaration – definition is in MonoScriptComponent.h
+// Forward declaration ï¿½ definition is in MonoScriptComponent.h
 struct MonoScriptComponent;
 
 // ========================================================
@@ -105,7 +106,7 @@ private:
         std::unordered_map<MonoScriptID, MonoObject*>>;
 
     std::filesystem::file_time_type m_lastWriteTime{};
-    std::string m_dllPath = "../Assets/Scripts/GameScripts.dll";
+    std::string m_dllPath = (FilePath::ASSETS_FOLDER + "Scripts/GameScripts.dll");
 
     // Name <-> ID
     std::unordered_map<std::string, MonoScriptID> m_nameToID;

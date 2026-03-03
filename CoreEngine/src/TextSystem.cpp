@@ -16,6 +16,7 @@
  * ========================================================
  */
 
+#include "FilePath.h"
 #include "TextSystem.h"
 
 namespace TextSystem
@@ -274,7 +275,7 @@ namespace TextSystem
 		std::vector<std::string> lines;
 		float textSpeed = 30.f;
 		Vec3 color = { 1.f, 1.f, 1.f };
-		std::string fontPath = "../Assets/fonts/Marker.ttf";
+		std::string fontPath = (FilePath::ASSETS_FOLDER + "fonts/Marker.ttf");
 		float fontSize = 1.f;
 		int speakerID = 0;
 
