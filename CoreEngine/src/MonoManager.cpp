@@ -11,7 +11,7 @@
  * The MonoManager initialize and configure the Mono environment, load C# assembly,
  * invoke script methods, and shutdown the runtime.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ======================================================== 
  */
 
@@ -58,7 +58,7 @@ void MonoManager::Initialize(const std::string& assemblyPath)
     std::cout << "[MonoManager] Mono lib path: " << monoLib << "\n";
     std::cout << "[MonoManager] Mono etc path: " << monoEtc << "\n";
 
-    domain = mono_jit_init_version("RockAndGhoulDomain", "v4.0.30319");
+    domain = mono_jit_init_version("GameEngineDomain", "v4.0.30319");
     if (!domain)
         throw std::runtime_error("Failed to initialize Mono domain");
 

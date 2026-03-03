@@ -833,7 +833,7 @@ void GuiSystem::Update(float dt)
     {
         if (Input::IsKeyPressed(GLFW_KEY_ESCAPE))
         {
-            sm.QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/") + RenderSystem::GetNextScene() + ".json");
+            sm.QueueLoadScene(FilePath::SAVES_FOLDER + RenderSystem::GetNextScene() + ".json");
         }
     }
 
@@ -1690,7 +1690,7 @@ void GuiSystem::Update(float dt)
         // Click to exit to main menu
         if (hoverexit && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/MainMenu.json"));
+            SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE);
             SceneManager::Get().SetTransitionTime(2.f);
         }
 
@@ -2300,13 +2300,13 @@ void GuiSystem::BindButtonAction(ButtonConfig& btn)
         break;
     case ButtonAction::LoadLevel1:
         btn.onClick = [this]() {
-            SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/level1.json"));
+            SceneManager::Get().QueueLoadScene(FilePath::LEVEL1_SCENE);
             SceneManager::Get().SetTransitionTime(2.f);
             };
         break;
     case ButtonAction::LoadMainMenu:
         btn.onClick = [this]() {
-            SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/MainMenu.json"));
+            SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE);
             SceneManager::Get().SetTransitionTime(0.f);
             };
         break;

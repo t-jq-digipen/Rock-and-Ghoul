@@ -214,7 +214,7 @@ void CoreEngine::Initialize()
     SceneManager& sm = SceneManager::Get();
 
     // Load your default scene (main menu)
-    sm.LoadScene((FilePath::ASSETS_FOLDER + "saves/MainMenu.json"));
+    sm.LoadScene(FilePath::MAIN_MENU_SCENE);
 
     // Legacy GSM init – can be removed once all GSM users are gone
     //gsm.Init(GameState::GS_MAIN_MENU);

@@ -47,6 +47,7 @@
 #include "BehaviourComponent.h"
 #include "DataDefs.h"
 #include <fstream>
+#include <filesystem>
 #include <nlohmann/json.hpp>
 #include <unordered_set> 
 #include <string>
@@ -76,6 +77,21 @@ static std::string pendingDestPath; //store dest path of existing img
 static bool g_showAudioErrorPopup = false;
 static std::string g_audioErrorMessage;
 
+// New Game popup state
+static bool s_openNewGamePopup = false;
+static char s_newGameName[64]  = {};
+static std::string s_newGameMessage   = "";
+static bool s_newGameSuccess   = false;
+
+// Open Game popup state
+static bool s_openOpenGamePopup          = false;
+static std::string s_selectedOpenGame    = "";
+static std::vector<std::string> s_openGameList;
+static std::string s_selectedOpenScene   = "";
+static std::vector<std::string> s_openSceneList;
+static std::string s_openGameMessage     = "";
+static bool s_openGameSuccess            = false;
+
 // runtime thumbnail cache
 static std::vector<Image> g_loadedThumbnails;
 static std::vector<std::string> g_imageNames;
@@ -84,7 +100,7 @@ static std::vector<std::string> g_imageNames;
 //g_imageNames[0] = "player.png"
 
 static FMOD::Channel* previewChannel = nullptr; //audio preview channel and tracking
-static const std::string AUDIO_MANIFEST_PATH = (FilePath::ASSETS_FOLDER + "audio_manifest.json");
+static std::string AUDIO_MANIFEST_PATH = (FilePath::ASSETS_FOLDER + "audio_manifest.json");
 // drag drop audio import
 static bool         g_showAudioImportPopup = false;
 static std::string  g_pendingAudioSourcePath;   // full path from drag drop
@@ -1432,11 +1448,333 @@ void ImGuiSystem::Update(float dt)
         ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoBringToFrontOnFocus |
-        ImGuiWindowFlags_NoNavFocus;
+        ImGuiWindowFlags_NoNavFocus |
+        ImGuiWindowFlags_MenuBar;
 
     ImGui::Begin("Editor", nullptr, dockspaceFlags);
     //prev style
     ImGui::PopStyleVar(3);
+
+    // ── Menu Bar ─────────────────────────────────────────────────────────────
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("New Game"))
+            {
+                s_openNewGamePopup = true;
+                memset(s_newGameName, 0, sizeof(s_newGameName));
+                s_newGameMessage  = "";
+                s_newGameSuccess  = false;
+            }
+            if (ImGui::MenuItem("Open Game"))
+            {
+                s_selectedOpenGame = "";
+                s_selectedOpenScene = "";
+                s_openSceneList.clear();
+                s_openGameMessage  = "";
+                s_openGameSuccess  = false;
+                // Scan REPO_ROOT for folders that contain an Assets/ subfolder
+                s_openGameList.clear();
+                namespace fs = std::filesystem;
+                if (!FilePath::REPO_ROOT.empty() && fs::exists(FilePath::REPO_ROOT))
+                {
+                    for (auto& entry : fs::directory_iterator(FilePath::REPO_ROOT))
+                    {
+                        if (entry.is_directory() && fs::exists(entry.path() / "Assets"))
+                            s_openGameList.push_back(entry.path().filename().string());
+                    }
+                    std::sort(s_openGameList.begin(), s_openGameList.end());
+                }
+                s_openOpenGamePopup = true;
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
+    // ── New Game Modal ────────────────────────────────────────────────────────
+    if (s_openNewGamePopup)
+    {
+        ImGui::OpenPopup("New Game##modal");
+        s_openNewGamePopup = false;
+    }
+
+    if (ImGui::BeginPopupModal("New Game##modal", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Enter a name for your new game project:");
+        ImGui::SetNextItemWidth(300.f);
+        ImGui::InputText("##newgamename", s_newGameName, sizeof(s_newGameName));
+
+        if (!s_newGameMessage.empty())
+        {
+            if (s_newGameSuccess)
+                ImGui::TextColored(ImVec4(0.2f, 1.f, 0.2f, 1.f), "%s", s_newGameMessage.c_str());
+            else
+                ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "%s", s_newGameMessage.c_str());
+        }
+
+        ImGui::Separator();
+
+        bool canCreate = strlen(s_newGameName) > 0;
+        if (!canCreate) ImGui::BeginDisabled();
+
+        if (ImGui::Button("Create", ImVec2(120, 0)))
+        {
+            std::string name = s_newGameName;
+            std::string root = FilePath::REPO_ROOT + name + "/";
+            try
+            {
+                namespace fs = std::filesystem;
+                fs::create_directories(root + "src/");
+                fs::create_directories(root + "include/");
+                fs::create_directories(root + "Assets/saves/");
+                fs::create_directories(root + "Assets/prefabs/");
+                fs::create_directories(root + "Assets/audio/");
+                fs::create_directories(root + "Assets/others/");
+
+                // Generate an empty audio manifest so AudioCache can initialize
+                {
+                    std::ofstream mf(root + "Assets/audio_manifest.json");
+                    mf << "{\n"
+                       << "  \"music\": {},\n"
+                       << "  \"sfx\": {},\n"
+                       << "  \"ui\": {},\n"
+                       << "  \"ambience\": {},\n"
+                       << "  \"banks\": {}\n"
+                       << "}\n";
+                }
+
+                // Generate a starter main.cpp with SetGameRoot already wired up
+                std::ofstream f(root + "src/main.cpp");
+                f << "// main.cpp – " << name << "\n";
+                f << "// Generated by AvidDivas Engine\n";
+                f << "// Add your game-specific systems below.\n\n";
+                f << "#include <GL/glew.h>\n";
+                f << "#include <GLFW/glfw3.h>\n";
+                f << "#include \"glapp.h\"\n";
+                f << "#include \"CoreEngine.h\"\n";
+                f << "#include \"FilePath.h\"\n";
+                f << "#include \"JsonLoad.h\"\n";
+                f << "#include \"RenderSystem.h\"\n";
+                f << "#include \"PhysicsSystem.h\"\n";
+                f << "#include \"ImguiSystem.h\"\n";
+                f << "#include \"GuiSystem.h\"\n";
+                f << "#include \"MovementSystem.h\"\n";
+                f << "#include \"AudioSystem.h\"\n";
+                f << "#include \"LogicSystem.h\"\n";
+                f << "#include \"MonoManager.h\"\n";
+                f << "#include \"MonoSystem.h\"\n";
+                f << "#include \"CrashHandler.h\"\n";
+                f << "#include <crtdbg.h>\n\n";
+                f << "int main() {\n";
+                f << "    // IMPORTANT: must be first — tells the engine where this game's assets live.\n";
+                f << "    FilePath::SetGameRoot(\"" << name << "\");\n\n";
+                f << "    CoreEngine& engine = CoreEngine::GetInstance();\n";
+                f << "    engine.Initialize();\n";
+                f << "    engine.Run();\n";
+                f << "    engine.Shutdown();\n";
+                f << "    return 0;\n";
+                f << "}\n";
+                f.close();
+
+                s_newGameMessage = "Created at: " + root;
+                s_newGameSuccess = true;
+            }
+            catch (const std::exception& e)
+            {
+                s_newGameMessage = std::string("Error: ") + e.what();
+                s_newGameSuccess = false;
+            }
+        }
+
+        if (!canCreate) ImGui::EndDisabled();
+
+        // Show "Switch" button after successful creation
+        if (s_newGameSuccess)
+        {
+            ImGui::SameLine();
+            std::string switchLabel = std::string("Switch to ") + s_newGameName + "##switchnew";
+            if (ImGui::Button(switchLabel.c_str(), ImVec2(0, 0)))
+            {
+                std::string name = s_newGameName;
+                FilePath::SetGameRoot(name);
+                AUDIO_MANIFEST_PATH = FilePath::ASSETS_FOLDER + "audio_manifest.json";
+                AudioCache::Shutdown();
+                if (std::filesystem::exists(AUDIO_MANIFEST_PATH))
+                    AudioCache::Initialize(AUDIO_MANIFEST_PATH);
+                JsonLoad::ClearAllEntities();
+                GuiSystem::Get().Clear();
+                SceneManager::Get().EnterEditMode();
+                // Load first scene if it already exists
+                if (std::filesystem::exists(FilePath::LEVEL1_SCENE))
+                    SceneManager::Get().LoadScene(FilePath::LEVEL1_SCENE);
+                ImGui::CloseCurrentPopup();
+                s_newGameMessage = "";
+            }
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Close", ImVec2(120, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+            s_newGameMessage = "";
+        }
+        ImGui::EndPopup();
+    }
+    // ── End New Game Modal ────────────────────────────────────────────────────
+
+    // ── Open Game Modal ───────────────────────────────────────────────────────
+    if (s_openOpenGamePopup)
+    {
+        ImGui::OpenPopup("Open Game##modal");
+        s_openOpenGamePopup = false;
+    }
+
+    if (ImGui::BeginPopupModal("Open Game##modal", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        namespace fs = std::filesystem;
+
+        // Non-scene files to skip when scanning saves/
+        static const std::unordered_set<std::string> kExclude = {
+            "settings.json", "controls.json", "temp.json"
+        };
+
+        // ── Column headers ────────────────────────────────────────────────────
+        ImGui::Text("Game");
+        ImGui::SameLine(220.f);
+        ImGui::Text("Scene  (optional)");
+        ImGui::Spacing();
+
+        // ── Game list ─────────────────────────────────────────────────────────
+        if (s_openGameList.empty())
+        {
+            ImGui::TextDisabled("(No game projects found in repo root)");
+        }
+        else
+        {
+            if (ImGui::BeginListBox("##gamelist", ImVec2(200, 160)))
+            {
+                for (auto& name : s_openGameList)
+                {
+                    bool selected = (name == s_selectedOpenGame);
+                    if (ImGui::Selectable(name.c_str(), selected))
+                    {
+                        if (s_selectedOpenGame != name)
+                        {
+                            s_selectedOpenGame  = name;
+                            s_selectedOpenScene = "";
+                            s_openSceneList.clear();
+                            // Scan this game's saves/ folder for scene files
+                            std::string savesDir = FilePath::REPO_ROOT + name + "/Assets/saves/";
+                            if (fs::exists(savesDir))
+                            {
+                                for (auto& entry : fs::directory_iterator(savesDir))
+                                {
+                                    if (!entry.is_regular_file()) continue;
+                                    auto p = entry.path();
+                                    if (p.extension() != ".json") continue;
+                                    std::string fname = p.filename().string();
+                                    if (kExclude.count(fname)) continue;
+                                    if (fname.rfind("temp", 0) == 0) continue;
+                                    s_openSceneList.push_back(p.stem().string());
+                                }
+                                std::sort(s_openSceneList.begin(), s_openSceneList.end());
+                            }
+                        }
+                    }
+                    if (selected) ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndListBox();
+            }
+        }
+
+        ImGui::SameLine();
+
+        // ── Scene list ────────────────────────────────────────────────────────
+        if (s_selectedOpenGame.empty())
+        {
+            ImGui::BeginChild("##scenehint", ImVec2(200, 160), true);
+            ImGui::TextDisabled("(pick a game first)");
+            ImGui::EndChild();
+        }
+        else if (s_openSceneList.empty())
+        {
+            ImGui::BeginChild("##noscenes", ImVec2(200, 160), true);
+            ImGui::TextDisabled("(no scenes yet)");
+            ImGui::EndChild();
+        }
+        else
+        {
+            if (ImGui::BeginListBox("##scenelist", ImVec2(200, 160)))
+            {
+                // "(blank canvas)" option at the top
+                bool noneSelected = s_selectedOpenScene.empty();
+                if (ImGui::Selectable("(blank canvas)", noneSelected))
+                    s_selectedOpenScene = "";
+                if (noneSelected) ImGui::SetItemDefaultFocus();
+
+                for (auto& sceneName : s_openSceneList)
+                {
+                    bool selected = (sceneName == s_selectedOpenScene);
+                    if (ImGui::Selectable(sceneName.c_str(), selected))
+                        s_selectedOpenScene = sceneName;
+                    if (selected) ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndListBox();
+            }
+        }
+
+        if (!s_openGameMessage.empty())
+        {
+            ImGui::Spacing();
+            if (s_openGameSuccess)
+                ImGui::TextColored(ImVec4(0.2f, 1.f, 0.2f, 1.f), "%s", s_openGameMessage.c_str());
+            else
+                ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "%s", s_openGameMessage.c_str());
+        }
+
+        ImGui::Separator();
+
+        bool canSwitch = !s_selectedOpenGame.empty();
+        if (!canSwitch) ImGui::BeginDisabled();
+
+        if (ImGui::Button("Switch##opengame", ImVec2(120, 0)))
+        {
+            std::string name = s_selectedOpenGame;
+            FilePath::SetGameRoot(name);
+            AUDIO_MANIFEST_PATH = FilePath::ASSETS_FOLDER + "audio_manifest.json";
+            AudioCache::Shutdown();
+            if (fs::exists(AUDIO_MANIFEST_PATH))
+                AudioCache::Initialize(AUDIO_MANIFEST_PATH);
+            JsonLoad::ClearAllEntities();
+            GuiSystem::Get().Clear();
+            SceneManager::Get().EnterEditMode();
+
+            if (!s_selectedOpenScene.empty())
+            {
+                std::string scenePath = FilePath::SAVES_FOLDER + s_selectedOpenScene + ".json";
+                SceneManager::Get().LoadScene(scenePath);
+                s_openGameMessage = "Switched to " + name;
+            }
+            else
+            {
+                s_openGameMessage = "Switched to " + name;
+            }
+            s_openGameSuccess = true;
+        }
+
+        if (!canSwitch) ImGui::EndDisabled();
+
+        ImGui::SameLine();
+        if (ImGui::Button("Close##opengame", ImVec2(120, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+            s_openGameMessage = "";
+        }
+        ImGui::EndPopup();
+    }
+    // ── End Open Game Modal ───────────────────────────────────────────────────
 
     ImGuiID dockspaceID = ImGui::GetID("MainDockspace");
     //dock node

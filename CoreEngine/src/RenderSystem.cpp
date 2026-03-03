@@ -1126,7 +1126,7 @@ void RenderSystem::Update(float dt) {
                     cutsceneFadingOut = false;
                     fadeOutTimer = 0.0;
 
-                    SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/") + GetNextScene() + ".json");
+                    SceneManager::Get().QueueLoadScene((FilePath::SAVES_FOLDER) + GetNextScene() + ".json");
                 }
 
                 return;

@@ -32,12 +32,12 @@
 class FilePath {
 public:
 
-    // Call this FIRST in your game's main() before anything else.
+    // Call this FIRST in main() before anything else
     // Pass the name of the game folder (e.g. "RockAndGhoul", "MySecondGame").
     static void SetGameRoot(const std::string& gameFolderName);
 
-    // Converts legacy "../Assets/foo" paths (stored in old JSON files) to the
-    // correct absolute path using ASSETS_FOLDER. Pass-through for any other path.
+    // Converts "../Assets/rocknghoul" paths (in old JSON files) to the
+    // correct path using ASSETS_FOLDER. Pass-through for any other path.
     // Use this wherever a path arrives from a JSON file.
     static std::string Resolve(const std::string& path) {
         const std::string oldPrefix = "../Assets/";
@@ -49,12 +49,14 @@ public:
         return path;
     }
 
+    static std::string REPO_ROOT;      // absolute path to the repo root (set by SetGameRoot)
     static std::string ASSETS_FOLDER;
     static std::string SAVES_FOLDER;
     static std::string PREFABS_FOLDER;
     static std::string SETTINGS_FILE;
     static std::string COLLISIONSETTINGS_FILE;
     static std::string CONTROLS_FILE;
+    static std::string MAIN_MENU_SCENE;
     static std::string LEVEL1_SCENE;
     static std::string LEVEL2_SCENE;
     static std::string LEVEL1_TEMP_SCENE;

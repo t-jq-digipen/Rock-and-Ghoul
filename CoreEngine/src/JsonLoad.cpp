@@ -1183,7 +1183,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.isVisible = b.isVisible;
 
             if (b.action == "LoadLevel1") {
-                cfg.onClick = []() { SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/level1.json")); };
+                cfg.onClick = []() { SceneManager::Get().QueueLoadScene(FilePath::LEVEL1_SCENE); };
             }
             else if (b.action == "Quit") {
                 cfg.onClick = []() {
@@ -1208,7 +1208,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             }
             else if (b.action == "LoadMainMenu") {
                 cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/MainMenu.json"));
+                    SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE);
                     };
             }
             else if (b.action == "LoadSettings") {
