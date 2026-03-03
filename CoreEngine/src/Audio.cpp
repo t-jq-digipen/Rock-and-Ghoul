@@ -378,7 +378,7 @@ void AudioSystem::SetChannelPaused(FMOD::Channel* channel, bool paused) {
  */
 void AudioManager::Initialize() {
     // Initialize AudioCache
-    if (!AudioCache::Initialize((FilePath::ASSETS_FOLDER + "audio_manifest.json"))) {
+    if (!AudioCache::Initialize(FilePath::AUDIO_MANIFEST)) {
         std::cerr << "AudioCache failed to initialize!" << std::endl;
     }
 

@@ -30,6 +30,7 @@ std::string FilePath::PREFABS_FOLDER;
 std::string FilePath::SETTINGS_FILE;
 std::string FilePath::COLLISIONSETTINGS_FILE;
 std::string FilePath::CONTROLS_FILE;
+std::string FilePath::AUDIO_MANIFEST;
 std::string FilePath::MAIN_MENU_SCENE;
 std::string FilePath::LEVEL1_SCENE;
 std::string FilePath::LEVEL2_SCENE;
@@ -75,6 +76,7 @@ void FilePath::SetGameRoot(const std::string& gameFolderName)
     SETTINGS_FILE          = ASSETS_FOLDER + "saves/settings.json";
     COLLISIONSETTINGS_FILE = ASSETS_FOLDER + "others/CollisionSettings.json";
     CONTROLS_FILE          = ASSETS_FOLDER + "saves/controls.json";
+    AUDIO_MANIFEST         = ASSETS_FOLDER + "audio_manifest.json";
     MAIN_MENU_SCENE        = SAVES_FOLDER  + "MainMenu.json";
     LEVEL1_SCENE           = SAVES_FOLDER  + "level1.json";
     LEVEL2_SCENE           = SAVES_FOLDER  + "level2.json";

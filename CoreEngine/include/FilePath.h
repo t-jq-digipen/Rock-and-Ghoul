@@ -56,6 +56,7 @@ public:
     static std::string SETTINGS_FILE;
     static std::string COLLISIONSETTINGS_FILE;
     static std::string CONTROLS_FILE;
+    static std::string AUDIO_MANIFEST;
     static std::string MAIN_MENU_SCENE;
     static std::string LEVEL1_SCENE;
     static std::string LEVEL2_SCENE;
