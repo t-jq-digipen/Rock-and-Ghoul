@@ -30,22 +30,18 @@
  */
 
 
+#include "reginegine.h"
 #include "EnemySystem.h"
-#include "MovementSystem.h"
 #include "Registry.h"
 #include "Component.h"
 #include "Remath.h"
 #include "BehaviourFCT.h"
-#include "LogicSystem.h"
 #include "SceneManager.h"
 #include "Enemy.h"
-#include "JsonLoad.h"
-#include "FilePath.h"
 #include <unordered_map>
 #include "CollisionManager.h"
 #include "PlayerSystem.h"
 #include "CombatSystem.h"
-#include "PhysicsSystem.h"
 
 static constexpr float DETECT_RADIUS = 400.f;
 static constexpr float LOSE_RADIUS = 360.f;

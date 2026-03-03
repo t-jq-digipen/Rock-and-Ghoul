@@ -7,17 +7,14 @@
  *
  * FIXTHISSHIT (or delete?)
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
-#include "FilePath.h"
+#include "reginegine.h"
 #include "Fretboard.h"
 #include <cstdlib>  // rand()
 #include <ctime>    // random number generator seed
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include "glapp.h"
 #include "Spells.h"
 #include "input.h"
 glm::vec2 arrowPositions[4] = {

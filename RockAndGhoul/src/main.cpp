@@ -30,30 +30,13 @@
  * ========================================================
  */
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include "glapp.h"
-#include "CoreEngine.h"
-#include "AudioSystem.h"  // contains AudioManager
-#include "RenderSystem.h"
+// Single include for all engine systems.
+#include "reginegine.h"
+
+// RockAndGhoul game-specific systems
 #include "PlayerSystem.h"
-#include "PhysicsSystem.h"
-#include "ImguiSystem.h"
-#include "CrashHandler.h"
-#include "GuiSystem.h"
-#include "MovementSystem.h"
 #include "EnemySystem.h"
 
-#include "JsonLoad.h"
-#include "FilePath.h"
-
-#include "MonoManager.h"
-#include "MonoScriptComponent.h"
-#include "MonoSystem.h"
-#include <crtdbg.h>
-//#include "ForcesManager.h"
-
-#include "LogicSystem.h"
 void EnableMemoryLeakChecking(int breakAlloc = -1)
 {
     int tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);

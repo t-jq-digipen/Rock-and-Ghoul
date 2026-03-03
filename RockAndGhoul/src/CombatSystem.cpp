@@ -34,17 +34,15 @@
  * - WIND: Applies knockback force on impact
  * - LIGHTNING: Stuns target, preventing movement for duration
  *
- * Copyright © 2026 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 
+#include "reginegine.h"
 #include "CombatSystem.h"
 #include "EventBus.h"
-#include "JsonLoad.h"
 #include "CollisionManager.h"
-#include "GuiSystem.h"
 #include "PooledEntityFactory.h"
-#include "LogicSystem.h"
 #include "SceneManager.h"
 #include "PlayerSystem.h"
 #include "EnemySystem.h"

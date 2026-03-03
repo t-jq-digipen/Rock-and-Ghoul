@@ -16,10 +16,9 @@
  * Copyright   2025 DigiPen, All rights reserved.
  * ========================================================
  */
+#include "reginegine.h"
 #include "EntityCreation.h"
-#include "JsonLoad.h"
 #include "FileIO.h"
-#include "FilePath.h"
 #include "Registry.h"
 #include "Component.h"
 #include "Physics.h"
@@ -27,13 +26,9 @@
 #include "PlayerSystem.h"
 #include <nlohmann/json.hpp>
 #include <iostream>
-#include "MonoScriptComponent.h"
 #include "AudioComponent.h"
 #include "AudioCache.h"
-
-#include "CoreEngine.h"
 #include "BehaviourComponent.h"
-#include "LogicSystem.h" 
 #include "GameScripts.h"
 using json = nlohmann::json;
 

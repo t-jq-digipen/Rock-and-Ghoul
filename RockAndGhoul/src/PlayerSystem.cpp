@@ -16,19 +16,13 @@
  * ========================================================
  */
 
+#include "reginegine.h"
 #include "PlayerSystem.h"
 #include "Registry.h"
 #include "Audio.h"
 #include "AudioComponent.h"
-#include "CoreEngine.h" // to check pause state for music
-#include "LogicSystem.h"
-#include "JsonLoad.h"
-#include "FilePath.h"
 #include "RenderComponent.h"
-#include "MonoSystem.h"
-#include "MonoScriptComponent.h"
 #include "SceneManager.h"
-#include "GuiSystem.h"
 #include "CombatSystem.h"
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
