@@ -9,8 +9,8 @@
     "entities": [
         {
             "components": {
-                "Behaviour": "{\"scripts\":[\"PlayerMovement\"]}",
-                "Movement": "{\"moveSpeed\":100.0,\"moveType\":0}",
+                "Behaviour": "{\"scripts\":[\"BasicPlayerInput\"]}",
+                "Movement": "{\"moveSpeed\":100.0,\"moveType\":1}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Render": "{\"renderData\":\"{\\\"colorX\\\":1.0,\\\"colorY\\\":1.0,\\\"colorZ\\\":1.0,\\\"dimX\\\":74.2490005493164,\\\"dimY\\\":68.66999816894531,\\\"shapeType\\\":0}\",\"renderLayer\":1,\"renderType\":0}",
                 "Tag": "{\"tagID\":1}",
