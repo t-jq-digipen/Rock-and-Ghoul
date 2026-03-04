@@ -378,6 +378,8 @@ source_group("BaseEngine\\Systems\\Undo" FILES
 source_group("BaseEngine\\Managers" FILES 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/SceneManager.h
    ${CMAKE_CURRENT_SOURCE_DIR}/src/SceneManager.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/ReplayManager.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/ReplayManager.cpp
 
 )
 

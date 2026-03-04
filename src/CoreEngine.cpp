@@ -26,6 +26,7 @@
  * ========================================================
  */
 
+
 #include "CoreEngine.h"
 #include "System.h"
 #include "glapp.h"
@@ -63,6 +64,9 @@
 #include "../src/rectpack2D/finders_interface.h"
 #include "GameMemoryManager.h"
 #include "PooledEntityFactory.h"
+#include "ReplayManager.h"
+
+
 CoreEngine::CoreEngine()
     : systems{}
     , timings{}
@@ -220,6 +224,8 @@ void CoreEngine::Initialize()
 
     // Flag for ImGui / editor that engine is ready
     GLApp::gameInitialized = true;
+
+    ReplayManager::Get().Configure(60, 10); // keep last 10 seconds
 }
 
 void CoreEngine::Run()
@@ -232,8 +238,22 @@ void CoreEngine::Run()
 
     while (running && !glfwWindowShouldClose(GLApp::ptr_window))
     {
+        auto& replay = ReplayManager::Get();
+
         frameRate.StartFrame();
         glfwPollEvents();
+
+        if (glfwGetKey(GLApp::ptr_window, GLFW_KEY_F9) == GLFW_PRESS)
+            replay.StartRecording();
+
+        if (glfwGetKey(GLApp::ptr_window, GLFW_KEY_F10) == GLFW_PRESS)
+            replay.StartPlayback();
+
+        if (glfwGetKey(GLApp::ptr_window, GLFW_KEY_F11) == GLFW_PRESS)
+        {
+            replay.StopPlayback();
+            replay.StopRecording();
+        }
 
         float dt = static_cast<float>(frameRate.GetDeltaTime());
         dt = std::clamp(dt, 0.0f, 0.05f); // clamp variable dt
@@ -264,21 +284,34 @@ void CoreEngine::Run()
             fixedDt = 0.f;
         }
 
+
+
         if (sm.IsPlaying() && !sm.IsPaused())
         {
             for (int step = 0; step < numSteps; ++step)
             {
-                for (auto* s : updateSystems)
+                if (replay.IsPlaying())
                 {
-                    auto start = clock::now();
+                    // During playback: apply recorded state instead of simulating
+                    replay.ApplyTick();
+                }
+                else
+                {
+                    for (auto* s : updateSystems)
+                    {
+                        auto start = clock::now();
 
-                    s->Update(fixedDt);
+                        s->Update(fixedDt);
 
-                    auto end = clock::now();
-                    double ms = DurationMs(start, end);
+                        auto end = clock::now();
+                        double ms = DurationMs(start, end);
 
-                    std::string name = typeid(*s).name();
-                    updateTimings[name] += ms;   // accumulate into stable entry
+                        std::string name = typeid(*s).name();
+                        updateTimings[name] += ms;   // accumulate into stable entry
+                    }
+
+                    if (replay.IsRecording())
+                        replay.CaptureTick();
                 }
             }
 
