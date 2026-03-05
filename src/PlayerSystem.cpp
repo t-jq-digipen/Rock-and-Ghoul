@@ -839,8 +839,11 @@ namespace RockScript {
 		if (shieldTimer >= SHIELD_DURATION) {
 			isVulnerable = true;
 			health.isVulnerable = true;
+			if (shieldy != INVALID_ENTITY) {
+				Registry::Get().Remove_Entity(shieldy);
+				shieldy = INVALID_ENTITY;
+			}
 			return;
-			// shieldy = INVALID_ENTITY;
 		}
 
 		// Update shield
@@ -1002,6 +1005,14 @@ namespace RockScript {
 			// Clean up old shield if exists
 			if (shieldy != INVALID_ENTITY) {
 				registry.Remove_Entity(shieldy);
+				shieldy = INVALID_ENTITY;
+			}
+			// Remove pool entry so old duration doesn't expire new shield early
+			for (auto oldshield = activeSpells.begin(); oldshield != activeSpells.end(); ) {
+				if (oldshield->poolEntity.type == EntityType::SHIELD) {
+					PooledEntityFactory::Get().DestroyEntity(oldshield->poolEntity);
+					oldshield = activeSpells.erase(oldshield);
+				} else { ++oldshield; }
 			}
 
 			// Create visual entity
@@ -1102,7 +1113,7 @@ namespace RockScript {
 		}
 		shot = false;
 
-		shieldTimer = 0.f; //Timer for shield invulnerability
+		shieldTimer = SHIELD_DURATION; //Timer for shield invulnerability (start inactive)
 		shieldy = INVALID_ENTITY;
 
 		currentElement = Element::NONE; //Set default element to none
@@ -1302,6 +1313,9 @@ namespace RockScript {
 
 						if (it->ecsEntity != INVALID_ENTITY) {
 							registry.Remove_Entity(it->ecsEntity);
+						}
+						if (it->ecsEntity == shieldy) {
+							shieldy = INVALID_ENTITY;
 						}
 						PooledEntityFactory::Get().DestroyEntity(it->poolEntity);
 

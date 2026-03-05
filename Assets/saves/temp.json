@@ -1,175 +1,210 @@
 {
     "backgrounds": [
-        "../Assets/Env03_EnemyWorld.PNG",
-        "../Assets/Env03Props_Enemy_UpperFloor.PNG",
-        "../Assets/Env03Props_Enemy_ArcadeMachine.PNG",
-        "../Assets/Env03Props_Enemy_Bar.PNG",
-        "../Assets/Env03Props_Enemy_TopStools&Tables.PNG",
-        "../Assets/Env03Props_Enemy_StageProps.PNG"
+        "../Assets/Env02_NormalWorld.PNG"
     ],
-    "bgmAssetName": "roomtone_boss",
+    "bgmAssetName": "level_1",
     "cameraSpawn": [
-        98.01097106933594,
-        509.4822998046875
+        542.2343139648438,
+        485.50408935546875
     ],
     "cameraZoom": 1.2000000476837158,
     "entities": [
         {
             "components": {
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-162.97792053222656,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-330.18994140625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":500.0,\"aabb_maxX\":2262.840087890625,\"aabb_maxY\":580.83984375,\"aabb_minX\":2062.840087890625,\"aabb_minY\":80.83984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":2162.840087890625,\"posY\":330.83984375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-162.97792053222656,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-330.18994140625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":500.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1181.309814453125,\"aabb_maxY\":901.07080078125,\"aabb_minX\":681.3098754882813,\"aabb_minY\":651.07080078125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":931.3098754882813,\"posY\":776.07080078125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":2500.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2199.88671875,\"aabb_maxY\":856.5203247070313,\"aabb_minX\":-300.1134033203125,\"aabb_minY\":756.5203247070313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":949.8865966796875,\"posY\":806.5203247070313,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":2500.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2243.0,\"aabb_maxY\":75.0,\"aabb_minX\":-256.99993896484375,\"aabb_minY\":-25.0,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":993.0000610351563,\"posY\":25.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":45.37608337402344,\"aabb_maxY\":961.81689453125,\"aabb_minX\":-121.83592224121094,\"aabb_minY\":554.005859375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":-38.22991943359375,\"posY\":757.911376953125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":1944.3492431640625,\"aabb_maxY\":1024.896728515625,\"aabb_minX\":1777.1373291015625,\"aabb_minY\":617.085693359375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":1860.7432861328125,\"posY\":820.9912109375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
                 "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
-                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":250.0,\"aabb_maxX\":157.50924682617188,\"aabb_maxY\":584.382080078125,\"aabb_minX\":-42.490760803222656,\"aabb_minY\":334.382080078125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":250.0,\"aabb_maxX\":443.9139404296875,\"aabb_maxY\":577.3692016601563,\"aabb_minX\":243.9139404296875,\"aabb_minY\":327.36920166015625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"triggerEvent\":\"\"}",
                 "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
                 "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":1000.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":35.0,\\\\\\\"scaleY\\\\\\\":35.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/RockSpritesheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":true},\\\"10\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5,\\\"willLoop\\\":false},\\\"11\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":4,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":11,\\\"willLoop\\\":true},\\\"3\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":10,\\\"willLoop\\\":true},\\\"4\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":9,\\\"willLoop\\\":false},\\\"5\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":8,\\\"willLoop\\\":false},\\\"6\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":7,\\\"willLoop\\\":false},\\\"7\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":6,\\\"willLoop\\\":false},\\\"8\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"9\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":10,\\\"totalRows\\\":12}\",\"renderLayer\":1,\"renderType\":2}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/RockSpritesheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":true},\\\"10\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5,\\\"willLoop\\\":false},\\\"11\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":4,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":11,\\\"willLoop\\\":true},\\\"3\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":10,\\\"willLoop\\\":true},\\\"4\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":9,\\\"willLoop\\\":false},\\\"5\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":8,\\\"willLoop\\\":false},\\\"6\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":7,\\\"willLoop\\\":false},\\\"7\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":6,\\\"willLoop\\\":false},\\\"8\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"9\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":10,\\\"totalRows\\\":12}\",\"renderLayer\":1,\"renderType\":2}",
                 "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":57.509239196777344,\"posY\":459.382080078125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":343.9139404296875,\"posY\":452.36920166015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Rock"
         },
         {
             "components": {
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":79.0,\\\"scaleY\\\":79.0,\\\"texturePath\\\":\\\"../Assets/Env03Props_Enemy_BarLights.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
-                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Light"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2811.10498046875,\"aabb_maxY\":144.94967651367188,\"aabb_minX\":-905.4520263671875,\"aabb_minY\":72.3258285522461,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":45.37608337402344,\"aabb_maxY\":961.81689453125,\"aabb_minX\":-121.83592224121094,\"aabb_minY\":554.005859375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":952.826416015625,\"posY\":108.63775634765625,\"rot\":0.0,\"scaleX\":37.16556930541992,\"scaleY\":0.7262385487556458}"
+                "Transform": "{\"posX\":-38.22991943359375,\"posY\":757.911376953125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2285.07421875,\"aabb_maxY\":749.929443359375,\"aabb_minX\":2045.34130859375,\"aabb_minY\":607.579833984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-61.66816711425781,\"aabb_maxY\":759.197509765625,\"aabb_minX\":-228.8801727294922,\"aabb_minY\":351.386474609375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":2165.207763671875,\"posY\":678.754638671875,\"rot\":0.0,\"scaleX\":2.397329092025757,\"scaleY\":1.4234962463378906}"
+                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
-                "Transform": "{\"posX\":49.75550842285156,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Audience"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-235.9080352783203,\"aabb_maxY\":1006.0772705078125,\"aabb_minX\":-372.96966552734375,\"aabb_minY\":803.5032958984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-304.4388427734375,\"posY\":904.790283203125,\"rot\":0.0,\"scaleX\":1.37061607837677,\"scaleY\":2.025740146636963}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-670.8059692382813,\"aabb_maxY\":985.09765625,\"aabb_minX\":-771.4916381835938,\"aabb_minY\":746.111328125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-721.1488037109375,\"posY\":865.6044921875,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.3898632526397705}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2396.202880859375,\"aabb_maxY\":788.9085693359375,\"aabb_minX\":2295.517333984375,\"aabb_minY\":508.3890380859375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":2345.860107421875,\"posY\":648.6488037109375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.8051950931549072}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":79.0,\\\"scaleY\\\":79.0,\\\"texturePath\\\":\\\"../Assets/Env03Props_Enemy_Railings.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
-                "Transform": "{\"posX\":960.0,\"posY\":540.4263916015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Railing"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
-                "Transform": "{\"posX\":652.94189453125,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Audience"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
-                "Transform": "{\"posX\":1255.065673828125,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Audience"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
-                "Transform": "{\"posX\":1857.189453125,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Audience"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":79.0,\\\"scaleY\\\":79.0,\\\"texturePath\\\":\\\"../Assets/Env03Props_Enemy_BottomStools&Tables.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
-                "Transform": "{\"posX\":960.0,\"posY\":540.4263916015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Railing"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2375.81298828125,\"aabb_maxY\":809.1974487304688,\"aabb_minX\":-243.6473388671875,\"aabb_minY\":736.5735473632813,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":1066.0828857421875,\"posY\":772.885498046875,\"rot\":0.0,\"scaleX\":26.194604873657227,\"scaleY\":0.7262385487556458}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2506.114501953125,\"aabb_maxY\":739.525634765625,\"aabb_minX\":2405.428955078125,\"aabb_minY\":146.79849243164063,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":2455.771728515625,\"posY\":443.16204833984375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":5.927270889282227}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-366.3101806640625,\"aabb_maxY\":981.1275634765625,\"aabb_minX\":-655.45068359375,\"aabb_minY\":878.1541748046875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-510.88043212890625,\"posY\":929.640869140625,\"rot\":0.0,\"scaleX\":2.891404628753662,\"scaleY\":1.0297335386276245}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-768.2927856445313,\"aabb_maxY\":755.6187744140625,\"aabb_minX\":-868.9784545898438,\"aabb_minY\":142.17416381835938,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-818.6356201171875,\"posY\":448.896484375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":6.134446620941162}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Behaviour": "{\"scripts\":[\"GhoulScript\"]}",
-                "Collider": "{\"aabb_dimX\":180.0,\"aabb_dimY\":350.0,\"aabb_maxX\":2003.5860595703125,\"aabb_maxY\":599.2611083984375,\"aabb_minX\":1823.5860595703125,\"aabb_minY\":249.2611083984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Health": "{\"currentHP\":300.0,\"maxHP\":300.0}",
-                "HealthBar": "{\"height\":25.0,\"width\":200.0,\"yOffset\":200.0}",
-                "Movement": "{\"moveSpeed\":300.0,\"moveType\":0}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":1000.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":1,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Ghoul_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"2\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":6,\\\"col_start\\\":5,\\\"duration\\\":0.10000000149011612,\\\"row\\\":3,\\\"willLoop\\\":true}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
+                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1745.36328125,\"aabb_maxY\":556.8907470703125,\"aabb_minX\":1495.36328125,\"aabb_minY\":306.8907165527344,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":80.0,\"maxHP\":80.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
+                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
                 "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":1913.5860595703125,\"posY\":424.2611083984375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":1620.36328125,\"posY\":431.8907165527344,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
-            "name": "Ghoul_SpriteSheet"
+            "name": "SpiritMelee"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1946.36083984375,\"aabb_maxY\":516.236083984375,\"aabb_minX\":1696.36083984375,\"aabb_minY\":266.2360534667969,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
+                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":1821.36083984375,\"posY\":391.2360534667969,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "SpiritRanged"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":150.0,\"aabb_dimY\":500.0,\"aabb_maxX\":2101.1962890625,\"aabb_maxY\":697.6119384765625,\"aabb_minX\":1951.1961669921875,\"aabb_minY\":197.61196899414063,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Portal\",\"triggerEvent\":\"TouchPortal\"}",
+                "Portal": "{\"scene\":\"../Assets/saves/level2.json\",\"state\":0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":100.0,\\\\\\\"scaleY\\\\\\\":100.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Env01_DoorSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"1\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false}},\\\"totalCols\\\":1,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
+                "Transform": "{\"posX\":2026.1961669921875,\"posY\":447.6119689941406,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Portal"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":500.0,\"aabb_maxX\":2144.32666015625,\"aabb_maxY\":1014.7512817382813,\"aabb_minX\":1944.32666015625,\"aabb_minY\":514.7512817382813,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":2044.32666015625,\"posY\":764.7512817382813,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"ObstacleScript\"]}",
+                "Collider": "{\"aabb_dimX\":125.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1318.3583984375,\"aabb_maxY\":541.7080078125,\"aabb_minX\":1193.3583984375,\"aabb_minY\":291.70794677734375,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":125.0,\"yOffset\":150.0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":0.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":25.0,\\\\\\\"scaleY\\\\\\\":25.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Speaker_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":1,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":1255.8583984375,\"posY\":416.7079772949219,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0000001192092896}"
+            },
+            "name": "Speaker"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"ObstacleScript\"]}",
+                "Collider": "{\"aabb_dimX\":125.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1062.5,\"aabb_maxY\":525.0,\"aabb_minX\":937.5,\"aabb_minY\":275.0,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":125.0,\"yOffset\":150.0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":0.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":25.0,\\\\\\\"scaleY\\\\\\\":25.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Speaker_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":1,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":1000.0,\"posY\":400.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0000001192092896}"
+            },
+            "name": "Speaker"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"ObstacleScript\"]}",
+                "Collider": "{\"aabb_dimX\":125.0,\"aabb_dimY\":250.0,\"aabb_maxX\":838.57080078125,\"aabb_maxY\":537.885009765625,\"aabb_minX\":713.57080078125,\"aabb_minY\":287.88494873046875,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":125.0,\"yOffset\":150.0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":0.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":25.0,\\\\\\\"scaleY\\\\\\\":25.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Speaker_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":1,\\\"totalRows\\\":3}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":776.07080078125,\"posY\":412.8849792480469,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0000001192092896}"
+            },
+            "name": "Speaker"
         }
     ],
     "fontConfig": "../Assets/fontAssets.json",
@@ -194,7 +229,62 @@
                 "soundType": 2
             }
         ],
-        "dialogues": [],
+        "dialogues": [
+            {
+                "ID": 10,
+                "bgEnabled": true,
+                "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                "bgSize": [
+                    1500.0,
+                    300.0
+                ],
+                "currentLineIndex": 0,
+                "isVisible": true,
+                "jsonPath": "../Assets/Dialogue.json",
+                "lines": [
+                    "Jam Out SG! We made it! We're gonna rock their socks off. Or whatever they say.",
+                    "Record deal, here we come.",
+                    "Crazy bummer that so many acts forfeited! I wouldn't be surprised if they pit US against each other for content.",
+                    "I'd like to see them try. (SMIRK)",
+                    "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star.",
+                    "Spooky...",
+                    "Groooowl...",
+                    "MEGA SPOOKY!",
+                    "I gotta find Ghoul, and fast!",
+                    "But first, I gotta fight off...whatever these are...",
+                    "I get the feeling they won't let me get past if I don't do something about these creeps...",
+                    "Alright then, let's rock this out! BRING IT ON!!!"
+                ],
+                "profileEnabled": true,
+                "profileOffset": [
+                    0.0,
+                    0.0
+                ],
+                "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Happy.png\\\"}\",\"type\":\"image\"}",
+                "profileSize": [
+                    300.0,
+                    300.0
+                ],
+                "sceneID": "0",
+                "textBox": {
+                    "centered": false,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "isVisible": true,
+                    "pos": [
+                        450.0,
+                        200.0
+                    ],
+                    "scale": 1.0,
+                    "text": ""
+                },
+                "textSpeed": 60.0,
+                "wrapWidth": 1300.0
+            }
+        ],
         "displays": [
             {
                 "ID": 4,
@@ -980,11 +1070,11 @@
     "sceneName": "temp",
     "sceneType": 1,
     "worldMax": [
-        2730.0,
-        1040.0
+        2240.0,
+        1080.0
     ],
     "worldMin": [
-        -750.0,
-        40.0
+        -260.0,
+        0.0
     ]
 }
