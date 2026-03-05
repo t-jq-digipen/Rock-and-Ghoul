@@ -779,6 +779,10 @@ static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 1.5f;
 
 void GuiSystem::Update(float dt)
 {
+    //int maxTextureSize = 0;
+    //glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+    //std::cout << maxTextureSize << std::endl;
+
     SceneManager& sm = SceneManager::Get();
 
     // Advance dialogue button

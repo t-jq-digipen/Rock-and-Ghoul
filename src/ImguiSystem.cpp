@@ -1493,9 +1493,68 @@ void ImGuiSystem::Update(float dt)
 
         ImGui::SameLine();
 
+        // Snapshot original dialogue box settings before setting Custom Override to true
+        // Default Snapshot (per ID)
+
+        struct DialogueOriginalSettings
+        {
+            // --- TextBox ---
+            Vec2 tbBasePos{};
+            float tbBaseScale = 1.f;
+            Colour3 tbColor{};
+            float wrapWidth = 0.f;
+            float textSpeed = 60.f;
+
+            // --- Background ---
+            bool bgEnabled = false;
+            Vec2 bgBaseSize{};
+            UIRenderType bgType = UIRenderType::None;
+
+            // Background UIRenderType::Shape
+            ButtonShape bgShape = ButtonShape::Rectangle;
+            Colour3 bgShapeColor{};
+
+            // Background UIRenderType::CustomQuad
+            Vec2 bgV0{}, bgV1{}, bgV2{}, bgV3{};
+            Colour3 bgQuadColor{};
+
+            // Background UIRenderType::ImageSheet
+            std::string bgTexName;
+            GLuint bgTexID = 0;
+            unsigned bgRows = 1;
+            unsigned bgCols = 1;
+            UIImageSheetRender::FrameIndex bgFrameIndex{};
+            std::unordered_map<unsigned int, UIImageSheetRender::FrameIndex> bgFrames{};
+
+            // --- Profile ---
+            bool profileEnabled = false;
+            Vec2 profileBaseSize{};
+            Vec2 profileOffset{};
+            UIRenderType profileType = UIRenderType::None;
+
+            // Profile UIRenderType::Shape
+            ButtonShape profileShape = ButtonShape::Rectangle;
+            Colour3 profileShapeColor{};
+
+            // Profile UIRenderType::CustomQuad
+            Vec2 pv0{}, pv1{}, pv2{}, pv3{};
+            Colour3 pQuadColor{};
+
+            // Profile UIRenderType::ImageSheet
+            std::string profileTexName;
+            GLuint profileTexID = 0;
+            unsigned pRows = 1;
+            unsigned pCols = 1;
+            UIImageSheetRender::FrameIndex pFrameIndex{};
+            std::unordered_map<unsigned int, UIImageSheetRender::FrameIndex> pFrames{};
+        };
+
         // static maps for accessing Dialogue properties for clones
+        static std::unordered_map<int, DialogueOriginalSettings> perDlgOriginalSettingsById; // key by d.ID
+        static std::unordered_map<int, bool> perDlgOriginalSettingsCapturedById; // key by d.ID
         static std::unordered_map<int, int> perDlgSceneIdxById; // key by d.ID
-        static std::unordered_map<int, bool> perDlgColorOverrideById; // key by d.ID
+        static std::unordered_map<int, bool> perDlgColorOverrideById; // key by d.ID (true = dialogue text color can be overriden)
+        static std::unordered_map<int, bool> perDlgCustomOverrideById; // key by d.ID (true = dialogue box is user-customizable)
 
         //  Button to duplicate the currently selected UI entity.
         if (ImGui::Button("Clone UI") && uiSelectedIndex >= 0)
@@ -1534,6 +1593,9 @@ void ImGuiSystem::Update(float dt)
                 {
                     const bool srcColorOverriden = perDlgColorOverrideById.contains(src.ID) ? perDlgColorOverrideById[src.ID] : false;
                     perDlgColorOverrideById[dst.ID] = srcColorOverriden;
+
+                    const bool srcCustomOverriden = perDlgCustomOverrideById.contains(src.ID) ? perDlgCustomOverrideById[src.ID] : false;
+                    perDlgCustomOverrideById[dst.ID] = srcCustomOverriden;
 
                     if (perDlgSceneIdxById.contains(src.ID))
                     {
@@ -1596,9 +1658,12 @@ void ImGuiSystem::Update(float dt)
                 if (lIdx >= 0 && lIdx < (int)dialogues.size())
                 {
                     const int erasedID = dialogues[lIdx].ID;
-                    dialogues.erase(dialogues.begin() + lIdx);
+                    dialogues.erase(dialogues.begin() + lIdx);;
                     perDlgSceneIdxById.erase(erasedID);
                     perDlgColorOverrideById.erase(erasedID);
+                    perDlgCustomOverrideById.erase(erasedID);
+                    perDlgOriginalSettingsCapturedById.erase(erasedID);
+                    perDlgOriginalSettingsById.erase(erasedID);
                 }
             }
             else if (type == SelectedType::Display)
@@ -1852,11 +1917,11 @@ void ImGuiSystem::Update(float dt)
                         int actionCount = (int)(sizeof(actionNames) / sizeof(actionNames[0]));
                         int curr = (int)b.action;
                         curr = (curr >= 0 && curr < actionCount) ? curr : 0;
-                        if (ImGui::Combo("Action", &curr, actionNames, actionCount))
-                        {
-                            b.action = (ButtonAction)curr;
-                            GuiSystem::Get().BindButtonAction(b);
-                        }
+                        //if (ImGui::Combo("Action", &curr, actionNames, actionCount))
+                        //{
+                        //    b.action = (ButtonAction)curr;
+                        //    GuiSystem::Get().BindButtonAction(b);
+                        //}
                     }
                     ImGui::Separator();
                     // Action new
@@ -1878,7 +1943,7 @@ void ImGuiSystem::Update(float dt)
                             }
                         }
 
-                        if (ImGui::Combo("ClickAction", &selected, actionNames.data(), static_cast<int>(actionNames.size())))
+                        if (ImGui::Combo("Button Action", &selected, actionNames.data(), static_cast<int>(actionNames.size())))
                         {
                             b.actionName = actionNames[selected];
                             b.actionParams.clear();
@@ -2105,7 +2170,7 @@ void ImGuiSystem::Update(float dt)
                             }
 
                             // Image texture
-                            if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), static_cast<int>(imgOptions.size())))
+                            if (ImGui::Combo("Texture Drawn", &selected, imgOptions.data(), static_cast<int>(imgOptions.size())))
                             {
                                 img = CreateImage(imgOptions[selected]);
                             }
@@ -2244,11 +2309,11 @@ void ImGuiSystem::Update(float dt)
                     // Position / Size / Text scale
                     {
                         ImGui::SeparatorText("Transform");
-                        ImGui::InputFloat("posX", &b.basePos.x, 0.1f);
-                        ImGui::InputFloat("posY", &b.basePos.y, 0.1f);
-                        ImGui::InputFloat("sizeX", &b.baseSize.x, 0.1f);
-                        ImGui::InputFloat("sizeY", &b.baseSize.y, 0.1f);
-                        ImGui::InputFloat("textScale", &b.baseTextScale, 0.1f);
+                        ImGui::DragFloat("posX", &b.basePos.x, 1.f);
+                        ImGui::DragFloat("posY", &b.basePos.y, 1.f);
+                        ImGui::DragFloat("sizeX", &b.baseSize.x, 1.f);
+                        ImGui::DragFloat("sizeY", &b.baseSize.y, 1.f);
+                        ImGui::DragFloat("textScale", &b.baseTextScale, 0.1f);
                     }
                     ImGui::Separator();
 
@@ -2285,9 +2350,9 @@ void ImGuiSystem::Update(float dt)
                     // Transform
                     ImGui::Separator();
                     ImGui::Text("Transform");
-                    ImGui::SliderFloat("posX", &t.basePos.x, 0.f, 1920.f);
-                    ImGui::SliderFloat("posY", &t.basePos.y, 0.f, 1080.f);
-                    ImGui::SliderFloat("scale", &t.baseScale, 0.1f, 100.f);
+                    ImGui::DragFloat("posX", &t.basePos.x, 1.f);
+                    ImGui::DragFloat("posY", &t.basePos.y, 1.f);
+                    ImGui::DragFloat("scale", &t.baseScale, 0.1f);
 
                     // Color
                     ImGui::Separator();
@@ -2392,7 +2457,13 @@ void ImGuiSystem::Update(float dt)
                     {
                         int initIdx = 0;
                         for (int i = 0; i < (int)sceneIDs.size(); ++i)
-                            if (sceneIDs[i] == d.sceneID) { initIdx = i; break; }
+                        {
+                            if (sceneIDs[i] == d.sceneID) 
+                            { 
+                                initIdx = i;
+                                break; 
+                            }
+                        }
                         perDlgSceneIdxById[d.ID] = initIdx;
                     }
 
@@ -2407,9 +2478,118 @@ void ImGuiSystem::Update(float dt)
                     }
 
                     bool& colorOverriden = perDlgColorOverrideById[d.ID];
+                    bool& customOverriden = perDlgCustomOverrideById[d.ID];
+
+                    // Get texture string from texture ID
+                    auto textureNameFromID = [&](GLuint texID) -> std::string
+                        {
+                            if (!texID) return {};
+                            const auto& cache = Render::GetInstance().Get_TextureCache();
+                            for (const auto& [name, id] : cache)
+                            {
+                                if (id == texID) return name;
+                            }
+                            return {};
+                        };
+
+                    {
+                        bool& captured = perDlgOriginalSettingsCapturedById[d.ID];
+                        if (!captured)
+                        {
+                            DialogueOriginalSettings ogs{};
+
+                            // TextBox
+                            ogs.tbBasePos = d.textBox.basePos;
+                            ogs.tbBaseScale = d.textBox.baseScale;
+                            ogs.tbColor = d.textBox.color;
+                            ogs.wrapWidth = d.wrapWidth;
+                            ogs.textSpeed = comp->GetTextSpeed();
+
+                            // Background
+                            ogs.bgEnabled = d.bgEnabled;
+                            ogs.bgBaseSize = d.bgBaseSize;
+                            ogs.bgType = d.bgRenderData.GetRenderType();
+
+                            if (ogs.bgType == UIRenderType::Shape)
+                            {
+                                auto& s = d.bgRenderData.GetShapeData();
+                                ogs.bgShape = s.shape;
+                                ogs.bgShapeColor = s.color;
+                            }
+                            else if (ogs.bgType == UIRenderType::CustomQuad)
+                            {
+                                auto& q = d.bgRenderData.GetQuadData();
+                                ogs.bgV0 = q.v0; ogs.bgV1 = q.v1; ogs.bgV2 = q.v2; ogs.bgV3 = q.v3;
+                                ogs.bgQuadColor = q.color;
+                            }
+                            else if (ogs.bgType == UIRenderType::Image)
+                            {
+                                auto& img = d.bgRenderData.GetImageData().m_image;
+                                ogs.bgTexID = img.textureID;
+                                ogs.bgTexName = textureNameFromID(ogs.bgTexID);
+                            }
+                            else if (ogs.bgType == UIRenderType::ImageSheet)
+                            {
+                                auto& sh = d.bgRenderData.GetImageSheetData();
+                                ogs.bgRows = sh.total_rows;
+                                ogs.bgCols = sh.total_cols;
+                                ogs.bgFrameIndex = sh.frame_index;
+                                ogs.bgFrames = sh.frames;
+                                ogs.bgTexID = sh.m_image.textureID;
+                                ogs.bgTexName = textureNameFromID(ogs.bgTexID);
+                            }
+
+                            // Profile
+                            ogs.profileEnabled = d.profileEnabled;
+                            ogs.profileBaseSize = d.profileBaseSize;
+                            ogs.profileOffset = d.profileOffset;
+                            ogs.profileType = d.profileRenderData.GetRenderType();
+
+                            if (ogs.profileType == UIRenderType::Shape)
+                            {
+                                auto& s = d.profileRenderData.GetShapeData();
+                                ogs.profileShape = s.shape;
+                                ogs.profileShapeColor = s.color;
+                            }
+                            else if (ogs.profileType == UIRenderType::CustomQuad)
+                            {
+                                auto& q = d.profileRenderData.GetQuadData();
+                                ogs.pv0 = q.v0; ogs.pv1 = q.v1; ogs.pv2 = q.v2; ogs.pv3 = q.v3;
+                                ogs.pQuadColor = q.color;
+                            }
+                            else if (ogs.profileType == UIRenderType::Image)
+                            {
+                                auto& img = d.profileRenderData.GetImageData().m_image;
+                                ogs.profileTexID = img.textureID;
+                                ogs.profileTexName = textureNameFromID(ogs.profileTexID);
+                            }
+                            else if (ogs.profileType == UIRenderType::ImageSheet)
+                            {
+                                auto& sh = d.profileRenderData.GetImageSheetData();
+                                ogs.pRows = sh.total_rows;
+                                ogs.pCols = sh.total_cols;
+                                ogs.pFrameIndex = sh.frame_index;
+                                ogs.pFrames = sh.frames;
+                                ogs.profileTexID = sh.m_image.textureID;
+                                ogs.profileTexName = textureNameFromID(ogs.profileTexID);
+                            }
+
+                            perDlgOriginalSettingsById[d.ID] = ogs;
+                            captured = true;
+                        }
+                    }
+
+                    // Check if dialogue box is user-customizable or not
+                    ImGui::SeparatorText("Dialogue Mode");
+                    bool prevCustom = customOverriden;
+                    ImGui::Checkbox("Custom Override", &customOverriden);
+                    if (ImGui::IsItemHovered())
+                    {
+                        ImGui::SetTooltip("When enabled, this dialogue box is fully editable and will not be auto-driven by the selected Scene ID.");
+                    }
 
                     // Apply script to text component based on scene ID
-                    auto applySceneToComp = [&](int sceneIdx, bool applyColor)
+                    auto applySceneToComp = [&](int sceneIdx, bool applyColor, bool applyTextBoxSettings)
                         {
                             if (!dlgDoc.contains("scenes") || !dlgDoc["scenes"].is_array()) return;
                             if (sceneIdx < 0 || sceneIdx >= (int)dlgDoc["scenes"].size()) return;
@@ -2431,60 +2611,161 @@ void ImGuiSystem::Update(float dt)
                             comp->SetCurrentLineIndex(0);
                             comp->SetIsTyping(false);
 
-                            comp->SetTextSpeed(sc.value("textSpeed", 60.f));
+                            // comp->SetTextSpeed(sc.value("textSpeed", 60.f));
                             comp->SetFontPath(sc.value("fontPath", std::string("../Assets/fonts/Marker.ttf")));
                             comp->SetFontSize(sc.value("fontSize", 1.0f));
 
-                            if (applyColor && sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3)
+                            if (applyTextBoxSettings)
                             {
-                                Vec3 c{ sc["color"][0].get<float>(), sc["color"][1].get<float>(), sc["color"][2].get<float>() };
-                                comp->SetColor(c);
-                                d.textBox.color = { c.x, c.y, c.z };
+                                comp->SetTextSpeed(sc.value("textSpeed", 60.f));
+                                d.wrapWidth = sc.value("wrapWidth", d.wrapWidth);
+
+                                if (applyColor && sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3)
+                                {
+                                    Vec3 c{ sc["color"][0].get<float>(), sc["color"][1].get<float>(), sc["color"][2].get<float>() };
+                                    comp->SetColor(c);
+                                    d.textBox.color = { c.x, c.y, c.z };
+                                }
+                                else
+                                {
+                                    comp->SetColor({ d.textBox.color.r, d.textBox.color.g, d.textBox.color.b });
+                                }
                             }
                             else
                             {
+                                comp->SetTextSpeed(comp->GetTextSpeed());
                                 comp->SetColor({ d.textBox.color.r, d.textBox.color.g, d.textBox.color.b });
                             }
-
-                            d.wrapWidth = sc.value("wrapWidth", d.wrapWidth);
-
-                            //d.customSpeaker = sc.value("customSpeaker", false);
-                            //d.customSpeakerName = sc.value("customSpeakerName", d.customSpeakerName);
-
-                            //if (sc.contains("speakerUI"))
-                            //{
-                            //    auto& s = sc["speakerUI"];
-                            //    if (s.contains("pos") && s["pos"].is_array() && s["pos"].size() == 2)
-                            //    {
-                            //        d.speakerNameBasePos = { s["pos"][0].get<float>(), s["pos"][1].get<float>() };
-                            //    }
-                            //    d.speakerNameBaseScale = s.value("scale", d.speakerNameBaseScale);
-                            //    d.speakerNameCentered = s.value("centered", d.speakerNameCentered);
-
-                            //    if (s.contains("color") && s["color"].is_array() && s["color"].size() == 3)
-                            //    {
-                            //        d.speakerNameColor = { s["color"][0].get<float>(), s["color"][1].get<float>(), s["color"][2].get<float>() };
-                            //    }
-                            //}
 
                             comp->SetVisibleChars(0);
                             comp->StartTyping();
                         };
 
+                    if (prevCustom != customOverriden)
+                    {
+                        // Switch back to scene-driven mode (re-apply the selected scene ID)
+                        if (!customOverriden)
+                        {
+                            // Restore original textbox settings (before setting to custom mode)
+                            if (auto it = perDlgOriginalSettingsById.find(d.ID); it != perDlgOriginalSettingsById.end())
+                            {
+                                const auto& ogs = it->second;
+
+                                // TextBox
+                                d.textBox.basePos = ogs.tbBasePos;
+                                d.textBox.baseScale = ogs.tbBaseScale;
+                                d.textBox.color = ogs.tbColor;
+                                d.wrapWidth = ogs.wrapWidth;
+                                comp->SetTextSpeed(ogs.textSpeed);
+                                comp->SetColor({ ogs.tbColor.r, ogs.tbColor.g, ogs.tbColor.b });
+
+                                // Background
+                                d.bgEnabled = ogs.bgEnabled;
+                                d.bgBaseSize = ogs.bgBaseSize;
+                                d.bgRenderData.SetRenderType(ogs.bgType);
+
+                                if (ogs.bgType == UIRenderType::Shape)
+                                {
+                                    auto& s = d.bgRenderData.GetShapeData();
+                                    s.shape = ogs.bgShape;
+                                    s.color = ogs.bgShapeColor;
+                                }
+                                else if (ogs.bgType == UIRenderType::CustomQuad)
+                                {
+                                    auto& q = d.bgRenderData.GetQuadData();
+                                    q.v0 = ogs.bgV0; q.v1 = ogs.bgV1; q.v2 = ogs.bgV2; q.v3 = ogs.bgV3;
+                                    q.color = ogs.bgQuadColor;
+                                }
+                                else if (ogs.bgType == UIRenderType::Image)
+                                {
+                                    auto& img = d.bgRenderData.GetImageData().m_image;
+                                    if (!ogs.bgTexName.empty())
+                                    {
+                                        img = CreateImage(ogs.bgTexName);
+                                    }
+                                }
+                                else if (ogs.bgType == UIRenderType::ImageSheet)
+                                {
+                                    auto& sh = d.bgRenderData.GetImageSheetData();
+                                    if (!ogs.bgTexName.empty())
+                                    {
+                                        sh.m_image = CreateImage(ogs.bgTexName);
+                                    }
+                                    sh.total_rows = std::max(1u, ogs.bgRows);
+                                    sh.total_cols = std::max(1u, ogs.bgCols);
+                                    sh.frame_index = ogs.bgFrameIndex;
+                                    sh.frames = ogs.bgFrames;
+                                    sh.m_image.textureID = ogs.bgTexID;
+                                }
+
+                                // Profile
+                                d.profileEnabled = ogs.profileEnabled;
+                                d.profileBaseSize = ogs.profileBaseSize;
+                                d.profileOffset = ogs.profileOffset;
+                                d.profileRenderData.SetRenderType(ogs.profileType);
+
+                                if (ogs.profileType == UIRenderType::Shape)
+                                {
+                                    auto& s = d.profileRenderData.GetShapeData();
+                                    s.shape = ogs.profileShape;
+                                    s.color = ogs.profileShapeColor;
+                                }
+                                else if (ogs.profileType == UIRenderType::CustomQuad)
+                                {
+                                    auto& q = d.profileRenderData.GetQuadData();
+                                    q.v0 = ogs.pv0; q.v1 = ogs.pv1; q.v2 = ogs.pv2; q.v3 = ogs.pv3;
+                                    q.color = ogs.pQuadColor;
+                                }
+                                else if (ogs.profileType == UIRenderType::Image)
+                                {
+                                    auto& img = d.profileRenderData.GetImageData().m_image;
+                                    if (!ogs.profileTexName.empty())
+                                    {
+                                        img = CreateImage(ogs.profileTexName);
+                                    }
+                                }
+                                else if (ogs.profileType == UIRenderType::ImageSheet)
+                                {
+                                    auto& sh = d.profileRenderData.GetImageSheetData();
+                                    if (!ogs.profileTexName.empty())
+                                    {
+                                        sh.m_image = CreateImage(ogs.profileTexName);
+                                    }
+                                    sh.total_rows = std::max(1u, ogs.pRows);
+                                    sh.total_cols = std::max(1u, ogs.pCols);
+                                    sh.frame_index = ogs.pFrameIndex;
+                                    sh.frames = ogs.pFrames;
+                                    sh.m_image.textureID = ogs.profileTexID;
+                                }
+                            }
+
+                            colorOverriden = false;
+                            applySceneToComp(activeSceneIdx, false, false);
+                            d.sceneID = sceneIDs.empty() ? "0" : sceneIDs[activeSceneIdx];
+                        }
+                    }
+
                     if (comp->GetLines().empty())
                     {
                         int wantIdx = 0;
                         for (int i = 0; i < (int)sceneIDs.size(); ++i)
-                            if (sceneIDs[i] == d.sceneID) { wantIdx = i; break; }
+                        {
+                            if (sceneIDs[i] == d.sceneID) 
+                            { 
+                                wantIdx = i; 
+                                break; 
+                            }
+                        }
                         activeSceneIdx = std::clamp(wantIdx, 0, std::max(0, (int)sceneIDs.size() - 1));
-                        applySceneToComp(activeSceneIdx, !colorOverriden);
+                        applySceneToComp(activeSceneIdx, customOverriden ? !colorOverriden : true, !customOverriden);
                     }
 
                     // Dialogue TextBox Properties
+                    ImGui::BeginDisabled(!customOverriden);
                     ImGui::SeparatorText("Dialogue Text Box");
-                    ImGui::SliderFloat("posX", &d.textBox.basePos.x, 0.f, 1920.f, "%.3f");
-                    ImGui::SliderFloat("posY", &d.textBox.basePos.y, 0.f, 1080.f, "%.3f");
-                    ImGui::SliderFloat("scale", &d.textBox.baseScale, 0.1f, 10.f, "%.3f");
+                    ImGui::DragFloat("posX", &d.textBox.basePos.x, 1.f);
+                    ImGui::DragFloat("posY", &d.textBox.basePos.y, 1.f);
+                    ImGui::DragFloat("scale", &d.textBox.baseScale, 0.1f);
 
                     float col[3] = { d.textBox.color.r, d.textBox.color.g, d.textBox.color.b };
 
@@ -2497,14 +2778,16 @@ void ImGuiSystem::Update(float dt)
                     }
 
                     // Textbox Wrap Width
-                    ImGui::SliderFloat("Wrap Width", &d.wrapWidth, 0.f, 1920.f, "%.3f");
+                    ImGui::DragFloat("Wrap Width", &d.wrapWidth, 1.f);
 
                     // Text Typing Speed
                     float spd = comp->GetTextSpeed();
-                    if (ImGui::SliderFloat("Text Speed", &spd, 0.f, 200.f, "%.3f"))
+                    if (ImGui::DragFloat("Text Speed", &spd, 1.f))
                     {
                         comp->SetTextSpeed(spd);
                     }
+
+                    ImGui::EndDisabled();
 
                     // Scene (determines script)
                     ImGui::SeparatorText("Scene");
@@ -2528,8 +2811,12 @@ void ImGuiSystem::Update(float dt)
 
                         if (activeSceneIdx != prevScene) 
                         {
-                            applySceneToComp(activeSceneIdx, !colorOverriden);               // resets lines and (re)starts typing
                             d.sceneID = sceneIDs.empty() ? "0" : sceneIDs[activeSceneIdx];
+                            if (!customOverriden)
+                            {
+                                colorOverriden = false;
+                                applySceneToComp(activeSceneIdx, true, true); // resets lines and (re)starts typing
+                            }
                         }
                     }
 
@@ -2537,39 +2824,113 @@ void ImGuiSystem::Update(float dt)
                     ImGui::SeparatorText("Lines");
                     if (comp)
                     {
-                        const auto& lines = comp->GetLines();
-                        int idx = comp->GetCurrentLineIndex();
-                        int lineCount = (int)lines.size();
-
-                        ImGui::Text("Current Line: %d / %d", lineCount ? (idx + 1) : 0, lineCount);
-
-                        if (lineCount > 0)
+                        // Custom Override is TRUE: edit lines freely
+                        // Custom Override is FALSE: select preset lines only
+                        if (!customOverriden)
                         {
-                            static std::vector<std::string> lbls;
-                            lbls.clear();
-                            lbls.reserve(lines.size());
-                            for (const auto& s : lines)
-                            {
-                                if (s.size() > 96) lbls.push_back(s.substr(0, 96) + "...");
-                                else               lbls.push_back(s);
-                            }
-                            std::vector<const char*> citems;
-                            citems.reserve(lbls.size());
-                            for (auto& s : lbls) citems.push_back(s.c_str());
+                            const auto& lines = comp->GetLines();
+                            int idx = comp->GetCurrentLineIndex();
+                            int lineCount = (int)lines.size();
 
-                            int prevIdx = idx;
-                            ImGui::Combo("Current Line", &idx, citems.data(), (int)citems.size());
-                            if (idx != prevIdx)
+                            ImGui::Text("Current Line: %d / %d", lineCount ? (idx + 1) : 0, lineCount);
+
+                            if (lineCount > 0)
                             {
-                                if (idx < 0) idx = 0;
-                                if (idx >= lineCount) idx = lineCount - 1;
-                                comp->SetCurrentLineIndex(idx);
-                                comp->StartTyping();
+                                static std::vector<std::string> lbls;
+                                lbls.clear();
+                                lbls.reserve(lines.size());
+                                for (const auto& s : lines)
+                                {
+                                    if (s.size() > 96) lbls.push_back(s.substr(0, 96) + "...");
+                                    else               lbls.push_back(s);
+                                }
+                                std::vector<const char*> citems;
+                                citems.reserve(lbls.size());
+                                for (auto& s : lbls) citems.push_back(s.c_str());
+
+                                int prevIdx = idx;
+                                ImGui::Combo("Current Line", &idx, citems.data(), (int)citems.size());
+                                if (idx != prevIdx)
+                                {
+                                    idx = std::clamp(idx, 0, std::max(0, lineCount - 1));
+                                    comp->SetCurrentLineIndex(idx);
+                                    comp->StartTyping();
+                                }
+                            }
+                            else
+                            {
+                                ImGui::TextDisabled("No lines in this scene!");
                             }
                         }
                         else
                         {
-                            ImGui::TextDisabled("No lines in this scene!");
+                            std::vector<std::string> lines = comp->GetLines();
+                            if (lines.empty()) lines.push_back("");
+
+                            int idx = comp->GetCurrentLineIndex();
+                            idx = std::clamp(idx, 0, (int)lines.size() - 1);
+
+                            ImGui::Text("Lines: %d", (int)lines.size());
+
+                            // Current line selector
+                            {
+                                static std::vector<std::string> lbls;
+                                lbls.clear();
+                                lbls.reserve(lines.size());
+                                for (const auto& s : lines)
+                                    lbls.push_back(s.size() > 96 ? (s.substr(0, 96) + "...") : s);
+
+                                std::vector<const char*> citems;
+                                citems.reserve(lbls.size());
+                                for (auto& s : lbls) citems.push_back(s.c_str());
+
+                                int prevIdx = idx;
+                                ImGui::Combo("Current Line", &idx, citems.data(), (int)citems.size());
+                                if (idx != prevIdx)
+                                {
+                                    idx = std::clamp(idx, 0, (int)lines.size() - 1);
+                                    comp->SetCurrentLineIndex(idx);
+                                    comp->StartTyping();
+                                }
+                            }
+
+                            // Edit current line
+                            {
+                                std::string& cur = lines[idx];
+                                static std::vector<char> buf;
+                                buf.assign(cur.begin(), cur.end());
+                                buf.push_back(' ');
+                                buf.resize(std::max<size_t>(buf.size(), 1024));
+
+                                ImGui::TextUnformatted("Edit Line");
+                                if (ImGui::InputTextMultiline("##DlgLineEdit", buf.data(), buf.size(), ImVec2(-FLT_MIN, 90)))
+                                {
+                                    cur = std::string(buf.data());
+                                    comp->SetLines(lines);
+                                    comp->SetCurrentLineIndex(idx);
+                                    comp->StartTyping();
+                                }
+                            }
+
+                            // Add / remove lines
+                            if (ImGui::Button("Add Line"))
+                            {
+                                lines.insert(lines.begin() + idx + 1, "");
+                                comp->SetLines(lines);
+                                comp->SetCurrentLineIndex(idx + 1);
+                                comp->StartTyping();
+                            }
+                            ImGui::SameLine();
+                            ImGui::BeginDisabled(lines.size() <= 1);
+                            if (ImGui::Button("Remove Line"))
+                            {
+                                lines.erase(lines.begin() + idx);
+                                idx = std::clamp(idx, 0, (int)lines.size() - 1);
+                                comp->SetLines(lines);
+                                comp->SetCurrentLineIndex(idx);
+                                comp->StartTyping();
+                            }
+                            ImGui::EndDisabled();
                         }
                     }
                     else
@@ -2577,14 +2938,15 @@ void ImGuiSystem::Update(float dt)
                         ImGui::TextDisabled("No TextComponent attached!");
                     }
 
-                    // DIALOGUE BACKGROUND
 
+                    ImGui::BeginDisabled(!customOverriden);
+                    // DIALOGUE BACKGROUND
                     ImGui::SeparatorText("Background");
                     ImGui::Checkbox("Show Background", &d.bgEnabled);
                     if (d.bgEnabled)
                     {
-                        ImGui::SliderFloat("BG Width", &d.bgBaseSize.x, 0.f, 1920.f);
-                        ImGui::SliderFloat("BG Height", &d.bgBaseSize.y, 0.f, 1080.f);
+                        ImGui::DragFloat("BG Width", &d.bgBaseSize.x, 1.f);
+                        ImGui::DragFloat("BG Height", &d.bgBaseSize.y, 1.f);
 
                         const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
                         int currType = (int)d.bgRenderData.GetRenderType();
@@ -2829,10 +3191,10 @@ void ImGuiSystem::Update(float dt)
                     ImGui::Checkbox("Show Profile", &d.profileEnabled);
                     if (d.profileEnabled)
                     {
-                        ImGui::SliderFloat("Profile Width", &d.profileBaseSize.x, 0.f, 1920.f);
-                        ImGui::SliderFloat("Profile Height", &d.profileBaseSize.y, 0.f, 1080.f);
-                        ImGui::SliderFloat("Profile Offset X", &d.profileOffset.x, 0.f, 1920.f);
-                        ImGui::SliderFloat("Profile Offset Y", &d.profileOffset.y, 0.f, 1080.f);
+                        ImGui::DragFloat("Profile Width", &d.profileBaseSize.x, 1.f);
+                        ImGui::DragFloat("Profile Height", &d.profileBaseSize.y, 1.f);
+                        ImGui::DragFloat("Profile Offset X", &d.profileOffset.x, 1.f);
+                        ImGui::DragFloat("Profile Offset Y", &d.profileOffset.y, 1.f);
 
                         const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
                         int currType = (int)d.profileRenderData.GetRenderType();
@@ -3070,6 +3432,7 @@ void ImGuiSystem::Update(float dt)
                             break;
                         }
                     }
+                    ImGui::EndDisabled();
 
                     ImGui::Separator();
 
@@ -3100,10 +3463,10 @@ void ImGuiSystem::Update(float dt)
                     // Transform
                     {
                         ImGui::SeparatorText("Transform");
-                        ImGui::InputFloat("posX", &dp.basePos.x, 0.1f);
-                        ImGui::InputFloat("posY", &dp.basePos.y, 0.1f);
-                        ImGui::InputFloat("sizeX", &dp.baseSize.x, 0.1f);
-                        ImGui::InputFloat("sizeY", &dp.baseSize.y, 0.1f);
+                        ImGui::DragFloat("posX", &dp.basePos.x, 1.f);
+                        ImGui::DragFloat("posY", &dp.basePos.y, 1.f);
+                        ImGui::DragFloat("sizeX", &dp.baseSize.x, 1.f);
+                        ImGui::DragFloat("sizeY", &dp.baseSize.y, 1.f);
                         ImGui::Checkbox("Centered", &dp.centered);
                     }
 
