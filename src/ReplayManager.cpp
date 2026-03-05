@@ -1,6 +1,14 @@
 #include "ReplayManager.h"
 #include "Registry.h"
 #include "Component.h" // <-- where TransformComponent is
+#include <unordered_set>
+#include "CombatSystem.h"
+#include "BehaviourComponent.h"
+#include "MonoScriptComponent.h"
+#include <SceneManager.h>
+//#include "RenderComponent.h"
+
+
 
 ReplayManager& ReplayManager::Get()
 {
@@ -57,6 +65,8 @@ void ReplayManager::StartPlayback()
 void ReplayManager::StopPlayback()
 {
     if (mode == Mode::Playback) mode = Mode::Off;
+
+    //SceneManager::Get().ReloadScene();
 }
 
 int ReplayManager::OldestIndex() const
@@ -85,6 +95,7 @@ void ReplayManager::CaptureTick()
 
     for (auto& [e, tc] : tmap)
     {
+        //transform component
         EntitySnapshot s{};
         s.id = e;
         s.px = tc.pos.x;
@@ -93,6 +104,56 @@ void ReplayManager::CaptureTick()
         s.sy = tc.scale.y;
         s.rot = tc.rot;
 
+        //physics compoennt
+        if (reg.Has_Component<Physics::PhysicsComponent>(e))
+        {
+            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(e);
+
+            s.hasPhysics = true;
+
+            Vec2 v = phys.Get_Vel();
+            s.vx = v.x;
+            s.vy = v.y;
+        }
+
+        //movement component
+        if (reg.Has_Component<Movement::MovementComponent>(e))
+        {
+            auto& mv = reg.Get_Component<Movement::MovementComponent>(e);
+
+            s.hasMovement = true;
+            s.isMoving = mv.GetIsMoving();
+
+            Vec2 dir = mv.GetMovementDirection();
+            s.mdx = dir.x;
+            s.mdy = dir.y;
+
+            s.inputDir = static_cast<int>(mv.GetInputDirection());
+
+            // infer facing direction
+            if (dir.x < 0)
+                s.faceRight = false;
+            else if (dir.x > 0)
+                s.faceRight = true;
+        }
+
+        if (reg.Has_Component<Animator::AnimatorComponent>(e))
+        {
+            auto& anim = reg.Get_Component<Animator::AnimatorComponent>(e);
+            s.hasAnimator = true;
+            s.animState = anim.GetCurrentState();
+            s.animCol = anim.GetCurrentCol();
+            s.animTimer = anim.GetAnimTimer();
+        }
+
+        //render component
+        /*if (reg.Has_Component<RenderComponent>(e))
+        {
+            auto& rc = reg.Get_Component<RenderComponent>(e);
+            s.hasRender = true;
+            s.renderData = rc.Serialize();
+        }*/
+
         frame.entities.push_back(s);
     }
 
@@ -100,6 +161,7 @@ void ReplayManager::CaptureTick()
     writeIdx++;
     if (writeIdx >= capacity) writeIdx = 0;
     if (validCount < capacity) validCount++;
+   
 }
 
 void ReplayManager::ApplyTick()
@@ -127,7 +189,43 @@ void ReplayManager::ApplyTick()
         tc.scale.x = s.sx;
         tc.scale.y = s.sy;
         tc.rot = s.rot;
+
+        //physics component
+        if (s.hasPhysics && reg.Has_Component<Physics::PhysicsComponent>(s.id))
+        {
+            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(s.id);
+            phys.Set_Vel({ s.vx, s.vy });
+        }
+
+        //movement component
+        if (s.hasMovement && reg.Has_Component<Movement::MovementComponent>(s.id))
+        {
+            auto& mv = reg.Get_Component<Movement::MovementComponent>(s.id);
+
+            mv.SetIsMoving(s.isMoving);
+            mv.SetMovementDirection({ s.mdx, s.mdy });
+            mv.SetInputDirection(static_cast<Movement::InputDirection>(s.inputDir));
+        }
+
+        if (s.hasAnimator && reg.Has_Component<Animator::AnimatorComponent>(s.id))
+        {
+            auto& anim = reg.Get_Component<Animator::AnimatorComponent>(s.id);
+            if ((unsigned int)anim.GetCurrentState() != s.animState)
+                anim.SetState(s.animState);
+            anim.SetCurrentCol(s.animCol);
+            anim.SetAnimTimer(s.animTimer);
+            anim.UpdateUV(); // recalculate UV coords from restored state
+        }
+
+        //render component
+        /*if (s.hasRender && reg.Has_Component<RenderComponent>(s.id))
+        {
+            // Rebuild the render state exactly as recorded
+            reg.Get_Component<RenderComponent>(s.id) = RenderComponent::DeSerialize(s.id, s.renderData);
+        }*/
     }
 
     playCursor++;
+
+   
 }

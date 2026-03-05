@@ -185,6 +185,12 @@ namespace Animator {
 		static AnimatorComponent DeSerialize(Entity eID, const std::string& data);
 		
 		Editor::ComponentData EditorData();
+
+		int GetCurrentCol() const { return m_current_col; }
+		float GetAnimTimer() const { return anim_timer; }
+		void SetCurrentCol(int col) { m_current_col = col; }
+		void SetAnimTimer(float t) { anim_timer = t; }
+
 	};
 
 }

@@ -30,6 +30,7 @@
 #include "SceneManager.h"
 #include "GuiSystem.h"
 #include "CombatSystem.h"
+#include <ReplayManager.h>
  // CONSTANTS for responsive, non-tunneling movement, can adjust
 constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
@@ -1301,9 +1302,11 @@ namespace RockScript {
 
 		// MOVEMENT
 		// ================================================================================
+		//auto& replay = ReplayManager::Get();
 		GuiSystem& gui = GuiSystem::Get();
 		if (!IsBusy() && !gui.GetDialogueGate())
 		{
+
 			int hor = 0;
 			int ver = 0;
 			if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
@@ -1349,6 +1352,83 @@ namespace RockScript {
 				}
 			}
 		}	// end MOVEMENT
+
+		// MOVEMENT
+// ================================================================================
+
+		/*auto& replay = ReplayManager::Get();
+		GuiSystem& gui = GuiSystem::Get();
+
+		if (!IsBusy() && !gui.GetDialogueGate())
+		{
+			if (!replay.IsPlaying())
+			{
+				// NORMAL GAME INPUT
+				int hor = 0;
+				int ver = 0;
+
+				if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
+				if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
+
+				if (Input::IsKeyHeld(GLFW_KEY_A))
+				{
+					hor -= 1;
+					faceRight = false;
+				}
+
+				if (Input::IsKeyHeld(GLFW_KEY_D))
+				{
+					hor += 1;
+					faceRight = true;
+				}
+
+				float fx = static_cast<float>(hor);
+				float fy = static_cast<float>(ver);
+				NormalizeDiagonalMovement(fx, fy);
+
+				const bool moving = (fx != 0.f || fy != 0.f);
+
+				moveComp.SetIsMoving(moving);
+				moveComp.SetInputDirection(VelToDir(fx, fy));
+				moveComp.SetMovementDirection({ fx, fy });
+
+				if (moving)
+					animstate = (faceRight) ? 2 : 3;
+			}
+			else
+			{
+				// REPLAY MODE
+				Vec2 dir = moveComp.GetMovementDirection();
+
+				bool moving = (fabs(dir.x) > 0.01f || fabs(dir.y) > 0.01f);
+
+				if (dir.x < 0)
+					faceRight = false;
+				else if (dir.x > 0)
+					faceRight = true;
+
+				if (moving)
+					animstate = (faceRight) ? 2 : 3;
+			}
+
+			// Footstep sound logic (shared by both modes)
+			bool moving = moveComp.GetIsMoving();
+
+			if (!moving)
+			{
+				footstepTimers[eID] = 0.0f;
+			}
+			else
+			{
+				footstepTimers[eID] += dt;
+
+				if (footstepTimers[eID] >= footstepInterval)
+				{
+					PlayAudio(SFX_FOOTSTEP);
+					footstepTimers[eID] = 0.0f;
+				}
+			}
+		}*/
 		// ================================================================================
 		// STUNNED
 		// ================================================================================

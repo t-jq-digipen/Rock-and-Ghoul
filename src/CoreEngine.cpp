@@ -299,6 +299,10 @@ void CoreEngine::Run()
                 {
                     for (auto* s : updateSystems)
                     {
+
+                        /*if (replay.IsPlaying() && dynamic_cast<MovementSystem*>(s))
+                            continue;*/
+
                         auto start = clock::now();
 
                         s->Update(fixedDt);

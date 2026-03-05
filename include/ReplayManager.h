@@ -2,6 +2,8 @@
 #define REPLAYMANAGER_H
 #include <vector>
 #include "Entity.h"
+#include "DataDefs.h"
+#include <string>
 
 // Forward declare
 class Registry;
@@ -33,10 +35,32 @@ private:
 
     struct EntitySnapshot
     {
+        //transform component stuff
         Entity id{};
         float px{}, py{};
         float sx{ 1.f }, sy{ 1.f };
         float rot{ 0.f };
+
+        //physics component suff
+        bool hasPhysics{ false };
+        float vx{}, vy{};
+
+        //movement stuff
+        bool hasMovement{ false };
+        bool isMoving{ false };
+        float mdx{ 0.f }, mdy{ 0.f };
+        int inputDir{ 0 };
+        bool faceRight{ true };
+
+        // animator
+        bool hasAnimator{ false };
+        unsigned int animState{ 0 };
+        int animCol{ 0 };
+        float animTimer{ 0.f };
+
+        //render component stuff
+        /*bool hasRender{false};
+        std::string renderData; // RenderComponent serialized JSON*/
     };
 
     struct FrameSnapshot
