@@ -53,14 +53,13 @@ private:
         bool faceRight{ true };
 
         // animator
-        bool hasAnimator{ false };
+        // animation state
+        bool hasAnim{ false };
         unsigned int animState{ 0 };
         int animCol{ 0 };
         float animTimer{ 0.f };
+        bool animFlipX{ false };
 
-        //render component stuff
-        /*bool hasRender{false};
-        std::string renderData; // RenderComponent serialized JSON*/
     };
 
     struct FrameSnapshot

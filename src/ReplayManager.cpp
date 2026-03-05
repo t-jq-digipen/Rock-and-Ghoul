@@ -137,22 +137,19 @@ void ReplayManager::CaptureTick()
                 s.faceRight = true;
         }
 
-        if (reg.Has_Component<Animator::AnimatorComponent>(e))
-        {
-            auto& anim = reg.Get_Component<Animator::AnimatorComponent>(e);
-            s.hasAnimator = true;
-            s.animState = anim.GetCurrentState();
-            s.animCol = anim.GetCurrentCol();
-            s.animTimer = anim.GetAnimTimer();
-        }
-
-        //render component
-        /*if (reg.Has_Component<RenderComponent>(e))
+        if (reg.Has_Component<RenderComponent>(e))
         {
             auto& rc = reg.Get_Component<RenderComponent>(e);
-            s.hasRender = true;
-            s.renderData = rc.Serialize();
-        }*/
+            if (rc.GetRenderType() == RT_SPRITESHEET)
+            {
+                auto& ss = rc.GetSpriteSheet();
+                s.hasAnim = true;
+                s.animState = ss.GetCurrentState();
+                s.animCol = ss.GetCurrentCol();
+                s.animTimer = ss.GetAnimTimer();
+                s.animFlipX = ss.Sprite().GetFlipX();
+            }
+        }
 
         frame.entities.push_back(s);
     }
@@ -207,22 +204,21 @@ void ReplayManager::ApplyTick()
             mv.SetInputDirection(static_cast<Movement::InputDirection>(s.inputDir));
         }
 
-        if (s.hasAnimator && reg.Has_Component<Animator::AnimatorComponent>(s.id))
-        {
-            auto& anim = reg.Get_Component<Animator::AnimatorComponent>(s.id);
-            if ((unsigned int)anim.GetCurrentState() != s.animState)
-                anim.SetState(s.animState);
-            anim.SetCurrentCol(s.animCol);
-            anim.SetAnimTimer(s.animTimer);
-            anim.UpdateUV(); // recalculate UV coords from restored state
-        }
 
-        //render component
-        /*if (s.hasRender && reg.Has_Component<RenderComponent>(s.id))
+        if (s.hasAnim && reg.Has_Component<RenderComponent>(s.id))
         {
-            // Rebuild the render state exactly as recorded
-            reg.Get_Component<RenderComponent>(s.id) = RenderComponent::DeSerialize(s.id, s.renderData);
-        }*/
+            auto& rc = reg.Get_Component<RenderComponent>(s.id);
+            if (rc.GetRenderType() == RT_SPRITESHEET)
+            {
+                auto& ss = rc.GetSpriteSheet();
+                if ((unsigned int)ss.GetCurrentState() != s.animState)
+                    ss.SetState(s.animState);
+                ss.SetCurrentCol(s.animCol);
+                ss.SetAnimTimer(s.animTimer);
+                ss.Sprite().SetFlipX(s.animFlipX);
+                ss.UpdateUV();
+            }
+        }
     }
 
     playCursor++;
