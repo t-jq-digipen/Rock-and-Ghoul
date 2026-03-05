@@ -11,138 +11,6 @@
     "entities": [
         {
             "components": {
-                "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
-                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":250.0,\"aabb_maxX\":-434.57476806640625,\"aabb_maxY\":625.3236083984375,\"aabb_minX\":-634.5747680664063,\"aabb_minY\":375.3236083984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"triggerEvent\":\"\"}",
-                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
-                "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":1000.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/RockSpritesheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":true},\\\"10\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5,\\\"willLoop\\\":false},\\\"11\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":4,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":11,\\\"willLoop\\\":true},\\\"3\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":10,\\\"willLoop\\\":true},\\\"4\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":9,\\\"willLoop\\\":false},\\\"5\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":8,\\\"willLoop\\\":false},\\\"6\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":7,\\\"willLoop\\\":false},\\\"7\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":6,\\\"willLoop\\\":false},\\\"8\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"9\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":10,\\\"totalRows\\\":12}\",\"renderLayer\":1,\"renderType\":2}",
-                "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":-534.5747680664063,\"posY\":500.3236083984375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "Rock"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2811.10498046875,\"aabb_maxY\":121.05587005615234,\"aabb_minX\":-905.4520263671875,\"aabb_minY\":48.43201446533203,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":952.826416015625,\"posY\":84.74394226074219,\"rot\":0.0,\"scaleX\":37.16556930541992,\"scaleY\":0.7262385487556458}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
-                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1048.90869140625,\"aabb_maxY\":333.6868591308594,\"aabb_minX\":798.9086303710938,\"aabb_minY\":83.68685913085938,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
-                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
-                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
-                "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":923.9086303710938,\"posY\":208.68685913085938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "SpiritRanged"
-        },
-        {
-            "components": {
-                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
-                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1014.212890625,\"aabb_maxY\":728.92626953125,\"aabb_minX\":764.212890625,\"aabb_minY\":478.92626953125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Health": "{\"currentHP\":80.0,\"maxHP\":80.0}",
-                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
-                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
-                "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":889.212890625,\"posY\":603.92626953125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "SpiritMelee"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2811.10498046875,\"aabb_maxY\":903.8099365234375,\"aabb_minX\":-905.4520263671875,\"aabb_minY\":871.3416748046875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":952.826416015625,\"posY\":887.5758056640625,\"rot\":0.0,\"scaleX\":37.16556930541992,\"scaleY\":0.3246825039386749}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2710.15234375,\"aabb_maxY\":1053.0865478515625,\"aabb_minX\":2609.466796875,\"aabb_minY\":43.502349853515625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":2659.8095703125,\"posY\":548.29443359375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":10.095841407775879}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-841.4078369140625,\"aabb_maxY\":1053.0865478515625,\"aabb_minX\":-942.093505859375,\"aabb_minY\":43.502349853515625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-891.7506713867188,\"posY\":548.29443359375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":10.095841407775879}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-533.1777954101563,\"aabb_maxY\":931.528564453125,\"aabb_minX\":-633.8634643554688,\"aabb_minY\":728.95458984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-583.5206298828125,\"posY\":830.2415771484375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.025740146636963}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-638.3104858398438,\"aabb_maxY\":745.1569213867188,\"aabb_minX\":-738.9961547851563,\"aabb_minY\":542.5829467773438,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-688.6533203125,\"posY\":643.8699340820313,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.025740146636963}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-741.0538330078125,\"aabb_maxY\":570.7321166992188,\"aabb_minX\":-841.739501953125,\"aabb_minY\":368.1581115722656,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-791.3966674804688,\"posY\":469.44512939453125,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.025740146636963}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
-                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1790.572021484375,\"aabb_maxY\":717.89794921875,\"aabb_minX\":1540.572021484375,\"aabb_minY\":467.89794921875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
-                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
-                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
-                "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":1665.572021484375,\"posY\":592.89794921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "SpiritRanged"
-        },
-        {
-            "components": {
-                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
-                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":2402.2529296875,\"aabb_maxY\":417.791015625,\"aabb_minX\":2152.2529296875,\"aabb_minY\":167.791015625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
-                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
-                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
-                "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":2277.2529296875,\"posY\":292.791015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "SpiritRanged"
-        },
-        {
-            "components": {
                 "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
                 "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1386.956787109375,\"aabb_maxY\":604.6797485351563,\"aabb_minX\":1136.956787109375,\"aabb_minY\":354.67974853515625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
                 "Health": "{\"currentHP\":80.0,\"maxHP\":80.0}",
@@ -171,8 +39,99 @@
         },
         {
             "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2605.01953125,\"aabb_maxY\":872.0791625976563,\"aabb_minX\":2504.333984375,\"aabb_minY\":652.6865844726563,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":2554.6767578125,\"posY\":762.3828735351563,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.193925619125366}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":2402.2529296875,\"aabb_maxY\":417.791015625,\"aabb_minX\":2152.2529296875,\"aabb_minY\":167.791015625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
+                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":2277.2529296875,\"posY\":292.791015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "SpiritRanged"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1790.572021484375,\"aabb_maxY\":717.89794921875,\"aabb_minX\":1540.572021484375,\"aabb_minY\":467.89794921875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
+                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":1665.572021484375,\"posY\":592.89794921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "SpiritRanged"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-741.0538330078125,\"aabb_maxY\":570.7321166992188,\"aabb_minX\":-841.739501953125,\"aabb_minY\":368.1581115722656,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":-791.3966674804688,\"posY\":469.44512939453125,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.025740146636963}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-638.3104858398438,\"aabb_maxY\":745.1569213867188,\"aabb_minX\":-738.9961547851563,\"aabb_minY\":542.5829467773438,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":-688.6533203125,\"posY\":643.8699340820313,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.025740146636963}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-533.1777954101563,\"aabb_maxY\":931.528564453125,\"aabb_minX\":-633.8634643554688,\"aabb_minY\":728.95458984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":-583.5206298828125,\"posY\":830.2415771484375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.025740146636963}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-841.4078369140625,\"aabb_maxY\":1053.0865478515625,\"aabb_minX\":-942.093505859375,\"aabb_minY\":43.502349853515625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":-891.7506713867188,\"posY\":548.29443359375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":10.095841407775879}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2710.15234375,\"aabb_maxY\":1053.0865478515625,\"aabb_minX\":2609.466796875,\"aabb_minY\":43.502349853515625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":2659.8095703125,\"posY\":548.29443359375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":10.095841407775879}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2811.10498046875,\"aabb_maxY\":903.8099365234375,\"aabb_minX\":-905.4520263671875,\"aabb_minY\":871.3416748046875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":952.826416015625,\"posY\":887.5758056640625,\"rot\":0.0,\"scaleX\":37.16556930541992,\"scaleY\":0.3246825039386749}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
                 "Collider": "{\"aabb_dimX\":300.0,\"aabb_dimY\":200.0,\"aabb_maxX\":2437.159912109375,\"aabb_maxY\":914.649658203125,\"aabb_minX\":2137.159912109375,\"aabb_minY\":714.649658203125,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Portal\",\"triggerEvent\":\"TouchPortal\"}",
-                "Portal": "{\"scene\":\"../Assets/saves/MainMenu.json\",\"state\":0}",
+                "Portal": "{\"scene\":\"../Assets/saves/level3.json\",\"state\":0}",
                 "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":85.0,\\\\\\\"scaleY\\\\\\\":85.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Environment02_LiftSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":16,\\\"col_start\\\":8,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":17,\\\"totalRows\\\":1}\",\"renderLayer\":1,\"renderType\":2}",
                 "Transform": "{\"posX\":2287.159912109375,\"posY\":814.649658203125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
@@ -180,10 +139,52 @@
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2605.01953125,\"aabb_maxY\":872.0791625976563,\"aabb_minX\":2504.333984375,\"aabb_minY\":652.6865844726563,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1014.212890625,\"aabb_maxY\":728.92626953125,\"aabb_minX\":764.212890625,\"aabb_minY\":478.92626953125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":80.0,\"maxHP\":80.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
+                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":889.212890625,\"posY\":603.92626953125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "SpiritMelee"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1048.90869140625,\"aabb_maxY\":333.6868591308594,\"aabb_minX\":798.9086303710938,\"aabb_minY\":83.68685913085938,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Element": "{\"baseDamage\":25.0,\"element\":2}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
+                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":923.9086303710938,\"posY\":208.68685913085938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "SpiritRanged"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
+                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":250.0,\"aabb_maxX\":-434.57476806640625,\"aabb_maxY\":625.3236083984375,\"aabb_minX\":-634.5747680664063,\"aabb_minY\":375.3236083984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+                "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":1000.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/RockSpritesheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":true},\\\"10\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5,\\\"willLoop\\\":false},\\\"11\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":4,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":11,\\\"willLoop\\\":true},\\\"3\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":10,\\\"willLoop\\\":true},\\\"4\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":9,\\\"willLoop\\\":false},\\\"5\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":8,\\\"willLoop\\\":false},\\\"6\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":7,\\\"willLoop\\\":false},\\\"7\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":6,\\\"willLoop\\\":false},\\\"8\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"9\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":10,\\\"totalRows\\\":12}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":1}",
+                "Transform": "{\"posX\":-534.5747680664063,\"posY\":500.3236083984375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Rock"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2811.10498046875,\"aabb_maxY\":121.05587005615234,\"aabb_minX\":-905.4520263671875,\"aabb_minY\":48.43201446533203,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":2554.6767578125,\"posY\":762.3828735351563,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.193925619125366}"
+                "Transform": "{\"posX\":952.826416015625,\"posY\":84.74394226074219,\"rot\":76.39189910888672,\"scaleX\":37.16556930541992,\"scaleY\":0.7262385487556458}"
             },
             "name": "Obstacle"
         }
@@ -269,13 +270,13 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    425.0,
-                    50.0
+                    407.454833984375,
+                    24.65703582763672
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_Guitar.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    1000.0,
-                    1000.0
+                    900.0,
+                    900.0
                 ]
             },
             {
@@ -283,8 +284,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    680.0,
-                    185.0
+                    630.0,
+                    150.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"../Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
@@ -297,8 +298,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    615.0,
-                    205.0
+                    570.0,
+                    170.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"../Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
@@ -311,8 +312,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    550.0,
-                    225.0
+                    510.0,
+                    190.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"../Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
@@ -321,17 +322,17 @@
                 ]
             },
             {
-                "ID": 5,
+                "ID": 7,
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    530.0,
-                    930.0
+                    342.8520202636719,
+                    976.7870483398438
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_CharacterStatBackground.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_CharacterStatBackground2.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    1000.0,
-                    1000.0
+                    700.0,
+                    700.0
                 ]
             },
             {
@@ -339,27 +340,27 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    150.0,
-                    940.0
+                    93.46571350097656,
+                    982.8881225585938
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0}},\\\"texturePath\\\":\\\"../Assets/UI_CharacterIcon.png\\\",\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
-                    300.0,
-                    300.0
+                    200.0,
+                    200.0
                 ]
             },
             {
-                "ID": 6,
+                "ID": 5,
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    540.0,
-                    942.0
+                    350.0,
+                    985.0
                 ],
-                "renderData": "{\"data\":\"{\\\"color\\\":[0.1921568661928177,0.250980406999588,0.25882354378700256],\\\"v0\\\":[270.0,920.0],\\\"v1\\\":[820.0,920.0],\\\"v2\\\":[820.0,963.0],\\\"v3\\\":[260.0,960.0]}\",\"type\":\"quad\"}",
+                "renderData": "{\"data\":\"{\\\"color\\\":[0.1921568661928177,0.250980406999588,0.25882354378700256],\\\"v0\\\":[150.0,972.5],\\\"v1\\\":[550.0,972.5],\\\"v2\\\":[550.0,997.5],\\\"v3\\\":[150.0,997.5]}\",\"type\":\"quad\"}",
                 "size": [
-                    240.0,
-                    160.0
+                    400.0,
+                    25.0
                 ]
             },
             {
@@ -367,27 +368,27 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    540.0,
-                    942.0
+                    350.0,
+                    985.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_HealthBarTransparent.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    1000.0,
-                    1000.0
+                    700.0,
+                    700.0
                 ]
             },
             {
-                "ID": 7,
+                "ID": 6,
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    540.0,
-                    942.0
+                    350.0,
+                    985.0
                 ],
-                "renderData": "{\"data\":\"{\\\"color\\\":[0.9921568632125854,0.0,0.29411765933036804],\\\"v0\\\":[270.0,920.0],\\\"v1\\\":[820.0,920.0],\\\"v2\\\":[820.0,963.0],\\\"v3\\\":[260.0,960.0]}\",\"type\":\"quad\"}",
+                "renderData": "{\"data\":\"{\\\"color\\\":[0.9921568632125854,0.0,0.29411765933036804],\\\"v0\\\":[150.0,972.5],\\\"v1\\\":[550.0,972.5],\\\"v2\\\":[550.0,997.5],\\\"v3\\\":[150.0,997.5]}\",\"type\":\"quad\"}",
                 "size": [
-                    240.0,
-                    160.0
+                    400.0,
+                    25.0
                 ]
             },
             {
@@ -395,8 +396,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    50.0,
-                    155.0
+                    45.0,
+                    120.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -409,8 +410,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    50.0,
-                    155.0
+                    45.0,
+                    120.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -423,8 +424,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    145.0,
-                    130.0
+                    140.0,
+                    95.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -437,8 +438,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    50.0,
-                    155.0
+                    45.0,
+                    120.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -451,8 +452,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    145.0,
-                    155.0
+                    140.0,
+                    120.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -465,8 +466,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    145.0,
-                    155.0
+                    140.0,
+                    120.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -479,8 +480,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    145.0,
-                    130.0
+                    140.0,
+                    95.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -493,8 +494,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    50.0,
-                    155.0
+                    45.0,
+                    120.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -507,8 +508,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    145.0,
-                    155.0
+                    140.0,
+                    120.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -521,8 +522,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    250.0,
-                    130.0
+                    230.0,
+                    95.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -535,8 +536,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    50.0,
-                    155.0
+                    45.0,
+                    120.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -549,8 +550,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    250.0,
-                    130.0
+                    230.0,
+                    95.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -563,8 +564,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    350.0,
-                    800.0
+                    1531.371826171875,
+                    80.64984130859375
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Lightning.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -577,8 +578,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    345.0,
-                    805.0
+                    1526.371826171875,
+                    77.85198974609375
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -591,8 +592,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    450.0,
-                    805.0
+                    1631.371826171875,
+                    87.59930419921875
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -605,8 +606,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    455.0,
-                    800.0
+                    1638.3212890625,
+                    82.59930419921875
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Fire.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -619,8 +620,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    545.0,
-                    805.0
+                    1736.119140625,
+                    89.5487060546875
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -633,8 +634,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    550.0,
-                    800.0
+                    1743.068603515625,
+                    84.5487060546875
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Wind.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -647,8 +648,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    645.0,
-                    805.0
+                    1832.22021484375,
+                    95.3970947265625
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -661,8 +662,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    650.0,
-                    800.0
+                    1835.2706298828125,
+                    88.44762420654297
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_PowerLogo_Ice.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -675,7 +676,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1400.0,
+                    1600.0,
                     970.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_Soundwave.PNG\\\"}\",\"type\":\"image\"}",
@@ -689,7 +690,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1400.0,
+                    1600.0,
                     910.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_AOEAttack.PNG\\\"}\",\"type\":\"image\"}",
@@ -703,7 +704,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1400.0,
+                    1600.0,
                     850.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_Shield.PNG\\\"}\",\"type\":\"image\"}",
@@ -717,7 +718,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1400.0,
+                    1600.0,
                     790.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_Healing.PNG\\\"}\",\"type\":\"image\"}",
@@ -731,7 +732,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1480.0,
+                    1680.0,
                     975.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -745,7 +746,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1560.0,
+                    1760.0,
                     975.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -759,7 +760,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1480.0,
+                    1680.0,
                     915.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -773,7 +774,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1560.0,
+                    1760.0,
                     915.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -787,7 +788,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1640.0,
+                    1840.0,
                     915.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -801,7 +802,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1480.0,
+                    1680.0,
                     855.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -815,7 +816,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1560.0,
+                    1760.0,
                     855.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -829,7 +830,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1640.0,
+                    1840.0,
                     855.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -843,7 +844,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1480.0,
+                    1680.0,
                     795.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -857,7 +858,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1560.0,
+                    1760.0,
                     795.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -871,7 +872,7 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1640.0,
+                    1840.0,
                     795.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"../Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
@@ -989,8 +990,8 @@
                 ],
                 "isVisible": true,
                 "pos": [
-                    547.2899780273438,
-                    272.52398681640625
+                    500.0,
+                    250.0
                 ],
                 "scale": 0.7329999804496765,
                 "text": "0x"
@@ -1005,8 +1006,8 @@
                 ],
                 "isVisible": true,
                 "pos": [
-                    610.093017578125,
-                    257.3840026855469
+                    560.0,
+                    230.0
                 ],
                 "scale": 0.7329999804496765,
                 "text": "0x"
@@ -1021,27 +1022,11 @@
                 ],
                 "isVisible": true,
                 "pos": [
-                    681.8690185546875,
-                    242.24200439453125
+                    620.0,
+                    210.0
                 ],
                 "scale": 0.7329999804496765,
                 "text": "0x"
-            },
-            {
-                "ID": 34,
-                "centered": false,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "isVisible": false,
-                "pos": [
-                    750.0,
-                    350.0
-                ],
-                "scale": 1.0,
-                "text": "PRESS ESC TO SKIP"
             },
             {
                 "ID": 51,
@@ -1053,10 +1038,10 @@
                 ],
                 "isVisible": true,
                 "pos": [
-                    1380.0,
+                    1580.0,
                     1020.0
                 ],
-                "scale": 0.6,
+                "scale": 0.6000000238418579,
                 "text": "SONG LIST:"
             }
         ]

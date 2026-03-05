@@ -208,7 +208,7 @@ namespace RockScript {
 	constexpr float SOUNDWAVE_TIME = 0.5f;
 	constexpr float AOE_TIME = 1.f;
 	constexpr float SHIELD_DURATION = 5.f;
-	constexpr float DASH_INVULN_DURATION = 1.f;
+	constexpr float DASH_INVULN_DURATION = 0.5f;
 	constexpr float DASH_COOLDOWN = 2.f;
 
 	constexpr float STAGGER_DURATION = 1.f;
@@ -957,6 +957,8 @@ namespace RockScript {
 				}
 			}
 
+			AOE_PROPERTIES.element = currentElement;
+
 			// Create visual entity (spawns above, will crash down)
 			float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
 			Entity aoeVisual = JsonLoad::LoadEntityFromFile(
@@ -1070,7 +1072,7 @@ namespace RockScript {
 		}
 
 		// If spell was cast with an element, put that element on cooldown and reset to NONE
-		if (currentElement != Element::NONE) {
+		if (currentElement != Element::NONE && (spell.type == SpellType::SOUNDWAVE || spell.type == SpellType::AOE)) {
 			elementCooldowns[currentElement] = ELEMENT_COOLDOWN;
 			std::cout << "Element " << static_cast<int>(currentElement) << " on cooldown for " << ELEMENT_COOLDOWN << "s\n";
 			currentElement = Element::NONE;
@@ -1507,7 +1509,6 @@ namespace RockScript {
 				Vec2 aoeSize = { AOE_RADIUS * 3.f, AOE_RADIUS * 2.f };  // Wider
 
 				AOE_PROPERTIES.owner = eID;
-				AOE_PROPERTIES.element = currentElement;
 				AOE_PROPERTIES.lifetime = 0.2f;
 
 				CombatSystem::Get().SpawnHitBox(
@@ -1515,6 +1516,8 @@ namespace RockScript {
 					aoeOffset,
 					aoeSize
 				);
+
+				AOE_PROPERTIES.element = Element::NONE; 
 
 				aoeHitboxSpawned = true;
 			}
@@ -1632,14 +1635,14 @@ void PlayerSystem::Initialize()
 		player.Init = [](Entity e) { PlayerMove::Start(e); };
 		player.Update = [](Entity e, float dt) { PlayerMove::Update(e, dt); };
 		player.End = [](Entity e) { PlayerMove::End(e); };
-		LogicSystem::Get().RegisterScript("PlayerMovement", player, ScriptID::PLAYER);
+		LogicSystem::Get().RegisterScript("PlayerMovement", player);
 	}
 	{
 		BehaviourFCT player;
 		player.Init = [](Entity e) { RockScript::Start(e); };
 		player.Update = [](Entity e, float dt) { RockScript::Update(e, dt); };
 		player.End = [](Entity e) { RockScript::End(e); };
-		LogicSystem::Get().RegisterScript("RockScript", player, ScriptID::ROCK_SCRIPT);
+		LogicSystem::Get().RegisterScript("RockScript", player);
 	}
 
 

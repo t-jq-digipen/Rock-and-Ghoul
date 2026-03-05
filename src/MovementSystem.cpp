@@ -29,7 +29,7 @@ void MovementSystem::Initialize()
 	move.Init = [](Entity e) { MainMenuMover::Start(e); };
 	move.Update = [](Entity e, float dt) { MainMenuMover::Update(e, dt); };
 	move.End = [](Entity e) { MainMenuMover::End(e); };
-	logicSys.RegisterScript("Movey", move, ScriptID::MAINMENU_BG);
+	logicSys.RegisterScript("Movey", move);
 
 }
 

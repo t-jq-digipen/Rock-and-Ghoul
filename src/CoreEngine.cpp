@@ -95,6 +95,7 @@ void CoreEngine::AddSystem(ISystem* sys)
 
 void CoreEngine::Initialize()
 {
+    srand((unsigned int)time(nullptr));
     // ----------------------------------------------------
     // Register Systems (order matters!)
     // ----------------------------------------------------
