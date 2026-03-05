@@ -1129,6 +1129,7 @@ namespace GhoulScript {
 
 	constexpr float GHOUL_MELEE_DURATION = 1.f;
 	constexpr float GHOUL_MELEE_WINDUP = 0.5f;
+	 const Vec2	    GHOUL_MELEE_HITBOX_SIZE = { 250.f, 250.f };
 
 	constexpr float GHOUL_RANGE_DURATION = 1.f;
 	constexpr float GHOUL_RANGE_CASTTIME = 0.5f;
@@ -1464,7 +1465,7 @@ namespace GhoulScript {
 					CombatSystem::Get().SpawnHitBox(
 						props,
 						offset,
-						{ 100.f, 100.f }
+						GHOUL_MELEE_HITBOX_SIZE
 					);
 				}
 
