@@ -60,6 +60,24 @@ private:
         float animTimer{ 0.f };
         bool animFlipX{ false };
 
+        // health
+        bool hasHealth{ false };
+        float currHp{ 0.f };
+        float maxHp{ 0.f };
+
+        // lifetime
+        bool hasLifetime{ false };
+        float age{ 0.f };
+        float lifetime{ 0.f };
+
+        // status effect
+        bool hasStatus{ false };
+        int activeEffect{ 0 };
+        float effectTimer{ 0.f };
+        float burnTickTimer{ 0.f };
+        float originalMoveSpeed{ 0.f };
+        bool isStunned{ false };
+
     };
 
     struct FrameSnapshot

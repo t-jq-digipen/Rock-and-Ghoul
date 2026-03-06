@@ -6,6 +6,8 @@
 #include "BehaviourComponent.h"
 #include "MonoScriptComponent.h"
 #include <SceneManager.h>
+#include <Camera.h>
+#include <PlayerSystem.h>
 //#include "RenderComponent.h"
 
 
@@ -93,6 +95,8 @@ void ReplayManager::CaptureTick()
     auto& tmap = reg.Get_ComponentMap<TransformComponent>();
     frame.entities.reserve(tmap.size());
 
+
+
     for (auto& [e, tc] : tmap)
     {
         //transform component
@@ -137,6 +141,7 @@ void ReplayManager::CaptureTick()
                 s.faceRight = true;
         }
 
+        //animations
         if (reg.Has_Component<RenderComponent>(e))
         {
             auto& rc = reg.Get_Component<RenderComponent>(e);
@@ -149,7 +154,37 @@ void ReplayManager::CaptureTick()
                 s.animTimer = ss.GetAnimTimer();
                 s.animFlipX = ss.Sprite().GetFlipX();
             }
+
         }
+
+        if (reg.Has_Component<HealthComponent>(e))
+        {
+            auto& hp = reg.Get_Component<HealthComponent>(e);
+            s.hasHealth = true;
+            s.currHp = hp.currhp;
+            s.maxHp = hp.maxhp;
+        }
+
+        if (reg.Has_Component<LifetimeComponent>(e))
+        {
+            auto& lt = reg.Get_Component<LifetimeComponent>(e);
+            s.hasLifetime = true;
+            s.age = lt.age;
+            s.lifetime = lt.lifetime;
+        }
+
+        if (reg.Has_Component<StatusEffectComponent>(e))
+        {
+            auto& se = reg.Get_Component<StatusEffectComponent>(e);
+            s.hasStatus = true;
+            s.activeEffect = static_cast<int>(se.activeEffect);
+            s.effectTimer = se.effectTimer;
+            s.burnTickTimer = se.burnTickTimer;
+            s.originalMoveSpeed = se.originalMoveSpeed;
+            s.isStunned = se.isStunned;
+        }
+ 
+
 
         frame.entities.push_back(s);
     }
@@ -204,7 +239,7 @@ void ReplayManager::ApplyTick()
             mv.SetInputDirection(static_cast<Movement::InputDirection>(s.inputDir));
         }
 
-
+        //animations
         if (s.hasAnim && reg.Has_Component<RenderComponent>(s.id))
         {
             auto& rc = reg.Get_Component<RenderComponent>(s.id);
@@ -219,6 +254,48 @@ void ReplayManager::ApplyTick()
                 ss.UpdateUV();
             }
         }
+
+        //camera 
+        if (Registry::Get().Has_Component<TagComponent>(s.id))
+        {
+            auto& tag = Registry::Get().Get_Component<TagComponent>(s.id);
+            if (tag.tag == T_PLAYER)
+            {
+                Camera::GetInstance().FollowTarget({ s.px, s.py }, 1.f / 60.f);
+                break;
+            }
+        }
+
+
+        if (s.hasHealth && reg.Has_Component<HealthComponent>(s.id))
+        {
+            auto& hp = reg.Get_Component<HealthComponent>(s.id);
+            hp.currhp = s.currHp;
+            hp.maxhp = s.maxHp;
+        }
+
+        if (s.hasLifetime && reg.Has_Component<LifetimeComponent>(s.id))
+        {
+            auto& lt = reg.Get_Component<LifetimeComponent>(s.id);
+            lt.age = s.age;
+            lt.lifetime = s.lifetime;
+        }
+
+        if (s.hasStatus && reg.Has_Component<StatusEffectComponent>(s.id))
+        {
+            auto& se = reg.Get_Component<StatusEffectComponent>(s.id);
+            se.activeEffect = static_cast<Element>(s.activeEffect);
+            se.effectTimer = s.effectTimer;
+            se.burnTickTimer = s.burnTickTimer;
+            se.originalMoveSpeed = s.originalMoveSpeed;
+            se.isStunned = s.isStunned;
+        }
+
+        // Update player health UI after restoring state
+        Entity player = PlayerSystem::FindPlayer();
+        if (player != INVALID_ENTITY && PlayerSystem::Instance())
+            PlayerSystem::Instance()->UpdateHealthUI(player);
+      
     }
 
     playCursor++;

@@ -294,6 +294,7 @@ void CoreEngine::Run()
                 {
                     // During playback: apply recorded state instead of simulating
                     replay.ApplyTick();
+
                 }
                 else
                 {

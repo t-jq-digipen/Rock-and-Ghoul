@@ -46,6 +46,8 @@
 #include "PlayerSystem.h"
 #include "CombatSystem.h"
 #include "PhysicsSystem.h"
+#include "ReplayManager.h"
+
 
 static constexpr float DETECT_RADIUS = 400.f;
 static constexpr float LOSE_RADIUS = 360.f;
@@ -341,6 +343,7 @@ namespace EnemyAI
 
 	inline void Update(Entity eID, float dt)
 	{
+		if (ReplayManager::Get().IsPlaying()) return;
 		if (dt <= 0.f) return;
 		if (!HasTransform(eID)) return;
 		if (!Registry::Get().Has_Component<Movement::MovementComponent>(eID)) return;
@@ -643,6 +646,7 @@ namespace SpiritScript {
 	}
 
 	inline void Update(Entity eID, float dt) {
+		if (ReplayManager::Get().IsPlaying()) return;
 		if (targetPlayer == INVALID_ENTITY) {
 			// No target player assigned, skipping update for spirit
 			return;
