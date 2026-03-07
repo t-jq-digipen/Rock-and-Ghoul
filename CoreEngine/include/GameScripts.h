@@ -265,14 +265,14 @@ inline void RegisterAllGameScripts()
         ghoul.Init = [](Entity e) { GhoulScript::Start(e); };
         ghoul.Update = [](Entity e, float dt) { GhoulScript::Update(e, dt); };
         ghoul.End = [](Entity e) { GhoulScript::End(e); };
-        logicSys.RegisterScript("GhoulScript", ghoul, ScriptID::GHOUL);
+        logicSys.RegisterScript("GhoulScript", ghoul);
 
         //same as ghoul
         BehaviourFCT patrol;
         patrol.Init = [](Entity e) { PatrolEnemyScript::Start(e); };
         patrol.Update = [](Entity e, float dt) { PatrolEnemyScript::Update(e, dt); };
         patrol.End = [](Entity e) { PatrolEnemyScript::End(e); };
-        logicSys.RegisterScript("ManfredEnemy", patrol, ScriptID::PATROL_ENEMY);
+        logicSys.RegisterScript("ManfredEnemy", patrol);
 
         // Generic WASD movement — works in any game project
         BehaviourFCT basicPlayer;

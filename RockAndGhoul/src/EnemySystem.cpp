@@ -42,6 +42,8 @@
 #include "CollisionManager.h"
 #include "PlayerSystem.h"
 #include "CombatSystem.h"
+#include "PhysicsSystem.h"
+#include "BehaviourComponent.h"
 
 static constexpr float DETECT_RADIUS = 400.f;
 static constexpr float LOSE_RADIUS = 360.f;
@@ -207,6 +209,9 @@ Entity CreateBarrier(Entity eID, Element elem)
 	const TransformComponent& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
 	Entity barrier = JsonLoad::LoadEntityFromFile(filepath, transComp.pos.x, transComp.pos.y-0.1f);
 
+	if (barrier != INVALID_ENTITY) {
+		g_elemBarriers[eID] = ElemBarrier{ barrier, elem, true };
+	}
 	return barrier;
 }
 
@@ -631,9 +636,6 @@ namespace SpiritScript {
 
 			Entity barrier = CreateBarrier(eID, elemComp.element);
 
-			if (barrier != INVALID_ENTITY) {
-				g_elemBarriers[eID] = ElemBarrier{ barrier, elemComp.element, true };
-			}
 
 		}
 	}
@@ -906,6 +908,8 @@ namespace SpiritScript {
 
 // =======================================================
 // FOR ENVIRONMENTAL OBSTACLES (e.g. speakers)
+#pragma region Obstacles
+
 
 enum OBSTACLE_ANIM_STATE : unsigned int
 {
@@ -955,12 +959,6 @@ static inline void SetObstacleAnim(Entity eID, int row, int col = 0, bool topDow
 	sheet.Sprite().Update_ImageSize();
 	
 	int internalRow = row;
-	//if (topDownRow)
-	//{
-	//	const int totalRows = sheet.GetTotalRows();
-	//	internalRow = (totalRows - 1) - row;
-	//}
-
 	if (internalRow < 0) internalRow = 0;
 	if (internalRow >= sheet.GetTotalRows()) internalRow = sheet.GetTotalRows() - 1;
 	if (col < 0) col = 0;
@@ -1008,7 +1006,7 @@ namespace ObstacleScript
 		auto& rt = g_obstacles[eID];
 		auto& hp = registry.Get_Component<HealthComponent>(eID);
 
-		MakeObstacleStationary(eID);
+		// MakeObstacleStationary(eID);
 
 		// Check if obstacle is burning
 		const bool isBurning = 
@@ -1089,6 +1087,8 @@ namespace ObstacleScript
 	}
 }
 
+#pragma endregion Obstacles
+
 
 void UpdateBarriers()
 {
@@ -1117,6 +1117,457 @@ void UpdateBarriers()
 	}
 }
 
+// should only have one ghoul so... not using a map just single instance
+namespace GhoulScript {
+	// const stuff!
+	constexpr float GHOUL_BARRIER_COOLDOWN = 5.f;
+	constexpr float GHOUL_MELEE_RANGE = 200.f;
+		
+	constexpr float GHOUL_BARRIER_CASTTIME = 1.f;
+
+	constexpr float GHOUL_MELEE_DURATION = 1.f;
+	constexpr float GHOUL_MELEE_WINDUP = 0.5f;
+	 const Vec2	    GHOUL_MELEE_HITBOX_SIZE = { 250.f, 250.f };
+
+	constexpr float GHOUL_RANGE_DURATION = 1.f;
+	constexpr float GHOUL_RANGE_CASTTIME = 0.5f;
+
+	constexpr float GHOUL_STAGGER_DURATION = 0.5f;
+
+	bool inCombat = false;
+
+	AttackProperties GHOUL_MELEE_PROPERTIES = {
+		INVALID_ENTITY, // set at runtime
+		T_PLAYER,
+		15.f,
+		500.f,
+		Element::NONE,
+		0.2f,
+		false
+	};
+
+	struct GhoulRuntime
+	{
+		GhoulState state{ GhoulState::GHOUL_IDLE };
+		GhoulAction nextAction{ GhoulAction::GHOUL_ACTION_RANGE };
+		float stateTime{ 0.f };
+
+		// cooldowns
+		float attackCooldown = 0.f;
+		float barrierCooldown = 0.f;
+
+		// barrier
+		Element barrierElem = Element::NONE;
+		bool hasBarrier = false;
+
+		// stagger count (hit 3x to stagger)
+		int staggerCount = 0;
+		
+		// phases
+		int phase = 1;
+
+		bool willAttack = false;
+
+
+	};
+
+	Entity ghoulEntity = INVALID_ENTITY;
+	GhoulRuntime ghoulRuntime;
+
+	// to get a new elem that isnt previous
+	Element GetBarrierElement(Element previous) {
+		Element result;
+		do {
+			result = static_cast<Element>((rand() % 4) + 1);
+		} while (result == previous);
+		ghoulRuntime.barrierElem = result;
+		return result;
+	}
+
+	void UpdateTimers(float dt, GhoulRuntime& rt)
+	{
+		rt.stateTime += dt;
+		rt.attackCooldown = std::max(0.f, rt.attackCooldown - dt);
+		rt.barrierCooldown = std::max(0.f, rt.barrierCooldown - dt);
+	}
+
+	void MovementLogic(Entity eID, float dt)
+	{
+		(void)eID; (void)dt;
+	}
+
+	void Start(Entity eID) {
+		std::cout << "Spirit script started for entity " << eID << std::endl;
+		CombatSystem::Get().RegisterCombatant(eID);
+
+		ghoulRuntime = GhoulRuntime();
+		ghoulEntity = eID;
+
+		inCombat = false;
+
+		GHOUL_MELEE_PROPERTIES.owner = eID;
+	}
+
+	void Update(Entity eID, float dt) {
+		if (eID != ghoulEntity || ghoulEntity == INVALID_ENTITY) {
+			return; 
+		}
+		Registry& registry = Registry::Get();
+
+		if (!registry.Has_Component<Movement::MovementComponent>(eID) ||
+			!registry.Has_Component<TransformComponent>(eID) ||
+			!registry.Has_Component<HealthComponent>(eID) ||
+			!registry.Has_Component<RenderComponent>(eID))
+		{
+			// missing required components
+			return;
+		}
+		
+		
+		UpdateTimers(dt, ghoulRuntime);
+
+		unsigned int animState = 0;
+
+		HealthComponent& health = registry.Get_Component<HealthComponent>(eID);
+
+		// death handling
+		if (health.currhp <= 0.f) {
+			// passaway
+			if (ghoulRuntime.state != GHOUL_DEAD) {
+				ghoulRuntime.state = GhoulState::GHOUL_DEAD;
+				ghoulRuntime.stateTime = 0.f;
+				// set animstate when done
+				registry.Add_Component<LifetimeComponent>(eID, LifetimeComponent{ 0.f, 5.f });
+				registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
+				registry.Get_Component<Movement::MovementComponent>(eID).ResetFrameIntent();
+			}
+			else {
+				// already dead, just chillin
+				// set animstate when done
+			}
+
+			return;
+		}
+
+		Movement::MovementComponent& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
+		// barrier needs updating
+		if (ghoulRuntime.hasBarrier != HasBarrier(eID))
+		{
+			ghoulRuntime.hasBarrier = HasBarrier(eID);
+
+			if (ghoulRuntime.hasBarrier) // gained barrier (?) should not need to do anyth here
+			{
+				
+			}
+			else // lost barrier
+			{
+				ghoulRuntime.barrierCooldown = GHOUL_BARRIER_COOLDOWN;
+				health.isVulnerable = true;
+				health.willHit = true;
+			}
+		}
+
+		if (
+			(ghoulRuntime.state == GHOUL_IDLE || GHOUL_MOVING) // neutral states
+			&& !ghoulRuntime.hasBarrier && ghoulRuntime.barrierCooldown <= 0.f // barrier ready to spawn
+			&& ghoulRuntime.state != GHOUL_DEAD // alive lol
+			&& ghoulRuntime.state != GHOUL_STAGGERED
+			)
+		{
+			// override neutral states, highest priority to spawn barrier when possible
+			
+			// spawn barrier
+			ghoulRuntime.hasBarrier = true;
+
+			Registry::Get().Remove_Component<StatusEffectComponent>(eID); // remove stun if have, since barrier should cleanse it
+
+
+			CreateBarrier(eID, GetBarrierElement(ghoulRuntime.barrierElem));
+
+			ghoulRuntime.state = GhoulState::GHOUL_BARRIER;
+			ghoulRuntime.stateTime = 0.f;
+			health.isVulnerable = false;
+		}
+
+		// override with stagger
+		else if (CombatSystem::Get().IsCombatantStaggered(eID) && !ghoulRuntime.hasBarrier) // staggered without barrier
+		{
+			// stagger this fella
+			ghoulRuntime.staggerCount++;
+			CombatSystem::Get().SetCombatantStagger(eID, false);
+
+			if (ghoulRuntime.staggerCount >= 3) {
+				// after 3 hits, stagger ghoul
+				ghoulRuntime.staggerCount = 0;
+				ghoulRuntime.state = GhoulState::GHOUL_STAGGERED;
+				ghoulRuntime.stateTime = 0.f;
+			}
+		}
+
+		Vec2 playerPos = GetPos(targetPlayer);
+		Vec2 selfPos = GetPos(eID);
+
+		Vec2 directionToPlayer = { playerPos.x - selfPos.x, playerPos.y - selfPos.y };
+		bool faceRight = directionToPlayer.x >= 0.f;
+
+		// squared distance
+		float dPlayerSq = DistSq(selfPos, playerPos);
+
+		BehaviourComponent& behaviourComp = registry.Get_Component<BehaviourComponent>(eID);
+		if (behaviourComp.HasScript("CamTarget"))
+		{
+			if (dPlayerSq >= 1000.f * 1000.f) {
+				behaviourComp.RemoveScript("CamTarget");
+			}
+		}
+		else if (dPlayerSq < 1000.f * 1000.f) {
+			inCombat = true;
+			behaviourComp.AddScript("CamTarget");
+		}
+
+		if (ghoulRuntime.state == GHOUL_DEAD)
+		{
+			// die logic, TBC
+		}
+		else // alive!
+		{
+			// add phase switch ltr
+
+			switch (ghoulRuntime.state)
+			{
+
+			case GHOUL_IDLE:
+			{
+				moveComp.ResetFrameIntent();
+				animState = 0; 
+				if (ghoulRuntime.attackCooldown <= 0.f && ghoulRuntime.stateTime >= 0.5f && inCombat)
+				{
+					// between 0 to 1 random val
+					float randVal = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+					if (randVal < 0.5f) {
+						// melee attack
+						ghoulRuntime.willAttack = true;
+						ghoulRuntime.nextAction = GhoulAction::GHOUL_ACTION_MELEE;
+						moveComp.SetMoveSpeed(600.f);
+					}
+					else {
+						// range attack
+						ghoulRuntime.willAttack = true;
+						ghoulRuntime.nextAction = GhoulAction::GHOUL_ACTION_RANGE;
+						moveComp.SetMoveSpeed(400.f);
+					}
+					ghoulRuntime.state = GhoulState::GHOUL_MOVING;
+					ghoulRuntime.stateTime = 0.f;
+				}
+			}
+			break; // end case GHOUL_IDLE
+
+			case GHOUL_MOVING:
+			{
+				moveComp.ResetFrameIntent();
+				Vec2 moveDir = RG_Normalize(directionToPlayer);
+				moveComp.SetIsMoving(true);
+
+
+				switch (ghoulRuntime.nextAction)
+				{
+					case GhoulAction::GHOUL_ACTION_MELEE:
+					{
+						moveComp.SetMovementDirection(moveDir);
+						float meleeSq = GHOUL_MELEE_RANGE * GHOUL_MELEE_RANGE;
+						if (dPlayerSq <= meleeSq) // smack
+						{
+							ghoulRuntime.willAttack = true;
+							ghoulRuntime.state = GhoulState::GHOUL_MELEE;
+							ghoulRuntime.stateTime = 0.f;
+						}
+					}
+					break; // end case GHOUL_ACTION_MELEE
+
+
+					case GhoulAction::GHOUL_ACTION_RANGE:
+					{
+
+						moveComp.SetMovementDirection(moveDir);
+						float rangeSq = MAX_SHOOT_RANGE * MAX_SHOOT_RANGE;
+						if (dPlayerSq <= rangeSq) // shoot
+						{
+							moveDir.x = -moveDir.x;
+						}
+						// run for abit then shoots
+						if (ghoulRuntime.stateTime >= .5f)
+						{
+							ghoulRuntime.willAttack = true;
+							ghoulRuntime.state = GhoulState::GHOUL_RANGE;
+							ghoulRuntime.stateTime = 0.f;
+						}
+					}
+					break; // end case GHOUL_ACTION_RANGE
+
+					default:
+						break;
+				} // end switch next action
+
+				//if (ghoulRuntime.nextAction == GhoulAction::GHOUL_ACTION_MELEE) {
+				//	ghoulRuntime.state = GhoulState::GHOUL_MELEE;
+				//	ghoulRuntime.stateTime = 0.f;
+				//}
+				//else if (ghoulRuntime.nextAction == GhoulAction::GHOUL_ACTION_RANGE) {
+				//	ghoulRuntime.state = GhoulState::GHOUL_RANGE;
+				//	ghoulRuntime.stateTime = 0.f;
+				//}
+				animState = 1;
+			}
+			break; // end case GHOUL_MOVING
+
+			case GHOUL_BARRIER:
+			{
+				moveComp.ResetFrameIntent();
+				animState = 3;
+				if (ghoulRuntime.stateTime >= GHOUL_BARRIER_CASTTIME)
+				{
+					ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+					ghoulRuntime.stateTime = 0.f;
+				}
+			}
+			break; // end case GHOUL_BARRIER
+
+			case GHOUL_STAGGERED:
+			{
+				moveComp.ResetFrameIntent();
+				animState = 4;
+				if (ghoulRuntime.stateTime >= GHOUL_STAGGER_DURATION) {
+					ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+					ghoulRuntime.stateTime = 0.f;
+				}
+			}
+			break; // end case GHOUL_STAGGERED
+
+			case GHOUL_MELEE:
+			{
+				moveComp.ResetFrameIntent();
+				animState = 2;
+				if (ghoulRuntime.willAttack && ghoulRuntime.stateTime >= GHOUL_MELEE_WINDUP)
+				{
+					ghoulRuntime.willAttack = false;
+
+					Vec2 offset = { 0.f, 0.f };
+					if (faceRight) {
+						offset.x += GHOUL_MELEE_RANGE / 2.f;
+					}
+					else {
+						offset.x -= GHOUL_MELEE_RANGE / 2.f;
+					}
+					AttackProperties props = GHOUL_MELEE_PROPERTIES;
+					props.owner = eID;
+					CombatSystem::Get().SpawnHitBox(
+						props,
+						offset,
+						GHOUL_MELEE_HITBOX_SIZE
+					);
+				}
+
+				if (ghoulRuntime.stateTime >= GHOUL_MELEE_DURATION) {
+					ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+					ghoulRuntime.stateTime = 0.f;
+				}
+
+
+			}
+			break; // end case GHOUL_MELEE
+
+			case GHOUL_RANGE:
+			{
+				moveComp.ResetFrameIntent();
+				animState = 3;
+				if (ghoulRuntime.willAttack && ghoulRuntime.stateTime >= GHOUL_RANGE_CASTTIME)
+				{
+					ghoulRuntime.willAttack = false;
+
+					// shotgun bangg
+					for (int i = 0; i < 5; i++) {
+
+						//recycle spirit spit first
+						// Create visual entity (for rendering/physics)
+						Entity spit = JsonLoad::LoadEntityFromFile(
+							FilePath::PREFABS_FOLDER + "SpiritSpit.json",
+							selfPos.x, selfPos.y
+						);
+
+						// if dont have smth wrong with the prefab... but just to prevent crash
+						if (registry.Has_Component<Physics::PhysicsComponent>(spit))
+						{
+							TransformComponent& spitTrans = registry.Get_Component<TransformComponent>(spit);
+							Physics::PhysicsComponent& spitPhy = registry.Get_Component<Physics::PhysicsComponent>(spit);
+							// make projectile
+
+							float angleOffset = (i - 2) * 0.1f; // -0.2, -0.1, 0, 0.1, 0.2 radians offset
+							Vec2 dir = { directionToPlayer.x * cos(angleOffset) - directionToPlayer.y * sin(angleOffset),
+										 directionToPlayer.x * sin(angleOffset) + directionToPlayer.y * cos(angleOffset) };
+							dir = RG_Normalize(dir);
+							dir = RG_Scale(dir, PROJECTILE_SPEED);
+							spitPhy.Set_Vel(dir);
+
+							float angleRad = std::atan2(dir.y, dir.x);
+							// angleDeg = angleRad * (180.0f / RG_PI);
+							spitTrans.rot = angleRad;
+
+
+							AttackProperties props = SPIRIT_PROJECTILE_PROPERTIES;
+							props.owner = spit;
+							CombatSystem::Get().RegisterProjectile(spit, props, SPIRIT_PROJECTILE_RUNTIME);
+						}
+					}
+				}
+
+				if (ghoulRuntime.stateTime >= GHOUL_RANGE_DURATION) {
+					ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+					ghoulRuntime.stateTime = 0.f;
+				}
+			}
+			break; // end case GHOUL_RANGE
+
+			case GHOUL_DEAD:
+			{
+				// yo i shouldnt be here ?
+			}
+			break; // end case GHOUL_DEAD
+
+			default:
+				break;
+
+			} // end switch ghoul state
+		}
+
+
+		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
+
+		Sprite::SpriteSheet& spriteSheet = renderComp.GetSpriteSheet();
+
+
+		// always face player
+		spriteSheet.Sprite().SetFlipX(faceRight);
+		spriteSheet.SetState(animState);
+
+		//switch (ghoulRuntime.phase)
+		//{
+
+		//}
+	}
+
+	void End(Entity eID) {
+		std::cout << "Spirit script ended for entity " << eID << std::endl;
+		ghoulRuntime = GhoulRuntime();
+		ghoulEntity = INVALID_ENTITY;
+		GHOUL_MELEE_PROPERTIES.owner = INVALID_ENTITY;
+		if (HasBarrier(eID)) {
+			g_elemBarriers[eID].active = false;
+		}
+		CombatSystem::Get().RemoveCombatant(eID);
+		inCombat = false;
+	}
+}
+
 
 void EnemySystem::Initialize()
 {
@@ -1124,19 +1575,25 @@ void EnemySystem::Initialize()
 	enemy.Init = [](Entity e) { EnemyAI::Start(e); };
 	enemy.Update = [](Entity e, float dt) { EnemyAI::Update(e, dt); };
 	enemy.End = [](Entity e) { EnemyAI::End(e); };
-	LogicSystem::Get().RegisterScript("ManfredEnemy", enemy, ScriptID::GHOUL);
+	LogicSystem::Get().RegisterScript("ManfredEnemy", enemy);
 
 	BehaviourFCT spirit;
 	spirit.Init = [](Entity e) { SpiritScript::Start(e); };
 	spirit.Update = [](Entity e, float dt) { SpiritScript::Update(e, dt); };
 	spirit.End = [](Entity e) { SpiritScript::End(e); };
-	LogicSystem::Get().RegisterScript("SpiritScript", spirit, ScriptID::SPIRIT);
+	LogicSystem::Get().RegisterScript("SpiritScript", spirit);
 
 	BehaviourFCT obstacle;
 	obstacle.Init = [](Entity e) { ObstacleScript::Start(e); };
 	obstacle.Update = [](Entity e, float dt) { ObstacleScript::Update(e, dt); };
 	obstacle.End = [](Entity e) { ObstacleScript::End(e); };
-	LogicSystem::Get().RegisterScript("ObstacleScript", obstacle, ScriptID::OBSTACLE);
+	LogicSystem::Get().RegisterScript("ObstacleScript", obstacle);
+
+	BehaviourFCT ghoul;
+	ghoul.Init = [](Entity e) { GhoulScript::Start(e); };
+	ghoul.Update = [](Entity e, float dt) { GhoulScript::Update(e, dt); };
+	ghoul.End = [](Entity e) { GhoulScript::End(e); };
+	LogicSystem::Get().RegisterScript("GhoulScript", ghoul);
 
 	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
 		// on scene load, wipe spirits and assign target player

@@ -82,6 +82,30 @@ namespace ObstacleScript {
 	inline void End(Entity eID);
 }
 
+namespace GhoulScript {
+	enum GhoulState : unsigned int {
+		GHOUL_IDLE,
+		GHOUL_MOVING,
+		GHOUL_BARRIER,
+		GHOUL_STAGGERED,
+		GHOUL_MELEE,
+		GHOUL_RANGE,
+		GHOUL_HIT,
+		GHOUL_DEAD
+	};
+
+	enum GhoulAction {
+
+		GHOUL_ACTION_MELEE,
+		GHOUL_ACTION_RANGE
+	};
+	
+
+	inline void Start(Entity eID);
+	inline void Update(Entity eID, float dt);
+	inline void End(Entity eID);
+}
+
 class EnemySystem : public ISystem
 {
 private:

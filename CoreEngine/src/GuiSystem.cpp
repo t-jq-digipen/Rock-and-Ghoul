@@ -763,6 +763,9 @@ bool GuiSystem::GetEditMode() const
     return editMode;
 }
 
+// Dialogue skip duration
+static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 1.5f;
+
 /**
  * @brief       Main per-frame update for the GUI system.
  *              Functions:
@@ -792,6 +795,94 @@ void GuiSystem::Update(float dt)
 
     // Typing delta-time
     const float typingDt = sm.IsPaused() ? 0.f : dt;
+
+    // Check if dialogue can be skipped
+    static float dialogueTimerBeforeCanSkip = 0.f;
+    static bool prevAnyDialogueVisible = false;
+
+    // Skip the entire dialogue after a delay
+    const bool anyDialogueVisible = std::any_of(dialogues.begin(), dialogues.end(),
+        [](const DialogueConfig& d) { return d.isVisible; });
+
+    if ((anyDialogueVisible && !prevAnyDialogueVisible) || sm.inEditMode )
+    {
+        dialogueTimerBeforeCanSkip = 0.f;
+    }
+    prevAnyDialogueVisible = anyDialogueVisible;
+
+    // Trigger skip timer only while dialogue is visible and game is not paused
+    if (anyDialogueVisible && !sm.IsPaused())
+    {
+        dialogueTimerBeforeCanSkip += dt;
+    }
+    else if (!anyDialogueVisible)
+    {
+        dialogueTimerBeforeCanSkip = 0.f;
+        for (auto& tb : textboxes)
+        {
+            if (tb.text == "PRESS ESC TO SKIP" ||
+                tb.text.find("PRESS ESC TO SKIP") != std::string::npos)
+            {
+                tb.isVisible = false;
+            }
+        }
+    }
+
+    const bool escPressed = Input::IsKeyPressed(GLFW_KEY_ESCAPE);
+
+    if (dialogueTimerBeforeCanSkip >= DIALOGUE_SKIP_DELAY_DURATION && GuiSystem::Get().GetDialogueGate())
+    {
+        for (auto& tb : textboxes)
+        {
+            if (tb.text == "PRESS ESC TO SKIP" ||
+                tb.text.find("PRESS ESC TO SKIP") != std::string::npos)
+            {
+                tb.isVisible = true;
+            }
+        }
+    }
+
+    if (anyDialogueVisible &&
+        !sm.inEditMode &&
+        !sm.IsPaused() &&
+        escPressed &&
+        dialogueTimerBeforeCanSkip >= DIALOGUE_SKIP_DELAY_DURATION)
+    {
+        // Hide all dialogue UI
+        for (auto& d : dialogues)
+        {
+            if (!d.isVisible) continue;
+
+            if (auto* comp = (d.textComp ? d.textComp : d.owned.get()))
+            {
+                if (comp->CheckIfTyping()) comp->StopTyping();
+            }
+            d.isVisible = false;
+        }
+
+        for (auto& b : buttons)
+        {
+            if (b.actionName == "AdvanceDialogue")
+            {
+                b.isVisible = false;
+            }
+        }
+
+        for (auto& tb : textboxes)
+        {
+            if (tb.text == "PRESS ESC TO SKIP" ||
+                tb.text.find("PRESS ESC TO SKIP") != std::string::npos)
+            {
+                tb.isVisible = false;
+            }
+        }
+
+        SetDialogueGate(false);
+
+        // Reset skip state
+        dialogueTimerBeforeCanSkip = 0.0f;
+        prevAnyDialogueVisible = false;
+    }
 
     // Toggle visibility of "AdvanceDialogue" button
     for (auto& b : buttons)

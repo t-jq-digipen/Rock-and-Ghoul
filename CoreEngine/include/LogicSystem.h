@@ -107,7 +107,7 @@ public:
     * @param id ScriptID of the script
     * 
     */
-    void RegisterScript(const std::string& name, const BehaviourFCT& script, ScriptID id);
+    void RegisterScript(const std::string& name, const BehaviourFCT& script);
 
     /**
     * @brief Retrieves behaviour using script name.
@@ -125,15 +125,15 @@ public:
     * @return BehaviourFCT of script ID
     *
     */
-    BehaviourFCT* GetBehaviourByID(ScriptID id);
+    BehaviourFCT* GetBehaviourByID(unsigned int id);
 
     // Map getters
-    const std::unordered_map<std::string, ScriptID>& GetNameToIDMap() const { return m_nameToID; }
-    const std::unordered_map<ScriptID, std::string>& GetIDToNameMap() const { return m_idToName; }
+    const std::unordered_map<std::string, unsigned int>& GetNameToIDMap() const { return m_nameToID; }
+    const std::unordered_map<unsigned int, std::string>& GetIDToNameMap() const { return m_idToName; }
 
 private:
     LogicSystem() = default;  // Private constructor for singleton
     std::unordered_map<std::string, BehaviourFCT> m_behaviours; // various behaviours (contain scripts)
-    std::unordered_map<std::string, ScriptID>     m_nameToID;   // name to ID map
-    std::unordered_map<ScriptID, std::string>     m_idToName;   // ID to name map
+    std::unordered_map<std::string, unsigned int> m_nameToID;   // name to ID map
+    std::unordered_map<unsigned int, std::string> m_idToName;   // ID to name map
 };

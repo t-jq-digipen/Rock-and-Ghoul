@@ -28,8 +28,11 @@
 #include "GameScripts.h"
 //extern GSM gsm;
 
+static unsigned int s_nextScriptID = 0;
+
 void LogicSystem::Initialize()
 {
+    s_nextScriptID = 0;
     std::cout << "[LogicSystem] Initialized" << std::endl;
     // Register all engine-level C++ behaviour scripts hm
     RegisterAllGameScripts();
@@ -58,11 +61,11 @@ void LogicSystem::Update(float dt)
             !layerEnabled[m_registry.Get_Component<RenderComponent>(entity).GetRenderLayer()])
             continue;
 
-        for (ScriptID scriptID : bc.scriptIDList)
+        for (unsigned int scriptID : bc.scriptIDList)
         {
             //find name from id
             std::string scriptName;
-            if (scriptID != ScriptID::NONE)
+
             {
                 const auto& idToName = m_idToName;
                 auto it = idToName.find(scriptID);
@@ -95,16 +98,18 @@ void LogicSystem::Shutdown()
 }
 
 
-void LogicSystem::RegisterScript(const std::string& name, const BehaviourFCT& script, ScriptID id)
+void LogicSystem::RegisterScript(const std::string& name, const BehaviourFCT& script)
 {
     //Adds a new script to the system
     m_behaviours[name] = script;
-    m_nameToID[name] = id;
-    m_idToName[id] = name;
-    std::cout << "[LogicSystem] Registered script: " << name << " (ID=" << static_cast<unsigned int>(id) << ")\n";
+    m_nameToID[name] = s_nextScriptID;
+    m_idToName[s_nextScriptID] = name;
+
+    std::cout << "[LogicSystem] Registered script: " << name << " (ID=" << s_nextScriptID << ")\n";
+    s_nextScriptID++;
 }
 
-BehaviourFCT* LogicSystem::GetBehaviourByID(ScriptID id)
+BehaviourFCT* LogicSystem::GetBehaviourByID(unsigned int id)
 {
     auto it = m_idToName.find(id);
     if (it == m_idToName.end()) return nullptr;

@@ -884,7 +884,7 @@ void RenderSystem::Initialize() {
     camFollow.Init = [](Entity e) { CamFollowScript::Start(e); };
     camFollow.Update = [](Entity e, float dt) { CamFollowScript::Update(e, dt); };
     camFollow.End = [](Entity e) {CamFollowScript::End(e); };
-    LogicSystem::Get().RegisterScript("CamTarget", camFollow, ScriptID::CAMERA_TRACK);
+    LogicSystem::Get().RegisterScript("CamTarget", camFollow);
 
     pixelsPerUnit = 100.f;
     unitsPerPixel = 1.f / pixelsPerUnit;

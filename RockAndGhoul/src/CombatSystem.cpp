@@ -2,7 +2,7 @@
  * @file        CombatSystem.cpp
  * @author      Yasmin Tazi        | yasmin.t@digipen.edu
  * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
- * @date        06 FEB 2026
+ * @date        02 MAR 2026
  *
  * @brief       Combat System implementation.
  *
@@ -34,7 +34,7 @@
  * - WIND: Applies knockback force on impact
  * - LIGHTNING: Stuns target, preventing movement for duration
  *
- * Copyright � 2026 DigiPen, All rights reserved.
+ * Copyright © 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -74,28 +74,53 @@ void CombatSystem::ApplyElementEffect(Entity target, Element element) {
 
 	auto& statusComp = m_registry.Get_Component<StatusEffectComponent>(target);
 
-	// Set the new effect
+	// Clear old status effect before applying new one
+	Element oldEffect = statusComp.activeEffect;
+	if (oldEffect != Element::NONE && oldEffect != element) {
+		// Restore state from old effect
+		switch (oldEffect) {
+			case Element::ICE:
+				// Restore original speed before applying new effect
+				if (m_registry.Has_Component<Movement::MovementComponent>(target)) {
+					auto& movement = m_registry.Get_Component<Movement::MovementComponent>(target);
+					movement.SetMoveSpeed(statusComp.originalMoveSpeed);
+				}
+				break;
+			case Element::LIGHTNING:
+				// Clear stun (so no override and wonky)
+				statusComp.isStunned = false;
+				break;
+			default:
+				break;
+		}
+	}
+
+	// Set new effect
 	statusComp.activeEffect = element;
 
 	switch (element) {
 	case Element::FIRE:
-		statusComp.effectTimer = 5.0f;  // Burn for 5 seconds
+		statusComp.effectTimer = 5.0f;  // Burn for 5 sec
 		statusComp.burnTickTimer = 0.0f;
 		break;
 
 	case Element::ICE:
-		statusComp.effectTimer = 3.0f;  // Slow for 3 seconds
-		// Store base speed and apply slow
+		statusComp.effectTimer = 3.0f;  // Slow for 3 sec
+		// Only store original speed if no effect was active (or same effect reapplied)
 		if (m_registry.Has_Component<Movement::MovementComponent>(target)) {
 			auto& movement = m_registry.Get_Component<Movement::MovementComponent>(target);
-			float currentSpeed = movement.GetMoveSpeed();
-			statusComp.originalMoveSpeed = (currentSpeed > 0.f) ? currentSpeed : 300.f;
+			// Only save original speed if this is a "fresh" effect
+			if (oldEffect == Element::NONE || oldEffect != Element::ICE) {
+				float currentSpeed = movement.GetMoveSpeed();
+				statusComp.originalMoveSpeed = (currentSpeed > 0.f) ? currentSpeed : 300.f;
+			}
+			// Apply slow using the saved original speed
 			movement.SetMoveSpeed(statusComp.originalMoveSpeed * 0.5f); // 50% slow
 		}
 		break;
 
 	case Element::LIGHTNING:
-		statusComp.effectTimer = 2.0f;  // Stun for 2 seconds
+		statusComp.effectTimer = 2.0f;  // Stun for 2 sec
 		statusComp.isStunned = true;
 		break;
 
@@ -159,7 +184,11 @@ void CombatSystem::ApplyDamage(Entity target, const AttackProperties& properties
 				// apply instant damage and stagger
 				health.currhp -= properties.damage;
 
-				combatants[target].toStagger = true;
+				auto it = combatants.find(target);
+				if (it != combatants.end())
+				{
+					it->second.toStagger = true;
+				}
 			}
 		}
 		else // target not vulnerable, skip rest of knockback and element effects

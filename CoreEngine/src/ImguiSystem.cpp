@@ -6127,9 +6127,7 @@ void ImGuiSystem::ShowInspectorWindow()
 
                 ImGui::SeparatorText("Registered Scripts:");
                 int id = 0;
-                ScriptID scriptToRemove{};
-                bool removeRequested = false;
-                for (ScriptID sID : behaviourComp.scriptIDList)
+                for (unsigned int sID : behaviourComp.scriptIDList)
                 {
                     ImGui::PushID(id++);
                     ImGui::Text(map.find(sID)->second.c_str());

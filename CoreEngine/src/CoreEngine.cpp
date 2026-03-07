@@ -99,6 +99,7 @@ void CoreEngine::RegisterGameSystem(ISystem* sys, bool ownsMemory)
 
 void CoreEngine::Initialize()
 {
+    srand((unsigned int)time(nullptr));
     // ----------------------------------------------------
     // Register Systems (order matters!)
     // ----------------------------------------------------

@@ -37,8 +37,8 @@ struct BehaviourComponent
 {
     Entity entityID{};                                  // ID of entity it is attached to, must store to update the components through registry
 
-    std::unordered_map<ScriptID, bool> startedScripts;  // Map of script ID to bool to check if a script has started
-    std::vector<ScriptID> scriptIDList;                 // List of script IDs attached to the entity
+    std::unordered_map<unsigned int, bool> startedScripts;  // Map of script ID to bool to check if a script has started
+    std::vector<unsigned int> scriptIDList;                 // List of script IDs attached to the entity
 
     std::string scriptName = "";                        // Human-readable name
     bool started = false;                               // Whether Init() ran yet
@@ -53,9 +53,9 @@ struct BehaviourComponent
      */
     ~BehaviourComponent()
     {
-        for (ScriptID scriptID : scriptIDList)
+        for (unsigned int scriptID : scriptIDList)
         {
-            if (scriptID != ScriptID::NONE)
+            if (startedScripts.contains(scriptID))
             {
                 if (startedScripts[scriptID])
                 {
@@ -126,11 +126,11 @@ struct BehaviourComponent
 
         if (auto it = map.find(name); it != map.end())
         {
-            ScriptID sID = it->second;
+            unsigned int sID = it->second;
             if (startedScripts.find(sID) == startedScripts.end()) { return; } // Script not added
 
 
-            if (startedScripts[sID] &&  sID != ScriptID::NONE)
+            if (startedScripts[sID])
             {
                 BehaviourFCT* script = logicSys.GetBehaviourByID(sID);
                 if (script && script->End)
@@ -153,22 +153,16 @@ struct BehaviourComponent
      * 
      * @param sID Script ID to remove.
      */
-    void RemoveScript(const ScriptID& sID)
+    void RemoveScript(const unsigned int& sID)
     {
         if (startedScripts.find(sID) == startedScripts.end()) { return; } // Script not added
 
-
-        if (sID != ScriptID::NONE)
+        if (startedScripts[sID]) 
         {
-            if (startedScripts.find(sID) == startedScripts.end()) { return; } // Script not added
-            if (startedScripts[sID]) 
-            {
-                BehaviourFCT* script = LogicSystem::Get().GetBehaviourByID(sID);
-                if (script && script->End)
-                    script->End(entityID);
-            }
+            BehaviourFCT* script = LogicSystem::Get().GetBehaviourByID(sID);
+            if (script && script->End)
+                script->End(entityID);
         }
-
 
         startedScripts.erase(sID);
 
@@ -236,7 +230,7 @@ struct BehaviourComponent
         LogicSystem& logicSys = LogicSystem::Get();
         auto& map = logicSys.GetIDToNameMap();
         std::vector<std::string> scriptNames;
-        for (const ScriptID sID : scriptIDList)
+        for (const unsigned int sID : scriptIDList)
         {
             scriptNames.push_back(map.find(sID)->second);
         }

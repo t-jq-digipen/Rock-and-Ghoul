@@ -4,7 +4,7 @@
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
  * @co-author   Manfred Sim		   | manfred.sim@digipen.edu
- * @date	    06 FEB 2026
+ * @date	    01 MAR 2026
  *
  * @brief	Player System for handling player behaviour.
  *
@@ -202,7 +202,7 @@ namespace RockScript {
 	constexpr float SOUNDWAVE_TIME = 0.5f;
 	constexpr float AOE_TIME = 1.f;
 	constexpr float SHIELD_DURATION = 5.f;
-	constexpr float DASH_INVULN_DURATION = 1.f;
+	constexpr float DASH_INVULN_DURATION = 0.5f;
 	constexpr float DASH_COOLDOWN = 2.f;
 
 	constexpr float STAGGER_DURATION = 1.f;
@@ -247,6 +247,15 @@ namespace RockScript {
 	std::unordered_map<Entity, size_t> subscriberID;
 
 	static Element currentElement = Element::NONE; //Set default element to none
+
+	// Element cooldown system
+	constexpr float ELEMENT_COOLDOWN = 5.0f; // Cooldown duration for elements
+	static std::unordered_map<Element, float> elementCooldowns = {
+		{Element::FIRE, 0.0f},
+		{Element::LIGHTNING, 0.0f},
+		{Element::ICE, 0.0f},
+		{Element::WIND, 0.0f}
+	};
 
 	// HELPER FUNCTION TO PLAY ELEMENTAL SOUNDS
 	inline void PlayElementalSound() {
@@ -348,16 +357,36 @@ namespace RockScript {
 
 	void AddSpellToSlot(SpellType type, float cooldown, int charges)
 	{
-		for (auto& slot : spellSlots)
+		// Check if all slots are full
+		bool allFull = true;
+		for (const auto& slot : spellSlots)
 		{
-			if (slot.charges <= 0) //Empty slot
-			{
-				slot = Spell(type, cooldown, charges);
-				std::cout << "Added spell to slot! Type: " << static_cast<int>(type) << "\n";
-				return;
+			if (slot.charges <= 0) {
+				allFull = false;
+				break;
 			}
 		}
-		std::cout << "All spell slots full! Cannot add spell.\n";
+		// If all spell slots are taken
+		if (allFull) {
+			// Push back existing spells (queue)
+			// Slot 0 -> Slot 1, Slot 1 -> Slot 2, Slot 2 deleted
+			spellSlots[2] = spellSlots[1];  // Slot 2 <- Slot 1 (old slot 2 deleted)
+			spellSlots[1] = spellSlots[0];  // Slot 1 <- Slot 0
+
+			// Add new spell to slot 0
+			spellSlots[0] = Spell(type, cooldown, charges);
+		}
+		else {
+			// Find first empty slot
+			for (auto& slot : spellSlots)
+			{
+				if (slot.charges <= 0) //Empty slot
+				{
+					slot = Spell(type, cooldown, charges);
+					return;
+				}
+			}
+		}
 	}
 
 	void AssignSlots()
@@ -413,38 +442,69 @@ namespace RockScript {
 	}
 
 	void CycleElement() {
-		/*int index = static_cast<int>(currentElement);
-		index = (index + 1) % static_cast<int>(Element::COUNT);
-		currentElement = static_cast<Element>(index);
+		// Cycle through elements, skipping those on cooldown
+		Element startElement = currentElement;
+		int attempts = 0;
+		const int MAX_ATTEMPTS = 5; // Prevent infinite loop
 
-		switch (currentElement) {
-		case Element::NONE: std::cout << "Element: NONE\n"; break;
-		case Element::LIGHTNING: std::cout << "Element: LIGHTNING\n"; break;
-		case Element::FIRE: std::cout << "Element: FIRE\n"; break;
-		case Element::WIND: std::cout << "Element: WIND\n"; break;
-		case Element::ICE: std::cout << "Element: ICE\n"; break;
-		}*/
-		
+		do {
+			switch (currentElement) {
+				case Element::NONE:
+					currentElement = Element::LIGHTNING;
+					break;
+				case Element::LIGHTNING:
+					currentElement = Element::FIRE;
+					break;
+				case Element::FIRE:
+					currentElement = Element::WIND;
+					break;
+				case Element::WIND:
+					currentElement = Element::ICE;
+					break;
+				case Element::ICE:
+					currentElement = Element::NONE;
+					break;
+				default:
+					break;
+			}
+			attempts++;
+
+			// If we've looped back to NONE or found an element not on cooldown, we're done
+			if (currentElement == Element::NONE ||
+			    elementCooldowns[currentElement] <= 0.0f ||
+			    attempts >= MAX_ATTEMPTS) {
+				break;
+			}
+		} while (currentElement != startElement);
+
+		// Print the selected element
 		switch (currentElement) {
 			case Element::NONE:
-				currentElement = Element::LIGHTNING;
-				std::cout << "Element: LIGHTNING\n";
+				std::cout << "Element: NONE\n";
 				break;
 			case Element::LIGHTNING:
-				currentElement = Element::FIRE;
-				std::cout << "Element: FIRE\n";
+				std::cout << "Element: LIGHTNING";
+				if (elementCooldowns[Element::LIGHTNING] > 0.0f)
+					std::cout << " (Cooldown: " << elementCooldowns[Element::LIGHTNING] << "s)";
+				std::cout << "\n";
 				break;
 			case Element::FIRE:
-				currentElement = Element::WIND;
-				std::cout << "Element: WIND\n";
+				std::cout << "Element: FIRE";
+				if (elementCooldowns[Element::FIRE] > 0.0f)
+					std::cout << " (Cooldown: " << elementCooldowns[Element::FIRE] << "s)";
+				std::cout << "\n";
 				break;
 			case Element::WIND:
-				currentElement = Element::ICE;
-				std::cout << "Element: ICE\n";
+				std::cout << "Element: WIND";
+				if (elementCooldowns[Element::WIND] > 0.0f)
+					std::cout << " (Cooldown: " << elementCooldowns[Element::WIND] << "s)";
+				std::cout << "\n";
 				break;
 			case Element::ICE:
-				currentElement = Element::NONE;
-				std::cout << "Element: NONE\n";
+				std::cout << "Element: ICE";
+				if (elementCooldowns[Element::ICE] > 0.0f)
+					std::cout << " (Cooldown: " << elementCooldowns[Element::ICE] << "s)";
+				std::cout << "\n";
 				break;
 			default:
 				break;
@@ -475,7 +535,7 @@ namespace RockScript {
 
 
 	void Dash(Entity eID) {
-		if (IsBusy()) { return; }
+		if (IsBusy() || dashtimer < DASH_COOLDOWN) { return; }
 		// dk if want to allow dash cancelling spells
 		ResetTimers();
 		shot = true;
@@ -773,8 +833,11 @@ namespace RockScript {
 		if (shieldTimer >= SHIELD_DURATION) {
 			isVulnerable = true;
 			health.isVulnerable = true;
+			if (shieldy != INVALID_ENTITY) {
+				Registry::Get().Remove_Entity(shieldy);
+				shieldy = INVALID_ENTITY;
+			}
 			return;
-			// shieldy = INVALID_ENTITY;
 		}
 
 		// Update shield
@@ -891,6 +954,8 @@ namespace RockScript {
 				}
 			}
 
+			AOE_PROPERTIES.element = currentElement;
+
 			// Create visual entity (spawns above, will crash down)
 			float posx = (faceRight) ? trans.pos.x + 500.f : trans.pos.x - 500.f;
 			Entity aoeVisual = JsonLoad::LoadEntityFromFile(
@@ -920,7 +985,7 @@ namespace RockScript {
 				spelled.lifetime = 1.5f; // AOE visual duration
 				activeSpells.push_back(spelled);
 			}
-
+			aoeHitboxSpawned = false;
 			aoetimer = 0.f;
 			break;
 		}
@@ -934,6 +999,14 @@ namespace RockScript {
 			// Clean up old shield if exists
 			if (shieldy != INVALID_ENTITY) {
 				registry.Remove_Entity(shieldy);
+				shieldy = INVALID_ENTITY;
+			}
+			// Remove pool entry so old duration doesn't expire new shield early
+			for (auto oldshield = activeSpells.begin(); oldshield != activeSpells.end(); ) {
+				if (oldshield->poolEntity.type == EntityType::SHIELD) {
+					PooledEntityFactory::Get().DestroyEntity(oldshield->poolEntity);
+					oldshield = activeSpells.erase(oldshield);
+				} else { ++oldshield; }
 			}
 
 			// Create visual entity
@@ -1003,6 +1076,12 @@ namespace RockScript {
 		}
 		}
 
+		// If spell was cast with an element, put that element on cooldown and reset to NONE
+		if (currentElement != Element::NONE && (spell.type == SpellType::SOUNDWAVE || spell.type == SpellType::AOE)) {
+			elementCooldowns[currentElement] = ELEMENT_COOLDOWN;
+			std::cout << "Element " << static_cast<int>(currentElement) << " on cooldown for " << ELEMENT_COOLDOWN << "s\n";
+			currentElement = Element::NONE;
+		}
 
 	}
 
@@ -1028,10 +1107,16 @@ namespace RockScript {
 		}
 		shot = false;
 
-		shieldTimer = 0.f; //Timer for shield invulnerability
+		shieldTimer = SHIELD_DURATION; //Timer for shield invulnerability (start inactive)
 		shieldy = INVALID_ENTITY;
 
 		currentElement = Element::NONE; //Set default element to none
+
+		// Reset element cooldowns
+		for (auto& [element, cooldown] : elementCooldowns)
+		{
+			cooldown = 0.0f;
+		}
 
 		isVulnerable = true; //Is Rock vulnerable
 	}
@@ -1223,6 +1308,9 @@ namespace RockScript {
 						if (it->ecsEntity != INVALID_ENTITY) {
 							registry.Remove_Entity(it->ecsEntity);
 						}
+						if (it->ecsEntity == shieldy) {
+							shieldy = INVALID_ENTITY;
+						}
 						PooledEntityFactory::Get().DestroyEntity(it->poolEntity);
 
 						it = activeSpells.erase(it);
@@ -1279,6 +1367,15 @@ namespace RockScript {
 		for (auto& spell : spellSlots)
 		{
 			spell.Update(dt);
+		}
+
+		// Update element cooldowns
+		for (auto& [element, cooldown] : elementCooldowns)
+		{
+			if (cooldown > 0.0f) {
+				cooldown -= dt;
+				if (cooldown < 0.0f) cooldown = 0.0f;
+			}
 		}
 
 		AssignSlots();
@@ -1343,6 +1440,7 @@ namespace RockScript {
 				}
 			}
 		}	// end MOVEMENT
+
 		// ================================================================================
 		// STUNNED
 		// ================================================================================
@@ -1354,6 +1452,7 @@ namespace RockScript {
 			stunnedtimer += dt;
 			animstate = (faceRight) ? 10 : 11;
 		}	// end STUNNED
+
 		// ================================================================================
 		// MELEE ATTACK
 		// ================================================================================
@@ -1380,6 +1479,7 @@ namespace RockScript {
 				shot = true;
 			}
 		}	// end MELEE ATTACK
+
 		// ================================================================================
 		// SOUNDWAVE CAST
 		// ================================================================================
@@ -1395,6 +1495,7 @@ namespace RockScript {
 				shot = true;
 			}
 		}	// end SOUNDWAVE CAST
+
 		// ================================================================================
 		// AOE CAST
 		// ================================================================================
@@ -1416,7 +1517,6 @@ namespace RockScript {
 				Vec2 aoeSize = { AOE_RADIUS * 3.f, AOE_RADIUS * 2.f };  // Wider
 
 				AOE_PROPERTIES.owner = eID;
-				AOE_PROPERTIES.element = currentElement;
 				AOE_PROPERTIES.lifetime = 0.2f;
 
 				CombatSystem::Get().SpawnHitBox(
@@ -1425,16 +1525,11 @@ namespace RockScript {
 					aoeSize
 				);
 
+				AOE_PROPERTIES.element = Element::NONE; 
+
 				aoeHitboxSpawned = true;
 			}
 		}	// end AOE CAST
-		else
-		{
-			// Reset flag when AOE animation completes
-			if (aoeHitboxSpawned) {
-				aoeHitboxSpawned = false;
-			}
-		}
 
 		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
 		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
@@ -1443,6 +1538,7 @@ namespace RockScript {
 
 		spriteSheet.SetState(animstate);
 
+		// Healthbar
 		if (registry.Has_Component<HealthComponent>(eID))
 		{
 			HealthComponent& hpComp = registry.Get_Component<HealthComponent>(eID);
@@ -1466,14 +1562,14 @@ namespace RockScript {
 			
 			Vec2 v0, v1, v2, v3;
 			// Get background quad
-			gui.GetDisplayQuad(stats.memberIDs[1], v0, v1, v2, v3);
+			gui.GetDisplayQuad(stats.memberIDs[0], v0, v1, v2, v3);
 			// Calculate position for new quad
 			float amount = hpComp.currhp / hpComp.maxhp;
 
 			Vec2 newV1 = v0 + (v1 - v0) * amount;   // bottom right moves left
 			Vec2 newV2 = v3 + (v2 - v3) * amount;   // top right moves left
 
-			gui.SetDisplayQuad(stats.memberIDs[2], v0, newV1, newV2, v3);
+			gui.SetDisplayQuad(stats.memberIDs[1], v0, newV1, newV2, v3);
 
 			int state = (hpComp.currhp > 0.2f * hpComp.maxhp) ? 0 : 1;
 			gui.SetDisplaySheetState(stats.memberIDs[4], state);
@@ -1547,14 +1643,14 @@ void PlayerSystem::Initialize()
 		player.Init = [](Entity e) { PlayerMove::Start(e); };
 		player.Update = [](Entity e, float dt) { PlayerMove::Update(e, dt); };
 		player.End = [](Entity e) { PlayerMove::End(e); };
-		LogicSystem::Get().RegisterScript("PlayerMovement", player, ScriptID::PLAYER);
+		LogicSystem::Get().RegisterScript("PlayerMovement", player);
 	}
 	{
 		BehaviourFCT player;
 		player.Init = [](Entity e) { RockScript::Start(e); };
 		player.Update = [](Entity e, float dt) { RockScript::Update(e, dt); };
 		player.End = [](Entity e) { RockScript::End(e); };
-		LogicSystem::Get().RegisterScript("RockScript", player, ScriptID::ROCK_SCRIPT);
+		LogicSystem::Get().RegisterScript("RockScript", player);
 	}
 
 
