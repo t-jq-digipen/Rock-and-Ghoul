@@ -666,7 +666,12 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"profileOffset", {dlg.profileOffset.x, dlg.profileOffset.y }},
             {"profileRenderData", dlg.profileRenderData},
 
-            {"isVisible", dlg.isVisible}
+            {"isVisible", dlg.isVisible},
+
+            {"customOverride", dlg.customOverride},
+            {"speakerOverrideEnabled", dlg.speakerOverrideEnabled},
+            {"speakerOverrideID", dlg.speakerOverrideID}
+
         };
         j["gui"]["dialogues"].push_back(std::move(jd));
     }
@@ -829,6 +834,9 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 }
                 d.profileRenderData = dlg.value("profileRenderData", std::string("{}"));
                 d.isVisible = dlg.value("isVisible", true);
+                d.customOverride = dlg.value("customOverride", false);
+                d.speakerOverrideEnabled = dlg.value("speakerOverrideEnabled", false);
+                d.speakerOverrideID = dlg.value("speakerOverrideID", 0);
 
                 s.guiDialogues.push_back(std::move(d));
             }
@@ -1050,6 +1058,10 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.profileRenderData = d.profileRenderData.Serialize();
 
             sd.isVisible = d.isVisible;
+
+            sd.customOverride = d.customOverride;
+            sd.speakerOverrideEnabled = d.speakerOverrideEnabled;
+            sd.speakerOverrideID = d.speakerOverrideID;
 
             const TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
             if (comp)
@@ -1273,6 +1285,10 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.jsonPath = d.jsonPath;
             cfg.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
             cfg.isVisible = d.isVisible;
+
+            cfg.customOverride = d.customOverride;
+            cfg.speakerOverrideEnabled = d.speakerOverrideEnabled;
+            cfg.speakerOverrideID = d.speakerOverrideID;
 
             // Always create a runtime TextComponent we can hydrate
             cfg.owned = std::make_shared<TextSystem::TextComponent>();

@@ -11,19 +11,19 @@
     "entities": [
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-162.97792053222656,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-330.18994140625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":167.21200561523438,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-162.97792053222656,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-330.18994140625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":64.5510025024414,\"aabb_dimY\":407.8110046386719,\"aabb_maxX\":-214.3084259033203,\"aabb_maxY\":384.5426025390625,\"aabb_minX\":-278.85943603515625,\"aabb_minY\":-23.268386840820313,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-246.58392333984375,\"posY\":180.63711547851563,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":-145.274169921875,\"posY\":555.2919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Obstacle"
         },
@@ -239,6 +239,7 @@
                     300.0
                 ],
                 "currentLineIndex": 0,
+                "customOverride": false,
                 "isVisible": true,
                 "jsonPath": "../Assets/Dialogue.json",
                 "lines": [
@@ -266,6 +267,8 @@
                     300.0
                 ],
                 "sceneID": "0",
+                "speakerOverrideEnabled": false,
+                "speakerOverrideID": 0,
                 "textBox": {
                     "centered": false,
                     "color": [
@@ -998,6 +1001,15 @@
                     49
                 ],
                 "name": "Song Input List"
+            },
+            {
+                "ID": 1,
+                "members": [
+                    10,
+                    11,
+                    33
+                ],
+                "name": "Level 1 Dialogue"
             }
         ],
         "textboxes": [
@@ -1078,7 +1090,7 @@
                     1380.0,
                     1020.0
                 ],
-                "scale": 0.6,
+                "scale": 0.6000000238418579,
                 "text": "SONG LIST:"
             }
         ]

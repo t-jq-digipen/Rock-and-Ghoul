@@ -561,6 +561,13 @@ struct DialogueConfig {
     Vec2 profileBaseSize = { 300.f, 300.f };
     Vec2 profileOffset = { 0.f, 0.f };
     UI_RenderData profileRenderData;
+    enum class ProfileDisplaySide { PROFILE_AUTOFROMSPEAKER = 0, PROFILE_LEFT = 1, PROFILE_RIGHT = 2 }; // which side the profile pic will be displayed
+    ProfileDisplaySide profileSide = ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
+
+    // To be used by the ImGui UI editor
+    bool customOverride = false; // if custom override mode is on
+    bool speakerOverrideEnabled = false; // to override speaker (only used when customOverride == true)
+    int speakerOverrideID = 0;
 };
 
 struct DisplayConfig
