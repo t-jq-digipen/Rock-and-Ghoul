@@ -28,53 +28,53 @@
 // ============================================
 // GHOUL SCRIPT
 // ============================================
-namespace GhoulScript
-{
-    /**
-     * @brief Called when the GhoulScript is first initialized.
-     *
-     * Prints a message confirming the script has started for the given entity.
-     */
-    //random entity name lol
-    inline void Start(Entity gob)
-    {
-        std::cout << "Ghoul script started for entity " << gob << std::endl;
-    }
-
-    /**
-     * @brief Rotates the entity at 45 degrees per second.
-     *
-     * Retrieves the TransformComponent and updates its rotation value
-     * each frame. Keeps the rotation angle clamped between 0�360 degrees.
-     *
-     */
-    inline void Update(Entity gob, float dt)
-    {
-        Registry& registry = Registry::Get();
-
-        if (registry.Has_Component<TransformComponent>(gob))
-        {
-            auto& transform = registry.Get_Component<TransformComponent>(gob);
-
-            // rot 45 degrees per second
-            transform.rot += 45.0f * dt;
-
-
-            if (transform.rot >= 360.0f) {
-                transform.rot -= 360.0f;
-            }
-        }
-    }
-    /**
-     * @brief Called when the GhoulScript is stopped or removed.
-     *
-     * Logs a message to indicate that the script has ended for this entity.
-     */
-    inline void End(Entity gob)
-    {
-        std::cout << "Ghoul script ended for entity " << gob << std::endl;
-    }
-}
+//namespace GhoulScript
+//{
+//    /**
+//     * @brief Called when the GhoulScript is first initialized.
+//     *
+//     * Prints a message confirming the script has started for the given entity.
+//     */
+//    //random entity name lol
+//    inline void Start(Entity gob)
+//    {
+//        std::cout << "Ghoul script started for entity " << gob << std::endl;
+//    }
+//
+//    /**
+//     * @brief Rotates the entity at 45 degrees per second.
+//     *
+//     * Retrieves the TransformComponent and updates its rotation value
+//     * each frame. Keeps the rotation angle clamped between 0�360 degrees.
+//     *
+//     */
+//    inline void Update(Entity gob, float dt)
+//    {
+//        Registry& registry = Registry::Get();
+//
+//        if (registry.Has_Component<TransformComponent>(gob))
+//        {
+//            auto& transform = registry.Get_Component<TransformComponent>(gob);
+//
+//            // rot 45 degrees per second
+//            transform.rot += 45.0f * dt;
+//
+//
+//            if (transform.rot >= 360.0f) {
+//                transform.rot -= 360.0f;
+//            }
+//        }
+//    }
+//    /**
+//     * @brief Called when the GhoulScript is stopped or removed.
+//     *
+//     * Logs a message to indicate that the script has ended for this entity.
+//     */
+//    inline void End(Entity gob)
+//    {
+//        std::cout << "Ghoul script ended for entity " << gob << std::endl;
+//    }
+//}
 // ============================================
 // PATROL ENEMY SCRIPT
 // ============================================
@@ -260,12 +260,12 @@ inline void RegisterAllGameScripts()
         //move.End = [](Entity e) { MainMenuMover::End(e); };
         //logicSys.RegisterScript("Movey", move, ScriptID::MAINMENU_BG);
 
-        BehaviourFCT ghoul;
-        //function that takes an Entity e calls GhoulScript::Start(e)
-        ghoul.Init = [](Entity e) { GhoulScript::Start(e); };
-        ghoul.Update = [](Entity e, float dt) { GhoulScript::Update(e, dt); };
-        ghoul.End = [](Entity e) { GhoulScript::End(e); };
-        logicSys.RegisterScript("GhoulScript", ghoul);
+        //BehaviourFCT ghoul;
+        ////function that takes an Entity e calls GhoulScript::Start(e)
+        //ghoul.Init = [](Entity e) { GhoulScript::Start(e); };
+        //ghoul.Update = [](Entity e, float dt) { GhoulScript::Update(e, dt); };
+        //ghoul.End = [](Entity e) { GhoulScript::End(e); };
+        //logicSys.RegisterScript("GhoulScript", ghoul);
 
         //same as ghoul
         BehaviourFCT patrol;
