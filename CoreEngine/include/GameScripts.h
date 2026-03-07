@@ -279,7 +279,7 @@ inline void RegisterAllGameScripts()
         basicPlayer.Init   = [](Entity e)           { BasicPlayerScript::Start(e); };
         basicPlayer.Update = [](Entity e, float dt) { BasicPlayerScript::Update(e, dt); };
         basicPlayer.End    = [](Entity e)            { BasicPlayerScript::End(e); };
-        logicSys.RegisterScript("BasicPlayerInput", basicPlayer, ScriptID::BASIC_PLAYER_INPUT);
+        logicSys.RegisterScript("BasicPlayerInput", basicPlayer);
     }
 
 }
