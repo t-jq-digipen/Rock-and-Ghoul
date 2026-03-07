@@ -78,6 +78,10 @@ private:
         float originalMoveSpeed{ 0.f };
         bool isStunned{ false };
 
+
+        //for projectiles etc.
+        bool hasReplayPrefab{ false };
+        std::string replayPrefab;
     };
 
     struct FrameSnapshot
@@ -99,6 +103,7 @@ private:
 private:
     int OldestIndex() const;
     int IndexAt(int logicalIndex) const;
+    std::unordered_map<Entity, Entity> replayEntityMap;
 };
 
 #endif

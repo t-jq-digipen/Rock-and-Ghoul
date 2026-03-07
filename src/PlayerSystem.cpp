@@ -62,6 +62,32 @@ float footstepInterval = 0.35f;  // Time between footsteps (in seconds)
 	gui.SetDisplaySheetState(stats.memberIDs[4], state);
 }*/
 
+void PlayerSystem::RefreshPlayerHealthUI(Entity eID)
+{
+	Registry& registry = Registry::Get();
+	if (!registry.Has_Component<HealthComponent>(eID)) return;
+
+	HealthComponent& hpComp = registry.Get_Component<HealthComponent>(eID);
+	if (hpComp.maxhp <= 0.f) return;
+
+	GuiSystem& gui = GuiSystem::Get();
+	UIGroup& stats = gui.GetGroup("Stats");
+
+	Vec2 v0, v1, v2, v3;
+	gui.GetDisplayQuad(stats.memberIDs[1], v0, v1, v2, v3);
+
+	float amount = hpComp.currhp / hpComp.maxhp;
+	amount = std::clamp(amount, 0.f, 1.f);
+
+	Vec2 newV1 = v0 + (v1 - v0) * amount;
+	Vec2 newV2 = v3 + (v2 - v3) * amount;
+
+	gui.SetDisplayQuad(stats.memberIDs[2], v0, newV1, newV2, v3);
+
+	int state = (hpComp.currhp > 0.2f * hpComp.maxhp) ? 0 : 1;
+	gui.SetDisplaySheetState(stats.memberIDs[4], state);
+}
+
 void NormalizeDiagonalMovement(float& x, float& y)
 {
 	const float l2 = x*x + y*y;

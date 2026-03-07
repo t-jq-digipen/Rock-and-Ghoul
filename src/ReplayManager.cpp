@@ -183,6 +183,7 @@ void ReplayManager::CaptureTick()
             s.originalMoveSpeed = se.originalMoveSpeed;
             s.isStunned = se.isStunned;
         }
+
  
 
 
@@ -196,7 +197,7 @@ void ReplayManager::CaptureTick()
    
 }
 
-void ReplayManager::ApplyTick()
+/*void ReplayManager::ApplyTick()
 {
     if (mode != Mode::Playback) return;
 
@@ -292,7 +293,7 @@ void ReplayManager::ApplyTick()
         }
 
         // Update player health UI after restoring state
-        Entity player = PlayerSystem::FindPlayer();
+        /*Entity player = PlayerSystem::FindPlayer();
         if (player != INVALID_ENTITY && PlayerSystem::Instance())
             PlayerSystem::Instance()->UpdateHealthUI(player);
       
@@ -301,4 +302,126 @@ void ReplayManager::ApplyTick()
     playCursor++;
 
    
+}*/
+
+void ReplayManager::ApplyTick()
+{
+    if (mode != Mode::Playback) return;
+
+    if (playCursor >= validCount)
+    {
+        mode = Mode::Off;
+        return;
+    }
+
+    const FrameSnapshot& frame = ring[IndexAt(playCursor)];
+    Registry& reg = Registry::Get();
+
+    bool foundPlayer = false;
+    float playerX = 0.f;
+    float playerY = 0.f;
+
+    for (const EntitySnapshot& s : frame.entities)
+    {
+        if (!reg.Has_Component<TransformComponent>(s.id))
+            continue;
+
+        auto& tc = reg.Get_Component<TransformComponent>(s.id);
+        tc.pos.x = s.px;
+        tc.pos.y = s.py;
+        tc.scale.x = s.sx;
+        tc.scale.y = s.sy;
+        tc.rot = s.rot;
+
+        if (s.hasPhysics && reg.Has_Component<Physics::PhysicsComponent>(s.id))
+        {
+            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(s.id);
+            phys.Set_Vel({ s.vx, s.vy });
+        }
+
+        if (s.hasMovement && reg.Has_Component<Movement::MovementComponent>(s.id))
+        {
+            auto& mv = reg.Get_Component<Movement::MovementComponent>(s.id);
+            mv.SetIsMoving(s.isMoving);
+            mv.SetMovementDirection({ s.mdx, s.mdy });
+            mv.SetInputDirection(static_cast<Movement::InputDirection>(s.inputDir));
+        }
+
+        if (s.hasAnim && reg.Has_Component<RenderComponent>(s.id))
+        {
+            auto& rc = reg.Get_Component<RenderComponent>(s.id);
+            if (rc.GetRenderType() == RT_SPRITESHEET)
+            {
+                auto& ss = rc.GetSpriteSheet();
+                if ((unsigned int)ss.GetCurrentState() != s.animState)
+                    ss.SetState(s.animState);
+                ss.SetCurrentCol(s.animCol);
+                ss.SetAnimTimer(s.animTimer);
+                ss.Sprite().SetFlipX(s.animFlipX);
+                ss.UpdateUV();
+            }
+        }
+
+        if (s.hasHealth && reg.Has_Component<HealthComponent>(s.id))
+        {
+            auto& hp = reg.Get_Component<HealthComponent>(s.id);
+            hp.currhp = s.currHp;
+            hp.maxhp = s.maxHp;
+
+            //to remove just try debug
+            /*if (reg.Has_Component<TagComponent>(s.id))
+            {
+                auto& tag = reg.Get_Component<TagComponent>(s.id);
+                if (tag.tag == T_PLAYER)
+                {
+                    std::cout << "[Replay] Player HP restored: "
+                        << hp.currhp << " / " << hp.maxhp << "\n";
+                }
+            }*/
+        }
+
+        if (s.hasLifetime && reg.Has_Component<LifetimeComponent>(s.id))
+        {
+            auto& lt = reg.Get_Component<LifetimeComponent>(s.id);
+            lt.age = s.age;
+            lt.lifetime = s.lifetime;
+        }
+
+        if (s.hasStatus && reg.Has_Component<StatusEffectComponent>(s.id))
+        {
+            auto& se = reg.Get_Component<StatusEffectComponent>(s.id);
+            se.activeEffect = static_cast<Element>(s.activeEffect);
+            se.effectTimer = s.effectTimer;
+            se.burnTickTimer = s.burnTickTimer;
+            se.originalMoveSpeed = s.originalMoveSpeed;
+            se.isStunned = s.isStunned;
+        }
+
+        if (reg.Has_Component<TagComponent>(s.id))
+        {
+            auto& tag = reg.Get_Component<TagComponent>(s.id);
+            if (tag.tag == T_PLAYER)
+            {
+                foundPlayer = true;
+                playerX = s.px;
+                playerY = s.py;
+            }
+        }
+
+      
+    }
+
+    if (foundPlayer)
+    {
+        Camera::GetInstance().FollowTarget({ playerX, playerY }, 1.f / 60.f);
+    }
+
+    playCursor++;
+
+    //make sure health is replayed correctly visually
+    Entity player = PlayerSystem::FindPlayer();
+    if (player != INVALID_ENTITY)
+    {
+        PlayerSystem::RefreshPlayerHealthUI(player);
+    }
 }

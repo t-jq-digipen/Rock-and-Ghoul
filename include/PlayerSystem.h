@@ -74,14 +74,13 @@ private:
 
     // static inline Movement::InputDirection VelToDir(float x, float y);
     std::vector<PooledEntity> activeProjectiles;
-    //static inline PlayerSystem* s_instance = nullptr; 
     // static inline void NormalizeDiagonalMovement(float& x, float& y);
 
 public:
     // player variable
     static Entity FindPlayer();
-    //void UpdateHealthUI(Entity eID);
-    //static PlayerSystem* Instance() { return s_instance; }
+    static void RefreshPlayerHealthUI(Entity eID); //helper for replay 
+
 
     void Initialize() override;
     void Update(float dt) override;
