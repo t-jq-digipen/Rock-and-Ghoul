@@ -6127,6 +6127,8 @@ void ImGuiSystem::ShowInspectorWindow()
 
                 ImGui::SeparatorText("Registered Scripts:");
                 int id = 0;
+                unsigned int scriptToRemove = 0;
+                bool removeRequested = false;
                 for (unsigned int sID : behaviourComp.scriptIDList)
                 {
                     ImGui::PushID(id++);
@@ -6145,7 +6147,7 @@ void ImGuiSystem::ShowInspectorWindow()
                     std::string scriptName = map.find(scriptToRemove)->second;
                     behaviourComp.RemoveScript(scriptToRemove);
                     BehaviourComponent* behaveComp = &behaviourComp;
-                    ScriptID removedID = scriptToRemove;
+                    unsigned int removedID = scriptToRemove;
                     UndoSystem::Get().RecordComponentChange(
                         [behaveComp, scriptName]() { behaveComp->AddScript(scriptName); },
                         [behaveComp, removedID]()  { behaveComp->RemoveScript(removedID); },
