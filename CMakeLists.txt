@@ -19,16 +19,18 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/lib/glm)
 
 
 # ======================= Auto-discover Source Files =================
-# Automatically find all .cpp files in src/
-file(GLOB_RECURSE SOURCES 
-    "src/*.cpp"
-    "src/*.c"
+file(GLOB_RECURSE SOURCES
+    "CoreEngine/src/*.cpp"
+    "CoreEngine/src/*.c"
+    "RockAndGhoul/src/*.cpp"
+    "RockAndGhoul/src/*.c"
 )
 
-# Automatically find all header files in include/
-file(GLOB_RECURSE HEADERS 
-    "include/*.h"
-    "include/*.hpp"
+file(GLOB_RECURSE HEADERS
+    "CoreEngine/include/*.h"
+    "CoreEngine/include/*.hpp"
+    "RockAndGhoul/include/*.h"
+    "RockAndGhoul/include/*.hpp"
 )
 
 # Debug output to verify files are found
@@ -195,7 +197,7 @@ endif()
 
 # ======================= Copy GameScripts DLL =========================
 set(GAMESCRIPTS_DLL_PATH "${CMAKE_SOURCE_DIR}/GameScripts/bin/$<CONFIG>/GameScripts.dll")
-set(GAMESCRIPTS_TARGET_DIR "${CMAKE_SOURCE_DIR}/Assets/Scripts")
+set(GAMESCRIPTS_TARGET_DIR "${CMAKE_SOURCE_DIR}/RockAndGhoul/Assets/Scripts")
 
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo "Copying GameScripts.dll from: ${GAMESCRIPTS_DLL_PATH}"
@@ -225,7 +227,6 @@ target_link_libraries(ffmpeg INTERFACE
     "${FFMPEG_DIR}/lib/swscale.lib"
 )
 
-
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ffmpeg)
 
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
@@ -248,235 +249,214 @@ endif()
 
 # ======================= Include Directories ========================
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/CoreEngine/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/CoreEngine/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/RockAndGhoul/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/RockAndGhoul/src
 )
 
 # ============== Organize files ============
-# This creates nice folder structure in Visual Studio/Xcode
+# This creates nice folder structure in Visual Studio
+set(CE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/CoreEngine/src)
+set(CE_INC ${CMAKE_CURRENT_SOURCE_DIR}/CoreEngine/include)
+set(RG_SRC ${CMAKE_CURRENT_SOURCE_DIR}/RockAndGhoul/src)
+set(RG_INC ${CMAKE_CURRENT_SOURCE_DIR}/RockAndGhoul/include)
 
-# BASE ENG COMPONENTS
-
-source_group("BaseEngine\\Components" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Camera.h    
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/glapp.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/glapp.h
+source_group("BaseEngine\\Components" FILES
+    ${CE_SRC}/Camera.cpp
+    ${CE_INC}/Camera.h
+    ${CE_SRC}/glapp.cpp
+    ${CE_INC}/glapp.h
 )
 
-
-source_group("BaseEngine\\CoreEngine" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/CoreEngine.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CoreEngine.h
+source_group("BaseEngine\\CoreEngine" FILES
+    ${CE_SRC}/CoreEngine.cpp
+    ${CE_INC}/CoreEngine.h
 )
 
-source_group("BaseEngine\\Serialization" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FilePath.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/FilePath.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FileIO.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/FileIO.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/DataDefs.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/JsonLoad.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/JsonLoad.h
+source_group("BaseEngine\\Serialization" FILES
+    ${CE_SRC}/FilePath.cpp
+    ${CE_INC}/FilePath.h
+    ${CE_SRC}/FileIO.cpp
+    ${CE_INC}/FileIO.h
+    ${CE_INC}/DataDefs.h
+    ${CE_SRC}/JsonLoad.cpp
+    ${CE_INC}/JsonLoad.h
 )
 
-
-source_group("BaseEngine\\Mono Scripting" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoManager.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoSystem.h
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/MonoBindings.cpp
+source_group("BaseEngine\\Mono Scripting" FILES
+    ${CE_SRC}/MonoManager.cpp
+    ${CE_INC}/MonoManager.h
+    ${CE_INC}/MonoSystem.cpp
+    ${CE_INC}/MonoSystem.h
+    ${CE_SRC}/MonoBindings.cpp
 )
 
-source_group("BaseEngine\\CScripting" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/BehaviourFCT.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/BehaviourComponent.h
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/LogicSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/LogicSystem.cpp
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameScripts.h
-    
-)
-source_group("BaseEngine\\Debug" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Debug.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Debug.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CrashHandler.h
+source_group("BaseEngine\\CScripting" FILES
+    ${CE_INC}/BehaviourFCT.h
+    ${CE_INC}/BehaviourComponent.h
+    ${CE_INC}/LogicSystem.h
+    ${CE_SRC}/LogicSystem.cpp
+    ${CE_INC}/GameScripts.h
 )
 
-# ECS
-# =================================================
-source_group("BaseEngine\\ECS\\Registry" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Registry.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Registry.cpp
-)
-# E
-source_group("BaseEngine\\ECS\\Entity" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Entity.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityManager.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityManager.cpp
-
-)
-source_group("BaseEngine\\ECS\\Component" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Component.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/ComponentManager.h
-)
-source_group("BaseEngine\\ECS\\Component\\Scripting" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/MonoScriptComponent.h
+source_group("BaseEngine\\Debug" FILES
+    ${CE_SRC}/Debug.cpp
+    ${CE_INC}/Debug.h
+    ${CE_INC}/CrashHandler.h
 )
 
-source_group("BaseEngine\\ECS\\Component\\Graphics" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Sprite.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Sprite.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Animator.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Animator.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderComponent.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderComponent.h
-
-)
-source_group("BaseEngine\\ECS\\Component\\Physics" FILES 
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Physics.h
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ForcesManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/ForcesManager.h
-
+source_group("BaseEngine\\ECS\\Registry" FILES
+    ${CE_INC}/Registry.h
+    ${CE_SRC}/Registry.cpp
 )
 
-source_group("BaseEngine\\Systems" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/System.h 
+source_group("BaseEngine\\ECS\\Entity" FILES
+    ${CE_INC}/Entity.h
+    ${CE_INC}/EntityManager.h
+    ${CE_SRC}/EntityManager.cpp
 )
 
-
-source_group("BaseEngine\\Systems\\Audio" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioSystem.h 
+source_group("BaseEngine\\ECS\\Component" FILES
+    ${CE_INC}/Component.h
+    ${CE_INC}/ComponentManager.h
 )
 
-
-source_group("BaseEngine\\Systems\\Render" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/RenderSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderSystem.cpp
+source_group("BaseEngine\\ECS\\Component\\Scripting" FILES
+    ${CE_INC}/MonoScriptComponent.h
 )
 
-source_group("BaseEngine\\Systems\\Editor" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImguiSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/ImguiSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GuiSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GuiSystem.h
-)
-source_group("BaseEngine\\Systems\\Physics" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/PhysicsSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicsSystem.cpp
-)
-source_group("BaseEngine\\Systems\\Undo" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/UndoSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/UndoSystem.cpp
-)
-source_group("BaseEngine\\Managers" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/SceneManager.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/SceneManager.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/ReplayManager.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/ReplayManager.cpp
-
+source_group("BaseEngine\\ECS\\Component\\Graphics" FILES
+    ${CE_SRC}/Sprite.cpp
+    ${CE_INC}/Sprite.h
+    ${CE_SRC}/Animator.cpp
+    ${CE_INC}/Animator.h
+    ${CE_SRC}/RenderComponent.cpp
+    ${CE_INC}/RenderComponent.h
 )
 
-source_group("BaseEngine\\Managers\\Frame Rate" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/FrameRateController.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/FrameRateController.h
+source_group("BaseEngine\\ECS\\Component\\Physics" FILES
+    ${CE_SRC}/Physics.cpp
+    ${CE_INC}/Physics.h
+    ${CE_SRC}/ForcesManager.cpp
+    ${CE_INC}/ForcesManager.h
 )
 
-source_group("BaseEngine\\Managers\\Collision" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/CollisionManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CollisionManager.h
+source_group("BaseEngine\\Systems" FILES
+    ${CE_INC}/System.h
 )
 
-
-
-source_group("BaseEngine\\Libraries\\Audio" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/AudioCache.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Audio.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioCache.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/AudioComponent.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioComponent.h
+source_group("BaseEngine\\Systems\\Audio" FILES
+    ${CE_INC}/AudioSystem.h
 )
 
-
-source_group("BaseEngine\\Libraries\\Input" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Input.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Input.h
-
+source_group("BaseEngine\\Systems\\Render" FILES
+    ${CE_INC}/RenderSystem.h
+    ${CE_SRC}/RenderSystem.cpp
 )
-source_group("BaseEngine\\Libraries\\Math" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Remath.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Remath.h
 
+source_group("BaseEngine\\Systems\\Editor" FILES
+    ${CE_SRC}/ImguiSystem.cpp
+    ${CE_INC}/ImguiSystem.h
+    ${CE_SRC}/GuiSystem.cpp
+    ${CE_INC}/GuiSystem.h
 )
-source_group("BaseEngine\\Libraries\\Render" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Render.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Render.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/SimpleAtlas.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/SimpleAtlas.h
 
-
+source_group("BaseEngine\\Systems\\Physics" FILES
+    ${CE_INC}/PhysicsSystem.h
+    ${CE_SRC}/PhysicsSystem.cpp
 )
-source_group("BaseEngine\\Libraries\\Collision" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Collision.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Collision.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/SpatialGrid.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/SpatialGrid.h
 
+source_group("BaseEngine\\Systems\\Undo" FILES
+    ${CE_INC}/UndoSystem.h
+    ${CE_SRC}/UndoSystem.cpp
+)
+
+source_group("BaseEngine\\Managers" FILES
+    ${CE_INC}/SceneManager.h
+    ${CE_SRC}/SceneManager.cpp
+)
+
+source_group("BaseEngine\\Managers\\Frame Rate" FILES
+    ${CE_SRC}/FrameRateController.cpp
+    ${CE_INC}/FrameRateController.h
+)
+
+source_group("BaseEngine\\Managers\\Collision" FILES
+    ${CE_SRC}/CollisionManager.cpp
+    ${CE_INC}/CollisionManager.h
+)
+
+source_group("BaseEngine\\Libraries\\Audio" FILES
+    ${CE_SRC}/Audio.cpp
+    ${CE_SRC}/AudioCache.cpp
+    ${CE_INC}/Audio.h
+    ${CE_INC}/AudioCache.h
+    ${CE_SRC}/AudioComponent.cpp
+    ${CE_INC}/AudioComponent.h
+)
+
+source_group("BaseEngine\\Libraries\\Input" FILES
+    ${CE_SRC}/Input.cpp
+    ${CE_INC}/Input.h
+)
+
+source_group("BaseEngine\\Libraries\\Math" FILES
+    ${CE_SRC}/Remath.cpp
+    ${CE_INC}/Remath.h
+)
+
+source_group("BaseEngine\\Libraries\\Render" FILES
+    ${CE_SRC}/Render.cpp
+    ${CE_INC}/Render.h
+    ${CE_SRC}/SimpleAtlas.cpp
+    ${CE_INC}/SimpleAtlas.h
+)
+
+source_group("BaseEngine\\Libraries\\Collision" FILES
+    ${CE_SRC}/Collision.cpp
+    ${CE_INC}/Collision.h
+    ${CE_SRC}/SpatialGrid.cpp
+    ${CE_INC}/SpatialGrid.h
 )
 
 source_group("others" FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Movement.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/MovementSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Movement.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/MovementSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/TextSystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/TextSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/MemoryPool.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/GameMemoryManager.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/PooledEntityFactory.h
-    
+    ${CE_SRC}/Movement.cpp
+    ${CE_SRC}/MovementSystem.cpp
+    ${CE_INC}/Movement.h
+    ${CE_INC}/MovementSystem.h
+    ${CE_SRC}/TextSystem.cpp
+    ${CE_INC}/TextSystem.h
+    ${CE_INC}/MemoryPool.h
+    ${CE_INC}/GameMemoryManager.h
+    ${CE_INC}/PooledEntityFactory.h
 )
 
-source_group("others\\EventBus" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/EventBus.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/EventBus.h
-
-)
-source_group("Game\\Main Menu" FILES 
-   )
-
-source_group("Game\\Main" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+source_group("others\\EventBus" FILES
+    ${CE_SRC}/EventBus.cpp
+    ${CE_INC}/EventBus.h
 )
 
-source_group("Game\\Combat System" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CombatSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/CombatSystem.cpp
+# GAME FILES
+source_group("Game\\Main" FILES
+    ${RG_SRC}/main.cpp
 )
 
-source_group("Game\\Game Logic" FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/PlayerSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PlayerSystem.cpp
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Spells.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Spells.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Fretboard.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Fretboard.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/EntityCreation.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/EntityCreation.h
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/CombatSystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/CombatSystem.cpp
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/EnemySystem.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/EnemySystem.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Enemy.h
+source_group("Game\\Combat System" FILES
+    ${RG_INC}/CombatSystem.h
+    ${RG_SRC}/CombatSystem.cpp
 )
 
+source_group("Game\\Game Logic" FILES
+    ${RG_INC}/PlayerSystem.h
+    ${RG_SRC}/PlayerSystem.cpp
+    ${RG_SRC}/Spells.cpp
+    ${RG_INC}/Spells.h
+    ${RG_SRC}/Fretboard.cpp
+    ${RG_INC}/Fretboard.h
+    ${RG_SRC}/EntityCreation.cpp
+    ${RG_INC}/EntityCreation.h
+    ${RG_INC}/EnemySystem.h
+    ${RG_SRC}/EnemySystem.cpp
+    ${RG_INC}/Enemy.h
+)
