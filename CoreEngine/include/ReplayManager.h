@@ -77,22 +77,37 @@ private:
         float burnTickTimer{ 0.f };
         float originalMoveSpeed{ 0.f };
         bool isStunned{ false };
+    };
 
+    struct SpellSlotSnapshot
+    {
+        int type{ 0 };
+        float currentCD{ 0.f };
+        int charges{ 0 };
+    };
 
-        //for projectiles etc.
-        bool hasReplayPrefab{ false };
-        std::string replayPrefab;
+    struct FretboardSnapshot
+    {
+        // Arrow display IDs 10-21, store visibility and opacity for each
+        bool isVisible[12]{};   // IDs 10-21
+        float opacity[12]{};
+        SpellSlotSnapshot spellSlots[3]; //update slots if increase in future
+        int currentElement{ 0 }; //element type
+
     };
 
     struct FrameSnapshot
     {
         std::vector<EntitySnapshot> entities;
+        FretboardSnapshot fretboard;
     };
+
+    
 
     Mode mode = Mode::Off;
 
     int fps = 60;
-    int seconds = 10;
+    int seconds = 10; //try capture and replay last 10s for now
     int capacity = 600;
 
     std::vector<FrameSnapshot> ring;
@@ -103,7 +118,7 @@ private:
 private:
     int OldestIndex() const;
     int IndexAt(int logicalIndex) const;
-    std::unordered_map<Entity, Entity> replayEntityMap;
+    //std::unordered_map<Entity, Entity> replayEntityMap;
 };
 
 #endif

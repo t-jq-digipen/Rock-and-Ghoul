@@ -35,27 +35,6 @@ constexpr float DASH_IMPULSE = 2000.f;   // Dash boost
 std::unordered_map<Entity, float> footstepTimers;  // Timer per player
 float footstepInterval = 0.35f;  // Time between footsteps (in seconds)
 
-
-/*void PlayerSystem::UpdateHealthUI(Entity eID)
-{
-	Registry& registry = Registry::Get();
-	if (!registry.Has_Component<HealthComponent>(eID)) return;
-
-	HealthComponent& hpComp = registry.Get_Component<HealthComponent>(eID);
-	if (hpComp.maxhp == 0) return;
-
-	GuiSystem& gui = GuiSystem::Get();
-	UIGroup& stats = gui.GetGroup("Stats");
-	Vec2 v0, v1, v2, v3;
-	gui.GetDisplayQuad(stats.memberIDs[1], v0, v1, v2, v3);
-	float amount = hpComp.currhp / hpComp.maxhp;
-	Vec2 newV1 = v0 + (v1 - v0) * amount;
-	Vec2 newV2 = v3 + (v2 - v3) * amount;
-	gui.SetDisplayQuad(stats.memberIDs[2], v0, newV1, newV2, v3);
-	int state = (hpComp.currhp > 0.2f * hpComp.maxhp) ? 0 : 1;
-	gui.SetDisplaySheetState(stats.memberIDs[4], state);
-}*/
-
 void PlayerSystem::RefreshPlayerHealthUI(Entity eID)
 {
 	Registry& registry = Registry::Get();
@@ -68,7 +47,7 @@ void PlayerSystem::RefreshPlayerHealthUI(Entity eID)
 	UIGroup& stats = gui.GetGroup("Stats");
 
 	Vec2 v0, v1, v2, v3;
-	gui.GetDisplayQuad(stats.memberIDs[1], v0, v1, v2, v3);
+	gui.GetDisplayQuad(stats.memberIDs[0], v0, v1, v2, v3);
 
 	float amount = hpComp.currhp / hpComp.maxhp;
 	amount = std::clamp(amount, 0.f, 1.f);
@@ -76,7 +55,7 @@ void PlayerSystem::RefreshPlayerHealthUI(Entity eID)
 	Vec2 newV1 = v0 + (v1 - v0) * amount;
 	Vec2 newV2 = v3 + (v2 - v3) * amount;
 
-	gui.SetDisplayQuad(stats.memberIDs[2], v0, newV1, newV2, v3);
+	gui.SetDisplayQuad(stats.memberIDs[1], v0, newV1, newV2, v3);
 
 	int state = (hpComp.currhp > 0.2f * hpComp.maxhp) ? 0 : 1;
 	gui.SetDisplaySheetState(stats.memberIDs[4], state);
@@ -132,6 +111,11 @@ namespace PlayerMove {
 
 	inline void Start(Entity eID)
 	{
+		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
+			if (ReplayManager::Get().IsPlaying()) return;
+			if (SceneManager::Get().IsPaused() || GuiSystem::Get().GetDialogueGate()) return;
+			});
+
 		std::cout << "Player script started" << std::endl;
 
 		footstepTimers[eID] = 0;
@@ -146,6 +130,9 @@ namespace PlayerMove {
 	}
 
 	inline void Update(Entity eID, float) {
+
+		if (ReplayManager::Get().IsPlaying()) return;
+
 		Registry& registry = Registry::Get();
 
 		if (!registry.Has_Component<Movement::MovementComponent>(eID)) return;
@@ -1171,6 +1158,11 @@ namespace RockScript {
 
 	inline void Start(Entity eID)
 	{
+		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
+			if (ReplayManager::Get().IsPlaying()) return;
+			if (SceneManager::Get().IsPaused() || GuiSystem::Get().GetDialogueGate()) return;
+			});
+
 		std::cout << "Rock script started" << std::endl;
 
 		playerEntityID = eID; // for audcomp to work
@@ -1277,6 +1269,7 @@ namespace RockScript {
 	}
 
 	inline void Update(Entity eID, float dt) {
+		if (ReplayManager::Get().IsPlaying()) return;
 		Registry& registry = Registry::Get();
 		// Update active spells
 		for (auto it = activeSpells.begin(); it != activeSpells.end();) {
@@ -1682,6 +1675,51 @@ Entity PlayerSystem::FindPlayer() {
 	}
 	return INVALID_ENTITY;
 }
+
+//helpers for the replay of the spells slot in fretboard
+void PlayerSystem::GetSpellSlotState(int slot, int& outType, float& outCD, int& outCharges)
+{
+	using namespace RockScript;
+	outType = static_cast<int>(spellSlots[slot].type);
+	outCD = spellSlots[slot].currentCD;
+	outCharges = spellSlots[slot].charges;
+}
+
+void PlayerSystem::SetSpellSlotState(int slot, int type, float cd, int charges)
+{
+	using namespace RockScript;
+	spellSlots[slot].type = static_cast<RockScript::SpellType>(type);
+	spellSlots[slot].currentCD = cd;
+	spellSlots[slot].charges = charges;
+	AssignSlots();
+}
+
+int PlayerSystem::GetCurrentElement()
+{
+	using namespace RockScript;
+	return static_cast<int>(currentElement);
+}
+
+/*void PlayerSystem::SetCurrentElement(int element)
+{
+	using namespace RockScript;
+	currentElement = static_cast<Element>(element);
+	// GUI opacity update is handled in RockScript::Update but since
+	// that's skipped during playback, manually update here
+	GuiSystem& gui = GuiSystem::Get();
+	auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
+
+	// Don't update opacity if dialogue is active
+	if (gui.GetDialogueGate()) return;
+
+	for (auto& display : displays)
+	{
+		if (display.ID == 26) display.opacity = (currentElement == Element::LIGHTNING) ? 1.0f : 0.4f;
+		else if (display.ID == 28) display.opacity = (currentElement == Element::FIRE) ? 1.0f : 0.4f;
+		else if (display.ID == 30) display.opacity = (currentElement == Element::WIND) ? 1.0f : 0.4f;
+		else if (display.ID == 32) display.opacity = (currentElement == Element::ICE) ? 1.0f : 0.4f;
+	}
+}*/
 
 void PlayerSystem::Initialize()
 {

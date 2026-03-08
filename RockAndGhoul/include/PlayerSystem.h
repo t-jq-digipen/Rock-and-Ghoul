@@ -79,7 +79,13 @@ private:
 public:
     // player variable
     static Entity FindPlayer();
-    static void RefreshPlayerHealthUI(Entity eID); //helper for replay 
+
+    //helpers for replay 
+    static void RefreshPlayerHealthUI(Entity eID); 
+    static void GetSpellSlotState(int slot, int& outType, float& outCD, int& outCharges); //helper for replay
+    static void SetSpellSlotState(int slot, int type, float cd, int charges); //helper for replay
+    static int GetCurrentElement();
+    static void SetCurrentElement(int element);
 
 
     void Initialize() override;

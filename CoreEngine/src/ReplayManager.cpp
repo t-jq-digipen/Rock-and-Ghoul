@@ -1,6 +1,6 @@
 #include "ReplayManager.h"
 #include "Registry.h"
-#include "Component.h" // <-- where TransformComponent is
+#include "Component.h" 
 #include <unordered_set>
 #include "CombatSystem.h"
 #include "BehaviourComponent.h"
@@ -8,6 +8,7 @@
 #include <SceneManager.h>
 #include <Camera.h>
 #include <PlayerSystem.h>
+#include <GuiSystem.h>
 //#include "RenderComponent.h"
 
 
@@ -190,6 +191,33 @@ void ReplayManager::CaptureTick()
         frame.entities.push_back(s);
     }
 
+    // Capture arrow display state
+    GuiSystem& gui = GuiSystem::Get();
+    auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
+    int i = 0;
+    for (auto& display : displays)
+    {
+        if (display.ID >= 10 && display.ID <= 21)
+        {
+            int idx = display.ID - 10;
+            frame.fretboard.isVisible[idx] = display.isVisible;
+            frame.fretboard.opacity[idx] = display.opacity;
+        }
+    }
+
+    // spell slots state
+    for (int i = 0; i < 3; i++)
+    {
+        int t; float cd; int ch;
+        PlayerSystem::GetSpellSlotState(i, t, cd, ch);
+        frame.fretboard.spellSlots[i].type = t;
+        frame.fretboard.spellSlots[i].currentCD = cd;
+        frame.fretboard.spellSlots[i].charges = ch;
+    }
+
+    //element cycle state
+    //frame.fretboard.currentElement = PlayerSystem::GetCurrentElement();
+
     // advance ring
     writeIdx++;
     if (writeIdx >= capacity) writeIdx = 0;
@@ -197,112 +225,6 @@ void ReplayManager::CaptureTick()
    
 }
 
-/*void ReplayManager::ApplyTick()
-{
-    if (mode != Mode::Playback) return;
-
-    if (playCursor >= validCount)
-    {
-        mode = Mode::Off;
-        return;
-    }
-
-    const FrameSnapshot& frame = ring[IndexAt(playCursor)];
-    Registry& reg = Registry::Get();
-
-    for (const EntitySnapshot& s : frame.entities)
-    {
-        // Entity might have been destroyed; skip if Transform missing
-        if (!reg.Has_Component<TransformComponent>(s.id))
-            continue;
-
-        auto& tc = reg.Get_Component<TransformComponent>(s.id);
-        tc.pos.x = s.px;
-        tc.pos.y = s.py;
-        tc.scale.x = s.sx;
-        tc.scale.y = s.sy;
-        tc.rot = s.rot;
-
-        //physics component
-        if (s.hasPhysics && reg.Has_Component<Physics::PhysicsComponent>(s.id))
-        {
-            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(s.id);
-            phys.Set_Vel({ s.vx, s.vy });
-        }
-
-        //movement component
-        if (s.hasMovement && reg.Has_Component<Movement::MovementComponent>(s.id))
-        {
-            auto& mv = reg.Get_Component<Movement::MovementComponent>(s.id);
-
-            mv.SetIsMoving(s.isMoving);
-            mv.SetMovementDirection({ s.mdx, s.mdy });
-            mv.SetInputDirection(static_cast<Movement::InputDirection>(s.inputDir));
-        }
-
-        //animations
-        if (s.hasAnim && reg.Has_Component<RenderComponent>(s.id))
-        {
-            auto& rc = reg.Get_Component<RenderComponent>(s.id);
-            if (rc.GetRenderType() == RT_SPRITESHEET)
-            {
-                auto& ss = rc.GetSpriteSheet();
-                if ((unsigned int)ss.GetCurrentState() != s.animState)
-                    ss.SetState(s.animState);
-                ss.SetCurrentCol(s.animCol);
-                ss.SetAnimTimer(s.animTimer);
-                ss.Sprite().SetFlipX(s.animFlipX);
-                ss.UpdateUV();
-            }
-        }
-
-        //camera 
-        if (Registry::Get().Has_Component<TagComponent>(s.id))
-        {
-            auto& tag = Registry::Get().Get_Component<TagComponent>(s.id);
-            if (tag.tag == T_PLAYER)
-            {
-                Camera::GetInstance().FollowTarget({ s.px, s.py }, 1.f / 60.f);
-                break;
-            }
-        }
-
-
-        if (s.hasHealth && reg.Has_Component<HealthComponent>(s.id))
-        {
-            auto& hp = reg.Get_Component<HealthComponent>(s.id);
-            hp.currhp = s.currHp;
-            hp.maxhp = s.maxHp;
-        }
-
-        if (s.hasLifetime && reg.Has_Component<LifetimeComponent>(s.id))
-        {
-            auto& lt = reg.Get_Component<LifetimeComponent>(s.id);
-            lt.age = s.age;
-            lt.lifetime = s.lifetime;
-        }
-
-        if (s.hasStatus && reg.Has_Component<StatusEffectComponent>(s.id))
-        {
-            auto& se = reg.Get_Component<StatusEffectComponent>(s.id);
-            se.activeEffect = static_cast<Element>(s.activeEffect);
-            se.effectTimer = s.effectTimer;
-            se.burnTickTimer = s.burnTickTimer;
-            se.originalMoveSpeed = s.originalMoveSpeed;
-            se.isStunned = s.isStunned;
-        }
-
-        // Update player health UI after restoring state
-        /*Entity player = PlayerSystem::FindPlayer();
-        if (player != INVALID_ENTITY && PlayerSystem::Instance())
-            PlayerSystem::Instance()->UpdateHealthUI(player);
-      
-    }
-
-    playCursor++;
-
-   
-}*/
 
 void ReplayManager::ApplyTick()
 {
@@ -347,6 +269,7 @@ void ReplayManager::ApplyTick()
             mv.SetInputDirection(static_cast<Movement::InputDirection>(s.inputDir));
         }
 
+        //animations replayed
         if (s.hasAnim && reg.Has_Component<RenderComponent>(s.id))
         {
             auto& rc = reg.Get_Component<RenderComponent>(s.id);
@@ -368,16 +291,6 @@ void ReplayManager::ApplyTick()
             hp.currhp = s.currHp;
             hp.maxhp = s.maxHp;
 
-            //to remove just try debug
-            /*if (reg.Has_Component<TagComponent>(s.id))
-            {
-                auto& tag = reg.Get_Component<TagComponent>(s.id);
-                if (tag.tag == T_PLAYER)
-                {
-                    std::cout << "[Replay] Player HP restored: "
-                        << hp.currhp << " / " << hp.maxhp << "\n";
-                }
-            }*/
         }
 
         if (s.hasLifetime && reg.Has_Component<LifetimeComponent>(s.id))
@@ -410,6 +323,33 @@ void ReplayManager::ApplyTick()
 
       
     }
+
+    // Restore arrow display state
+    GuiSystem& gui = GuiSystem::Get();
+    auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
+    for (auto& display : displays)
+    {
+        if (display.ID >= 10 && display.ID <= 21)
+        {
+            int idx = display.ID - 10;
+            display.isVisible = frame.fretboard.isVisible[idx];
+            display.opacity = frame.fretboard.opacity[idx];
+        }
+    }
+
+    //restore spell slot state (kinda need update range if add more speels in the future)
+    for (int i = 0; i < 3; i++)
+    {
+        PlayerSystem::SetSpellSlotState(
+            i,
+            frame.fretboard.spellSlots[i].type,
+            frame.fretboard.spellSlots[i].currentCD,
+            frame.fretboard.spellSlots[i].charges
+        );
+    }
+
+    //element cycle state
+    //PlayerSystem::SetCurrentElement(frame.fretboard.currentElement);
 
     if (foundPlayer)
     {

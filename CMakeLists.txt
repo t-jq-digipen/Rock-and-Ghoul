@@ -375,6 +375,8 @@ source_group("BaseEngine\\Systems\\Undo" FILES
 source_group("BaseEngine\\Managers" FILES
     ${CE_INC}/SceneManager.h
     ${CE_SRC}/SceneManager.cpp
+    ${CE_INC}/ReplayManager.h
+    ${CE_SRC}/ReplayManager.cpp
 )
 
 source_group("BaseEngine\\Managers\\Frame Rate" FILES
