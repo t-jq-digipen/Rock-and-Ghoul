@@ -216,7 +216,7 @@ void ReplayManager::CaptureTick()
     }
 
     //element cycle state
-    //frame.fretboard.currentElement = PlayerSystem::GetCurrentElement();
+    frame.fretboard.currentElement = PlayerSystem::GetCurrentElement();
 
     // advance ring
     writeIdx++;
@@ -349,7 +349,7 @@ void ReplayManager::ApplyTick()
     }
 
     //element cycle state
-    //PlayerSystem::SetCurrentElement(frame.fretboard.currentElement);
+    PlayerSystem::SetCurrentElement(frame.fretboard.currentElement);
 
     if (foundPlayer)
     {

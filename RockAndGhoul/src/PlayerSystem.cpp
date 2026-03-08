@@ -1700,7 +1700,7 @@ int PlayerSystem::GetCurrentElement()
 	return static_cast<int>(currentElement);
 }
 
-/*void PlayerSystem::SetCurrentElement(int element)
+void PlayerSystem::SetCurrentElement(int element)
 {
 	using namespace RockScript;
 	currentElement = static_cast<Element>(element);
@@ -1719,7 +1719,7 @@ int PlayerSystem::GetCurrentElement()
 		else if (display.ID == 30) display.opacity = (currentElement == Element::WIND) ? 1.0f : 0.4f;
 		else if (display.ID == 32) display.opacity = (currentElement == Element::ICE) ? 1.0f : 0.4f;
 	}
-}*/
+}
 
 void PlayerSystem::Initialize()
 {
