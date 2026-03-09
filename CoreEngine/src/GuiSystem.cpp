@@ -35,6 +35,7 @@
 #include "SceneManager.h"
 #include <FilePath.h>
 #include "RenderSystem.h"
+#include <ReplayManager.h>
 //extern bool cutsceneActive;
 
 // Call Audio Manager for GuiSystem
@@ -1781,6 +1782,7 @@ void GuiSystem::Update(float dt)
         // Click to exit to main menu
         if (hoverexit && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
+            ReplayManager::Get().StopPlayback(); //stop the playback if quit to main menu (to fix buggy main menu visuals)
             SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE);
             SceneManager::Get().SetTransitionTime(2.f);
         }

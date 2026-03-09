@@ -1,14 +1,5 @@
 #include "ReplayManager.h"
-#include "Registry.h"
-#include "Component.h" 
-#include <unordered_set>
-#include "CombatSystem.h"
-#include "BehaviourComponent.h"
-#include "MonoScriptComponent.h"
-#include <SceneManager.h>
-#include <Camera.h>
-#include <PlayerSystem.h>
-#include <GuiSystem.h>
+
 //#include "RenderComponent.h"
 
 
@@ -34,6 +25,32 @@ void ReplayManager::Configure(int fps_, int secondsToKeep)
     writeIdx = 0;
     validCount = 0;
     playCursor = 0;
+}
+
+void ReplayManager::Reset()
+{
+    mode = Mode::Off;
+    writeIdx = 0;
+    validCount = 0;
+    playCursor = 0;
+    /*m_knownEntities.clear();
+    m_pendingSpawns.clear();
+    m_playbackIDMap.clear();*/
+
+    for (auto& frame : ring)
+    {
+        frame.entities.clear();
+        //frame.newEntities.clear();
+        //frame.deadEntities.clear();
+    }
+}
+
+void ReplayManager::Init()
+{
+    m_sceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent&)
+        {
+            ReplayManager::Get().Reset();
+        });
 }
 
 void ReplayManager::StartRecording()

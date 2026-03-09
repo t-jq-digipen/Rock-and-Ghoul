@@ -622,7 +622,7 @@ void CombatSystem::Update(float dt) {
 		if (portal.state == PortalState::ACTIVE )
 		{
 			if (Input::IsKeyPressed(GLFW_KEY_SPACE) || Input::IsKeyHeld(GLFW_KEY_SPACE))
-				SceneManager::Get().QueueLoadScene(portal.nextScene);
+				SceneManager::Get().QueueLoadScene(FilePath::Resolve(portal.nextScene)); //idk maybe is just my device but i need call resolve or the scene wont load
 		}
 
 

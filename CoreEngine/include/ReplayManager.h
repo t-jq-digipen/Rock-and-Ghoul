@@ -4,6 +4,17 @@
 #include "Entity.h"
 #include "DataDefs.h"
 #include <string>
+#include "Registry.h"
+#include "Component.h" 
+#include <unordered_set>
+#include "CombatSystem.h"
+#include "BehaviourComponent.h"
+#include "MonoScriptComponent.h"
+#include <SceneManager.h>
+#include "Camera.h"
+#include "PlayerSystem.h"
+#include "GuiSystem.h"
+#include "JsonLoad.h"
 
 // Forward declare
 class Registry;
@@ -16,6 +27,8 @@ public:
     static ReplayManager& Get();
 
     void Configure(int fps, int secondsToKeep);
+    void Reset(); //reset everything after playback has stopped
+    void Init();
 
     void StartRecording();
     void StopRecording();
@@ -32,6 +45,7 @@ public:
 
 private:
     ReplayManager() = default;
+    size_t m_sceneSubscriberID{};
 
     struct EntitySnapshot
     {

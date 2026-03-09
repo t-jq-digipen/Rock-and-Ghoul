@@ -229,7 +229,9 @@ void CoreEngine::Initialize()
     // Flag for ImGui / editor that engine is ready
     GLApp::gameInitialized = true;
 
+    //replay stuff
     ReplayManager::Get().Configure(60, 10); // keep last 10 seconds
+    ReplayManager::Get().Init();
 }
 
 void CoreEngine::Run()
@@ -246,7 +248,8 @@ void CoreEngine::Run()
 
         frameRate.StartFrame();
         glfwPollEvents();
-
+        
+        //testing of replay
         if (glfwGetKey(GLApp::ptr_window, GLFW_KEY_F9) == GLFW_PRESS)
             replay.StartRecording();
 
@@ -258,6 +261,7 @@ void CoreEngine::Run()
             replay.StopPlayback();
             replay.StopRecording();
         }
+
 
         float dt = static_cast<float>(frameRate.GetDeltaTime());
         dt = std::clamp(dt, 0.0f, 0.05f); // clamp variable dt
