@@ -562,7 +562,7 @@ struct DialogueConfig {
     Vec2 profileOffset = { 0.f, 0.f };
     UI_RenderData profileRenderData;
     enum class ProfileDisplaySide { PROFILE_AUTOFROMSPEAKER = 0, PROFILE_LEFT = 1, PROFILE_RIGHT = 2 }; // which side the profile pic will be displayed
-    ProfileDisplaySide profileSide = ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
+    ProfileDisplaySide profileDisplaySide = ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
 
     // To be used by the ImGui UI editor
     bool customOverride = false; // if custom override mode is on
@@ -627,6 +627,22 @@ std::string ButtonActionToString(ButtonAction action);
  */
 
 ButtonAction StringToButtonAction(const std::string& s);
+
+/**
+ * @brief Converts a ProfileDisplaySide enum value to its string representation.
+ * @param action The ProfileDisplaySide value.
+ * @return String representation of the ProfileDisplaySide.
+ */
+
+std::string ProfileDisplaySideToString(DialogueConfig::ProfileDisplaySide side);
+
+/**
+ * @brief Converts a string to a ProfileDisplaySide enum value.
+ * @param str The string representation of the ProfileDisplaySide.
+ * @return Corresponding ProfileDisplaySide value.
+ */
+
+DialogueConfig::ProfileDisplaySide StringToProfileDisplaySide(const std::string& s);
 
 class GuiSystem : public ISystem {
 public:

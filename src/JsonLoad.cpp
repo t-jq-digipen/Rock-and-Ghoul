@@ -665,6 +665,7 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"profileSize", {dlg.profileSize.x, dlg.profileSize.y }},
             {"profileOffset", {dlg.profileOffset.x, dlg.profileOffset.y }},
             {"profileRenderData", dlg.profileRenderData},
+            {"profileDisplaySide", dlg.profileDisplaySide},
 
             {"isVisible", dlg.isVisible},
 
@@ -833,6 +834,8 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                     d.profileOffset = { dlg["profileOffset"][0], dlg["profileOffset"][1] };
                 }
                 d.profileRenderData = dlg.value("profileRenderData", std::string("{}"));
+                d.profileDisplaySide = dlg.value("profileDisplaySide", 0);
+
                 d.isVisible = dlg.value("isVisible", true);
                 d.customOverride = dlg.value("customOverride", false);
                 d.speakerOverrideEnabled = dlg.value("speakerOverrideEnabled", false);
@@ -1056,6 +1059,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.profileSize = d.profileBaseSize;
             sd.profileOffset = d.profileOffset;
             sd.profileRenderData = d.profileRenderData.Serialize();
+            sd.profileDisplaySide = static_cast<int>(d.profileDisplaySide);
 
             sd.isVisible = d.isVisible;
 
@@ -1281,6 +1285,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.profileBaseSize = d.profileSize;
             cfg.profileOffset = d.profileOffset;
             cfg.profileRenderData = UI_RenderData::DeSerialize(d.profileRenderData);
+            cfg.profileDisplaySide = static_cast<DialogueConfig::ProfileDisplaySide>(std::clamp(d.profileDisplaySide, 0, 2));
 
             cfg.jsonPath = d.jsonPath;
             cfg.sceneID = d.sceneID.empty() ? "0" : d.sceneID;

@@ -855,7 +855,7 @@ static inline void MakeObstacleStationary(Entity eID)
 }
 
 // Set obstacle spritesheet
-static inline void SetObstacleAnim(Entity eID, int row, int col = 0, bool topDownRow = true)
+static inline void SetObstacleAnim(Entity eID, int row, int col = 0)
 {
 	Registry& registry = Registry::Get();
 	if (!registry.Has_Component<RenderComponent>(eID))

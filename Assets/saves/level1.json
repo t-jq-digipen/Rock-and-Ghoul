@@ -240,6 +240,7 @@
                 ],
                 "currentLineIndex": 0,
                 "customOverride": false,
+                "displayProfileSide": 0,
                 "isVisible": true,
                 "jsonPath": "../Assets/Dialogue.json",
                 "lines": [

@@ -3201,15 +3201,15 @@ void ImGuiSystem::Update(float dt)
 
                             // Profile display on which side
                             const char* sideItems[] = { "Auto (from speaker)", "Left", "Right" };
-                            int displaySide = (int)d.profileSide;
+                            int displaySide = (int)d.profileDisplaySide;
                             ImGui::Combo("Profile Display Side", &displaySide, sideItems, IM_ARRAYSIZE(sideItems));
                             if (customOverriden)
                             {
-                                d.profileSide = (DialogueConfig::ProfileDisplaySide)displaySide;
+                                d.profileDisplaySide = (DialogueConfig::ProfileDisplaySide)displaySide;
                             }
                             else
                             {
-                                d.profileSide = DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
+                                d.profileDisplaySide = DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
                             }
 
                             switch (d.profileRenderData.GetRenderType())

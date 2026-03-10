@@ -1247,7 +1247,7 @@ void GuiSystem::Update(float dt)
                 effectiveSpeakerID = d.speakerOverrideID;
             }
 
-            bool autoFromSpeaker = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER);
+            bool autoFromSpeaker = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER);
             bool notRock = (effectiveSpeakerID == 1 || effectiveSpeakerID == 2);
             float profDir = notRock ? +1.f : -1.f;
             float posLeftShift = notRock ? DIALOGUE_BACKGROUND_OFFSET_X : 0.f;
@@ -1255,8 +1255,8 @@ void GuiSystem::Update(float dt)
             // Determine which side profile is placed
             if (d.customOverride && !autoFromSpeaker)
             {
-                posLeftShift = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? DIALOGUE_BACKGROUND_OFFSET_X : 0.f;
-                profDir = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? +1.f : -1.f;
+                posLeftShift = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? DIALOGUE_BACKGROUND_OFFSET_X : 0.f;
+                profDir = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? +1.f : -1.f;
             }
 
             // Determine advance dialogue button position
@@ -1268,7 +1268,7 @@ void GuiSystem::Update(float dt)
                 }
                 else
                 {
-                    advanceBtnPosShift = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_LEFT) ? 0.f : ADVANCE_DIALOGUE_BUTTON_OFFSET_X;
+                    advanceBtnPosShift = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_LEFT) ? 0.f : ADVANCE_DIALOGUE_BUTTON_OFFSET_X;
                 }
                 showAdvanceBtn = HandleDialogueAdvance(false);
             }
@@ -1524,7 +1524,7 @@ void GuiSystem::Update(float dt)
 
             // render.DrawText(speakerName, speakerX, speakerY, speakerScale, d.speakerNameColor, "Marker");
             const bool profileSideOverriden = (d.customOverride && !autoFromSpeaker);
-            const float textPosLeftShift = profileSideOverriden ? (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT ? -275.f : 0.f) : (notRock ? -275.f : 0.f);
+            const float textPosLeftShift = profileSideOverriden ? (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT ? -275.f : 0.f) : (notRock ? -275.f : 0.f);
             float textX = (bgCenter.x - bgScale.x * 0.4f) + textPosLeftShift;
 
             // Render wrapped lines
@@ -2306,6 +2306,37 @@ std::string ButtonActionToString(ButtonAction action)
     case ButtonAction::LoadControls:        return "LoadControls";
     case ButtonAction::AdvanceDialogue:     return "AdvanceDialogue";
     default:                                return "None";
+    }
+}
+
+/**
+ * @brief   Converts string representation of action into ProfileDisplaySide enum.
+ * @param s String (e.g. "Auto", "Left").
+ * @return  ButtonAction parsed enum or ButtonAction::None for unknown strings.
+ */
+
+DialogueConfig::ProfileDisplaySide StringToProfileDisplaySide(const std::string& s)
+{
+    if (s == "Auto")        return DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
+    if (s == "Left")        return DialogueConfig::ProfileDisplaySide::PROFILE_LEFT;
+    if (s == "Right")       return DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT;
+    return DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
+}
+
+/**
+ * @brief           Converts a ProfileDisplaySide enum to a string.
+ * @param action    ProfileDisplaySide value.
+ * @return          String representation.
+ */
+
+std::string ProfileDisplaySideToString(DialogueConfig::ProfileDisplaySide side)
+{
+    switch (side)
+    {
+    case DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER:   return "Auto";
+    case DialogueConfig::ProfileDisplaySide::PROFILE_LEFT:              return "Left";
+    case DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT:             return "Right";
+    default:                                                            return "Auto";
     }
 }
 
