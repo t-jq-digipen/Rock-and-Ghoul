@@ -33,23 +33,6 @@ enum class ButtonShape
     Circle
 };
 
-enum class ButtonAction
-{
-    None,
-    LoadLevel1,
-    LoadMainMenu,
-    Quit,
-    OpenStateWindow,
-    ToggleAllButtons,
-    ToggleAllTextboxes,
-    ToggleAllDialogues,
-    ToggleAllDisplays,
-    LoadSettings,
-    LoadControls,
-    AdvanceDialogue,
-    GetActionCount
-};
-
 enum class SelectedType
 {
     None,
@@ -502,8 +485,6 @@ struct ButtonConfig {
 
     std::function<void()> onClick = nullptr;
     AudioSystem::ButtonType soundType = AudioSystem::ButtonType::CLICK;
-    //ButtonShape shape = ButtonShape::Rectangle;
-    ButtonAction action = ButtonAction::None;
 
     std::string actionName{"[]"};
     json actionParams{ "[]" };
@@ -611,22 +592,6 @@ std::string ButtonShapeToString(ButtonShape shape);
  */
 
 ButtonShape StringToButtonShape(const std::string& s);
-
-/**
- * @brief Converts a ButtonAction enum value to its string representation.
- * @param action The ButtonAction value.
- * @return String representation of the ButtonAction.
- */
-
-std::string ButtonActionToString(ButtonAction action);
-
-/**
- * @brief Converts a string to a ButtonAction enum value.
- * @param str The string representation of the ButtonAction.
- * @return Corresponding ButtonAction value.
- */
-
-ButtonAction StringToButtonAction(const std::string& s);
 
 /**
  * @brief Converts a ProfileDisplaySide enum value to its string representation.
@@ -829,15 +794,6 @@ public:
 
     void Clear();
 
-    // Button functions
-
-/**
- * @brief       Binds built-in click behaviors to a button based on its ButtonAction.
- * @param btn   The button configuration to modify.
- */
-
-    void BindButtonAction(ButtonConfig& btn);
-
 /**
  * @brief           Toggles visibility of all buttons except an optional excluded one.
  *                  If all considered buttons are visible, hides them; otherwise shows them.
@@ -863,14 +819,6 @@ public:
  */
 
     void ToggleAllDisplays();
-
-/**
- * @brief           Draws the state window overlay UI (e.g. "Choose Your State" menu).
- *                  This overlay is drawn in screen space, including its own buttons and close control.
- * @param render    Reference to the Render instance to use.
- */
-
-    void DrawStateWindow(Render& render);
 
 /**
  * @brief       Converts the given mouse position to game-view coordinates when ImGui is active.
@@ -1034,6 +982,13 @@ public:
 
     void HideTextBox(int textBoxID);
 
+/**
+ * @brief           Gets the order of registered actions.
+ * @return          The ordered list of registered actions.
+ */
+
+    const std::vector<std::string>& GetActionOrder() const { return actionOrder; }
+
 private:
 
     std::vector<ButtonConfig> buttons;
@@ -1045,6 +1000,9 @@ private:
 
     // a registry to hold functions, keyed by function name
     std::unordered_map<std::string, ActionFunction> actionRegistry;
+
+    // keeps RegisterAction insertion order
+    std::vector<std::string> actionOrder;
 
     struct DrawItem
     {
@@ -1074,10 +1032,6 @@ private:
     enum class SelectedType selectedType = SelectedType::None;
 
     GameViewRect m_gameViewRect;
-
-    // state window overlay
-    bool stateWindowActive = false;
-
 };
 
 // inline GuiSystem guiSystem;

@@ -1016,7 +1016,6 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             //sb.color = b.color;
             sb.renderData = b.m_renderData.Serialize();
             //sb.shape = ButtonShapeToString(b.shape);
-            sb.action = ButtonActionToString(b.action); 
             sb.actionName = b.actionName;
             sb.actionParams = b.actionParams;
             sb.soundType = static_cast<int>(b.soundType);
@@ -1184,59 +1183,19 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                 cfg.m_renderData = UI_RenderData::DeSerialize(b.renderData);
             }
             //cfg.shape = StringToButtonShape(b.shape);
-            cfg.action = StringToButtonAction(b.action);
             cfg.actionName = b.actionName;
-            cfg.actionParams = b.actionParams;
+            if (b.actionParams.is_string())
+            {
+                const std::string raw = b.actionParams.get<std::string>();
+                try { cfg.actionParams = json::parse(raw); }
+                catch (...) { cfg.actionParams = json::object(); }
+            }
+            else
+            {
+                cfg.actionParams = b.actionParams;
+            }
             cfg.soundType = static_cast<AudioSystem::ButtonType>(b.soundType);
             cfg.isVisible = b.isVisible;
-
-            if (b.action == "LoadLevel1") {
-                cfg.onClick = []() { SceneManager::Get().QueueLoadScene("../Assets/saves/level1.json"); };
-            }
-            else if (b.action == "Quit") {
-                cfg.onClick = []() {
-                    // let quit sound play
-                    double startTime = glfwGetTime();
-                    while (glfwGetTime() - startTime < 0.5) {
-                        AudioSystem::Update();
-                        glfwPollEvents();
-                    }
-
-                    // stop all audio BEFORE shutdown
-                    AudioSystem::StopAll();
-                    // give FMOD time to cleanup by updating several times lol
-                    for (int i = 0; i < 10; ++i) {
-                        AudioSystem::Update();
-                        glfwPollEvents();
-                    }
-
-                    // QUIT NOW!!!
-                    CoreEngine::GetInstance().Quit();
-                    };
-            }
-            else if (b.action == "LoadMainMenu") {
-                cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene("../Assets/saves/MainMenu.json");
-                    };
-            }
-            else if (b.action == "LoadSettings") {
-                cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene("../Assets/others/settings.json");
-                    };
-            }
-            else if (b.action == "LoadControls") {
-                cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene("../Assets/others/controls.json");
-                    };
-            }
-            else if (b.action == "OpenStateWindow") {
-                cfg.onClick = []() {
-                    GuiSystem::Get().DrawStateWindow(Render::GetInstance());
-                    };
-            }
-            else {
-                cfg.onClick = nullptr;
-            }
 
             GuiSystem::Get().AddButton(cfg);
         }

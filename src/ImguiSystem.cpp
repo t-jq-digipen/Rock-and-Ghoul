@@ -1404,9 +1404,7 @@ void ImGuiSystem::Update(float dt)
                     //b.color = { 0.4f, 0.7f, 0.9f };
                     b.textScale = 1.0f;
                     b.basePos = b.pos; b.baseSize = b.size; b.baseTextScale = b.textScale;
-                    b.action = ButtonAction::None;
                     b.ID = nextID();
-                    gui.BindButtonAction(b);
                     buttons.push_back(b);
 
                     // select the new one
@@ -1900,53 +1898,21 @@ void ImGuiSystem::Update(float dt)
                         }
                     }
                     ImGui::Separator();
-                    // Action
-                    {
-                        const char* actionNames[] =
-                        {
-                            "None",
-                            "Load Level 1",
-                            "Load Main Menu",
-                            "Quit",
-                            "Open State Window",
-                            "Toggle All Buttons",
-                            "Toggle All Textboxes",
-                            "Toggle All Dialogues",
-                            "Toggle All Displays",
-                            "Load Settings",
-                            "Load Controls",
-                            "Advance Dialogue"
-                        };
-                        int actionCount = (int)(sizeof(actionNames) / sizeof(actionNames[0]));
-                        int curr = (int)b.action;
-                        curr = (curr >= 0 && curr < actionCount) ? curr : 0;
-                        //if (ImGui::Combo("Action", &curr, actionNames, actionCount))
-                        //{
-                        //    b.action = (ButtonAction)curr;
-                        //    GuiSystem::Get().BindButtonAction(b);
-                        //}
-                    }
-                    ImGui::Separator();
                     // Action new
                     {
                         std::vector<const char*> actionNames;
-                        int selected = -1;
-                        auto& map = GuiSystem::Get().GetActionMap();
+                        int selected = 0;
 
-                        actionNames.reserve(map.size());
-                        for (auto& [name, func] : map)
+                        const auto& ordered = GuiSystem::Get().GetActionOrder();
+                        actionNames.reserve(ordered.size());
+                        for (const auto& s : ordered) actionNames.push_back(s.c_str());
+
+                        for (int i = 0; i < (int)actionNames.size(); ++i)
                         {
-                            actionNames.push_back(name.c_str());
-                        }
-                        for (size_t i = 0; i < static_cast<int>(actionNames.size()); i++)
-                        {
-                            if (b.actionName == actionNames[i]) {
-                                selected = static_cast<int>(i);
-                                break;
-                            }
+                            if (b.actionName == actionNames[i]) { selected = i; break; }
                         }
 
-                        if (ImGui::Combo("Button Action", &selected, actionNames.data(), static_cast<int>(actionNames.size())))
+                        if (ImGui::Combo("Click Action", &selected, actionNames.data(), static_cast<int>(actionNames.size())))
                         {
                             b.actionName = actionNames[selected];
                             b.actionParams.clear();
