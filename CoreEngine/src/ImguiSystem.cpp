@@ -2130,9 +2130,71 @@ void ImGuiSystem::Update(float dt)
 
         ImGui::SameLine();
 
+        // Snapshot original dialogue box settings before setting Custom Override to true
+        // Default Snapshot (per ID)
+
+        struct DialogueOriginalSettings
+        {
+            // --- TextBox ---
+            Vec2 tbBasePos{};
+            float tbBaseScale = 1.f;
+            Colour3 tbColor{};
+            float wrapWidth = 0.f;
+            float textSpeed = 60.f;
+
+            // --- Background ---
+            bool bgEnabled = false;
+            Vec2 bgBaseSize{};
+            UI_RenderData bgRenderData{};
+            UIRenderType bgType;
+
+            // Background UIRenderType::Shape
+            ButtonShape bgShape;
+            Colour3 bgShapeColor{};
+
+            // Background UIRenderType::CustomQuad
+            Vec2 bgV0{}, bgV1{}, bgV2{}, bgV3{};
+            Colour3 bgQuadColor{};
+
+            // Background UIRenderType::ImageSheet
+            std::string bgTexName;
+            GLuint bgTexID = 0;
+            unsigned bgRows = 1;
+            unsigned bgCols = 1;
+            UIImageSheetRender::FrameIndex bgFrameIndex{};
+            std::unordered_map<unsigned int, UIImageSheetRender::FrameIndex> bgFrames{};
+
+            // --- Profile ---
+            bool profileEnabled = false;
+            Vec2 profileBaseSize{};
+            Vec2 profileOffset{};
+            UI_RenderData profileRenderData{};
+            UIRenderType profileType;
+
+            // Profile UIRenderType::Shape
+            ButtonShape profileShape;
+            Colour3 profileShapeColor{};
+
+            // Profile UIRenderType::CustomQuad
+            Vec2 pv0{}, pv1{}, pv2{}, pv3{};
+            Colour3 pQuadColor{};
+
+            // Profile UIRenderType::ImageSheet
+            std::string profileTexName;
+            GLuint profileTexID = 0;
+            unsigned pRows = 1;
+            unsigned pCols = 1;
+            UIImageSheetRender::FrameIndex pFrameIndex{};
+            std::unordered_map<unsigned int, UIImageSheetRender::FrameIndex> pFrames{};
+        };
+
         // static maps for accessing Dialogue properties for clones
+        static std::unordered_map<int, DialogueOriginalSettings> perDlgOriginalSettingsById; // key by d.ID
+        static std::unordered_map<int, bool> perDlgOriginalSettingsCapturedById; // key by d.ID
         static std::unordered_map<int, int> perDlgSceneIdxById; // key by d.ID
-        static std::unordered_map<int, bool> perDlgColorOverrideById; // key by d.ID
+        static std::unordered_map<int, bool> perDlgColorOverrideById; // key by d.ID (true = dialogue text color can be overriden)
+        static std::unordered_map<int, bool> perDlgCustomOverrideById; // key by d.ID (true = dialogue box is user-customizable)
+        static std::unordered_map<int, bool> perDlgPrevCustomOverrideById;
 
         //  Button to duplicate the currently selected UI entity.
         if (ImGui::Button("Clone UI") && uiSelectedIndex >= 0)
@@ -2185,6 +2247,9 @@ void ImGuiSystem::Update(float dt)
                 {
                     const bool srcColorOverriden = perDlgColorOverrideById.contains(src.ID) ? perDlgColorOverrideById[src.ID] : false;
                     perDlgColorOverrideById[dst.ID] = srcColorOverriden;
+
+                    const bool srcCustomOverriden = perDlgCustomOverrideById.contains(src.ID) ? perDlgCustomOverrideById[src.ID] : false;
+                    perDlgCustomOverrideById[dst.ID] = srcCustomOverriden;
 
                     if (perDlgSceneIdxById.contains(src.ID))
                     {
@@ -2268,9 +2333,12 @@ void ImGuiSystem::Update(float dt)
                 if (lIdx >= 0 && lIdx < (int)dialogues.size())
                 {
                     const int erasedID = dialogues[lIdx].ID;
-                    dialogues.erase(dialogues.begin() + lIdx);
+                    dialogues.erase(dialogues.begin() + lIdx);;
                     perDlgSceneIdxById.erase(erasedID);
                     perDlgColorOverrideById.erase(erasedID);
+                    perDlgCustomOverrideById.erase(erasedID);
+                    perDlgOriginalSettingsCapturedById.erase(erasedID);
+                    perDlgOriginalSettingsById.erase(erasedID);
                 }
             }
             else if (type == SelectedType::Display)
@@ -2587,7 +2655,7 @@ void ImGuiSystem::Update(float dt)
                             }
                         }
 
-                        if (ImGui::Combo("ClickAction", &selected, actionNames.data(), static_cast<int>(actionNames.size())))
+                        if (ImGui::Combo("Button Action", &selected, actionNames.data(), static_cast<int>(actionNames.size())))
                         {
                             int                idx           = selectedLocal;
                             std::string        nameBefore    = b.actionName;
@@ -2838,7 +2906,7 @@ void ImGuiSystem::Update(float dt)
                             }
 
                             // Image texture
-                            if (ImGui::Combo("textureIDnew", &selected, imgOptions.data(), static_cast<int>(imgOptions.size())))
+                            if (ImGui::Combo("Texture Drawn", &selected, imgOptions.data(), static_cast<int>(imgOptions.size())))
                             {
                                 int   idx       = selectedLocal;
                                 Image imgBefore = img;
@@ -3205,27 +3273,8 @@ void ImGuiSystem::Update(float dt)
                                 for (auto& sc : dlgDoc["scenes"])
                                 {
                                     sceneIDs.push_back(sc.value("sceneID", std::string("0")));
-                                    // speaker label defaults
-                                    //if (sc.contains("speakerUI") && sc["speakerUI"].is_object()) 
-                                    //{
-                                    //    auto& sl = sc["speakerUI"];
-                                    //    if (sl.contains("pos") && sl["pos"].is_array())
-                                    //    {
-                                    //        d.speakerNameBasePos = { sl["pos"][0].get<float>(), sl["pos"][1].get<float>() };
-                                    //    }
-                                    //    if (sl.contains("scale"))
-                                    //    {
-                                    //        d.speakerNameBaseScale = sl["scale"].get<float>();
-                                    //    }
-                                    //    if (sl.contains("color") && sl["color"].is_array())
-                                    //    {
-                                    //        d.speakerNameColor = { sl["color"][0].get<float>(), sl["color"][1].get<float>(), sl["color"][2].get<float>() };
-                                    //    }
-                                    //}
                                     if (sc.contains("textSpeed")) d.textSpeed = sc["textSpeed"].get<float>();
                                     if (sc.contains("wrapWidth")) d.wrapWidth = sc["wrapWidth"].get<float>();
-                                    //if (sc.contains("customSpeaker")) d.customSpeaker = sc["customSpeaker"].get<bool>();
-                                    //if (sc.contains("customSpeakerName")) d.customSpeakerName = sc["customSpeakerName"].get<std::string>();
                                 }
                                 dlgLoaded = true;
                             }
@@ -3243,7 +3292,13 @@ void ImGuiSystem::Update(float dt)
                     {
                         int initIdx = 0;
                         for (int i = 0; i < (int)sceneIDs.size(); ++i)
-                            if (sceneIDs[i] == d.sceneID) { initIdx = i; break; }
+                        {
+                            if (sceneIDs[i] == d.sceneID) 
+                            { 
+                                initIdx = i;
+                                break; 
+                            }
+                        }
                         perDlgSceneIdxById[d.ID] = initIdx;
                     }
 
@@ -3257,10 +3312,144 @@ void ImGuiSystem::Update(float dt)
                         activeSceneIdx = 0;
                     }
 
+                    if (!perDlgColorOverrideById.contains(d.ID))
+                        perDlgColorOverrideById[d.ID] = false;
+
+                    if (!perDlgCustomOverrideById.contains(d.ID))
+                        perDlgCustomOverrideById[d.ID] = d.customOverride;
+
                     bool& colorOverriden = perDlgColorOverrideById[d.ID];
+                    bool& customOverriden = perDlgCustomOverrideById[d.ID];
+
+                    if (!perDlgPrevCustomOverrideById.contains(d.ID))
+                        perDlgPrevCustomOverrideById[d.ID] = customOverriden;
+
+                    bool& prevCustomState = perDlgPrevCustomOverrideById[d.ID];
+
+                    // Get texture string from texture ID
+                    auto textureNameFromID = [&](GLuint texID) -> std::string
+                        {
+                            if (!texID) return {};
+                            const auto& cache = Render::GetInstance().Get_TextureCache();
+                            for (const auto& [name, id] : cache)
+                            {
+                                if (id == texID) return name;
+                            }
+                            return {};
+                        };
+
+                    {
+                        bool& captured = perDlgOriginalSettingsCapturedById[d.ID];
+                        if (!captured)
+                        {
+                            DialogueOriginalSettings ogs{};
+
+                            // TextBox
+                            ogs.tbBasePos = d.textBox.basePos;
+                            ogs.tbBaseScale = d.textBox.baseScale;
+                            ogs.tbColor = d.textBox.color;
+                            ogs.wrapWidth = d.wrapWidth;
+                            ogs.textSpeed = comp->GetTextSpeed();
+
+                            // Background
+                            ogs.bgEnabled = d.bgEnabled;
+                            ogs.bgBaseSize = d.bgBaseSize;
+                            ogs.bgRenderData = d.bgRenderData;
+                            ogs.bgType = d.bgRenderData.GetRenderType();
+
+                            if (ogs.bgType == UIRenderType::Shape)
+                            {
+                                auto& s = d.bgRenderData.GetShapeData();
+                                ogs.bgShape = s.shape;
+                                ogs.bgShapeColor = s.color;
+                            }
+                            else if (ogs.bgType == UIRenderType::CustomQuad)
+                            {
+                                auto& q = d.bgRenderData.GetQuadData();
+                                ogs.bgV0 = q.v0; ogs.bgV1 = q.v1; ogs.bgV2 = q.v2; ogs.bgV3 = q.v3;
+                                ogs.bgQuadColor = q.color;
+                            }
+                            else if (ogs.bgType == UIRenderType::Image)
+                            {
+                                auto& img = d.bgRenderData.GetImageData().m_image;
+                                ogs.bgTexID = img.textureID;
+                                ogs.bgTexName = textureNameFromID(ogs.bgTexID);
+                            }
+                            else if (ogs.bgType == UIRenderType::ImageSheet)
+                            {
+                                auto& sh = d.bgRenderData.GetImageSheetData();
+                                ogs.bgRows = sh.total_rows;
+                                ogs.bgCols = sh.total_cols;
+                                ogs.bgFrameIndex = sh.frame_index;
+                                ogs.bgFrames = sh.frames;
+                                ogs.bgTexID = sh.m_image.textureID;
+                                ogs.bgTexName = textureNameFromID(ogs.bgTexID);
+                            }
+
+                            // Profile
+                            ogs.profileEnabled = d.profileEnabled;
+                            ogs.profileBaseSize = d.profileBaseSize;
+                            ogs.profileOffset = d.profileOffset;
+                            ogs.profileRenderData = d.profileRenderData;
+                            ogs.profileType = d.profileRenderData.GetRenderType();
+
+                            if (ogs.profileType == UIRenderType::Shape)
+                            {
+                                auto& s = d.profileRenderData.GetShapeData();
+                                ogs.profileShape = s.shape;
+                                ogs.profileShapeColor = s.color;
+                            }
+                            else if (ogs.profileType == UIRenderType::CustomQuad)
+                            {
+                                auto& q = d.profileRenderData.GetQuadData();
+                                ogs.pv0 = q.v0; ogs.pv1 = q.v1; ogs.pv2 = q.v2; ogs.pv3 = q.v3;
+                                ogs.pQuadColor = q.color;
+                            }
+                            else if (ogs.profileType == UIRenderType::Image)
+                            {
+                                auto& img = d.profileRenderData.GetImageData().m_image;
+                                ogs.profileTexID = img.textureID;
+                                ogs.profileTexName = textureNameFromID(ogs.profileTexID);
+                            }
+                            else if (ogs.profileType == UIRenderType::ImageSheet)
+                            {
+                                auto& sh = d.profileRenderData.GetImageSheetData();
+                                ogs.pRows = sh.total_rows;
+                                ogs.pCols = sh.total_cols;
+                                ogs.pFrameIndex = sh.frame_index;
+                                ogs.pFrames = sh.frames;
+                                ogs.profileTexID = sh.m_image.textureID;
+                                ogs.profileTexName = textureNameFromID(ogs.profileTexID);
+                            }
+
+                            perDlgOriginalSettingsById[d.ID] = ogs;
+                            captured = true;
+                        }
+                    }
+
+                    // Check if dialogue box is user-customizable or not
+                    ImGui::SeparatorText("Dialogue Mode");
+                    const bool changedCustomMode = ImGui::Checkbox("Custom Override", &customOverriden);
+                    d.customOverride = customOverriden;
+                    if (ImGui::IsItemHovered())
+                    {
+                        ImGui::SetTooltip("When enabled, this dialogue box is fully editable and will not be auto-driven by the selected Scene ID.");
+                    }
+
+                    // Speaker ID Override
+                    ImGui::BeginDisabled(!customOverriden);
+
+                    ImGui::Checkbox("Override Speaker ID", &d.speakerOverrideEnabled);
+                    if (d.speakerOverrideEnabled)
+                    {
+                        ImGui::InputInt("Speaker ID", &d.speakerOverrideID);
+                        d.speakerOverrideID = std::max(0, d.speakerOverrideID);
+                    }
+
+                    ImGui::EndDisabled();
 
                     // Apply script to text component based on scene ID
-                    auto applySceneToComp = [&](int sceneIdx, bool applyColor)
+                    auto applySceneToComp = [&](int sceneIdx, bool applyColor, bool applyTextBoxSettings)
                         {
                             if (!dlgDoc.contains("scenes") || !dlgDoc["scenes"].is_array()) return;
                             if (sceneIdx < 0 || sceneIdx >= (int)dlgDoc["scenes"].size()) return;
@@ -3286,56 +3475,143 @@ void ImGuiSystem::Update(float dt)
                             comp->SetFontPath(sc.value("fontPath", std::string((FilePath::ASSETS_FOLDER + "fonts/Marker.ttf"))));
                             comp->SetFontSize(sc.value("fontSize", 1.0f));
 
-                            if (applyColor && sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3)
+                            if (applyTextBoxSettings)
                             {
-                                Vec3 c{ sc["color"][0].get<float>(), sc["color"][1].get<float>(), sc["color"][2].get<float>() };
-                                comp->SetColor(c);
-                                d.textBox.color = { c.x, c.y, c.z };
+                                comp->SetTextSpeed(sc.value("textSpeed", 60.f));
+                                d.wrapWidth = sc.value("wrapWidth", d.wrapWidth);
+
+                                if (applyColor && sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3)
+                                {
+                                    Vec3 c{ sc["color"][0].get<float>(), sc["color"][1].get<float>(), sc["color"][2].get<float>() };
+                                    comp->SetColor(c);
+                                    d.textBox.color = { c.x, c.y, c.z };
+                                }
+                                else
+                                {
+                                    comp->SetColor({ d.textBox.color.r, d.textBox.color.g, d.textBox.color.b });
+                                }
                             }
                             else
                             {
+                                comp->SetTextSpeed(comp->GetTextSpeed());
                                 comp->SetColor({ d.textBox.color.r, d.textBox.color.g, d.textBox.color.b });
                             }
-
-                            d.wrapWidth = sc.value("wrapWidth", d.wrapWidth);
-
-                            //d.customSpeaker = sc.value("customSpeaker", false);
-                            //d.customSpeakerName = sc.value("customSpeakerName", d.customSpeakerName);
-
-                            //if (sc.contains("speakerUI"))
-                            //{
-                            //    auto& s = sc["speakerUI"];
-                            //    if (s.contains("pos") && s["pos"].is_array() && s["pos"].size() == 2)
-                            //    {
-                            //        d.speakerNameBasePos = { s["pos"][0].get<float>(), s["pos"][1].get<float>() };
-                            //    }
-                            //    d.speakerNameBaseScale = s.value("scale", d.speakerNameBaseScale);
-                            //    d.speakerNameCentered = s.value("centered", d.speakerNameCentered);
-
-                            //    if (s.contains("color") && s["color"].is_array() && s["color"].size() == 3)
-                            //    {
-                            //        d.speakerNameColor = { s["color"][0].get<float>(), s["color"][1].get<float>(), s["color"][2].get<float>() };
-                            //    }
-                            //}
 
                             comp->SetVisibleChars(0);
                             comp->StartTyping();
                         };
 
+                    if (changedCustomMode && prevCustomState && !customOverriden)
+                    {
+                        // Restore original textbox settings (before setting to custom mode)
+                        if (auto it = perDlgOriginalSettingsById.find(d.ID); it != perDlgOriginalSettingsById.end())
+                        {
+                            const DialogueOriginalSettings& ogs = it->second;
+
+                            // TextBox
+                            d.textBox.basePos = ogs.tbBasePos;
+                            d.textBox.baseScale = ogs.tbBaseScale;
+                            d.textBox.color = ogs.tbColor;
+                            d.wrapWidth = ogs.wrapWidth;
+                            comp->SetTextSpeed(ogs.textSpeed);
+                            comp->SetColor({ ogs.tbColor.r, ogs.tbColor.g, ogs.tbColor.b });
+
+                            // Background
+                            d.bgEnabled = ogs.bgEnabled;
+                            d.bgBaseSize = ogs.bgBaseSize;
+                            d.bgRenderData = ogs.bgRenderData;
+
+                            if (ogs.bgType == UIRenderType::Shape)
+                            {
+                                auto& s = d.bgRenderData.GetShapeData();
+                                s.shape = ogs.bgShape;
+                                s.color = ogs.bgShapeColor;
+                            }
+                            else if (ogs.bgType == UIRenderType::CustomQuad)
+                            {
+                                auto& q = d.bgRenderData.GetQuadData();
+                                q.v0 = ogs.bgV0; q.v1 = ogs.bgV1; q.v2 = ogs.bgV2; q.v3 = ogs.bgV3;
+                                q.color = ogs.bgQuadColor;
+                            }
+                            else if (ogs.bgType == UIRenderType::Image)
+                            {
+                                auto& img = d.bgRenderData.GetImageData().m_image;
+                                if (!ogs.bgTexName.empty()) img = CreateImage(ogs.bgTexName);
+                            }
+                            else if (ogs.bgType == UIRenderType::ImageSheet)
+                            {
+                                auto& sh = d.bgRenderData.GetImageSheetData();
+                                sh.m_image = CreateImage(ogs.bgTexName);
+                                sh.m_image.textureID = ogs.bgTexID;
+                                sh.total_rows = std::max(1u, ogs.bgRows);
+                                sh.total_cols = std::max(1u, ogs.bgCols);
+                                sh.frame_index = ogs.bgFrameIndex;
+                                sh.frames = ogs.bgFrames;
+                            }
+
+                            // Profile
+                            d.profileEnabled = ogs.profileEnabled;
+                            d.profileBaseSize = ogs.profileBaseSize;
+                            d.profileOffset = ogs.profileOffset;
+                            d.profileRenderData = ogs.profileRenderData;
+
+                            if (ogs.profileType == UIRenderType::Shape)
+                            {
+                                auto& s = d.profileRenderData.GetShapeData();
+                                s.shape = ogs.profileShape;
+                                s.color = ogs.profileShapeColor;
+                            }
+                            else if (ogs.profileType == UIRenderType::CustomQuad)
+                            {
+                                auto& q = d.profileRenderData.GetQuadData();
+                                q.v0 = ogs.pv0; q.v1 = ogs.pv1; q.v2 = ogs.pv2; q.v3 = ogs.pv3;
+                                q.color = ogs.pQuadColor;
+                            }
+                            else if (ogs.profileType == UIRenderType::Image)
+                            {
+                                auto& img = d.profileRenderData.GetImageData().m_image;
+                                if (!ogs.profileTexName.empty()) img = CreateImage(ogs.profileTexName);
+                            }
+                            else if (ogs.profileType == UIRenderType::ImageSheet)
+                            {
+                                auto& sh = d.profileRenderData.GetImageSheetData();
+                                sh.m_image = CreateImage(ogs.profileTexName);
+                                sh.m_image.textureID = ogs.profileTexID;
+                                sh.total_rows = std::max(1u, ogs.pRows);
+                                sh.total_cols = std::max(1u, ogs.pCols);
+                                sh.frame_index = ogs.pFrameIndex;
+                                sh.frames = ogs.pFrames;
+                            }
+                        }
+
+                        colorOverriden = false;
+                        applySceneToComp(activeSceneIdx, true, true);
+                        d.sceneID = sceneIDs.empty() ? "0" : sceneIDs[activeSceneIdx];
+                    }
+
+                    prevCustomState = customOverriden;
+
                     if (comp->GetLines().empty())
                     {
                         int wantIdx = 0;
                         for (int i = 0; i < (int)sceneIDs.size(); ++i)
-                            if (sceneIDs[i] == d.sceneID) { wantIdx = i; break; }
+                        {
+                            if (sceneIDs[i] == d.sceneID) 
+                            { 
+                                wantIdx = i; 
+                                break; 
+                            }
+                        }
                         activeSceneIdx = std::clamp(wantIdx, 0, std::max(0, (int)sceneIDs.size() - 1));
-                        applySceneToComp(activeSceneIdx, !colorOverriden);
+                        applySceneToComp(activeSceneIdx, customOverriden ? !colorOverriden : true, !customOverriden);
                     }
 
                     // Dialogue TextBox Properties
+                    ImGui::BeginDisabled(!customOverriden);
                     ImGui::SeparatorText("Dialogue Text Box");
-                    ImGui::SliderFloat("posX", &d.textBox.basePos.x, 0.f, 1920.f, "%.3f");
-                    ImGui::SliderFloat("posY", &d.textBox.basePos.y, 0.f, 1080.f, "%.3f");
-                    ImGui::SliderFloat("scale", &d.textBox.baseScale, 0.1f, 10.f, "%.3f");
+                    ImGui::DragFloat("posX", &d.textBox.basePos.x, 1.f);
+                    ImGui::DragFloat("posY", &d.textBox.basePos.y, 1.f);
+                    ImGui::DragFloat("scale", &d.textBox.baseScale, 0.1f);
 
                     float col[3] = { d.textBox.color.r, d.textBox.color.g, d.textBox.color.b };
 
@@ -3348,14 +3624,16 @@ void ImGuiSystem::Update(float dt)
                     }
 
                     // Textbox Wrap Width
-                    ImGui::SliderFloat("Wrap Width", &d.wrapWidth, 0.f, 1920.f, "%.3f");
+                    ImGui::DragFloat("Wrap Width", &d.wrapWidth, 1.f);
 
                     // Text Typing Speed
                     float spd = comp->GetTextSpeed();
-                    if (ImGui::SliderFloat("Text Speed", &spd, 0.f, 200.f, "%.3f"))
+                    if (ImGui::DragFloat("Text Speed", &spd, 1.f))
                     {
                         comp->SetTextSpeed(spd);
                     }
+
+                    ImGui::EndDisabled();
 
                     // Scene (determines script)
                     ImGui::SeparatorText("Scene");
@@ -3379,8 +3657,12 @@ void ImGuiSystem::Update(float dt)
 
                         if (activeSceneIdx != prevScene) 
                         {
-                            applySceneToComp(activeSceneIdx, !colorOverriden);               // resets lines and (re)starts typing
                             d.sceneID = sceneIDs.empty() ? "0" : sceneIDs[activeSceneIdx];
+                            if (!customOverriden)
+                            {
+                                colorOverriden = false;
+                                applySceneToComp(activeSceneIdx, true, true); // resets lines and (re)starts typing
+                            }
                         }
                     }
 
@@ -3388,39 +3670,113 @@ void ImGuiSystem::Update(float dt)
                     ImGui::SeparatorText("Lines");
                     if (comp)
                     {
-                        const auto& lines = comp->GetLines();
-                        int idx = comp->GetCurrentLineIndex();
-                        int lineCount = (int)lines.size();
-
-                        ImGui::Text("Current Line: %d / %d", lineCount ? (idx + 1) : 0, lineCount);
-
-                        if (lineCount > 0)
+                        // Custom Override is TRUE: edit lines freely
+                        // Custom Override is FALSE: select preset lines only
+                        if (!customOverriden)
                         {
-                            static std::vector<std::string> lbls;
-                            lbls.clear();
-                            lbls.reserve(lines.size());
-                            for (const auto& s : lines)
-                            {
-                                if (s.size() > 96) lbls.push_back(s.substr(0, 96) + "...");
-                                else               lbls.push_back(s);
-                            }
-                            std::vector<const char*> citems;
-                            citems.reserve(lbls.size());
-                            for (auto& s : lbls) citems.push_back(s.c_str());
+                            const auto& lines = comp->GetLines();
+                            int idx = comp->GetCurrentLineIndex();
+                            int lineCount = (int)lines.size();
 
-                            int prevIdx = idx;
-                            ImGui::Combo("Current Line", &idx, citems.data(), (int)citems.size());
-                            if (idx != prevIdx)
+                            ImGui::Text("Current Line: %d / %d", lineCount ? (idx + 1) : 0, lineCount);
+
+                            if (lineCount > 0)
                             {
-                                if (idx < 0) idx = 0;
-                                if (idx >= lineCount) idx = lineCount - 1;
-                                comp->SetCurrentLineIndex(idx);
-                                comp->StartTyping();
+                                static std::vector<std::string> lbls;
+                                lbls.clear();
+                                lbls.reserve(lines.size());
+                                for (const auto& s : lines)
+                                {
+                                    if (s.size() > 96) lbls.push_back(s.substr(0, 96) + "...");
+                                    else               lbls.push_back(s);
+                                }
+                                std::vector<const char*> citems;
+                                citems.reserve(lbls.size());
+                                for (auto& s : lbls) citems.push_back(s.c_str());
+
+                                int prevIdx = idx;
+                                ImGui::Combo("Current Line", &idx, citems.data(), (int)citems.size());
+                                if (idx != prevIdx)
+                                {
+                                    idx = std::clamp(idx, 0, std::max(0, lineCount - 1));
+                                    comp->SetCurrentLineIndex(idx);
+                                    comp->StartTyping();
+                                }
+                            }
+                            else
+                            {
+                                ImGui::TextDisabled("No lines in this scene!");
                             }
                         }
                         else
                         {
-                            ImGui::TextDisabled("No lines in this scene!");
+                            std::vector<std::string> lines = comp->GetLines();
+                            if (lines.empty()) lines.push_back("");
+
+                            int idx = comp->GetCurrentLineIndex();
+                            idx = std::clamp(idx, 0, (int)lines.size() - 1);
+
+                            ImGui::Text("Lines: %d", (int)lines.size());
+
+                            // Current line selector
+                            {
+                                static std::vector<std::string> lbls;
+                                lbls.clear();
+                                lbls.reserve(lines.size());
+                                for (const auto& s : lines)
+                                    lbls.push_back(s.size() > 96 ? (s.substr(0, 96) + "...") : s);
+
+                                std::vector<const char*> citems;
+                                citems.reserve(lbls.size());
+                                for (auto& s : lbls) citems.push_back(s.c_str());
+
+                                int prevIdx = idx;
+                                ImGui::Combo("Current Line", &idx, citems.data(), (int)citems.size());
+                                if (idx != prevIdx)
+                                {
+                                    idx = std::clamp(idx, 0, (int)lines.size() - 1);
+                                    comp->SetCurrentLineIndex(idx);
+                                    comp->StartTyping();
+                                }
+                            }
+
+                            // Edit current line
+                            {
+                                std::string& cur = lines[idx];
+                                static std::vector<char> buf;
+                                buf.assign(cur.begin(), cur.end());
+                                buf.push_back(' ');
+                                buf.resize(std::max<size_t>(buf.size(), 1024));
+
+                                ImGui::TextUnformatted("Edit Line");
+                                if (ImGui::InputTextMultiline("##DlgLineEdit", buf.data(), buf.size(), ImVec2(-FLT_MIN, 90)))
+                                {
+                                    cur = std::string(buf.data());
+                                    comp->SetLines(lines);
+                                    comp->SetCurrentLineIndex(idx);
+                                    comp->StartTyping();
+                                }
+                            }
+
+                            // Add / remove lines
+                            if (ImGui::Button("Add Line"))
+                            {
+                                lines.insert(lines.begin() + idx + 1, "");
+                                comp->SetLines(lines);
+                                comp->SetCurrentLineIndex(idx + 1);
+                                comp->StartTyping();
+                            }
+                            ImGui::SameLine();
+                            ImGui::BeginDisabled(lines.size() <= 1);
+                            if (ImGui::Button("Remove Line"))
+                            {
+                                lines.erase(lines.begin() + idx);
+                                idx = std::clamp(idx, 0, (int)lines.size() - 1);
+                                comp->SetLines(lines);
+                                comp->SetCurrentLineIndex(idx);
+                                comp->StartTyping();
+                            }
+                            ImGui::EndDisabled();
                         }
                     }
                     else
@@ -3428,498 +3784,523 @@ void ImGuiSystem::Update(float dt)
                         ImGui::TextDisabled("No TextComponent attached!");
                     }
 
-                    // DIALOGUE BACKGROUND
-
-                    ImGui::SeparatorText("Background");
-                    ImGui::Checkbox("Show Background", &d.bgEnabled);
-                    if (d.bgEnabled)
+                    if (customOverriden)
                     {
-                        ImGui::SliderFloat("BG Width", &d.bgBaseSize.x, 0.f, 1920.f);
-                        ImGui::SliderFloat("BG Height", &d.bgBaseSize.y, 0.f, 1080.f);
-
-                        const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
-                        int currType = (int)d.bgRenderData.GetRenderType();
-                        if (ImGui::Combo("BG Render Type", &currType, typeNames, IM_ARRAYSIZE(typeNames)))
+                        // === Background UI ===
+                        ImGui::SeparatorText("Background");
+                        ImGui::Checkbox("Show Background", &d.bgEnabled);
+                        if (d.bgEnabled)
                         {
-                            d.bgRenderData.SetRenderType((UIRenderType)currType);
+                            ImGui::DragFloat("BG Width", &d.bgBaseSize.x, 1.f);
+                            ImGui::DragFloat("BG Height", &d.bgBaseSize.y, 1.f);
+
+                            const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
+                            int currType = static_cast<int>(d.bgRenderData.GetRenderType());
+                            if (ImGui::Combo("BG Render Type", &currType, typeNames, IM_ARRAYSIZE(typeNames)))
+                            {
+                                d.bgRenderData.SetRenderType((UIRenderType)currType);
+                            }
+
+                            switch (d.bgRenderData.GetRenderType())
+                            {
+                                // Shape Render
+                            case UIRenderType::Shape:
+                            {
+                                auto& shape = d.bgRenderData.GetShapeData();
+                                const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
+                                int currShape = (int)shape.shape;
+                                if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames)))
+                                {
+                                    shape.shape = (ButtonShape)currShape;
+                                }
+
+                                float currCol[3] = { shape.color.r, shape.color.g, shape.color.b };
+                                if (ImGui::ColorEdit3("Color", currCol))
+                                {
+                                    shape.color = { currCol[0], currCol[1], currCol[2] };
+                                }
+                            } break;
+
+                            // Custom Quad Render
+                            case UIRenderType::CustomQuad:
+                            {
+                                auto& quad = d.bgRenderData.GetQuadData();
+                                ImGui::InputFloat2("v0", &quad.v0.x);
+                                ImGui::InputFloat2("v1", &quad.v1.x);
+                                ImGui::InputFloat2("v2", &quad.v2.x);
+                                ImGui::InputFloat2("v3", &quad.v3.x);
+
+                                if (ImGui::Button("Automatic quad by size"))
+                                {
+                                    quad.v0 = { d.textBox.basePos.x - (0.5f * d.bgBaseSize.x), d.textBox.basePos.y - (0.5f * d.bgBaseSize.y) };
+                                    quad.v1 = { d.textBox.basePos.x + (0.5f * d.bgBaseSize.x), d.textBox.basePos.y - (0.5f * d.bgBaseSize.y) };
+                                    quad.v2 = { d.textBox.basePos.x + (0.5f * d.bgBaseSize.x), d.textBox.basePos.y + (0.5f * d.bgBaseSize.y) };
+                                    quad.v3 = { d.textBox.basePos.x - (0.5f * d.bgBaseSize.x), d.textBox.basePos.y + (0.5f * d.bgBaseSize.y) };
+                                }
+                                float quadCol[3] = { quad.color.r, quad.color.g, quad.color.b };
+                                if (ImGui::ColorEdit3("Color", quadCol))
+                                {
+                                    quad.color = { quadCol[0], quadCol[1], quadCol[2] };
+                                }
+                            } break;
+
+                            // Image Render
+                            case UIRenderType::Image:
+                            {
+                                auto& imgData = d.bgRenderData.GetImageData();
+                                Image& img = imgData.m_image;
+                                const auto& cache = Render::GetInstance().Get_TextureCache();
+
+                                static std::unordered_map<int, int> bgImageSelectedByDlg;
+                                int& selected = bgImageSelectedByDlg[d.ID];
+                                std::vector<const char*> imgOptions;
+                                std::vector<GLuint> textureIDs;
+                                imgOptions.reserve(cache.size());
+                                for (auto const& [optname, optval] : cache)
+                                {
+                                    imgOptions.push_back(optname.c_str());
+                                    textureIDs.push_back(optval);
+                                }
+                                for (size_t i = 0; i < textureIDs.size(); i++)
+                                {
+                                    if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
+                                }
+                                if (ImGui::Combo("BG Texture", &selected, imgOptions.data(), (int)imgOptions.size()))
+                                {
+                                    img = CreateImage(imgOptions[selected]);
+                                }
+
+                                {
+                                    GLuint texID = img.textureID;
+                                    ImVec2 avail = ImGui::GetContentRegionAvail();
+                                    float scale = img.widthPixels ? (avail.x / img.widthPixels) : 0.f;
+                                    ImVec2 displaySize(img.widthPixels * scale, img.heightPixels * scale);
+                                    ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+                                }
+
+                                ImGui::Text("Resize to aspect ratio:");
+                                if (ImGui::Button("Width"))  d.bgBaseSize.x = d.bgBaseSize.y * ((float)img.widthPixels / (float)img.heightPixels);
+                                ImGui::SameLine();
+                                if (ImGui::Button("Height")) d.bgBaseSize.y = d.bgBaseSize.x * ((float)img.heightPixels / (float)img.widthPixels);
+                            } break;
+
+                            // Image Sheet Render
+                            case UIRenderType::ImageSheet:
+                            {
+                                auto& sheet = d.bgRenderData.GetImageSheetData();
+                                Image& img = sheet.m_image;
+
+                                const auto& cache = Render::GetInstance().Get_TextureCache();
+                                static std::unordered_map<int, int> bgImageSheetSelectedByDlg;
+                                int& selected = bgImageSheetSelectedByDlg[d.ID];
+                                std::vector<const char*> imgOptions;
+                                std::vector<GLuint> textureIDs;
+                                imgOptions.reserve(cache.size());
+                                for (auto const& [optname, optval] : cache)
+                                {
+                                    imgOptions.push_back(optname.c_str());
+                                    textureIDs.push_back(optval);
+                                }
+                                for (size_t i = 0; i < textureIDs.size(); i++)
+                                {
+                                    if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
+                                }
+                                if (ImGui::Combo("Texture Drawn", &selected, imgOptions.data(), (int)imgOptions.size()))
+                                {
+                                    img = CreateImage(imgOptions[selected]);
+                                }
+
+                                // display
+                                {
+                                    GLuint texID = img.textureID;
+                                    const float texW = (float)img.widthPixels;
+                                    const float texH = (float)img.heightPixels;
+
+                                    ImVec2 avail = ImGui::GetContentRegionAvail();
+
+                                    float scale = (texW != 0) ? avail.x / texW : 0.f;
+
+                                    ImVec2 displaySize(texW * scale, texH * scale);
+                                    ImVec2 imagePos = ImGui::GetCursorScreenPos();
+
+                                    ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+
+                                    ImDrawList* draw = ImGui::GetWindowDrawList();
+
+                                    int rows = sheet.total_rows;
+                                    int cols = sheet.total_cols;
+
+                                    float cellW = displaySize.x / cols;
+                                    float cellH = displaySize.y / rows;
+
+                                    // vertical lines
+                                    for (int c = 1; c < cols; ++c)
+                                    {
+                                        float x = imagePos.x + c * cellW;
+                                        draw->AddLine(ImVec2(x, imagePos.y),
+                                            ImVec2(x, imagePos.y + displaySize.y),
+                                            IM_COL32(255, 255, 255, 128));
+                                    }
+
+                                    // horizontal lines
+                                    for (int r = 1; r < rows; ++r)
+                                    {
+                                        float y = imagePos.y + r * cellH;
+                                        draw->AddLine(ImVec2(imagePos.x, y),
+                                            ImVec2(imagePos.x + displaySize.x, y),
+                                            IM_COL32(255, 255, 255, 128));
+                                    }
+
+                                    // highlight
+                                    int r = sheet.frame_index.curr_row;
+                                    int c = sheet.frame_index.curr_col;
+
+                                    ImVec2 p0(
+                                        imagePos.x + c * cellW,
+                                        imagePos.y + r * cellH
+                                    );
+                                    ImVec2 p1(
+                                        imagePos.x + (c + 1) * cellW,
+                                        imagePos.y + (r + 1) * cellH
+                                    );
+
+                                    // Filled highlight
+                                    draw->AddRectFilled(p0, p1, IM_COL32(255, 255, 0, 80));
+
+                                    // Outline
+                                    draw->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
+                                }
+
+                                // Render image based on selected row and column of the image sheet
+                                ImGui::InputInt("Rows", (int*)&sheet.total_rows);
+                                if (sheet.total_rows < 1) { sheet.total_rows = 1; }
+                                ImGui::InputInt("Columns", (int*)&sheet.total_cols);
+                                if (sheet.total_cols < 1) { sheet.total_cols = 1; }
+
+                                ImGui::Separator();
+
+                                ImGui::SliderInt("Current Row", (int*)&sheet.frame_index.curr_row, 0, (int)sheet.total_rows - 1);
+                                ImGui::SliderInt("Current Col", (int*)&sheet.frame_index.curr_col, 0, (int)sheet.total_cols - 1);
+
+
+                                sheet.total_cols = std::max(1u, sheet.total_cols);
+                                sheet.total_rows = std::max(1u, sheet.total_rows);
+
+                                // State Frames
+                                if (ImGui::TreeNode("State Frames"))
+                                {
+                                    for (auto& [state, idx] : sheet.frames)
+                                    {
+                                        ImGui::PushID(state);
+
+                                        ImGui::Text("State %u", state);
+
+                                        ImGui::InputInt("Row", (int*)&idx.curr_row);
+                                        ImGui::InputInt("Col", (int*)&idx.curr_col);
+
+                                        idx.curr_row = std::clamp(idx.curr_row, 0u, sheet.total_rows - 1);
+                                        idx.curr_col = std::clamp(idx.curr_col, 0u, sheet.total_cols - 1);
+
+                                        if (ImGui::Button("Delete"))
+                                            sheet.frames.erase(state);
+
+                                        ImGui::Separator();
+                                        ImGui::PopID();
+                                    }
+
+                                    static int newStateID = 0;
+                                    ImGui::InputInt("Add State", &newStateID);
+                                    if (ImGui::Button("Add"))
+                                    {
+                                        sheet.frames[newStateID] = { 0,0 };
+                                    }
+
+                                    ImGui::TreePop();
+                                }
+
+                                // Aspect helpers (use frame size)
+                                int frameW = img.widthPixels / std::max(1u, sheet.total_cols);
+                                int frameH = img.heightPixels / std::max(1u, sheet.total_rows);
+                                ImGui::Text("Resize to aspect ratio:");
+                                if (ImGui::Button("Width")) d.bgBaseSize.x = d.bgBaseSize.y * (float(frameW) / float(frameH));
+                                ImGui::SameLine();
+                                if (ImGui::Button("Height")) d.bgBaseSize.y = d.bgBaseSize.x * (float(frameH) / float(frameW));
+                            } break;
+
+                            default:
+                                ImGui::TextDisabled("No render info.");
+                                break;
+                            }
                         }
 
-                        switch (d.bgRenderData.GetRenderType())
+                        // === Profile UI ===
+                        ImGui::SeparatorText("Profile");
+                        ImGui::Checkbox("Show Profile", &d.profileEnabled);
+                        if (d.profileEnabled)
                         {
-                            // Shape Render
-                        case UIRenderType::Shape:
-                        {
-                            auto& shape = d.bgRenderData.GetShapeData();
-                            const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
-                            int currShape = (int)shape.shape;
-                            if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames)))
+                            ImGui::DragFloat("Profile Width", &d.profileBaseSize.x, 1.f);
+                            ImGui::DragFloat("Profile Height", &d.profileBaseSize.y, 1.f);
+                            ImGui::DragFloat("Profile Offset X", &d.profileOffset.x, 1.f);
+                            ImGui::DragFloat("Profile Offset Y", &d.profileOffset.y, 1.f);
+
+                            const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
+                            int currType = static_cast<int>(d.profileRenderData.GetRenderType());
+                            if (ImGui::Combo("Profile Render Type", &currType, typeNames, IM_ARRAYSIZE(typeNames)))
                             {
-                                shape.shape = (ButtonShape)currShape;
+                                d.profileRenderData.SetRenderType((UIRenderType)currType);
                             }
 
-                            float currCol[3] = { shape.color.r, shape.color.g, shape.color.b };
-                            if (ImGui::ColorEdit3("Color", currCol))
+                            // Profile display on which side
+                            const char* sideItems[] = { "Auto (from speaker)", "Left", "Right" };
+                            int displaySide = (int)d.profileSide;
+                            ImGui::Combo("Profile Display Side", &displaySide, sideItems, IM_ARRAYSIZE(sideItems));
+                            if (customOverriden)
                             {
-                                shape.color = { currCol[0], currCol[1], currCol[2] };
+                                d.profileSide = (DialogueConfig::ProfileDisplaySide)displaySide;
                             }
-                        } break;
-
-                        // Custom Quad Render
-                        case UIRenderType::CustomQuad:
-                        {
-                            auto& quad = d.bgRenderData.GetQuadData();
-                            ImGui::InputFloat2("v0", &quad.v0.x);
-                            ImGui::InputFloat2("v1", &quad.v1.x);
-                            ImGui::InputFloat2("v2", &quad.v2.x);
-                            ImGui::InputFloat2("v3", &quad.v3.x);
-
-                            if (ImGui::Button("Automatic quad by size"))
+                            else
                             {
-                                quad.v0 = { d.textBox.basePos.x - (0.5f * d.bgBaseSize.x), d.textBox.basePos.y - (0.5f * d.bgBaseSize.y) };
-                                quad.v1 = { d.textBox.basePos.x + (0.5f * d.bgBaseSize.x), d.textBox.basePos.y - (0.5f * d.bgBaseSize.y) };
-                                quad.v2 = { d.textBox.basePos.x + (0.5f * d.bgBaseSize.x), d.textBox.basePos.y + (0.5f * d.bgBaseSize.y) };
-                                quad.v3 = { d.textBox.basePos.x - (0.5f * d.bgBaseSize.x), d.textBox.basePos.y + (0.5f * d.bgBaseSize.y) };
-                            }
-                            float quadCol[3] = { quad.color.r, quad.color.g, quad.color.b };
-                            if (ImGui::ColorEdit3("Color", quadCol))
-                            {
-                                quad.color = { quadCol[0], quadCol[1], quadCol[2] };
-                            }
-                        } break;
-
-                        // Image Render
-                        case UIRenderType::Image:
-                        {
-                            auto& imgData = d.bgRenderData.GetImageData();
-                            Image& img = imgData.m_image;
-                            const auto& cache = Render::GetInstance().Get_TextureCache();
-
-                            static int selected = 0;
-                            std::vector<const char*> imgOptions;
-                            std::vector<GLuint> textureIDs;
-                            imgOptions.reserve(cache.size());
-                            for (auto const& [optname, optval] : cache)
-                            {
-                                imgOptions.push_back(optname.c_str());
-                                textureIDs.push_back(optval);
-                            }
-                            for (size_t i = 0; i < textureIDs.size(); i++)
-                            {
-                                if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
-                            }
-                            if (ImGui::Combo("BG Texture", &selected, imgOptions.data(), (int)imgOptions.size()))
-                            {
-                                img = CreateImage(imgOptions[selected]);
+                                d.profileSide = DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
                             }
 
+                            switch (d.profileRenderData.GetRenderType())
                             {
-                                GLuint texID = img.textureID;
-                                ImVec2 avail = ImGui::GetContentRegionAvail();
-                                float scale = img.widthPixels ? (avail.x / img.widthPixels) : 0.f;
-                                ImVec2 displaySize(img.widthPixels * scale, img.heightPixels * scale);
-                                ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
-                            }
-
-                            ImGui::Text("Resize to aspect ratio:");
-                            if (ImGui::Button("Width"))  d.bgBaseSize.x = d.bgBaseSize.y * ((float)img.widthPixels / (float)img.heightPixels);
-                            ImGui::SameLine();
-                            if (ImGui::Button("Height")) d.bgBaseSize.y = d.bgBaseSize.x * ((float)img.heightPixels / (float)img.widthPixels);
-                        } break;
-
-                        // Image Sheet Render
-                        case UIRenderType::ImageSheet:
-                        {
-                            auto& sheet = d.bgRenderData.GetImageSheetData();
-                            Image& img = sheet.m_image;
-
-                            const auto& cache = Render::GetInstance().Get_TextureCache();
-                            static int selected = 0;
-                            std::vector<const char*> imgOptions;
-                            std::vector<GLuint> textureIDs;
-                            imgOptions.reserve(cache.size());
-                            for (auto const& [optname, optval] : cache)
+                                // Shape Render
+                            case UIRenderType::Shape:
                             {
-                                imgOptions.push_back(optname.c_str());
-                                textureIDs.push_back(optval);
-                            }
-                            for (size_t i = 0; i < textureIDs.size(); i++)
-                            {
-                                if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
-                            }
-                            if (ImGui::Combo("Texture Drawn", &selected, imgOptions.data(), (int)imgOptions.size()))
-                            {
-                                img = CreateImage(imgOptions[selected]);
-                            }
-
-                            // display
-                            {
-                                GLuint texID = img.textureID;
-                                const float texW = (float)img.widthPixels;
-                                const float texH = (float)img.heightPixels;
-
-                                ImVec2 avail = ImGui::GetContentRegionAvail();
-
-                                float scale = (texW != 0) ? avail.x / texW : 0.f;
-
-                                ImVec2 displaySize(texW * scale, texH * scale);
-                                ImVec2 imagePos = ImGui::GetCursorScreenPos();
-
-                                ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
-
-                                ImDrawList* draw = ImGui::GetWindowDrawList();
-
-                                int rows = sheet.total_rows;
-                                int cols = sheet.total_cols;
-
-                                float cellW = displaySize.x / cols;
-                                float cellH = displaySize.y / rows;
-
-                                // vertical lines
-                                for (int c = 1; c < cols; ++c)
+                                auto& shape = d.profileRenderData.GetShapeData();
+                                const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
+                                int currShape = (int)shape.shape;
+                                if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames)))
                                 {
-                                    float x = imagePos.x + c * cellW;
-                                    draw->AddLine(ImVec2(x, imagePos.y),
-                                        ImVec2(x, imagePos.y + displaySize.y),
-                                        IM_COL32(255, 255, 255, 128));
+                                    shape.shape = (ButtonShape)currShape;
                                 }
 
-                                // horizontal lines
-                                for (int r = 1; r < rows; ++r)
+                                float currCol[3] = { shape.color.r, shape.color.g, shape.color.b };
+                                if (ImGui::ColorEdit3("Color", currCol))
                                 {
-                                    float y = imagePos.y + r * cellH;
-                                    draw->AddLine(ImVec2(imagePos.x, y),
-                                        ImVec2(imagePos.x + displaySize.x, y),
-                                        IM_COL32(255, 255, 255, 128));
+                                    shape.color = { currCol[0], currCol[1], currCol[2] };
                                 }
+                            } break;
 
-                                // highlight
-                                int r = sheet.frame_index.curr_row;
-                                int c = sheet.frame_index.curr_col;
-
-                                ImVec2 p0(
-                                    imagePos.x + c * cellW,
-                                    imagePos.y + r * cellH
-                                );
-                                ImVec2 p1(
-                                    imagePos.x + (c + 1) * cellW,
-                                    imagePos.y + (r + 1) * cellH
-                                );
-
-                                // Filled highlight
-                                draw->AddRectFilled(p0, p1, IM_COL32(255, 255, 0, 80));
-
-                                // Outline
-                                draw->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
-                            }
-
-                            // Render image based on selected row and column of the image sheet
-                            ImGui::InputInt("Rows", (int*)&sheet.total_rows);
-                            if (sheet.total_rows < 1) { sheet.total_rows = 1; }
-                            ImGui::InputInt("Columns", (int*)&sheet.total_cols);
-                            if (sheet.total_cols < 1) { sheet.total_cols = 1; }
-
-                            ImGui::Separator();
-
-                            ImGui::SliderInt("Current Row", (int*)&sheet.frame_index.curr_row, 0, (int)sheet.total_rows - 1);
-                            ImGui::SliderInt("Current Col", (int*)&sheet.frame_index.curr_col, 0, (int)sheet.total_cols - 1);
-
-
-                            sheet.total_cols = std::max(1u, sheet.total_cols);
-                            sheet.total_rows = std::max(1u, sheet.total_rows);
-
-                            // State Frames
-                            if (ImGui::TreeNode("State Frames"))
+                            // Custom Quad Render
+                            case UIRenderType::CustomQuad:
                             {
-                                for (auto& [state, idx] : sheet.frames)
+                                auto& quad = d.profileRenderData.GetQuadData();
+                                ImGui::InputFloat2("v0", &quad.v0.x);
+                                ImGui::InputFloat2("v1", &quad.v1.x);
+                                ImGui::InputFloat2("v2", &quad.v2.x);
+                                ImGui::InputFloat2("v3", &quad.v3.x);
+
+                                if (ImGui::Button("Automatic quad by size"))
                                 {
-                                    ImGui::PushID(state);
+                                    quad.v0 = { d.textBox.basePos.x - (0.5f * d.profileBaseSize.x), d.textBox.basePos.y - (0.5f * d.profileBaseSize.y) };
+                                    quad.v1 = { d.textBox.basePos.x + (0.5f * d.profileBaseSize.x), d.textBox.basePos.y - (0.5f * d.profileBaseSize.y) };
+                                    quad.v2 = { d.textBox.basePos.x + (0.5f * d.profileBaseSize.x), d.textBox.basePos.y + (0.5f * d.profileBaseSize.y) };
+                                    quad.v3 = { d.textBox.basePos.x - (0.5f * d.profileBaseSize.x), d.textBox.basePos.y + (0.5f * d.profileBaseSize.y) };
+                                }
+                                float quadCol[3] = { quad.color.r, quad.color.g, quad.color.b };
+                                if (ImGui::ColorEdit3("Color", quadCol))
+                                {
+                                    quad.color = { quadCol[0], quadCol[1], quadCol[2] };
+                                }
+                            } break;
 
-                                    ImGui::Text("State %u", state);
+                            // Image Render
+                            case UIRenderType::Image:
+                            {
+                                auto& imgData = d.profileRenderData.GetImageData();
+                                Image& img = imgData.m_image;
+                                const auto& cache = Render::GetInstance().Get_TextureCache();
 
-                                    ImGui::InputInt("Row", (int*)&idx.curr_row);
-                                    ImGui::InputInt("Col", (int*)&idx.curr_col);
-
-                                    idx.curr_row = std::clamp(idx.curr_row, 0u, sheet.total_rows - 1);
-                                    idx.curr_col = std::clamp(idx.curr_col, 0u, sheet.total_cols - 1);
-
-                                    if (ImGui::Button("Delete"))
-                                        sheet.frames.erase(state);
-
-                                    ImGui::Separator();
-                                    ImGui::PopID();
+                                static std::unordered_map<int, int> profileImageSelectedByDlg;
+                                int& selected = profileImageSelectedByDlg[d.ID];
+                                std::vector<const char*> imgOptions;
+                                std::vector<GLuint> textureIDs;
+                                imgOptions.reserve(cache.size());
+                                for (auto const& [optname, optval] : cache)
+                                {
+                                    imgOptions.push_back(optname.c_str());
+                                    textureIDs.push_back(optval);
+                                }
+                                for (size_t i = 0; i < textureIDs.size(); i++)
+                                {
+                                    if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
+                                }
+                                if (ImGui::Combo("Profile Texture", &selected, imgOptions.data(), (int)imgOptions.size()))
+                                {
+                                    img = CreateImage(imgOptions[selected]);
                                 }
 
-                                static int newStateID = 0;
-                                ImGui::InputInt("Add State", &newStateID);
-                                if (ImGui::Button("Add"))
                                 {
-                                    sheet.frames[newStateID] = { 0,0 };
+                                    GLuint texID = img.textureID;
+                                    ImVec2 avail = ImGui::GetContentRegionAvail();
+                                    float scale = img.widthPixels ? (avail.x / img.widthPixels) : 0.f;
+                                    ImVec2 displaySize(img.widthPixels * scale, img.heightPixels * scale);
+                                    ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
                                 }
 
-                                ImGui::TreePop();
+                                ImGui::Text("Resize to aspect ratio:");
+                                if (ImGui::Button("Width"))  d.profileBaseSize.x = d.profileBaseSize.y * ((float)img.widthPixels / (float)img.heightPixels);
+                                ImGui::SameLine();
+                                if (ImGui::Button("Height")) d.profileBaseSize.y = d.profileBaseSize.x * ((float)img.heightPixels / (float)img.widthPixels);
+                            } break;
+
+                            // Image Sheet Render
+                            case UIRenderType::ImageSheet:
+                            {
+                                auto& sheet = d.profileRenderData.GetImageSheetData();
+                                Image& img = sheet.m_image;
+
+                                const auto& cache = Render::GetInstance().Get_TextureCache();
+                                static std::unordered_map<int, int> profileImageSheetSelectedByDlg;
+                                int& selected = profileImageSheetSelectedByDlg[d.ID];
+                                std::vector<const char*> imgOptions;
+                                std::vector<GLuint> textureIDs;
+                                imgOptions.reserve(cache.size());
+                                for (auto const& [optname, optval] : cache)
+                                {
+                                    imgOptions.push_back(optname.c_str());
+                                    textureIDs.push_back(optval);
+                                }
+                                for (size_t i = 0; i < textureIDs.size(); i++)
+                                {
+                                    if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
+                                }
+                                if (ImGui::Combo("Texture Drawn", &selected, imgOptions.data(), (int)imgOptions.size()))
+                                {
+                                    img = CreateImage(imgOptions[selected]);
+                                }
+
+                                // display
+                                {
+                                    GLuint texID = img.textureID;
+                                    const float texW = (float)img.widthPixels;
+                                    const float texH = (float)img.heightPixels;
+
+                                    ImVec2 avail = ImGui::GetContentRegionAvail();
+
+                                    float scale = (texW != 0) ? avail.x / texW : 0.f;
+
+                                    ImVec2 displaySize(texW * scale, texH * scale);
+                                    ImVec2 imagePos = ImGui::GetCursorScreenPos();
+
+                                    ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
+
+                                    ImDrawList* draw = ImGui::GetWindowDrawList();
+
+                                    int rows = sheet.total_rows;
+                                    int cols = sheet.total_cols;
+
+                                    float cellW = displaySize.x / cols;
+                                    float cellH = displaySize.y / rows;
+
+                                    // vertical lines
+                                    for (int c = 1; c < cols; ++c)
+                                    {
+                                        float x = imagePos.x + c * cellW;
+                                        draw->AddLine(ImVec2(x, imagePos.y),
+                                            ImVec2(x, imagePos.y + displaySize.y),
+                                            IM_COL32(255, 255, 255, 128));
+                                    }
+
+                                    // horizontal lines
+                                    for (int r = 1; r < rows; ++r)
+                                    {
+                                        float y = imagePos.y + r * cellH;
+                                        draw->AddLine(ImVec2(imagePos.x, y),
+                                            ImVec2(imagePos.x + displaySize.x, y),
+                                            IM_COL32(255, 255, 255, 128));
+                                    }
+
+                                    // highlight
+                                    int r = sheet.frame_index.curr_row;
+                                    int c = sheet.frame_index.curr_col;
+
+                                    ImVec2 p0(
+                                        imagePos.x + c * cellW,
+                                        imagePos.y + r * cellH
+                                    );
+                                    ImVec2 p1(
+                                        imagePos.x + (c + 1) * cellW,
+                                        imagePos.y + (r + 1) * cellH
+                                    );
+
+                                    // Filled highlight
+                                    draw->AddRectFilled(p0, p1, IM_COL32(255, 255, 0, 80));
+
+                                    // Outline
+                                    draw->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
+                                }
+
+                                // Render image based on selected row and column of the image sheet
+                                ImGui::InputInt("Rows", (int*)&sheet.total_rows);
+                                if (sheet.total_rows < 1) { sheet.total_rows = 1; }
+                                ImGui::InputInt("Columns", (int*)&sheet.total_cols);
+                                if (sheet.total_cols < 1) { sheet.total_cols = 1; }
+
+                                ImGui::Separator();
+
+                                ImGui::SliderInt("Current Row", (int*)&sheet.frame_index.curr_row, 0, (int)sheet.total_rows - 1);
+                                ImGui::SliderInt("Current Col", (int*)&sheet.frame_index.curr_col, 0, (int)sheet.total_cols - 1);
+
+
+                                sheet.total_cols = std::max(1u, sheet.total_cols);
+                                sheet.total_rows = std::max(1u, sheet.total_rows);
+
+                                // State Frames
+                                if (ImGui::TreeNode("State Frames"))
+                                {
+                                    for (auto& [state, idx] : sheet.frames)
+                                    {
+                                        ImGui::PushID(state);
+
+                                        ImGui::Text("State %u", state);
+
+                                        ImGui::InputInt("Row", (int*)&idx.curr_row);
+                                        ImGui::InputInt("Col", (int*)&idx.curr_col);
+
+                                        idx.curr_row = std::clamp(idx.curr_row, 0u, sheet.total_rows - 1);
+                                        idx.curr_col = std::clamp(idx.curr_col, 0u, sheet.total_cols - 1);
+
+                                        if (ImGui::Button("Delete"))
+                                            sheet.frames.erase(state);
+
+                                        ImGui::Separator();
+                                        ImGui::PopID();
+                                    }
+
+                                    static int newStateID = 0;
+                                    ImGui::InputInt("Add State", &newStateID);
+                                    if (ImGui::Button("Add"))
+                                    {
+                                        sheet.frames[newStateID] = { 0,0 };
+                                    }
+
+                                    ImGui::TreePop();
+                                }
+
+                                // Aspect helpers (use frame size)
+                                int frameW = img.widthPixels / std::max(1u, sheet.total_cols);
+                                int frameH = img.heightPixels / std::max(1u, sheet.total_rows);
+                                ImGui::Text("Resize to aspect ratio:");
+                                if (ImGui::Button("Width")) d.profileBaseSize.x = d.profileBaseSize.y * (float(frameW) / float(frameH));
+                                ImGui::SameLine();
+                                if (ImGui::Button("Height")) d.profileBaseSize.y = d.profileBaseSize.x * (float(frameH) / float(frameW));
+                            } break;
+
+                            default:
+                                ImGui::TextDisabled("No render info.");
+                                break;
                             }
-
-                            // Aspect helpers (use frame size)
-                            int frameW = img.widthPixels / std::max(1u, sheet.total_cols);
-                            int frameH = img.heightPixels / std::max(1u, sheet.total_rows);
-                            ImGui::Text("Resize to aspect ratio:");
-                            if (ImGui::Button("Width")) d.bgBaseSize.x = d.bgBaseSize.y * (float(frameW) / float(frameH));
-                            ImGui::SameLine();
-                            if (ImGui::Button("Height")) d.bgBaseSize.y = d.bgBaseSize.x * (float(frameH) / float(frameW));
-                        } break;
-
-                        default:
-                            ImGui::TextDisabled("No render info.");
-                            break;
                         }
                     }
-
-                    // DIALOGUE PROFILE
-
-                    ImGui::SeparatorText("Profile");
-                    ImGui::Checkbox("Show Profile", &d.profileEnabled);
-                    if (d.profileEnabled)
+                    else
                     {
-                        ImGui::SliderFloat("Profile Width", &d.profileBaseSize.x, 0.f, 1920.f);
-                        ImGui::SliderFloat("Profile Height", &d.profileBaseSize.y, 0.f, 1080.f);
-                        ImGui::SliderFloat("Profile Offset X", &d.profileOffset.x, 0.f, 1920.f);
-                        ImGui::SliderFloat("Profile Offset Y", &d.profileOffset.y, 0.f, 1080.f);
-
-                        const char* typeNames[] = { "None", "Shape", "CustomQuad", "Image", "ImageSheet" };
-                        int currType = (int)d.profileRenderData.GetRenderType();
-                        if (ImGui::Combo("Profile Render Type", &currType, typeNames, IM_ARRAYSIZE(typeNames)))
-                        {
-                            d.profileRenderData.SetRenderType((UIRenderType)currType);
-                        }
-
-                        switch (d.profileRenderData.GetRenderType())
-                        {
-                            // Shape Render
-                        case UIRenderType::Shape:
-                        {
-                            auto& shape = d.profileRenderData.GetShapeData();
-                            const char* shapeNames[] = { "Rectangle", "Rounded", "Circle" };
-                            int currShape = (int)shape.shape;
-                            if (ImGui::Combo("Shape", &currShape, shapeNames, IM_ARRAYSIZE(shapeNames)))
-                            {
-                                shape.shape = (ButtonShape)currShape;
-                            }
-
-                            float currCol[3] = { shape.color.r, shape.color.g, shape.color.b };
-                            if (ImGui::ColorEdit3("Color", currCol))
-                            {
-                                shape.color = { currCol[0], currCol[1], currCol[2] };
-                            }
-                        } break;
-
-                        // Custom Quad Render
-                        case UIRenderType::CustomQuad:
-                        {
-                            auto& quad = d.profileRenderData.GetQuadData();
-                            ImGui::InputFloat2("v0", &quad.v0.x);
-                            ImGui::InputFloat2("v1", &quad.v1.x);
-                            ImGui::InputFloat2("v2", &quad.v2.x);
-                            ImGui::InputFloat2("v3", &quad.v3.x);
-
-                            if (ImGui::Button("Automatic quad by size"))
-                            {
-                                quad.v0 = { d.textBox.basePos.x - (0.5f * d.profileBaseSize.x), d.textBox.basePos.y - (0.5f * d.profileBaseSize.y) };
-                                quad.v1 = { d.textBox.basePos.x + (0.5f * d.profileBaseSize.x), d.textBox.basePos.y - (0.5f * d.profileBaseSize.y) };
-                                quad.v2 = { d.textBox.basePos.x + (0.5f * d.profileBaseSize.x), d.textBox.basePos.y + (0.5f * d.profileBaseSize.y) };
-                                quad.v3 = { d.textBox.basePos.x - (0.5f * d.profileBaseSize.x), d.textBox.basePos.y + (0.5f * d.profileBaseSize.y) };
-                            }
-                            float quadCol[3] = { quad.color.r, quad.color.g, quad.color.b };
-                            if (ImGui::ColorEdit3("Color", quadCol))
-                            {
-                                quad.color = { quadCol[0], quadCol[1], quadCol[2] };
-                            }
-                        } break;
-
-                        // Image Render
-                        case UIRenderType::Image:
-                        {
-                            auto& imgData = d.profileRenderData.GetImageData();
-                            Image& img = imgData.m_image;
-                            const auto& cache = Render::GetInstance().Get_TextureCache();
-
-                            static int selected = 0;
-                            std::vector<const char*> imgOptions;
-                            std::vector<GLuint> textureIDs;
-                            imgOptions.reserve(cache.size());
-                            for (auto const& [optname, optval] : cache)
-                            {
-                                imgOptions.push_back(optname.c_str());
-                                textureIDs.push_back(optval);
-                            }
-                            for (size_t i = 0; i < textureIDs.size(); i++)
-                            {
-                                if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
-                            }
-                            if (ImGui::Combo("Profile Texture", &selected, imgOptions.data(), (int)imgOptions.size()))
-                            {
-                                img = CreateImage(imgOptions[selected]);
-                            }
-
-                            {
-                                GLuint texID = img.textureID;
-                                ImVec2 avail = ImGui::GetContentRegionAvail();
-                                float scale = img.widthPixels ? (avail.x / img.widthPixels) : 0.f;
-                                ImVec2 displaySize(img.widthPixels * scale, img.heightPixels * scale);
-                                ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
-                            }
-
-                            ImGui::Text("Resize to aspect ratio:");
-                            if (ImGui::Button("Width"))  d.profileBaseSize.x = d.profileBaseSize.y * ((float)img.widthPixels / (float)img.heightPixels);
-                            ImGui::SameLine();
-                            if (ImGui::Button("Height")) d.profileBaseSize.y = d.profileBaseSize.x * ((float)img.heightPixels / (float)img.widthPixels);
-                        } break;
-
-                        // Image Sheet Render
-                        case UIRenderType::ImageSheet:
-                        {
-                            auto& sheet = d.profileRenderData.GetImageSheetData();
-                            Image& img = sheet.m_image;
-
-                            const auto& cache = Render::GetInstance().Get_TextureCache();
-                            static int selected = 0;
-                            std::vector<const char*> imgOptions;
-                            std::vector<GLuint> textureIDs;
-                            imgOptions.reserve(cache.size());
-                            for (auto const& [optname, optval] : cache)
-                            {
-                                imgOptions.push_back(optname.c_str());
-                                textureIDs.push_back(optval);
-                            }
-                            for (size_t i = 0; i < textureIDs.size(); i++)
-                            {
-                                if (textureIDs[i] == img.textureID) { selected = (int)i; break; }
-                            }
-                            if (ImGui::Combo("Texture Drawn", &selected, imgOptions.data(), (int)imgOptions.size()))
-                            {
-                                img = CreateImage(imgOptions[selected]);
-                            }
-
-                            // display
-                            {
-                                GLuint texID = img.textureID;
-                                const float texW = (float)img.widthPixels;
-                                const float texH = (float)img.heightPixels;
-
-                                ImVec2 avail = ImGui::GetContentRegionAvail();
-
-                                float scale = (texW != 0) ? avail.x / texW : 0.f;
-
-                                ImVec2 displaySize(texW * scale, texH * scale);
-                                ImVec2 imagePos = ImGui::GetCursorScreenPos();
-
-                                ImGui::Image((ImTextureID)(intptr_t)texID, displaySize, ImVec2(0, 1), ImVec2(1, 0));
-
-                                ImDrawList* draw = ImGui::GetWindowDrawList();
-
-                                int rows = sheet.total_rows;
-                                int cols = sheet.total_cols;
-
-                                float cellW = displaySize.x / cols;
-                                float cellH = displaySize.y / rows;
-
-                                // vertical lines
-                                for (int c = 1; c < cols; ++c)
-                                {
-                                    float x = imagePos.x + c * cellW;
-                                    draw->AddLine(ImVec2(x, imagePos.y),
-                                        ImVec2(x, imagePos.y + displaySize.y),
-                                        IM_COL32(255, 255, 255, 128));
-                                }
-
-                                // horizontal lines
-                                for (int r = 1; r < rows; ++r)
-                                {
-                                    float y = imagePos.y + r * cellH;
-                                    draw->AddLine(ImVec2(imagePos.x, y),
-                                        ImVec2(imagePos.x + displaySize.x, y),
-                                        IM_COL32(255, 255, 255, 128));
-                                }
-
-                                // highlight
-                                int r = sheet.frame_index.curr_row;
-                                int c = sheet.frame_index.curr_col;
-
-                                ImVec2 p0(
-                                    imagePos.x + c * cellW,
-                                    imagePos.y + r * cellH
-                                );
-                                ImVec2 p1(
-                                    imagePos.x + (c + 1) * cellW,
-                                    imagePos.y + (r + 1) * cellH
-                                );
-
-                                // Filled highlight
-                                draw->AddRectFilled(p0, p1, IM_COL32(255, 255, 0, 80));
-
-                                // Outline
-                                draw->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
-                            }
-
-                            // Render image based on selected row and column of the image sheet
-                            ImGui::InputInt("Rows", (int*)&sheet.total_rows);
-                            if (sheet.total_rows < 1) { sheet.total_rows = 1; }
-                            ImGui::InputInt("Columns", (int*)&sheet.total_cols);
-                            if (sheet.total_cols < 1) { sheet.total_cols = 1; }
-
-                            ImGui::Separator();
-
-                            ImGui::SliderInt("Current Row", (int*)&sheet.frame_index.curr_row, 0, (int)sheet.total_rows - 1);
-                            ImGui::SliderInt("Current Col", (int*)&sheet.frame_index.curr_col, 0, (int)sheet.total_cols - 1);
-
-
-                            sheet.total_cols = std::max(1u, sheet.total_cols);
-                            sheet.total_rows = std::max(1u, sheet.total_rows);
-
-                            // State Frames
-                            if (ImGui::TreeNode("State Frames"))
-                            {
-                                for (auto& [state, idx] : sheet.frames)
-                                {
-                                    ImGui::PushID(state);
-
-                                    ImGui::Text("State %u", state);
-
-                                    ImGui::InputInt("Row", (int*)&idx.curr_row);
-                                    ImGui::InputInt("Col", (int*)&idx.curr_col);
-
-                                    idx.curr_row = std::clamp(idx.curr_row, 0u, sheet.total_rows - 1);
-                                    idx.curr_col = std::clamp(idx.curr_col, 0u, sheet.total_cols - 1);
-
-                                    if (ImGui::Button("Delete"))
-                                        sheet.frames.erase(state);
-
-                                    ImGui::Separator();
-                                    ImGui::PopID();
-                                }
-
-                                static int newStateID = 0;
-                                ImGui::InputInt("Add State", &newStateID);
-                                if (ImGui::Button("Add"))
-                                {
-                                    sheet.frames[newStateID] = { 0,0 };
-                                }
-
-                                ImGui::TreePop();
-                            }
-
-                            // Aspect helpers (use frame size)
-                            int frameW = img.widthPixels / std::max(1u, sheet.total_cols);
-                            int frameH = img.heightPixels / std::max(1u, sheet.total_rows);
-                            ImGui::Text("Resize to aspect ratio:");
-                            if (ImGui::Button("Width")) d.profileBaseSize.x = d.profileBaseSize.y * (float(frameW) / float(frameH));
-                            ImGui::SameLine();
-                            if (ImGui::Button("Height")) d.profileBaseSize.y = d.profileBaseSize.x * (float(frameH) / float(frameW));
-                        } break;
-
-                        default:
-                            ImGui::TextDisabled("No render info.");
-                            break;
-                        }
+                        ImGui::SeparatorText("Background");
+                        ImGui::TextDisabled("Scene-driven (locked)");
+                        ImGui::SeparatorText("Profile");
+                        ImGui::TextDisabled("Scene-driven (locked)");
                     }
 
                     ImGui::Separator();
@@ -3932,6 +4313,10 @@ void ImGuiSystem::Update(float dt)
 
                         perDlgSceneIdxById.erase(erasedID);
                         perDlgColorOverrideById.erase(erasedID);
+                        perDlgCustomOverrideById.erase(erasedID);
+                        perDlgPrevCustomOverrideById.erase(erasedID);
+                        perDlgOriginalSettingsCapturedById.erase(erasedID);
+                        perDlgOriginalSettingsById.erase(erasedID);
 
                         uiSelectedIndex = -1;
                         uiSelectedType = SelectedType::None;
@@ -4564,6 +4949,11 @@ void ImGuiSystem::Update(float dt)
                             dst.bgEnabled = src.bgEnabled;
                             dst.bgBaseSize = src.bgBaseSize;
                             dst.bgRenderData = src.bgRenderData;
+
+                            dst.profileEnabled = src.profileEnabled;
+                            dst.profileBaseSize = src.profileBaseSize;
+                            dst.profileOffset = src.profileOffset;
+                            dst.profileRenderData = src.profileRenderData;
                         }
                         else
                         {

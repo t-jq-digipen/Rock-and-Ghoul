@@ -148,6 +148,10 @@ struct SavedScene {
         Vec2 profileSize = { 200.f, 200.f };
         Vec2 profileOffset = { 0.f, 0.f };
         std::string profileRenderData{ "{}" };
+
+        bool customOverride = false;
+        bool speakerOverrideEnabled = false;
+        int speakerOverrideID;
         
         bool isVisible;
     };
