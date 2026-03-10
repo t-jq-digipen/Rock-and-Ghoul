@@ -1000,6 +1000,7 @@ namespace ObstacleScript
 
 	inline void Update(Entity eID, float dt)
 	{
+		if (ReplayManager::Get().IsPlaying()) return;
 		(void)dt;
 
 		Registry& registry = Registry::Get();
@@ -1213,6 +1214,7 @@ namespace GhoulScript {
 	}
 
 	void Update(Entity eID, float dt) {
+		if (ReplayManager::Get().IsPlaying()) return;
 		if (eID != ghoulEntity || ghoulEntity == INVALID_ENTITY) {
 			return; 
 		}

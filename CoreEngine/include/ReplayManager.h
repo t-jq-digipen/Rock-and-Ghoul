@@ -91,6 +91,14 @@ private:
         float burnTickTimer{ 0.f };
         float originalMoveSpeed{ 0.f };
         bool isStunned{ false };
+
+        // identity / recreation
+        bool hasTag{ false };
+        int tagValue{ 0 };
+
+        bool canRecreate{ false };
+        std::string recreatePrefab;
+        std::string archetypeName;
     };
 
     struct SpellSlotSnapshot
@@ -132,7 +140,8 @@ private:
 private:
     int OldestIndex() const;
     int IndexAt(int logicalIndex) const;
-    //std::unordered_map<Entity, Entity> replayEntityMap;
+    std::unordered_map<Entity, Entity> replayEntityMap;
+    Entity ResolvePlaybackEntity(const EntitySnapshot& s);
 };
 
 #endif

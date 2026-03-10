@@ -33,6 +33,7 @@ void ReplayManager::Reset()
     writeIdx = 0;
     validCount = 0;
     playCursor = 0;
+    replayEntityMap.clear();
     /*m_knownEntities.clear();
     m_pendingSpawns.clear();
     m_playbackIDMap.clear();*/
@@ -55,10 +56,12 @@ void ReplayManager::Init()
 
 void ReplayManager::StartRecording()
 {
+    replayEntityMap.clear();
     mode = Mode::Recording;
     writeIdx = 0;
     validCount = 0;
     playCursor = 0;
+   
 
     if ((int)ring.size() != capacity)
     {
@@ -78,6 +81,7 @@ void ReplayManager::StopRecording()
 void ReplayManager::StartPlayback()
 {
     if (validCount <= 0) return;
+    replayEntityMap.clear();
     mode = Mode::Playback;
     playCursor = 0;
 }
@@ -85,6 +89,7 @@ void ReplayManager::StartPlayback()
 void ReplayManager::StopPlayback()
 {
     if (mode == Mode::Playback) mode = Mode::Off;
+    replayEntityMap.clear();
 
     //SceneManager::Get().ReloadScene();
 }
@@ -202,6 +207,43 @@ void ReplayManager::CaptureTick()
             s.isStunned = se.isStunned;
         }
 
+        /*if (reg.Has_Component<TagComponent>(e))
+        {
+            auto& tag = reg.Get_Component<TagComponent>(e);
+            s.hasTag = true;
+            s.tagValue = static_cast<int>(tag.tag);
+
+            // first attempt: recreate enemies only
+            if (tag.tag == T_ENEMY)
+            {
+                s.canRecreate = true;
+
+                // replace this with the actual prefab for your enemy
+                s.recreatePrefab = "Spirit.json";
+            }
+        }*/
+
+        if (reg.Has_Component<BehaviourComponent>(e))
+        {
+            auto& bc = reg.Get_Component<BehaviourComponent>(e);
+
+            if (bc.HasScript("ObstacleScript"))
+            {
+                s.canRecreate = true;
+                s.recreatePrefab = "Speaker.json";
+            }
+            else if (bc.HasScript("SpiritScript"))
+            {
+                s.canRecreate = true;
+                s.recreatePrefab = "Spirit.json";
+            }
+            else if (bc.HasScript("ManfredEnemy"))
+            {
+                s.canRecreate = true;
+                s.recreatePrefab = "ghoul.json"; // replace with actual prefab
+            }
+        }
+
  
 
 
@@ -242,6 +284,39 @@ void ReplayManager::CaptureTick()
    
 }
 
+Entity ReplayManager::ResolvePlaybackEntity(const EntitySnapshot& s)
+{
+    Registry& reg = Registry::Get();
+
+    if (reg.Has_Component<TransformComponent>(s.id))
+        return s.id;
+
+    auto it = replayEntityMap.find(s.id);
+    if (it != replayEntityMap.end())
+    {
+        if (reg.Has_Component<TransformComponent>(it->second))
+            return it->second;
+    }
+
+    if (s.canRecreate && !s.recreatePrefab.empty())
+    {
+        Entity newE = JsonLoad::LoadEntityFromFile(
+            FilePath::PREFABS_FOLDER + s.recreatePrefab,
+            s.px, s.py
+        );
+
+        if (newE != INVALID_ENTITY)
+        {
+            replayEntityMap[s.id] = newE;
+            std::cout << "[Replay] Recreated entity " << s.id
+                << " -> " << newE
+                << " from " << s.recreatePrefab << "\n";
+            return newE;
+        }
+    }
+
+    return INVALID_ENTITY;
+}
 
 void ReplayManager::ApplyTick()
 {
@@ -262,17 +337,24 @@ void ReplayManager::ApplyTick()
 
     for (const EntitySnapshot& s : frame.entities)
     {
-        if (!reg.Has_Component<TransformComponent>(s.id))
+        /*if (!reg.Has_Component<TransformComponent>(s.id))
             continue;
 
-        auto& tc = reg.Get_Component<TransformComponent>(s.id);
+        auto& tc = reg.Get_Component<TransformComponent>(s.id);*/
+
+        Entity target = ResolvePlaybackEntity(s);
+        if (target == INVALID_ENTITY)
+            continue;
+
+        auto& tc = reg.Get_Component<TransformComponent>(target);
+
         tc.pos.x = s.px;
         tc.pos.y = s.py;
         tc.scale.x = s.sx;
         tc.scale.y = s.sy;
         tc.rot = s.rot;
 
-        if (s.hasPhysics && reg.Has_Component<Physics::PhysicsComponent>(s.id))
+        /*if (s.hasPhysics && reg.Has_Component<Physics::PhysicsComponent>(s.id))
         {
             auto& phys = reg.Get_Component<Physics::PhysicsComponent>(s.id);
             phys.Set_Vel({ s.vx, s.vy });
@@ -330,6 +412,70 @@ void ReplayManager::ApplyTick()
         if (reg.Has_Component<TagComponent>(s.id))
         {
             auto& tag = reg.Get_Component<TagComponent>(s.id);
+            if (tag.tag == T_PLAYER)
+            {
+                foundPlayer = true;
+                playerX = s.px;
+                playerY = s.py;
+            }
+        }*/
+
+        if (s.hasPhysics && reg.Has_Component<Physics::PhysicsComponent>(target))
+        {
+            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(target);
+            phys.Set_Vel({ s.vx, s.vy });
+        }
+
+        if (s.hasMovement && reg.Has_Component<Movement::MovementComponent>(target))
+        {
+            auto& mv = reg.Get_Component<Movement::MovementComponent>(target);
+            mv.SetIsMoving(s.isMoving);
+            mv.SetMovementDirection({ s.mdx, s.mdy });
+            mv.SetInputDirection(static_cast<Movement::InputDirection>(s.inputDir));
+        }
+
+        if (s.hasAnim && reg.Has_Component<RenderComponent>(target))
+        {
+            auto& rc = reg.Get_Component<RenderComponent>(target);
+            if (rc.GetRenderType() == RT_SPRITESHEET)
+            {
+                auto& ss = rc.GetSpriteSheet();
+                if ((unsigned int)ss.GetCurrentState() != s.animState)
+                    ss.SetState(s.animState);
+                ss.SetCurrentCol(s.animCol);
+                ss.SetAnimTimer(s.animTimer);
+                ss.Sprite().SetFlipX(s.animFlipX);
+                ss.UpdateUV();
+            }
+        }
+
+        if (s.hasHealth && reg.Has_Component<HealthComponent>(target))
+        {
+            auto& hp = reg.Get_Component<HealthComponent>(target);
+            hp.currhp = s.currHp;
+            hp.maxhp = s.maxHp;
+        }
+
+        if (s.hasLifetime && reg.Has_Component<LifetimeComponent>(target))
+        {
+            auto& lt = reg.Get_Component<LifetimeComponent>(target);
+            lt.age = s.age;
+            lt.lifetime = s.lifetime;
+        }
+
+        if (s.hasStatus && reg.Has_Component<StatusEffectComponent>(target))
+        {
+            auto& se = reg.Get_Component<StatusEffectComponent>(target);
+            se.activeEffect = static_cast<Element>(s.activeEffect);
+            se.effectTimer = s.effectTimer;
+            se.burnTickTimer = s.burnTickTimer;
+            se.originalMoveSpeed = s.originalMoveSpeed;
+            se.isStunned = s.isStunned;
+        }
+
+        if (reg.Has_Component<TagComponent>(target))
+        {
+            auto& tag = reg.Get_Component<TagComponent>(target);
             if (tag.tag == T_PLAYER)
             {
                 foundPlayer = true;

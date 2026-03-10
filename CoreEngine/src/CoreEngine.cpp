@@ -250,7 +250,7 @@ void CoreEngine::Run()
         glfwPollEvents();
         
         //testing of replay
-        if (glfwGetKey(GLApp::ptr_window, GLFW_KEY_F9) == GLFW_PRESS)
+        /*if (glfwGetKey(GLApp::ptr_window, GLFW_KEY_F9) == GLFW_PRESS)
             replay.StartRecording();
 
         if (glfwGetKey(GLApp::ptr_window, GLFW_KEY_F10) == GLFW_PRESS)
@@ -260,7 +260,7 @@ void CoreEngine::Run()
         {
             replay.StopPlayback();
             replay.StopRecording();
-        }
+        }*/
 
 
         float dt = static_cast<float>(frameRate.GetDeltaTime());

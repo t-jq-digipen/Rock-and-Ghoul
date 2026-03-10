@@ -61,6 +61,7 @@
 #include "SceneManager.h"
 #include "ImGuizmo.h"
 #include "UndoSystem.h"
+#include "ReplayManager.h"
 
 // ========================================================
 // File-Local Static Variables (Editor State)
@@ -8200,7 +8201,7 @@ void ImGuiSystem::ShowPrefabControls()
 
 
 //play stop button
-void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
+/*void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 {
     ImGui::SeparatorText("Simulation Controls");
 
@@ -8298,6 +8299,196 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
         isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
         isPlaying ? "PLAYING" : "EDITING"
     );
+}*/
+
+// play / stop / replay buttons
+void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
+{
+    ImGui::SeparatorText("Simulation Controls");
+
+    float panelWidth = ImGui::GetContentRegionAvail().x;
+    float buttonWidth = 80.f;
+    float spacing = 16.f;
+
+    SceneManager& sm = SceneManager::Get();
+    ReplayManager& replay = ReplayManager::Get();
+
+    bool inEdit = sm.inEditMode;
+    bool inDialogue = GuiSystem::Get().GetDialogueGate();
+    bool inCutscene = sm.IsCutscenePlaying();
+    bool paused = sm.IsPaused();
+    bool inGameplayScene = (sm.GetSceneType() == SceneType::ST_GAME);
+
+    bool canUseReplayControls = !inEdit && inGameplayScene && !paused && !inDialogue && !inCutscene;
+
+    // ======================================================
+    // ROW 1 : PLAY / STOP
+    // ======================================================
+    {
+        float totalWidth = buttonWidth * 2 + spacing;
+        //float totalWidth = buttonWidth * 5 + spacing * 4;
+        float startX = (panelWidth - totalWidth) * 0.5f;
+        ImGui::SetCursorPosX(startX);
+
+        // ---------------- PLAY ----------------
+        if (!inEdit) { ImGui::BeginDisabled(); }
+        if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
+        {
+            selectedEntity = INVALID_ENTITY;
+
+            // Set GameViewRect FIRST before mode switch
+            GameViewRect rect;
+            rect.x = 0.0f;
+            rect.y = 0.0f;
+            rect.width = static_cast<float>(GLApp::width);
+            rect.height = static_cast<float>(GLApp::height);
+            GuiSystem::Get().SetGameViewRect(rect);
+
+            // Enter play mode
+            sm.EnterPlayMode();
+
+            Camera& cam = Camera::GetInstance();
+            cam.SetBounds(sceneMin, sceneMax);
+            cam.SetPosition(camSpawnPos);
+            cam.SetZoom(camSpawnZoom);
+
+            SavedScene::SavedCamera camSet;
+            camSet.pos = cam.GetPosition();
+            camSet.zoom = cam.GetZoom();
+            camSet.worldMin = cam.GetWorldMin();
+            camSet.worldMax = cam.GetWorldMax();
+
+            sm.SaveScene(sm.GetTempScenePath(), camSet);
+
+            // Optional: prepare replay fresh for this run
+            replay.Reset();
+
+            std::cout << "[Editor] Gameplay started.\n";
+            isPlaying = true;
+        }
+        if (!inEdit) { ImGui::EndDisabled(); }
+
+        ImGui::SameLine(0, spacing);
+
+        // ---------------- STOP ----------------
+        if (inEdit) { ImGui::BeginDisabled(); }
+        if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
+        {
+            // stop replay first
+            replay.StopRecording();
+            replay.StopPlayback();
+            replay.Reset();
+
+            // Set GameViewRect FIRST before mode switch
+            GameViewRect rect;
+            rect.x = 0.0f;
+            rect.y = 0.0f;
+            rect.width = static_cast<float>(GLApp::width);
+            rect.height = static_cast<float>(GLApp::height);
+            GuiSystem::Get().SetGameViewRect(rect);
+
+            // Exit play mode
+            sm.EnterEditMode();
+
+            // Reload gameplay entities from temp
+            JsonLoad::ClearAllEntities();
+            JsonLoad::LoadScene(sm.GetTempScenePath());
+
+            // Restore editor camera
+            Camera& cam = Camera::GetInstance();
+            camSpawnPos = cam.GetPosition();
+            camSpawnZoom = cam.GetZoom();
+            sceneMin = cam.GetWorldMin();
+            sceneMax = cam.GetWorldMax();
+            sceneSize = sceneMax - sceneMin;
+
+            cam.SetMode(Camera::Mode::EDITOR);
+            cam.ResetToCenter();
+
+            ImGuiSystem::selectedEntity = INVALID_ENTITY;
+
+            std::cout << "[Editor] Gameplay stopped.\n";
+            isPlaying = false;
+        }
+        if (inEdit) { ImGui::EndDisabled(); }
+
+        // Status text
+        ImGui::SameLine(spacing * 2);
+        ImGui::TextColored(
+            isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
+            isPlaying ? "PLAYING" : "EDITING"
+        );
+    }
+
+    // ======================================================
+    // ROW 2 : RECORD / STOP REC / PLAYBACK
+    // ======================================================
+    ImGui::Spacing();
+
+    {
+        float totalWidth = buttonWidth * 3 + spacing * 2;
+        float startX = (panelWidth - totalWidth) * 0.5f;
+        ImGui::SetCursorPosX(startX);
+
+        // ---------------- RECORD ----------------
+        bool disableRecord = !canUseReplayControls || replay.IsRecording() || replay.IsPlaying();
+        if (disableRecord) ImGui::BeginDisabled();
+
+        if (ImGui::Button("Record", ImVec2(buttonWidth, 0)))
+        {
+            replay.StartRecording();
+            std::cout << "[Replay] Recording started.\n";
+        }
+
+        if (disableRecord) ImGui::EndDisabled();
+
+        ImGui::SameLine(0, spacing);
+
+        // ---------------- STOP RECORD ----------------
+        bool disableStopRec = !canUseReplayControls || !replay.IsRecording();
+        if (disableStopRec) ImGui::BeginDisabled();
+
+        if (ImGui::Button("StopRec", ImVec2(buttonWidth, 0)))
+        {
+            replay.StopRecording();
+            std::cout << "[Replay] Recording stopped.\n";
+        }
+
+        if (disableStopRec) ImGui::EndDisabled();
+
+        ImGui::SameLine(0, spacing);
+
+        // ---------------- PLAYBACK ----------------
+        bool disablePlayback = !canUseReplayControls || replay.IsRecording() || replay.IsPlaying();
+        if (disablePlayback) ImGui::BeginDisabled();
+
+        if (ImGui::Button("Playback", ImVec2(buttonWidth, 0)))
+        {
+            replay.StartPlayback();
+            std::cout << "[Replay] Playback started.\n";
+        }
+
+        if (disablePlayback) ImGui::EndDisabled();
+
+    }
+
+    // Replay status
+    ImGui::Spacing();
+    float statusWidth = 180.f;
+    ImGui::SetCursorPosX((panelWidth - statusWidth) * 0.5f);
+
+    if (replay.IsRecording())
+    {
+        ImGui::TextColored(ImVec4(1.f, 0.2f, 0.2f, 1.f), "Replay: RECORDING");
+    }
+    else if (replay.IsPlaying())
+    {
+        ImGui::TextColored(ImVec4(0.2f, 0.7f, 1.f, 1.f), "Replay: PLAYBACK");
+    }
+    else
+    {
+        ImGui::TextDisabled("Replay: IDLE");
+    }
 }
 
 void ImGuiSystem::ShowLayerCollisionMatrix()
