@@ -984,7 +984,11 @@ void RenderSystem::Update(float dt) {
         wasPaused = false;
     }
 
-    Render::GetInstance().UpdateProjection();
+    // Menu scenes: use virtual 1920x1080 projection so entity positions (stored in virtual
+    // space) render correctly
+    // Game/other scenes: use actual window dimensions so the camera covers the right area.
+    bool isMenuScene = (SceneManager::Get().GetSceneType() == ST_MENU);
+    Render::GetInstance().UpdateProjection(isMenuScene);
    // renderer.ClearBackground({ 0.05f, 0.0f, 0.1f, 1.0f });
     // ===== DRAW BACKGROUND IF SET =====
 
@@ -1623,6 +1627,9 @@ void RenderSystem::Update(float dt) {
         renderInstance.FlushBatch();
     }
     renderer.useCamera = camcheck;
+
+    // Reset projection to actual screen dimensions
+    Render::GetInstance().UpdateProjection(false);
 
 
     //Draw in the correct order

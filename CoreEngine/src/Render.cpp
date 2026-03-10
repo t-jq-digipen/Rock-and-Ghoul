@@ -195,13 +195,21 @@ void Render::ClearBackground(const Colour4& color) {
     glClearColor(color.r, color.g, color.b, color.a);
     glClear(GL_COLOR_BUFFER_BIT);
 }
-void Render::UpdateProjection()
+void Render::UpdateProjection(bool useVirtual)
 {
-    projection = glm::ortho(
-        0.0f, static_cast<float>(GLApp::width),
-        0.0f, static_cast<float>(GLApp::height),
-        -1.0f, 1.0f
-    );
+    if (useVirtual) {
+        projection = glm::ortho(
+            0.0f, static_cast<float>(GLApp::VIRTUAL_W),
+            0.0f, static_cast<float>(GLApp::VIRTUAL_H),
+            -1.0f, 1.0f
+        );
+    } else {
+        projection = glm::ortho(
+            0.0f, static_cast<float>(GLApp::width),
+            0.0f, static_cast<float>(GLApp::height),
+            -1.0f, 1.0f
+        );
+    }
 }
 
 void Render::SetProjectionType(ProjectionType type)
@@ -2202,22 +2210,17 @@ Vec2 Render::PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImV
 
 ImVec2 Render::WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImVec2& panelSize)
 {
+    // Use the camera's actual view-projection matrix so the outline matches
+    // the rendered scene exactly, regardless of resolution or fullscreen mode.
     Camera& cam = Camera::GetInstance();
-    Vec2 camPos = cam.GetPosition();
-    float zoom = cam.GetZoom();
+    Vec2 ndc = cam.WorldToNDC(world);
 
-    float halfWidth = (GLApp::width * 0.5f) / zoom;
-    float halfHeight = (GLApp::height * 0.5f) / zoom;
-
-    float ndcX = (world.x - camPos.x) / halfWidth;
-    float ndcY = (world.y - camPos.y) / halfHeight;
-
-    float u = ndcX * 0.5f + 0.5f;
-    float v = 1.f - (ndcY * 0.5f + 0.5f);
+    float u = ndc.x * 0.5f + 0.5f;
+    float v = 1.f - (ndc.y * 0.5f + 0.5f);
 
     return ImVec2(
-        (panelPos.x + u * panelSize.x),
-        (panelPos.y + v * panelSize.y)
+        panelPos.x + u * panelSize.x,
+        panelPos.y + v * panelSize.y
     );
 }
 
@@ -2297,8 +2300,10 @@ void Render::DrawLetterboxedTexture(GLuint texture)
     bool oldUseCam = useCamera;
     useCamera = false;
 
-    // make sure projection is 0..width x 0..height
-    UpdateProjection();
+    // Temporarily use actual screen projection for the background quad;
+    // save and restore so subsequent entity rendering uses whatever projection set before.
+    glm::mat4 savedProjection = projection;
+    projection = glm::ortho(0.f, winW, 0.f, winH, -1.f, 1.f);
 
     // Center of the letterbox rect in screen space
     Vec2 center{
@@ -2311,7 +2316,8 @@ void Render::DrawLetterboxedTexture(GLuint texture)
     // Just draw the quad in the computed rect
     DrawTexturedQuad(center, size, texture);
 
-    // restore camera flag
+    // Restore projection and camera flag
+    projection = savedProjection;
     useCamera = oldUseCam;
 }
 

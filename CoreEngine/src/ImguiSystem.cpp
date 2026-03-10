@@ -144,6 +144,10 @@ static bool g_uiEditorTabActive  = false;
 // tracks previous-frame state so we can detect the moment of switching
 static bool s_uiTabWasActive     = false;
 
+static SelectedType g_uiClickSelType  = SelectedType::None;
+static int          g_uiClickSelLocal = -1;
+static bool         g_uiClickWaiting   = false;
+
 // ========================================================
 // Anonymous Namespace
 // ========================================================
@@ -841,6 +845,74 @@ Entity PickEntityAtWorldPos(const Vec2& world)
     }
     //winner!!!!!
     return best;
+}
+
+
+std::pair<SelectedType, int> PickUIElementAtVirtualPos(float vx, float vy)
+{
+    auto& gui = GuiSystem::Get();
+
+    // Buttons – centered AABB (back-to-front so last drawn = topmost)
+    auto& buttons = gui.Buttons();
+    for (int i = (int)buttons.size() - 1; i >= 0; --i)
+    {
+        const auto& b = buttons[i];
+        if (!b.isVisible) continue;
+        float hw = b.baseSize.x * 0.5f, hh = b.baseSize.y * 0.5f;
+        if (vx >= b.basePos.x - hw && vx <= b.basePos.x + hw &&
+            vy >= b.basePos.y - hh && vy <= b.basePos.y + hh)
+            return { SelectedType::Button, i };
+    }
+
+    // Displays – may be centered or top-left anchored
+    auto& displays = gui.Displays();
+    for (int i = (int)displays.size() - 1; i >= 0; --i)
+    {
+        const auto& d = displays[i];
+        if (!d.isVisible) continue;
+        if (d.centered)
+        {
+            float hw = d.baseSize.x * 0.5f, hh = d.baseSize.y * 0.5f;
+            if (vx >= d.basePos.x - hw && vx <= d.basePos.x + hw &&
+                vy >= d.basePos.y - hh && vy <= d.basePos.y + hh)
+                return { SelectedType::Display, i };
+        }
+        else
+        {
+            if (vx >= d.basePos.x && vx <= d.basePos.x + d.baseSize.x &&
+                vy >= d.basePos.y && vy <= d.basePos.y + d.baseSize.y)
+                return { SelectedType::Display, i };
+        }
+    }
+
+    // Textboxes – hit radius proportional to scale (no explicit size)
+    auto& textboxes = gui.TextBoxes();
+    for (int i = (int)textboxes.size() - 1; i >= 0; --i)
+    {
+        const auto& t = textboxes[i];
+        if (!t.isVisible) continue;
+        float radius = 40.f * t.baseScale;
+        if (vx >= t.basePos.x - radius && vx <= t.basePos.x + radius &&
+            vy >= t.basePos.y - radius && vy <= t.basePos.y + radius)
+            return { SelectedType::TextBox, i };
+    }
+
+    // Dialogues – AABB from background box centered at textBox.basePos
+    auto& dialogues = gui.Dialogues();
+    for (int i = (int)dialogues.size() - 1; i >= 0; --i)
+    {
+        const auto& d = dialogues[i];
+        if (!d.isVisible) continue;
+        if (d.bgEnabled)
+        {
+            float hw = d.bgBaseSize.x * 0.5f, hh = d.bgBaseSize.y * 0.5f;
+            if (vx >= d.textBox.basePos.x - hw && vx <= d.textBox.basePos.x + hw &&
+                vy >= d.textBox.basePos.y - hh && vy <= d.textBox.basePos.y + hh)
+                return { SelectedType::Dialogue, i };
+        }
+    }
+
+    return { SelectedType::None, -1 };
 }
 
 inline float AngleToMouse(const Vec2& posWorld, const Vec2& mouseWorld)
@@ -1991,6 +2063,16 @@ void ImGuiSystem::Update(float dt)
                 if (type == SelectedType::Display)  return numBtn + numTxt + numDlg + lIdx;
                 return -1;
             };
+
+        if (g_uiClickWaiting)
+        {
+            uiSelectedType  = g_uiClickSelType;
+            uiSelectedIndex = (g_uiClickSelType != SelectedType::None && g_uiClickSelLocal >= 0)
+                                  ? localToGlobal(g_uiClickSelType, g_uiClickSelLocal) : -1;
+            g_uiGizmoSelType  = g_uiClickSelType;
+            g_uiGizmoSelLocal = g_uiClickSelLocal;
+            g_uiClickWaiting = false;
+        }
 
         static bool openAddPopup = false;
         static int addTypeIdx = 0;
@@ -5398,18 +5480,32 @@ void ImGuiSystem::Update(float dt)
 
                 if (mousePos.x >= imgMin.x && mousePos.x <= imgMax.x && mousePos.y >= imgMin.y && mousePos.y <= imgMax.y)
                 {
-                    //conversion again
                     float u = (mousePos.x - imgMin.x) / (imgMax.x - imgMin.x);
                     float v = (mousePos.y - imgMin.y) / (imgMax.y - imgMin.y);
 
-                    //imgui top left so converttt
-                    float ndcX = u * 2.0f - 1.0f;
-                    float ndcY = (1.0f - v) * 2.0f - 1.0f;
+                    if (g_uiEditorTabActive)
+                    {
+                        // UI Editor mode: convert to virtual 1920x1080 screen space and pick GUI element
+                        float vx = u * 1920.f;
+                        float vy = (1.f - v) * 1080.f;
+                        std::pair<SelectedType, int> picked = PickUIElementAtVirtualPos(vx, vy);
+                        g_uiGizmoSelType  = picked.first;
+                        g_uiGizmoSelLocal = picked.second;
+                        g_uiClickSelType  = picked.first;
+                        g_uiClickSelLocal = picked.second;
+                        g_uiClickWaiting = true;
+                    }
+                    else
+                    {
+                        //imgui top left so converttt
+                        float ndcX = u * 2.0f - 1.0f;
+                        float ndcY = (1.0f - v) * 2.0f - 1.0f;
 
-                    Camera& cam = Camera::GetInstance();
-                    Vec2 world = cam.NDCToWorld({ ndcX, ndcY });
+                        Camera& cam = Camera::GetInstance();
+                        Vec2 world = cam.NDCToWorld({ ndcX, ndcY });
 
-                    selectedEntity = PickEntityAtWorldPos(world);
+                        selectedEntity = PickEntityAtWorldPos(world);
+                    }
                 }
             }
         }
@@ -5864,17 +5960,38 @@ void ImGuiSystem::ShowSceneBrowser()
     }
 
     // SAVE SCENE
+    static std::string pendingSavePath;
+    static std::string pendingSaveName;
     ImGui::SameLine();
     if (ImGui::Button("Save Current Scene") && selectedScene >= 0)
     {
-        std::string path = sceneFolder + sceneFiles[selectedScene] + ".json";
-        SavedScene::SavedCamera camSet;
-        camSet.pos = camSpawnPos;
-        camSet.zoom = camSpawnZoom;
-        camSet.worldMin = sceneMin;
-        camSet.worldMax = sceneMax;
-        JsonLoad::SaveCurrentScene(path, sceneFiles[selectedScene], camSet);
-        std::cout << "[Editor] Saved scene: " << path << "\n";
+        pendingSavePath = sceneFolder + sceneFiles[selectedScene] + ".json";
+        pendingSaveName = sceneFiles[selectedScene];
+        ImGui::OpenPopup("Override Scene");
+    }
+
+    // Override confirmation popup
+    if (ImGui::BeginPopupModal("Override Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Are you sure you want to override \"%s\"?", pendingSaveName.c_str());
+        ImGui::Separator();
+        if (ImGui::Button("Yes", ImVec2(120, 0)))
+        {
+            SavedScene::SavedCamera camSet;
+            camSet.pos = camSpawnPos;
+            camSet.zoom = camSpawnZoom;
+            camSet.worldMin = sceneMin;
+            camSet.worldMax = sceneMax;
+            JsonLoad::SaveCurrentScene(pendingSavePath, pendingSaveName, camSet);
+            //std::cout << "[Editor] Saved scene: " << pendingSavePath << "\n";
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("No", ImVec2(120, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
     }
 
     // NEW SCENE
