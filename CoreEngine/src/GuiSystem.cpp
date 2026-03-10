@@ -765,6 +765,8 @@ bool GuiSystem::GetEditMode() const
 
 // Dialogue skip duration
 static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 1.5f;
+static constexpr float ADVANCE_DIALOGUE_BUTTON_OFFSET_X = -300.f;
+static constexpr float DIALOGUE_BACKGROUND_OFFSET_X = -200.f;
 
 /**
  * @brief       Main per-frame update for the GUI system.
@@ -779,19 +781,15 @@ static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 1.5f;
 
 void GuiSystem::Update(float dt)
 {
+    //int maxTextureSize = 0;
+    //glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+    //std::cout << maxTextureSize << std::endl;
+
     SceneManager& sm = SceneManager::Get();
 
     // Advance dialogue button
     static float advanceBtnPosShift = 0.f;
     static bool showAdvanceBtn = false;
-
-    // Speaker ID
-    static int speakerID = 0;
-
-    // Decide rendering from current line's speakerID
-    bool notRock = (speakerID == 1 || speakerID == 2);
-    const float profDir = notRock ? +1.f : -1.f; // +1 = profile on the right, -1 = profile on the left
-    const float posLeftShift = notRock ? -200.f : 0.f;
 
     // Typing delta-time
     const float typingDt = sm.IsPaused() ? 0.f : dt;
@@ -1045,8 +1043,6 @@ void GuiSystem::Update(float dt)
             return script[lineIdx].value("speakerID", -1);
         };
 
-    speakerID = 0;
-
     // Get dialogue lines
     if (sDlgLoaded)
     {
@@ -1059,7 +1055,7 @@ void GuiSystem::Update(float dt)
             const auto& lines = comp->GetLines();
             if (lines.empty()) break;
 
-            int idx = std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1);
+            // int idx = std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1);
 
             int sceneIdxInt = 0;
             if (!d.sceneID.empty())
@@ -1073,8 +1069,6 @@ void GuiSystem::Update(float dt)
                 int maxScene = (int)sDlgDoc["scenes"].size() - 1;
                 sceneIdxInt = std::clamp(sceneIdxInt, 0, std::max(0, maxScene));
             }
-
-            speakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
             break;
         }
     }
@@ -1150,7 +1144,7 @@ void GuiSystem::Update(float dt)
 
             if (!sm.inEditMode && cfg.actionName == "AdvanceDialogue")
             {
-                if (notRock) base.x += advanceBtnPosShift;
+                base.x += advanceBtnPosShift;
             }
             cfg.pos = { base.x * scaleX, base.y * scaleY };
 
@@ -1305,14 +1299,39 @@ void GuiSystem::Update(float dt)
                 }
             }
 
-            // Speaker ID
-            speakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
             static std::unordered_map<int, int> lastSpeakerAppliedByDlg;
             static std::unordered_map<int, bool> autoSpeakerImagesByDlg;
 
+            // Apply speaker ID (custom or otherwise)
+            int effectiveSpeakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
+            if (d.customOverride && d.speakerOverrideEnabled)
+            {
+                effectiveSpeakerID = d.speakerOverrideID;
+            }
+
+            bool autoFromSpeaker = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER);
+            bool notRock = (effectiveSpeakerID == 1 || effectiveSpeakerID == 2);
+            float profDir = notRock ? +1.f : -1.f;
+            float posLeftShift = notRock ? DIALOGUE_BACKGROUND_OFFSET_X : 0.f;
+
+            // Determine which side profile is placed
+            if (d.customOverride && !autoFromSpeaker)
+            {
+                posLeftShift = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? DIALOGUE_BACKGROUND_OFFSET_X : 0.f;
+                profDir = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? +1.f : -1.f;
+            }
+
+            // Determine advance dialogue button position
             if (!sm.inEditMode)
             {
-                advanceBtnPosShift = notRock ? -300.f : 0.f;
+                if (!d.customOverride)
+                {
+                    advanceBtnPosShift = notRock ? ADVANCE_DIALOGUE_BUTTON_OFFSET_X : 0.f;
+                }
+                else
+                {
+                    advanceBtnPosShift = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_LEFT) ? 0.f : ADVANCE_DIALOGUE_BUTTON_OFFSET_X;
+                }
                 showAdvanceBtn = HandleDialogueAdvance(false);
             }
 
@@ -1328,33 +1347,57 @@ void GuiSystem::Update(float dt)
 
             int& lastSpeaker = lastSpeakerAppliedByDlg[d.ID];
             bool& autoSpeakerImages = autoSpeakerImagesByDlg[d.ID];
+            static std::unordered_map<int, bool> prevCustomOverrideByDlg;
+            bool& prevCustom = prevCustomOverrideByDlg[d.ID];
 
-            if (autoSpeakerImages && speakerID >= 0 && speakerID != lastSpeaker)
+            const bool nowCustom = d.customOverride;
+            if (prevCustom && !nowCustom)
             {
-                // To determine background + profile to display depending on current speaker ID
-                auto SelectImage = [&](const std::string& path)
-                {
-                    UI_RenderData rd;
-                    rd.SetRenderType(UIRenderType::Image);
-                    rd.GetImageData().m_image = CreateImage(path.c_str());
-                    return rd;
-                };
+                lastSpeaker = -1;
+            }
+            prevCustom = nowCustom;
+
+            // Ensure default images from JSON are only applied in scene-driven mode
+            const bool shouldApplySpeakerImages = (!nowCustom) && autoSpeakerImages && (effectiveSpeakerID >= 0);
+
+            if (shouldApplySpeakerImages && effectiveSpeakerID != lastSpeaker)
+            {
+                auto ApplySpeakerTexture = [&](UI_RenderData& rd, const std::string& path)
+                    {
+                        switch (rd.GetRenderType())
+                        {
+                        case UIRenderType::Image:
+                            rd.GetImageData().m_image = CreateImage(path.c_str());
+                            return true;
+
+                        case UIRenderType::ImageSheet:
+                            rd.GetImageSheetData().m_image = CreateImage(path.c_str());
+                            return true;
+
+                        default:
+                            return false;
+                        }
+                    };
 
                 const json& sc = sDlgDoc["scenes"][sceneIdxInt];
 
                 if (sc.contains("speakerBGs") && sc["speakerBGs"].is_array() &&
-                    speakerID < (int)sc["speakerBGs"].size() && sc["speakerBGs"][speakerID].is_string())
+                    effectiveSpeakerID < (int)sc["speakerBGs"].size() &&
+                    sc["speakerBGs"][effectiveSpeakerID].is_string())
                 {
-                    d.bgRenderData = SelectImage(sc["speakerBGs"][speakerID].get<std::string>());
+                    const std::string path = sc["speakerBGs"][effectiveSpeakerID].get<std::string>();
+                    ApplySpeakerTexture(d.bgRenderData, path);
                 }
 
                 if (sc.contains("speakerProfiles") && sc["speakerProfiles"].is_array() &&
-                    speakerID < (int)sc["speakerProfiles"].size() && sc["speakerProfiles"][speakerID].is_string())
+                    effectiveSpeakerID < (int)sc["speakerProfiles"].size() &&
+                    sc["speakerProfiles"][effectiveSpeakerID].is_string())
                 {
-                    d.profileRenderData = SelectImage(sc["speakerProfiles"][speakerID].get<std::string>());
+                    const std::string path = sc["speakerProfiles"][effectiveSpeakerID].get<std::string>();
+                    ApplySpeakerTexture(d.profileRenderData, path);
                 }
 
-                lastSpeaker = speakerID;
+                lastSpeaker = effectiveSpeakerID;
             }
 
             // Draw text positions
@@ -1542,8 +1585,8 @@ void GuiSystem::Update(float dt)
             }
 
             // render.DrawText(speakerName, speakerX, speakerY, speakerScale, d.speakerNameColor, "Marker");
-
-            const float textPosLeftShift = notRock ? -275.f : 0.f;
+            const bool profileSideOverriden = (d.customOverride && !autoFromSpeaker);
+            const float textPosLeftShift = profileSideOverriden ? (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT ? -275.f : 0.f) : (notRock ? -275.f : 0.f);
             float textX = (bgCenter.x - bgScale.x * 0.4f) + textPosLeftShift;
 
             // Render wrapped lines
