@@ -2210,22 +2210,17 @@ Vec2 Render::PanelToWorld(const ImVec2& mouse, const ImVec2& panelPos, const ImV
 
 ImVec2 Render::WorldToPanel(const Vec2& world, const ImVec2& panelPos, const ImVec2& panelSize)
 {
+    // Use the camera's actual view-projection matrix so the outline matches
+    // the rendered scene exactly, regardless of resolution or fullscreen mode.
     Camera& cam = Camera::GetInstance();
-    Vec2 camPos = cam.GetPosition();
-    float zoom = cam.GetZoom();
+    Vec2 ndc = cam.WorldToNDC(world);
 
-    float halfWidth = (GLApp::width * 0.5f) / zoom;
-    float halfHeight = (GLApp::height * 0.5f) / zoom;
-
-    float ndcX = (world.x - camPos.x) / halfWidth;
-    float ndcY = (world.y - camPos.y) / halfHeight;
-
-    float u = ndcX * 0.5f + 0.5f;
-    float v = 1.f - (ndcY * 0.5f + 0.5f);
+    float u = ndc.x * 0.5f + 0.5f;
+    float v = 1.f - (ndc.y * 0.5f + 0.5f);
 
     return ImVec2(
-        (panelPos.x + u * panelSize.x),
-        (panelPos.y + v * panelSize.y)
+        panelPos.x + u * panelSize.x,
+        panelPos.y + v * panelSize.y
     );
 }
 

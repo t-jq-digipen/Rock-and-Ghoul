@@ -144,10 +144,9 @@ static bool g_uiEditorTabActive  = false;
 // tracks previous-frame state so we can detect the moment of switching
 static bool s_uiTabWasActive     = false;
 
-// Pending UI click-pick from Game View – consumed by ShowUIEditor each frame
 static SelectedType g_uiClickSelType  = SelectedType::None;
 static int          g_uiClickSelLocal = -1;
-static bool         g_uiClickDirty    = false;
+static bool         g_uiClickWaiting   = false;
 
 // ========================================================
 // Anonymous Namespace
@@ -848,8 +847,7 @@ Entity PickEntityAtWorldPos(const Vec2& world)
     return best;
 }
 
-// Returns {SelectedType, localIndex} for the topmost visible UI element hit
-// at virtual screen coordinates (vx in 0..1920, vy in 0..1080).
+
 std::pair<SelectedType, int> PickUIElementAtVirtualPos(float vx, float vy)
 {
     auto& gui = GuiSystem::Get();
@@ -2066,15 +2064,14 @@ void ImGuiSystem::Update(float dt)
                 return -1;
             };
 
-        // Apply any pending click-pick selection driven from the Game View
-        if (g_uiClickDirty)
+        if (g_uiClickWaiting)
         {
             uiSelectedType  = g_uiClickSelType;
             uiSelectedIndex = (g_uiClickSelType != SelectedType::None && g_uiClickSelLocal >= 0)
                                   ? localToGlobal(g_uiClickSelType, g_uiClickSelLocal) : -1;
             g_uiGizmoSelType  = g_uiClickSelType;
             g_uiGizmoSelLocal = g_uiClickSelLocal;
-            g_uiClickDirty    = false;
+            g_uiClickWaiting = false;
         }
 
         static bool openAddPopup = false;
@@ -5496,7 +5493,7 @@ void ImGuiSystem::Update(float dt)
                         g_uiGizmoSelLocal = picked.second;
                         g_uiClickSelType  = picked.first;
                         g_uiClickSelLocal = picked.second;
-                        g_uiClickDirty    = true;
+                        g_uiClickWaiting = true;
                     }
                     else
                     {
