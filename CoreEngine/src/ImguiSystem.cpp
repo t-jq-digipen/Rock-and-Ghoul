@@ -5864,17 +5864,38 @@ void ImGuiSystem::ShowSceneBrowser()
     }
 
     // SAVE SCENE
+    static std::string pendingSavePath;
+    static std::string pendingSaveName;
     ImGui::SameLine();
     if (ImGui::Button("Save Current Scene") && selectedScene >= 0)
     {
-        std::string path = sceneFolder + sceneFiles[selectedScene] + ".json";
-        SavedScene::SavedCamera camSet;
-        camSet.pos = camSpawnPos;
-        camSet.zoom = camSpawnZoom;
-        camSet.worldMin = sceneMin;
-        camSet.worldMax = sceneMax;
-        JsonLoad::SaveCurrentScene(path, sceneFiles[selectedScene], camSet);
-        std::cout << "[Editor] Saved scene: " << path << "\n";
+        pendingSavePath = sceneFolder + sceneFiles[selectedScene] + ".json";
+        pendingSaveName = sceneFiles[selectedScene];
+        ImGui::OpenPopup("Override Scene");
+    }
+
+    // Override confirmation popup
+    if (ImGui::BeginPopupModal("Override Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Are you sure you want to override \"%s\"?", pendingSaveName.c_str());
+        ImGui::Separator();
+        if (ImGui::Button("Yes", ImVec2(120, 0)))
+        {
+            SavedScene::SavedCamera camSet;
+            camSet.pos = camSpawnPos;
+            camSet.zoom = camSpawnZoom;
+            camSet.worldMin = sceneMin;
+            camSet.worldMax = sceneMax;
+            JsonLoad::SaveCurrentScene(pendingSavePath, pendingSaveName, camSet);
+            //std::cout << "[Editor] Saved scene: " << pendingSavePath << "\n";
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("No", ImVec2(120, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
     }
 
     // NEW SCENE

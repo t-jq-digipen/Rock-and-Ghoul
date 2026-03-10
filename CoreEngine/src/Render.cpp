@@ -2306,7 +2306,7 @@ void Render::DrawLetterboxedTexture(GLuint texture)
     useCamera = false;
 
     // Temporarily use actual screen projection for the background quad;
-    // save and restore so subsequent entity rendering uses whatever projection was set before.
+    // save and restore so subsequent entity rendering uses whatever projection set before.
     glm::mat4 savedProjection = projection;
     projection = glm::ortho(0.f, winW, 0.f, winH, -1.f, 1.f);
 
