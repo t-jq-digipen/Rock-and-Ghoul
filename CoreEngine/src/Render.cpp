@@ -195,13 +195,21 @@ void Render::ClearBackground(const Colour4& color) {
     glClearColor(color.r, color.g, color.b, color.a);
     glClear(GL_COLOR_BUFFER_BIT);
 }
-void Render::UpdateProjection()
+void Render::UpdateProjection(bool useVirtual)
 {
-    projection = glm::ortho(
-        0.0f, static_cast<float>(GLApp::width),
-        0.0f, static_cast<float>(GLApp::height),
-        -1.0f, 1.0f
-    );
+    if (useVirtual) {
+        projection = glm::ortho(
+            0.0f, static_cast<float>(GLApp::VIRTUAL_W),
+            0.0f, static_cast<float>(GLApp::VIRTUAL_H),
+            -1.0f, 1.0f
+        );
+    } else {
+        projection = glm::ortho(
+            0.0f, static_cast<float>(GLApp::width),
+            0.0f, static_cast<float>(GLApp::height),
+            -1.0f, 1.0f
+        );
+    }
 }
 
 void Render::SetProjectionType(ProjectionType type)
@@ -2297,8 +2305,10 @@ void Render::DrawLetterboxedTexture(GLuint texture)
     bool oldUseCam = useCamera;
     useCamera = false;
 
-    // make sure projection is 0..width x 0..height
-    UpdateProjection();
+    // Temporarily use actual screen projection for the background quad;
+    // save and restore so subsequent entity rendering uses whatever projection was set before.
+    glm::mat4 savedProjection = projection;
+    projection = glm::ortho(0.f, winW, 0.f, winH, -1.f, 1.f);
 
     // Center of the letterbox rect in screen space
     Vec2 center{
@@ -2311,7 +2321,8 @@ void Render::DrawLetterboxedTexture(GLuint texture)
     // Just draw the quad in the computed rect
     DrawTexturedQuad(center, size, texture);
 
-    // restore camera flag
+    // Restore projection and camera flag
+    projection = savedProjection;
     useCamera = oldUseCam;
 }
 

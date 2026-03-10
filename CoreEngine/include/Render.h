@@ -22,7 +22,7 @@
  * - Off-screen rendering via scene framebuffer (for ImGui or post-processing)
  * - Screen-to-world coordinate conversion utilities
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -616,19 +616,19 @@ public:
     /**
     * @brief Updates the orthographic projection matrix to match the current window size.
     *
-    *   This function recalculates the renderer’s projection matrix so that the coordinate
+    *   This function recalculates the renderer's projection matrix so that the coordinate
     * system matches the current window dimensions. The resulting projection maps (0, 0)
     * to the bottom-left corner of the screen and (width, height) to the top-right corner
     *
     */
-    void UpdateProjection();
+    void UpdateProjection(bool useVirtual = false);
 
 
     /**
     * @brief Draws a texture scaled to fill or fit the entire window while preserving aspect ratio.
     *
     * This function renders a fullscreen quad using the specified texture. The texture is
-    * scaled based on the window’s aspect ratio and either cropped or letterboxed
+    * scaled based on the window's aspect ratio and either cropped or letterboxed
     * to maintain visual consistent.
     *
     * @param texture  OpenGL texture ID to render. The texture must be valid and bound to GL_TEXTURE_2D.
@@ -1090,13 +1090,12 @@ public:
     /**
     * @brief Retrieves the color texture containing the captured scene.
     *
-    * Returns the OpenGL texture handle of the framebuffer’s color attachment,
+    * Returns the OpenGL texture handle of the framebuffer's color attachment,
     * which holds the fully rendered scene image.
     *
     * @return GLuint  Texture ID of the captured scene.
     *
-    * @note Used by ImGui, editor systems to display the
-    *       “Game View” 
+    * @note Used by ImGui, editor systems to display the game view
     */
     GLuint GetSceneTexture() const { return sceneColor; }
 
