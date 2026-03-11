@@ -1131,12 +1131,16 @@ namespace GhoulScript {
 
 	constexpr float GHOUL_MELEE_DURATION = 1.f;
 	constexpr float GHOUL_MELEE_WINDUP = 0.5f;
-	 const Vec2	    GHOUL_MELEE_HITBOX_SIZE = { 250.f, 250.f };
+	const Vec2	    GHOUL_MELEE_HITBOX_SIZE = { 250.f, 250.f };
 
 	constexpr float GHOUL_RANGE_DURATION = 1.f;
 	constexpr float GHOUL_RANGE_CASTTIME = 0.5f;
 
-	constexpr float GHOUL_STAGGER_DURATION = 0.5f;
+	constexpr float GHOUL_STAGGER_DURATION = 1.f;
+
+	constexpr float GHOUL_PHASE1_COOLDOWN = 2.f;
+	constexpr float GHOUL_PHASE2_COOLDOWN = 1.f;
+	constexpr float GHOUL_PHASE3_COOLDOWN = 0.5f;
 
 	bool inCombat = false;
 
@@ -1152,7 +1156,7 @@ namespace GhoulScript {
 
 	struct GhoulRuntime
 	{
-		GhoulState state{ GhoulState::GHOUL_IDLE };
+		GhoulState state{ GhoulState::GHOUL_SPAWN };
 		GhoulAction nextAction{ GhoulAction::GHOUL_ACTION_RANGE };
 		float stateTime{ 0.f };
 
@@ -1200,6 +1204,537 @@ namespace GhoulScript {
 		(void)eID; (void)dt;
 	}
 
+	void Phase1Logic(Entity eID, Movement::MovementComponent& moveComp, const Vec2& selfPos, const Vec2& directionToPlayer, unsigned int& animState, const float& dPlayerSq, bool& faceRight)
+	{
+		Registry& registry = Registry::Get();
+		switch (ghoulRuntime.state)
+		{
+		case GHOUL_IDLE:
+		{
+			moveComp.ResetFrameIntent();
+			animState = 0;
+			if (ghoulRuntime.attackCooldown <= 0.f && ghoulRuntime.stateTime >= 0.5f && inCombat)
+			{
+				// between 0 to 1 random val
+				float randVal = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+				if (randVal < 0.5f) {
+					// melee attack
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.nextAction = GhoulAction::GHOUL_ACTION_MELEE;
+					moveComp.SetMoveSpeed(600.f);
+				}
+				else {
+					// range attack
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.nextAction = GhoulAction::GHOUL_ACTION_RANGE;
+					moveComp.SetMoveSpeed(400.f);
+				}
+				ghoulRuntime.state = GhoulState::GHOUL_MOVING;
+				ghoulRuntime.stateTime = 0.f;
+			}
+		}
+		break; // end case GHOUL_IDLE
+
+		case GHOUL_MOVING:
+		{
+			moveComp.ResetFrameIntent();
+			Vec2 moveDir = RG_Normalize(directionToPlayer);
+			moveComp.SetIsMoving(true);
+
+
+			switch (ghoulRuntime.nextAction)
+			{
+			case GhoulAction::GHOUL_ACTION_MELEE:
+			{
+				moveComp.SetMovementDirection(moveDir);
+				float meleeSq = GHOUL_MELEE_RANGE * GHOUL_MELEE_RANGE;
+				if (dPlayerSq <= meleeSq) // smack
+				{
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.state = GhoulState::GHOUL_MELEE;
+					ghoulRuntime.stateTime = 0.f;
+				}
+			}
+			break; // end case GHOUL_ACTION_MELEE
+
+
+			case GhoulAction::GHOUL_ACTION_RANGE:
+			{
+
+				moveComp.SetMovementDirection(moveDir);
+				float rangeSq = MAX_SHOOT_RANGE * MAX_SHOOT_RANGE;
+				if (dPlayerSq <= rangeSq) // shoot
+				{
+					moveDir.x = -moveDir.x;
+				}
+				// run for abit then shoots
+				if (ghoulRuntime.stateTime >= .5f)
+				{
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.state = GhoulState::GHOUL_RANGE;
+					ghoulRuntime.stateTime = 0.f;
+				}
+			}
+			break; // end case GHOUL_ACTION_RANGE
+
+			default:
+				break;
+			} // end switch next action
+
+			animState = 1;
+		}
+		break; // end case GHOUL_MOVING
+
+		case GHOUL_MELEE:
+		{
+			moveComp.ResetFrameIntent();
+			animState = 2;
+			if (ghoulRuntime.willAttack && ghoulRuntime.stateTime >= GHOUL_MELEE_WINDUP)
+			{
+				ghoulRuntime.willAttack = false;
+
+				Vec2 offset = { 0.f, 0.f };
+				if (faceRight) {
+					offset.x += GHOUL_MELEE_RANGE / 2.f;
+				}
+				else {
+					offset.x -= GHOUL_MELEE_RANGE / 2.f;
+				}
+				AttackProperties props = GHOUL_MELEE_PROPERTIES;
+				props.owner = eID;
+				CombatSystem::Get().SpawnHitBox(
+					props,
+					offset,
+					GHOUL_MELEE_HITBOX_SIZE
+				);
+			}
+
+			if (ghoulRuntime.stateTime >= GHOUL_MELEE_DURATION) {
+				ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+				ghoulRuntime.stateTime = 0.f;
+				ghoulRuntime.attackCooldown = GHOUL_PHASE1_COOLDOWN;
+			}
+
+
+		}
+		break; // end case GHOUL_MELEE
+
+		case GHOUL_RANGE:
+		{
+			moveComp.ResetFrameIntent();
+			animState = 3;
+			if (ghoulRuntime.willAttack && ghoulRuntime.stateTime >= GHOUL_RANGE_CASTTIME)
+			{
+				ghoulRuntime.willAttack = false;
+
+
+				//recycle spirit spit first
+				// Create visual entity (for rendering/physics)
+				Entity spit = JsonLoad::LoadEntityFromFile(
+					FilePath::PREFABS_FOLDER + "SpiritSpit.json",
+					selfPos.x, selfPos.y
+				);
+
+				// if dont have smth wrong with the prefab... but just to prevent crash
+				if (registry.Has_Component<Physics::PhysicsComponent>(spit))
+				{
+					TransformComponent& spitTrans = registry.Get_Component<TransformComponent>(spit);
+					Physics::PhysicsComponent& spitPhy = registry.Get_Component<Physics::PhysicsComponent>(spit);
+					// make 1 projectile
+
+					Vec2 dir = directionToPlayer;
+					dir = RG_Normalize(dir);
+					dir = RG_Scale(dir, PROJECTILE_SPEED);
+					spitPhy.Set_Vel(dir);
+
+					float angleRad = std::atan2(dir.y, dir.x);
+					// angleDeg = angleRad * (180.0f / RG_PI);
+					spitTrans.rot = angleRad;
+
+
+					AttackProperties props = SPIRIT_PROJECTILE_PROPERTIES;
+					props.owner = spit;
+					CombatSystem::Get().RegisterProjectile(spit, props, SPIRIT_PROJECTILE_RUNTIME);
+
+				}
+				
+			}
+
+			if (ghoulRuntime.stateTime >= GHOUL_RANGE_DURATION) {
+				ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+				ghoulRuntime.stateTime = 0.f;
+				ghoulRuntime.attackCooldown = GHOUL_PHASE1_COOLDOWN;
+			}
+		}
+		break; // end case GHOUL_RANGE
+
+		default:
+			// should be handled already:
+			// - Death
+			// - Staggered
+			// - Barrier
+			//
+			break;
+
+		} // end switch ghoul state
+	}
+
+	void Phase2Logic(Entity eID, Movement::MovementComponent& moveComp, const Vec2& selfPos, const Vec2& directionToPlayer, unsigned int& animState, const float& dPlayerSq, bool& faceRight)
+	{
+		Registry& registry = Registry::Get();
+		switch (ghoulRuntime.state)
+		{
+		case GHOUL_IDLE:
+		{
+			moveComp.ResetFrameIntent();
+			animState = 0;
+			if (ghoulRuntime.attackCooldown <= 0.f && ghoulRuntime.stateTime >= 0.5f && inCombat)
+			{
+				// between 0 to 1 random val
+				float randVal = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+				if (randVal < 0.5f) {
+					// melee attack
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.nextAction = GhoulAction::GHOUL_ACTION_MELEE;
+					moveComp.SetMoveSpeed(700.f);
+				}
+				else {
+					// range attack
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.nextAction = GhoulAction::GHOUL_ACTION_RANGE;
+					moveComp.SetMoveSpeed(400.f);
+				}
+				ghoulRuntime.state = GhoulState::GHOUL_MOVING;
+				ghoulRuntime.stateTime = 0.f;
+			}
+		}
+		break; // end case GHOUL_IDLE
+
+		case GHOUL_MOVING:
+		{
+			moveComp.ResetFrameIntent();
+			Vec2 moveDir = RG_Normalize(directionToPlayer);
+			moveComp.SetIsMoving(true);
+
+
+			switch (ghoulRuntime.nextAction)
+			{
+			case GhoulAction::GHOUL_ACTION_MELEE:
+			{
+				moveComp.SetMovementDirection(moveDir);
+				float meleeSq = GHOUL_MELEE_RANGE * GHOUL_MELEE_RANGE;
+				if (dPlayerSq <= meleeSq) // smack
+				{
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.state = GhoulState::GHOUL_MELEE;
+					ghoulRuntime.stateTime = 0.f;
+				}
+			}
+			break; // end case GHOUL_ACTION_MELEE
+
+
+			case GhoulAction::GHOUL_ACTION_RANGE:
+			{
+
+				moveComp.SetMovementDirection(moveDir);
+				float rangeSq = MAX_SHOOT_RANGE * MAX_SHOOT_RANGE;
+				if (dPlayerSq <= rangeSq) // shoot
+				{
+					moveDir.x = -moveDir.x;
+				}
+				// run for abit then shoots
+				if (ghoulRuntime.stateTime >= .5f)
+				{
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.state = GhoulState::GHOUL_RANGE;
+					ghoulRuntime.stateTime = 0.f;
+				}
+			}
+			break; // end case GHOUL_ACTION_RANGE
+
+			default:
+				break;
+			} // end switch next action
+
+			animState = 1;
+		}
+		break; // end case GHOUL_MOVING
+
+		case GHOUL_MELEE:
+		{
+			moveComp.ResetFrameIntent();
+			animState = 2;
+			if (ghoulRuntime.willAttack && ghoulRuntime.stateTime >= GHOUL_MELEE_WINDUP)
+			{
+				ghoulRuntime.willAttack = false;
+
+				Vec2 offset = { 0.f, 0.f };
+				if (faceRight) {
+					offset.x += GHOUL_MELEE_RANGE / 2.f;
+				}
+				else {
+					offset.x -= GHOUL_MELEE_RANGE / 2.f;
+				}
+				AttackProperties props = GHOUL_MELEE_PROPERTIES;
+				props.owner = eID;
+				CombatSystem::Get().SpawnHitBox(
+					props,
+					offset,
+					GHOUL_MELEE_HITBOX_SIZE
+				);
+			}
+
+			if (ghoulRuntime.stateTime >= GHOUL_MELEE_DURATION) {
+				ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+				ghoulRuntime.stateTime = 0.f;
+				ghoulRuntime.attackCooldown = GHOUL_PHASE2_COOLDOWN;
+			}
+
+
+		}
+		break; // end case GHOUL_MELEE
+
+		case GHOUL_RANGE:
+		{
+			moveComp.ResetFrameIntent();
+			animState = 3;
+			if (ghoulRuntime.willAttack && ghoulRuntime.stateTime >= GHOUL_RANGE_CASTTIME)
+			{
+				ghoulRuntime.willAttack = false;
+
+				// shotgun bangg
+				for (int i = 0; i < 5; i++) {
+
+					//recycle spirit spit first
+					// Create visual entity (for rendering/physics)
+					Entity spit = JsonLoad::LoadEntityFromFile(
+						FilePath::PREFABS_FOLDER + "SpiritSpit.json",
+						selfPos.x, selfPos.y
+					);
+
+					// if dont have smth wrong with the prefab... but just to prevent crash
+					if (registry.Has_Component<Physics::PhysicsComponent>(spit))
+					{
+						TransformComponent& spitTrans = registry.Get_Component<TransformComponent>(spit);
+						Physics::PhysicsComponent& spitPhy = registry.Get_Component<Physics::PhysicsComponent>(spit);
+						// make projectile
+
+						float angleOffset = (i - 2) * 0.1f; // -0.2, -0.1, 0, 0.1, 0.2 radians offset
+						Vec2 dir = { directionToPlayer.x * cos(angleOffset) - directionToPlayer.y * sin(angleOffset),
+									 directionToPlayer.x * sin(angleOffset) + directionToPlayer.y * cos(angleOffset) };
+						dir = RG_Normalize(dir);
+						dir = RG_Scale(dir, PROJECTILE_SPEED);
+						spitPhy.Set_Vel(dir);
+
+						float angleRad = std::atan2(dir.y, dir.x);
+						// angleDeg = angleRad * (180.0f / RG_PI);
+						spitTrans.rot = angleRad;
+
+
+						AttackProperties props = SPIRIT_PROJECTILE_PROPERTIES;
+						props.owner = spit;
+						CombatSystem::Get().RegisterProjectile(spit, props, SPIRIT_PROJECTILE_RUNTIME);
+					}
+				}
+			}
+
+			if (ghoulRuntime.stateTime >= GHOUL_RANGE_DURATION) {
+				ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+				ghoulRuntime.stateTime = 0.f;
+				ghoulRuntime.attackCooldown = GHOUL_PHASE2_COOLDOWN;
+			}
+		}
+		break; // end case GHOUL_RANGE
+
+		default:
+			// should be handled already:
+			// - Death
+			// - Staggered
+			// - Barrier
+			//
+			break;
+
+		} // end switch ghoul state
+	}
+
+	void Phase3Logic(Entity eID, Movement::MovementComponent& moveComp, const Vec2& selfPos, const Vec2& directionToPlayer, unsigned int& animState, const float& dPlayerSq, bool& faceRight)
+	{
+		Registry& registry = Registry::Get();
+		switch (ghoulRuntime.state)
+		{
+		case GHOUL_IDLE:
+		{
+			moveComp.ResetFrameIntent();
+			animState = 0;
+			if (ghoulRuntime.attackCooldown <= 0.f && ghoulRuntime.stateTime >= 0.5f && inCombat)
+			{
+				// between 0 to 1 random val
+				float randVal = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+				if (randVal < 0.5f) {
+					// melee attack
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.nextAction = GhoulAction::GHOUL_ACTION_MELEE;
+					moveComp.SetMoveSpeed(800.f);
+				}
+				else {
+					// range attack
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.nextAction = GhoulAction::GHOUL_ACTION_RANGE;
+					moveComp.SetMoveSpeed(400.f);
+				}
+				ghoulRuntime.state = GhoulState::GHOUL_MOVING;
+				ghoulRuntime.stateTime = 0.f;
+			}
+		}
+		break; // end case GHOUL_IDLE
+
+		case GHOUL_MOVING:
+		{
+			moveComp.ResetFrameIntent();
+			Vec2 moveDir = RG_Normalize(directionToPlayer);
+			moveComp.SetIsMoving(true);
+
+
+			switch (ghoulRuntime.nextAction)
+			{
+			case GhoulAction::GHOUL_ACTION_MELEE:
+			{
+				moveComp.SetMovementDirection(moveDir);
+				float meleeSq = GHOUL_MELEE_RANGE * GHOUL_MELEE_RANGE;
+				if (dPlayerSq <= meleeSq) // smack
+				{
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.state = GhoulState::GHOUL_MELEE;
+					ghoulRuntime.stateTime = 0.f;
+				}
+			}
+			break; // end case GHOUL_ACTION_MELEE
+
+
+			case GhoulAction::GHOUL_ACTION_RANGE:
+			{
+
+				moveComp.SetMovementDirection(moveDir);
+				float rangeSq = MAX_SHOOT_RANGE * MAX_SHOOT_RANGE;
+				if (dPlayerSq <= rangeSq) // shoot
+				{
+					moveDir.x = -moveDir.x;
+				}
+				// run for abit then shoots
+				if (ghoulRuntime.stateTime >= .5f)
+				{
+					ghoulRuntime.willAttack = true;
+					ghoulRuntime.state = GhoulState::GHOUL_RANGE;
+					ghoulRuntime.stateTime = 0.f;
+				}
+			}
+			break; // end case GHOUL_ACTION_RANGE
+
+			default:
+				break;
+			} // end switch next action
+
+			animState = 1;
+		}
+		break; // end case GHOUL_MOVING
+
+		case GHOUL_MELEE:
+		{
+			moveComp.ResetFrameIntent();
+			animState = 2;
+			if (ghoulRuntime.willAttack && ghoulRuntime.stateTime >= GHOUL_MELEE_WINDUP)
+			{
+				ghoulRuntime.willAttack = false;
+
+				Vec2 offset = { 0.f, 0.f };
+				if (faceRight) {
+					offset.x += GHOUL_MELEE_RANGE / 2.f;
+				}
+				else {
+					offset.x -= GHOUL_MELEE_RANGE / 2.f;
+				}
+				AttackProperties props = GHOUL_MELEE_PROPERTIES;
+				props.owner = eID;
+				CombatSystem::Get().SpawnHitBox(
+					props,
+					offset,
+					GHOUL_MELEE_HITBOX_SIZE
+				);
+			}
+
+			if (ghoulRuntime.stateTime >= GHOUL_MELEE_DURATION) {
+				ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+				ghoulRuntime.stateTime = 0.f;
+				ghoulRuntime.attackCooldown = GHOUL_PHASE3_COOLDOWN;
+			}
+
+
+		}
+		break; // end case GHOUL_MELEE
+
+		case GHOUL_RANGE:
+		{
+			moveComp.ResetFrameIntent();
+			animState = 3;
+			if (ghoulRuntime.willAttack && ghoulRuntime.stateTime >= GHOUL_RANGE_CASTTIME)
+			{
+				ghoulRuntime.willAttack = false;
+
+				// shotgun bangg
+				for (int i = 0; i < 5; i++) {
+
+					//recycle spirit spit first
+					// Create visual entity (for rendering/physics)
+					Entity spit = JsonLoad::LoadEntityFromFile(
+						FilePath::PREFABS_FOLDER + "SpiritSpit.json",
+						selfPos.x, selfPos.y
+					);
+
+					// if dont have smth wrong with the prefab... but just to prevent crash
+					if (registry.Has_Component<Physics::PhysicsComponent>(spit))
+					{
+						TransformComponent& spitTrans = registry.Get_Component<TransformComponent>(spit);
+						Physics::PhysicsComponent& spitPhy = registry.Get_Component<Physics::PhysicsComponent>(spit);
+						// make projectile
+
+						float angleOffset = (i - 2) * 0.1f; // -0.2, -0.1, 0, 0.1, 0.2 radians offset
+						Vec2 dir = { directionToPlayer.x * cos(angleOffset) - directionToPlayer.y * sin(angleOffset),
+									 directionToPlayer.x * sin(angleOffset) + directionToPlayer.y * cos(angleOffset) };
+						dir = RG_Normalize(dir);
+						dir = RG_Scale(dir, PROJECTILE_SPEED);
+						spitPhy.Set_Vel(dir);
+
+						float angleRad = std::atan2(dir.y, dir.x);
+						// angleDeg = angleRad * (180.0f / RG_PI);
+						spitTrans.rot = angleRad;
+
+
+						AttackProperties props = SPIRIT_PROJECTILE_PROPERTIES;
+						props.owner = spit;
+						CombatSystem::Get().RegisterProjectile(spit, props, SPIRIT_PROJECTILE_RUNTIME);
+					}
+				}
+			}
+
+			if (ghoulRuntime.stateTime >= GHOUL_RANGE_DURATION) {
+				ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+				ghoulRuntime.stateTime = 0.f;
+				ghoulRuntime.attackCooldown = GHOUL_PHASE3_COOLDOWN;
+			}
+		}
+		break; // end case GHOUL_RANGE
+
+		default:
+			// should be handled already:
+			// - Death
+			// - Staggered
+			// - Barrier
+			//
+			break;
+
+		} // end switch ghoul state
+	}
+
 	void Start(Entity eID) {
 		std::cout << "Spirit script started for entity " << eID << std::endl;
 		CombatSystem::Get().RegisterCombatant(eID);
@@ -1232,6 +1767,7 @@ namespace GhoulScript {
 
 		unsigned int animState = 0;
 
+
 		HealthComponent& health = registry.Get_Component<HealthComponent>(eID);
 
 		// death handling
@@ -1240,20 +1776,16 @@ namespace GhoulScript {
 			if (ghoulRuntime.state != GHOUL_DEAD) {
 				ghoulRuntime.state = GhoulState::GHOUL_DEAD;
 				ghoulRuntime.stateTime = 0.f;
-				// set animstate when done
-				registry.Add_Component<LifetimeComponent>(eID, LifetimeComponent{ 0.f, 5.f });
+				animState = 7;
 				registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
 				registry.Get_Component<Movement::MovementComponent>(eID).ResetFrameIntent();
-			}
-			else {
-				// already dead, just chillin
-				// set animstate when done
 			}
 
 			return;
 		}
 
 		Movement::MovementComponent& moveComp = registry.Get_Component<Movement::MovementComponent>(eID);
+
 		// barrier needs updating
 		if (ghoulRuntime.hasBarrier != HasBarrier(eID))
 		{
@@ -1271,20 +1803,18 @@ namespace GhoulScript {
 			}
 		}
 
-		if (
-			(ghoulRuntime.state == GHOUL_IDLE || GHOUL_MOVING) // neutral states
-			&& !ghoulRuntime.hasBarrier && ghoulRuntime.barrierCooldown <= 0.f // barrier ready to spawn
-			&& ghoulRuntime.state != GHOUL_DEAD // alive lol
-			&& ghoulRuntime.state != GHOUL_STAGGERED
+		// try spawn barrier if can, only after phase 1
+		if (ghoulRuntime.phase > 1														// after phase 1
+			&& (ghoulRuntime.state == GHOUL_IDLE || ghoulRuntime.state == GHOUL_MOVING)	// neutral states
+			&& !ghoulRuntime.hasBarrier && ghoulRuntime.barrierCooldown <= 0.f			// barrier ready to spawn
+			&& ghoulRuntime.state != GHOUL_DEAD											// alive lol
+			&& ghoulRuntime.state != GHOUL_STAGGERED									// not stunned
 			)
 		{
-			// override neutral states, highest priority to spawn barrier when possible
-			
 			// spawn barrier
 			ghoulRuntime.hasBarrier = true;
 
-			Registry::Get().Remove_Component<StatusEffectComponent>(eID); // remove stun if have, since barrier should cleanse it
-
+			Registry::Get().Remove_Component<StatusEffectComponent>(eID); // remove statuses if have, since barrier should cleanse it
 
 			CreateBarrier(eID, GetBarrierElement(ghoulRuntime.barrierElem));
 
@@ -1308,6 +1838,7 @@ namespace GhoulScript {
 			}
 		}
 
+		// distance n direction to player
 		Vec2 playerPos = GetPos(targetPlayer);
 		Vec2 selfPos = GetPos(eID);
 
@@ -1317,230 +1848,123 @@ namespace GhoulScript {
 		// squared distance
 		float dPlayerSq = DistSq(selfPos, playerPos);
 
-		BehaviourComponent& behaviourComp = registry.Get_Component<BehaviourComponent>(eID);
-		if (behaviourComp.HasScript("CamTarget"))
+		GuiSystem& gui = GuiSystem::Get();
+		UIGroup& stats = gui.GetGroup("BossHP");
+
+		// Camera logic, if player near then make it between both, also trigger start combat
 		{
-			if (dPlayerSq >= 1000.f * 1000.f) {
-				behaviourComp.RemoveScript("CamTarget");
+			BehaviourComponent& behaviourComp = registry.Get_Component<BehaviourComponent>(eID);
+			if (behaviourComp.HasScript("CamTarget"))
+			{
+				if (dPlayerSq >= 1000.f * 1000.f) {
+					behaviourComp.RemoveScript("CamTarget");
+				}
+			}
+			else if (dPlayerSq < 1000.f * 1000.f) {
+				if (!inCombat)
+				{
+					inCombat = true;
+					animState = 6;
+					ghoulRuntime.state = GhoulState::GHOUL_TRANSFORM;
+					ghoulRuntime.stateTime = 0.f;
+					health.willHit = false;
+					health.isVulnerable = false;
+				}
+				behaviourComp.AddScript("CamTarget");
 			}
 		}
-		else if (dPlayerSq < 1000.f * 1000.f) {
-			inCombat = true;
-			behaviourComp.AddScript("CamTarget");
-		}
 
-		if (ghoulRuntime.state == GHOUL_DEAD)
+		// combat not started
+		if (!inCombat) {
+			animState = 5; // pre transform
+			moveComp.ResetFrameIntent();
+			registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
+			return;
+		}
+		else if (ghoulRuntime.state == GHOUL_DEAD)
 		{
 			// die logic, TBC
+			moveComp.ResetFrameIntent();
+			animState = 7;
+			if (ghoulRuntime.stateTime >= 2.f) {
+				// start end dialogue
+			}
+			
+			// MANFREDHELP
+			// yo i need help to toggle off the visibility in this ui group
+			// make the UI in UIGroup stats not visible :(
+		}
+		else if (ghoulRuntime.state == GhoulState::GHOUL_TRANSFORM) // combat starting!
+		{
+			moveComp.ResetFrameIntent();
+			animState = 6;
+			if (ghoulRuntime.stateTime >= 2.f) // after transform animation, start combat properly
+			{
+				ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+				ghoulRuntime.stateTime = 0.f;
+				health.willHit = true;
+				health.isVulnerable = true;
+			}
+		}
+		else if (ghoulRuntime.state == GhoulState::GHOUL_STAGGERED) // staggered
+		{
+			moveComp.ResetFrameIntent();
+			animState = 4;
+			if (ghoulRuntime.stateTime >= GHOUL_STAGGER_DURATION) {
+				ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+				ghoulRuntime.stateTime = 0.f;
+			}
+		}
+		else if (ghoulRuntime.state == GhoulState::GHOUL_BARRIER) // barrier
+		{
+			moveComp.ResetFrameIntent();
+			animState = 3;
+			if (ghoulRuntime.stateTime >= GHOUL_BARRIER_CASTTIME)
+			{
+				ghoulRuntime.state = GhoulState::GHOUL_IDLE;
+				ghoulRuntime.stateTime = 0.f;
+			}
 		}
 		else // alive!
 		{
-			// add phase switch ltr
-
-			switch (ghoulRuntime.state)
+			switch (ghoulRuntime.phase)
 			{
-
-			case GHOUL_IDLE:
+			case 1:
 			{
-				moveComp.ResetFrameIntent();
-				animState = 0; 
-				if (ghoulRuntime.attackCooldown <= 0.f && ghoulRuntime.stateTime >= 0.5f && inCombat)
-				{
-					// between 0 to 1 random val
-					float randVal = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-					if (randVal < 0.5f) {
-						// melee attack
-						ghoulRuntime.willAttack = true;
-						ghoulRuntime.nextAction = GhoulAction::GHOUL_ACTION_MELEE;
-						moveComp.SetMoveSpeed(600.f);
-					}
-					else {
-						// range attack
-						ghoulRuntime.willAttack = true;
-						ghoulRuntime.nextAction = GhoulAction::GHOUL_ACTION_RANGE;
-						moveComp.SetMoveSpeed(400.f);
-					}
-					ghoulRuntime.state = GhoulState::GHOUL_MOVING;
-					ghoulRuntime.stateTime = 0.f;
-				}
-			}
-			break; // end case GHOUL_IDLE
+				Phase1Logic(eID, moveComp, selfPos, directionToPlayer, animState, dPlayerSq, faceRight);
 
-			case GHOUL_MOVING:
-			{
-				moveComp.ResetFrameIntent();
-				Vec2 moveDir = RG_Normalize(directionToPlayer);
-				moveComp.SetIsMoving(true);
-
-
-				switch (ghoulRuntime.nextAction)
-				{
-					case GhoulAction::GHOUL_ACTION_MELEE:
-					{
-						moveComp.SetMovementDirection(moveDir);
-						float meleeSq = GHOUL_MELEE_RANGE * GHOUL_MELEE_RANGE;
-						if (dPlayerSq <= meleeSq) // smack
-						{
-							ghoulRuntime.willAttack = true;
-							ghoulRuntime.state = GhoulState::GHOUL_MELEE;
-							ghoulRuntime.stateTime = 0.f;
-						}
-					}
-					break; // end case GHOUL_ACTION_MELEE
-
-
-					case GhoulAction::GHOUL_ACTION_RANGE:
-					{
-
-						moveComp.SetMovementDirection(moveDir);
-						float rangeSq = MAX_SHOOT_RANGE * MAX_SHOOT_RANGE;
-						if (dPlayerSq <= rangeSq) // shoot
-						{
-							moveDir.x = -moveDir.x;
-						}
-						// run for abit then shoots
-						if (ghoulRuntime.stateTime >= .5f)
-						{
-							ghoulRuntime.willAttack = true;
-							ghoulRuntime.state = GhoulState::GHOUL_RANGE;
-							ghoulRuntime.stateTime = 0.f;
-						}
-					}
-					break; // end case GHOUL_ACTION_RANGE
-
-					default:
-						break;
-				} // end switch next action
-
-				//if (ghoulRuntime.nextAction == GhoulAction::GHOUL_ACTION_MELEE) {
-				//	ghoulRuntime.state = GhoulState::GHOUL_MELEE;
-				//	ghoulRuntime.stateTime = 0.f;
-				//}
-				//else if (ghoulRuntime.nextAction == GhoulAction::GHOUL_ACTION_RANGE) {
-				//	ghoulRuntime.state = GhoulState::GHOUL_RANGE;
-				//	ghoulRuntime.stateTime = 0.f;
-				//}
-				animState = 1;
-			}
-			break; // end case GHOUL_MOVING
-
-			case GHOUL_BARRIER:
-			{
-				moveComp.ResetFrameIntent();
-				animState = 3;
-				if (ghoulRuntime.stateTime >= GHOUL_BARRIER_CASTTIME)
-				{
+				if (health.currhp <= health.maxhp * 0.75f) {
+					health.currhp = health.maxhp * 0.75f;
+					ghoulRuntime.phase = 2;
 					ghoulRuntime.state = GhoulState::GHOUL_IDLE;
 					ghoulRuntime.stateTime = 0.f;
 				}
 			}
-			break; // end case GHOUL_BARRIER
+			break; // end case 0
 
-			case GHOUL_STAGGERED:
+			case 2:
 			{
-				moveComp.ResetFrameIntent();
-				animState = 4;
-				if (ghoulRuntime.stateTime >= GHOUL_STAGGER_DURATION) {
+				Phase2Logic(eID, moveComp, selfPos, directionToPlayer, animState, dPlayerSq, faceRight);
+
+				if (health.currhp <= health.maxhp * 0.4f) {
+					health.currhp = health.maxhp * 0.4f;
+					ghoulRuntime.phase = 3;
 					ghoulRuntime.state = GhoulState::GHOUL_IDLE;
 					ghoulRuntime.stateTime = 0.f;
 				}
 			}
-			break; // end case GHOUL_STAGGERED
+			break; // end case 1
 
-			case GHOUL_MELEE:
+			case 3:
 			{
-				moveComp.ResetFrameIntent();
-				animState = 2;
-				if (ghoulRuntime.willAttack && ghoulRuntime.stateTime >= GHOUL_MELEE_WINDUP)
-				{
-					ghoulRuntime.willAttack = false;
-
-					Vec2 offset = { 0.f, 0.f };
-					if (faceRight) {
-						offset.x += GHOUL_MELEE_RANGE / 2.f;
-					}
-					else {
-						offset.x -= GHOUL_MELEE_RANGE / 2.f;
-					}
-					AttackProperties props = GHOUL_MELEE_PROPERTIES;
-					props.owner = eID;
-					CombatSystem::Get().SpawnHitBox(
-						props,
-						offset,
-						GHOUL_MELEE_HITBOX_SIZE
-					);
-				}
-
-				if (ghoulRuntime.stateTime >= GHOUL_MELEE_DURATION) {
-					ghoulRuntime.state = GhoulState::GHOUL_IDLE;
-					ghoulRuntime.stateTime = 0.f;
-				}
-
-
+				Phase3Logic(eID, moveComp, selfPos, directionToPlayer, animState, dPlayerSq, faceRight);
 			}
-			break; // end case GHOUL_MELEE
-
-			case GHOUL_RANGE:
-			{
-				moveComp.ResetFrameIntent();
-				animState = 3;
-				if (ghoulRuntime.willAttack && ghoulRuntime.stateTime >= GHOUL_RANGE_CASTTIME)
-				{
-					ghoulRuntime.willAttack = false;
-
-					// shotgun bangg
-					for (int i = 0; i < 5; i++) {
-
-						//recycle spirit spit first
-						// Create visual entity (for rendering/physics)
-						Entity spit = JsonLoad::LoadEntityFromFile(
-							FilePath::PREFABS_FOLDER + "SpiritSpit.json",
-							selfPos.x, selfPos.y
-						);
-
-						// if dont have smth wrong with the prefab... but just to prevent crash
-						if (registry.Has_Component<Physics::PhysicsComponent>(spit))
-						{
-							TransformComponent& spitTrans = registry.Get_Component<TransformComponent>(spit);
-							Physics::PhysicsComponent& spitPhy = registry.Get_Component<Physics::PhysicsComponent>(spit);
-							// make projectile
-
-							float angleOffset = (i - 2) * 0.1f; // -0.2, -0.1, 0, 0.1, 0.2 radians offset
-							Vec2 dir = { directionToPlayer.x * cos(angleOffset) - directionToPlayer.y * sin(angleOffset),
-										 directionToPlayer.x * sin(angleOffset) + directionToPlayer.y * cos(angleOffset) };
-							dir = RG_Normalize(dir);
-							dir = RG_Scale(dir, PROJECTILE_SPEED);
-							spitPhy.Set_Vel(dir);
-
-							float angleRad = std::atan2(dir.y, dir.x);
-							// angleDeg = angleRad * (180.0f / RG_PI);
-							spitTrans.rot = angleRad;
-
-
-							AttackProperties props = SPIRIT_PROJECTILE_PROPERTIES;
-							props.owner = spit;
-							CombatSystem::Get().RegisterProjectile(spit, props, SPIRIT_PROJECTILE_RUNTIME);
-						}
-					}
-				}
-
-				if (ghoulRuntime.stateTime >= GHOUL_RANGE_DURATION) {
-					ghoulRuntime.state = GhoulState::GHOUL_IDLE;
-					ghoulRuntime.stateTime = 0.f;
-				}
-			}
-			break; // end case GHOUL_RANGE
-
-			case GHOUL_DEAD:
-			{
-				// yo i shouldnt be here ?
-			}
-			break; // end case GHOUL_DEAD
 
 			default:
 				break;
 
-			} // end switch ghoul state
+			}
+			// end switch phase
 		}
 
 
@@ -1553,10 +1977,25 @@ namespace GhoulScript {
 		spriteSheet.Sprite().SetFlipX(faceRight);
 		spriteSheet.SetState(animState);
 
-		//switch (ghoulRuntime.phase)
-		//{
 
-		//}
+		// hp bar
+		{
+			// value
+			Vec2 v0, v1, v2, v3;
+			// Get background quad
+			gui.GetDisplayQuad(stats.memberIDs[0], v0, v1, v2, v3);
+			// Calculate position for new quad
+			float amount = health.currhp / health.maxhp;
+
+			Vec2 newV1 = v0 + (v1 - v0) * amount;   // bottom right moves left
+			Vec2 newV2 = v3 + (v2 - v3) * amount;   // top right moves left
+
+			gui.SetDisplayQuad(stats.memberIDs[1], v0, newV1, newV2, v3);
+
+			// phase
+			gui.SetDisplaySheetState(stats.memberIDs[2], ghoulRuntime.phase - 1);
+		}
+		// end update for ghoul
 	}
 
 	void End(Entity eID) {

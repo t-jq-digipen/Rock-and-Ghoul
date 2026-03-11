@@ -84,13 +84,14 @@ namespace ObstacleScript {
 
 namespace GhoulScript {
 	enum GhoulState : unsigned int {
+		GHOUL_SPAWN,
+		GHOUL_TRANSFORM,
 		GHOUL_IDLE,
 		GHOUL_MOVING,
 		GHOUL_BARRIER,
 		GHOUL_STAGGERED,
 		GHOUL_MELEE,
 		GHOUL_RANGE,
-		GHOUL_HIT,
 		GHOUL_DEAD
 	};
 

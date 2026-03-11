@@ -2625,7 +2625,7 @@ void ImGuiSystem::Update(float dt)
 
         // UI Properties Window for selected UI entity
         ImGui::SeparatorText("UI Properties");
-        ImGui::BeginChild("Properties", ImVec2(0, 0), true); // 0 height = fill remaining space
+        ImGui::BeginChild("Properties", ImVec2(0, 220), true); // 0 height = fill remaining space
 
         if (uiSelectedIndex < 0 || uiSelectedType == SelectedType::None)
         {
