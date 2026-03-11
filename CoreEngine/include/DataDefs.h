@@ -103,7 +103,7 @@ struct SavedScene {
         std::string action;
         std::string actionName{"{}"};
         json actionParams{"{}"};
-        int soundType = 0; // default to PLAY(0)
+        std::string soundName = "ui_click";
         bool isVisible;
     };
     std::vector<SavedButton> guiButtons;

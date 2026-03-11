@@ -1112,7 +1112,7 @@ void GuiSystem::Update(float dt)
             if (navEnter && focusedButtonIndex >= 0 && focusedButtonIndex < (int)buttons.size() && buttons[focusedButtonIndex].isVisible)
             {
                 auto& cfg = buttons[focusedButtonIndex];
-                if (audio) audio->PlayButtonSound(cfg.soundType);
+                AudioSystem::PlaySoundByName(cfg.soundName);
                 if (cfg.onClick) cfg.onClick();
                 if (cfg.actionName != "") CallAction(cfg.actionName, cfg.actionParams);
             }
@@ -1198,7 +1198,7 @@ void GuiSystem::Update(float dt)
             {
 #endif
                 if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
-                    if (audio) audio->PlayButtonSound(cfg.soundType);
+                    AudioSystem::PlaySoundByName(cfg.soundName);
                     if (cfg.onClick) cfg.onClick();
                     if (cfg.actionName != "") CallAction(cfg.actionName, cfg.actionParams);
                 }

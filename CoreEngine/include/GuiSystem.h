@@ -501,7 +501,7 @@ struct ButtonConfig {
     float textScale{ 1.f };
 
     std::function<void()> onClick = nullptr;
-    AudioSystem::ButtonType soundType = AudioSystem::ButtonType::CLICK;
+    std::string soundName = "ui_click";
     //ButtonShape shape = ButtonShape::Rectangle;
     ButtonAction action = ButtonAction::None;
 

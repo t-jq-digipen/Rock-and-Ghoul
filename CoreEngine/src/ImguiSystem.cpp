@@ -2815,24 +2815,33 @@ void ImGuiSystem::Update(float dt)
                     ImGui::Separator();
                     // Button sound
                     {
-                        static const char* ButtonSoundLabels[] = {
-                            "Play",
-                            "Quit",
-                            "Click"
-                        };
-                        int currentSound = static_cast<int>(b.soundType);
-                        int soundBefore  = currentSound;
-                        if (ImGui::Combo("Button Sound", &currentSound, ButtonSoundLabels, static_cast<int>(AudioSystem::ButtonType::COUNT)))
-                        {
-                            int idx    = selectedLocal;
-                            int before = soundBefore;
-                            int after  = currentSound;
-                            b.soundType = static_cast<AudioSystem::ButtonType>(currentSound);
-                            UndoSystem::Get().RecordComponentChange(
-                                [idx, before]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) btns[idx].soundType = static_cast<AudioSystem::ButtonType>(before); },
-                                [idx, after ]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) btns[idx].soundType = static_cast<AudioSystem::ButtonType>(after);  },
-                                "UI.Button.soundType");
+                        // Rebuild every frame so switching games shows correct assets
+                        std::vector<std::string> soundNames;
+                        std::vector<const char*> soundNamePtrs;
+                        for (auto& [name, asset] : AudioCache::GetAllAssets())
+                            soundNames.push_back(name);
+                        std::sort(soundNames.begin(), soundNames.end());
+                        for (auto& n : soundNames) soundNamePtrs.push_back(n.c_str());
+
+                        int currentIdx = 0;
+                        for (int i = 0; i < (int)soundNames.size(); i++) {
+                            if (soundNames[i] == b.soundName) { currentIdx = i; break; }
                         }
+                        int idxBefore = currentIdx;
+                        if (ImGui::Combo("Button Sound", &currentIdx, soundNamePtrs.data(), (int)soundNamePtrs.size()))
+                        {
+                            int widgetIdx   = selectedLocal;
+                            std::string before = b.soundName;
+                            std::string after  = soundNames[currentIdx];
+                            b.soundName = after;
+                            UndoSystem::Get().RecordComponentChange(
+                                [widgetIdx, before]() { auto& btns = GuiSystem::Get().Buttons(); if (widgetIdx < (int)btns.size()) btns[widgetIdx].soundName = before; },
+                                [widgetIdx, after ]() { auto& btns = GuiSystem::Get().Buttons(); if (widgetIdx < (int)btns.size()) btns[widgetIdx].soundName = after;  },
+                                "UI.Button.soundName");
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::SmallButton("Preview##snd"))
+                            AudioSystem::PlaySoundByName(b.soundName);
                     }
                     ImGui::Separator();
                     // Render data
