@@ -1268,6 +1268,48 @@ void GuiSystem::Update(float dt)
         }; // end DRAW TEXTBOX
     // --------------------------------------------------
 
+    auto TryApplySkinToDialogue = [&](DialogueConfig& dlg, const DialogueSpeakerSkin& skin)
+        {
+            dlg.bgEnabled = skin.bgEnabled;
+            dlg.bgBaseSize = skin.bgBaseSize;
+            dlg.bgRenderData = skin.bgRenderData;
+
+            dlg.profileEnabled = skin.profileEnabled;
+            dlg.profileBaseSize = skin.profileBaseSize;
+            dlg.profileOffset = skin.profileOffset;
+            dlg.profileRenderData = skin.profileRenderData;
+        };
+
+    auto ReadSkinFromDialogueJson = [&](const nlohmann::json& sc, int speakerID, DialogueSpeakerSkin& out) -> bool
+        {
+            if (!sc.contains("speakerUI") || !sc["speakerUI"].is_object()) return false;
+
+            const std::string key = std::to_string(speakerID);
+            if (!sc["speakerUI"].contains(key) || !sc["speakerUI"][key].is_object()) return false;
+
+            const auto& node = sc["speakerUI"][key];
+
+            out.bgEnabled = node.value("bgEnabled", true);
+            if (node.contains("bgSize") && node["bgSize"].is_array())
+                out.bgBaseSize = { node["bgSize"][0].get<float>(), node["bgSize"][1].get<float>() };
+
+            if (node.contains("bgRenderData") && node["bgRenderData"].is_string())
+                out.bgRenderData = UI_RenderData::DeSerialize(node["bgRenderData"].get<std::string>());
+
+            out.profileEnabled = node.value("profileEnabled", true);
+            if (node.contains("profileSize") && node["profileSize"].is_array())
+                out.profileBaseSize = { node["profileSize"][0].get<float>(), node["profileSize"][1].get<float>() };
+
+            if (node.contains("profileOffset") && node["profileOffset"].is_array())
+                out.profileOffset = { node["profileOffset"][0].get<float>(), node["profileOffset"][1].get<float>() };
+
+            if (node.contains("profileRenderData") && node["profileRenderData"].is_string())
+                out.profileRenderData = UI_RenderData::DeSerialize(node["profileRenderData"].get<std::string>());
+
+            // Optional: profileDisplaySide per speaker if you want, but you currently store it per DialogueConfig.
+            return true;
+        };
+
     // Draw dialogue
     // --------------------------------------------------
     auto drawDialogueAt = [&](int i)
@@ -1338,10 +1380,47 @@ void GuiSystem::Update(float dt)
             static std::unordered_map<int, bool> autoSpeakerImagesByDlg;
 
             // Apply speaker ID (custom or otherwise)
-            int effectiveSpeakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
-            if (d.customOverride && d.speakerOverrideEnabled)
+            int effectiveSpeakerID = -1;
+            if (!d.customOverride)
             {
-                effectiveSpeakerID = d.speakerOverrideID;
+                effectiveSpeakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
+            }
+            else
+            {
+                // Custom mode: use per-line speaker IDs
+                if (idx >= 0 && idx < (int)d.customLineSpeakerIDs.size())
+                {
+                    effectiveSpeakerID = d.customLineSpeakerIDs[idx];
+                }
+                else
+                {
+                    effectiveSpeakerID = 0;
+                }
+            }
+            
+            // Apply speaker skin to dialogue line
+            bool appliedSkin = false;
+
+            // Custom mode: use saved per-speaker skins
+            if (d.customOverride)
+            {
+                auto it = d.speakerSkins.find(effectiveSpeakerID);
+                if (it != d.speakerSkins.end())
+                {
+                    TryApplySkinToDialogue(d, it->second);
+                    appliedSkin = true;
+                }
+            }
+            else
+            {
+                // Scene-driven: read per-speaker skin from Dialogue JSON
+                const json& sc = sDlgDoc["scenes"][sceneIdxInt];
+                DialogueSpeakerSkin skin{};
+                if (ReadSkinFromDialogueJson(sc, effectiveSpeakerID, skin))
+                {
+                    TryApplySkinToDialogue(d, skin);
+                    appliedSkin = true;
+                }
             }
 
             bool autoFromSpeaker = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER);
@@ -2599,6 +2678,7 @@ bool GuiSystem::HandleDialogueAdvance(bool advance)
         if (typing)
         {
             comp->StopTyping();
+            comp->SetVisibleChars((int)lines[idx].size());
             return true;
         }
 

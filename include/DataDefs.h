@@ -125,6 +125,38 @@ struct SavedScene {
     std::vector<SavedTextBox> guiTextboxes;
 
 /**
+ * @struct SavedDialogueLine
+ * @brief Serializable dialogue line and its properties.
+ */
+
+    struct SavedDialogueLine
+    {
+        int speakerID = 0;
+        std::string line;
+    };
+
+/**
+ * @struct SavedDialogueSpeakerUI
+ * @brief Serializable dialogue speaker UI and its properties.
+ */
+
+    struct SavedDialogueSpeakerUI
+    {
+        std::string speakerName;
+
+        bool bgEnabled = true;
+        Vec2 bgSize{ 1500.f, 300.f };
+        std::string bgRenderData;
+
+        bool profileEnabled = true;
+        Vec2 profileSize{ 300.f, 300.f };
+        Vec2 profileOffset{ 0.f, 0.f };
+        std::string profileRenderData;
+
+        int profileDisplaySide = 0;
+    };
+
+/**
  * @struct SavedDialogue
  * @brief Serializable dialogue box and its properties.
  */
@@ -135,8 +167,9 @@ struct SavedScene {
         std::string jsonPath;
         std::string sceneID = "0";
         std::vector<std::string> lines;
-        int currentLineIndex = 0;
+        std::vector<SavedDialogueLine> savedLines;
 
+        int currentLineIndex = 0;
         float textSpeed;
         float wrapWidth;
 
@@ -145,16 +178,15 @@ struct SavedScene {
         std::string bgRenderData{ "{}" };
 
         bool profileEnabled = true;
-        Vec2 profileSize = { 200.f, 200.f };
+        Vec2 profileSize = { 300.f, 300.f };
         Vec2 profileOffset = { 0.f, 0.f };
         std::string profileRenderData{ "{}" };
         int profileDisplaySide = 0;
 
+        std::unordered_map<int, SavedDialogueSpeakerUI> savedSpeakerUI;
+
         bool customOverride = false;
-        bool speakerOverrideEnabled = false;
-        int speakerOverrideID;
-        
-        bool isVisible;
+        bool isVisible = true;
     };
     std::vector<SavedDialogue> guiDialogues;
 

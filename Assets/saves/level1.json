@@ -211,10 +211,10 @@
     "gui": {
         "buttons": [
             {
-                "ID": 11,
-                "action": "None",
+                "ID": 51,
+                "action": "",
                 "actionName": "AdvanceDialogue",
-                "actionParams": "{}",
+                "actionParams": [],
                 "isVisible": false,
                 "label": "",
                 "pos": [
@@ -231,7 +231,7 @@
         ],
         "dialogues": [
             {
-                "ID": 10,
+                "ID": 50,
                 "bgEnabled": true,
                 "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
                 "bgSize": [
@@ -240,23 +240,59 @@
                 ],
                 "currentLineIndex": 0,
                 "customOverride": false,
-                "displayProfileSide": 0,
                 "isVisible": true,
                 "jsonPath": "../Assets/Dialogue.json",
                 "lines": [
-                    "Jam Out SG! We made it! We're gonna rock their socks off. Or whatever they say.",
-                    "Record deal, here we come.",
-                    "Crazy bummer that so many acts forfeited! I wouldn't be surprised if they pit US against each other for content.",
-                    "I'd like to see them try. (SMIRK)",
-                    "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star.",
-                    "Spooky...",
-                    "Groooowl...",
-                    "MEGA SPOOKY!",
-                    "I gotta find Ghoul, and fast!",
-                    "But first, I gotta fight off...whatever these are...",
-                    "I get the feeling they won't let me get past if I don't do something about these creeps...",
-                    "Alright then, let's rock this out! BRING IT ON!!!"
+                    {
+                        "line": "Jam Out SG! We made it! We're gonna rock their socks off. Or whatever they say.",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "Record deal, here we come.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "Crazy bummer that so many acts forfeited! I wouldn't be surprised if they pit US against each other for content.",
+                        "speakerID": 6
+                    },
+                    {
+                        "line": "I'd like to see them try. (SMIRK)",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "Spooky...",
+                        "speakerID": 5
+                    },
+                    {
+                        "line": "Groooowl...",
+                        "speakerID": 2
+                    },
+                    {
+                        "line": "MEGA SPOOKY!",
+                        "speakerID": 4
+                    },
+                    {
+                        "line": "I gotta find Ghoul, and fast!",
+                        "speakerID": 4
+                    },
+                    {
+                        "line": "But first, I gotta fight off...whatever these are...",
+                        "speakerID": 5
+                    },
+                    {
+                        "line": "I get the feeling they won't let me get past if I don't do something about these creeps...",
+                        "speakerID": 4
+                    },
+                    {
+                        "line": "Alright then, foul spirits! BRING IT ON!!!",
+                        "speakerID": 3
+                    }
                 ],
+                "profileDisplaySide": 0,
                 "profileEnabled": true,
                 "profileOffset": [
                     0.0,
@@ -268,8 +304,142 @@
                     300.0
                 ],
                 "sceneID": "0",
-                "speakerOverrideEnabled": false,
-                "speakerOverrideID": 0,
+                "speakerUI": {
+                    "0": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Happy.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Rock"
+                    },
+                    "1": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Ghoul.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_GhoulDialogue_Normal.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Ghoul"
+                    },
+                    "2": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Enemy.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_EnemyDialogue_Normal.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ]
+                        ,
+                        "speakerName": "Spirit"
+                    },
+                    "3": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Angry.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Rock"
+                    },
+                    "4": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Frightened.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Rock"
+                    },
+                    "5": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Shocked.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Rock"
+                    },
+                    "6": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Victory.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Rock"
+                    }
+                },
                 "textBox": {
                     "centered": false,
                     "color": [
@@ -1007,8 +1177,9 @@
                 "ID": 1,
                 "members": [
                     10,
-                    11,
-                    33
+                    33,
+                    50,
+                    51
                 ],
                 "name": "Level 1 Dialogue"
             }

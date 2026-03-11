@@ -519,6 +519,22 @@ struct TextBoxConfig {
     int ID = 0;
 };
 
+// Dialogue background/profile configurations by speaker ID
+
+struct DialogueSpeakerSkin
+{
+    // Dialogue box background UI settings
+    bool bgEnabled = true;
+    Vec2 bgBaseSize = { 1500.f, 300.f };
+    UI_RenderData bgRenderData;
+
+    // Dialogue box profile UI settings
+    bool profileEnabled = true;
+    Vec2 profileBaseSize = { 300.f, 300.f };
+    Vec2 profileOffset = { 0.f, 0.f };
+    UI_RenderData profileRenderData;
+};
+
 struct DialogueConfig {
     TextSystem::TextComponent* textComp = nullptr;
     TextBoxConfig textBox;
@@ -547,8 +563,15 @@ struct DialogueConfig {
 
     // To be used by the ImGui UI editor
     bool customOverride = false; // if custom override mode is on
-    bool speakerOverrideEnabled = false; // to override speaker (only used when customOverride == true)
-    int speakerOverrideID = 0;
+
+    // Custom mode: per-line speaker IDs
+    std::vector<int> customLineSpeakerIDs;
+
+    // Custom / scene-driven mode: per-speaker skin
+    std::unordered_map<int, DialogueSpeakerSkin> speakerSkins;
+
+    // Custom mode: override speaker names
+    std::unordered_map<int, std::string> speakerNameOverrides;
 };
 
 struct DisplayConfig
