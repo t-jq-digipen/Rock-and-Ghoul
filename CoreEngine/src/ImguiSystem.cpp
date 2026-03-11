@@ -2683,42 +2683,7 @@ void ImGuiSystem::Update(float dt)
                         }
                     }
                     ImGui::Separator();
-                    // Action
-                    {
-                        const char* actionNames[] =
-                        {
-                            "None",
-                            "Load Level 1",
-                            "Load Main Menu",
-                            "Quit",
-                            "Open State Window",
-                            "Toggle All Buttons",
-                            "Toggle All Textboxes",
-                            "Toggle All Dialogues",
-                            "Toggle All Displays",
-                            "Load Settings",
-                            "Load Controls",
-                            "Advance Dialogue"
-                        };
-                        int actionCount = (int)(sizeof(actionNames) / sizeof(actionNames[0]));
-                        int curr = (int)b.action;
-                        curr = (curr >= 0 && curr < actionCount) ? curr : 0;
-                        int actionBefore = curr;
-                        if (ImGui::Combo("Action", &curr, actionNames, actionCount))
-                        {
-                            int idx    = selectedLocal;
-                            int before = actionBefore;
-                            int after  = curr;
-                            b.action = (ButtonAction)curr;
-                            GuiSystem::Get().BindButtonAction(b);
-                            UndoSystem::Get().RecordComponentChange(
-                                [idx, before]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) { btns[idx].action = (ButtonAction)before; GuiSystem::Get().BindButtonAction(btns[idx]); } },
-                                [idx, after ]() { auto& btns = GuiSystem::Get().Buttons(); if (idx < (int)btns.size()) { btns[idx].action = (ButtonAction)after;  GuiSystem::Get().BindButtonAction(btns[idx]); } },
-                                "UI.Button.action");
-                        }
-                    }
-                    ImGui::Separator();
-                    // Action new
+                    // Button Action
                     {
                         std::vector<const char*> actionNames;
                         int selected = -1;
