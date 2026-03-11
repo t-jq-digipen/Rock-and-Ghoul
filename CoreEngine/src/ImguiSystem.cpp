@@ -8200,107 +8200,6 @@ void ImGuiSystem::ShowPrefabControls()
 }
 
 
-//play stop button
-/*void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
-{
-    ImGui::SeparatorText("Simulation Controls");
-
-    // center horizontally in game view
-    float panelWidth = ImGui::GetContentRegionAvail().x;
-    float buttonWidth = 80.f;
-    float spacing = 16.f;
-    float totalWidth = buttonWidth * 2 + spacing;
-    float startX = (panelWidth - totalWidth) * 0.5f;
-    ImGui::SetCursorPosX(startX);
-    SceneManager& sm = SceneManager::Get();
-    bool inEdit = sm.inEditMode;
-    // ───────────────────────────────
-     // PLAY BUTTON
-     // ───────────────────────────────
-    if (!inEdit) { ImGui::BeginDisabled(); }
-    if (ImGui::Button("Play", ImVec2(buttonWidth, 0)))
-    {
-        selectedEntity = INVALID_ENTITY;
-        // Set GameViewRect FIRST before mode switch
-        GameViewRect rect;
-        rect.x = 0.0f;
-        rect.y = 0.0f;
-        rect.width = static_cast<float>(GLApp::width);
-        rect.height = static_cast<float>(GLApp::height);
-        GuiSystem::Get().SetGameViewRect(rect);
-        // 1) Switch to PLAY first so camera becomes gameplay camera
-        sm.EnterPlayMode();
-
-        Camera& cam = Camera::GetInstance();
-        cam.SetBounds(sceneMin, sceneMax);
-        cam.SetPosition(camSpawnPos);
-        cam.SetZoom(camSpawnZoom);
-
-        // 2) NOW camera is GAME camera — save it
-        SavedScene::SavedCamera camSet;
-        camSet.pos = cam.GetPosition();
-        camSet.zoom = cam.GetZoom();
-        camSet.worldMin = cam.GetWorldMin();
-        camSet.worldMax = cam.GetWorldMax();
-
-        sm.SaveScene(sm.GetTempScenePath(), camSet);
-      
-        std::cout << "[Editor] Gameplay started.\n";
-        isPlaying = true;
-
-    }
-
-
-    if (!inEdit) { ImGui::EndDisabled(); }
-
-    ImGui::SameLine(0, spacing);
-
-    // ───────────────────────────────
-    // STOP BUTTON
-    // ─────────────────────────────── 
-    if (inEdit) { ImGui::BeginDisabled(); }
-    if (ImGui::Button("Stop", ImVec2(buttonWidth, 0)))
-    {
-        // Set GameViewRect FIRST before mode switch
-        GameViewRect rect;
-        rect.x = 0.0f;
-        rect.y = 0.0f;
-        rect.width = static_cast<float>(GLApp::width);
-        rect.height = static_cast<float>(GLApp::height);
-        GuiSystem::Get().SetGameViewRect(rect);
-        // 1) Exit play mode → go back to editor rule set
-        sm.EnterEditMode();
-
-        // 2) Reload gameplay entities from temp
-        JsonLoad::ClearAllEntities();
-        JsonLoad::LoadScene(sm.GetTempScenePath());
-
-        // 3) Restore EDITOR camera only (we do NOT use temp camera)
-        Camera& cam = Camera::GetInstance();
-        camSpawnPos = cam.GetPosition();
-        camSpawnZoom = cam.GetZoom();
-        sceneMin = cam.GetWorldMin();
-        sceneMax = cam.GetWorldMax();
-        sceneSize = sceneMax - sceneMin;
-
-        cam.SetMode(Camera::Mode::EDITOR);
-        cam.ResetToCenter();
-
-        ImGuiSystem::selectedEntity = INVALID_ENTITY;
-
-        std::cout << "[Editor] Gameplay stopped.\n";
-        isPlaying = false;
-    }
-    if (inEdit) { ImGui::EndDisabled(); }
-
-    // Status text
-    ImGui::SameLine(spacing * 2);
-    ImGui::TextColored(
-        isPlaying ? ImVec4(0.2f, 0.8f, 0.2f, 1.f) : ImVec4(0.8f, 0.3f, 0.3f, 1.f),
-        isPlaying ? "PLAYING" : "EDITING"
-    );
-}*/
-
 // play / stop / replay buttons
 void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
 {
@@ -8326,7 +8225,6 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     // ======================================================
     {
         float totalWidth = buttonWidth * 2 + spacing;
-        //float totalWidth = buttonWidth * 5 + spacing * 4;
         float startX = (panelWidth - totalWidth) * 0.5f;
         ImGui::SetCursorPosX(startX);
 

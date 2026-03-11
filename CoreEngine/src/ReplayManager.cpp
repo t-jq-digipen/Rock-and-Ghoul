@@ -1,19 +1,67 @@
+/* ========================================================
+ * @file        ReplayManager.cpp
+ * @author      Kervin Ong Guan Cheng  | kervinguancheng.ong@digipen.edu
+ * @date        11 MAR 2026
+ *
+ * @brief
+ * Implements the ReplayManager system which provides
+ * short-term gameplay recording and playback functionality.
+ *
+ * Responsibilities:
+ * - Captures entity gameplay state into a fixed-size ring buffer.
+ * - Restores entity state during playback without running
+ *   normal gameplay systems.
+ * - Recreates runtime entities (e.g. enemies, spells, obstacles)
+ *   from prefabs when missing during replay.
+ * - Synchronizes UI gameplay state such as fretboard arrows,
+ *   spell slots, and current element selection.
+ * - Maintains playback entity remapping to support destroyed /
+ *   respawned ECS entities.
+ * - Automatically resets replay state when scenes change.
+ *
+ * The system is designed as a lightweight debugging / gameplay
+ * feature and does NOT perform full ECS serialization.
+ *
+ * Copyright © 2026 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
+
 #include "ReplayManager.h"
 
-//#include "RenderComponent.h"
 
-
-
+/**
+ * @brief Retrieves the global ReplayManager singleton.
+ *
+ * Ensures only one replay system instance exists.
+ *
+ * @return Reference to ReplayManager instance.
+ */
 ReplayManager& ReplayManager::Get()
 {
     static ReplayManager inst;
     return inst;
 }
 
+
+/**
+ * @brief Configures replay buffer capacity.
+ *
+ * Sets recording FPS and duration in seconds, and resizes
+ * the internal circular frame buffer accordingly.
+ *
+ * @param fps_ Target recording frame rate.
+ * @param secondsToKeep Duration of gameplay history to keep.
+ */
 void ReplayManager::Configure(int fps_, int secondsToKeep)
 {
-    if (fps_ <= 0) fps_ = 60;
-    if (secondsToKeep <= 0) secondsToKeep = 10;
+    if (fps_ <= 0) {
+        fps_ = 60;
+    }
+
+    if (secondsToKeep <= 0) {
+        secondsToKeep = 10;
+    }
 
     fps = fps_;
     seconds = secondsToKeep;
@@ -27,6 +75,19 @@ void ReplayManager::Configure(int fps_, int secondsToKeep)
     playCursor = 0;
 }
 
+
+
+/**
+ * @brief Fully resets replay state.
+ *
+ * Clears playback mappings, buffer indices, mode flags,
+ * and removes all stored frame snapshots.
+ *
+ * Called when:
+ * - Scene loads
+ * - Playback stops
+ * - Recording session restarts
+ */
 void ReplayManager::Reset()
 {
     mode = Mode::Off;
@@ -34,18 +95,22 @@ void ReplayManager::Reset()
     validCount = 0;
     playCursor = 0;
     replayEntityMap.clear();
-    /*m_knownEntities.clear();
-    m_pendingSpawns.clear();
-    m_playbackIDMap.clear();*/
+
 
     for (auto& frame : ring)
     {
         frame.entities.clear();
-        //frame.newEntities.clear();
-        //frame.deadEntities.clear();
     }
 }
 
+
+
+/**
+ * @brief Initializes ReplayManager runtime behaviour.
+ *
+ * Subscribes to SceneLoadEvent to ensure replay buffer
+ * is cleared safely when scenes change.
+ */
 void ReplayManager::Init()
 {
     m_sceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent&)
@@ -54,6 +119,14 @@ void ReplayManager::Init()
         });
 }
 
+
+
+/**
+ * @brief Begins gameplay recording.
+ *
+ * Resets buffer indices and clears existing replay mappings.
+ * Allocates buffer if required.
+ */
 void ReplayManager::StartRecording()
 {
     replayEntityMap.clear();
@@ -73,42 +146,113 @@ void ReplayManager::StartRecording()
         ring[i].entities.clear();
 }
 
+
+
+/**
+ * @brief Stops gameplay recording.
+ *
+ * Replay buffer contents are preserved for playback.
+ */
 void ReplayManager::StopRecording()
 {
-    if (mode == Mode::Recording) mode = Mode::Off;
+    if (mode == Mode::Recording) {
+        mode = Mode::Off;
+    }
 }
 
+
+
+/**
+ * @brief Begins replay playback.
+ *
+ * Playback starts from the oldest recorded frame.
+ * Clears entity remapping table to prepare recreation.
+ */
 void ReplayManager::StartPlayback()
 {
-    if (validCount <= 0) return;
+    if (validCount <= 0) {
+        return;
+    }
     replayEntityMap.clear();
     mode = Mode::Playback;
     playCursor = 0;
 }
 
+
+/**
+ * @brief Stops replay playback.
+ *
+ * Clears playback entity remapping and returns replay mode
+ * to OFF.
+ */
 void ReplayManager::StopPlayback()
 {
-    if (mode == Mode::Playback) mode = Mode::Off;
+    if (mode == Mode::Playback) {
+        mode = Mode::Off;
+    }
     replayEntityMap.clear();
 
     //SceneManager::Get().ReloadScene();
 }
 
+
+/**
+ * @brief Computes index of the oldest valid frame.
+ *
+ * Used for circular buffer addressing.
+ *
+ * @return Index of oldest recorded frame.
+ */
 int ReplayManager::OldestIndex() const
 {
     return (validCount < capacity) ? 0 : writeIdx;
 }
 
+
+
+/**
+ * @brief Converts logical playback index to buffer index.
+ *
+ * Handles circular wrapping of the replay buffer.
+ *
+ * @param logicalIndex Playback frame number.
+ * @return Physical buffer index.
+ */
 int ReplayManager::IndexAt(int logicalIndex) const
 {
     int idx = OldestIndex() + logicalIndex;
-    while (idx >= capacity) idx -= capacity;
+    while (idx >= capacity) {
+        idx -= capacity;
+    }
+
     return idx;
 }
 
+
+
+/**
+ * @brief Captures one frame of gameplay state.
+ *
+ * Iterates all entities with TransformComponent and records:
+ * - Transform
+ * - Physics velocity
+ * - Movement intent
+ * - Animation state
+ * - Health / Lifetime / Status
+ * - Replay recreation metadata
+ *
+ * Also records gameplay UI state:
+ * - Fretboard arrow visibility
+ * - Spell slot cooldown / charges
+ * - Current player element selection
+ *
+ * Advances circular buffer write pointer.
+ */
 void ReplayManager::CaptureTick()
 {
-    if (mode != Mode::Recording) return;
+    if (mode != Mode::Recording) {
+        return;
+    }
 
     Registry& reg = Registry::Get();
     FrameSnapshot& frame = ring[writeIdx];
@@ -157,11 +301,14 @@ void ReplayManager::CaptureTick()
 
             s.inputDir = static_cast<int>(mv.GetInputDirection());
 
-            // infer facing direction
-            if (dir.x < 0)
+            //facing direction
+            if (dir.x < 0) {
                 s.faceRight = false;
-            else if (dir.x > 0)
+            }        
+            else if (dir.x > 0) {
                 s.faceRight = true;
+            }
+               
         }
 
         //animations
@@ -207,21 +354,6 @@ void ReplayManager::CaptureTick()
             s.isStunned = se.isStunned;
         }
 
-        /*if (reg.Has_Component<TagComponent>(e))
-        {
-            auto& tag = reg.Get_Component<TagComponent>(e);
-            s.hasTag = true;
-            s.tagValue = static_cast<int>(tag.tag);
-
-            // first attempt: recreate enemies only
-            if (tag.tag == T_ENEMY)
-            {
-                s.canRecreate = true;
-
-                // replace this with the actual prefab for your enemy
-                s.recreatePrefab = "Spirit.json";
-            }
-        }*/
 
         if (reg.Has_Component<BehaviourComponent>(e))
         {
@@ -240,11 +372,9 @@ void ReplayManager::CaptureTick()
             else if (bc.HasScript("ManfredEnemy"))
             {
                 s.canRecreate = true;
-                s.recreatePrefab = "ghoul.json"; // replace with actual prefab
+                s.recreatePrefab = "ghoul.json"; 
             }
         }
-
- 
 
 
         frame.entities.push_back(s);
@@ -253,7 +383,7 @@ void ReplayManager::CaptureTick()
     // Capture arrow display state
     GuiSystem& gui = GuiSystem::Get();
     auto& displays = const_cast<std::vector<DisplayConfig>&>(gui.GetDisplays());
-    int i = 0;
+
     for (auto& display : displays)
     {
         if (display.ID >= 10 && display.ID <= 21)
@@ -265,13 +395,13 @@ void ReplayManager::CaptureTick()
     }
 
     // spell slots state
-    for (int i = 0; i < 3; i++)
+    for (int j = 0; j < 3; j++)
     {
         int t; float cd; int ch;
-        PlayerSystem::GetSpellSlotState(i, t, cd, ch);
-        frame.fretboard.spellSlots[i].type = t;
-        frame.fretboard.spellSlots[i].currentCD = cd;
-        frame.fretboard.spellSlots[i].charges = ch;
+        PlayerSystem::GetSpellSlotState(j, t, cd, ch);
+        frame.fretboard.spellSlots[j].type = t;
+        frame.fretboard.spellSlots[j].currentCD = cd;
+        frame.fretboard.spellSlots[j].charges = ch;
     }
 
     //element cycle state
@@ -279,23 +409,46 @@ void ReplayManager::CaptureTick()
 
     // advance ring
     writeIdx++;
-    if (writeIdx >= capacity) writeIdx = 0;
-    if (validCount < capacity) validCount++;
+    if (writeIdx >= capacity) {
+        writeIdx = 0;
+    }
+
+    if (validCount < capacity) {
+        validCount++;
+    }
    
 }
 
+
+
+/**
+ * @brief Resolves entity used for playback restoration.
+ *
+ * If original entity still exists, it is reused.
+ * Otherwise attempts to:
+ * - Find previously recreated playback entity
+ * - Recreate entity from prefab snapshot metadata
+ *
+ * Maintains replayEntityMap for stable playback references.
+ *
+ * @param s Snapshot describing entity state.
+ * @return Valid entity ID or INVALID_ENTITY.
+ */
 Entity ReplayManager::ResolvePlaybackEntity(const EntitySnapshot& s)
 {
     Registry& reg = Registry::Get();
 
-    if (reg.Has_Component<TransformComponent>(s.id))
+    if (reg.Has_Component<TransformComponent>(s.id)) {
         return s.id;
-
+    }
+        
     auto it = replayEntityMap.find(s.id);
     if (it != replayEntityMap.end())
     {
-        if (reg.Has_Component<TransformComponent>(it->second))
+        if (reg.Has_Component<TransformComponent>(it->second)) {
             return it->second;
+        }
+            
     }
 
     if (s.canRecreate && !s.recreatePrefab.empty())
@@ -318,9 +471,28 @@ Entity ReplayManager::ResolvePlaybackEntity(const EntitySnapshot& s)
     return INVALID_ENTITY;
 }
 
+
+
+/**
+ * @brief Restores one recorded frame during playback.
+ *
+ * Updates entity state including:
+ * - Transform
+ * - Physics velocity
+ * - Movement state
+ * - Animation state
+ * - Health / Lifetime / Status effects
+ *
+ * Restores gameplay UI snapshot state.
+ * Updates gameplay camera to follow recorded player position.
+ *
+ * Advances playback cursor.
+ */
 void ReplayManager::ApplyTick()
 {
-    if (mode != Mode::Playback) return;
+    if (mode != Mode::Playback) {
+        return;
+    }
 
     if (playCursor >= validCount)
     {
@@ -337,10 +509,6 @@ void ReplayManager::ApplyTick()
 
     for (const EntitySnapshot& s : frame.entities)
     {
-        /*if (!reg.Has_Component<TransformComponent>(s.id))
-            continue;
-
-        auto& tc = reg.Get_Component<TransformComponent>(s.id);*/
 
         Entity target = ResolvePlaybackEntity(s);
         if (target == INVALID_ENTITY)
@@ -353,72 +521,6 @@ void ReplayManager::ApplyTick()
         tc.scale.x = s.sx;
         tc.scale.y = s.sy;
         tc.rot = s.rot;
-
-        /*if (s.hasPhysics && reg.Has_Component<Physics::PhysicsComponent>(s.id))
-        {
-            auto& phys = reg.Get_Component<Physics::PhysicsComponent>(s.id);
-            phys.Set_Vel({ s.vx, s.vy });
-        }
-
-        if (s.hasMovement && reg.Has_Component<Movement::MovementComponent>(s.id))
-        {
-            auto& mv = reg.Get_Component<Movement::MovementComponent>(s.id);
-            mv.SetIsMoving(s.isMoving);
-            mv.SetMovementDirection({ s.mdx, s.mdy });
-            mv.SetInputDirection(static_cast<Movement::InputDirection>(s.inputDir));
-        }
-
-        //animations replayed
-        if (s.hasAnim && reg.Has_Component<RenderComponent>(s.id))
-        {
-            auto& rc = reg.Get_Component<RenderComponent>(s.id);
-            if (rc.GetRenderType() == RT_SPRITESHEET)
-            {
-                auto& ss = rc.GetSpriteSheet();
-                if ((unsigned int)ss.GetCurrentState() != s.animState)
-                    ss.SetState(s.animState);
-                ss.SetCurrentCol(s.animCol);
-                ss.SetAnimTimer(s.animTimer);
-                ss.Sprite().SetFlipX(s.animFlipX);
-                ss.UpdateUV();
-            }
-        }
-
-        if (s.hasHealth && reg.Has_Component<HealthComponent>(s.id))
-        {
-            auto& hp = reg.Get_Component<HealthComponent>(s.id);
-            hp.currhp = s.currHp;
-            hp.maxhp = s.maxHp;
-
-        }
-
-        if (s.hasLifetime && reg.Has_Component<LifetimeComponent>(s.id))
-        {
-            auto& lt = reg.Get_Component<LifetimeComponent>(s.id);
-            lt.age = s.age;
-            lt.lifetime = s.lifetime;
-        }
-
-        if (s.hasStatus && reg.Has_Component<StatusEffectComponent>(s.id))
-        {
-            auto& se = reg.Get_Component<StatusEffectComponent>(s.id);
-            se.activeEffect = static_cast<Element>(s.activeEffect);
-            se.effectTimer = s.effectTimer;
-            se.burnTickTimer = s.burnTickTimer;
-            se.originalMoveSpeed = s.originalMoveSpeed;
-            se.isStunned = s.isStunned;
-        }
-
-        if (reg.Has_Component<TagComponent>(s.id))
-        {
-            auto& tag = reg.Get_Component<TagComponent>(s.id);
-            if (tag.tag == T_PLAYER)
-            {
-                foundPlayer = true;
-                playerX = s.px;
-                playerY = s.py;
-            }
-        }*/
 
         if (s.hasPhysics && reg.Has_Component<Physics::PhysicsComponent>(target))
         {
@@ -440,8 +542,10 @@ void ReplayManager::ApplyTick()
             if (rc.GetRenderType() == RT_SPRITESHEET)
             {
                 auto& ss = rc.GetSpriteSheet();
-                if ((unsigned int)ss.GetCurrentState() != s.animState)
+                if ((unsigned int)ss.GetCurrentState() != s.animState) {
                     ss.SetState(s.animState);
+                }
+                    
                 ss.SetCurrentCol(s.animCol);
                 ss.SetAnimTimer(s.animTimer);
                 ss.Sprite().SetFlipX(s.animFlipX);
