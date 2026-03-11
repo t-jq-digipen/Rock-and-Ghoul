@@ -89,55 +89,49 @@
       "minDistance": 100.0,
       "maxDistance": 1000.0
     },
-    "guitar_strum_heavy": {
+    "guitar_strum1": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Heavy Electric Guitar.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_strum": {
-      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar Riff.mp3",
-      "loop": false,
-      "group": "SFX",
-      "spatial": false
-    },
-    "guitar_note_1": {
+    "guitar_strum2": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var1.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_2": {
+    "guitar_strum3": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var2.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_3": {
+    "guitar_strum4": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var3.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_4": {
+    "guitar_strum5": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var4.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_5": {
+    "guitar_strum6": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var5.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_6": {
+    "guitar_strum7": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var6.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_7": {
+    "guitar_strum8": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var7.wav",
       "loop": false,
       "group": "SFX",
@@ -193,8 +187,56 @@
       "minDistance": 100.0,
       "maxDistance": 2000.0
     },
-    "player_spawnSound": {
+    "player_spawnSound1": {
       "path": "../Assets/audio/SFX/Player/VO/Bring it on.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 2000.0
+    },
+    "player_spawnSound2": {
+      "path": "../Assets/audio/SFX/Player/VO/Brother.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 2000.0
+    },
+    "player_spawnSound3": {
+      "path": "../Assets/audio/SFX/Player/VO/Not again.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 2000.0
+    },
+    "player_spawnSound4": {
+      "path": "../Assets/audio/SFX/Player/VO/Trouble.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 2000.0
+    },
+    "player_spawnSound5": {
+      "path": "../Assets/audio/SFX/Player/VO/Who goes there.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 2000.0
+    },
+    "player_spawnSound6": {
+      "path": "../Assets/audio/SFX/Player/VO/GoAhead.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true,
+      "minDistance": 100.0,
+      "maxDistance": 2000.0
+    },
+    "player_spawnSound7": {
+      "path": "../Assets/audio/SFX/Player/VO/LeaveAloneWhine.wav",
       "loop": false,
       "group": "SFX",
       "spatial": true,

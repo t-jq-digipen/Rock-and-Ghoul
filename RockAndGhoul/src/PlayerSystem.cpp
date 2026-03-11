@@ -29,7 +29,6 @@ constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
 constexpr float DASH_IMPULSE = 2000.f;   // Dash boost
 
-
 // spatial footstep sfx
 std::unordered_map<Entity, float> footstepTimers;  // Timer per player
 float footstepInterval = 0.35f;  // Time between footsteps (in seconds)
@@ -51,7 +50,6 @@ Movement::InputDirection VelToDir(float x, float y)
 	if (std::abs(y) >= std::abs(x)) return (y > 0.f) ? Movement::MOVE_UP : (y < 0.f ? Movement::MOVE_DOWN : Movement::MOVE_NONE);
 	return (x > 0.f) ? Movement::MOVE_RIGHT : (x < 0.f ? Movement::MOVE_LEFT : Movement::MOVE_NONE);
 }
-
 
 namespace PlayerMove {
 	std::unordered_map<Entity, size_t> subscriberID;
@@ -145,21 +143,34 @@ namespace RockScript {
 	// Constants
 	// 
 
-	enum PlayerSounds { // audio indices
+	enum PlayerSounds {
 		SFX_FOOTSTEP = 0,
 		SFX_DODGE = 1,
-		SFX_SPAWN = 2,
-		SFX_GUITAR_STRUM = 3,
-		SFX_ELEMENT_FIRE = 4,
-		SFX_ELEMENT_ELECTRIC = 5,
-		SFX_ELEMENT_ICE = 6,
-		SFX_ELEMENT_WIND = 7,
-		SFX_ELEMENT_EXPLOSION = 8,  // for fire AOE impact
-		SFX_PLUCK1,
-		SFX_PLUCK2,
-		SFX_PLUCK3,
-		SFX_PLUCK4,
-		SFX_TWANG1
+		SFX_SPAWN1 = 2,
+		SFX_SPAWN2,        // 3
+		SFX_SPAWN3,        // 4
+		SFX_SPAWN4,        // 5
+		SFX_SPAWN5,        // 6
+		SFX_SPAWN6,        // 7
+		SFX_SPAWN7,        // 8
+		SFX_GUITAR_STRUM1, // 9
+		SFX_GUITAR_STRUM2, // 10
+		SFX_GUITAR_STRUM3, // 11
+		SFX_GUITAR_STRUM4, // 12
+		SFX_GUITAR_STRUM5, // 13
+		SFX_GUITAR_STRUM6, // 14
+		SFX_GUITAR_STRUM7, // 15
+		SFX_GUITAR_STRUM8, // 16
+		SFX_ELEMENT_FIRE,  // 17
+		SFX_ELEMENT_ELECTRIC, // 18
+		SFX_ELEMENT_ICE,   // 19
+		SFX_ELEMENT_WIND,  // 20
+		SFX_ELEMENT_EXPLOSION, // 21 fire aoe explosion
+		SFX_PLUCK1,        // 22
+		SFX_PLUCK2,        // 23
+		SFX_PLUCK3,        // 24
+		SFX_PLUCK4,        // 25
+		SFX_TWANG1         // 26
 	};
 	// store player entity ID so all functions can access it; FOR SPATIAL AUDIO.. if it isn't spatial it just isnt used
 	static Entity playerEntityID = INVALID_ENTITY;
@@ -171,6 +182,19 @@ namespace RockScript {
 			audioComp.PlaySound(soundIndex, playerEntityID);
 		}
 	}
+
+	inline void PlayRandom(const PlayerSounds* sounds, int count) {
+		PlayAudio(sounds[std::rand() % count]);
+	}
+	static const PlayerSounds strums[] = {
+	SFX_GUITAR_STRUM1, SFX_GUITAR_STRUM2, SFX_GUITAR_STRUM3, SFX_GUITAR_STRUM4,
+	SFX_GUITAR_STRUM5, SFX_GUITAR_STRUM6, SFX_GUITAR_STRUM7, SFX_GUITAR_STRUM8
+	};
+
+	static const PlayerSounds voice[] = {
+	SFX_SPAWN1, SFX_SPAWN2, SFX_SPAWN3, SFX_SPAWN4,
+	SFX_SPAWN5, SFX_SPAWN6, SFX_SPAWN7
+	};
 
 	struct ActiveSpell {
         Entity ecsEntity;        // Visual entity from JsonLoad
@@ -872,7 +896,8 @@ namespace RockScript {
 		auto& registry = Registry::Get();
 		auto& trans = registry.Get_Component<TransformComponent>(eID);
 
-		PlayAudio(SFX_GUITAR_STRUM);
+		//PlayAudio(SFX_GUITAR_STRUM);
+		PlayRandom(strums, 8); // plays random strum sound from 8 choices
 		// play elemental sound if element is active hohohoho
 		if (currentElement != Element::NONE) {
 			PlayElementalSound();
@@ -1136,20 +1161,33 @@ namespace RockScript {
 			audioComp.maxDistance = 1000.0f;
 
 			// Add sounds in specific order
-			audioComp.AddSound("player_footstep_wood");			  // index nada
-			audioComp.AddSound("player_dodge");					  // index 1
-			audioComp.AddSound("player_spawnSound");			  // index 2
-			audioComp.AddSound("guitar_strum_heavy");			  // index 3
-			audioComp.AddSound("guitar_element_fire");           // index 4  - SFX_ELEMENT_FIRE
-			audioComp.AddSound("guitar_element_electric");       // index 5  - SFX_ELEMENT_ELECTRIC
-			audioComp.AddSound("guitar_element_ice");            // index 6  - SFX_ELEMENT_ICE
-			audioComp.AddSound("guitar_element_wind");           // index 7  - SFX_ELEMENT_WIND
-			audioComp.AddSound("guitar_element_exploding_item"); // index 8  - SFX_ELEMENT_EXPLOSION
-			audioComp.AddSound("pluck1");                        // index 9  - SFX_PLUCK1
-			audioComp.AddSound("pluck2");                        // index 10 - SFX_PLUCK2
-			audioComp.AddSound("pluck3");                        // index 11 - SFX_PLUCK3
-			audioComp.AddSound("pluck4");                        // index 12 - SFX_PLUCK4
-			audioComp.AddSound("twang1");						 // index 13 - SFX_TWANG1
+			audioComp.AddSound("player_footstep_wood");        // 0  - SFX_FOOTSTEP
+			audioComp.AddSound("player_dodge");                // 1  - SFX_DODGE
+			audioComp.AddSound("player_spawnSound1");          // 2  - SFX_SPAWN1
+			audioComp.AddSound("player_spawnSound2");          // 3  - SFX_SPAWN2
+			audioComp.AddSound("player_spawnSound3");          // 4  - SFX_SPAWN3
+			audioComp.AddSound("player_spawnSound4");          // 5  - SFX_SPAWN4
+			audioComp.AddSound("player_spawnSound5");          // 6  - SFX_SPAWN5
+			audioComp.AddSound("player_spawnSound6");          // 7  - SFX_SPAWN6
+			audioComp.AddSound("player_spawnSound7");          // 8  - SFX_SPAWN7
+			audioComp.AddSound("guitar_strum1");               // 9  - SFX_GUITAR_STRUM1
+			audioComp.AddSound("guitar_strum2");               // 10 - SFX_GUITAR_STRUM2
+			audioComp.AddSound("guitar_strum3");               // 11 - SFX_GUITAR_STRUM3
+			audioComp.AddSound("guitar_strum4");               // 12 - SFX_GUITAR_STRUM4
+			audioComp.AddSound("guitar_strum5");               // 13 - SFX_GUITAR_STRUM5
+			audioComp.AddSound("guitar_strum6");               // 14 - SFX_GUITAR_STRUM6
+			audioComp.AddSound("guitar_strum7");               // 15 - SFX_GUITAR_STRUM7
+			audioComp.AddSound("guitar_strum8");               // 16 - SFX_GUITAR_STRUM8
+			audioComp.AddSound("guitar_element_fire");         // 17 - SFX_ELEMENT_FIRE
+			audioComp.AddSound("guitar_element_electric");     // 18 - SFX_ELEMENT_ELECTRIC
+			audioComp.AddSound("guitar_element_ice");          // 19 - SFX_ELEMENT_ICE
+			audioComp.AddSound("guitar_element_wind");         // 20 - SFX_ELEMENT_WIND
+			audioComp.AddSound("guitar_element_exploding_item"); // 21 - SFX_ELEMENT_EXPLOSION
+			audioComp.AddSound("pluck1");                      // 22 - SFX_PLUCK1
+			audioComp.AddSound("pluck2");                      // 23 - SFX_PLUCK2
+			audioComp.AddSound("pluck3");                      // 24 - SFX_PLUCK3
+			audioComp.AddSound("pluck4");                      // 25 - SFX_PLUCK4
+			audioComp.AddSound("twang1");                      // 26 - SFX_TWANG1
 
 
 			Registry::Get().Add_Component(eID, audioComp);
@@ -1222,7 +1260,7 @@ namespace RockScript {
 		shieldy = INVALID_ENTITY;
 
 
-		PlayAudio(SFX_SPAWN);
+		PlayRandom(voice, 7);
 
 		CombatSystem::Get().RegisterCombatant(eID);
 
