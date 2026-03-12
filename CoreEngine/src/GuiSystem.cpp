@@ -654,6 +654,68 @@ void GuiSystem::Initialize() {
         {
             HandleDialogueAdvance(true);
         });
+
+    // Turn on/off all buttons
+    RegisterAction("ToggleAllButtons",
+        [this](const json& j)
+        {
+            const ButtonConfig* exclude = nullptr;
+            int callerID = -1;
+
+            if (j.is_object())
+            {
+                if (j.contains("ID") && j["ID"].is_number_integer())
+                    callerID = j["ID"].get<int>();
+            }
+            else if (j.is_array())
+            {
+                if (!j.empty())
+                {
+                    if (j[0].is_number_integer()) callerID = j[0].get<int>();
+                    else if (j[0].is_string())
+                    {
+                        try { callerID = std::stoi(j[0].get<std::string>()); }
+                        catch (...) {}
+                    }
+                }
+            }
+            else if (j.is_string())
+            {
+                try { callerID = std::stoi(j.get<std::string>()); }
+                catch (...) {}
+            }
+
+            if (callerID >= 0)
+            {
+                for (const auto& b : buttons)
+                {
+                    if (b.ID == callerID) { exclude = &b; break; }
+                }
+            }
+
+            ToggleAllButtons(exclude);
+        });
+
+    // Turn on/off all textboxes
+    RegisterAction("ToggleAllTextboxes",
+        [this](const json&)
+        {
+            ToggleAllTextboxes();
+        });
+
+    // Turn on/off all dialogues
+    RegisterAction("ToggleAllDialogues",
+        [this](const json&)
+        {
+            ToggleAllDialogues();
+        });
+
+    // Turn on/off all displays
+    RegisterAction("ToggleAllDisplays",
+        [this](const json&)
+        {
+            ToggleAllDisplays();
+        });
 }
 
 /**
@@ -670,7 +732,9 @@ void GuiSystem::AddButton(const ButtonConfig& cfg)
     copy.onClick = nullptr;
     if (copy.ID <= 0) copy.ID = nextUIID++;
     else nextUIID = std::max(nextUIID, copy.ID + 1);
-    BindButtonAction(copy);
+    // BindButtonAction(copy);
+    copy.actionName = cfg.actionName;
+    copy.actionParams = cfg.actionParams;
     buttons.push_back(copy);
 }
 
@@ -764,10 +828,12 @@ bool GuiSystem::GetEditMode() const
     return editMode;
 }
 
-// Dialogue skip duration
-static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 1.5f;
-static constexpr float ADVANCE_DIALOGUE_BUTTON_OFFSET_X = -300.f;
-static constexpr float DIALOGUE_BACKGROUND_OFFSET_X = -200.f;
+static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 2.f; // duration until active dialogue can be skipped
+static constexpr float DIALOGUE_SKIP_HOLD_ESC_DURATION = 1.5f; // duration needed to hold esc key to skip dialogue
+static constexpr float ADVANCE_DIALOGUE_BUTTON_OFFSET_X = -300.f; // advance dialogue button left shift
+static constexpr float DIALOGUE_BACKGROUND_OFFSET_X = -200.f; // dialogue background left shift
+static constexpr int DIALOGUE_SKIP_HOLD_BAR_BG_ID = 52; 
+static constexpr int DIALOGUE_SKIP_HOLD_BAR_FILL_ID = 53;
 
 /**
  * @brief       Main per-frame update for the GUI system.
@@ -797,7 +863,9 @@ void GuiSystem::Update(float dt)
 
     // Check if dialogue can be skipped
     static float dialogueTimerBeforeCanSkip = 0.f;
+    static float escHoldTimer = 0.f;
     static bool prevAnyDialogueVisible = false;
+    static float cachedHoldBarMaxWidth = -1.f;
 
     // Skip the entire dialogue after a delay
     const bool anyDialogueVisible = std::any_of(dialogues.begin(), dialogues.end(),
@@ -816,7 +884,6 @@ void GuiSystem::Update(float dt)
     }
     else if (!anyDialogueVisible)
     {
-        dialogueTimerBeforeCanSkip = 0.f;
         for (auto& tb : textboxes)
         {
             if (tb.text == "PRESS ESC TO SKIP" ||
@@ -825,27 +892,110 @@ void GuiSystem::Update(float dt)
                 tb.isVisible = false;
             }
         }
+
+        // Hide bar displays
+        for (auto& dp : displays)
+        {
+            if (dp.ID == DIALOGUE_SKIP_HOLD_BAR_FILL_ID || dp.ID == DIALOGUE_SKIP_HOLD_BAR_BG_ID)
+            {
+                dp.isVisible = false;
+            }
+        }
+
+        // Reset state
+        dialogueTimerBeforeCanSkip = 0.f;
+        escHoldTimer = 0.f;
+        cachedHoldBarMaxWidth = -1.f;
+        prevAnyDialogueVisible = false;
     }
 
-    const bool escPressed = Input::IsKeyPressed(GLFW_KEY_ESCAPE);
+    // ====================================================
+    // DIALOGUE SKIP
+    // ====================================================
 
-    if (dialogueTimerBeforeCanSkip >= DIALOGUE_SKIP_DELAY_DURATION && GuiSystem::Get().GetDialogueGate())
+    // Show skip textbox only if dialogue skip is available
+    const bool escHeld = Input::IsKeyHeld(GLFW_KEY_ESCAPE);
+    const bool skipAvailable = anyDialogueVisible && !sm.inEditMode && !sm.IsPaused() && (dialogueTimerBeforeCanSkip >= DIALOGUE_SKIP_DELAY_DURATION);
+
+    for (auto& tb : textboxes)
     {
-        for (auto& tb : textboxes)
+        if (tb.text == "PRESS ESC TO SKIP" || tb.text.find("PRESS ESC TO SKIP") != std::string::npos)
         {
-            if (tb.text == "PRESS ESC TO SKIP" ||
-                tb.text.find("PRESS ESC TO SKIP") != std::string::npos)
-            {
-                tb.isVisible = true;
-            }
+            tb.isVisible = skipAvailable;
         }
     }
 
-    if (anyDialogueVisible &&
-        !sm.inEditMode &&
-        !sm.IsPaused() &&
-        escPressed &&
-        dialogueTimerBeforeCanSkip >= DIALOGUE_SKIP_DELAY_DURATION)
+    // Show hold bar only when esc key is held and dialogue skip is available
+    const bool showHoldBar = skipAvailable && escHeld;
+    for (auto& dp : displays)
+    {
+        if (dp.ID == DIALOGUE_SKIP_HOLD_BAR_FILL_ID || dp.ID == DIALOGUE_SKIP_HOLD_BAR_BG_ID)
+        {
+            dp.isVisible = showHoldBar;
+        }
+    }
+
+    // Call this every frame when skipAvailable is true (even if bar is hidden),
+    // so the geometry resets properly when ESC is released.
+    auto UpdateSkipHoldBar = [&](float percentage, int id)
+        {
+            percentage = std::clamp(percentage, 0.f, 1.f);
+
+            struct BarGeometry { float leftX{}, rightX{}, topY{}, botY{}, maxW{}; bool cached = false; };
+            static std::unordered_map<int, BarGeometry> s_barGeom;
+
+            for (auto& dp : displays)
+            {
+                if (dp.ID != id) continue;
+                if (dp.m_renderData.GetRenderType() != UIRenderType::CustomQuad) return;
+
+                auto& q = dp.m_renderData.GetQuadData();
+                auto& g = s_barGeom[id];
+
+                if (!g.cached)
+                {
+                    g.leftX = std::min(std::min(q.v0.x, q.v1.x), std::min(q.v2.x, q.v3.x));
+                    g.rightX = std::max(std::max(q.v0.x, q.v1.x), std::max(q.v2.x, q.v3.x));
+                    g.topY = std::max(std::max(q.v0.y, q.v1.y), std::max(q.v2.y, q.v3.y));
+                    g.botY = std::min(std::min(q.v0.y, q.v1.y), std::min(q.v2.y, q.v3.y));
+                    g.maxW = std::max(0.f, g.rightX - g.leftX);
+                    g.cached = true;
+                }
+
+                const float newRightX = g.leftX + g.maxW * percentage;
+
+                GuiSystem::Get().SetDisplayQuad(dp.ID,
+                    { g.leftX,    g.botY },
+                    { newRightX,  g.botY },
+                    { newRightX,  g.topY },
+                    { g.leftX,    g.topY }
+                );
+
+                dp.baseSize.x = g.maxW;
+                dp.size.x = g.maxW * percentage;
+                return;
+            }
+
+            s_barGeom.clear();
+        };
+
+
+    // Accumulate esc key hold time when held to skip dialogue
+    static float escHoldBarFillPercentage = 0.f;
+    if (skipAvailable && escHeld)
+    {
+        escHoldTimer = std::min(escHoldTimer + dt, DIALOGUE_SKIP_HOLD_ESC_DURATION);
+        escHoldBarFillPercentage = escHoldTimer / DIALOGUE_SKIP_HOLD_ESC_DURATION;
+    }
+    else
+    {
+        escHoldTimer = 0.f;
+        escHoldBarFillPercentage = 0.f;
+    }
+    UpdateSkipHoldBar(escHoldBarFillPercentage, DIALOGUE_SKIP_HOLD_BAR_FILL_ID);
+
+    // Trigger dialogue skip when esc hold progress is complete
+    if (skipAvailable && escHoldTimer >= DIALOGUE_SKIP_HOLD_ESC_DURATION)
     {
         // Hide all dialogue UI
         for (auto& d : dialogues)
@@ -859,16 +1009,22 @@ void GuiSystem::Update(float dt)
             d.isVisible = false;
         }
 
+        // Hide advance dialogue button
         for (auto& b : buttons)
         {
+            if (!b.isVisible) continue;
+
             if (b.actionName == "AdvanceDialogue")
             {
                 b.isVisible = false;
             }
         }
 
+        // Hide skip textbox
         for (auto& tb : textboxes)
         {
+            if (!tb.isVisible) continue;
+
             if (tb.text == "PRESS ESC TO SKIP" ||
                 tb.text.find("PRESS ESC TO SKIP") != std::string::npos)
             {
@@ -876,12 +1032,25 @@ void GuiSystem::Update(float dt)
             }
         }
 
+        // Hide bar displays
+        for (auto& dp : displays)
+        {
+            if (dp.ID == DIALOGUE_SKIP_HOLD_BAR_FILL_ID || dp.ID == DIALOGUE_SKIP_HOLD_BAR_BG_ID)
+            {
+                dp.isVisible = false;
+            }
+        }
+
         SetDialogueGate(false);
 
         // Reset skip state
+        escHoldTimer = 0.f;
         dialogueTimerBeforeCanSkip = 0.0f;
         prevAnyDialogueVisible = false;
+        cachedHoldBarMaxWidth = -1.f;
     }
+
+    // ====================================================
 
     // Toggle visibility of "AdvanceDialogue" button
     for (auto& b : buttons)
@@ -1201,7 +1370,36 @@ void GuiSystem::Update(float dt)
                 if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT)) {
                     if (audio) audio->PlayButtonSound(cfg.soundType);
                     if (cfg.onClick) cfg.onClick();
-                    if (cfg.actionName != "") CallAction(cfg.actionName, cfg.actionParams);
+                    if (!cfg.actionName.empty())
+                    {
+                        json params;
+
+                        if (cfg.actionParams.is_object())
+                        {
+                            params = cfg.actionParams;
+                        }
+                        else if (cfg.actionParams.is_string())
+                        {
+                            try { params = json::parse(cfg.actionParams.get<std::string>()); }
+                            catch (...) { params = json::object(); }
+                            if (!params.is_object())
+                            {
+                                json tmp = json::object();
+                                tmp["value"] = params;
+                                params = std::move(tmp);
+                            }
+                        }
+                        else
+                        {
+                            params = json::object();
+                            params["args"] = cfg.actionParams;
+                        }
+
+                        if (cfg.actionName == "ToggleAllButtons")
+                            params["ID"] = cfg.ID;
+
+                        CallAction(cfg.actionName, params);
+                    }
                 }
 #ifndef NO_IMGUI //EDITORMACRO
             }
@@ -1233,6 +1431,48 @@ void GuiSystem::Update(float dt)
             render.DrawText(tb.text, drawX, drawY, tb.scale, tb.color, tb.fontKey);
         }; // end DRAW TEXTBOX
     // --------------------------------------------------
+
+    auto TryApplySkinToDialogue = [&](DialogueConfig& dlg, const DialogueSpeakerSkin& skin)
+        {
+            dlg.bgEnabled = skin.bgEnabled;
+            dlg.bgBaseSize = skin.bgBaseSize;
+            dlg.bgRenderData = skin.bgRenderData;
+
+            dlg.profileEnabled = skin.profileEnabled;
+            dlg.profileBaseSize = skin.profileBaseSize;
+            dlg.profileOffset = skin.profileOffset;
+            dlg.profileRenderData = skin.profileRenderData;
+        };
+
+    auto ReadSkinFromDialogueJson = [&](const nlohmann::json& sc, int speakerID, DialogueSpeakerSkin& out) -> bool
+        {
+            if (!sc.contains("speakerUI") || !sc["speakerUI"].is_object()) return false;
+
+            const std::string key = std::to_string(speakerID);
+            if (!sc["speakerUI"].contains(key) || !sc["speakerUI"][key].is_object()) return false;
+
+            const auto& node = sc["speakerUI"][key];
+
+            out.bgEnabled = node.value("bgEnabled", true);
+            if (node.contains("bgSize") && node["bgSize"].is_array())
+                out.bgBaseSize = { node["bgSize"][0].get<float>(), node["bgSize"][1].get<float>() };
+
+            if (node.contains("bgRenderData") && node["bgRenderData"].is_string())
+                out.bgRenderData = UI_RenderData::DeSerialize(node["bgRenderData"].get<std::string>());
+
+            out.profileEnabled = node.value("profileEnabled", true);
+            if (node.contains("profileSize") && node["profileSize"].is_array())
+                out.profileBaseSize = { node["profileSize"][0].get<float>(), node["profileSize"][1].get<float>() };
+
+            if (node.contains("profileOffset") && node["profileOffset"].is_array())
+                out.profileOffset = { node["profileOffset"][0].get<float>(), node["profileOffset"][1].get<float>() };
+
+            if (node.contains("profileRenderData") && node["profileRenderData"].is_string())
+                out.profileRenderData = UI_RenderData::DeSerialize(node["profileRenderData"].get<std::string>());
+
+            // Optional: profileDisplaySide per speaker if you want, but you currently store it per DialogueConfig.
+            return true;
+        };
 
     // Draw dialogue
     // --------------------------------------------------
@@ -1304,13 +1544,50 @@ void GuiSystem::Update(float dt)
             static std::unordered_map<int, bool> autoSpeakerImagesByDlg;
 
             // Apply speaker ID (custom or otherwise)
-            int effectiveSpeakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
-            if (d.customOverride && d.speakerOverrideEnabled)
+            int effectiveSpeakerID = -1;
+            if (!d.customOverride)
             {
-                effectiveSpeakerID = d.speakerOverrideID;
+                effectiveSpeakerID = getSpeakerID(sDlgDoc, sceneIdxInt, idx);
+            }
+            else
+            {
+                // Custom mode: use per-line speaker IDs
+                if (idx >= 0 && idx < (int)d.customLineSpeakerIDs.size())
+                {
+                    effectiveSpeakerID = d.customLineSpeakerIDs[idx];
+                }
+                else
+                {
+                    effectiveSpeakerID = 0;
+                }
+            }
+            
+            // Apply speaker skin to dialogue line
+            bool appliedSkin = false;
+
+            // Custom mode: use saved per-speaker skins
+            if (d.customOverride)
+            {
+                auto it = d.speakerSkins.find(effectiveSpeakerID);
+                if (it != d.speakerSkins.end())
+                {
+                    TryApplySkinToDialogue(d, it->second);
+                    appliedSkin = true;
+                }
+            }
+            else
+            {
+                // Scene-driven: read per-speaker skin from Dialogue JSON
+                const json& sc = sDlgDoc["scenes"][sceneIdxInt];
+                DialogueSpeakerSkin skin{};
+                if (ReadSkinFromDialogueJson(sc, effectiveSpeakerID, skin))
+                {
+                    TryApplySkinToDialogue(d, skin);
+                    appliedSkin = true;
+                }
             }
 
-            bool autoFromSpeaker = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER);
+            bool autoFromSpeaker = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER);
             bool notRock = (effectiveSpeakerID == 1 || effectiveSpeakerID == 2);
             float profDir = notRock ? +1.f : -1.f;
             float posLeftShift = notRock ? DIALOGUE_BACKGROUND_OFFSET_X : 0.f;
@@ -1318,8 +1595,8 @@ void GuiSystem::Update(float dt)
             // Determine which side profile is placed
             if (d.customOverride && !autoFromSpeaker)
             {
-                posLeftShift = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? DIALOGUE_BACKGROUND_OFFSET_X : 0.f;
-                profDir = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? +1.f : -1.f;
+                posLeftShift = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? DIALOGUE_BACKGROUND_OFFSET_X : 0.f;
+                profDir = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? +1.f : -1.f;
             }
 
             // Determine advance dialogue button position
@@ -1331,7 +1608,7 @@ void GuiSystem::Update(float dt)
                 }
                 else
                 {
-                    advanceBtnPosShift = (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_LEFT) ? 0.f : ADVANCE_DIALOGUE_BUTTON_OFFSET_X;
+                    advanceBtnPosShift = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_LEFT) ? 0.f : ADVANCE_DIALOGUE_BUTTON_OFFSET_X;
                 }
                 showAdvanceBtn = HandleDialogueAdvance(false);
             }
@@ -1587,7 +1864,7 @@ void GuiSystem::Update(float dt)
 
             // render.DrawText(speakerName, speakerX, speakerY, speakerScale, d.speakerNameColor, "Marker");
             const bool profileSideOverriden = (d.customOverride && !autoFromSpeaker);
-            const float textPosLeftShift = profileSideOverriden ? (d.profileSide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT ? -275.f : 0.f) : (notRock ? -275.f : 0.f);
+            const float textPosLeftShift = profileSideOverriden ? (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT ? -275.f : 0.f) : (notRock ? -275.f : 0.f);
             float textX = (bgCenter.x - bgScale.x * 0.4f) + textPosLeftShift;
 
             // Render wrapped lines
@@ -1729,10 +2006,10 @@ void GuiSystem::Update(float dt)
     }
 
     // --- State window over UI ---
-    if (stateWindowActive)
-    {
-        DrawStateWindow(render);
-    }
+    //if (stateWindowActive)
+    //{
+    //    DrawStateWindow(render);
+    //}
 
 #ifndef NO_IMGUI
     if (!SceneManager::Get().inEditMode)
@@ -2348,51 +2625,34 @@ ButtonShape StringToButtonShape(const std::string& s)
 }
 
 /**
- * @brief           Converts a ButtonAction enum to a string.
- * @param action    ButtonAction value.
- * @return          String representation.
- */
-
-std::string ButtonActionToString(ButtonAction action)
-{
-    switch (action)
-    {
-    case ButtonAction::None:                return "None";
-    case ButtonAction::LoadLevel1:          return "LoadLevel1";
-    case ButtonAction::LoadMainMenu:        return "LoadMainMenu";
-    case ButtonAction::Quit:                return "Quit";
-    case ButtonAction::OpenStateWindow:     return "OpenStateWindow";
-    case ButtonAction::ToggleAllButtons:    return "ToggleAllButtons";
-    case ButtonAction::ToggleAllTextboxes:  return "ToggleAllTextboxes";
-    case ButtonAction::ToggleAllDialogues:  return "ToggleAllDialogues";
-    case ButtonAction::ToggleAllDisplays:   return "ToggleAllDisplays";
-    case ButtonAction::LoadSettings:        return "LoadSettings";
-    case ButtonAction::LoadControls:        return "LoadControls";
-    case ButtonAction::AdvanceDialogue:     return "AdvanceDialogue";
-    default:                                return "None";
-    }
-}
-
-/**
- * @brief   Converts string representation of action into ButtonAction enum.
- * @param s String (e.g. "LoadMainMenu", "Quit").
+ * @brief   Converts string representation of action into ProfileDisplaySide enum.
+ * @param s String (e.g. "Auto", "Left").
  * @return  ButtonAction parsed enum or ButtonAction::None for unknown strings.
  */
 
-ButtonAction StringToButtonAction(const std::string& s)
+DialogueConfig::ProfileDisplaySide StringToProfileDisplaySide(const std::string& s)
 {
-    if (s == "LoadLevel1")          return ButtonAction::LoadLevel1;
-    if (s == "LoadMainMenu")        return ButtonAction::LoadMainMenu;
-    if (s == "Quit")                return ButtonAction::Quit;
-    if (s == "OpenStateWindow")     return ButtonAction::OpenStateWindow;
-    if (s == "ToggleAllButtons")    return ButtonAction::ToggleAllButtons;
-    if (s == "ToggleAllTextboxes")  return ButtonAction::ToggleAllTextboxes;
-    if (s == "ToggleAllDialogues")  return ButtonAction::ToggleAllDialogues;
-    if (s == "ToggleAllDisplays")   return ButtonAction::ToggleAllDisplays;
-    if (s == "LoadSettings")        return ButtonAction::LoadSettings;
-    if (s == "LoadControls")        return ButtonAction::LoadControls;
-    if (s == "AdvanceDialogue")     return ButtonAction::AdvanceDialogue;
-    return ButtonAction::None;
+    if (s == "Auto")        return DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
+    if (s == "Left")        return DialogueConfig::ProfileDisplaySide::PROFILE_LEFT;
+    if (s == "Right")       return DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT;
+    return DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
+}
+
+/**
+ * @brief           Converts a ProfileDisplaySide enum to a string.
+ * @param action    ProfileDisplaySide value.
+ * @return          String representation.
+ */
+
+std::string ProfileDisplaySideToString(DialogueConfig::ProfileDisplaySide side)
+{
+    switch (side)
+    {
+    case DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER:   return "Auto";
+    case DialogueConfig::ProfileDisplaySide::PROFILE_LEFT:              return "Left";
+    case DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT:             return "Right";
+    default:                                                            return "Auto";
+    }
 }
 
 /**
@@ -2408,68 +2668,6 @@ void GuiSystem::Clear()
     m_groups.clear();
     nextUIID = 1;
     focusedButtonIndex = -1;
-}
-
-/**
- * @brief       Binds built-in click behaviors to a button based on its ButtonAction.
- * @param btn   The button configuration to modify.
- */
-
-void GuiSystem::BindButtonAction(ButtonConfig& btn)
-{
-    switch (btn.action)
-    {
-    case ButtonAction::OpenStateWindow:
-        btn.onClick = [this]() { stateWindowActive = true; };
-        break;
-    case ButtonAction::ToggleAllButtons:
-        btn.onClick = [this, &btn]() { ToggleAllButtons(&btn); };
-        break;
-    case ButtonAction::ToggleAllTextboxes:
-        btn.onClick = [this]() { ToggleAllTextboxes(); };
-        break;
-    case ButtonAction::ToggleAllDialogues:
-        btn.onClick = [this]() { ToggleAllDialogues(); };
-        break;
-    case ButtonAction::ToggleAllDisplays:
-        btn.onClick = [this]() { ToggleAllDisplays(); };
-        break;
-    case ButtonAction::LoadLevel1:
-        btn.onClick = [this]() {
-            SceneManager::Get().QueueLoadScene(FilePath::LEVEL1_SCENE);
-            SceneManager::Get().SetTransitionTime(2.f);
-            };
-        break;
-    case ButtonAction::LoadMainMenu:
-        btn.onClick = [this]() {
-            SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE);
-            SceneManager::Get().SetTransitionTime(0.f);
-            };
-        break;
-    case ButtonAction::Quit:
-        btn.onClick = [this]() { CoreEngine::GetInstance().Quit(); };
-        break;
-    case ButtonAction::LoadSettings:
-        btn.onClick = [this]() {
-            SceneManager::Get().QueueLoadScene(FilePath::SETTINGS_FILE);
-            SceneManager::Get().SetTransitionTime(0.f);
-            };
-        break;
-    case ButtonAction::LoadControls:
-        btn.onClick = [this]() {
-            SceneManager::Get().QueueLoadScene(FilePath::CONTROLS_FILE);
-            SceneManager::Get().SetTransitionTime(0.f);
-            };
-        break;
-    case ButtonAction::AdvanceDialogue:
-        btn.onClick = [this]() {
-            HandleDialogueAdvance(true);
-            };
-        break;
-    default:
-        btn.onClick = nullptr;
-        break;
-    }
 }
 
 /**
@@ -2509,9 +2707,23 @@ void GuiSystem::ToggleAllButtons(const ButtonConfig* exclude)
 void GuiSystem::ToggleAllTextboxes()
 {
     if (textboxes.empty()) return;
+
+    auto isSkipHint = [](const TextBoxConfig& tb)
+        {
+            return tb.text == "PRESS ESC TO SKIP" || tb.text.find("PRESS ESC TO SKIP") != std::string::npos;
+        };
+
     bool anyVisible = false;
-    for (auto& t : textboxes) if (t.isVisible) { anyVisible = true; break; }
-    for (auto& t : textboxes) t.isVisible = !anyVisible;
+    for (auto& t : textboxes)
+    {
+        if (isSkipHint(t)) continue;
+        if (t.isVisible) { anyVisible = true; break; }
+    }
+    for (auto& t : textboxes)
+    {
+        if (isSkipHint(t)) continue;
+        t.isVisible = !anyVisible;
+    }
 }
 
 /**
@@ -2536,131 +2748,6 @@ void GuiSystem::ToggleAllDisplays()
     bool anyVisible = false;
     for (auto& dp : displays) if (dp.isVisible) { anyVisible = true; break; }
     for (auto& dp : displays) dp.isVisible = !anyVisible;
-}
-
-/**
- * @brief           Draws the state window overlay UI (e.g. "Choose Your State" menu).
- *                  This overlay is drawn in screen space, including its own buttons and close control.
- * @param render    Reference to the Render instance to use.
- */
-
-void GuiSystem::DrawStateWindow(Render& renderer)
-{
-    if (!stateWindowActive) return;
-
-    const bool prevCam = renderer.useCamera;
-    renderer.useCamera = false;
-
-    const float defaultW = 1920.f;
-    const float defaultH = 1080.f;
-    const float scaleX = GLApp::width / defaultW;
-    const float scaleY = GLApp::height / defaultH;
-    const float uiScale = std::min(scaleX, scaleY);
-
-    Vec2 mouse = Input::GetMousePosition();
-    GuiSystem::GetMouseImgui(mouse);
-
-    // -------- Window background (scaled like UI) --------
-    {
-        const Vec2 basePos = { 960.f, 560.f };   // virtual center
-        const Vec2 baseSize = { 700.f, 550.f };   // virtual size
-        Vec2 pos;   pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
-        Vec2 size;  size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
-        render.DrawRect(pos, size.x, size.y, { 0.1f, 0.1f, 0.1f });
-
-        // Title text (scaled like UI text)
-        const float baseTextScale = 1.0f;
-        const float textScale = baseTextScale * uiScale;
-
-        const Vec2 baseTitlePos = { 960.f, 780.f };
-        const std::string title = "CHOOSE YOUR STATE";
-        Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
-        float textX = baseTitlePos.x - textSize.x * 0.5f;
-        float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
-        render.DrawText(title, textX, textY, textScale, { 1,1,1 }, "Marker");
-    }
-
-    struct Item { const char* label; ButtonAction action; };
-    const Item items[] = {
-        {"None",            ButtonAction::None},
-        {"Main Menu",       ButtonAction::LoadMainMenu},
-        {"Level 1",         ButtonAction::LoadLevel1},
-        {"Quit",            ButtonAction::Quit},
-        {"Toggle Buttons",  ButtonAction::ToggleAllButtons}
-    };
-
-    auto ClickFunction = [this](ButtonAction action)
-        {
-            ButtonConfig tmp;
-            tmp.action = action;
-            BindButtonAction(tmp);
-            if (tmp.onClick) tmp.onClick();
-        };
-
-    // State Window Buttons
-    float yVirtual = 720.f;
-
-    for (const auto& it : items)
-    {
-        if (it.action == ButtonAction::None) { yVirtual -= 40.f; continue; }
-
-        const Vec2 basePos = { 960.f, yVirtual };
-        const Vec2 baseSize = { 500.f,  60.f };
-
-        Vec2 pos;  pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
-        Vec2 size; size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
-
-        const bool hover = render.IsAreaTouched(mouse, pos, size.x, size.y);
-
-        Colour3 col = hover ? Colour3{ 0.45f, 0.45f, 0.45f } : Colour3{ 0.25f, 0.25f, 0.25f };
-        render.DrawRect(pos, size.x, size.y, col);
-
-        const float baseTextScale = 0.7f;
-        const float textScale = baseTextScale * uiScale;
-        Vec2 textSize = render.CalculateTextSize(it.label, textScale, "Marker");
-
-        float textX = pos.x - textSize.x * 0.5f;
-        float textY = pos.y - textSize.y * 0.5f + textSize.y * 0.15f;
-        render.DrawText(it.label, textX, textY, textScale, { 1,1,1 }, "Marker");
-
-        // Click action
-        if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
-        {
-            ClickFunction(it.action);
-            render.useCamera = prevCam;
-            return;
-        }
-
-        yVirtual -= 80.f;
-    }
-
-    // Button to close state window
-    {
-        const Vec2 basePos = { 960.f, yVirtual };
-        const Vec2 baseSize = { 200.f,  50.f };
-
-        Vec2 pos;  pos.x = basePos.x * scaleX; pos.y = basePos.y * scaleY;
-        Vec2 size; size.x = baseSize.x * uiScale; size.y = baseSize.y * uiScale;
-
-        const bool hover = render.IsAreaTouched(mouse, pos, size.x, size.y);
-
-        render.DrawRect(pos, size.x, size.y, { 0.7f, 0.f, 0.f });
-
-        const char* label = "Close";
-        const float baseTextScale = 0.7f;
-        const float textScale = baseTextScale * uiScale;
-        Vec2 textSize = render.CalculateTextSize(label, textScale, "Marker");
-        float textX = pos.x - textSize.x * 0.5f;
-        float textY = pos.y - textSize.y * 0.5f + textSize.y * 0.15f;
-        render.DrawText(label, textX, textY, textScale, { 1,1,1 }, "Marker");
-
-        if (hover && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
-        {
-            stateWindowActive = false;
-        }
-    }
-
-    render.useCamera = prevCam;
 }
 
 /**
@@ -2757,6 +2844,7 @@ bool GuiSystem::HandleDialogueAdvance(bool advance)
         if (typing)
         {
             comp->StopTyping();
+            comp->SetVisibleChars((int)lines[idx].size());
             return true;
         }
 
@@ -2814,8 +2902,9 @@ std::vector<GuiSystem::DrawItem> GuiSystem::BuildSortedDrawList() const
  */
 
 void GuiSystem::RegisterAction(const std::string& name, ActionFunction func) {
+    if (!actionRegistry.contains(name)) { actionOrder.push_back(name); }
     if (actionRegistry.contains(name)) { std::cerr << "Button function " << name << " already registered...\n"; }
-    actionRegistry[name] = func;
+    actionRegistry[name] = std::move(func);
 }
 
 /**

@@ -513,6 +513,102 @@
 
 #pragma region Serialization
 
+// ==========================================================================
+// === Dialogue Helpers ===
+// ==========================================================================
+
+static std::string MakeImageRenderDataString(const std::string& texturePath)
+{
+    json inner;
+    inner["texturePath"] = texturePath;
+
+    json outer;
+    outer["data"] = inner.dump();
+    outer["type"] = "image";
+    return outer.dump();
+}
+
+static bool TryLoadDialogueSceneFromFile(const std::string& dialogueJsonPath,
+    const std::string& sceneID,
+    json& outScene)
+{
+    try
+    {
+        std::ifstream ifs(dialogueJsonPath);
+        if (!ifs) return false;
+
+        json doc;
+        ifs >> doc;
+
+        if (!doc.contains("scenes") || !doc["scenes"].is_array()) return false;
+
+        for (const auto& sc : doc["scenes"])
+        {
+            if (sc.value("sceneID", std::string{}) == sceneID)
+            {
+                outScene = sc;
+                return true;
+            }
+        }
+    }
+    catch (...)
+    {
+        return false;
+    }
+    return false;
+}
+
+static void FillSavedDialogueFromDialogueJson_SceneDriven(SavedScene::SavedDialogue& sd,
+    const json& scene)
+{
+    sd.savedLines.clear();
+    sd.lines.clear();
+
+    if (scene.contains("script") && scene["script"].is_array())
+    {
+        for (const auto& node : scene["script"])
+        {
+            SavedScene::SavedDialogueLine rl;
+            rl.speakerID = std::max(0, node.value("speakerID", 0));
+            rl.line = node.value("line", std::string{});
+
+            sd.savedLines.push_back(rl);
+            sd.lines.push_back(rl.line);
+        }
+    }
+
+    sd.savedSpeakerUI.clear();
+
+    const bool hasBGs = scene.contains("speakerBGs") && scene["speakerBGs"].is_array();
+    const bool hasProfiles = scene.contains("speakerProfiles") && scene["speakerProfiles"].is_array();
+
+    if (!hasBGs || !hasProfiles) return;
+
+    const auto& bgs = scene["speakerBGs"];
+    const auto& profiles = scene["speakerProfiles"];
+    const int count = (int)std::min(bgs.size(), profiles.size());
+
+    for (int i = 0; i < count; ++i)
+    {
+        const std::string bgPath = bgs[i].get<std::string>();
+        const std::string profilePath = profiles[i].get<std::string>();
+
+        SavedScene::SavedDialogueSpeakerUI ui{};
+        ui.bgEnabled = true;
+        ui.bgSize = { 1500.f, 300.f };
+        ui.bgRenderData = MakeImageRenderDataString(bgPath);
+
+        ui.profileEnabled = true;
+        ui.profileSize = { 300.f, 300.f };
+        ui.profileOffset = { 0.f, 0.f };
+        ui.profileRenderData = MakeImageRenderDataString(profilePath);
+
+        sd.savedSpeakerUI[i] = std::move(ui);
+    }
+}
+
+// ==========================================================================
+
 /**
  * @brief Serializes SavedEntity to JSON object.
  *
@@ -654,7 +750,14 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"textBox", std::move(jtb)},
             {"jsonPath", dlg.jsonPath},
             {"sceneID", dlg.sceneID.empty() ? "0" : dlg.sceneID},
-            {"lines", dlg.lines},
+            {"lines", dlg.savedLines.empty() ? json(dlg.lines) : [&] {
+                json arr = json::array();
+                for (const auto& sl : dlg.savedLines)
+                {
+                    arr.push_back({ {"speakerID", sl.speakerID}, {"line", sl.line} });
+                }
+                return arr;
+            }()},
             {"currentLineIndex", dlg.currentLineIndex},
             {"wrapWidth", dlg.wrapWidth},
             {"textSpeed", dlg.textSpeed},
@@ -667,14 +770,30 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"profileSize", {dlg.profileSize.x, dlg.profileSize.y }},
             {"profileOffset", {dlg.profileOffset.x, dlg.profileOffset.y }},
             {"profileRenderData", dlg.profileRenderData},
+            {"profileDisplaySide", dlg.profileDisplaySide},
 
             {"isVisible", dlg.isVisible},
-
-            {"customOverride", dlg.customOverride},
-            {"speakerOverrideEnabled", dlg.speakerOverrideEnabled},
-            {"speakerOverrideID", dlg.speakerOverrideID}
-
+            {"customOverride", dlg.customOverride}
         };
+        if (!dlg.savedSpeakerUI.empty())
+        {
+            json speakerUIObj = json::object();
+            for (const auto& [sid, ui] : dlg.savedSpeakerUI)
+            {
+                speakerUIObj[std::to_string(sid)] = {
+                    {"speakerName", ui.speakerName},
+                    {"bgEnabled", ui.bgEnabled},
+                    {"bgSize", { ui.bgSize.x, ui.bgSize.y }},
+                    {"bgRenderData", ui.bgRenderData},
+
+                    {"profileEnabled", ui.profileEnabled},
+                    {"profileSize", { ui.profileSize.x, ui.profileSize.y }},
+                    {"profileOffset", { ui.profileOffset.x, ui.profileOffset.y }},
+                    {"profileRenderData", ui.profileRenderData}
+                };
+            }
+            jd["speakerUI"] = std::move(speakerUIObj);
+        }
         j["gui"]["dialogues"].push_back(std::move(jd));
     }
 
@@ -812,11 +931,56 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 d.jsonPath = dlg["jsonPath"];
                 d.sceneID = dlg.value("sceneID", std::string{ "0" });
 
+                // Dialogue Lines
+                d.lines.clear();
+                d.savedLines.clear();
                 if (dlg.contains("lines") && dlg["lines"].is_array())
                 {
-                    d.lines.clear();
-                    for (const auto& ln : dlg["lines"]) d.lines.push_back(ln.get<std::string>());
+                    const auto& arr = dlg["lines"];
+                    if (!arr.empty() && arr[0].is_object())
+                    {
+                        for (const auto& node : arr)
+                        {
+                            SavedScene::SavedDialogueLine sl;
+                            sl.speakerID = node.value("speakerID", 0);
+                            sl.line = node.value("line", std::string{});
+                            d.savedLines.push_back(std::move(sl));
+                        }
+                        for (const auto& sl : d.savedLines) d.lines.push_back(sl.line);
+                    }
+                    else
+                    {
+                        for (const auto& ln : arr) d.lines.push_back(ln.get<std::string>());
+                    }
                 }
+
+                if (dlg.contains("speakerUI") && dlg["speakerUI"].is_object())
+                {
+                    for (auto it = dlg["speakerUI"].begin(); it != dlg["speakerUI"].end(); ++it)
+                    {
+                        int sid = 0;
+                        try { sid = std::stoi(it.key()); }
+                        catch (...) { continue; }
+
+                        const auto& node = it.value();
+                        SavedScene::SavedDialogueSpeakerUI ui{};
+                        ui.speakerName = node.value("speakerName", std::string{});
+                        ui.bgEnabled = node.value("bgEnabled", ui.bgEnabled);
+                        if (node.contains("bgSize") && node["bgSize"].is_array())
+                            ui.bgSize = { node["bgSize"][0].get<float>(), node["bgSize"][1].get<float>() };
+                        ui.bgRenderData = node.value("bgRenderData", ui.bgRenderData);
+
+                        ui.profileEnabled = node.value("profileEnabled", ui.profileEnabled);
+                        if (node.contains("profileSize") && node["profileSize"].is_array())
+                            ui.profileSize = { node["profileSize"][0].get<float>(), node["profileSize"][1].get<float>() };
+                        if (node.contains("profileOffset") && node["profileOffset"].is_array())
+                            ui.profileOffset = { node["profileOffset"][0].get<float>(), node["profileOffset"][1].get<float>() };
+                        ui.profileRenderData = node.value("profileRenderData", ui.profileRenderData);
+
+                        d.savedSpeakerUI[sid] = std::move(ui);
+                    }
+                }
+
                 d.currentLineIndex = dlg.value("currentLineIndex", 0);
                 d.textSpeed = dlg.value("textSpeed", d.textSpeed);
                 d.wrapWidth = dlg.value("wrapWidth", d.wrapWidth);
@@ -838,10 +1002,10 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                     d.profileOffset = { dlg["profileOffset"][0], dlg["profileOffset"][1] };
                 }
                 d.profileRenderData = dlg.value("profileRenderData", std::string("{}"));
+                d.profileDisplaySide = dlg.value("profileDisplaySide", 0);
+
                 d.isVisible = dlg.value("isVisible", true);
                 d.customOverride = dlg.value("customOverride", false);
-                d.speakerOverrideEnabled = dlg.value("speakerOverrideEnabled", false);
-                d.speakerOverrideID = dlg.value("speakerOverrideID", 0);
 
                 s.guiDialogues.push_back(std::move(d));
             }
@@ -1021,7 +1185,6 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             //sb.color = b.color;
             sb.renderData = b.m_renderData.Serialize();
             //sb.shape = ButtonShapeToString(b.shape);
-            sb.action = ButtonActionToString(b.action); 
             sb.actionName = b.actionName;
             sb.actionParams = b.actionParams;
             sb.soundType = static_cast<int>(b.soundType);
@@ -1064,20 +1227,66 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.profileSize = d.profileBaseSize;
             sd.profileOffset = d.profileOffset;
             sd.profileRenderData = d.profileRenderData.Serialize();
+            sd.profileDisplaySide = static_cast<int>(d.profileDisplaySide);
 
             sd.isVisible = d.isVisible;
-
             sd.customOverride = d.customOverride;
-            sd.speakerOverrideEnabled = d.speakerOverrideEnabled;
-            sd.speakerOverrideID = d.speakerOverrideID;
 
             const TextSystem::TextComponent* comp = d.textComp ? d.textComp : d.owned.get();
-            if (comp)
+            if (!sd.customOverride)
             {
-                sd.lines = comp->GetLines();
-                sd.currentLineIndex = comp->GetCurrentLineIndex();
-            }
+                nlohmann::json sc;
+                if (TryLoadDialogueSceneFromFile(sd.jsonPath, sd.sceneID, sc))
+                {
+                    FillSavedDialogueFromDialogueJson_SceneDriven(sd, sc);
 
+                    // Optional: keep these synced with Dialogue.json too
+                    sd.textSpeed = sc.value("textSpeed", sd.textSpeed);
+                    sd.wrapWidth = sc.value("wrapWidth", sd.wrapWidth);
+                }
+            }
+            else
+            {
+                if (comp)
+                {
+                    sd.lines = comp->GetLines();
+                    sd.currentLineIndex = comp->GetCurrentLineIndex();
+                    sd.textSpeed = comp->GetTextSpeed();
+                    sd.wrapWidth = d.wrapWidth;
+                }
+
+                // Custom mode: persist speakerIDs per line
+                if (sd.customOverride)
+                {
+                    sd.savedLines.clear();
+                    sd.savedLines.reserve(sd.lines.size());
+
+                    for (size_t i = 0; i < sd.lines.size(); ++i)
+                        sd.savedLines.push_back({ std::max(0, d.customLineSpeakerIDs[i]), sd.lines[i] });
+
+                    // Save per-speaker skins
+                    sd.savedSpeakerUI.clear();
+                    for (const auto& [sid, skin] : d.speakerSkins)
+                    {
+                        SavedScene::SavedDialogueSpeakerUI ui{};
+                        ui.speakerName = "";
+                        if (auto it = d.speakerNameOverrides.find(sid); it != d.speakerNameOverrides.end())
+                        {
+                            ui.speakerName = it->second;
+                        }
+                        ui.bgEnabled = skin.bgEnabled;
+                        ui.bgSize = skin.bgBaseSize;
+                        ui.bgRenderData = skin.bgRenderData.Serialize();
+
+                        ui.profileEnabled = skin.profileEnabled;
+                        ui.profileSize = skin.profileBaseSize;
+                        ui.profileOffset = skin.profileOffset;
+                        ui.profileRenderData = skin.profileRenderData.Serialize();
+
+                        sd.savedSpeakerUI[sid] = std::move(ui);
+                    }
+                }
+            }
             scene.guiDialogues.push_back(std::move(sd));
         }
         // GUI Displays
@@ -1188,59 +1397,19 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                 cfg.m_renderData = UI_RenderData::DeSerialize(b.renderData);
             }
             //cfg.shape = StringToButtonShape(b.shape);
-            cfg.action = StringToButtonAction(b.action);
             cfg.actionName = b.actionName;
-            cfg.actionParams = b.actionParams;
+            if (b.actionParams.is_string())
+            {
+                const std::string raw = b.actionParams.get<std::string>();
+                try { cfg.actionParams = json::parse(raw); }
+                catch (...) { cfg.actionParams = json::object(); }
+            }
+            else
+            {
+                cfg.actionParams = b.actionParams;
+            }
             cfg.soundType = static_cast<AudioSystem::ButtonType>(b.soundType);
             cfg.isVisible = b.isVisible;
-
-            if (b.action == "LoadLevel1") {
-                cfg.onClick = []() { SceneManager::Get().QueueLoadScene(FilePath::LEVEL1_SCENE); };
-            }
-            else if (b.action == "Quit") {
-                cfg.onClick = []() {
-                    // let quit sound play
-                    double startTime = glfwGetTime();
-                    while (glfwGetTime() - startTime < 0.5) {
-                        AudioSystem::Update();
-                        glfwPollEvents();
-                    }
-
-                    // stop all audio BEFORE shutdown
-                    AudioSystem::StopAll();
-                    // give FMOD time to cleanup by updating several times lol
-                    for (int i = 0; i < 10; ++i) {
-                        AudioSystem::Update();
-                        glfwPollEvents();
-                    }
-
-                    // QUIT NOW!!!
-                    CoreEngine::GetInstance().Quit();
-                    };
-            }
-            else if (b.action == "LoadMainMenu") {
-                cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE);
-                    };
-            }
-            else if (b.action == "LoadSettings") {
-                cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "others/settings.json"));
-                    };
-            }
-            else if (b.action == "LoadControls") {
-                cfg.onClick = []() {
-                    SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "others/controls.json"));
-                    };
-            }
-            else if (b.action == "OpenStateWindow") {
-                cfg.onClick = []() {
-                    GuiSystem::Get().DrawStateWindow(Render::GetInstance());
-                    };
-            }
-            else {
-                cfg.onClick = nullptr;
-            }
 
             GuiSystem::Get().AddButton(cfg);
         }
@@ -1289,14 +1458,12 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.profileBaseSize = d.profileSize;
             cfg.profileOffset = d.profileOffset;
             cfg.profileRenderData = UI_RenderData::DeSerialize(d.profileRenderData);
+            cfg.profileDisplaySide = static_cast<DialogueConfig::ProfileDisplaySide>(std::clamp(d.profileDisplaySide, 0, 2));
 
             cfg.jsonPath = d.jsonPath;
             cfg.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
             cfg.isVisible = d.isVisible;
-
             cfg.customOverride = d.customOverride;
-            cfg.speakerOverrideEnabled = d.speakerOverrideEnabled;
-            cfg.speakerOverrideID = d.speakerOverrideID;
 
             // Always create a runtime TextComponent we can hydrate
             cfg.owned = std::make_shared<TextSystem::TextComponent>();
@@ -1364,33 +1531,81 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                 };
 
             // Load dialogue properties
-            if (!d.lines.empty())
+            if (d.customOverride)
             {
-                comp->SetLines(d.lines);
-                int clamped = std::clamp(d.currentLineIndex, 0, (int)d.lines.size() - 1);
-                comp->SetCurrentLineIndex(clamped);
-                comp->SetIsTyping(false);
+                if (!d.savedLines.empty())
+                {
+                    std::vector<std::string> text;
+                    text.reserve(d.savedLines.size());
 
-                comp->SetTextSpeed(d.textSpeed);
-                if (!SceneManager::Get().inEditMode) comp->StartTyping();
+                    cfg.customLineSpeakerIDs.clear();
+                    cfg.customLineSpeakerIDs.reserve(d.savedLines.size());
+
+                    for (const auto& sl : d.savedLines)
+                    {
+                        cfg.customLineSpeakerIDs.push_back(std::max(0, sl.speakerID));
+                        text.push_back(sl.line);
+                    }
+
+                    comp->SetLines(text);
+                }
+                else
+                {
+                    comp->SetLines(d.lines);
+                    cfg.customLineSpeakerIDs.assign(d.lines.size(), 0);
+                }
+
+                // Load speaker skins
+                cfg.speakerSkins.clear();
+                for (const auto& [sid, ui] : d.savedSpeakerUI)
+                {
+                    DialogueSpeakerSkin spkr{};
+                    if (!ui.speakerName.empty())
+                    {
+                        cfg.speakerNameOverrides[sid] = ui.speakerName;
+                    }
+                    spkr.bgEnabled = ui.bgEnabled;
+                    spkr.bgBaseSize = ui.bgSize;
+                    spkr.bgRenderData = UI_RenderData::DeSerialize(ui.bgRenderData);
+
+                    spkr.profileEnabled = ui.profileEnabled;
+                    spkr.profileBaseSize = ui.profileSize;
+                    spkr.profileOffset = ui.profileOffset;
+                    spkr.profileRenderData = UI_RenderData::DeSerialize(ui.profileRenderData);
+
+                    cfg.speakerSkins[sid] = std::move(spkr);
+                }
             }
             else
             {
-                std::vector<std::string> lines;
-                float textSpeed = 60.f; std::string fontPath; float fontSize = 1.f; Vec3 color{};
-                loadLinesFromDialogueJson(cfg.sceneID, lines, textSpeed, fontPath, fontSize, color);
+                if (!d.lines.empty())
+                {
+                    comp->SetLines(d.lines);
+                    int clamped = std::clamp(d.currentLineIndex, 0, (int)d.lines.size() - 1);
+                    comp->SetCurrentLineIndex(clamped);
+                    comp->SetIsTyping(false);
 
-                comp->SetLines(lines);
-                comp->SetCurrentLineIndex(0);
-                comp->SetIsTyping(false);
+                    comp->SetTextSpeed(d.textSpeed);
+                    if (!SceneManager::Get().inEditMode) comp->StartTyping();
+                }
+                else
+                {
+                    std::vector<std::string> lines;
+                    float textSpeed = 60.f; std::string fontPath; float fontSize = 1.f; Vec3 color{};
+                    loadLinesFromDialogueJson(cfg.sceneID, lines, textSpeed, fontPath, fontSize, color);
 
-                comp->SetTextSpeed(textSpeed);
-                comp->SetFontPath(fontPath);
-                comp->SetFontSize(fontSize);
-                comp->SetColor(color);
+                    comp->SetLines(lines);
+                    comp->SetCurrentLineIndex(0);
+                    comp->SetIsTyping(false);
 
-                // keep text color in sync with scene default
-                cfg.textBox.color = { color.x, color.y, color.z };
+                    comp->SetTextSpeed(textSpeed);
+                    comp->SetFontPath(fontPath);
+                    comp->SetFontSize(fontSize);
+                    comp->SetColor(color);
+
+                    // keep text color in sync with scene default
+                    cfg.textBox.color = { color.x, color.y, color.z };
+                }
             }
 
             GuiSystem::Get().AddDialogue(cfg);

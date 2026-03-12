@@ -33,23 +33,6 @@ enum class ButtonShape
     Circle
 };
 
-enum class ButtonAction
-{
-    None,
-    LoadLevel1,
-    LoadMainMenu,
-    Quit,
-    OpenStateWindow,
-    ToggleAllButtons,
-    ToggleAllTextboxes,
-    ToggleAllDialogues,
-    ToggleAllDisplays,
-    LoadSettings,
-    LoadControls,
-    AdvanceDialogue,
-    GetActionCount
-};
-
 enum class SelectedType
 {
     None,
@@ -502,8 +485,6 @@ struct ButtonConfig {
 
     std::function<void()> onClick = nullptr;
     AudioSystem::ButtonType soundType = AudioSystem::ButtonType::CLICK;
-    //ButtonShape shape = ButtonShape::Rectangle;
-    ButtonAction action = ButtonAction::None;
 
     std::string actionName{"[]"};
     json actionParams{ "[]" };
@@ -538,6 +519,22 @@ struct TextBoxConfig {
     int ID = 0;
 };
 
+// Dialogue background/profile configurations by speaker ID
+
+struct DialogueSpeakerSkin
+{
+    // Dialogue box background UI settings
+    bool bgEnabled = true;
+    Vec2 bgBaseSize = { 1500.f, 300.f };
+    UI_RenderData bgRenderData;
+
+    // Dialogue box profile UI settings
+    bool profileEnabled = true;
+    Vec2 profileBaseSize = { 300.f, 300.f };
+    Vec2 profileOffset = { 0.f, 0.f };
+    UI_RenderData profileRenderData;
+};
+
 struct DialogueConfig {
     TextSystem::TextComponent* textComp = nullptr;
     TextBoxConfig textBox;
@@ -562,12 +559,19 @@ struct DialogueConfig {
     Vec2 profileOffset = { 0.f, 0.f };
     UI_RenderData profileRenderData;
     enum class ProfileDisplaySide { PROFILE_AUTOFROMSPEAKER = 0, PROFILE_LEFT = 1, PROFILE_RIGHT = 2 }; // which side the profile pic will be displayed
-    ProfileDisplaySide profileSide = ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
+    ProfileDisplaySide profileDisplaySide = ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER;
 
     // To be used by the ImGui UI editor
     bool customOverride = false; // if custom override mode is on
-    bool speakerOverrideEnabled = false; // to override speaker (only used when customOverride == true)
-    int speakerOverrideID = 0;
+
+    // Custom mode: per-line speaker IDs
+    std::vector<int> customLineSpeakerIDs;
+
+    // Custom / scene-driven mode: per-speaker skin
+    std::unordered_map<int, DialogueSpeakerSkin> speakerSkins;
+
+    // Custom mode: override speaker names
+    std::unordered_map<int, std::string> speakerNameOverrides;
 };
 
 struct DisplayConfig
@@ -613,20 +617,20 @@ std::string ButtonShapeToString(ButtonShape shape);
 ButtonShape StringToButtonShape(const std::string& s);
 
 /**
- * @brief Converts a ButtonAction enum value to its string representation.
- * @param action The ButtonAction value.
- * @return String representation of the ButtonAction.
+ * @brief Converts a ProfileDisplaySide enum value to its string representation.
+ * @param action The ProfileDisplaySide value.
+ * @return String representation of the ProfileDisplaySide.
  */
 
-std::string ButtonActionToString(ButtonAction action);
+std::string ProfileDisplaySideToString(DialogueConfig::ProfileDisplaySide side);
 
 /**
- * @brief Converts a string to a ButtonAction enum value.
- * @param str The string representation of the ButtonAction.
- * @return Corresponding ButtonAction value.
+ * @brief Converts a string to a ProfileDisplaySide enum value.
+ * @param str The string representation of the ProfileDisplaySide.
+ * @return Corresponding ProfileDisplaySide value.
  */
 
-ButtonAction StringToButtonAction(const std::string& s);
+DialogueConfig::ProfileDisplaySide StringToProfileDisplaySide(const std::string& s);
 
 class GuiSystem : public ISystem {
 public:
@@ -813,15 +817,6 @@ public:
 
     void Clear();
 
-    // Button functions
-
-/**
- * @brief       Binds built-in click behaviors to a button based on its ButtonAction.
- * @param btn   The button configuration to modify.
- */
-
-    void BindButtonAction(ButtonConfig& btn);
-
 /**
  * @brief           Toggles visibility of all buttons except an optional excluded one.
  *                  If all considered buttons are visible, hides them; otherwise shows them.
@@ -847,14 +842,6 @@ public:
  */
 
     void ToggleAllDisplays();
-
-/**
- * @brief           Draws the state window overlay UI (e.g. "Choose Your State" menu).
- *                  This overlay is drawn in screen space, including its own buttons and close control.
- * @param render    Reference to the Render instance to use.
- */
-
-    void DrawStateWindow(Render& render);
 
 /**
  * @brief       Converts the given mouse position to game-view coordinates when ImGui is active.
@@ -1018,6 +1005,13 @@ public:
 
     void HideTextBox(int textBoxID);
 
+/**
+ * @brief           Gets the order of registered actions.
+ * @return          The ordered list of registered actions.
+ */
+
+    const std::vector<std::string>& GetActionOrder() const { return actionOrder; }
+
 private:
 
     std::vector<ButtonConfig> buttons;
@@ -1029,6 +1023,9 @@ private:
 
     // a registry to hold functions, keyed by function name
     std::unordered_map<std::string, ActionFunction> actionRegistry;
+
+    // keeps RegisterAction insertion order
+    std::vector<std::string> actionOrder;
 
     struct DrawItem
     {
@@ -1059,10 +1056,6 @@ private:
     enum class SelectedType selectedType = SelectedType::None;
 
     GameViewRect m_gameViewRect;
-
-    // state window overlay
-    bool stateWindowActive = false;
-
 };
 
 // inline GuiSystem guiSystem;

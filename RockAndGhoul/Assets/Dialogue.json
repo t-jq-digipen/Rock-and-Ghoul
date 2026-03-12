@@ -11,7 +11,7 @@
                     "line": "Record deal, here we come."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 6,
                     "line": "Crazy bummer that so many acts forfeited! I wouldn't be surprised if they pit US against each other for content."
                 },
                 {
@@ -48,7 +48,7 @@
                 },
                 {
                     "speakerID": 3,
-                    "line": "Alright then, let's rock this out! BRING IT ON!!!"
+                    "line": "Alright then, foul spirits! BRING IT ON!!!"
                 }
             ],
             "textSpeed": 60.0,
@@ -96,7 +96,7 @@
         {
           "script": [
                 {
-                    "speakerID": 0,
+                    "speakerID": 6,
                     "line": "Phew! That took a while to get through."
                 },
                 {
@@ -108,11 +108,11 @@
                     "line": "Grooooooowl... Hissssss..."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 4,
                     "line": "WOW!"
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 5,
                     "line": "Wait a minute, something seems off about these spirits?"
                 },
                 {
@@ -120,15 +120,15 @@
                     "line": "Ziiing..."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 5,
                     "line": "They have elemental barriers now?!?!"
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 5,
                     "line": "Ugh great, just as I thought everything was going a little too easy."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 3,
                     "line": "Alright spirit, game on!"
                 }
           ],
@@ -158,12 +158,20 @@
             "speakerBGs": [
                 "../Assets/UI_DialogueBox_Rock.png",
                 "../Assets/UI_DialogueBox_Ghoul.png",
-                "../Assets/UI_DialogueBox_Enemy.png"
+                "../Assets/UI_DialogueBox_Enemy.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png"
             ],
             "speakerProfiles": [
                 "../Assets/UI_RockDialogue_Happy.png",
                 "../Assets/UI_GhoulDialogue_Normal.png",
-                "../Assets/UI_EnemyDialogue_Normal.png"
+                "../Assets/UI_EnemyDialogue_Normal.png",
+                "../Assets/UI_RockDialogue_Angry.png",
+                "../Assets/UI_RockDialogue_Frightened.png",
+                "../Assets/UI_RockDialogue_Shocked.png",
+                "../Assets/UI_RockDialogue_Victory.png"
             ]
         },
         {
