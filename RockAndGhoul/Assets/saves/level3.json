@@ -7,7 +7,7 @@
         "../Assets/Env03Props_Enemy_TopStools&Tables.PNG",
         "../Assets/Env03Props_Enemy_StageProps.PNG"
     ],
-    "bgmAssetName": "main_menu",
+    "bgmAssetName": "level_3",
     "cameraSpawn": [
         98.0,
         509.0

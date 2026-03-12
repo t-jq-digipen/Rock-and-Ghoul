@@ -81,10 +81,10 @@ void AudioComponent::PlaySound(size_t index, Entity eID) {
     }
     else {
         std::cout << "[AudioComponent] Playing NON-SPATIAL (spatial=" << spatial << ")" << std::endl;
-        channels[index] = AudioSystem::PlaySoundGetChannel(sound, false);
+        channels[index] = AudioSystem::PlaySoundGetChannel(sound, true); // start paused
         if (channels[index]) {
-            channels[index]->setVolume(volume);
-            std::cout << "[AudioComponent] Non-spatial SUCCESS, volume set to " << volume << std::endl;
+            channels[index]->setVolume(volume * AudioSystem::GetMasterVolume());
+            channels[index]->setPaused(false); // unpause after volume is set
         }
         else {
             std::cout << "[AudioComponent] Non-spatial FAILED - channel is NULL!" << std::endl;

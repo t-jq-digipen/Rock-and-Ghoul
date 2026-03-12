@@ -2,7 +2,7 @@
     "backgrounds": [
         "../Assets/Env02_EnemyWorld.PNG"
     ],
-    "bgmAssetName": "level_1",
+    "bgmAssetName": "level_2",
     "cameraSpawn": [
         -57.27496337890625,
         498.444091796875

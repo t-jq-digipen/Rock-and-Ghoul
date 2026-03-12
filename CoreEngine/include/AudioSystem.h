@@ -241,6 +241,7 @@ public:
      */
     void SetMasterVolume(float vol) {
         masterVolume = std::clamp(vol, 0.f, 1.f);
+        AudioSystem::SetMasterVolume(masterVolume);
         // update current channel NOW
         if (currentChannel) {
             currentChannel->setVolume(musicVol * masterVolume);

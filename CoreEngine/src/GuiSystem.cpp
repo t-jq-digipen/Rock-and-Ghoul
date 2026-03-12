@@ -2095,6 +2095,7 @@ void GuiSystem::Update(float dt)
         // Click to open controls page
         if (hovercontrol && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
+            AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK); // ari added this
             opencontrol = true;
             controlpage = 0;
         }
@@ -2103,6 +2104,7 @@ void GuiSystem::Update(float dt)
         if (hoverexit && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             ReplayManager::Get().StopPlayback(); //stop the playback if quit to main menu (to fix buggy main menu visuals)
+            AudioSystem::PlayButtonSound(AudioSystem::ButtonType::QUIT); // ari added this
             SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE);
             SceneManager::Get().SetTransitionTime(2.f);
         }
@@ -2110,6 +2112,7 @@ void GuiSystem::Update(float dt)
         // Click to resume game level
         if (hoverresume && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
+            AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK); // ari added this
             SceneManager::Get().TogglePause();
         }
 

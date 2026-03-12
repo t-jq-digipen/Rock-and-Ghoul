@@ -5,13 +5,23 @@
       "loop": true,
       "group": "Music"
     },
+    "cutscene_music": {
+      "path": "../Assets/audio/BGM/level1.wav",
+      "loop": true,
+      "group": "Music"
+    },
     "level_1": {
       "path": "../Assets/audio/BGM/Rock n Ghoul - Boss Idea_01_ROUGH.wav",
       "loop": true,
       "group": "Music"
     },
-    "cutscene_music": {
-      "path": "../Assets/audio/BGM/level1.wav",
+    "level_2": {
+      "path": "../Assets/audio/BGM/Ambience/SCI-FI-AMBIENCE.wav",
+      "loop": true,
+      "group": "Music"
+    },
+    "level_3": {
+      "path": "../Assets/audio/BGM/Rock n Ghoul - Level 3ph.wav",
       "loop": true,
       "group": "Music"
     },
@@ -89,86 +99,104 @@
       "minDistance": 100.0,
       "maxDistance": 1000.0
     },
-    "guitar_strum_heavy": {
+    "guitar_strum1": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Heavy Electric Guitar.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_strum": {
-      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar Riff.mp3",
-      "loop": false,
-      "group": "SFX",
-      "spatial": false
-    },
-    "guitar_note_1": {
+    "guitar_strum2": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var1.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_2": {
+    "guitar_strum3": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var2.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_3": {
+    "guitar_strum4": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var3.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_4": {
+    "guitar_strum5": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var4.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_5": {
+    "guitar_strum6": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var5.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_6": {
+    "guitar_strum7": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var6.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
-    "guitar_note_7": {
+    "guitar_strum8": {
       "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/D String var7.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "pluck1": {
-      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck1.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/GuitarShoot_D_04.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "pluck2": {
-      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck2.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/GuitarShoot_D_05.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "pluck3": {
-      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck3.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/GuitarShoot_D_12.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "pluck4": {
-      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/pluck4.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/GuitarShoot_D_13.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "twang1": {
-      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/twang1.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_05.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "twang2": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_07.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "twang3": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_09.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "twang4": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_10.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "twang5": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_12.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
@@ -185,6 +213,18 @@
       "group": "SFX",
       "spatial": true
     },
+    "player_hit1": {
+      "path": "../Assets/audio/SFX/Player/Movement/Rock Grunt1.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true
+    },
+    "player_hit2": {
+      "path": "../Assets/audio/SFX/Player/Movement/Rock Grunt2.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true
+    },
     "player_footstep_wood": {
       "path": "../Assets/audio/SFX/Player/Movement/Walking on Wood.wav",
       "loop": false,
@@ -193,13 +233,65 @@
       "minDistance": 100.0,
       "maxDistance": 2000.0
     },
-    "player_spawnSound": {
+    "player_spawnSound1": {
       "path": "../Assets/audio/SFX/Player/VO/Bring it on.wav",
       "loop": false,
       "group": "SFX",
-      "spatial": true,
-      "minDistance": 100.0,
-      "maxDistance": 2000.0
+      "spatial": false
+    },
+    "player_spawnSound2": {
+      "path": "../Assets/audio/SFX/Player/VO/Brother.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "player_spawnSound3": {
+      "path": "../Assets/audio/SFX/Player/VO/Not again.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "player_spawnSound4": {
+      "path": "../Assets/audio/SFX/Player/VO/Trouble.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "player_spawnSound5": {
+      "path": "../Assets/audio/SFX/Player/VO/Who goes there.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "player_spawnSound6": {
+      "path": "../Assets/audio/SFX/Player/VO/GoAhead.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "player_spawnSound7": {
+      "path": "../Assets/audio/SFX/Player/VO/LeaveAloneWhine.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "enemyattack": {
+      "path": "../Assets/audio/SFX/Enemy/EnemyAttack.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "enemyhit": {
+      "path": "../Assets/audio/SFX/Enemy/EnemyHit.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "enemydie": {
+      "path": "../Assets/audio/SFX/Enemy/EnemyDie.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
     }
   },
   "ui": {
@@ -215,6 +307,11 @@
     },
     "ui_click": {
       "path": "../Assets/audio/SFX/UI/UI Click.wav",
+      "loop": false,
+      "group": "UI"
+    },
+    "level_lose": {
+      "path": "../Assets/audio/SFX/UI/Level_Lose.wav",
       "loop": false,
       "group": "UI"
     }

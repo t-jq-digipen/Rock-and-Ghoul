@@ -684,7 +684,10 @@ namespace SpiritScript {
 
 		SpiritRuntime& spiritLogic = g_spirits[eID];
 
-
+		// ari shifted these 2 things about bc the audio needs the selfPos declaration on top
+		// get player pos and spirit pos
+		Vec2 playerPos = GetPos(targetPlayer);
+		Vec2 selfPos = GetPos(eID);
 
 		if (healthComp.currhp <= 0.f) {
 			// spirit state not dead yet
@@ -694,6 +697,7 @@ namespace SpiritScript {
 				spriteSheet.SetState(2);
 				registry.Add_Component<LifetimeComponent>(eID, LifetimeComponent{ 0.f, SPIRIT_DEATH_DURATION });
 				moveComp.ResetFrameIntent();
+				AudioSystem::PlaySoundAt("enemydie", selfPos.x, selfPos.y, 0.3f); //die sound
 			}
 			else // spirit is dead 
 			{
@@ -707,10 +711,6 @@ namespace SpiritScript {
 			// no need check the rest bc this fella die alr
 			return;
 		}
-
-		// get player pos and spirit pos
-		Vec2 playerPos = GetPos(targetPlayer);
-		Vec2 selfPos = GetPos(eID);
 
 		Vec2 directionToPlayer = { playerPos.x - selfPos.x, playerPos.y - selfPos.y };
 
@@ -726,6 +726,7 @@ namespace SpiritScript {
 			spiritLogic.state = SpiritState::SPIRIT_HIT;
 			spiritLogic.stateTime = 0.f;
 			CombatSystem::Get().SetCombatantStagger(eID, false);
+			AudioSystem::PlaySoundAt("enemyhit", selfPos.x, selfPos.y, 0.2f); //hitsound
 		}
 
 		if (spiritLogic.state == SpiritState::SPIRIT_IDLE) {
@@ -779,6 +780,7 @@ namespace SpiritScript {
 
 			if (spiritLogic.stateTime >= SPIRIT_MELEE_WINDUP && spiritLogic.willAttack) {
 				spiritLogic.willAttack = false;
+				AudioSystem::PlaySoundAt("enemyattack", selfPos.x, selfPos.y, 0.3f);
 
 				Vec2 offset = { 0.f, 0.f };
 				if (faceRight) {
