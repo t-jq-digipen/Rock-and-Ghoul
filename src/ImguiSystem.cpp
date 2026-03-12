@@ -2771,11 +2771,9 @@ void ImGuiSystem::Update(float dt)
                         }
                     }
 
-                    ImGui::SeparatorText("Dialogue");
-
                     // Custom Override / Scene-Driven Mode Select
                     {
-                        ImGui::SeparatorText("Mode");
+                        ImGui::SeparatorText("Dialogue Mode");
                         const bool changedCustomMode = ImGui::Checkbox("Custom Override", &customOverriden);
                         d.customOverride = customOverriden;
 
@@ -2784,8 +2782,8 @@ void ImGuiSystem::Update(float dt)
 
                         if (ImGui::IsItemHovered())
                             ImGui::SetTooltip(customOverriden
-                                ? "Lines + speaker skins come from the scene save (level json)."
-                                : "Lines + speaker skins come from Dialogue.json.");
+                                ? "Lines + speaker skins can be edited."
+                                : "Lines + speaker skins are derived by game scene data.");
 
                         if (changedCustomMode && customOverriden)
                         {

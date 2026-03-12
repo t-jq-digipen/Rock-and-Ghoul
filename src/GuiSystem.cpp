@@ -827,10 +827,12 @@ bool GuiSystem::GetEditMode() const
     return editMode;
 }
 
-// Dialogue skip duration
-static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 1.5f;
-static constexpr float ADVANCE_DIALOGUE_BUTTON_OFFSET_X = -300.f;
-static constexpr float DIALOGUE_BACKGROUND_OFFSET_X = -200.f;
+static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 2.f; // duration until active dialogue can be skipped
+static constexpr float DIALOGUE_SKIP_HOLD_ESC_DURATION = 1.5f; // duration needed to hold esc key to skip dialogue
+static constexpr float ADVANCE_DIALOGUE_BUTTON_OFFSET_X = -300.f; // advance dialogue button left shift
+static constexpr float DIALOGUE_BACKGROUND_OFFSET_X = -200.f; // dialogue background left shift
+static constexpr int DIALOGUE_SKIP_HOLD_BAR_BG_ID = 52; 
+static constexpr int DIALOGUE_SKIP_HOLD_BAR_FILL_ID = 53;
 
 /**
  * @brief       Main per-frame update for the GUI system.
@@ -860,7 +862,9 @@ void GuiSystem::Update(float dt)
 
     // Check if dialogue can be skipped
     static float dialogueTimerBeforeCanSkip = 0.f;
+    static float escHoldTimer = 0.f;
     static bool prevAnyDialogueVisible = false;
+    static float cachedHoldBarMaxWidth = -1.f;
 
     // Skip the entire dialogue after a delay
     const bool anyDialogueVisible = std::any_of(dialogues.begin(), dialogues.end(),
@@ -879,7 +883,6 @@ void GuiSystem::Update(float dt)
     }
     else if (!anyDialogueVisible)
     {
-        dialogueTimerBeforeCanSkip = 0.f;
         for (auto& tb : textboxes)
         {
             if (tb.text == "PRESS ESC TO SKIP" ||
@@ -888,27 +891,110 @@ void GuiSystem::Update(float dt)
                 tb.isVisible = false;
             }
         }
+
+        // Hide bar displays
+        for (auto& dp : displays)
+        {
+            if (dp.ID == DIALOGUE_SKIP_HOLD_BAR_FILL_ID || dp.ID == DIALOGUE_SKIP_HOLD_BAR_BG_ID)
+            {
+                dp.isVisible = false;
+            }
+        }
+
+        // Reset state
+        dialogueTimerBeforeCanSkip = 0.f;
+        escHoldTimer = 0.f;
+        cachedHoldBarMaxWidth = -1.f;
+        prevAnyDialogueVisible = false;
     }
 
-    const bool escPressed = Input::IsKeyPressed(GLFW_KEY_ESCAPE);
+    // ====================================================
+    // DIALOGUE SKIP
+    // ====================================================
 
-    if (dialogueTimerBeforeCanSkip >= DIALOGUE_SKIP_DELAY_DURATION && GuiSystem::Get().GetDialogueGate())
+    // Show skip textbox only if dialogue skip is available
+    const bool escHeld = Input::IsKeyHeld(GLFW_KEY_ESCAPE);
+    const bool skipAvailable = anyDialogueVisible && !sm.inEditMode && !sm.IsPaused() && (dialogueTimerBeforeCanSkip >= DIALOGUE_SKIP_DELAY_DURATION);
+
+    for (auto& tb : textboxes)
     {
-        for (auto& tb : textboxes)
+        if (tb.text == "PRESS ESC TO SKIP" || tb.text.find("PRESS ESC TO SKIP") != std::string::npos)
         {
-            if (tb.text == "PRESS ESC TO SKIP" ||
-                tb.text.find("PRESS ESC TO SKIP") != std::string::npos)
-            {
-                tb.isVisible = true;
-            }
+            tb.isVisible = skipAvailable;
         }
     }
 
-    if (anyDialogueVisible &&
-        !sm.inEditMode &&
-        !sm.IsPaused() &&
-        escPressed &&
-        dialogueTimerBeforeCanSkip >= DIALOGUE_SKIP_DELAY_DURATION)
+    // Show hold bar only when esc key is held and dialogue skip is available
+    const bool showHoldBar = skipAvailable && escHeld;
+    for (auto& dp : displays)
+    {
+        if (dp.ID == DIALOGUE_SKIP_HOLD_BAR_FILL_ID || dp.ID == DIALOGUE_SKIP_HOLD_BAR_BG_ID)
+        {
+            dp.isVisible = showHoldBar;
+        }
+    }
+
+    // Call this every frame when skipAvailable is true (even if bar is hidden),
+    // so the geometry resets properly when ESC is released.
+    auto UpdateSkipHoldBar = [&](float percentage, int id)
+        {
+            percentage = std::clamp(percentage, 0.f, 1.f);
+
+            struct BarGeometry { float leftX{}, rightX{}, topY{}, botY{}, maxW{}; bool cached = false; };
+            static std::unordered_map<int, BarGeometry> s_barGeom;
+
+            for (auto& dp : displays)
+            {
+                if (dp.ID != id) continue;
+                if (dp.m_renderData.GetRenderType() != UIRenderType::CustomQuad) return;
+
+                auto& q = dp.m_renderData.GetQuadData();
+                auto& g = s_barGeom[id];
+
+                if (!g.cached)
+                {
+                    g.leftX = std::min(std::min(q.v0.x, q.v1.x), std::min(q.v2.x, q.v3.x));
+                    g.rightX = std::max(std::max(q.v0.x, q.v1.x), std::max(q.v2.x, q.v3.x));
+                    g.topY = std::max(std::max(q.v0.y, q.v1.y), std::max(q.v2.y, q.v3.y));
+                    g.botY = std::min(std::min(q.v0.y, q.v1.y), std::min(q.v2.y, q.v3.y));
+                    g.maxW = std::max(0.f, g.rightX - g.leftX);
+                    g.cached = true;
+                }
+
+                const float newRightX = g.leftX + g.maxW * percentage;
+
+                GuiSystem::Get().SetDisplayQuad(dp.ID,
+                    { g.leftX,    g.botY },
+                    { newRightX,  g.botY },
+                    { newRightX,  g.topY },
+                    { g.leftX,    g.topY }
+                );
+
+                dp.baseSize.x = g.maxW;
+                dp.size.x = g.maxW * percentage;
+                return;
+            }
+
+            s_barGeom.clear();
+        };
+
+
+    // Accumulate esc key hold time when held to skip dialogue
+    static float escHoldBarFillPercentage = 0.f;
+    if (skipAvailable && escHeld)
+    {
+        escHoldTimer = std::min(escHoldTimer + dt, DIALOGUE_SKIP_HOLD_ESC_DURATION);
+        escHoldBarFillPercentage = escHoldTimer / DIALOGUE_SKIP_HOLD_ESC_DURATION;
+    }
+    else
+    {
+        escHoldTimer = 0.f;
+        escHoldBarFillPercentage = 0.f;
+    }
+    UpdateSkipHoldBar(escHoldBarFillPercentage, DIALOGUE_SKIP_HOLD_BAR_FILL_ID);
+
+    // Trigger dialogue skip when esc hold progress is complete
+    if (skipAvailable && escHoldTimer >= DIALOGUE_SKIP_HOLD_ESC_DURATION)
     {
         // Hide all dialogue UI
         for (auto& d : dialogues)
@@ -922,6 +1008,7 @@ void GuiSystem::Update(float dt)
             d.isVisible = false;
         }
 
+        // Hide advance dialogue button
         for (auto& b : buttons)
         {
             if (!b.isVisible) continue;
@@ -932,6 +1019,7 @@ void GuiSystem::Update(float dt)
             }
         }
 
+        // Hide skip textbox
         for (auto& tb : textboxes)
         {
             if (!tb.isVisible) continue;
@@ -943,12 +1031,25 @@ void GuiSystem::Update(float dt)
             }
         }
 
+        // Hide bar displays
+        for (auto& dp : displays)
+        {
+            if (dp.ID == DIALOGUE_SKIP_HOLD_BAR_FILL_ID || dp.ID == DIALOGUE_SKIP_HOLD_BAR_BG_ID)
+            {
+                dp.isVisible = false;
+            }
+        }
+
         SetDialogueGate(false);
 
         // Reset skip state
+        escHoldTimer = 0.f;
         dialogueTimerBeforeCanSkip = 0.0f;
         prevAnyDialogueVisible = false;
+        cachedHoldBarMaxWidth = -1.f;
     }
+
+    // ====================================================
 
     // Toggle visibility of "AdvanceDialogue" button
     for (auto& b : buttons)
