@@ -46,6 +46,7 @@
 #include "SceneManager.h"
 #include "PlayerSystem.h"
 #include "EnemySystem.h"
+#include <ReplayManager.h>
 
 // MEMORY POOLLLLLLLL: Map projectile Entity to its PooledEntity for cleanup
 static std::unordered_map<Entity, PooledEntity> g_projectilePoolData;

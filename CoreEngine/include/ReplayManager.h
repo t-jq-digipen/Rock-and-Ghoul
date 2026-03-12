@@ -1,5 +1,38 @@
+/* ========================================================
+ * @file        ReplayManager.h
+ * @author      Kervin Ong Guan Cheng  | kervinguancheng.ong@digipen.edu
+ * @date        11 MAR 2026
+ *
+ * @brief
+ * Declares the ReplayManager, which records and replays
+ * short windows of gameplay state using frame snapshots.
+ *
+ * - Captures per-frame ECS state into a circular ring buffer.
+ * - Supports switching between OFF, RECORDING, and PLAYBACK modes.
+ * - Restores entity state during playback without running full gameplay logic.
+ * - Stores core replay data such as transform, physics, movement,
+ *   animation, health, lifetime, and status effect state.
+ * - Tracks UI-related replay data such as fretboard arrow visibility,
+ *   spell slot state, and current element selection.
+ * - Supports recreation of missing runtime entities through prefab-based
+ *   replay identity data and playback entity remapping.
+ * - Resets replay state safely on scene load and mode transitions.
+ *
+ * Additional Features:
+ * - Uses a fixed-capacity frame buffer based on configured FPS and duration.
+ * - Allows playback of recent gameplay history without full ECS serialization.
+ * - Integrates with SceneManager, Camera, GuiSystem, PlayerSystem,
+ *   and JsonLoad for gameplay and editor replay workflows.
+ * - Provides a lightweight replay pipeline suited for transient combat,
+ *   spell visuals, and short-term debugging of gameplay events.
+ *
+ * Copyright © 2026 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #ifndef REPLAYMANAGER_H
 #define REPLAYMANAGER_H
+
 #include <vector>
 #include "Entity.h"
 #include "DataDefs.h"
@@ -16,7 +49,7 @@
 #include "GuiSystem.h"
 #include "JsonLoad.h"
 
-// Forward declare
+
 class Registry;
 
 class ReplayManager
@@ -91,6 +124,14 @@ private:
         float burnTickTimer{ 0.f };
         float originalMoveSpeed{ 0.f };
         bool isStunned{ false };
+
+        // identity / recreation
+        bool hasTag{ false };
+        int tagValue{ 0 };
+
+        bool canRecreate{ false };
+        std::string recreatePrefab;
+        std::string archetypeName;
     };
 
     struct SpellSlotSnapshot
@@ -132,7 +173,8 @@ private:
 private:
     int OldestIndex() const;
     int IndexAt(int logicalIndex) const;
-    //std::unordered_map<Entity, Entity> replayEntityMap;
+    std::unordered_map<Entity, Entity> replayEntityMap;
+    Entity ResolvePlaybackEntity(const EntitySnapshot& s);
 };
 
 #endif

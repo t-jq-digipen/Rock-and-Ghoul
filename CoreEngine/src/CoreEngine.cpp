@@ -249,20 +249,6 @@ void CoreEngine::Run()
         frameRate.StartFrame();
         glfwPollEvents();
         
-        //testing of replay
-        if (glfwGetKey(GLApp::ptr_window, GLFW_KEY_F9) == GLFW_PRESS)
-            replay.StartRecording();
-
-        if (glfwGetKey(GLApp::ptr_window, GLFW_KEY_F10) == GLFW_PRESS)
-            replay.StartPlayback();
-
-        if (glfwGetKey(GLApp::ptr_window, GLFW_KEY_F11) == GLFW_PRESS)
-        {
-            replay.StopPlayback();
-            replay.StopRecording();
-        }
-
-
         float dt = static_cast<float>(frameRate.GetDeltaTime());
         dt = std::clamp(dt, 0.0f, 0.05f); // clamp variable dt
 
@@ -308,9 +294,6 @@ void CoreEngine::Run()
                 {
                     for (auto* s : updateSystems)
                     {
-
-                        /*if (replay.IsPlaying() && dynamic_cast<MovementSystem*>(s))
-                            continue;*/
 
                         auto start = clock::now();
 
