@@ -51,6 +51,7 @@
 #include <nlohmann/json.hpp>
 #include <unordered_set> 
 #include <string>
+#include <algorithm>
 #include <iostream>
 #include "SpatialGrid.h"
 #include "CollisionManager.h"
@@ -92,6 +93,10 @@ static std::string s_selectedOpenScene   = "";
 static std::vector<std::string> s_openSceneList;
 static std::string s_openGameMessage     = "";
 static bool s_openGameSuccess            = false;
+
+// Delete Game confirmation state
+static std::string s_pendingDeleteGame   = "";
+static bool s_openDeleteConfirmPopup     = false;
 
 // runtime thumbnail cache
 static std::vector<Image> g_loadedThumbnails;
@@ -1779,10 +1784,97 @@ void ImGuiSystem::Update(float dt)
                         }
                     }
                     if (selected) ImGui::SetItemDefaultFocus();
+
+                    // Right-click context menu on each game entry
+                    if (ImGui::BeginPopupContextItem(("##ctx_" + name).c_str()))
+                    {
+                        ImGui::TextDisabled("%s", name.c_str());
+                        ImGui::Separator();
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 0.3f, 0.3f, 1.f));
+                        if (ImGui::MenuItem("Delete Game..."))
+                        {
+                            s_pendingDeleteGame     = name;
+                            s_openDeleteConfirmPopup = true;
+                        }
+                        ImGui::PopStyleColor();
+                        ImGui::EndPopup();
+                    }
                 }
                 ImGui::EndListBox();
             }
         }
+
+        // ── Delete confirmation popup ─────────────────────────────────────────
+        if (s_openDeleteConfirmPopup)
+        {
+            ImGui::OpenPopup("Delete Game?##confirm");
+            s_openDeleteConfirmPopup = false;
+        }
+
+        if (ImGui::BeginPopupModal("Delete Game?##confirm", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "This will permanently delete:");
+            ImGui::Text("  %s", s_pendingDeleteGame.c_str());
+            ImGui::TextDisabled("All assets, scenes, and source files will be lost.");
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.7f, 0.1f, 0.1f, 1.f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.2f, 0.2f, 1.f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.5f, 0.0f, 0.0f, 1.f));
+            if (ImGui::Button("Delete", ImVec2(120, 0)))
+            {
+                std::string gameRoot = FilePath::REPO_ROOT + s_pendingDeleteGame;
+                try
+                {
+                    std::filesystem::remove_all(gameRoot);
+
+                    // If the deleted game is currently loaded, reset engine state
+                    if (FilePath::IsGameLoaded() &&
+                        FilePath::REPO_ROOT + s_pendingDeleteGame + "/" == FilePath::ASSETS_FOLDER.substr(
+                            0, FilePath::REPO_ROOT.size() + s_pendingDeleteGame.size() + 1))
+                    {
+                        JsonLoad::ClearAllEntities();
+                        GuiSystem::Get().Clear();
+                        RenderSystem::ClearBackgroundTextures();
+                        FilePath::InitRepoRoot();
+                    }
+
+                    // Refresh game list
+                    s_openGameList.erase(
+                        std::remove(s_openGameList.begin(), s_openGameList.end(), s_pendingDeleteGame),
+                        s_openGameList.end());
+
+                    if (s_selectedOpenGame == s_pendingDeleteGame)
+                    {
+                        s_selectedOpenGame  = "";
+                        s_selectedOpenScene = "";
+                        s_openSceneList.clear();
+                    }
+
+                    s_openGameMessage = "Deleted: " + s_pendingDeleteGame;
+                    s_openGameSuccess = false; // show in red
+                }
+                catch (const std::exception& ex)
+                {
+                    s_openGameMessage = std::string("Delete failed: ") + ex.what();
+                    s_openGameSuccess = false;
+                }
+                s_pendingDeleteGame = "";
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::PopStyleColor(3);
+
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0)))
+            {
+                s_pendingDeleteGame = "";
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+        // ── End Delete confirmation popup ─────────────────────────────────────
 
         ImGui::SameLine();
 
@@ -1828,6 +1920,68 @@ void ImGuiSystem::Update(float dt)
             else
                 ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "%s", s_openGameMessage.c_str());
         }
+
+        // ── Inline create-game row ────────────────────────────────────────────
+        ImGui::Separator();
+        ImGui::TextDisabled("New game:");
+        ImGui::SameLine();
+        static char s_inlineNewGameName[128] = {};
+        ImGui::SetNextItemWidth(180.f);
+        ImGui::InputText("##inlinenewgame", s_inlineNewGameName, sizeof(s_inlineNewGameName));
+        ImGui::SameLine();
+        bool canCreate = s_inlineNewGameName[0] != '\0';
+        if (!canCreate) ImGui::BeginDisabled();
+        if (ImGui::Button("Create##inline", ImVec2(80, 0)))
+        {
+            std::string newName = s_inlineNewGameName;
+            std::string newRoot = FilePath::REPO_ROOT + newName + "/";
+            try
+            {
+                fs::create_directories(newRoot + "src/");
+                fs::create_directories(newRoot + "include/");
+                fs::create_directories(newRoot + "Assets/saves/");
+                fs::create_directories(newRoot + "Assets/prefabs/");
+                fs::create_directories(newRoot + "Assets/audio/");
+                fs::create_directories(newRoot + "Assets/others/");
+
+                auto touchFile = [](const std::string& dst) { std::ofstream f(dst); };
+                touchFile(newRoot + "Assets/saves/.gitkeep");
+                touchFile(newRoot + "Assets/prefabs/.gitkeep");
+                touchFile(newRoot + "Assets/audio/.gitkeep");
+                touchFile(newRoot + "Assets/others/.gitkeep");
+                touchFile(newRoot + "src/.gitkeep");
+                touchFile(newRoot + "include/.gitkeep");
+
+                { std::ofstream mf(newRoot + "Assets/audio_manifest.json");
+                  mf << "{\n  \"music\": {},\n  \"sfx\": {},\n  \"ui\": {},\n  \"ambience\": {},\n  \"banks\": {}\n}\n"; }
+
+                { std::ofstream mf(newRoot + "src/main.cpp");
+                  mf << "// main.cpp - " << newName << "\n#include \"reginegine.h\"\nint main() {\n"
+                     << "    FilePath::SetGameRoot(\"" << newName << "\");\n"
+                     << "    CoreEngine& engine = CoreEngine::GetInstance();\n"
+                     << "    engine.Initialize();\n    engine.Run();\n    engine.Shutdown();\n    return 0;\n}\n"; }
+
+                // Add to list and auto-select
+                if (std::find(s_openGameList.begin(), s_openGameList.end(), newName) == s_openGameList.end())
+                {
+                    s_openGameList.push_back(newName);
+                    std::sort(s_openGameList.begin(), s_openGameList.end());
+                }
+                s_selectedOpenGame  = newName;
+                s_selectedOpenScene = "";
+                s_openSceneList.clear();
+                s_openGameMessage = "Created: " + newName;
+                s_openGameSuccess = true;
+                memset(s_inlineNewGameName, 0, sizeof(s_inlineNewGameName));
+            }
+            catch (const std::exception& ex)
+            {
+                s_openGameMessage = std::string("Create failed: ") + ex.what();
+                s_openGameSuccess = false;
+            }
+        }
+        if (!canCreate) ImGui::EndDisabled();
+        // ── End inline create-game row ────────────────────────────────────────
 
         ImGui::Separator();
 
