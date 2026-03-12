@@ -43,17 +43,43 @@ public:
     // Returns true if a game folder has been selected (SetGameRoot was called).
     static bool IsGameLoaded() { return !GAME_ROOT.empty(); }
 
-    // Converts "../Assets/rocknghoul" paths (in old JSON files) to the
-    // correct path using ASSETS_FOLDER. Pass-through for any other path.
-    // Use this wherever a path arrives from a JSON file.
-    static std::string Resolve(const std::string& path) {
+    // Converts any asset path from a JSON file to a valid path on this machine.
+    // Handles three cases:
+    //   1. Old relative prefix  "../Assets/..."      (legacy format)
+    //   2. Absolute path from a different machine    (e.g. "E:/School/.../Assets/foo.png")
+    //   3. Already-correct absolute path             (pass-through)
+    static std::string Resolve(const std::string& raw) {
+        if (raw.empty()) return raw;
+
+        // Case 1: legacy "../Assets/" prefix
         const std::string oldPrefix = "../Assets/";
-        if (path.size() >= oldPrefix.size() &&
-            path.compare(0, oldPrefix.size(), oldPrefix) == 0)
+        if (raw.size() >= oldPrefix.size() &&
+            raw.compare(0, oldPrefix.size(), oldPrefix) == 0)
         {
-            return ASSETS_FOLDER + path.substr(oldPrefix.size());
+            return ASSETS_FOLDER + raw.substr(oldPrefix.size());
         }
-        return path;
+
+        // Case 2: absolute path from another machine — rebase to current ASSETS_FOLDER.
+        // Detect by looking for "/Assets/" or "\Assets\" inside the string.
+        if (!ASSETS_FOLDER.empty()) {
+            // Already on this machine — pass through
+            if (raw.compare(0, ASSETS_FOLDER.size(), ASSETS_FOLDER) == 0)
+                return raw;
+
+            // Find the "/Assets/" boundary (handle both slash styles)
+            for (const char* marker : { "/Assets/", "\\Assets\\" , "/Assets\\", "\\Assets/" }) {
+                auto pos = raw.find(marker);
+                if (pos != std::string::npos) {
+                    // Take everything after "/Assets/"
+                    std::string rel = raw.substr(pos + 8); // len("/Assets/") == 8
+                    // Normalise backslashes to forward slashes
+                    for (char& c : rel) if (c == '\\') c = '/';
+                    return ASSETS_FOLDER + rel;
+                }
+            }
+        }
+
+        return raw;
     }
 
     static std::string REPO_ROOT;      // absolute path to the repo root (set by SetGameRoot)

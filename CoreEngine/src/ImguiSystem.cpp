@@ -1631,7 +1631,7 @@ void ImGuiSystem::Update(float dt)
                 fs::create_directories(root + "Assets/others/");
 
                 // Git doesn't track empty folders — plant .gitkeep so teammates get them on pull
-                auto touch = [](const std::string& path) { std::ofstream(path); };
+                auto touch = [](const std::string& dst) { std::ofstream f(dst); };
                 touch(root + "Assets/saves/.gitkeep");
                 touch(root + "Assets/prefabs/.gitkeep");
                 touch(root + "Assets/audio/.gitkeep");

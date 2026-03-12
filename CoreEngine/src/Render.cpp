@@ -2137,13 +2137,6 @@ void Render::EndSceneCapture()
 }
 
 
-// Write a file only if it doesn't already exist
-static void WriteDefaultShader(const std::string& path, const char* src)
-{
-    if (std::filesystem::exists(path)) return;
-    std::ofstream f(path);
-    if (f) f << src;
-}
 
 static const char* kDefaultVert = R"GLSL(
 #version 450 core
@@ -2235,10 +2228,13 @@ void Render::LoadShaders()
     std::string bfragPath = FilePath::ASSETS_FOLDER + "batch.frag";
 
     // Seed missing shader files with defaults so new games render immediately
-    WriteDefaultShader(vertPath,  kDefaultVert);
-    WriteDefaultShader(fragPath,  kDefaultFrag);
-    WriteDefaultShader(bvertPath, kDefaultBatchVert);
-    WriteDefaultShader(bfragPath, kDefaultBatchFrag);
+    auto seedShader = [](const std::string& dst, const char* src) {
+        if (!std::filesystem::exists(dst)) { std::ofstream o(dst); if (o) o << src; }
+    };
+    seedShader(vertPath,  kDefaultVert);
+    seedShader(fragPath,  kDefaultFrag);
+    seedShader(bvertPath, kDefaultBatchVert);
+    seedShader(bfragPath, kDefaultBatchFrag);
 
     if (shaderProgram) { glDeleteProgram(shaderProgram); shaderProgram = 0; }
     if (fs::exists(vertPath) && fs::exists(fragPath))
