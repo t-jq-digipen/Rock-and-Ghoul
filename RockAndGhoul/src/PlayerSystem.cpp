@@ -4,7 +4,7 @@
  * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
  * @co-author   Manfred Sim		   | manfred.sim@digipen.edu
- * @date	    01 MAR 2026
+ * @date	    12 MAR 2026
  *
  * @brief	Player System for handling player behaviour.
  *
@@ -1629,17 +1629,48 @@ namespace RockScript {
 
 				for (auto& display : displays) {
 					if (display.ID == LIGHTNING_ID) {
-						display.opacity = (currentElement == Element::LIGHTNING) ? 1.0f : 0.4f;
+						if (currentElement == Element::LIGHTNING)       display.opacity = 1.0f;
+						else if (elementCooldowns[Element::LIGHTNING] > 0.0f) display.opacity = 0.08f;
+						else                                             display.opacity = 0.4f;
 					}
 					else if (display.ID == FIRE_ID) {
-						display.opacity = (currentElement == Element::FIRE) ? 1.0f : 0.4f;
+						if (currentElement == Element::FIRE)            display.opacity = 1.0f;
+						else if (elementCooldowns[Element::FIRE] > 0.0f)      display.opacity = 0.08f;
+						else                                             display.opacity = 0.4f;
 					}
 					else if (display.ID == WIND_ID) {
-						display.opacity = (currentElement == Element::WIND) ? 1.0f : 0.4f;
+						if (currentElement == Element::WIND)            display.opacity = 1.0f;
+						else if (elementCooldowns[Element::WIND] > 0.0f)      display.opacity = 0.08f;
+						else                                             display.opacity = 0.4f;
 					}
 					else if (display.ID == ICE_ID) {
-						display.opacity = (currentElement == Element::ICE) ? 1.0f : 0.4f;
+						if (currentElement == Element::ICE)             display.opacity = 1.0f;
+						else if (elementCooldowns[Element::ICE] > 0.0f)       display.opacity = 0.08f;
+						else                                             display.opacity = 0.4f;
 					}
+				}
+
+				// Move the selection ring to active element icon
+				const int ELEM_CIRCLE_ID = 60;
+				for (auto& circle : displays) {
+					if (circle.ID != ELEM_CIRCLE_ID) continue;
+					if (currentElement == Element::NONE) {
+						circle.isVisible = false;
+					} else {
+						int activeID = LIGHTNING_ID;
+						if (currentElement == Element::FIRE)      activeID = FIRE_ID;
+						else if (currentElement == Element::WIND) activeID = WIND_ID;
+						else if (currentElement == Element::ICE)  activeID = ICE_ID;
+						for (const auto& elem : displays) {
+							if (elem.ID == activeID) {
+								circle.pos     = elem.pos;
+								circle.basePos = elem.basePos;
+								break;
+							}
+						}
+						circle.isVisible = true;
+					}
+					break;
 				}
 			}
 
@@ -1714,10 +1745,48 @@ void PlayerSystem::SetCurrentElement(int element)
 
 	for (auto& display : displays)
 	{
-		if (display.ID == 26) display.opacity = (currentElement == Element::LIGHTNING) ? 1.0f : 0.4f;
-		else if (display.ID == 28) display.opacity = (currentElement == Element::FIRE) ? 1.0f : 0.4f;
-		else if (display.ID == 30) display.opacity = (currentElement == Element::WIND) ? 1.0f : 0.4f;
-		else if (display.ID == 32) display.opacity = (currentElement == Element::ICE) ? 1.0f : 0.4f;
+		if (display.ID == 26) {
+			if (currentElement == Element::LIGHTNING)            display.opacity = 1.0f;
+			else if (elementCooldowns[Element::LIGHTNING] > 0.0f) display.opacity = 0.08f;
+			else                                                  display.opacity = 0.4f;
+		}
+		else if (display.ID == 28) {
+			if (currentElement == Element::FIRE)                 display.opacity = 1.0f;
+			else if (elementCooldowns[Element::FIRE] > 0.0f)     display.opacity = 0.08f;
+			else                                                  display.opacity = 0.4f;
+		}
+		else if (display.ID == 30) {
+			if (currentElement == Element::WIND)                 display.opacity = 1.0f;
+			else if (elementCooldowns[Element::WIND] > 0.0f)     display.opacity = 0.08f;
+			else                                                  display.opacity = 0.4f;
+		}
+		else if (display.ID == 32) {
+			if (currentElement == Element::ICE)                  display.opacity = 1.0f;
+			else if (elementCooldowns[Element::ICE] > 0.0f)      display.opacity = 0.08f;
+			else                                                  display.opacity = 0.4f;
+		}
+	}
+
+	// Move the selection ring to active element icon
+	for (auto& circle : displays) {
+		if (circle.ID != 60) continue;
+		if (currentElement == Element::NONE) {
+			circle.isVisible = false;
+		} else {
+			int activeID = 26;
+			if (currentElement == Element::FIRE)      activeID = 28;
+			else if (currentElement == Element::WIND) activeID = 30;
+			else if (currentElement == Element::ICE)  activeID = 32;
+			for (const auto& elem : displays) {
+				if (elem.ID == activeID) {
+					circle.pos     = elem.pos;
+					circle.basePos = elem.basePos;
+					break;
+				}
+			}
+			circle.isVisible = true;
+		}
+		break;
 	}
 }
 

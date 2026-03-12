@@ -674,6 +674,20 @@
                 ]
             },
             {
+                "ID": 60,
+                "centered": true,
+                "isVisible": false,
+                "pos": [
+                    1531.371826171875,
+                    80.64984130859375
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_Circle_Red.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    300.0,
+                    260.0
+                ]
+            },
+            {
                 "ID": 36,
                 "centered": true,
                 "isVisible": true,
