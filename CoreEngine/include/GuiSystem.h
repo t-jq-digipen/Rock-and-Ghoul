@@ -707,7 +707,7 @@ public:
  * @return          Index of the newly added dialogue in dialogues container, or -1 on failure.
  */
 
-    int AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox, const std::string& sceneID = "0");
+    // int AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox, const std::string& sceneID = "0");
 
 /**
  * @brief       Adds a new display to the GUI system with a unique ID.

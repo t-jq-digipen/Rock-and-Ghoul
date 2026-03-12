@@ -1115,7 +1115,7 @@
                 "name": "Spell Slots"
             },
             {
-                "ID": 1,
+                "ID": 2,
                 "members": [
                     5,
                     6,
@@ -1126,7 +1126,7 @@
                 "name": "Stats"
             },
             {
-                "ID": 1,
+                "ID": 3,
                 "members": [
                     32,
                     31,
@@ -1140,7 +1140,7 @@
                 "name": "Elements"
             },
             {
-                "ID": 1,
+                "ID": 4,
                 "members": [
                     34,
                     38,
@@ -1149,7 +1149,7 @@
                 "name": "Soundwave Input"
             },
             {
-                "ID": 2,
+                "ID": 5,
                 "members": [
                     35,
                     40,
@@ -1159,7 +1159,7 @@
                 "name": "AOE Input"
             },
             {
-                "ID": 3,
+                "ID": 6,
                 "members": [
                     36,
                     43,
@@ -1169,7 +1169,7 @@
                 "name": "Shield Input"
             },
             {
-                "ID": 4,
+                "ID": 7,
                 "members": [
                     37,
                     46,
@@ -1179,7 +1179,7 @@
                 "name": "Healing Input"
             },
             {
-                "ID": 5,
+                "ID": 8,
                 "members": [
                     34,
                     35,
@@ -1201,7 +1201,7 @@
                 "name": "Song Input List"
             },
             {
-                "ID": 1,
+                "ID": 9,
                 "members": [
                     10,
                     33,
