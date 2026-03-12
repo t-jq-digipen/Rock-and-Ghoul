@@ -968,7 +968,12 @@ FMOD::Channel* AudioSystem::PlaySoundAt(const std::string& assetName, float x, f
 
     // play normally without spatial sound if no need
     if (!asset->spatial) {
-        return PlaySoundGetChannel(sound, false);
+        FMOD::Channel* channel = PlaySoundGetChannel(sound, true);
+        if (channel) {
+            channel->setVolume(volume * masterVolume);
+            channel->setPaused(false);
+        }
+        return channel;
     }
 
     // For spatial sounds, set up 3D positioning

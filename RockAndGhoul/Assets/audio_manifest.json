@@ -191,57 +191,43 @@
       "path": "../Assets/audio/SFX/Player/VO/Bring it on.wav",
       "loop": false,
       "group": "SFX",
-      "spatial": true,
-      "minDistance": 100.0,
-      "maxDistance": 2000.0
+      "spatial": false
     },
     "player_spawnSound2": {
       "path": "../Assets/audio/SFX/Player/VO/Brother.wav",
       "loop": false,
       "group": "SFX",
-      "spatial": true,
-      "minDistance": 100.0,
-      "maxDistance": 2000.0
+      "spatial": false
     },
     "player_spawnSound3": {
       "path": "../Assets/audio/SFX/Player/VO/Not again.wav",
       "loop": false,
       "group": "SFX",
-      "spatial": true,
-      "minDistance": 100.0,
-      "maxDistance": 2000.0
+      "spatial": false
     },
     "player_spawnSound4": {
       "path": "../Assets/audio/SFX/Player/VO/Trouble.wav",
       "loop": false,
       "group": "SFX",
-      "spatial": true,
-      "minDistance": 100.0,
-      "maxDistance": 2000.0
+      "spatial": false
     },
     "player_spawnSound5": {
       "path": "../Assets/audio/SFX/Player/VO/Who goes there.wav",
       "loop": false,
       "group": "SFX",
-      "spatial": true,
-      "minDistance": 100.0,
-      "maxDistance": 2000.0
+      "spatial": false
     },
     "player_spawnSound6": {
       "path": "../Assets/audio/SFX/Player/VO/GoAhead.wav",
       "loop": false,
       "group": "SFX",
-      "spatial": true,
-      "minDistance": 100.0,
-      "maxDistance": 2000.0
+      "spatial": false
     },
     "player_spawnSound7": {
       "path": "../Assets/audio/SFX/Player/VO/LeaveAloneWhine.wav",
       "loop": false,
       "group": "SFX",
-      "spatial": true,
-      "minDistance": 100.0,
-      "maxDistance": 2000.0
+      "spatial": false
     }
   },
   "ui": {

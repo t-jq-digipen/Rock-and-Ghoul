@@ -1260,7 +1260,11 @@ namespace RockScript {
 		shieldy = INVALID_ENTITY;
 
 
+		auto& audioComp = Registry::Get().Get_Component<AudioComponent>(playerEntityID);
+		float originalVolume = audioComp.volume;
+		audioComp.volume = 0.3f;
 		PlayRandom(voice, 7);
+		audioComp.volume = originalVolume; // lol spawn sound too loud
 
 		CombatSystem::Get().RegisterCombatant(eID);
 
