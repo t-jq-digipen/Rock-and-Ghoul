@@ -1695,6 +1695,8 @@ void ImGuiSystem::Update(float dt)
                 AudioCache::Shutdown();
                 if (std::filesystem::exists(AUDIO_MANIFEST_PATH))
                     AudioCache::Initialize(AUDIO_MANIFEST_PATH);
+                Render::GetInstance().LoadShaders();
+                CollisionLayerManager::Get().LoadCollisionSettings();
                 JsonLoad::ClearAllEntities();
                 GuiSystem::Get().Clear();
                 RenderSystem::ClearBackgroundTextures();
@@ -1841,6 +1843,7 @@ void ImGuiSystem::Update(float dt)
             if (fs::exists(AUDIO_MANIFEST_PATH))
                 AudioCache::Initialize(AUDIO_MANIFEST_PATH);
             Render::GetInstance().LoadShaders();
+            CollisionLayerManager::Get().LoadCollisionSettings();
             JsonLoad::ClearAllEntities();
             GuiSystem::Get().Clear();
             RenderSystem::ClearBackgroundTextures();

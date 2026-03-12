@@ -62,8 +62,10 @@ uint32_t CollisionLayerManager::RegisterLayer(const std::string& name) {
 void CollisionLayerManager::LoadCollisionSettings() {
 
     std::string settings;
-    if (!FilePath::COLLISIONSETTINGS_FILE.empty())
-        settings = FileIO::ReadFile(FilePath::COLLISIONSETTINGS_FILE);
+    if (!FilePath::COLLISIONSETTINGS_FILE.empty()) {
+        try { settings = FileIO::ReadFile(FilePath::COLLISIONSETTINGS_FILE); }
+        catch (...) { /* file missing fall through to defaults */ }
+    }
 
     if (settings.empty())
     {
