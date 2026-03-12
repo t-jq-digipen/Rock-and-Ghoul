@@ -1503,6 +1503,30 @@ void ImGuiSystem::Update(float dt)
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    // On the very first frame, if no game has been selected yet, open the picker.
+    static bool s_gamePromptDone = false;
+    if (!s_gamePromptDone && !FilePath::IsGameLoaded())
+    {
+        s_gamePromptDone = true;
+        s_selectedOpenGame  = "";
+        s_selectedOpenScene = "";
+        s_openSceneList.clear();
+        s_openGameMessage  = "";
+        s_openGameSuccess  = false;
+        s_openGameList.clear();
+        namespace fs = std::filesystem;
+        if (!FilePath::REPO_ROOT.empty() && fs::exists(FilePath::REPO_ROOT))
+        {
+            for (auto& entry : fs::directory_iterator(FilePath::REPO_ROOT))
+            {
+                if (entry.is_directory() && fs::exists(entry.path() / "Assets"))
+                    s_openGameList.push_back(entry.path().filename().string());
+            }
+            std::sort(s_openGameList.begin(), s_openGameList.end());
+        }
+        s_openOpenGamePopup = true;
+    }
+
 
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -1806,6 +1830,7 @@ void ImGuiSystem::Update(float dt)
             AudioCache::Shutdown();
             if (fs::exists(AUDIO_MANIFEST_PATH))
                 AudioCache::Initialize(AUDIO_MANIFEST_PATH);
+            Render::GetInstance().LoadShaders();
             JsonLoad::ClearAllEntities();
             GuiSystem::Get().Clear();
             RenderSystem::ClearBackgroundTextures();
@@ -1890,7 +1915,11 @@ void ImGuiSystem::Update(float dt)
     }
     ImGui::End();
 
-
+    // Don't render any panels until a game is selected
+    if (!FilePath::IsGameLoaded()) {
+        ImGui::End(); // close "Editor" dockspace host window
+        return;
+    }
 
     if (ImGui::Begin("Engine Info")) {
         if (/* */!sm.inEditMode) ImGui::BeginDisabled();

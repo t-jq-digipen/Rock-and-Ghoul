@@ -216,8 +216,10 @@ void CoreEngine::Initialize()
     // ----------------------------------------------------
     SceneManager& sm = SceneManager::Get();
 
-    // Load your default scene (main menu)
-    sm.LoadScene(FilePath::MAIN_MENU_SCENE);
+    // Only load a scene if game has been selected
+    // In editor mode user is prompted to pick a game first
+    if (FilePath::IsGameLoaded())
+        sm.LoadScene(FilePath::MAIN_MENU_SCENE);
 
     // Legacy GSM init – can be removed once all GSM users are gone
     //gsm.Init(GameState::GS_MAIN_MENU);

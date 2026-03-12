@@ -161,6 +161,12 @@ public:
     void Init();
 
     /**
+    * @brief Loads (or reloads) all game shaders from ASSETS_FOLDER.
+    * Safe to call after switching game roots. No-op if ASSETS_FOLDER is empty.
+    */
+    void LoadShaders();
+
+    /**
     * @brief Releases all allocated GPU and CPU resources used by the
     Render system, including textures, buffers, and FreeType data.
     */
