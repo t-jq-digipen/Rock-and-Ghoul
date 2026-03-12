@@ -30,6 +30,8 @@
   */
 class AudioSystem {
 public:
+    static void SetMasterVolume(float vol) { masterVolume = vol; }
+    static float GetMasterVolume() { return masterVolume; }
     /**
      * @brief Initializes the FMOD audio system.
      *
@@ -223,7 +225,7 @@ public:
 
 private:
     static FMOD::System* mSystem;
-
+    static float masterVolume;
     static std::unordered_map<ButtonType, FMOD::Sound*> buttonSounds;
 
     /**

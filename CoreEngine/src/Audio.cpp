@@ -19,6 +19,8 @@
  * ========================================================
  */
 #include "FilePath.h"
+#include "DataDefs.h"
+#include "JsonLoad.h"
 #include "Audio.h"
 #include "AudioSystem.h"
 #include "AudioCache.h"
@@ -32,6 +34,8 @@
 #include "Input.h"
  // Static members
 FMOD::System* AudioSystem::mSystem = nullptr;
+
+float AudioSystem::masterVolume = 1.0f;  // add this line
 
 // button sound storage
 std::unordered_map<AudioSystem::ButtonType, FMOD::Sound*> AudioSystem::buttonSounds;
@@ -111,8 +115,7 @@ void AudioSystem::PlayButtonSound(ButtonType type) {
     // If found and valid, play it
     if (it != buttonSounds.end() && it->second) {
         // IMPORTANT: Button sounds bypass pause check
-        // We call playSound directly instead of using PlaySound()
-        // This ensures UI sounds work even when game is paused
+        // call playSound directly instead of using PlaySound() to ensure UI sounds work even when game is paused
         if (mSystem) {
             FMOD::Channel* channel = nullptr;
             mSystem->playSound(it->second, nullptr, false, &channel);
@@ -257,7 +260,10 @@ void AudioSystem::PlaySound(FMOD::Sound* sound) {
 
     FMOD::Channel* channel = nullptr;
     mSystem->playSound(sound, nullptr, false, &channel);
-}
+    if (channel) {
+        channel->setVolume(masterVolume);
+    }
+   }
 
 /**
  * @brief Stops all currently playing sounds.
@@ -664,7 +670,7 @@ void AudioManager::SetPaused(FMOD::Channel* channel, bool paused) {
 void AudioManager::PlayMusic(FMOD::Sound* track, bool paused) {
     currentChannel = PlayGetChannel(track, paused);
     if (currentChannel && !paused)
-        currentChannel->setVolume(musicVol);
+        currentChannel->setVolume(musicVol * masterVolume); // no more spike problem
 }
 
 
@@ -715,6 +721,12 @@ void AudioManager::Update(float dt) {
         fadeTime = 0.0f;
         pendingBGM = "";
 
+        // Apply saved volume BEFORE starting BGM
+        auto settings = JsonLoad::LoadSettings(FilePath::SETTINGS_FILE);
+        if (settings.has_value()) {
+            SetMasterVolume(settings->volume);
+        }
+
         std::string bgmAssetName = sm.GetCurrentSceneBGM();
 
         if (!bgmAssetName.empty()) {
@@ -763,7 +775,7 @@ void AudioManager::Update(float dt) {
         // If we're in a transition, fade out BGM volume
         if (isTransitioning) {
             if (currentChannel) {
-                float fadeOutVolume = musicVol * (1.0f - transitionProgress);
+                float fadeOutVolume = musicVol * masterVolume * (1.0f - transitionProgress);
                 currentChannel->setVolume(fadeOutVolume);
             }
             wasTransitioning = true;
@@ -984,7 +996,7 @@ FMOD::Channel* AudioSystem::PlaySoundAt(const std::string& assetName, float x, f
     }
 
     // Set volume
-    channel->setVolume(volume);
+    channel->setVolume(volume * masterVolume);
 
     // Unpause to start playback
     channel->setPaused(false);
