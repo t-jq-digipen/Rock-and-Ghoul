@@ -141,7 +141,7 @@ Vec2   ImGuiSystem::sceneSize = { GLApp::VIRTUAL_W, GLApp::VIRTUAL_H };
 static ImGuizmo::OPERATION gizmoOperation = ImGuizmo::TRANSLATE;
 static ImGuizmo::MODE gizmoMode = ImGuizmo::WORLD;
 
-// UI gizmo state – shared between UI Editor and Game View panels
+// UI gizmo state
 static SelectedType g_uiGizmoSelType  = SelectedType::None;
 static int          g_uiGizmoSelLocal = -1;
 
@@ -5196,7 +5196,7 @@ void ImGuiSystem::Update(float dt)
         if (!g_uiEditorTabActive)
             DrawSelectionOutline(selectedEntity, cursor, newWidth, newHeight);
 
-        // UI gizmo – overlay for selected UI element (translate handle)
+        // UI gizmo overlay for selected UI element
         if (!isPlaying && g_uiGizmoSelType != SelectedType::None && g_uiGizmoSelLocal >= 0)
         {
             auto& gui = GuiSystem::Get();
@@ -5267,7 +5267,7 @@ void ImGuiSystem::Update(float dt)
                     s_uiGizmoDragStarted    = true;
                 }
 
-                // Drag ended – record undo
+                // Drag ended record undo
                 if (s_uiGizmoDragStarted && !ImGui::GetIO().MouseDown[0])
                 {
                     Vec2         afterPos  = *pBasePos;

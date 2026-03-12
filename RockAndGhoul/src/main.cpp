@@ -46,13 +46,18 @@ void EnableMemoryLeakChecking(int breakAlloc = -1)
     if (breakAlloc != -1) _CrtSetBreakAlloc(breakAlloc);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 #ifdef NO_IMGUI
     // Shipping build: always load RockAndGhoul directly.
     FilePath::SetGameRoot("RockAndGhoul");
 #else
-    // Editor build: just find REPO_ROOT so the game-picker popup can scan for games.
-    FilePath::InitRepoRoot();
+    // Editor build: if a game name was passed as argv[1], load it directly.
+    // Otherwise open the game-picker popup.
+    if (argc > 1 && argv[1] && argv[1][0] != '\0') {
+        FilePath::SetGameRoot(argv[1]);
+    } else {
+        FilePath::InitRepoRoot();
+    }
 #endif
 
     // Load settings from file (only valid once a game root is set)
