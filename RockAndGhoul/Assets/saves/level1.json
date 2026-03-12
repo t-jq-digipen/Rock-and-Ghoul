@@ -211,7 +211,7 @@
     "gui": {
         "buttons": [
             {
-                "ID": 11,
+                "ID": 35,
                 "action": "None",
                 "actionName": "AdvanceDialogue",
                 "actionParams": "{}",
@@ -231,7 +231,7 @@
         ],
         "dialogues": [
             {
-                "ID": 10,
+                "ID": 34,
                 "bgEnabled": true,
                 "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
                 "bgSize": [
@@ -901,6 +901,34 @@
             60.0,
             60.0
           ]
+        },
+        {
+          "ID": 52,
+          "centered": true,
+          "isVisible": false,
+          "pos": [
+            1500.0,
+            360.0
+          ],
+          "renderData": "{\"data\":\"{\\\"ButtonShape\\\":\\\"Rectangle\\\",\\\"Color\\\":[1.0,1.0,1.0]}\",\"type\":\"shape\"}",
+          "size": [
+            480.0,
+            40.0
+          ]
+        },
+        {
+          "ID": 53,
+          "centered": false,
+          "isVisible": false,
+          "pos": [
+            1500.0,
+            360.0
+          ],
+          "renderData": "{\"data\":\"{\\\"color\\\":[0.3019607961177826,0.3019607961177826,1.0],\\\"v0\\\":[1260.0,340.0],\\\"v1\\\":[1740.0,340.0],\\\"v2\\\":[1740.0,380.0],\\\"v3\\\":[1260.0,380.0]}\",\"type\":\"quad\"}",
+          "size": [
+            480.0,
+            40.0
+          ]
         }
       ],
       "groups": [
@@ -914,7 +942,7 @@
           "name": "Spell Slots"
         },
         {
-          "ID": 1,
+          "ID": 2,
           "members": [
             5,
             6,
@@ -925,7 +953,7 @@
           "name": "Stats"
         },
         {
-          "ID": 1,
+          "ID": 3,
           "members": [
             32,
             31,
@@ -939,7 +967,7 @@
           "name": "Elements"
         },
         {
-          "ID": 1,
+          "ID": 4,
           "members": [
             36,
             40,
@@ -948,7 +976,7 @@
           "name": "Soundwave Input"
         },
         {
-          "ID": 2,
+          "ID": 5,
           "members": [
             37,
             42,
@@ -958,7 +986,7 @@
           "name": "AOE Input"
         },
         {
-          "ID": 3,
+          "ID": 6,
           "members": [
             38,
             45,
@@ -968,7 +996,7 @@
           "name": "Shield Input"
         },
         {
-          "ID": 4,
+          "ID": 7,
           "members": [
             39,
             48,
@@ -978,7 +1006,7 @@
           "name": "Healing Input"
         },
         {
-          "ID": 5,
+          "ID": 8,
           "members": [
             36,
             37,
@@ -998,6 +1026,18 @@
             51
           ],
           "name": "Song Input List"
+        },
+        {
+          "ID": 9,
+          "members": [
+            10,
+            33,
+            50,
+            51,
+            52,
+            53
+          ],
+          "name": "Level 1 Dialogue"
         }
       ],
       "textboxes": [
@@ -1048,6 +1088,22 @@
           ],
           "scale": 0.7329999804496765,
           "text": "0x"
+        },
+        {
+          "ID": 33,
+          "centered": false,
+          "color": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "isVisible": false,
+          "pos": [
+            750.0,
+            350.0
+          ],
+          "scale": 1.0,
+          "text": "PRESS ESC TO SKIP"          
         },
         {
           "ID": 51,

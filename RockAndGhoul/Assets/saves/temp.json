@@ -7,7 +7,7 @@
         "../Assets/Env03Props_Enemy_TopStools&Tables.PNG",
         "../Assets/Env03Props_Enemy_StageProps.PNG"
     ],
-    "bgmAssetName": "main_menu",
+    "bgmAssetName": "roomtone_boss",
     "cameraSpawn": [
         98.0,
         509.0
@@ -16,126 +16,24 @@
     "entities": [
         {
             "components": {
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":79.0,\\\"scaleY\\\":79.0,\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Env03Props_Enemy_BarLights.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
-                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Light"
-        },
-        {
-            "components": {
-                "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
-                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":250.0,\"aabb_maxX\":157.50924682617188,\"aabb_maxY\":584.382080078125,\"aabb_minX\":-42.490760803222656,\"aabb_minY\":334.382080078125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"triggerEvent\":\"\"}",
-                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
-                "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
+                "Behaviour": "{\"scripts\":[\"GhoulScript\"]}",
+                "Collider": "{\"aabb_dimX\":180.0,\"aabb_dimY\":350.0,\"aabb_maxX\":2003.5860595703125,\"aabb_maxY\":599.2611083984375,\"aabb_minX\":1823.5860595703125,\"aabb_minY\":249.2611083984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":300.0,\"maxHP\":300.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":200.0,\"yOffset\":200.0}",
+                "Movement": "{\"moveSpeed\":300.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":1000.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":35.0,\\\\\\\"scaleY\\\\\\\":35.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/RockSpritesheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":true},\\\"10\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5,\\\"willLoop\\\":false},\\\"11\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":4,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":11,\\\"willLoop\\\":true},\\\"3\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":10,\\\"willLoop\\\":true},\\\"4\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":9,\\\"willLoop\\\":false},\\\"5\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":8,\\\"willLoop\\\":false},\\\"6\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":7,\\\"willLoop\\\":false},\\\"7\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":6,\\\"willLoop\\\":false},\\\"8\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"9\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":10,\\\"totalRows\\\":12}\",\"renderLayer\":1,\"renderType\":2}",
-                "Tag": "{\"tagID\":1}",
-                "Transform": "{\"posX\":57.509239196777344,\"posY\":459.382080078125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":5,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":50.0,\\\\\\\"scaleY\\\\\\\":50.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Ghoul_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":true},\\\"2\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":4,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":6,\\\"col_start\\\":5,\\\"duration\\\":0.10000000149011612,\\\"row\\\":4,\\\"willLoop\\\":true},\\\"5\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"6\\\":{\\\"col_end\\\":12,\\\"col_start\\\":0,\\\"duration\\\":2.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"7\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5,\\\"willLoop\\\":false}},\\\"totalCols\\\":13,\\\"totalRows\\\":6}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":1913.5860595703125,\"posY\":424.2611083984375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
-            "name": "Rock"
+            "name": "ghoul"
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2811.10498046875,\"aabb_maxY\":144.94967651367188,\"aabb_minX\":-905.4520263671875,\"aabb_minY\":72.3258285522461,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-768.2927856445313,\"aabb_maxY\":755.6187744140625,\"aabb_minX\":-868.9784545898438,\"aabb_minY\":142.17416381835938,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":952.826416015625,\"posY\":108.63775634765625,\"rot\":0.0,\"scaleX\":37.16556930541992,\"scaleY\":0.7262385487556458}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2285.07421875,\"aabb_maxY\":749.929443359375,\"aabb_minX\":2045.34130859375,\"aabb_minY\":607.579833984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":2165.207763671875,\"posY\":678.754638671875,\"rot\":0.0,\"scaleX\":2.397329092025757,\"scaleY\":1.4234962463378906}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
-                "Transform": "{\"posX\":49.75550842285156,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Audience"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-235.9080352783203,\"aabb_maxY\":1006.0772705078125,\"aabb_minX\":-372.96966552734375,\"aabb_minY\":803.5032958984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-304.4388427734375,\"posY\":904.790283203125,\"rot\":0.0,\"scaleX\":1.37061607837677,\"scaleY\":2.025740146636963}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-670.8059692382813,\"aabb_maxY\":985.09765625,\"aabb_minX\":-771.4916381835938,\"aabb_minY\":746.111328125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-721.1488037109375,\"posY\":865.6044921875,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.3898632526397705}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2396.202880859375,\"aabb_maxY\":788.9085693359375,\"aabb_minX\":2295.517333984375,\"aabb_minY\":508.3890380859375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":2345.860107421875,\"posY\":648.6488037109375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.8051950931549072}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":79.0,\\\"scaleY\\\":79.0,\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Env03Props_Enemy_Railings.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
-                "Transform": "{\"posX\":960.0,\"posY\":540.4263916015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Railing"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
-                "Transform": "{\"posX\":652.94189453125,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Audience"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
-                "Transform": "{\"posX\":1255.065673828125,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Audience"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":79.0,\\\"scaleY\\\":79.0,\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Env03Props_Enemy_BottomStools&Tables.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
-                "Transform": "{\"posX\":960.0,\"posY\":540.4263916015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Railing"
-        },
-        {
-            "components": {
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
-                "Transform": "{\"posX\":1857.189453125,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "BG_Audience"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2375.81298828125,\"aabb_maxY\":809.1974487304688,\"aabb_minX\":-243.6473388671875,\"aabb_minY\":736.5735473632813,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":1066.0828857421875,\"posY\":772.885498046875,\"rot\":0.0,\"scaleX\":26.194604873657227,\"scaleY\":0.7262385487556458}"
-            },
-            "name": "Obstacle"
-        },
-        {
-            "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2506.114501953125,\"aabb_maxY\":739.525634765625,\"aabb_minX\":2405.428955078125,\"aabb_minY\":146.79849243164063,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":2455.771728515625,\"posY\":443.16204833984375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":5.927270889282227}"
+                "Transform": "{\"posX\":-818.6356201171875,\"posY\":448.896484375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":6.134446620941162}"
             },
             "name": "Obstacle"
         },
@@ -150,33 +48,135 @@
         },
         {
             "components": {
-                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-768.2927856445313,\"aabb_maxY\":755.6187744140625,\"aabb_minX\":-868.9784545898438,\"aabb_minY\":142.17416381835938,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2506.114501953125,\"aabb_maxY\":739.525634765625,\"aabb_minX\":2405.428955078125,\"aabb_minY\":146.79849243164063,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
                 "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Tag": "{\"tagID\":4}",
-                "Transform": "{\"posX\":-818.6356201171875,\"posY\":448.896484375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":6.134446620941162}"
+                "Transform": "{\"posX\":2455.771728515625,\"posY\":443.16204833984375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":5.927270889282227}"
             },
             "name": "Obstacle"
         },
         {
             "components": {
-                "Behaviour": "{\"scripts\":[\"GhoulScript\"]}",
-                "Collider": "{\"aabb_dimX\":180.0,\"aabb_dimY\":350.0,\"aabb_maxX\":2003.5860595703125,\"aabb_maxY\":599.2611083984375,\"aabb_minX\":1823.5860595703125,\"aabb_minY\":249.2611083984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Health": "{\"currentHP\":300.0,\"maxHP\":300.0}",
-                "HealthBar": "{\"height\":25.0,\"width\":200.0,\"yOffset\":200.0}",
-                "Movement": "{\"moveSpeed\":300.0,\"moveType\":0}",
-                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":1000.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":5,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":50.0,\\\\\\\"scaleY\\\\\\\":50.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Ghoul_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":true},\\\"2\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":4,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":6,\\\"col_start\\\":5,\\\"duration\\\":0.10000000149011612,\\\"row\\\":4,\\\"willLoop\\\":true},\\\"5\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"6\\\":{\\\"col_end\\\":12,\\\"col_start\\\":0,\\\"duration\\\":2.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"7\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5,\\\"willLoop\\\":false}},\\\"totalCols\\\":13,\\\"totalRows\\\":6}\",\"renderLayer\":1,\"renderType\":2}",
-                "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":1913.5860595703125,\"posY\":424.2611083984375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2375.81298828125,\"aabb_maxY\":809.1974487304688,\"aabb_minX\":-243.6473388671875,\"aabb_minY\":736.5735473632813,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":1066.0828857421875,\"posY\":772.885498046875,\"rot\":0.0,\"scaleX\":26.194604873657227,\"scaleY\":0.7262385487556458}"
             },
-            "name": "ghoul"
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
+                "Transform": "{\"posX\":1857.189453125,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "BG_Audience"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":79.0,\\\"scaleY\\\":79.0,\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Env03Props_Enemy_BottomStools&Tables.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
+                "Transform": "{\"posX\":960.0,\"posY\":540.4263916015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "BG_Railing"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
+                "Transform": "{\"posX\":1255.065673828125,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "BG_Audience"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
+                "Transform": "{\"posX\":652.94189453125,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "BG_Audience"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":79.0,\\\"scaleY\\\":79.0,\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Env03Props_Enemy_Railings.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
+                "Transform": "{\"posX\":960.0,\"posY\":540.4263916015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "BG_Railing"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2396.202880859375,\"aabb_maxY\":788.9085693359375,\"aabb_minX\":2295.517333984375,\"aabb_minY\":508.3890380859375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":2345.860107421875,\"posY\":648.6488037109375,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.8051950931549072}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-670.8059692382813,\"aabb_maxY\":985.09765625,\"aabb_minX\":-771.4916381835938,\"aabb_minY\":746.111328125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":-721.1488037109375,\"posY\":865.6044921875,\"rot\":0.0,\"scaleX\":1.0068564414978027,\"scaleY\":2.3898632526397705}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-235.9080352783203,\"aabb_maxY\":1006.0772705078125,\"aabb_minX\":-372.96966552734375,\"aabb_minY\":803.5032958984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":-304.4388427734375,\"posY\":904.790283203125,\"rot\":0.0,\"scaleX\":1.37061607837677,\"scaleY\":2.025740146636963}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":1,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":60.0,\\\\\\\"scaleY\\\\\\\":60.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment03_GhostAudienceSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":1,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"renderLayer\":0,\"renderType\":2}",
+                "Transform": "{\"posX\":49.75550842285156,\"posY\":981.9037475585938,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "BG_Audience"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2285.07421875,\"aabb_maxY\":749.929443359375,\"aabb_minX\":2045.34130859375,\"aabb_minY\":607.579833984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":2165.207763671875,\"posY\":678.754638671875,\"rot\":0.0,\"scaleX\":2.397329092025757,\"scaleY\":1.4234962463378906}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":2811.10498046875,\"aabb_maxY\":144.94967651367188,\"aabb_minX\":-905.4520263671875,\"aabb_minY\":72.3258285522461,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
+                "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Tag": "{\"tagID\":4}",
+                "Transform": "{\"posX\":952.826416015625,\"posY\":108.63775634765625,\"rot\":0.0,\"scaleX\":37.16556930541992,\"scaleY\":0.7262385487556458}"
+            },
+            "name": "Obstacle"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"CamTarget\",\"RockScript\"]}",
+                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":250.0,\"aabb_maxX\":157.50924682617188,\"aabb_maxY\":584.382080078125,\"aabb_minX\":-42.490760803222656,\"aabb_minY\":334.382080078125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Player\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":100.0,\"maxHP\":100.0}",
+                "Movement": "{\"moveSpeed\":250.0,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":1000.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":7,\\\"frameColStart\\\":0,\\\"frameRow\\\":3,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":35.0,\\\\\\\"scaleY\\\\\\\":35.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/RockSpritesheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":true},\\\"10\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5,\\\"willLoop\\\":false},\\\"11\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":4,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":11,\\\"willLoop\\\":true},\\\"3\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":10,\\\"willLoop\\\":true},\\\"4\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":9,\\\"willLoop\\\":false},\\\"5\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":8,\\\"willLoop\\\":false},\\\"6\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":7,\\\"willLoop\\\":false},\\\"7\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":6,\\\"willLoop\\\":false},\\\"8\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"9\\\":{\\\"col_end\\\":9,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":10,\\\"totalRows\\\":12}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":1}",
+                "Transform": "{\"posX\":57.509239196777344,\"posY\":459.382080078125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Rock"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":79.0,\\\"scaleY\\\":79.0,\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Env03Props_Enemy_BarLights.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
+                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "BG_Light"
         }
     ],
-    "fontConfig": "C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
+    "fontConfig": "C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
     "gui": {
         "buttons": [
             {
-                "ID": 11,
+                "ID": 34,
                 "action": "",
                 "actionName": "AdvanceDialogue",
                 "actionParams": {},
@@ -186,7 +186,7 @@
                     1700.0,
                     130.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_DialogueBox_NextButton.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_DialogueBox_NextButton.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     50.0,
                     50.0
@@ -194,7 +194,147 @@
                 "soundName": "ui_click"
             }
         ],
-        "dialogues": [],
+        "dialogues": [
+            {
+                "ID": 33,
+                "bgEnabled": true,
+                "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_DialogueBox_Ghoul.png\\\"}\",\"type\":\"image\"}",
+                "bgSize": [
+                    1500.0,
+                    300.0
+                ],
+                "currentLineIndex": 0,
+                "customOverride": false,
+                "isVisible": true,
+                "jsonPath": "C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Dialogue.json",
+                "lines": [
+                    {
+                        "line": "Hey, Rock-Star.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "Uh... What-",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "Yeah, I realised I prefer flying solo. And I want that record deal.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "So, surrender or meet your doom. Or whatever they say.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "What's going on, Ghoul? I thought we were in this together?",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "Look, if you wanna hear it so bad: You're the best guitarist I've ever had.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "But I'm so sick of being your little bassist.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "I've got something to prove and YOU are the last person I want in my way.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "W-wait, hold o-.",
+                        "speakerID": 0
+                    }
+                ],
+                "profileDisplaySide": 0,
+                "profileEnabled": true,
+                "profileOffset": [
+                    0.0,
+                    0.0
+                ],
+                "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_GhoulDialogue_Normal.png\\\"}\",\"type\":\"image\"}",
+                "profileSize": [
+                    300.0,
+                    300.0
+                ],
+                "sceneID": "2",
+                "speakerUI": {
+                    "0": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Happy.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "1": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Ghoul.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_GhoulDialogue_Normal.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "2": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Enemy.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_EnemyDialogue_Normal.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    }
+                },
+                "textBox": {
+                    "centered": false,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "isVisible": true,
+                    "pos": [
+                        450.0,
+                        200.0
+                    ],
+                    "scale": 1.0,
+                    "text": ""
+                },
+                "textSpeed": 60.0,
+                "wrapWidth": 1300.0
+            }
+        ],
         "displays": [
             {
                 "ID": 4,
@@ -204,7 +344,7 @@
                     407.454833984375,
                     24.65703582763672
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_Guitar.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_Guitar.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     900.0,
                     900.0
@@ -218,7 +358,7 @@
                     630.0,
                     150.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
                     125.0,
                     125.0
@@ -232,7 +372,7 @@
                     570.0,
                     170.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
                     125.0,
                     125.0
@@ -246,7 +386,7 @@
                     510.0,
                     190.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
                     125.0,
                     125.0
@@ -260,7 +400,7 @@
                     342.8520202636719,
                     976.7870483398438
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_CharacterStatBackground2.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_CharacterStatBackground2.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     700.0,
                     700.0
@@ -274,7 +414,7 @@
                     93.46571350097656,
                     982.8881225585938
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0}},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_CharacterIcon.png\\\",\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0}},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_CharacterIcon.png\\\",\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
                     200.0,
                     200.0
@@ -302,7 +442,7 @@
                     350.0,
                     985.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_HealthBarTransparent.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_HealthBarTransparent.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     700.0,
                     700.0
@@ -323,20 +463,6 @@
                 ]
             },
             {
-                "ID": 10,
-                "centered": true,
-                "isVisible": true,
-                "pos": [
-                    45.0,
-                    120.0
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    240.0,
-                    160.0
-                ]
-            },
-            {
                 "ID": 11,
                 "centered": true,
                 "isVisible": true,
@@ -344,7 +470,7 @@
                     45.0,
                     120.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
@@ -355,10 +481,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    140.0,
-                    95.0
+                    45.0,
+                    120.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
@@ -369,10 +495,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    45.0,
-                    120.0
+                    140.0,
+                    95.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
@@ -383,10 +509,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    140.0,
+                    45.0,
                     120.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
@@ -400,7 +526,7 @@
                     140.0,
                     120.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
@@ -412,9 +538,9 @@
                 "isVisible": true,
                 "pos": [
                     140.0,
-                    95.0
+                    120.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
@@ -425,10 +551,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    45.0,
-                    120.0
+                    140.0,
+                    95.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
@@ -439,10 +565,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    140.0,
+                    45.0,
                     120.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
@@ -453,10 +579,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    230.0,
-                    95.0
+                    140.0,
+                    120.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fretboard_arr.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
@@ -467,10 +593,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    45.0,
-                    120.0
+                    230.0,
+                    95.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_down.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
@@ -481,41 +607,27 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    230.0,
-                    95.0
+                    45.0,
+                    120.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_left.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     160.0
                 ]
             },
             {
-                "ID": 26,
+                "ID": 22,
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1531.371826171875,
-                    80.64984130859375
+                    230.0,
+                    95.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Lightning.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/arr_right.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
-                    200.0
-                ]
-            },
-            {
-                "ID": 25,
-                "centered": true,
-                "isVisible": true,
-                "pos": [
-                    1526.371826171875,
-                    77.85198974609375
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    240.0,
-                    200.0
+                    160.0
                 ]
             },
             {
@@ -523,10 +635,24 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1631.371826171875,
-                    87.59930419921875
+                    1531.371826171875,
+                    80.64984130859375
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Lightning.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    240.0,
+                    200.0
+                ]
+            },
+            {
+                "ID": 26,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1526.371826171875,
+                    77.85198974609375
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     200.0
@@ -537,10 +663,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1638.3212890625,
-                    82.59930419921875
+                    1631.371826171875,
+                    87.59930419921875
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Fire.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     200.0
@@ -551,10 +677,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1736.119140625,
-                    89.5487060546875
+                    1638.3212890625,
+                    82.59930419921875
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Fire.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
                     200.0
@@ -565,13 +691,13 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1743.068603515625,
-                    84.5487060546875
+                    1736.119140625,
+                    89.5487060546875
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Wind.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
-                    210.0
+                    200.0
                 ]
             },
             {
@@ -579,13 +705,13 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1832.22021484375,
-                    95.3970947265625
+                    1743.068603515625,
+                    84.5487060546875
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Wind.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
-                    200.0
+                    210.0
                 ]
             },
             {
@@ -593,13 +719,13 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1835.2706298828125,
-                    88.44762420654297
+                    1832.22021484375,
+                    95.3970947265625
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Ice.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Background.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     240.0,
-                    210.0
+                    200.0
                 ]
             },
             {
@@ -607,13 +733,13 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1600.0,
-                    970.0
+                    1835.2706298828125,
+                    88.44762420654297
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_Soundwave.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_PowerLogo_Ice.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    180.0,
-                    180.0
+                    240.0,
+                    210.0
                 ]
             },
             {
@@ -622,9 +748,9 @@
                 "isVisible": true,
                 "pos": [
                     1600.0,
-                    910.0
+                    970.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_AOEAttack.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_Soundwave.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     180.0,
                     180.0
@@ -636,9 +762,9 @@
                 "isVisible": true,
                 "pos": [
                     1600.0,
-                    850.0
+                    910.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_Shield.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_AOEAttack.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     180.0,
                     180.0
@@ -650,9 +776,9 @@
                 "isVisible": true,
                 "pos": [
                     1600.0,
-                    790.0
+                    850.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_Healing.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_Shield.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     180.0,
                     180.0
@@ -663,13 +789,13 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1680.0,
-                    975.0
+                    1600.0,
+                    790.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_Healing.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    60.0,
-                    60.0
+                    180.0,
+                    180.0
                 ]
             },
             {
@@ -677,10 +803,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1760.0,
+                    1680.0,
                     975.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
                     60.0,
                     60.0
@@ -691,10 +817,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1680.0,
-                    915.0
+                    1760.0,
+                    975.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
                     60.0,
                     60.0
@@ -705,10 +831,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1760.0,
+                    1680.0,
                     915.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
                     60.0,
                     60.0
@@ -719,10 +845,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1840.0,
+                    1760.0,
                     915.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
                     60.0,
                     60.0
@@ -733,10 +859,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1680.0,
-                    855.0
+                    1840.0,
+                    915.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
                     60.0,
                     60.0
@@ -747,10 +873,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1760.0,
+                    1680.0,
                     855.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
                     60.0,
                     60.0
@@ -761,10 +887,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1840.0,
+                    1760.0,
                     855.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
                     60.0,
                     60.0
@@ -775,10 +901,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1680.0,
-                    795.0
+                    1840.0,
+                    855.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
                     60.0,
                     60.0
@@ -789,10 +915,10 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    1760.0,
+                    1680.0,
                     795.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
                     60.0,
                     60.0
@@ -803,10 +929,24 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
+                    1760.0,
+                    795.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    60.0,
+                    60.0
+                ]
+            },
+            {
+                "ID": 51,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
                     1840.0,
                     795.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":2,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
                     60.0,
                     60.0
@@ -817,55 +957,83 @@
                 "centered": true,
                 "isVisible": false,
                 "pos": [
-                    960.0,
-                    828.0
+                    1500.0,
+                    360.0
                 ],
-                "renderData": "{\"data\":\"{\\\"color\\\":[0.30000001192092896,0.30000001192092896,0.30000001192092896],\\\"v0\\\":[605.0,812.0],\\\"v1\\\":[1335.5,810.0],\\\"v2\\\":[1335.5,833.0],\\\"v3\\\":[584.5,850.0]}\",\"type\":\"quad\"}",
+                "renderData": "{\"data\":\"{\\\"ButtonShape\\\":\\\"Rectangle\\\",\\\"Color\\\":[1.0,1.0,1.0]}\",\"type\":\"shape\"}",
                 "size": [
-                    751.0,
-                    64.0
+                    480.0,
+                    40.0
                 ]
             },
             {
-                "ID": 54,
+                "ID": 53,
+                "centered": false,
+                "isVisible": false,
+                "pos": [
+                    1500.0,
+                    360.0
+                ],
+                "renderData": "{\"data\":\"{\\\"color\\\":[0.3019607961177826,0.3019607961177826,1.0],\\\"v0\\\":[1260.0,340.0],\\\"v1\\\":[1260.0,340.0],\\\"v2\\\":[1260.0,380.0],\\\"v3\\\":[1260.0,380.0]}\",\"type\":\"quad\"}",
+                "size": [
+                    480.0,
+                    40.0
+                ]
+            },
+            {
+                "ID": 56,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    960.0,
+                    828.0
+                ],
+                "renderData": "{\"data\":\"{\\\"color\\\":[0.30000001192092896,0.30000001192092896,0.30000001192092896],\\\"v0\\\":[585.0,808.0],\\\"v1\\\":[1335.0,808.0],\\\"v2\\\":[1335.0,848.0],\\\"v3\\\":[585.0,848.0]}\",\"type\":\"quad\"}",
+                "size": [
+                    750.0,
+                    40.0
+                ]
+            },
+            {
+                "ID": 58,
                 "centered": true,
                 "isVisible": true,
                 "pos": [
                     960.0,
                     841.18701171875
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0}},\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_GhoulHealthbar.png\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0}},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_GhoulHealthbar.png\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
                     800.0,
                     195.3125
                 ]
             },
             {
-                "ID": 55,
+                "ID": 59,
                 "centered": true,
                 "isVisible": true,
                 "pos": [
                     960.0,
                     892.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/Regine/source/repos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_GhoulBossProfile.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_GhoulBossProfile.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     250.0,
                     250.0
                 ]
             },
             {
-                "ID": 53,
+                "ID": 57,
                 "centered": true,
-                "isVisible": false,
+                "isVisible": true,
                 "pos": [
                     960.0,
                     828.0
                 ],
-                "renderData": "{\"data\":\"{\\\"color\\\":[0.4901960492134094,0.0,0.0],\\\"v0\\\":[584.5,810.0],\\\"v1\\\":[584.5,810.0],\\\"v2\\\":[584.5,850.0],\\\"v3\\\":[584.5,850.0]}\",\"type\":\"quad\"}",
+                "renderData": "{\"data\":\"{\\\"color\\\":[0.4901960492134094,0.0,0.0],\\\"v0\\\":[585.0,808.0],\\\"v1\\\":[1335.0,808.0],\\\"v2\\\":[1335.0,848.0],\\\"v3\\\":[585.0,848.0]}\",\"type\":\"quad\"}",
                 "size": [
-                    751.0,
-                    64.0
+                    750.0,
+                    40.0
                 ]
             }
         ],
@@ -880,7 +1048,7 @@
                 "name": "Spell Slots"
             },
             {
-                "ID": 1,
+                "ID": 2,
                 "members": [
                     5,
                     6,
@@ -891,7 +1059,7 @@
                 "name": "Stats"
             },
             {
-                "ID": 1,
+                "ID": 3,
                 "members": [
                     32,
                     31,
@@ -905,7 +1073,7 @@
                 "name": "Elements"
             },
             {
-                "ID": 1,
+                "ID": 4,
                 "members": [
                     36,
                     40,
@@ -914,7 +1082,7 @@
                 "name": "Soundwave Input"
             },
             {
-                "ID": 2,
+                "ID": 5,
                 "members": [
                     37,
                     42,
@@ -924,7 +1092,7 @@
                 "name": "AOE Input"
             },
             {
-                "ID": 3,
+                "ID": 6,
                 "members": [
                     38,
                     45,
@@ -934,7 +1102,7 @@
                 "name": "Shield Input"
             },
             {
-                "ID": 4,
+                "ID": 7,
                 "members": [
                     39,
                     48,
@@ -944,7 +1112,7 @@
                 "name": "Healing Input"
             },
             {
-                "ID": 5,
+                "ID": 8,
                 "members": [
                     36,
                     37,
@@ -966,19 +1134,30 @@
                 "name": "Song Input List"
             },
             {
-                "ID": 1,
+                "ID": 9,
                 "members": [
-                    52,
-                    53,
-                    54,
-                    55
+                    56,
+                    57,
+                    58,
+                    59
                 ],
                 "name": "BossHP"
+            },
+            {
+                "ID": 10,
+                "members": [
+                    33,
+                    34,
+                    52,
+                    53,
+                    55
+                ],
+                "name": "Level 3 Dialogue"
             }
         ],
         "textboxes": [
             {
-                "ID": 22,
+                "ID": 23,
                 "centered": false,
                 "color": [
                     1.0,
@@ -994,7 +1173,7 @@
                 "text": "0x"
             },
             {
-                "ID": 23,
+                "ID": 24,
                 "centered": false,
                 "color": [
                     1.0,
@@ -1010,7 +1189,7 @@
                 "text": "0x"
             },
             {
-                "ID": 24,
+                "ID": 25,
                 "centered": false,
                 "color": [
                     1.0,
@@ -1026,7 +1205,7 @@
                 "text": "0x"
             },
             {
-                "ID": 51,
+                "ID": 54,
                 "centered": false,
                 "color": [
                     1.0,
@@ -1040,6 +1219,22 @@
                 ],
                 "scale": 0.6000000238418579,
                 "text": "SONG LIST:"
+            },
+            {
+                "ID": 55,
+                "centered": false,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "isVisible": false,
+                "pos": [
+                    750.0,
+                    350.0
+                ],
+                "scale": 1.0,
+                "text": "PRESS ESC TO SKIP"
             }
         ]
     },
