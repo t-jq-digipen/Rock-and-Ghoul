@@ -170,7 +170,11 @@ namespace RockScript {
 		SFX_PLUCK2,        // 23
 		SFX_PLUCK3,        // 24
 		SFX_PLUCK4,        // 25
-		SFX_TWANG1         // 26
+		SFX_TWANG1,         // 26
+		SFX_TWANG2,
+		SFX_TWANG3,
+		SFX_TWANG4,
+		SFX_TWANG5
 	};
 	// store player entity ID so all functions can access it; FOR SPATIAL AUDIO.. if it isn't spatial it just isnt used
 	static Entity playerEntityID = INVALID_ENTITY;
@@ -189,6 +193,10 @@ namespace RockScript {
 	static const PlayerSounds strums[] = {
 	SFX_GUITAR_STRUM1, SFX_GUITAR_STRUM2, SFX_GUITAR_STRUM3, SFX_GUITAR_STRUM4,
 	SFX_GUITAR_STRUM5, SFX_GUITAR_STRUM6, SFX_GUITAR_STRUM7, SFX_GUITAR_STRUM8
+	};
+
+	static const PlayerSounds twang[] = {
+	SFX_TWANG1, SFX_TWANG2, SFX_TWANG3, SFX_TWANG4, SFX_TWANG5
 	};
 
 	static const PlayerSounds voice[] = {
@@ -764,7 +772,7 @@ namespace RockScript {
 			inputBuffer.clear();
 			UpdateVisualDisplays();  // hide all arrows
 			// ARI PLUCK SOUND FAIL HERE
-			PlayAudio(SFX_TWANG1);
+			PlayRandom(twang, 5);
 			return;  //dont process key
 		}
 
@@ -1188,6 +1196,10 @@ namespace RockScript {
 			audioComp.AddSound("pluck3");                      // 24 - SFX_PLUCK3
 			audioComp.AddSound("pluck4");                      // 25 - SFX_PLUCK4
 			audioComp.AddSound("twang1");                      // 26 - SFX_TWANG1
+			audioComp.AddSound("twang2");
+			audioComp.AddSound("twang3");
+			audioComp.AddSound("twang4");
+			audioComp.AddSound("twang5");
 
 
 			Registry::Get().Add_Component(eID, audioComp);

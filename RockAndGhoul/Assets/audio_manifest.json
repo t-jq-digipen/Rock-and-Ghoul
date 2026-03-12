@@ -172,13 +172,31 @@
       "spatial": false
     },
     "twang1": {
-      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_09.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_05.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "twang2": {
-      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_05.wav",
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_07.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "twang3": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_09.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "twang4": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_10.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "twang5": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar_Miss_12.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
@@ -241,6 +259,18 @@
     },
     "player_spawnSound7": {
       "path": "../Assets/audio/SFX/Player/VO/LeaveAloneWhine.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "enemyhit": {
+      "path": "../Assets/audio/SFX/Enemy/EnemyHit.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "enemydie": {
+      "path": "../Assets/audio/SFX/Enemy/EnemyDie.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
