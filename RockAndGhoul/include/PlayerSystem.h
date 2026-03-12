@@ -66,6 +66,12 @@ namespace RockScript {
     void Knockback(Entity eID, bool left, float damage);
 }
 
+namespace TutorialScript {
+    inline void Start(Entity e);
+    inline void Update(Entity e, float dt);
+	inline void End(Entity e);
+}
+
 
 
 class PlayerSystem : public ISystem {

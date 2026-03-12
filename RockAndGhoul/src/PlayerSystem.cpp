@@ -1863,6 +1863,49 @@ void PlayerSystem::SetCurrentElement(int element)
 	}
 }
 
+namespace TutorialScript {
+	unsigned int page = 1;
+	size_t subscriberID{};
+
+
+	inline void Start(Entity)
+	{
+		page = 1;
+		subscriberID = EventBus::Get().Subscribe<KeyPressedEvent>([](const KeyPressedEvent& e) {
+			if (GuiSystem::Get().GetDialogueGate()) return;
+			if (e.key == GLFW_KEY_SPACE) {
+				page++;
+			}
+			});
+	}
+
+
+
+	inline void Update(Entity eID, float dt)
+	{
+		unsigned int animState = page;
+
+		if (!Registry::Get().Has_Component<RenderComponent>(eID)) return;
+
+
+		if (page > 2) { animState = 0; }
+
+		
+		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
+
+		Sprite::SpriteSheet& spriteSheet = renderComp.GetSpriteSheet();
+
+		spriteSheet.SetState(animState);
+		
+	}
+
+	inline void End(Entity)
+	{
+		page = 1;
+		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID);
+	}
+}
+
 void PlayerSystem::Initialize()
 {
 	//s_instance = this;
@@ -1882,6 +1925,13 @@ void PlayerSystem::Initialize()
 		player.Update = [](Entity e, float dt) { RockScript::Update(e, dt); };
 		player.End = [](Entity e) { RockScript::End(e); };
 		LogicSystem::Get().RegisterScript("RockScript", player);
+	}
+	{
+		BehaviourFCT tutorial;
+		tutorial.Init = [](Entity e) { TutorialScript::Start(e); };
+		tutorial.Update = [](Entity e, float dt) { TutorialScript::Update(e, dt); };
+		tutorial.End = [](Entity e) { TutorialScript::End(e); };
+		LogicSystem::Get().RegisterScript("TutorialScript", tutorial);
 	}
 
 
