@@ -2827,7 +2827,7 @@ void ImGuiSystem::Update(float dt)
                         for (int i = 0; i < (int)soundNames.size(); i++) {
                             if (soundNames[i] == b.soundName) { currentIdx = i; break; }
                         }
-                        int idxBefore = currentIdx;
+                        //int idxBefore = currentIdx;
                         if (ImGui::Combo("Button Sound", &currentIdx, soundNamePtrs.data(), (int)soundNamePtrs.size()))
                         {
                             int widgetIdx   = selectedLocal;

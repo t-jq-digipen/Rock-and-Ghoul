@@ -789,24 +789,24 @@ void GuiSystem::AddDisplay(const DisplayConfig& cfg)
  * @return          Index of the newly added dialogue in dialogues container, or -1 on failure.
  */
 
-int GuiSystem::AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox, const std::string& sceneID)
-{
-    auto owned = std::make_shared<TextSystem::TextComponent>();
-    if (!TextSystem::LoadDialogueFromJson(jsonPath, *owned)) return -1;
-
-    DialogueConfig d;
-    d.owned = std::move(owned);
-    d.textComp = nullptr;
-    d.textBox = textBox;
-    d.jsonPath = jsonPath;
-    d.sceneID = sceneID;
-
-    if (d.ID <= 0) d.ID = nextUIID++;
-    else nextUIID = std::max(nextUIID, d.ID + 1);
-
-    dialogues.push_back(std::move(d));
-    return static_cast<int>(dialogues.size()) - 1;
-}
+//int GuiSystem::AddDialogueFromJson(const std::string& jsonPath, const TextBoxConfig& textBox, const std::string& sceneID)
+//{
+//    auto owned = std::make_shared<TextSystem::TextComponent>();
+//    if (!TextSystem::LoadDialogueFromJson(jsonPath, *owned)) return -1;
+//
+//    DialogueConfig d;
+//    d.owned = std::move(owned);
+//    d.textComp = nullptr;
+//    d.textBox = textBox;
+//    d.jsonPath = jsonPath;
+//    d.sceneID = sceneID;
+//
+//    if (d.ID <= 0) d.ID = nextUIID++;
+//    else nextUIID = std::max(nextUIID, d.ID + 1);
+//
+//    dialogues.push_back(std::move(d));
+//    return static_cast<int>(dialogues.size()) - 1;
+//}
 
 /**
  * @brief           Enables or disables GUI edit mode.
