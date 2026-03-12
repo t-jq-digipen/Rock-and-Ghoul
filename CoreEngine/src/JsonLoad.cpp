@@ -1771,15 +1771,38 @@ bool JsonLoad::SaveEntity(const std::string& filepath, Entity eID) {
  * @return Entity The created entity ID, or 0 if failed.
  */
 
+// Prefab JSON cache — avoids re-reading and re-parsing the same file on every spawn
+// Keyed by absolute filepath cleared on game/scene switch via ClearPrefabCache()
+static std::unordered_map<std::string, json> s_prefabCache;
+
+void JsonLoad::ClearPrefabCache() {
+    s_prefabCache.clear();
+}
+
 Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float y) {
-    std::string content = FileIO::ReadFile(filepath);
-    if (content.empty()) {
-        std::cerr << "Failed to load entity from: " << filepath << std::endl;
-        return 0;
+    // Check cache first — avoid disk I/O and JSON parse on every projectile spawn
+    auto cacheIt = s_prefabCache.find(filepath);
+    if (cacheIt == s_prefabCache.end()) {
+        // Not cached yet — read from disk and parse
+        std::string content;
+        try { content = FileIO::ReadFile(filepath); }
+        catch (...) {}
+        if (content.empty()) {
+            std::cerr << "Failed to load entity from: " << filepath << std::endl;
+            return 0;
+        }
+        try {
+            s_prefabCache[filepath] = json::parse(content);
+        }
+        catch (...) {
+            std::cerr << "Error parsing prefab: " << filepath << std::endl;
+            return 0;
+        }
+        cacheIt = s_prefabCache.find(filepath);
     }
 
     try {
-        json j = json::parse(content);
+        json j = cacheIt->second; // copy so from_json can mutate it freely
 
         SavedEntity enty;
         from_json(j, enty);
@@ -1812,6 +1835,7 @@ Entity JsonLoad::LoadEntityFromFile(const std::string& filepath, float x, float 
  * @brief Clears all entities from the current scene.
  */
 void JsonLoad::ClearAllEntities() {
+    ClearPrefabCache(); // invalidate cached prefab JSON on scene/game switch
     EntityManager& em = EntityManager::get();
     std::vector<Entity> toRemove;
 

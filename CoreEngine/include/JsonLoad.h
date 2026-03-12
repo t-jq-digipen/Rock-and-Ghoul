@@ -75,7 +75,10 @@ public:
  * @return Entity The created entity ID, or 0 if failed.
  */
     static Entity LoadEntityFromFile(const std::string& filepath, float x, float y);
-    
+
+    // Clears the in-memory prefab JSON cache (call on game/scene switch)
+    static void ClearPrefabCache();
+
     // Clear all entities before loading (no cloning)
     static void ClearAllEntities();
 
