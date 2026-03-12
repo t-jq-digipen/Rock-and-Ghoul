@@ -1,8 +1,8 @@
 {
     "components": {
         "Lifetime": "{\"age\":0.0,\"lifetime\":1.0}",
-        "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":10,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":100.0,\\\\\\\"scaleY\\\\\\\":100.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/IceAOE_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":10,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":11,\\\"totalRows\\\":1}\",\"renderLayer\":1,\"renderType\":2}",
-        "Transform": "{\"posX\":1053.56982421875,\"posY\":785.0020751953125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+        "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":13,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":100.0,\\\\\\\"scaleY\\\\\\\":100.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/IceAOE_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":13,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":14,\\\"totalRows\\\":1}\",\"renderLayer\":1,\"renderType\":2}",
+        "Transform": "{\"posX\":531.993408203125,\"posY\":566.8294067382813,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
     },
     "name": "AoeFX_Ice"
 }

@@ -34,7 +34,7 @@
 using json = nlohmann::json;
 
 void AudioComponent::PlaySound(size_t index, Entity eID) {
-    std::cout << "[AudioComponent::PlaySound] START - index: " << index << ", eID: " << eID << std::endl;
+    //std::cout << "[AudioComponent::PlaySound] START - index: " << index << ", eID: " << eID << std::endl;
 
     // check exist? index
     if (index >= sounds.size()) {
@@ -47,7 +47,7 @@ void AudioComponent::PlaySound(size_t index, Entity eID) {
         return;
     }
 
-    std::cout << "[AudioComponent] Playing sound: '" << sounds[index] << "'" << std::endl;
+    // std::cout << "[AudioComponent] Playing sound: '" << sounds[index] << "'" << std::endl;
 
     // Ensure vectors are properly sized
     if (channels.size() <= index) {
@@ -69,18 +69,18 @@ void AudioComponent::PlaySound(size_t index, Entity eID) {
         return;
     }
 
-    std::cout << "[AudioComponent] Sound loaded from cache successfully" << std::endl;
-    std::cout << "[AudioComponent] Spatial: " << spatial << std::endl;
+    //std::cout << "[AudioComponent] Sound loaded from cache successfully" << std::endl;
+    //std::cout << "[AudioComponent] Spatial: " << spatial << std::endl;
 
     // Play with spatial audio or normal
     if (spatial && Registry::Get().Has_Component<TransformComponent>(eID)) {
         auto& transform = Registry::Get().Get_Component<TransformComponent>(eID);
-        std::cout << "[AudioComponent] Playing SPATIAL at (" << transform.pos.x << ", " << transform.pos.y << ")" << std::endl;
+        //std::cout << "[AudioComponent] Playing SPATIAL at (" << transform.pos.x << ", " << transform.pos.y << ")" << std::endl;
         channels[index] = AudioSystem::PlaySoundAt(sounds[index], transform.pos.x, transform.pos.y, volume);
-        std::cout << "[AudioComponent] Spatial channel: " << (channels[index] ? "SUCCESS" : "NULL") << std::endl;
+        //std::cout << "[AudioComponent] Spatial channel: " << (channels[index] ? "SUCCESS" : "NULL") << std::endl;
     }
     else {
-        std::cout << "[AudioComponent] Playing NON-SPATIAL (spatial=" << spatial << ")" << std::endl;
+        //std::cout << "[AudioComponent] Playing NON-SPATIAL (spatial=" << spatial << ")" << std::endl;
         channels[index] = AudioSystem::PlaySoundGetChannel(sound, true); // start paused
         if (channels[index]) {
             channels[index]->setVolume(volume * AudioSystem::GetMasterVolume());
@@ -92,7 +92,7 @@ void AudioComponent::PlaySound(size_t index, Entity eID) {
     }
 
     isPlaying[index] = (channels[index] != nullptr);
-    std::cout << "[AudioComponent] PlaySound END - isPlaying[" << index << "] = " << isPlaying[index] << std::endl;
+    //std::cout << "[AudioComponent] PlaySound END - isPlaying[" << index << "] = " << isPlaying[index] << std::endl;
 }
 
 void AudioComponent::StopSound(size_t index) {

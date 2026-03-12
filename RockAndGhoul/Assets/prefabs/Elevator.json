@@ -1,0 +1,9 @@
+{
+    "components": {
+        "Collider": "{\"aabb_dimX\":300.0,\"aabb_dimY\":200.0,\"aabb_maxX\":2437.159912109375,\"aabb_maxY\":914.649658203125,\"aabb_minX\":2137.159912109375,\"aabb_minY\":714.649658203125,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Portal\",\"triggerEvent\":\"TouchPortal\"}",
+        "Portal": "{\"scene\":\"../Assets/saves/MainMenu.json\",\"state\":0}",
+        "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":2,\\\"frameColEnd\\\":9,\\\"frameColStart\\\":5,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":85.0,\\\\\\\"scaleY\\\\\\\":85.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment02_LiftSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":5,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":9,\\\"col_start\\\":5,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":10,\\\"totalRows\\\":1}\",\"renderLayer\":1,\"renderType\":2}",
+        "Transform": "{\"posX\":2287.159912109375,\"posY\":814.649658203125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+    },
+    "name": "Elevator"
+}
