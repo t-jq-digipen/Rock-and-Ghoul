@@ -233,34 +233,72 @@
             {
                 "ID": 33,
                 "bgEnabled": true,
-                "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
                 "bgSize": [
                     1500.0,
                     300.0
                 ],
                 "currentLineIndex": 0,
+                "customOverride": false,
                 "isVisible": true,
-                "jsonPath": "../Assets/Dialogue.json",
+                "jsonPath": "C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Dialogue.json",
                 "lines": [
-                    "Jam Out SG! We made it! We're gonna rock their socks off. Or whatever they say.",
-                    "Record deal, here we come.",
-                    "Crazy bummer that so many acts forfeited! I wouldn't be surprised if they pit US against each other for content.",
-                    "I'd like to see them try. (SMIRK)",
-                    "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star.",
-                    "Spooky...",
-                    "Groooowl...",
-                    "MEGA SPOOKY!",
-                    "I gotta find Ghoul, and fast!",
-                    "But first, I gotta fight off...whatever these are...",
-                    "I get the feeling they won't let me get past if I don't do something about these creeps...",
-                    "Alright then, let's rock this out! BRING IT ON!!!"
+                {
+                    "speakerID": 0,
+                    "line": "Jam Out SG! We made it! We're gonna rock their socks off. Or whatever they say."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Record deal, here we come."
+                },
+                {
+                    "speakerID": 6,
+                    "line": "Crazy bummer that so many acts forfeited! I wouldn't be surprised if they pit US against each other for content."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "I'd like to see them try. (SMIRK)"
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star."
+                },
+                {
+                    "speakerID": 5,
+                    "line": "Spooky..."
+                },
+                {
+                    "speakerID": 2,
+                    "line": "Groooowl..."
+                },
+                {
+                    "speakerID": 4,
+                    "line": "MEGA SPOOKY!"
+                },
+                {
+                    "speakerID": 4,
+                    "line": "I gotta find Ghoul, and fast!"
+                },
+                {
+                    "speakerID": 5,
+                    "line": "But first, I gotta fight off...whatever these are..."
+                },
+                {
+                    "speakerID": 4,
+                    "line": "I get the feeling they won't let me get past if I don't do something about these creeps..."
+                },
+                {
+                    "speakerID": 3,
+                    "line": "Alright then, foul spirits! BRING IT ON!!!"
+                }
                 ],
+                "profileDisplaySide": 0,
                 "profileEnabled": true,
                 "profileOffset": [
                     0.0,
                     0.0
                 ],
-                "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Happy.png\\\"}\",\"type\":\"image\"}",
+                "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_RockDialogue_Happy.png\\\"}\",\"type\":\"image\"}",
                 "profileSize": [
                     300.0,
                     300.0
@@ -939,7 +977,8 @@
             2,
             3
           ],
-          "name": "Spell Slots"
+          "name": "Spell Slots",
+          "isVisible": true
         },
         {
           "ID": 2,
@@ -950,7 +989,8 @@
             8,
             9
           ],
-          "name": "Stats"
+          "name": "Stats",
+          "isVisible": true
         },
         {
           "ID": 3,
@@ -964,7 +1004,8 @@
             31,
             32
           ],
-          "name": "Elements"
+          "name": "Elements",
+          "isVisible": true
         },
         {
           "ID": 4,
@@ -973,7 +1014,8 @@
             39,
             40
           ],
-          "name": "Soundwave Input"
+          "name": "Soundwave Input",
+          "isVisible": true
         },
         {
           "ID": 5,
@@ -983,7 +1025,8 @@
             42,
             43
           ],
-          "name": "AOE Input"
+          "name": "AOE Input",
+          "isVisible": true
         },
         {
           "ID": 6,
@@ -993,7 +1036,8 @@
             45,
             46
           ],
-          "name": "Shield Input"
+          "name": "Shield Input",
+          "isVisible": true
         },
         {
           "ID": 7,
@@ -1003,7 +1047,8 @@
             48,
             49
           ],
-          "name": "Healing Input"
+          "name": "Healing Input",
+          "isVisible": true
         },
         {
           "ID": 8,
@@ -1025,7 +1070,8 @@
             49,
             50
           ],
-          "name": "Song Input List"
+          "name": "Song Input List",
+          "isVisible": true
         },
         {
           "ID": 9,
@@ -1036,7 +1082,8 @@
             52,
             53
           ],
-          "name": "Level 1 Dialogue"
+          "name": "Level 1 Dialogue",
+          "isVisible": true
         }
       ],
       "textboxes": [

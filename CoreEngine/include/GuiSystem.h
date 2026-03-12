@@ -598,6 +598,7 @@ struct UIGroup
     int groupID = 0;
     std::string groupName;
     std::vector<int> memberIDs;
+    bool isVisible = true;
 };
 
 /**
@@ -1011,6 +1012,24 @@ public:
  */
 
     const std::vector<std::string>& GetActionOrder() const { return actionOrder; }
+
+/**
+ * @brief           Overrides visbility settings of UI elements by ID
+ * @param gui       Reference to GUI system
+ * @param id        ID of UI elements to override
+ * @param visible   Visibility setting to change to
+ */
+
+    void OverrideVisibilityByUIID(GuiSystem& gui, int id, bool visible);
+
+/**
+ * @brief           Apply visbility settings overrides to members of a selected group
+ * @param gui       Reference to GUI system
+ * @param grpId     Group ID to override
+ * @param visible   Visibility setting to toggle to
+ */
+
+    void ApplyGroupVisibilityOverrides(GuiSystem& gui, int grpId, bool visible);
 
 private:
 

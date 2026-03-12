@@ -222,18 +222,46 @@
                 "currentLineIndex": 0,
                 "customOverride": false,
                 "isVisible": true,
-                "jsonPath": "C:\\Users\\manfr\\OneDrive\\Documents\\GitHub\\csd2401s25_team_aviddivas\\csd2401f25_team_aviddivas\\build\\Debug/../../Assets/Dialogue.json",
+                "jsonPath": "C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Dialogue.json",
                 "lines": [
-                    "Phew! That took a while to get through.",
-                    "Ghoul said she went to the toilet, so it should be this way.",
-                    "Grooooooowl... Hissssss...",
-                    "WOW!",
-                    "Wait a minute, something seems off about these spirits?",
-                    "Ziiing...",
-                    "They have elemental barriers now?!?!",
-                    "Ugh great, just as I thought everything was going a little too easy.",
-                    "Alright spirit, game on!"
+                {
+                    "speakerID": 6,
+                    "line": "Phew! That took a while to get through."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Ghoul said she went to the toilet, so it should be this way."
+                },
+                {
+                    "speakerID": 2,
+                    "line": "Grooooooowl... Hissssss..."
+                },
+                {
+                    "speakerID": 4,
+                    "line": "WOW!"
+                },
+                {
+                    "speakerID": 5,
+                    "line": "Wait a minute, something seems off about these spirits?"
+                },
+                {
+                    "speakerID": 2,
+                    "line": "Ziiing..."
+                },
+                {
+                    "speakerID": 5,
+                    "line": "They have elemental barriers now?!?!"
+                },
+                {
+                    "speakerID": 5,
+                    "line": "Ugh great, just as I thought everything was going a little too easy."
+                },
+                {
+                    "speakerID": 3,
+                    "line": "Alright spirit, game on!"
+                }
                 ],
+                "profileDisplaySide": 0,
                 "profileEnabled": true,
                 "profileOffset": [
                     0.0,
@@ -245,8 +273,141 @@
                     300.0
                 ],
                 "sceneID": "1",
-                "speakerOverrideEnabled": false,
-                "speakerOverrideID": 0,
+                "speakerUI": {
+                    "0": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Happy.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Rock"
+                    },
+                    "1": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Ghoul.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_GhoulDialogue_Normal.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Ghoul"
+                    },
+                    "2": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Spirit.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/EnemyDialogue_Normal.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Spirit"
+                    },
+                    "3": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\".../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Angry.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Rock"
+                    },
+                    "4": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\".../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Frightened.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Rock"
+                    },
+                    "5": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\".../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Shocked.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Rock"
+                    },
+                    "6": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\".../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Victory.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": "Rock"
+                    }
+                },
                 "textBox": {
                     "centered": false,
                     "color": [
@@ -920,7 +1081,8 @@
                     2,
                     3
                 ],
-                "name": "Spell Slots"
+                "name": "Spell Slots",
+                "isVisible": true
             },
             {
                 "ID": 2,
@@ -931,7 +1093,8 @@
                     8,
                     9
                 ],
-                "name": "Stats"
+                "name": "Stats",
+                "isVisible": true
             },
             {
                 "ID": 3,
@@ -945,7 +1108,8 @@
                     31,
                     32
                 ],
-                "name": "Elements"
+                "name": "Elements",
+                "isVisible": true
             },
             {
                 "ID": 4,
@@ -954,7 +1118,8 @@
                     39,
                     40
                 ],
-                "name": "Soundwave Input"
+                "name": "Soundwave Input",
+                "isVisible": true
             },
             {
                 "ID": 5,
@@ -964,7 +1129,8 @@
                     42,
                     43
                 ],
-                "name": "AOE Input"
+                "name": "AOE Input",
+                "isVisible": true
             },
             {
                 "ID": 6,
@@ -974,7 +1140,8 @@
                     45,
                     46
                 ],
-                "name": "Shield Input"
+                "name": "Shield Input",
+                "isVisible": true
             },
             {
                 "ID": 7,
@@ -984,7 +1151,8 @@
                     48,
                     49
                 ],
-                "name": "Healing Input"
+                "name": "Healing Input",
+                "isVisible": true
             },
             {
                 "ID": 8,
@@ -1006,7 +1174,8 @@
                     49,
                     50
                 ],
-                "name": "Song Input List"
+                "name": "Song Input List",
+                "isVisible": true
             },
             {
                 "ID": 9,
@@ -1017,7 +1186,8 @@
                     52,
                     53
                 ],
-                "name": "Level 2 Dialogue"
+                "name": "Level 2 Dialogue",
+                "isVisible": true
             }
         ],
         "textboxes": [

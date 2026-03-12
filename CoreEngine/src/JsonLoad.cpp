@@ -815,7 +815,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
         j["gui"]["groups"].push_back({
             {"ID", group.groupID},
             {"name", group.groupName },
-            {"members", group.memberIDs}
+            {"members", group.memberIDs},
+            {"isVisible", group.isVisible}
         });
     }
 
@@ -1051,6 +1052,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 {
                     temp.memberIDs.push_back(member);
                 }
+                temp.isVisible = group["isVisible"];
                 GuiSystem::Get().AddGroup(temp);
             }
         }
