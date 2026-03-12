@@ -693,7 +693,7 @@ namespace SpiritScript {
 				spriteSheet.SetState(2);
 				registry.Add_Component<LifetimeComponent>(eID, LifetimeComponent{ 0.f, SPIRIT_DEATH_DURATION });
 				moveComp.ResetFrameIntent();
-				AudioSystem::PlaySoundAt("enemydie", selfPos.x, selfPos.y, 1.0f); //die sound
+				AudioSystem::PlaySoundAt("enemydie", selfPos.x, selfPos.y, 0.3f); //die sound
 			}
 			else // spirit is dead 
 			{
@@ -722,7 +722,7 @@ namespace SpiritScript {
 			spiritLogic.state = SpiritState::SPIRIT_HIT;
 			spiritLogic.stateTime = 0.f;
 			CombatSystem::Get().SetCombatantStagger(eID, false);
-			AudioSystem::PlaySoundAt("enemyhit", selfPos.x, selfPos.y, 1.0f); //hitsound
+			AudioSystem::PlaySoundAt("enemyhit", selfPos.x, selfPos.y, 0.2f); //hitsound
 		}
 
 		if (spiritLogic.state == SpiritState::SPIRIT_IDLE) {
@@ -776,6 +776,7 @@ namespace SpiritScript {
 
 			if (spiritLogic.stateTime >= SPIRIT_MELEE_WINDUP && spiritLogic.willAttack) {
 				spiritLogic.willAttack = false;
+				AudioSystem::PlaySoundAt("enemyattack", selfPos.x, selfPos.y, 0.3f);
 
 				Vec2 offset = { 0.f, 0.f };
 				if (faceRight) {

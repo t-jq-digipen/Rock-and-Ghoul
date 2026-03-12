@@ -213,6 +213,18 @@
       "group": "SFX",
       "spatial": true
     },
+    "player_hit1": {
+      "path": "../Assets/audio/SFX/Player/Movement/Rock Grunt1.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true
+    },
+    "player_hit2": {
+      "path": "../Assets/audio/SFX/Player/Movement/Rock Grunt2.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": true
+    },
     "player_footstep_wood": {
       "path": "../Assets/audio/SFX/Player/Movement/Walking on Wood.wav",
       "loop": false,
@@ -263,6 +275,12 @@
       "group": "SFX",
       "spatial": false
     },
+    "enemyattack": {
+      "path": "../Assets/audio/SFX/Enemy/EnemyAttack.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
     "enemyhit": {
       "path": "../Assets/audio/SFX/Enemy/EnemyHit.wav",
       "loop": false,
@@ -289,6 +307,11 @@
     },
     "ui_click": {
       "path": "../Assets/audio/SFX/UI/UI Click.wav",
+      "loop": false,
+      "group": "UI"
+    },
+    "level_lose": {
+      "path": "../Assets/audio/SFX/UI/Level_Lose.wav",
       "loop": false,
       "group": "UI"
     }

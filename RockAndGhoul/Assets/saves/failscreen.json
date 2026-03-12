@@ -2,7 +2,7 @@
     "backgrounds": [
         "../Assets/UI_FailedPage_Background.JPG"
     ],
-    "bgmAssetName": "level_1",
+    "bgmAssetName": "level_lose",
     "cameraSpawn": [
         0.0,
         0.0

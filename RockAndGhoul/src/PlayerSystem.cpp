@@ -153,24 +153,27 @@ namespace RockScript {
 		SFX_SPAWN5,        // 6
 		SFX_SPAWN6,        // 7
 		SFX_SPAWN7,        // 8
-		SFX_GUITAR_STRUM1, // 9
-		SFX_GUITAR_STRUM2, // 10
-		SFX_GUITAR_STRUM3, // 11
-		SFX_GUITAR_STRUM4, // 12
-		SFX_GUITAR_STRUM5, // 13
-		SFX_GUITAR_STRUM6, // 14
-		SFX_GUITAR_STRUM7, // 15
-		SFX_GUITAR_STRUM8, // 16
-		SFX_ELEMENT_FIRE,  // 17
-		SFX_ELEMENT_ELECTRIC, // 18
-		SFX_ELEMENT_ICE,   // 19
-		SFX_ELEMENT_WIND,  // 20
-		SFX_ELEMENT_EXPLOSION, // 21 fire aoe explosion
-		SFX_PLUCK1,        // 22
-		SFX_PLUCK2,        // 23
-		SFX_PLUCK3,        // 24
-		SFX_PLUCK4,        // 25
-		SFX_TWANG1,         // 26
+		SFX_HIT1,
+		SFX_HIT2,
+		SFX_DIE,
+		SFX_GUITAR_STRUM1,
+		SFX_GUITAR_STRUM2,
+		SFX_GUITAR_STRUM3, 
+		SFX_GUITAR_STRUM4,
+		SFX_GUITAR_STRUM5, 
+		SFX_GUITAR_STRUM6,
+		SFX_GUITAR_STRUM7, 
+		SFX_GUITAR_STRUM8,
+		SFX_ELEMENT_FIRE, 
+		SFX_ELEMENT_ELECTRIC,
+		SFX_ELEMENT_ICE,  
+		SFX_ELEMENT_WIND,  
+		SFX_ELEMENT_EXPLOSION, // fire aoe explosion
+		SFX_PLUCK1,     
+		SFX_PLUCK2,       
+		SFX_PLUCK3,        
+		SFX_PLUCK4,        
+		SFX_TWANG1,       
 		SFX_TWANG2,
 		SFX_TWANG3,
 		SFX_TWANG4,
@@ -178,6 +181,8 @@ namespace RockScript {
 	};
 	// store player entity ID so all functions can access it; FOR SPATIAL AUDIO.. if it isn't spatial it just isnt used
 	static Entity playerEntityID = INVALID_ENTITY;
+	// for die sound otherwise it repeats
+	static bool deathSoundPlayed = false;
 
 	// HELPER FUNCTION TO PLAY AUDIOCOMP
 	inline void PlayAudio(PlayerSounds soundIndex) {
@@ -186,7 +191,7 @@ namespace RockScript {
 			audioComp.PlaySound(soundIndex, playerEntityID);
 		}
 	}
-
+	// FUNCTION TO RANDOMISE SOUNDZ
 	inline void PlayRandom(const PlayerSounds* sounds, int count) {
 		PlayAudio(sounds[std::rand() % count]);
 	}
@@ -202,6 +207,10 @@ namespace RockScript {
 	static const PlayerSounds voice[] = {
 	SFX_SPAWN1, SFX_SPAWN2, SFX_SPAWN3, SFX_SPAWN4,
 	SFX_SPAWN5, SFX_SPAWN6, SFX_SPAWN7
+	};
+
+	static const PlayerSounds hit[] = {
+	SFX_HIT1, SFX_HIT2
 	};
 
 	struct ActiveSpell {
@@ -1121,6 +1130,7 @@ namespace RockScript {
 	// To reset all player variables on scene load
 	void ResetPlayerVariables()
 	{
+		deathSoundPlayed = false; // for die sound
 		stunnedtimer = STAGGER_DURATION;
 
 		dashtimer = DASH_COOLDOWN;
@@ -1178,24 +1188,27 @@ namespace RockScript {
 			audioComp.AddSound("player_spawnSound5");          // 6  - SFX_SPAWN5
 			audioComp.AddSound("player_spawnSound6");          // 7  - SFX_SPAWN6
 			audioComp.AddSound("player_spawnSound7");          // 8  - SFX_SPAWN7
-			audioComp.AddSound("guitar_strum1");               // 9  - SFX_GUITAR_STRUM1
-			audioComp.AddSound("guitar_strum2");               // 10 - SFX_GUITAR_STRUM2
-			audioComp.AddSound("guitar_strum3");               // 11 - SFX_GUITAR_STRUM3
-			audioComp.AddSound("guitar_strum4");               // 12 - SFX_GUITAR_STRUM4
-			audioComp.AddSound("guitar_strum5");               // 13 - SFX_GUITAR_STRUM5
-			audioComp.AddSound("guitar_strum6");               // 14 - SFX_GUITAR_STRUM6
-			audioComp.AddSound("guitar_strum7");               // 15 - SFX_GUITAR_STRUM7
-			audioComp.AddSound("guitar_strum8");               // 16 - SFX_GUITAR_STRUM8
-			audioComp.AddSound("guitar_element_fire");         // 17 - SFX_ELEMENT_FIRE
-			audioComp.AddSound("guitar_element_electric");     // 18 - SFX_ELEMENT_ELECTRIC
-			audioComp.AddSound("guitar_element_ice");          // 19 - SFX_ELEMENT_ICE
-			audioComp.AddSound("guitar_element_wind");         // 20 - SFX_ELEMENT_WIND
-			audioComp.AddSound("guitar_element_exploding_item"); // 21 - SFX_ELEMENT_EXPLOSION
-			audioComp.AddSound("pluck1");                      // 22 - SFX_PLUCK1
-			audioComp.AddSound("pluck2");                      // 23 - SFX_PLUCK2
-			audioComp.AddSound("pluck3");                      // 24 - SFX_PLUCK3
-			audioComp.AddSound("pluck4");                      // 25 - SFX_PLUCK4
-			audioComp.AddSound("twang1");                      // 26 - SFX_TWANG1
+			audioComp.AddSound("player_hit1");
+			audioComp.AddSound("player_hit2");
+			audioComp.AddSound("player_die");
+			audioComp.AddSound("guitar_strum1");               
+			audioComp.AddSound("guitar_strum2");           
+			audioComp.AddSound("guitar_strum3");           
+			audioComp.AddSound("guitar_strum4");         
+			audioComp.AddSound("guitar_strum5");            
+			audioComp.AddSound("guitar_strum6");             
+			audioComp.AddSound("guitar_strum7");          
+			audioComp.AddSound("guitar_strum8");             
+			audioComp.AddSound("guitar_element_fire");   
+			audioComp.AddSound("guitar_element_electric");   
+			audioComp.AddSound("guitar_element_ice");  
+			audioComp.AddSound("guitar_element_wind");     
+			audioComp.AddSound("guitar_element_exploding_item"); 
+			audioComp.AddSound("pluck1");                  
+			audioComp.AddSound("pluck2");                
+			audioComp.AddSound("pluck3");                  
+			audioComp.AddSound("pluck4");
+			audioComp.AddSound("twang1");
 			audioComp.AddSound("twang2");
 			audioComp.AddSound("twang3");
 			audioComp.AddSound("twang4");
@@ -1439,6 +1452,7 @@ namespace RockScript {
 			CombatSystem::Get().SetCombatantStagger(eID, false);
 			stunnedtimer = 0.f;
 			ResetTimers();
+			PlayRandom(hit, 2); //rock grunt noise
 		}
 
 
@@ -1606,6 +1620,11 @@ namespace RockScript {
 
 			if (hpComp.currhp <= 0.f)
 			{
+				if (!deathSoundPlayed)
+				{
+					PlayAudio(SFX_DIE);
+					deathSoundPlayed = true;
+				}
 				SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/failscreen.json"));
 			}
 
@@ -1713,6 +1732,8 @@ void PlayerSystem::Initialize()
 			if (e.sceneType == SceneType::ST_GAME) {
 				RockScript::ResetPlayerVariables();
 			}
+
+
 		}
 	);
 
