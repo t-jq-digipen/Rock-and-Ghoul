@@ -11,7 +11,7 @@
  * control, and handling button sound effects. It also declares
  * functions for spatial audio positioning.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -159,6 +159,16 @@ public:
      *             as defined in the ButtonType enum.
      */
     static void PlayButtonSound(ButtonType type);
+
+    /**
+     * @brief Plays a sound by audio asset name from the AudioCache.
+     *
+     * Looks up the sound by name and plays it, bypassing the pause check
+     * so it works even when the game is paused (same as button sounds).
+     *
+     * @param name The asset name as defined in the audio manifest.
+     */
+    static void PlaySoundByName(const std::string& name);
 
     /**
      * @brief Registers a button sound effect by loading it from a file path.

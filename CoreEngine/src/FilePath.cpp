@@ -85,3 +85,15 @@ void FilePath::SetGameRoot(const std::string& gameFolderName)
     SCENES_LIST            = ASSETS_FOLDER + "others/ScenesList.json";
     DIALOGUE               = ASSETS_FOLDER + "Dialogue.json";
 }
+
+void FilePath::InitRepoRoot()
+{
+    namespace fs = std::filesystem;
+#ifdef NO_IMGUI
+    REPO_ROOT = fs::weakly_canonical(fs::path(getExeDir()) / "..").generic_string() + "/";
+#else
+    REPO_ROOT = fs::weakly_canonical(fs::path(getExeDir()) / ".." / "..").generic_string() + "/";
+#endif
+    // GAME_ROOT and all game-specific paths are left empty;
+    // the editor will prompt the user to pick a game.
+}

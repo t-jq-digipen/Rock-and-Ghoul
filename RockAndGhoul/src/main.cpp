@@ -47,11 +47,15 @@ void EnableMemoryLeakChecking(int breakAlloc = -1)
 }
 
 int main() {
-    // Set the active game folder FIRST so all FilePath members are valid.
-    // For a new game project, change this to its folder name e.g. "MySecondGame".
+#ifdef NO_IMGUI
+    // Shipping build: always load RockAndGhoul directly.
     FilePath::SetGameRoot("RockAndGhoul");
+#else
+    // Editor build: just find REPO_ROOT so the game-picker popup can scan for games.
+    FilePath::InitRepoRoot();
+#endif
 
-    // Load settings from file FIRST (before creating window)
+    // Load settings from file (only valid once a game root is set)
     auto settingsOpt = JsonLoad::LoadSettings(FilePath::SETTINGS_FILE);
 
     GameSettings settings;
@@ -68,7 +72,8 @@ int main() {
             settings.resolutionWidth = 1920;
             settings.resolutionHeight = 1080;
             settings.fullscreen = true;
-            JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
+            if (!FilePath::SETTINGS_FILE.empty())
+                JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
         }
     }
     else {
@@ -76,10 +81,12 @@ int main() {
         settings.volume = 100.0f;
         settings.resolutionWidth = 1920;
         settings.resolutionHeight = 1080;
-        settings.fullscreen = true;
+        // Editor starts windowed so the game-picker popup is visible
+        settings.fullscreen = !FilePath::SETTINGS_FILE.empty();
 
-        // Save defaults for next time
-        JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
+        // Save defaults for next time (only when a game path is set)
+        if (!FilePath::SETTINGS_FILE.empty())
+            JsonLoad::SaveSettings(FilePath::SETTINGS_FILE, settings);
     }
 
 #ifdef NO_IMGUI

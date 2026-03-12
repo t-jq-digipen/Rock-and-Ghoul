@@ -131,6 +131,17 @@ void AudioSystem::PlayButtonSound(ButtonType type) {
 }
 
 /**
+ * @brief Plays a sound by audio asset name from the AudioCache.
+ */
+void AudioSystem::PlaySoundByName(const std::string& name) {
+    FMOD::Sound* sound = AudioCache::GetSound(name);
+    if (sound && mSystem) {
+        FMOD::Channel* channel = nullptr;
+        mSystem->playSound(sound, nullptr, false, &channel);
+    }
+}
+
+/**
  * @brief Registers a button sound effect by loading it from a file path.
  *
  * This function loads a sound file from the specified path and associates

@@ -716,7 +716,7 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"action", btn.action},
             {"actionName", btn.actionName},
             {"actionParams", btn.actionParams},
-            {"soundType", btn.soundType },
+            {"soundName", btn.soundName },
             {"isVisible", btn.isVisible}
             });
     }
@@ -895,7 +895,14 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 else { b.actionParams = "{}"; }
                 //b.shape = btn["shape"];
                 b.action = btn.value("action", "");
-                b.soundType = btn.value("soundType", 0);
+                if (btn.contains("soundName")) {
+                    b.soundName = btn.value("soundName", std::string("ui_click"));
+                } else {
+                    // Backward compat: convert legacy int soundType (0=PLAY,1=QUIT,2=CLICK) to name
+                    static const char* legacyNames[] = { "button_play", "button_quit", "ui_click" };
+                    int legacyType = btn.value("soundType", 2);
+                    b.soundName = (legacyType >= 0 && legacyType < 3) ? legacyNames[legacyType] : "ui_click";
+                }
                 b.isVisible = btn.value("isVisible", true);
                 s.guiButtons.push_back(b);
             }
@@ -1187,7 +1194,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             //sb.shape = ButtonShapeToString(b.shape);
             sb.actionName = b.actionName;
             sb.actionParams = b.actionParams;
-            sb.soundType = static_cast<int>(b.soundType);
+            sb.soundName = b.soundName;
             sb.isVisible = b.isVisible;
             scene.guiButtons.push_back(sb);
         }
@@ -1408,7 +1415,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             {
                 cfg.actionParams = b.actionParams;
             }
-            cfg.soundType = static_cast<AudioSystem::ButtonType>(b.soundType);
+            cfg.soundName = b.soundName;
             cfg.isVisible = b.isVisible;
 
             GuiSystem::Get().AddButton(cfg);

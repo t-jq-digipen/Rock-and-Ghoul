@@ -29,6 +29,7 @@
 #include "Render.h"
 #include "glapp.h"
 #include <iostream>
+#include <fstream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -144,11 +145,8 @@ void Render::Init() {
 
     glBindVertexArray(0);
 
-    // Shaders
-    shaderProgram = CreateProgramFromFiles(
-        (FilePath::ASSETS_FOLDER + "vertexSrc.vert"),
-        (FilePath::ASSETS_FOLDER + "fragmentSrc.frag")
-    );
+    // Shaders — deferred to LoadShaders() so Init() is safe with no game loaded
+    LoadShaders();
 
     /*InstanceShaderProgram = CreateProgramFromFiles(
         (FilePath::ASSETS_FOLDER + "InstanceVertexSrc.vert"),  // try use a new vertex shader for instancing , cus it needs per-instance attributes
@@ -1725,8 +1723,8 @@ void Render::InitBatch()
 
     glBindVertexArray(0);
 
-    //Shader program for batches
-    batchShader = CreateProgramFromFiles((FilePath::ASSETS_FOLDER + "batch.vert"), (FilePath::ASSETS_FOLDER + "batch.frag")); //remember add this new files and correct path
+    //Shader program for batches — loaded in LoadShaders(), skip here
+    batchShader = 0;
 
     //CPU buffer reserve mem
     batchCPUBuffer.reserve(MaxVertices);
@@ -2138,6 +2136,135 @@ void Render::EndSceneCapture()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+
+// Write a file only if it doesn't already exist
+static void WriteDefaultShader(const std::string& path, const char* src)
+{
+    if (std::filesystem::exists(path)) return;
+    std::ofstream f(path);
+    if (f) f << src;
+}
+
+static const char* kDefaultVert = R"GLSL(
+#version 450 core
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec2 aTex;
+uniform mat4 uProjection;
+uniform vec2 uPos;
+uniform vec2 uScale;
+uniform float uRotation;
+uniform vec4 uUVRect;
+uniform bool uUseSubImage;
+uniform bool uUseCustomVerts;
+out vec2 TexCoord;
+void main() {
+    vec2 world;
+    if (uUseCustomVerts) {
+        world = aPos;
+    } else {
+        float c = cos(uRotation); float s = sin(uRotation);
+        mat2 rot = mat2(c, -s, s, c);
+        world = rot * aPos * uScale + uPos;
+    }
+    gl_Position = uProjection * vec4(world, 0.0, 1.0);
+    TexCoord = uUseSubImage ? mix(uUVRect.xy, uUVRect.zw, aTex) : aTex;
+}
+)GLSL";
+
+static const char* kDefaultFrag = R"GLSL(
+#version 450 core
+out vec4 FragColor;
+uniform sampler2D uTexture;
+uniform bool uUseTexture;
+uniform vec3 uColor;
+uniform bool uUseText;
+uniform vec3 uTextColor;
+uniform float uAlpha;
+uniform float uBrightness;
+in vec2 TexCoord;
+void main() {
+    if (uUseText) {
+        float alpha = texture(uTexture, TexCoord).r;
+        FragColor = vec4(uTextColor, alpha);
+    } else if (uUseTexture) {
+        vec4 t = texture(uTexture, TexCoord);
+        vec3 tinted = mix(t.rgb * (uColor * 0.5 + 0.5), vec3(1.0), uBrightness);
+        FragColor = vec4(tinted, t.a);
+    } else {
+        FragColor = vec4(uColor, uAlpha);
+    }
+}
+)GLSL";
+
+static const char* kDefaultBatchVert = R"GLSL(
+#version 450 core
+layout(location = 0) in vec2 aPos;
+layout(location = 1) in vec2 aTex;
+layout(location = 2) in vec4 aColor;
+layout(location = 3) in float aTexIndex;
+uniform mat4 uProjection;
+out vec2 vTex;
+out vec4 vColor;
+flat out int vTexIndex;
+void main() {
+    gl_Position = uProjection * vec4(aPos, 0.0, 1.0);
+    vTex = aTex; vColor = aColor; vTexIndex = int(aTexIndex);
+}
+)GLSL";
+
+static const char* kDefaultBatchFrag = R"GLSL(
+#version 450 core
+in vec2 vTex;
+in vec4 vColor;
+flat in int vTexIndex;
+out vec4 FragColor;
+uniform sampler2D uTextures[16];
+void main() {
+    FragColor = texture(uTextures[vTexIndex], vTex) * vColor;
+}
+)GLSL";
+
+void Render::LoadShaders()
+{
+    if (FilePath::ASSETS_FOLDER.empty()) return;
+
+    namespace fs = std::filesystem;
+    std::string vertPath  = FilePath::ASSETS_FOLDER + "vertexSrc.vert";
+    std::string fragPath  = FilePath::ASSETS_FOLDER + "fragmentSrc.frag";
+    std::string bvertPath = FilePath::ASSETS_FOLDER + "batch.vert";
+    std::string bfragPath = FilePath::ASSETS_FOLDER + "batch.frag";
+
+    // Seed missing shader files with defaults so new games render immediately
+    WriteDefaultShader(vertPath,  kDefaultVert);
+    WriteDefaultShader(fragPath,  kDefaultFrag);
+    WriteDefaultShader(bvertPath, kDefaultBatchVert);
+    WriteDefaultShader(bfragPath, kDefaultBatchFrag);
+
+    if (shaderProgram) { glDeleteProgram(shaderProgram); shaderProgram = 0; }
+    if (fs::exists(vertPath) && fs::exists(fragPath))
+        shaderProgram = CreateProgramFromFiles(vertPath, fragPath);
+
+    if (batchShader) { glDeleteProgram(batchShader); batchShader = 0; }
+    if (fs::exists(bvertPath) && fs::exists(bfragPath))
+        batchShader = CreateProgramFromFiles(bvertPath, bfragPath);
+
+    // Re-bind sampler array for batch shader
+    if (batchShader)
+    {
+        glUseProgram(batchShader);
+        GLint loc = glGetUniformLocation(batchShader, "uTextures");
+        if (loc != -1)
+        {
+            int samplers[16];
+            for (int i = 0; i < 16; ++i) samplers[i] = i;
+            glUniform1iv(loc, 16, samplers);
+        }
+        glUseProgram(0);
+    }
+
+    // Reload fonts now that ASSETS_FOLDER is valid
+    InitTextRendering();
+}
 
 void Render::Shutdown() {
     // Delete all glyph textures

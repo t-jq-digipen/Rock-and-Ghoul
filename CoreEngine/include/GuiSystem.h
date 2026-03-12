@@ -484,7 +484,7 @@ struct ButtonConfig {
     float textScale{ 1.f };
 
     std::function<void()> onClick = nullptr;
-    AudioSystem::ButtonType soundType = AudioSystem::ButtonType::CLICK;
+    std::string soundName = "ui_click";
 
     std::string actionName{"[]"};
     json actionParams{ "[]" };

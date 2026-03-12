@@ -36,6 +36,13 @@ public:
     // Pass the name of the game folder (e.g. "RockAndGhoul", "MySecondGame").
     static void SetGameRoot(const std::string& gameFolderName);
 
+    // Editor-only: sets REPO_ROOT without loading any game.
+    // Lets the editor prompt the user to choose a game on startup.
+    static void InitRepoRoot();
+
+    // Returns true if a game folder has been selected (SetGameRoot was called).
+    static bool IsGameLoaded() { return !GAME_ROOT.empty(); }
+
     // Converts "../Assets/rocknghoul" paths (in old JSON files) to the
     // correct path using ASSETS_FOLDER. Pass-through for any other path.
     // Use this wherever a path arrives from a JSON file.
