@@ -144,7 +144,7 @@
     "sceneName": "settings",
     "sceneType": 0,
     "settings": {
-        "volume": 20.0
+        "volume": 10.0
     },
     "worldMax": [
         1920.0,

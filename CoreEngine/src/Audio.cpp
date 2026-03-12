@@ -724,8 +724,13 @@ void AudioManager::Update(float dt) {
         // Apply saved volume BEFORE starting BGM
         auto settings = JsonLoad::LoadSettings(FilePath::SETTINGS_FILE);
         if (settings.has_value()) {
-            SetMasterVolume(settings->volume);
+            //std::cout << "[AudioManager] Loaded volume: " << settings->volume << std::endl;
+            SetMasterVolume(settings->volume / 100.f);
         }
+        else {
+            std::cout << "[AudioManager] Settings load FAILED - path: " << FilePath::SETTINGS_FILE << std::endl;
+        }
+        //std::cout << "[AudioManager] masterVolume after load: " << masterVolume << std::endl;
 
         std::string bgmAssetName = sm.GetCurrentSceneBGM();
 

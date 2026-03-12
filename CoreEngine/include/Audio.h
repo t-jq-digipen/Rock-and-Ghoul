@@ -148,7 +148,7 @@ public:
         PLAY,    ///< Play button sound effect
         QUIT,    ///< Quit button sound effect
         CLICK,   ///< Any UI clicks
-        COUNT    ///< For ImGui
+        COUNT,    ///< For ImGui
     };
 
     /**
