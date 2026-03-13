@@ -94,6 +94,12 @@ static std::vector<std::string> s_openSceneList;
 static std::string s_openGameMessage     = "";
 static bool s_openGameSuccess            = false;
 
+// Loading popup state
+static bool s_openLoadingPopup  = false;
+static int  s_loadingStep       = 0;
+static std::string s_pendingLoadGame;
+static std::string s_pendingLoadScene;
+
 // Delete Game confirmation state
 static std::string s_pendingDeleteGame   = "";
 static bool s_openDeleteConfirmPopup     = false;
@@ -1557,7 +1563,7 @@ void ImGuiSystem::Update(float dt)
     //prev style
     ImGui::PopStyleVar(3);
 
-    // ── Menu Bar ─────────────────────────────────────────────────────────────
+    // --- Menu Bar-----------------------------
     if (ImGui::BeginMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -1595,7 +1601,7 @@ void ImGuiSystem::Update(float dt)
         ImGui::EndMenuBar();
     }
 
-    // ── New Game Modal ────────────────────────────────────────────────────────
+    // --- New Game Modal-----------------------------
     if (s_openNewGamePopup)
     {
         ImGui::OpenPopup("New Game##modal");
@@ -1722,9 +1728,9 @@ void ImGuiSystem::Update(float dt)
         }
         ImGui::EndPopup();
     }
-    // ── End New Game Modal ────────────────────────────────────────────────────
+    // -- End New Game Modal -----------------------------
 
-    // ── Open Game Modal ───────────────────────────────────────────────────────
+    // -- Open Game Modal -----------------------------
     if (s_openOpenGamePopup)
     {
         ImGui::OpenPopup("Open Game##modal");
@@ -1740,13 +1746,13 @@ void ImGuiSystem::Update(float dt)
             "settings.json", "controls.json", "temp.json"
         };
 
-        // ── Column headers ────────────────────────────────────────────────────
+        // -- Column headers -----------------------------
         ImGui::Text("Game");
         ImGui::SameLine(220.f);
         ImGui::Text("Scene  (optional)");
         ImGui::Spacing();
 
-        // ── Game list ─────────────────────────────────────────────────────────
+        // -- Game list-----------------------------
         if (s_openGameList.empty())
         {
             ImGui::TextDisabled("(No game projects found in repo root)");
@@ -1804,7 +1810,7 @@ void ImGuiSystem::Update(float dt)
             }
         }
 
-        // ── Delete confirmation popup ─────────────────────────────────────────
+        // --- Delete confirmation popup -----------------------------
         if (s_openDeleteConfirmPopup)
         {
             ImGui::OpenPopup("Delete Game?##confirm");
@@ -1874,11 +1880,11 @@ void ImGuiSystem::Update(float dt)
             }
             ImGui::EndPopup();
         }
-        // ── End Delete confirmation popup ─────────────────────────────────────
+        // --- End Delete confirmation popup -----------------------------
 
         ImGui::SameLine();
 
-        // ── Scene list ────────────────────────────────────────────────────────
+        // -- Scene list -----------------------------
         if (s_selectedOpenGame.empty())
         {
             ImGui::BeginChild("##scenehint", ImVec2(200, 160), true);
@@ -1921,7 +1927,7 @@ void ImGuiSystem::Update(float dt)
                 ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "%s", s_openGameMessage.c_str());
         }
 
-        // ── Inline create-game row ────────────────────────────────────────────
+        // --- Inline create-game row-----------------------------
         ImGui::Separator();
         ImGui::TextDisabled("New game:");
         ImGui::SameLine();
@@ -1945,6 +1951,7 @@ void ImGuiSystem::Update(float dt)
                 fs::create_directories(newRoot + "Assets/others/");
 
                 auto touchFile = [](const std::string& dst) { std::ofstream f(dst); };
+                //coz will be empty git dun keep empty files
                 touchFile(newRoot + "Assets/saves/.gitkeep");
                 touchFile(newRoot + "Assets/prefabs/.gitkeep");
                 touchFile(newRoot + "Assets/audio/.gitkeep");
@@ -1955,13 +1962,14 @@ void ImGuiSystem::Update(float dt)
                 { std::ofstream mf(newRoot + "Assets/audio_manifest.json");
                   mf << "{\n  \"music\": {},\n  \"sfx\": {},\n  \"ui\": {},\n  \"ambience\": {},\n  \"banks\": {}\n}\n"; }
 
+                //simple file
                 { std::ofstream mf(newRoot + "src/main.cpp");
                   mf << "// main.cpp - " << newName << "\n#include \"reginegine.h\"\nint main() {\n"
                      << "    FilePath::SetGameRoot(\"" << newName << "\");\n"
                      << "    CoreEngine& engine = CoreEngine::GetInstance();\n"
                      << "    engine.Initialize();\n    engine.Run();\n    engine.Shutdown();\n    return 0;\n}\n"; }
 
-                // Add to list and auto-select
+                // add to list and auto-select
                 if (std::find(s_openGameList.begin(), s_openGameList.end(), newName) == s_openGameList.end())
                 {
                     s_openGameList.push_back(newName);
@@ -1981,7 +1989,7 @@ void ImGuiSystem::Update(float dt)
             }
         }
         if (!canCreate) ImGui::EndDisabled();
-        // ── End inline create-game row ────────────────────────────────────────
+        // --- End inline create-game row ----------------------------------
 
         ImGui::Separator();
 
@@ -1990,30 +1998,10 @@ void ImGuiSystem::Update(float dt)
 
         if (ImGui::Button("Switch##opengame", ImVec2(120, 0)))
         {
-            std::string name = s_selectedOpenGame;
-            FilePath::SetGameRoot(name);
-            AUDIO_MANIFEST_PATH = FilePath::AUDIO_MANIFEST;
-            AudioCache::Shutdown();
-            if (fs::exists(AUDIO_MANIFEST_PATH))
-                AudioCache::Initialize(AUDIO_MANIFEST_PATH);
-            Render::GetInstance().LoadShaders();
-            CollisionLayerManager::Get().LoadCollisionSettings();
-            JsonLoad::ClearAllEntities();
-            GuiSystem::Get().Clear();
-            RenderSystem::ClearBackgroundTextures();
-            SceneManager::Get().EnterEditMode();
-
-            if (!s_selectedOpenScene.empty())
-            {
-                std::string scenePath = FilePath::SAVES_FOLDER + s_selectedOpenScene + ".json";
-                SceneManager::Get().LoadScene(scenePath);
-                s_openGameMessage = "Switched to " + name;
-            }
-            else
-            {
-                s_openGameMessage = "Switched to " + name;
-            }
-            s_openGameSuccess = true;
+            s_pendingLoadGame  = s_selectedOpenGame;
+            s_pendingLoadScene = s_selectedOpenScene;
+            s_loadingStep      = 1;
+            ImGui::CloseCurrentPopup();
         }
 
         if (!canSwitch) ImGui::EndDisabled();
@@ -2026,7 +2014,32 @@ void ImGuiSystem::Update(float dt)
         }
         ImGui::EndPopup();
     }
-    // ── End Open Game Modal ───────────────────────────────────────────────────
+    // -- End Open Game Modal---------------------------
+    // -- Loading Popup --------------------------
+    // Steps: 1=open popup, 2=show text first frame, 3=show text second frame, 4=render game, 5=close popup
+    if (s_loadingStep == 1)
+    {
+        ImGui::OpenPopup("Loading##loadingpopup");
+        s_loadingStep = 2;
+    }
+
+    if (ImGui::BeginPopupModal("Loading##loadingpopup", nullptr,
+        ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar))
+    {
+        ImGui::Spacing();
+        ImGui::Text("  Loading...  ");
+        ImGui::Spacing();
+
+        if (s_loadingStep == 2) s_loadingStep = 3; // frame 1: just render
+        else if (s_loadingStep == 3) s_loadingStep = 4; // frame 2: tell Render() to work
+        else if (s_loadingStep == 5) { 
+            ImGui::CloseCurrentPopup(); 
+            s_loadingStep = 0; 
+        }
+
+        ImGui::EndPopup();
+    }
+
 
     ImGuiID dockspaceID = ImGui::GetID("MainDockspace");
     //dock node
@@ -2130,6 +2143,16 @@ void ImGuiSystem::Update(float dt)
         if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
         {
             Registry& reg = Registry::Get();
+
+            // Capture the original entity's prefab name BEFORE selectedEntity changes,
+            // so the clone inherits it and can be found by "Update All Instances".
+            std::string clonedName;
+            {
+                auto& nm = reg.Get_EntityNameMap();
+                auto it = nm.find(selectedEntity);
+                if (it != nm.end()) clonedName = it->second;
+            }
+
             SavedEntity src = reg.Save_Entity(selectedEntity);
 
             //filter out empty json data
@@ -2147,6 +2170,10 @@ void ImGuiSystem::Update(float dt)
             Entity newEntity = reg.Load_Entity(src);
             if (newEntity != INVALID_ENTITY)
             {
+                // Inherit prefab name so Update All can find this clone
+                if (!clonedName.empty())
+                    reg.Get_EntityNameMap()[newEntity] = clonedName;
+
                 selectedEntity = newEntity;
                 UndoSystem::Get().RecordAdd(newEntity);
             }
@@ -5642,6 +5669,52 @@ void ImGuiSystem::Render() {
     if (!guiEnabled) return; //skip if GUI is off
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); //draw to screen
+
+    // Loading: swap NOW so "Loading..." is visible
+    if (s_loadingStep == 4)
+    {
+        glfwSwapBuffers(GLApp::ptr_window); //"Loading..." to screen
+
+        namespace fs = std::filesystem;
+        std::string name = s_pendingLoadGame;
+        FilePath::SetGameRoot(name);
+        AUDIO_MANIFEST_PATH = FilePath::AUDIO_MANIFEST;
+        AudioCache::Shutdown();
+        if (fs::exists(AUDIO_MANIFEST_PATH))
+            AudioCache::Initialize(AUDIO_MANIFEST_PATH);
+        Render::GetInstance().LoadShaders();
+
+        if (fs::exists(FilePath::ASSETS_FOLDER))
+        {
+            auto& renderer = Render::GetInstance();
+            for (auto& entry : fs::recursive_directory_iterator(
+                FilePath::ASSETS_FOLDER, fs::directory_options::skip_permission_denied))
+            {
+                if (!entry.is_regular_file()) continue;
+                std::string ext = entry.path().extension().string();
+                std::transform(ext.begin(), ext.end(), ext.begin(),
+                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+                    renderer.LoadTexture(entry.path().string());
+            }
+        }
+
+        CollisionLayerManager::Get().LoadCollisionSettings();
+        JsonLoad::ClearAllEntities();
+        GuiSystem::Get().Clear();
+        RenderSystem::ClearBackgroundTextures();
+        SceneManager::Get().EnterEditMode();
+
+        if (!s_pendingLoadScene.empty())
+        {
+            std::string scenePath = FilePath::SAVES_FOLDER + s_pendingLoadScene + ".json";
+            SceneManager::Get().LoadScene(scenePath);
+        }
+
+        s_openGameMessage = "Switched to " + name;
+        s_openGameSuccess = true;
+        s_loadingStep = 5; // tell Update() to close the popup next frame
+    }
 }
 
 void ImGuiSystem::ShowEngineDebugWindow() {
@@ -6610,87 +6683,6 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
-        // Custom data fields for Monoscript component (C# scripts)
-        else if (compName == "Mono Script")
-        {
-            MonoScriptComponent& monoComp =
-                m_registry.Get_Component<MonoScriptComponent>(selectedEntity);
-
-            if (ImGui::TreeNode(compName.c_str()))
-            {
-                MonoSystem& monoSys = MonoSystem::Get();
-
-                // ----------------------------------------------
-                // 1. Build list of available script names
-                // ----------------------------------------------
-                const auto& nameToID = monoSys.GetNameToIDMap();
-
-                if (nameToID.empty())
-                {
-                    ImGui::TextDisabled("No C# scripts registered.");
-                    ImGui::TreePop();
-                    return;
-                }
-
-                std::vector<const char*> items;
-                items.reserve(nameToID.size());
-                for (auto& [name, id] : nameToID)
-                    items.push_back(name.c_str());
-
-                static int currentIndex = 0;
-                std::string selectedScript = items[currentIndex];
-
-                // dropdown
-                if (ImGui::Combo("Select C# Script",
-                    &currentIndex, items.data(), (int)items.size()))
-                {
-                    selectedScript = items[currentIndex];
-                }
-
-                // ----------------------------------------------
-                // 2. Add Script button
-                // ----------------------------------------------
-                bool disableAdd = monoComp.HasScript(selectedScript);
-
-                std::string addLabel = "Add Script";
-                if (disableAdd)
-                {
-                    addLabel += " (already added)";
-                    ImGui::BeginDisabled();
-                }
-
-                if (ImGui::Button(addLabel.c_str()))
-                {
-                    monoComp.AddScript(selectedScript);
-                }
-
-                if (disableAdd) ImGui::EndDisabled();
-
-                ImGui::SeparatorText("Attached Scripts");
-
-                // ----------------------------------------------
-                // 3. Show list of attached scripts
-                // ----------------------------------------------
-                int id = 0;
-                for (MonoScriptID scriptID : monoComp.scriptIDList)
-                {
-                    ImGui::PushID(id++);
-
-                    const std::string& name = monoSys.GetScriptName(scriptID);
-                    ImGui::Text("%s", name.c_str());
-
-                    ImGui::SameLine();
-                    if (ImGui::SmallButton("Remove"))
-                    {
-                        monoComp.RemoveScript(scriptID);
-                    }
-
-                    ImGui::PopID();
-                }
-
-                ImGui::TreePop();
-            }
-        }
         // Custom data fields for collider component (collision layers)
         else if (compName == "Collider")
         {
@@ -6962,6 +6954,7 @@ void ImGuiSystem::ShowAddRemoveComponents()
     for (std::type_index typeID : m_registry.Get_ComponentOrder())
     {
         std::string compName = m_registry.Get_ComponentTypeName(typeID);
+        if (compName == "MonoScriptComponent") continue;
         bool hasComp = m_registry.Has_Component(eID, typeID);
         bool depsOK = m_registry.HasDependencies(eID, typeID);
 
@@ -8424,6 +8417,9 @@ void ImGuiSystem::ShowPrefabControls()
                 std::string outpath = FilePath::PREFABS_FOLDER + pendingPrefabName + ".json";
                 if (JsonLoad::SaveEntity(outpath, selectedEntity))
                 {
+                    // Invalidate the prefab cache so Update All loads the freshly saved file,
+                    // not the stale pre-edit version that was cached from a previous spawn.
+                    JsonLoad::ClearPrefabCache();
                     Registry::Get().Get_EntityNameMap()[selectedEntity] = pendingPrefabName;
                     std::cout << "[Editor] Replaced prefab: " << outpath << "\n";
                     updateInstancesPopup = true;
@@ -8483,55 +8479,49 @@ void ImGuiSystem::ShowPrefabControls()
 
                 std::string prefabPath = FilePath::PREFABS_FOLDER + targetName + ".json";
 
-                // Replace old entities
+                // Replace other instances n skip the selected entity since it is
+                // already in the correct (freshly edited) state.
                 for (Entity oldEnt : replaceList)
                 {
+                    if (oldEnt == selectedEntity)
+                        continue;
 
                     // Check if transform exists
                     if (!registry.Has_Component<TransformComponent>(oldEnt))
-                    {
-                     
                         continue;
-                    }
 
-                    // Only preserve POSITION and optionally ROTATION from old entity
+                    // Preserve position and rotation from old entity
                     TransformComponent oldTransform = registry.Get_Component<TransformComponent>(oldEnt);
 
                     // Delete the old entity
                     registry.Remove_Entity(oldEnt);
 
-                    // Spawn new entity from prefab at OLD position
+                    // Spawn new entity from saved prefab at old position
                     Entity newEnt = JsonLoad::LoadEntityFromFile(prefabPath, oldTransform.pos.x, oldTransform.pos.y);
 
                     if (newEnt == INVALID_ENTITY)
-                    {
                         continue;
-                    }
 
-
-                    // Verify new entity has transform
                     if (!registry.Has_Component<TransformComponent>(newEnt))
-                    {
                         continue;
-                    }
 
-                    // Get reference to new transform
                     TransformComponent& newTransform = registry.Get_Component<TransformComponent>(newEnt);
                     newTransform.rot = oldTransform.rot;
 
-
-                    // Update collider with NEW prefab scale
                     if (registry.Has_Component<ColliderComponent>(newEnt))
                     {
                         auto& col = registry.Get_Component<ColliderComponent>(newEnt);
                         col.UpdateHitboxes(newTransform.pos, newTransform.scale);
                     }
 
-                    // Set the name
                     registry.Get_EntityNameMap()[newEnt] = targetName;
                 }
 
                 std::cout << "[Update Instances] Finished updating " << replaceList.size() << " instances" << std::endl;
+
+                // Undo records may hold raw pointers to components on the
+                // deleted entities clear to prevent dangling-pointer crashes.
+                UndoSystem::Get().Clear();
 
                 ImGui::CloseCurrentPopup();
                 pendingPrefabName.clear();

@@ -108,11 +108,9 @@ public:
      * Record a generic component property change.
      * @param applyUndo  Lambda that restores the value to what it was BEFORE.
      * @param applyRedo  Lambda that restores the value to what it is AFTER.
-     * @param description  Human-readable label (e.g. "Physics.mass").
+     * @param description  label
      */
-    void RecordComponentChange(std::function<void()> applyUndo,
-                               std::function<void()> applyRedo,
-                               const std::string&    description = "");
+    void RecordComponentChange(std::function<void()> applyUndo, std::function<void()> applyRedo, const std::string& description = "");
 
     // -------------------------------------------------------
     // Undo / Redo
@@ -124,7 +122,7 @@ public:
     // Helpers
     // -------------------------------------------------------
     static TransformState MakeState(const TransformComponent& t);
-    static bool           StatesEqual(const TransformState& a, const TransformState& b);
+    static bool StatesEqual(const TransformState& a, const TransformState& b);
 
 private:
     UndoSystem() = default;

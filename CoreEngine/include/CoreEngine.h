@@ -10,7 +10,7 @@
  * managing game loop, along with system management and
  * Game State Manager (GSM) integration.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
