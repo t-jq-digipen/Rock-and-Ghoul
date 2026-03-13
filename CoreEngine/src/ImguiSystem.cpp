@@ -1563,7 +1563,7 @@ void ImGuiSystem::Update(float dt)
     //prev style
     ImGui::PopStyleVar(3);
 
-    // ── Menu Bar ─────────────────────────────────────────────────────────────
+    // --- Menu Bar-----------------------------
     if (ImGui::BeginMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -1601,7 +1601,7 @@ void ImGuiSystem::Update(float dt)
         ImGui::EndMenuBar();
     }
 
-    // ── New Game Modal ────────────────────────────────────────────────────────
+    // --- New Game Modal-----------------------------
     if (s_openNewGamePopup)
     {
         ImGui::OpenPopup("New Game##modal");
@@ -1728,9 +1728,9 @@ void ImGuiSystem::Update(float dt)
         }
         ImGui::EndPopup();
     }
-    // ── End New Game Modal ────────────────────────────────────────────────────
+    // -- End New Game Modal -----------------------------
 
-    // ── Open Game Modal ───────────────────────────────────────────────────────
+    // -- Open Game Modal -----------------------------
     if (s_openOpenGamePopup)
     {
         ImGui::OpenPopup("Open Game##modal");
@@ -1746,13 +1746,13 @@ void ImGuiSystem::Update(float dt)
             "settings.json", "controls.json", "temp.json"
         };
 
-        // ── Column headers ────────────────────────────────────────────────────
+        // -- Column headers -----------------------------
         ImGui::Text("Game");
         ImGui::SameLine(220.f);
         ImGui::Text("Scene  (optional)");
         ImGui::Spacing();
 
-        // ── Game list ─────────────────────────────────────────────────────────
+        // -- Game list-----------------------------
         if (s_openGameList.empty())
         {
             ImGui::TextDisabled("(No game projects found in repo root)");
@@ -1810,7 +1810,7 @@ void ImGuiSystem::Update(float dt)
             }
         }
 
-        // ── Delete confirmation popup ─────────────────────────────────────────
+        // --- Delete confirmation popup -----------------------------
         if (s_openDeleteConfirmPopup)
         {
             ImGui::OpenPopup("Delete Game?##confirm");
@@ -1880,11 +1880,11 @@ void ImGuiSystem::Update(float dt)
             }
             ImGui::EndPopup();
         }
-        // ── End Delete confirmation popup ─────────────────────────────────────
+        // --- End Delete confirmation popup -----------------------------
 
         ImGui::SameLine();
 
-        // ── Scene list ────────────────────────────────────────────────────────
+        // -- Scene list -----------------------------
         if (s_selectedOpenGame.empty())
         {
             ImGui::BeginChild("##scenehint", ImVec2(200, 160), true);
@@ -1927,7 +1927,7 @@ void ImGuiSystem::Update(float dt)
                 ImGui::TextColored(ImVec4(1.f, 0.3f, 0.3f, 1.f), "%s", s_openGameMessage.c_str());
         }
 
-        // ── Inline create-game row ────────────────────────────────────────────
+        // --- Inline create-game row-----------------------------
         ImGui::Separator();
         ImGui::TextDisabled("New game:");
         ImGui::SameLine();
@@ -1951,6 +1951,7 @@ void ImGuiSystem::Update(float dt)
                 fs::create_directories(newRoot + "Assets/others/");
 
                 auto touchFile = [](const std::string& dst) { std::ofstream f(dst); };
+                //coz will be empty git dun keep empty files
                 touchFile(newRoot + "Assets/saves/.gitkeep");
                 touchFile(newRoot + "Assets/prefabs/.gitkeep");
                 touchFile(newRoot + "Assets/audio/.gitkeep");
@@ -1961,13 +1962,14 @@ void ImGuiSystem::Update(float dt)
                 { std::ofstream mf(newRoot + "Assets/audio_manifest.json");
                   mf << "{\n  \"music\": {},\n  \"sfx\": {},\n  \"ui\": {},\n  \"ambience\": {},\n  \"banks\": {}\n}\n"; }
 
+                //simple file
                 { std::ofstream mf(newRoot + "src/main.cpp");
                   mf << "// main.cpp - " << newName << "\n#include \"reginegine.h\"\nint main() {\n"
                      << "    FilePath::SetGameRoot(\"" << newName << "\");\n"
                      << "    CoreEngine& engine = CoreEngine::GetInstance();\n"
                      << "    engine.Initialize();\n    engine.Run();\n    engine.Shutdown();\n    return 0;\n}\n"; }
 
-                // Add to list and auto-select
+                // add to list and auto-select
                 if (std::find(s_openGameList.begin(), s_openGameList.end(), newName) == s_openGameList.end())
                 {
                     s_openGameList.push_back(newName);
@@ -1987,7 +1989,7 @@ void ImGuiSystem::Update(float dt)
             }
         }
         if (!canCreate) ImGui::EndDisabled();
-        // ── End inline create-game row ────────────────────────────────────────
+        // --- End inline create-game row ----------------------------------
 
         ImGui::Separator();
 
@@ -2012,9 +2014,8 @@ void ImGuiSystem::Update(float dt)
         }
         ImGui::EndPopup();
     }
-    // ── End Open Game Modal ───────────────────────────────────────────────────
-
-    // ── Loading Popup ─────────────────────────────────────────────────────────
+    // -- End Open Game Modal---------------------------
+    // -- Loading Popup --------------------------
     // Steps: 1=open popup, 2=show text first frame, 3=show text second frame, 4=render game, 5=close popup
     if (s_loadingStep == 1)
     {
@@ -2031,11 +2032,14 @@ void ImGuiSystem::Update(float dt)
 
         if (s_loadingStep == 2) s_loadingStep = 3; // frame 1: just render
         else if (s_loadingStep == 3) s_loadingStep = 4; // frame 2: tell Render() to work
-        else if (s_loadingStep == 5) { ImGui::CloseCurrentPopup(); s_loadingStep = 0; }
+        else if (s_loadingStep == 5) { 
+            ImGui::CloseCurrentPopup(); 
+            s_loadingStep = 0; 
+        }
 
         ImGui::EndPopup();
     }
-    // ── End Loading Popup ─────────────────────────────────────────────────────
+
 
     ImGuiID dockspaceID = ImGui::GetID("MainDockspace");
     //dock node
