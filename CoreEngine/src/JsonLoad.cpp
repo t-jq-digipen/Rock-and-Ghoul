@@ -1223,7 +1223,8 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sd.textBox.scale = d.textBox.baseScale;
             sd.textBox.color = d.textBox.color;
             sd.textBox.centered = d.textBox.centered;
-            sd.jsonPath = d.jsonPath;
+            //sd.jsonPath = d.jsonPath;
+            sd.jsonPath = FilePath::DIALOGUE;
             sd.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
             sd.textSpeed = d.textSpeed;
             sd.wrapWidth = d.wrapWidth;
@@ -1469,7 +1470,8 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.profileRenderData = UI_RenderData::DeSerialize(d.profileRenderData);
             cfg.profileDisplaySide = static_cast<DialogueConfig::ProfileDisplaySide>(std::clamp(d.profileDisplaySide, 0, 2));
 
-            cfg.jsonPath = d.jsonPath;
+            //cfg.jsonPath = d.jsonPath;
+            cfg.jsonPath = FilePath::DIALOGUE;
             cfg.sceneID = d.sceneID.empty() ? "0" : d.sceneID;
             cfg.isVisible = d.isVisible;
             cfg.customOverride = d.customOverride;

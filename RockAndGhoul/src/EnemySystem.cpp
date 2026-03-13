@@ -993,47 +993,85 @@ static inline void DeactivateObstacle(Entity eID)
 
 namespace ObstacleScript
 {
+	std::unordered_map<Entity, Entity> obstacleStatusEffects{};
+
+
 	inline void Start(Entity eID)
 	{
 		g_obstacles[eID] = ObstacleRuntime{};
 		MakeObstacleStationary(eID);
-		SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_IDLE);
+		obstacleStatusEffects[eID] = JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "ObstacleStatusFx.json", 0.f, 0.f);
 	}
 
 	inline void Update(Entity eID, float dt)
 	{
 		if (ReplayManager::Get().IsPlaying()) return;
-		(void)dt;
 
 		Registry& registry = Registry::Get();
 
 		if (!registry.Has_Component<HealthComponent>(eID))
 			return;
 
+		unsigned animState = 0;
+
+		TransformComponent& transComp = registry.Get_Component<TransformComponent>(eID);
+		TransformComponent& statusTrans = registry.Get_Component<TransformComponent>(obstacleStatusEffects[eID]);
+		statusTrans.pos = transComp.pos;
+
 		auto& rt = g_obstacles[eID];
 		auto& hp = registry.Get_Component<HealthComponent>(eID);
+
+		if (hp.currhp < hp.maxhp)
+		{
+			animState = 1;
+		}
 
 		// MakeObstacleStationary(eID);
 
 		// Elemental status effects active checks
-		const bool isStunned =
-			registry.Has_Component<StatusEffectComponent>(eID) &&
-			registry.Get_Component<StatusEffectComponent>(eID).activeEffect == Element::LIGHTNING;
-		const bool isBurning = 
-			registry.Has_Component<StatusEffectComponent>(eID) && 
-			registry.Get_Component<StatusEffectComponent>(eID).activeEffect == Element::FIRE;
-		const bool isFrozen =
-			registry.Has_Component<StatusEffectComponent>(eID) &&
-			registry.Get_Component<StatusEffectComponent>(eID).activeEffect == Element::ICE;
-		const bool isPushed =
-			registry.Has_Component<StatusEffectComponent>(eID) &&
-			registry.Get_Component<StatusEffectComponent>(eID).activeEffect == Element::WIND;
+
+		bool isStunned = false;
+		bool isBurning = false;
+		bool isFrozen = false;
+		bool isPushed = false;
+		if (registry.Has_Component<StatusEffectComponent>(eID))
+		{
+		StatusEffectComponent& statusEffect = registry.Get_Component<StatusEffectComponent>(eID);
+		isStunned =
+			statusEffect.activeEffect == Element::LIGHTNING;
+		isBurning = 
+			statusEffect.activeEffect == Element::FIRE;
+		isFrozen =
+			statusEffect.activeEffect == Element::ICE;
+		isPushed =
+			statusEffect.activeEffect == Element::WIND;
+
+		switch (statusEffect.activeEffect)
+		{
+		case Element::FIRE:
+			registry.Get_Component<RenderComponent>(obstacleStatusEffects[eID]).GetSpriteSheet().SetState(1);
+			animState = 2;
+			break;
+		case Element::ICE:
+			registry.Get_Component<RenderComponent>(obstacleStatusEffects[eID]).GetSpriteSheet().SetState(2);
+			break;
+		case Element::LIGHTNING:
+			registry.Get_Component<RenderComponent>(obstacleStatusEffects[eID]).GetSpriteSheet().SetState(3);
+			break;
+		case Element::WIND:
+		default:
+			registry.Get_Component<RenderComponent>(obstacleStatusEffects[eID]).GetSpriteSheet().SetState(0);
+			break;
+		}
+		}
+
+		
 
 		switch (rt.state)
 		{
 		case ObstacleState::OBSTACLE_IDLE:
 		{
-			SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_IDLE);
+			//SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_IDLE);
 
 			if (isBurning)
 			{
@@ -1051,6 +1089,8 @@ namespace ObstacleScript
 			if (hp.currhp <= 0.f)
 			{
 				hp.currhp = 0.f;
+				hp.willHit = false;
+				hp.isVulnerable = false;
 				rt.state = ObstacleState::OBSTACLE_DESTROYED;
 				rt.stateTime = 0.f;
 				DeactivateObstacle(eID);
@@ -1060,7 +1100,7 @@ namespace ObstacleScript
 
 		case ObstacleState::OBSTACLE_BURNING:
 		{
-			SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_BURN);
+			//SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_BURN);
 
 			if (!isBurning && hp.currhp > 0.f)
 			{
@@ -1072,6 +1112,8 @@ namespace ObstacleScript
 			if (hp.currhp <= 0.f)
 			{
 				hp.currhp = 0.f;
+				hp.willHit = false;
+				hp.isVulnerable = false;
 				rt.state = ObstacleState::OBSTACLE_EXPLODE;
 				rt.stateTime = 0.f;
 			}
@@ -1080,8 +1122,9 @@ namespace ObstacleScript
 
 		case ObstacleState::OBSTACLE_EXPLODE:
 		{
-			SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_EXPLODE);
+			//SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_EXPLODE);
 			rt.stateTime += std::max(0.f, dt);
+			animState = 3;
 			if (rt.stateTime >= OBSTACLE_EXPLOSION_DURATION)
 			{
 				rt.state = ObstacleState::OBSTACLE_DESTROYED;
@@ -1110,11 +1153,16 @@ namespace ObstacleScript
 			break;
 		}
 		}
+
+		registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
 	}
 
 	inline void End(Entity eID)
 	{
 		g_obstacles.erase(eID);
+		// expire status effect display
+		Registry::Get().Remove_Entity(obstacleStatusEffects[eID]);
+		obstacleStatusEffects.erase(eID);
 	}
 }
 
