@@ -1901,6 +1901,8 @@ namespace GhoulScript {
 						gui.SetDialogueGate(false);
 						gui.ApplyGroupVisibilityOverrides(gui, endDialogueID, false);
 						waitingForDialogue = false;
+						SceneManager::Get().QueueLoadScene(FilePath::SAVES_FOLDER + "Victory scene.json");
+						SceneManager::Get().SetTransitionTime(2.f);
 					}
 				}
 			}
@@ -2086,7 +2088,7 @@ namespace GhoulScript {
 					ghoulRuntime.stateTime = 0.f;
 				}
 			}
-			break; // end case 0
+			break; // end case 1
 
 			case 2:
 			{
@@ -2099,13 +2101,13 @@ namespace GhoulScript {
 					ghoulRuntime.stateTime = 0.f;
 				}
 			}
-			break; // end case 1
+			break; // end case 2
 
 			case 3:
 			{
 				Phase3Logic(eID, moveComp, selfPos, directionToPlayer, animState, dPlayerSq, faceRight);
 			}
-
+			break; // end case 3
 			default:
 				break;
 

@@ -1,6 +1,6 @@
 {
     "backgrounds": [
-        "../Assets/Env02_EnemyWorld.PNG"
+        "../Assets/Env02_AllEnemyWorld.PNG"
     ],
     "bgmAssetName": "level_2",
     "cameraSpawn": [
@@ -186,6 +186,27 @@
                 "Transform": "{\"posX\":-534.5747680664063,\"posY\":500.3236083984375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Rock"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":5.5,\\\"currentState\\\":0,\\\"frameColEnd\\\":13,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":50.0,\\\\\\\"scaleY\\\\\\\":50.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment02_LightsSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":13,\\\"col_start\\\":0,\\\"duration\\\":5.5,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":14,\\\"totalRows\\\":1}\",\"renderLayer\":2,\"renderType\":2}",
+                "Transform": "{\"posX\":-73.27099609375,\"posY\":814.3555908203125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Environment02_LightsSpriteSheet"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":10.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":13,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":50.0,\\\\\\\"scaleY\\\\\\\":50.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment02_LightsSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":13,\\\"col_start\\\":0,\\\"duration\\\":10.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":14,\\\"totalRows\\\":1}\",\"renderLayer\":2,\"renderType\":2}",
+                "Transform": "{\"posX\":902.6294555664063,\"posY\":814.3555908203125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Environment02_LightsSpriteSheet"
+        },
+        {
+            "components": {
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":6.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":13,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":50.0,\\\\\\\"scaleY\\\\\\\":50.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Environment02_LightsSpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":13,\\\"col_start\\\":0,\\\"duration\\\":6.0,\\\"row\\\":0,\\\"willLoop\\\":true}},\\\"totalCols\\\":14,\\\"totalRows\\\":1}\",\"renderLayer\":2,\"renderType\":2}",
+                "Transform": "{\"posX\":2001.4276123046875,\"posY\":814.3555908203125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "Environment02_LightsSpriteSheet"
         }
     ],
     "fontConfig": "E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
