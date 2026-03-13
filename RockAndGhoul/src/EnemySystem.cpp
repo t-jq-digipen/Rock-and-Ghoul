@@ -634,10 +634,10 @@ namespace SpiritScript {
 		g_spirits[eID] = SpiritRuntime();
 
 		if (Registry::Get().Has_Component<ElementComponent>(eID)) {
-			// auto& elemComp = Registry::Get().Get_Component<ElementComponent>(eID);
-			// auto& transformComp = Registry::Get().Get_Component<TransformComponent>(eID);
+			auto& elemComp = Registry::Get().Get_Component<ElementComponent>(eID);
+			auto& transformComp = Registry::Get().Get_Component<TransformComponent>(eID);
 
-			// Entity barrier = CreateBarrier(eID, elemComp.element);
+			Entity barrier = CreateBarrier(eID, elemComp.element);
 
 
 		}
