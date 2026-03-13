@@ -1,0 +1,7 @@
+{
+    "components": {
+        "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":6,\\\"frameColStart\\\":5,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":50.0,\\\\\\\"scaleY\\\\\\\":50.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Props_Status_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":6,\\\"col_start\\\":5,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"1\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"2\\\":{\\\"col_end\\\":3,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":13,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":true}},\\\"totalCols\\\":14,\\\"totalRows\\\":3}\",\"renderLayer\":2,\"renderType\":2}",
+        "Transform": "{\"posX\":468.7403869628906,\"posY\":508.99810791015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0000001192092896}"
+    },
+    "name": "ObstacleStatusFx"
+}
