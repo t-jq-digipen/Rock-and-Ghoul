@@ -634,10 +634,10 @@ namespace SpiritScript {
 		g_spirits[eID] = SpiritRuntime();
 
 		if (Registry::Get().Has_Component<ElementComponent>(eID)) {
-			auto& elemComp = Registry::Get().Get_Component<ElementComponent>(eID);
-			auto& transformComp = Registry::Get().Get_Component<TransformComponent>(eID);
+			// auto& elemComp = Registry::Get().Get_Component<ElementComponent>(eID);
+			// auto& transformComp = Registry::Get().Get_Component<TransformComponent>(eID);
 
-			Entity barrier = CreateBarrier(eID, elemComp.element);
+			// Entity barrier = CreateBarrier(eID, elemComp.element);
 
 
 		}
@@ -952,7 +952,7 @@ static inline void MakeObstacleStationary(Entity eID)
 }
 
 // Set obstacle spritesheet
-static inline void SetObstacleAnim(Entity eID, int row, int col = 0, bool topDownRow = true)
+static inline void SetObstacleAnim(Entity eID, int row, int col = 0)
 {
 	Registry& registry = Registry::Get();
 	if (!registry.Has_Component<RenderComponent>(eID))
@@ -1773,6 +1773,9 @@ namespace GhoulScript {
 
 
 		HealthComponent& health = registry.Get_Component<HealthComponent>(eID);
+		GuiSystem& gui = GuiSystem::Get();
+		UIGroup& stats = gui.GetGroup("BossHP");
+		int bossStatsID = stats.groupID;
 
 		// death handling
 		if (health.currhp <= 0.f) {
@@ -1852,9 +1855,6 @@ namespace GhoulScript {
 		// squared distance
 		float dPlayerSq = DistSq(selfPos, playerPos);
 
-		GuiSystem& gui = GuiSystem::Get();
-		UIGroup& stats = gui.GetGroup("BossHP");
-
 		// Camera logic, if player near then make it between both, also trigger start combat
 		{
 			BehaviourComponent& behaviourComp = registry.Get_Component<BehaviourComponent>(eID);
@@ -1873,6 +1873,7 @@ namespace GhoulScript {
 					ghoulRuntime.stateTime = 0.f;
 					health.willHit = false;
 					health.isVulnerable = false;
+					gui.ApplyGroupVisibilityOverrides(gui, bossStatsID, true);
 				}
 				behaviourComp.AddScript("CamTarget");
 			}
@@ -1897,11 +1898,21 @@ namespace GhoulScript {
 			// MANFREDHELP
 			// yo i need help to toggle off the visibility in this ui group
 			// make the UI in UIGroup stats not visible :(
+			gui.ApplyGroupVisibilityOverrides(gui, bossStatsID, false);
 		}
 		else if (ghoulRuntime.state == GhoulState::GHOUL_TRANSFORM) // combat starting!
 		{
 			moveComp.ResetFrameIntent();
 			animState = 6;
+			if (health.currhp < health.maxhp)	// simulate healthbar fill up before combat starts
+			{
+				health.currhp += 3.f;
+			}
+			else
+			{
+				health.currhp = health.maxhp;
+			}
+
 			if (ghoulRuntime.stateTime >= 2.f) // after transform animation, start combat properly
 			{
 				ghoulRuntime.state = GhoulState::GHOUL_IDLE;

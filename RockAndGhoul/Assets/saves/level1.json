@@ -213,7 +213,56 @@
                 "customOverride": false,
                 "isVisible": true,
                 "jsonPath": "../Assets/Dialogue.json",
-                "lines": [],
+                "lines": [
+                {
+                    "speakerID": 0,
+                    "line": "Jam Out SG! We made it! We're gonna rock their socks off. Or whatever they say."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Record deal, here we come."
+                },
+                {
+                    "speakerID": 6,
+                    "line": "Crazy bummer that so many acts forfeited! I wouldn't be surprised if they pit US against each other for content."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "I'd like to see them try. (SMIRK)"
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star."
+                },
+                {
+                    "speakerID": 5,
+                    "line": "Spooky..."
+                },
+                {
+                    "speakerID": 2,
+                    "line": "Groooowl..."
+                },
+                {
+                    "speakerID": 4,
+                    "line": "MEGA SPOOKY!"
+                },
+                {
+                    "speakerID": 4,
+                    "line": "I gotta find Ghoul, and fast!"
+                },
+                {
+                    "speakerID": 5,
+                    "line": "But first, I gotta fight off...whatever these are..."
+                },
+                {
+                    "speakerID": 4,
+                    "line": "I get the feeling they won't let me get past if I don't do something about these creeps..."
+                },
+                {
+                    "speakerID": 3,
+                    "line": "Alright then, foul spirits! BRING IT ON!!!"
+                }
+                ],
                 "profileDisplaySide": 0,
                 "profileEnabled": true,
                 "profileOffset": [
@@ -906,112 +955,121 @@
             }
         ],
         "groups": [
-            {
-                "ID": 1,
-                "members": [
-                    1,
-                    2,
-                    3
-                ],
-                "name": "Spell Slots"
-            },
-            {
-                "ID": 2,
-                "members": [
-                    5,
-                    6,
-                    7,
-                    8,
-                    9
-                ],
-                "name": "Stats"
-            },
-            {
-                "ID": 3,
-                "members": [
-                    25,
-                    26,
-                    27,
-                    28,
-                    29,
-                    30,
-                    31,
-                    32
-                ],
-                "name": "Elements"
-            },
-            {
-                "ID": 4,
-                "members": [
-                    35,
-                    39,
-                    40
-                ],
-                "name": "Soundwave Input"
-            },
-            {
-                "ID": 5,
-                "members": [
-                    36,
-                    41,
-                    42,
-                    43
-                ],
-                "name": "AOE Input"
-            },
-            {
-                "ID": 6,
-                "members": [
-                    37,
-                    44,
-                    45,
-                    46
-                ],
-                "name": "Shield Input"
-            },
-            {
-                "ID": 7,
-                "members": [
-                    38,
-                    47,
-                    48,
-                    49
-                ],
-                "name": "Healing Input"
-            },
-            {
-                "ID": 8,
-                "members": [
-                    35,
-                    36,
-                    37,
-                    38,
-                    39,
-                    40,
-                    41,
-                    42,
-                    43,
-                    44,
-                    45,
-                    46,
-                    47,
-                    48,
-                    49,
-                    50
-                ],
-                "name": "Song Input List"
-            },
-            {
-                "ID": 9,
-                "members": [
-                    33,
-                    34,
-                    51,
-                    52,
-                    53
-                ],
-                "name": "Level 1 Dialogue"
-            }
+          {
+            "ID": 1,
+            "members": [
+              1,
+              2,
+              3
+            ],
+            "name": "Spell Slots",
+            "isVisible": true
+          },
+          {
+            "ID": 2,
+            "members": [
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "name": "Stats",
+            "isVisible": true
+          },
+          {
+            "ID": 3,
+            "members": [
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32
+            ],
+            "name": "Elements",
+            "isVisible": true
+          },
+          {
+            "ID": 4,
+            "members": [
+              35,
+              39,
+              40
+            ],
+            "name": "Soundwave Input",
+            "isVisible": true
+          },
+          {
+            "ID": 5,
+            "members": [
+              36,
+              41,
+              42,
+              43
+            ],
+            "name": "AOE Input",
+            "isVisible": true
+          },
+          {
+            "ID": 6,
+            "members": [
+              37,
+              44,
+              45,
+              46
+            ],
+            "name": "Shield Input",
+            "isVisible": true
+          },
+          {
+            "ID": 7,
+            "members": [
+              38,
+              47,
+              48,
+              49
+            ],
+            "name": "Healing Input",
+            "isVisible": true
+          },
+          {
+            "ID": 8,
+            "members": [
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45,
+              46,
+              47,
+              48,
+              49,
+              50
+            ],
+            "name": "Song Input List",
+            "isVisible": true
+          },
+          {
+            "ID": 9,
+            "members": [
+              33,
+              34,
+              51,
+              52,
+              53
+            ],
+            "name": "Level 1 Dialogue",
+            "isVisible": true
+          }
         ],
         "textboxes": [
             {

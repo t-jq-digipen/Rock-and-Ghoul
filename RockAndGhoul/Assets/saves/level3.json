@@ -910,7 +910,7 @@
             {
                 "ID": 54,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     960.0,
                     828.0
@@ -924,7 +924,7 @@
             {
                 "ID": 56,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     960.0,
                     841.18701171875
@@ -938,7 +938,7 @@
             {
                 "ID": 57,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     960.0,
                     892.0
@@ -952,7 +952,7 @@
             {
                 "ID": 55,
                 "centered": true,
-                "isVisible": true,
+                "isVisible": false,
                 "pos": [
                     960.0,
                     828.0
@@ -972,7 +972,8 @@
                     2,
                     3
                 ],
-                "name": "Spell Slots"
+                "name": "Spell Slots",
+                "isVisible": true
             },
             {
                 "ID": 2,
@@ -983,7 +984,8 @@
                     8,
                     9
                 ],
-                "name": "Stats"
+                "name": "Stats",
+                "isVisible": true
             },
             {
                 "ID": 3,
@@ -997,7 +999,8 @@
                     31,
                     32
                 ],
-                "name": "Elements"
+                "name": "Elements",
+                "isVisible": true
             },
             {
                 "ID": 4,
@@ -1006,7 +1009,8 @@
                     39,
                     40
                 ],
-                "name": "Soundwave Input"
+                "name": "Soundwave Input",
+                "isVisible": true
             },
             {
                 "ID": 5,
@@ -1016,7 +1020,8 @@
                     42,
                     43
                 ],
-                "name": "AOE Input"
+                "name": "AOE Input",
+                "isVisible": true
             },
             {
                 "ID": 6,
@@ -1026,7 +1031,8 @@
                     45,
                     46
                 ],
-                "name": "Shield Input"
+                "name": "Shield Input",
+                "isVisible": true
             },
             {
                 "ID": 7,
@@ -1036,7 +1042,8 @@
                     48,
                     49
                 ],
-                "name": "Healing Input"
+                "name": "Healing Input",
+                "isVisible": true
             },
             {
                 "ID": 8,
@@ -1058,7 +1065,8 @@
                     49,
                     50
                 ],
-                "name": "Song Input List"
+                "name": "Song Input List",
+                "isVisible": true
             },
             {
                 "ID": 9,
@@ -1068,7 +1076,8 @@
                     56,
                     57
                 ],
-                "name": "BossHP"
+                "name": "BossHP",
+                "isVisible": false
             },
             {
                 "ID": 10,
@@ -1079,7 +1088,8 @@
                     52,
                     53
                 ],
-                "name": "Level 3 Dialogue"
+                "name": "Level 3 Dialogue",
+                "isVisible": true
             }
         ],
         "textboxes": [

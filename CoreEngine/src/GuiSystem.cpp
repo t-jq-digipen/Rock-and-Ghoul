@@ -716,6 +716,7 @@ void GuiSystem::Initialize() {
         {
             ToggleAllDisplays();
         });
+
 }
 
 /**
@@ -828,6 +829,44 @@ bool GuiSystem::GetEditMode() const
     return editMode;
 }
 
+
+/**
+ * @brief           Overrides visbility settings of UI elements by ID
+ * @param gui       Reference to GUI system
+ * @param id        ID of UI elements to override
+ * @param visible   Visibility setting to change to
+ */
+
+void GuiSystem::OverrideVisibilityByUIID(GuiSystem& gui, int id, bool visible)
+{
+    for (auto& b : gui.Buttons())   if (b.ID == id) { b.isVisible = visible; return; }
+    for (auto& t : gui.TextBoxes()) if (t.ID == id) { t.isVisible = visible; return; }
+    for (auto& d : gui.Dialogues()) if (d.ID == id) { d.isVisible = visible; return; }
+    for (auto& p : gui.Displays())  if (p.ID == id) { p.isVisible = visible; return; }
+}
+
+/**
+ * @brief           Apply visbility settings overrides to members of a selected group
+ * @param gui       Reference to GUI system
+ * @param grpId     Group ID to override
+ * @param visible   Visibility setting to toggle to
+ */
+
+void GuiSystem::ApplyGroupVisibilityOverrides(GuiSystem& gui, int grpID, bool visible)
+{
+    auto& groups = gui.GetGroups();
+    for (const auto& g : groups)
+    {
+        if (g.groupID == grpID)
+        {
+            for (int memberID : g.memberIDs)
+            {
+                gui.OverrideVisibilityByUIID(gui, memberID, visible);
+            }
+        }
+    }
+}
+
 static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 2.f; // duration until active dialogue can be skipped
 static constexpr float DIALOGUE_SKIP_HOLD_ESC_DURATION = 1.5f; // duration needed to hold esc key to skip dialogue
 static constexpr float ADVANCE_DIALOGUE_BUTTON_OFFSET_X = -300.f; // advance dialogue button left shift
@@ -865,7 +904,6 @@ void GuiSystem::Update(float dt)
     static float dialogueTimerBeforeCanSkip = 0.f;
     static float escHoldTimer = 0.f;
     static bool prevAnyDialogueVisible = false;
-    static float cachedHoldBarMaxWidth = -1.f;
 
     // Skip the entire dialogue after a delay
     const bool anyDialogueVisible = std::any_of(dialogues.begin(), dialogues.end(),
@@ -905,7 +943,6 @@ void GuiSystem::Update(float dt)
         // Reset state
         dialogueTimerBeforeCanSkip = 0.f;
         escHoldTimer = 0.f;
-        cachedHoldBarMaxWidth = -1.f;
         prevAnyDialogueVisible = false;
     }
 
@@ -971,8 +1008,8 @@ void GuiSystem::Update(float dt)
                     { g.leftX,    g.topY }
                 );
 
-                dp.baseSize.x = g.maxW;
-                dp.size.x = g.maxW * percentage;
+                //dp.baseSize.x = g.maxW;
+                //dp.size.x = g.maxW * percentage;
                 return;
             }
 
@@ -1047,7 +1084,6 @@ void GuiSystem::Update(float dt)
         escHoldTimer = 0.f;
         dialogueTimerBeforeCanSkip = 0.0f;
         prevAnyDialogueVisible = false;
-        cachedHoldBarMaxWidth = -1.f;
     }
 
     // ====================================================
