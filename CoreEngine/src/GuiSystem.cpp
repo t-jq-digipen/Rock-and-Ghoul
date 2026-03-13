@@ -1394,7 +1394,7 @@ void GuiSystem::Update(float dt)
             // center text on button
             float textX = cfg.pos.x - textSize.x * 0.5f;
             float textY = cfg.pos.y - textSize.y * 0.5f;
-            textY += textSize.y * 0.15f; // small vertical offset
+            // textY += textSize.y * 0.15f; // small vertical offset
 
             render.DrawText(cfg.label, textX, textY, textScale, { 1, 1, 1 }, "Marker");
 
@@ -2076,17 +2076,17 @@ void GuiSystem::Update(float dt)
         bool hovercontrol = false;
         bool hoverexit = false;
         bool hoverresume = false;
-        baseTextScale = 0.8f;
+        baseTextScale = 0.9f;
 
         // How to play button
         {
-            hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 350 * scaleY }, 400 * scaleX, 190 * scaleY));
+            hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 320 * scaleY }, 380 * scaleX, 180 * scaleY));
             float brightness = hovercontrol ? 0.2f : 0.f;
             Image btnimg = CreateImage((FilePath::ASSETS_FOLDER + "UI_MainMenu_DarkControls.PNG"));
-            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 350.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
+            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 320.f * scaleY, 400.f * scaleX, 180.f * scaleY, 0.f, brightness);
 
-            const Vec2 baseTitlePos = { 960.f * scaleX, 350.f * scaleY};
-            const std::string title = "how to play";
+            const Vec2 baseTitlePos = { 960.f * scaleX, 320.f * scaleY};
+            const std::string title = "CONTROLS";
             Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
             float textX = baseTitlePos.x - textSize.x * 0.5f;
             float textY = baseTitlePos.y - textSize.y * 0.5f + textSize.y * 0.15f;
@@ -2096,12 +2096,12 @@ void GuiSystem::Update(float dt)
 
         // Quit button
         {
-            hoverexit = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 550 * scaleY}, 400 * scaleX, 190 * scaleY));
+            hoverexit = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 520 * scaleY}, 380 * scaleX, 180 * scaleY));
             float brightness = hoverexit ? 0.2f : 0.f;
             Image btnimg = CreateImage((FilePath::ASSETS_FOLDER + "UI_MainMenu_DarkQuit.PNG"));
-            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 550.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
+            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 520.f * scaleY, 380.f * scaleX, 180.f * scaleY, 0.f, brightness);
 
-            const Vec2 baseTitlePos = { 960.f * scaleX, 550.f * scaleY };
+            const Vec2 baseTitlePos = { 960.f * scaleX, 520.f * scaleY };
             const std::string title = "QUIT";
             Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
             float textX = baseTitlePos.x - textSize.x * 0.5f;
@@ -2112,12 +2112,12 @@ void GuiSystem::Update(float dt)
 
         // Resume button
         {
-            hoverresume = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 750 * scaleY }, 400 * scaleX, 190 * scaleY));
+            hoverresume = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 720 * scaleY }, 380 * scaleX, 180 * scaleY));
             float brightness = hoverresume ? 0.2f : 0.f;
             Image btnimg = CreateImage((FilePath::ASSETS_FOLDER + "UI_MainMenu_DarkNewGame.PNG"));
-            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 750.f * scaleY, 400.f * scaleX, 190.f * scaleY, 0.f, brightness);
+            renderer.DrawImageRotated(btnimg, 960.f * scaleX, 720.f * scaleY, 400.f * scaleX, 180.f * scaleY, 0.f, brightness);
 
-            const Vec2 baseTitlePos = { 960.f * scaleX, 750.f * scaleY };
+            const Vec2 baseTitlePos = { 960.f * scaleX, 720.f * scaleY };
             const std::string title = "RESUME";
             Vec2 textSize = render.CalculateTextSize(title, textScale, "Marker");
             float textX = baseTitlePos.x - textSize.x * 0.5f;

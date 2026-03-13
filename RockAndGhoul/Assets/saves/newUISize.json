@@ -193,7 +193,6 @@
         "buttons": [
             {
                 "ID": 35,
-                "action": "None",
                 "actionName": "AdvanceDialogue",
                 "actionParams": "{}",
                 "isVisible": false,
@@ -207,7 +206,8 @@
                     50.0,
                     50.0
                 ],
-                "soundType": 2
+                "soundType": 2,
+                "textScale": 1.0
             }
         ],
         "dialogues": [

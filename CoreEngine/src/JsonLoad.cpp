@@ -710,10 +710,11 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
             {"label", btn.label},
             {"pos", {btn.pos.x, btn.pos.y}},
             {"size", {btn.size.x, btn.size.y}},
+            {"textScale", btn.textScale},
             //{"color", {btn.color.r, btn.color.g, btn.color.b}},
             {"renderData", btn.renderData},
             //{"shape", btn.shape},
-            {"action", btn.action},
+            //{"action", btn.action},
             {"actionName", btn.actionName},
             {"actionParams", btn.actionParams},
             {"soundName", btn.soundName },
@@ -877,6 +878,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 b.ID = btn.value("ID", fallbackID++);
                 b.label = btn["label"];
                 b.pos = { btn["pos"][0], btn["pos"][1] };
+                b.textScale = btn["textScale"];
                 if (btn.contains("size") && btn["size"].is_array() && btn["size"].size() >= 2)
                     b.size = { btn["size"][0], btn["size"][1] };
                 else
@@ -1191,6 +1193,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
             sb.label = b.label;
             sb.pos = b.basePos;
             sb.size = b.baseSize;
+            sb.textScale = b.baseTextScale;
             //sb.color = b.color;
             sb.renderData = b.m_renderData.Serialize();
             //sb.shape = ButtonShapeToString(b.shape);
@@ -1401,6 +1404,8 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             cfg.basePos = b.pos;
             cfg.size = b.size;
             cfg.baseSize = b.size;
+            cfg.textScale = b.textScale;
+            cfg.baseTextScale = b.textScale;
             //cfg.color = b.color;
             if (!b.renderData.empty())
             {

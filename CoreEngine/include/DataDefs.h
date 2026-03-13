@@ -97,6 +97,7 @@ struct SavedScene {
         std::string label;
         Vec2 pos;
         Vec2 size;
+        float textScale = 1.f;
         Colour3 color;
         std::string shape;
         std::string renderData;

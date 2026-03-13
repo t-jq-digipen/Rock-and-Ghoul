@@ -492,7 +492,7 @@ struct ButtonConfig {
     // baseline (screen-space anchors)
     Vec2 basePos;         // base position for scaling (1920x1080)
     Vec2 baseSize;
-    float baseTextScale{ 1.f };
+    float baseTextScale;
     bool isVisible = true;
     int ID = 0;
 

@@ -14,7 +14,6 @@
         "buttons": [
             {
                 "ID": 1,
-                "action": "None",
                 "actionName": "LoadScene",
                 "actionParams": {
                     "duration": 0.5,
@@ -31,11 +30,11 @@
                     250.0,
                     180.0
                 ],
-                "soundType": 2
+                "soundType": 2,
+                "textScale": 1.0
             },
             {
                 "ID": 3,
-                "action": "None",
                 "actionName": "LoadScene",
                 "actionParams": {
                     "duration": 0.5,
@@ -52,7 +51,8 @@
                     200.0,
                     180.0
                 ],
-                "soundType": 2
+                "soundType": 2,
+                "textScale": 1.0
             }
         ],
         "dialogues": [],

@@ -33,7 +33,6 @@
         "buttons": [
             {
                 "ID": 1,
-                "action": "",
                 "actionName": "LoadScene",
                 "actionParams": {
                     "duration": 2.0,
@@ -45,88 +44,88 @@
                     1650.0,
                     600.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkNewGame.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkNewGame.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     150.0
                 ],
-                "soundName": "ui_click"
+                "soundName": "ui_click",
+                "textScale": 0.8
             },
             {
                 "ID": 2,
-                "action": "",
                 "actionName": "LoadSettings",
                 "actionParams": {},
                 "isVisible": true,
-                "label": "settings",
+                "label": "SETTINGS",
                 "pos": [
                     1650.0,
                     450.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkSettings.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkSettings.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     150.0
                 ],
-                "soundName": "ui_click"
+                "soundName": "ui_click",
+                "textScale": 0.8
             },
             {
                 "ID": 3,
-                "action": "",
                 "actionName": "LoadControls",
                 "actionParams": {},
                 "isVisible": true,
-                "label": "how to play",
+                "label": "CONTROLS",
                 "pos": [
                     1650.0,
                     300.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkControls.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkControls.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     150.0
                 ],
-                "soundName": "ui_click"
+                "soundName": "ui_click",
+                "textScale": 0.8
             },
             {
                 "ID": 4,
-                "action": "",
                 "actionName": "Quit",
                 "actionParams": {},
                 "isVisible": true,
-                "label": "QUIT GAME ",
+                "label": "QUIT",
                 "pos": [
                     1650.0,
                     150.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkQuit.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkQuit.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     150.0
                 ],
-                "soundName": "ui_click"
+                "soundName": "ui_click",
+                "textScale": 0.8
             },
             {
                 "ID": 8,
-                "action": "",
                 "actionName": "Quit",
                 "actionParams": {},
                 "isVisible": true,
                 "label": "YES",
                 "pos": [
-                    960.0,
-                    600.0
+                    970.0,
+                    560.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkQuit.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    400.0,
-                    189.47369384765625
+                    430.0,
+                    140.0
                 ],
-                "soundName": "button_quit"
+                "soundName": "button_quit",
+                "textScale": 1.0
             },
             {
                 "ID": 9,
-                "action": "",
                 "actionName": "LoadScene",
                 "actionParams": {
                     "duration": 0.0,
@@ -141,9 +140,10 @@
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkNewGame.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
-                    189.47369384765625
+                    140.0
                 ],
-                "soundName": "ui_click"
+                "soundName": "ui_click",
+                "textScale": 1.0
             }
         ],
         "dialogues": [],
