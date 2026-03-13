@@ -393,36 +393,44 @@
                         "speakerID": 0
                     },
                     {
-                        "line": "[Ghoul hesitates, her spectral form glitching softer, the anger draining into something sad.]",
-                        "speakerID": 1
-                    },
-                    {
-                        "line": "...You always were terrible at rhythm. (weak laugh) But maybe... maybe we did sound kinda good.",
-                        "speakerID": 1
-                    },
-                    {
-                        "line": "The best there ever was.",
+                        "line": "And… and maybe we still can.",
                         "speakerID": 0
                     },
                     {
-                        "line": "Guess this is my final solo, huh?",
+                        "line": "What?",
                         "speakerID": 1
                     },
                     {
-                        "line": "No solos. Just... a long fade-out.",
+                        "line": "If you just… tell me right now that the past 3 years weren't for nothing and that you still care about me…",
                         "speakerID": 0
                     },
                     {
-                        "line": "[Ghoul smiles faintly before disappearing in a shimmer of light. The lights dim, leaving Rock alone in the spotlight.]",
+                        "line": "You'll forgive me?",
                         "speakerID": 1
                     },
                     {
-                        "line": "Guess it's just me now... But the show goes on.",
+                        "line": "No!",
                         "speakerID": 0
                     },
                     {
-                        "line": "[She strums a single melancholic note.]",
+                        "line": "Not now.",
                         "speakerID": 0
+                    },
+                    {
+                        "line": "But I wouldn't mind jamming together some time.",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "Rock...",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "I'm sorry.",
+                        "speakerID": 1
+                    },
+                                        {
+                        "line": "Let's make a new playlist.",
+                        "speakerID": 1
                     }
                 ],
                 "profileDisplaySide": 0,
