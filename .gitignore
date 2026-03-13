@@ -104,3 +104,4 @@ GameScripts/bin/*
 
 # FFmpeg
 deps/FFmpeg/
+/Game/
