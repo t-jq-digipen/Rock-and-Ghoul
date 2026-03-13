@@ -174,6 +174,11 @@ void CombatSystem::ApplyDamage(Entity target, const AttackProperties& properties
 			toRemove.push_back(damageArea);
 		}
 
+		const auto& targetPos = m_registry.Get_Component<TransformComponent>(target).pos;
+		const auto& attackPos = m_registry.Get_Component<TransformComponent>(damageArea).pos;
+		Vec2 midpoint = RG_Add(targetPos, attackPos) * 0.5f;
+		JsonLoad::LoadEntityFromFile(FilePath::PREFABS_FOLDER + "HitmarkerFX.json", midpoint.x, midpoint.y);
+
 		// target vulnerable, apply damage and stagger!
 		if (vulnerable) {
 			if (properties.damageOverTime) {
@@ -492,6 +497,7 @@ void CombatSystem::Initialize() {
 			}
 			const AttackProperties& properties = g_attackProperties[damageArea];
 			ApplyDamage(target, properties, damageArea);
+
 		}
 		else if (e.eventName == "TouchPortal")
 		{

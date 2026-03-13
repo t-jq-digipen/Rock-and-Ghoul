@@ -1,0 +1,8 @@
+{
+    "components": {
+        "Lifetime": "{\"age\":0.0,\"lifetime\":0.25}",
+        "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.5,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":25.0,\\\\\\\"scaleY\\\\\\\":25.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/ImpactCircle_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":0.25,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"renderLayer\":2,\"renderType\":2}",
+        "Transform": "{\"posX\":579.0361938476563,\"posY\":631.0843505859375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+    },
+    "name": "HitmarkerFX"
+}
