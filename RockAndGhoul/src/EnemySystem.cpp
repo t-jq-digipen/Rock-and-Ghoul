@@ -925,7 +925,7 @@ namespace SpiritScript {
 //};
 
 static constexpr float OBSTACLE_DEATH_LIFETIME = 0.05f;
-static constexpr float OBSTACLE_EXPLOSION_DURATION = 0.3f;
+static constexpr float OBSTACLE_EXPLOSION_DURATION = .75f;
 
 struct ObstacleRuntime
 {
@@ -1133,17 +1133,17 @@ namespace ObstacleScript
 		{
 			//SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_EXPLODE);
 			rt.stateTime += std::max(0.f, dt);
-			sheet.Sprite().Update_ImageSize();
-			const auto& img = sheet.Sprite().Get_Image();
+			//sheet.Sprite().Update_ImageSize();
+			//const auto& img = sheet.Sprite().Get_Image();
 			animState = 3;
-			if (enteredState)
+			/*if (enteredState)
 			{
 				sheet.SetState(animState);
 				sheet.EditFrames(1, 0, 7, 0.2f, false);
 				sheet.ResetTimer();
-			}
-			sheet.UpdateFrame(dt);
-			sheet.UpdateUV(img.widthPixels, img.heightPixels);
+			}*/
+			/*sheet.UpdateFrame(dt);
+			sheet.UpdateUV(img.widthPixels, img.heightPixels);*/
 			if (rt.stateTime >= OBSTACLE_EXPLOSION_DURATION)
 			{
 				rt.state = ObstacleState::OBSTACLE_DESTROYED;
@@ -1174,11 +1174,12 @@ namespace ObstacleScript
 		}
 
 		unsigned& prev = prevAnimState[eID];
-		if (prev != animState)
+		/*if (prev != animState)
 		{
 			registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
 			prev = animState;
-		}
+		}*/
+		registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
 	}
 
 	inline void End(Entity eID)

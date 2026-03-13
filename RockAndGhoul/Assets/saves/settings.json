@@ -9,62 +9,62 @@
     ],
     "cameraZoom": 1.0,
     "entities": [],
-    "fontConfig": "../Assets/fontAssets.json",
+    "fontConfig": "E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
     "fullscreen": true,
     "gui": {
         "buttons": [
             {
                 "ID": 1,
                 "actionName": "VolDown",
-                "actionParams": "{}",
+                "actionParams": {},
                 "isVisible": true,
                 "label": "",
                 "pos": [
                     280.0,
                     600.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_AmbienceLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_SettingsPage_AmbienceLogo.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     250.0,
                     250.0
                 ],
-                "soundType": 2,
+                "soundName": "ui_click",
                 "textScale": 1.0
             },
             {
                 "ID": 2,
                 "actionName": "VolUp",
-                "actionParams": "{}",
+                "actionParams": {},
                 "isVisible": true,
                 "label": "",
                 "pos": [
                     1120.0,
                     600.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_SFXLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_SettingsPage_SFXLogo.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     250.0,
                     250.0
                 ],
-                "soundType": 2,
+                "soundName": "ui_click",
                 "textScale": 1.0
             },
             {
                 "ID": 3,
                 "actionName": "SaveSettings",
-                "actionParams": "{}",
+                "actionParams": {},
                 "isVisible": true,
                 "label": "SAVE",
                 "pos": [
                     660.0,
-                    220.0
+                    264.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_MainMenu_DarkContinueButton.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkContinueButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     300.0,
                     142.1052703857422
                 ],
-                "soundType": 0,
+                "soundName": "button_play",
                 "textScale": 1.0
             },
             {
@@ -80,12 +80,12 @@
                     660.0,
                     100.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_SettingsPage_BackButton.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_SettingsPage_BackButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     200.0,
                     180.0
                 ],
-                "soundType": 2,
+                "soundName": "ui_click",
                 "textScale": 1.0
             }
         ],
@@ -113,7 +113,7 @@
                     700.0,
                     600.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_HealthBarTransparent.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_HealthBarTransparent.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     1100.0,
                     1150.0
@@ -144,7 +144,7 @@
     "sceneName": "settings",
     "sceneType": 0,
     "settings": {
-        "volume": 80.0
+        "volume": 50.0
     },
     "worldMax": [
         1920.0,
