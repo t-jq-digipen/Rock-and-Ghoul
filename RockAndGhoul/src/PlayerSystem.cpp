@@ -1550,7 +1550,13 @@ namespace RockScript {
 					footstepTimers[eID] = 0.0f;  // Reset timer
 				}
 			}
-		}	// end MOVEMENT
+		}	
+		else if (gui.GetDialogueGate())
+		{
+			moveComp.ResetFrameIntent();
+			animstate = (faceRight) ? 0 : 1; //idle
+		}
+		// end MOVEMENT
 
 		// ================================================================================
 		// STUNNED
