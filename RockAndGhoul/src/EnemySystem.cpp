@@ -1013,10 +1013,19 @@ namespace ObstacleScript
 
 		// MakeObstacleStationary(eID);
 
-		// Check if obstacle is burning
+		// Elemental status effects active checks
+		const bool isStunned =
+			registry.Has_Component<StatusEffectComponent>(eID) &&
+			registry.Get_Component<StatusEffectComponent>(eID).activeEffect == Element::LIGHTNING;
 		const bool isBurning = 
 			registry.Has_Component<StatusEffectComponent>(eID) && 
 			registry.Get_Component<StatusEffectComponent>(eID).activeEffect == Element::FIRE;
+		const bool isFrozen =
+			registry.Has_Component<StatusEffectComponent>(eID) &&
+			registry.Get_Component<StatusEffectComponent>(eID).activeEffect == Element::ICE;
+		const bool isPushed =
+			registry.Has_Component<StatusEffectComponent>(eID) &&
+			registry.Get_Component<StatusEffectComponent>(eID).activeEffect == Element::WIND;
 
 		switch (rt.state)
 		{
@@ -1027,6 +1036,12 @@ namespace ObstacleScript
 			if (isBurning)
 			{
 				rt.state = ObstacleState::OBSTACLE_BURNING;
+				rt.stateTime = 0.f;
+				break;
+			}
+			else if (isPushed)
+			{
+				rt.state = ObstacleState::OBSTACLE_PUSHED;
 				rt.stateTime = 0.f;
 				break;
 			}
@@ -1070,6 +1085,15 @@ namespace ObstacleScript
 				rt.state = ObstacleState::OBSTACLE_DESTROYED;
 				rt.stateTime = 0.f;
 				DeactivateObstacle(eID);
+			}
+			break;
+		}
+
+		case ObstacleState::OBSTACLE_PUSHED:
+		{
+			if (!isPushed)
+			{
+				rt.state = ObstacleState::OBSTACLE_IDLE;
 			}
 			break;
 		}
@@ -1144,6 +1168,25 @@ namespace GhoulScript {
 	constexpr float GHOUL_PHASE3_COOLDOWN = 0.5f;
 
 	bool inCombat = false;
+	bool hasStartingDialogueBeenTriggered = false;
+	bool hasDeathDialogueBeenTriggered = false;
+	bool waitingForDialogue = false;
+	static bool IsAnyDialogueVisibleInGroup(GuiSystem& gui, int groupID)
+	{
+		for (auto& g : gui.GetGroups())
+		{
+			if (g.groupID != groupID) continue;
+			for (int memberID : g.memberIDs)
+			{
+				for (auto& d : gui.Dialogues())
+				{
+					if (d.ID == memberID && d.isVisible) return true;
+				}
+			}
+			return false;
+		}
+		return false;
+	}
 
 	AttackProperties GHOUL_MELEE_PROPERTIES = {
 		INVALID_ENTITY, // set at runtime
@@ -1744,6 +1787,9 @@ namespace GhoulScript {
 		ghoulEntity = eID;
 
 		inCombat = false;
+		hasStartingDialogueBeenTriggered = false;
+		hasDeathDialogueBeenTriggered = false;
+		waitingForDialogue = false;
 
 		GHOUL_MELEE_PROPERTIES.owner = eID;
 	}
@@ -1774,6 +1820,8 @@ namespace GhoulScript {
 		GuiSystem& gui = GuiSystem::Get();
 		UIGroup& stats = gui.GetGroup("BossHP");
 		int bossStatsID = stats.groupID;
+		int level3DialogueID = gui.GetGroup("Level 3 Dialogue").groupID;
+		int endDialogueID = gui.GetGroup("End Dialogue").groupID;
 
 		// death handling
 		if (health.currhp <= 0.f) {
@@ -1781,10 +1829,32 @@ namespace GhoulScript {
 			if (ghoulRuntime.state != GHOUL_DEAD) {
 				ghoulRuntime.state = GhoulState::GHOUL_DEAD;
 				ghoulRuntime.stateTime = 0.f;
-				animState = 7;
-				registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
-				registry.Get_Component<Movement::MovementComponent>(eID).ResetFrameIntent();
 			}
+			animState = 7;
+			registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
+			registry.Get_Component<Movement::MovementComponent>(eID).ResetFrameIntent();
+
+			if (ghoulRuntime.stateTime >= 2.f) {
+				// start end dialogue
+				if (!hasDeathDialogueBeenTriggered)
+				{
+					hasDeathDialogueBeenTriggered = true;
+					waitingForDialogue = true;
+					gui.SetDialogueGate(true);
+					gui.ApplyGroupVisibilityOverrides(gui, endDialogueID, true);
+				}
+				if (waitingForDialogue)
+				{
+					const bool endDialogueStillVisible = IsAnyDialogueVisibleInGroup(gui, endDialogueID);
+					if (!endDialogueStillVisible)
+					{
+						gui.SetDialogueGate(false);
+						gui.ApplyGroupVisibilityOverrides(gui, endDialogueID, false);
+						waitingForDialogue = false;
+					}
+				}
+			}
+			gui.ApplyGroupVisibilityOverrides(gui, bossStatsID, false);
 
 			return;
 		}
@@ -1862,8 +1932,31 @@ namespace GhoulScript {
 					behaviourComp.RemoveScript("CamTarget");
 				}
 			}
-			else if (dPlayerSq < 1000.f * 1000.f) {
-				if (!inCombat)
+			if (dPlayerSq < 1000.f * 1000.f) {
+				behaviourComp.AddScript("CamTarget");
+
+				if (!hasStartingDialogueBeenTriggered)
+				{
+					hasStartingDialogueBeenTriggered = true;
+					waitingForDialogue = true;
+
+					gui.SetDialogueGate(true);
+					gui.ApplyGroupVisibilityOverrides(gui, level3DialogueID, true);
+				}
+
+				if (waitingForDialogue)
+				{
+					const bool level3DialogueStillVisible = IsAnyDialogueVisibleInGroup(gui, level3DialogueID);
+
+					if (!level3DialogueStillVisible)
+					{
+						gui.SetDialogueGate(false);
+						gui.ApplyGroupVisibilityOverrides(gui, level3DialogueID, false);
+						waitingForDialogue = false;
+					}
+				}
+
+				if (!waitingForDialogue && !inCombat)
 				{
 					inCombat = true;
 					animState = 6;
@@ -1873,7 +1966,6 @@ namespace GhoulScript {
 					health.isVulnerable = false;
 					gui.ApplyGroupVisibilityOverrides(gui, bossStatsID, true);
 				}
-				behaviourComp.AddScript("CamTarget");
 			}
 		}
 
@@ -1886,17 +1978,8 @@ namespace GhoulScript {
 		}
 		else if (ghoulRuntime.state == GHOUL_DEAD)
 		{
-			// die logic, TBC
 			moveComp.ResetFrameIntent();
 			animState = 7;
-			if (ghoulRuntime.stateTime >= 2.f) {
-				// start end dialogue
-			}
-			
-			// MANFREDHELP
-			// yo i need help to toggle off the visibility in this ui group
-			// make the UI in UIGroup stats not visible :(
-			gui.ApplyGroupVisibilityOverrides(gui, bossStatsID, false);
 		}
 		else if (ghoulRuntime.state == GhoulState::GHOUL_TRANSFORM) // combat starting!
 		{

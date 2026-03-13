@@ -206,6 +206,19 @@ struct SavedScene {
     std::vector<SavedDisplay> guiDisplays;
 
 /**
+ * @struct SavedDisplay
+ * @brief Serializable display and its properties.
+ */
+
+    struct SavedGroup {
+        int groupID = 0;
+        std::string groupName;
+        std::vector<int> memberIDs;
+        bool isVisible;
+    };
+    std::vector<SavedGroup> guiGroups;
+
+/**
  * @struct SavedCamera
  * @brief In-game camera configuration settings.
  */
