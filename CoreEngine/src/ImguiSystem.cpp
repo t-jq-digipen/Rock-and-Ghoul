@@ -8508,6 +8508,10 @@ void ImGuiSystem::ShowPrefabControls()
 
                     // Set the name
                     registry.Get_EntityNameMap()[newEnt] = targetName;
+
+                    // If the replaced entity was selected, select the new one
+                    if (oldEnt == selectedEntity)
+                        selectedEntity = newEnt;
                 }
 
                 std::cout << "[Update Instances] Finished updating " << replaceList.size() << " instances" << std::endl;
