@@ -477,8 +477,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    630.0,
-                    150.0
+                    510.0,
+                    190.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
@@ -505,8 +505,8 @@
                 "centered": true,
                 "isVisible": true,
                 "pos": [
-                    510.0,
-                    190.0
+                    630.0,
+                    150.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{\\\"0\\\":{\\\"col\\\":0,\\\"row\\\":0},\\\"1\\\":{\\\"col\\\":1,\\\"row\\\":0},\\\"2\\\":{\\\"col\\\":2,\\\"row\\\":0},\\\"3\\\":{\\\"col\\\":3,\\\"row\\\":0},\\\"4\\\":{\\\"col\\\":4,\\\"row\\\":0}},\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/SpellSlots.png\\\",\\\"totalCols\\\":5,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
@@ -851,20 +851,6 @@
                 ]
             },
             {
-                "ID": 60,
-                "centered": true,
-                "isVisible": false,
-                "pos": [
-                    1531.371826171875,
-                    80.64984130859375
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_Circle_Red.PNG\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    300.0,
-                    260.0
-                ]
-            },
-            {
                 "ID": 32,
                 "centered": true,
                 "isVisible": true,
@@ -876,6 +862,20 @@
                 "size": [
                     240.0,
                     210.0
+                ]
+            },
+            {
+                "ID": 60,
+                "centered": true,
+                "isVisible": false,
+                "pos": [
+                    1531.371826171875,
+                    80.64984130859375
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_Circle_Red.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    300.0,
+                    260.0
                 ]
             },
             {

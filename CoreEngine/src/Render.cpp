@@ -1724,7 +1724,9 @@ void Render::InitBatch()
     glBindVertexArray(0);
 
     //Shader program for batches — loaded in LoadShaders(), skip here
+#ifndef NO_IMGUI
     batchShader = 0;
+#endif
 
     //CPU buffer reserve mem
     batchCPUBuffer.reserve(MaxVertices);
