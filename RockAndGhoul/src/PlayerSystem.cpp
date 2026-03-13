@@ -109,7 +109,7 @@ namespace PlayerMove {
 
 	inline void Start(Entity eID)
 	{
-		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
+		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent&) {
 			if (ReplayManager::Get().IsPlaying()) return;
 			if (SceneManager::Get().IsPaused() || GuiSystem::Get().GetDialogueGate()) return;
 			});
@@ -1201,7 +1201,7 @@ namespace RockScript {
 
 	inline void Start(Entity eID)
 	{
-		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
+		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent&) {
 			if (ReplayManager::Get().IsPlaying()) return;
 			if (SceneManager::Get().IsPaused() || GuiSystem::Get().GetDialogueGate()) return;
 			});
@@ -1887,7 +1887,7 @@ namespace TutorialScript {
 
 
 
-	inline void Update(Entity eID, float dt)
+	inline void Update(Entity eID, float)
 	{
 		unsigned int animState = page;
 
