@@ -376,6 +376,7 @@ This functions receives the cursor position, measured in screen coordinates but
 relative to the top-left corner of the window client area.
 */
 void GLApp::mousepos_cb(GLFWwindow *pwin, double xpos, double ypos) {
+    (void)pwin; (void)xpos; (void)ypos;
 #ifdef _DEBUG
     (void)pwin;
   std::cout << "Mouse cursor position: (" << xpos << ", " << ypos << ")" << std::endl;
