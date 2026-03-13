@@ -94,6 +94,12 @@ static std::vector<std::string> s_openSceneList;
 static std::string s_openGameMessage     = "";
 static bool s_openGameSuccess            = false;
 
+// Loading popup state
+static bool s_openLoadingPopup  = false;
+static int  s_loadingStep       = 0;
+static std::string s_pendingLoadGame;
+static std::string s_pendingLoadScene;
+
 // Delete Game confirmation state
 static std::string s_pendingDeleteGame   = "";
 static bool s_openDeleteConfirmPopup     = false;
@@ -1990,30 +1996,10 @@ void ImGuiSystem::Update(float dt)
 
         if (ImGui::Button("Switch##opengame", ImVec2(120, 0)))
         {
-            std::string name = s_selectedOpenGame;
-            FilePath::SetGameRoot(name);
-            AUDIO_MANIFEST_PATH = FilePath::AUDIO_MANIFEST;
-            AudioCache::Shutdown();
-            if (fs::exists(AUDIO_MANIFEST_PATH))
-                AudioCache::Initialize(AUDIO_MANIFEST_PATH);
-            Render::GetInstance().LoadShaders();
-            CollisionLayerManager::Get().LoadCollisionSettings();
-            JsonLoad::ClearAllEntities();
-            GuiSystem::Get().Clear();
-            RenderSystem::ClearBackgroundTextures();
-            SceneManager::Get().EnterEditMode();
-
-            if (!s_selectedOpenScene.empty())
-            {
-                std::string scenePath = FilePath::SAVES_FOLDER + s_selectedOpenScene + ".json";
-                SceneManager::Get().LoadScene(scenePath);
-                s_openGameMessage = "Switched to " + name;
-            }
-            else
-            {
-                s_openGameMessage = "Switched to " + name;
-            }
-            s_openGameSuccess = true;
+            s_pendingLoadGame  = s_selectedOpenGame;
+            s_pendingLoadScene = s_selectedOpenScene;
+            s_loadingStep      = 1;
+            ImGui::CloseCurrentPopup();
         }
 
         if (!canSwitch) ImGui::EndDisabled();
@@ -2027,6 +2013,29 @@ void ImGuiSystem::Update(float dt)
         ImGui::EndPopup();
     }
     // ── End Open Game Modal ───────────────────────────────────────────────────
+
+    // ── Loading Popup ─────────────────────────────────────────────────────────
+    // Steps: 1=open popup, 2=show text first frame, 3=show text second frame, 4=render game, 5=close popup
+    if (s_loadingStep == 1)
+    {
+        ImGui::OpenPopup("Loading##loadingpopup");
+        s_loadingStep = 2;
+    }
+
+    if (ImGui::BeginPopupModal("Loading##loadingpopup", nullptr,
+        ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar))
+    {
+        ImGui::Spacing();
+        ImGui::Text("  Loading...  ");
+        ImGui::Spacing();
+
+        if (s_loadingStep == 2) s_loadingStep = 3; // frame 1: just render
+        else if (s_loadingStep == 3) s_loadingStep = 4; // frame 2: tell Render() to work
+        else if (s_loadingStep == 5) { ImGui::CloseCurrentPopup(); s_loadingStep = 0; }
+
+        ImGui::EndPopup();
+    }
+    // ── End Loading Popup ─────────────────────────────────────────────────────
 
     ImGuiID dockspaceID = ImGui::GetID("MainDockspace");
     //dock node
@@ -5642,6 +5651,52 @@ void ImGuiSystem::Render() {
     if (!guiEnabled) return; //skip if GUI is off
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); //draw to screen
+
+    // Loading: swap NOW so "Loading..." is visible
+    if (s_loadingStep == 4)
+    {
+        glfwSwapBuffers(GLApp::ptr_window); //"Loading..." to screen
+
+        namespace fs = std::filesystem;
+        std::string name = s_pendingLoadGame;
+        FilePath::SetGameRoot(name);
+        AUDIO_MANIFEST_PATH = FilePath::AUDIO_MANIFEST;
+        AudioCache::Shutdown();
+        if (fs::exists(AUDIO_MANIFEST_PATH))
+            AudioCache::Initialize(AUDIO_MANIFEST_PATH);
+        Render::GetInstance().LoadShaders();
+
+        if (fs::exists(FilePath::ASSETS_FOLDER))
+        {
+            auto& renderer = Render::GetInstance();
+            for (auto& entry : fs::recursive_directory_iterator(
+                FilePath::ASSETS_FOLDER, fs::directory_options::skip_permission_denied))
+            {
+                if (!entry.is_regular_file()) continue;
+                std::string ext = entry.path().extension().string();
+                std::transform(ext.begin(), ext.end(), ext.begin(),
+                    [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+                    renderer.LoadTexture(entry.path().string());
+            }
+        }
+
+        CollisionLayerManager::Get().LoadCollisionSettings();
+        JsonLoad::ClearAllEntities();
+        GuiSystem::Get().Clear();
+        RenderSystem::ClearBackgroundTextures();
+        SceneManager::Get().EnterEditMode();
+
+        if (!s_pendingLoadScene.empty())
+        {
+            std::string scenePath = FilePath::SAVES_FOLDER + s_pendingLoadScene + ".json";
+            SceneManager::Get().LoadScene(scenePath);
+        }
+
+        s_openGameMessage = "Switched to " + name;
+        s_openGameSuccess = true;
+        s_loadingStep = 5; // tell Update() to close the popup next frame
+    }
 }
 
 void ImGuiSystem::ShowEngineDebugWindow() {
