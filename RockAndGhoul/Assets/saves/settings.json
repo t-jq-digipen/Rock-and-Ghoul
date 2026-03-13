@@ -15,7 +15,6 @@
         "buttons": [
             {
                 "ID": 1,
-                "action": "None",
                 "actionName": "VolDown",
                 "actionParams": "{}",
                 "isVisible": true,
@@ -29,11 +28,11 @@
                     250.0,
                     250.0
                 ],
-                "soundType": 2
+                "soundType": 2,
+                "textScale": 1.0
             },
             {
                 "ID": 2,
-                "action": "None",
                 "actionName": "VolUp",
                 "actionParams": "{}",
                 "isVisible": true,
@@ -47,11 +46,11 @@
                     250.0,
                     250.0
                 ],
-                "soundType": 2
+                "soundType": 2,
+                "textScale": 1.0
             },
             {
                 "ID": 3,
-                "action": "None",
                 "actionName": "SaveSettings",
                 "actionParams": "{}",
                 "isVisible": true,
@@ -65,11 +64,11 @@
                     300.0,
                     142.1052703857422
                 ],
-                "soundType": 0
+                "soundType": 0,
+                "textScale": 1.0
             },
             {
                 "ID": 4,
-                "action": "None",
                 "actionName": "LoadScene",
                 "actionParams": {
                     "duration": 0.0,
@@ -86,7 +85,8 @@
                     200.0,
                     180.0
                 ],
-                "soundType": 2
+                "soundType": 2,
+                "textScale": 1.0
             }
         ],
         "dialogues": [],

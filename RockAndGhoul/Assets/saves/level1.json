@@ -183,7 +183,6 @@
         "buttons": [
             {
                 "ID": 34,
-                "action": "",
                 "actionName": "AdvanceDialogue",
                 "actionParams": {},
                 "isVisible": false,
@@ -197,7 +196,8 @@
                     50.0,
                     50.0
                 ],
-                "soundName": "ui_click"
+                "soundName": "ui_click",
+                "textScale": 1.0
             }
         ],
         "dialogues": [

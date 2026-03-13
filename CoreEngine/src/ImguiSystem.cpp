@@ -4943,6 +4943,7 @@ void ImGuiSystem::Update(float dt)
                         c.ID = 0;
                         c.label += " (Copy)";
                         c.basePos.x += kOffX; c.basePos.y += kOffY;
+                        c.baseTextScale = 1.f;
                         gui.AddButton(c);
                         newMemberIDs.push_back(gui.Buttons().back().ID);
                     } break;

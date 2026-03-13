@@ -14,7 +14,6 @@
         "buttons": [
             {
                 "ID": 1,
-                "action": "None",
                 "actionName": "LoadScene",
                 "actionParams": {
                     "duration": 0.0,
@@ -31,43 +30,44 @@
                     200.0,
                     180.0
                 ],
-                "soundType": 2
+                "soundType": 2,
+                "textScale": 1.0
             },
             {
                 "ID": 2,
-                "action": "None",
                 "actionName": "ControlsPage1",
                 "actionParams": "{}",
                 "isVisible": false,
                 "label": "",
                 "pos": [
                     120.0,
-                    100.0
+                    80.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlsPage_BackwardsPageLogo.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    180.0,
-                    150.0
+                    150.0,
+                    120.0
                 ],
-                "soundType": 2
+                "soundType": 2,
+                "textScale": 1.0
             },
             {
                 "ID": 3,
-                "action": "None",
                 "actionName": "ControlsPage2",
                 "actionParams": "{}",
                 "isVisible": true,
                 "label": "",
                 "pos": [
                     120.0,
-                    200.0
+                    240.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_ControlsPage_ForwardPageLogo.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    180.0,
-                    150.0
+                    150.0,
+                    120.0
                 ],
-                "soundType": 2
+                "soundType": 2,
+                "textScale": 1.0
             }
         ],
         "dialogues": [],
