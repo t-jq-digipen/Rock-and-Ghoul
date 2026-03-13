@@ -6610,87 +6610,6 @@ void ImGuiSystem::ShowInspectorWindow()
                 ImGui::TreePop();
             }
         }
-        // Custom data fields for Monoscript component (C# scripts)
-        else if (compName == "Mono Script")
-        {
-            MonoScriptComponent& monoComp =
-                m_registry.Get_Component<MonoScriptComponent>(selectedEntity);
-
-            if (ImGui::TreeNode(compName.c_str()))
-            {
-                MonoSystem& monoSys = MonoSystem::Get();
-
-                // ----------------------------------------------
-                // 1. Build list of available script names
-                // ----------------------------------------------
-                const auto& nameToID = monoSys.GetNameToIDMap();
-
-                if (nameToID.empty())
-                {
-                    ImGui::TextDisabled("No C# scripts registered.");
-                    ImGui::TreePop();
-                    return;
-                }
-
-                std::vector<const char*> items;
-                items.reserve(nameToID.size());
-                for (auto& [name, id] : nameToID)
-                    items.push_back(name.c_str());
-
-                static int currentIndex = 0;
-                std::string selectedScript = items[currentIndex];
-
-                // dropdown
-                if (ImGui::Combo("Select C# Script",
-                    &currentIndex, items.data(), (int)items.size()))
-                {
-                    selectedScript = items[currentIndex];
-                }
-
-                // ----------------------------------------------
-                // 2. Add Script button
-                // ----------------------------------------------
-                bool disableAdd = monoComp.HasScript(selectedScript);
-
-                std::string addLabel = "Add Script";
-                if (disableAdd)
-                {
-                    addLabel += " (already added)";
-                    ImGui::BeginDisabled();
-                }
-
-                if (ImGui::Button(addLabel.c_str()))
-                {
-                    monoComp.AddScript(selectedScript);
-                }
-
-                if (disableAdd) ImGui::EndDisabled();
-
-                ImGui::SeparatorText("Attached Scripts");
-
-                // ----------------------------------------------
-                // 3. Show list of attached scripts
-                // ----------------------------------------------
-                int id = 0;
-                for (MonoScriptID scriptID : monoComp.scriptIDList)
-                {
-                    ImGui::PushID(id++);
-
-                    const std::string& name = monoSys.GetScriptName(scriptID);
-                    ImGui::Text("%s", name.c_str());
-
-                    ImGui::SameLine();
-                    if (ImGui::SmallButton("Remove"))
-                    {
-                        monoComp.RemoveScript(scriptID);
-                    }
-
-                    ImGui::PopID();
-                }
-
-                ImGui::TreePop();
-            }
-        }
         // Custom data fields for collider component (collision layers)
         else if (compName == "Collider")
         {
@@ -6962,6 +6881,7 @@ void ImGuiSystem::ShowAddRemoveComponents()
     for (std::type_index typeID : m_registry.Get_ComponentOrder())
     {
         std::string compName = m_registry.Get_ComponentTypeName(typeID);
+        if (compName == "MonoScriptComponent") continue;
         bool hasComp = m_registry.Has_Component(eID, typeID);
         bool depsOK = m_registry.HasDependencies(eID, typeID);
 
