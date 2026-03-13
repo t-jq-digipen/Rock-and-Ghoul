@@ -900,10 +900,17 @@ void GuiSystem::Update(float dt)
     // Typing delta-time
     const float typingDt = sm.IsPaused() ? 0.f : dt;
 
+    // ====================================================
+    // DIALOGUE SKIP
+    // ====================================================
+
     // Check if dialogue can be skipped
     static float dialogueTimerBeforeCanSkip = 0.f;
     static float escHoldTimer = 0.f;
     static bool prevAnyDialogueVisible = false;
+
+    struct BarGeometry { float leftX{}, rightX{}, topY{}, botY{}, maxW{}; bool cached = false; };
+    static std::unordered_map<int, BarGeometry> s_barGeom;
 
     // Skip the entire dialogue after a delay
     const bool anyDialogueVisible = std::any_of(dialogues.begin(), dialogues.end(),
@@ -912,6 +919,8 @@ void GuiSystem::Update(float dt)
     if ((anyDialogueVisible && !prevAnyDialogueVisible) || sm.inEditMode )
     {
         dialogueTimerBeforeCanSkip = 0.f;
+        escHoldTimer = 0.f;
+        s_barGeom.clear();
     }
     prevAnyDialogueVisible = anyDialogueVisible;
 
@@ -944,11 +953,8 @@ void GuiSystem::Update(float dt)
         dialogueTimerBeforeCanSkip = 0.f;
         escHoldTimer = 0.f;
         prevAnyDialogueVisible = false;
+        s_barGeom.clear();
     }
-
-    // ====================================================
-    // DIALOGUE SKIP
-    // ====================================================
 
     // Show skip textbox only if dialogue skip is available
     const bool escHeld = Input::IsKeyHeld(GLFW_KEY_ESCAPE);
@@ -978,9 +984,6 @@ void GuiSystem::Update(float dt)
         {
             percentage = std::clamp(percentage, 0.f, 1.f);
 
-            struct BarGeometry { float leftX{}, rightX{}, topY{}, botY{}, maxW{}; bool cached = false; };
-            static std::unordered_map<int, BarGeometry> s_barGeom;
-
             for (auto& dp : displays)
             {
                 if (dp.ID != id) continue;
@@ -995,7 +998,7 @@ void GuiSystem::Update(float dt)
                     g.rightX = std::max(std::max(q.v0.x, q.v1.x), std::max(q.v2.x, q.v3.x));
                     g.topY = std::max(std::max(q.v0.y, q.v1.y), std::max(q.v2.y, q.v3.y));
                     g.botY = std::min(std::min(q.v0.y, q.v1.y), std::min(q.v2.y, q.v3.y));
-                    g.maxW = std::max(0.f, g.rightX - g.leftX);
+                    g.maxW = dp.baseSize.x > 0.f ? dp.baseSize.x : dp.size.x;
                     g.cached = true;
                 }
 
@@ -1007,13 +1010,8 @@ void GuiSystem::Update(float dt)
                     { newRightX,  g.topY },
                     { g.leftX,    g.topY }
                 );
-
-                //dp.baseSize.x = g.maxW;
-                //dp.size.x = g.maxW * percentage;
                 return;
             }
-
-            s_barGeom.clear();
         };
 
 
@@ -1084,6 +1082,7 @@ void GuiSystem::Update(float dt)
         escHoldTimer = 0.f;
         dialogueTimerBeforeCanSkip = 0.0f;
         prevAnyDialogueVisible = false;
+        s_barGeom.clear();
     }
 
     // ====================================================

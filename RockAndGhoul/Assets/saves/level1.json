@@ -212,7 +212,7 @@
                 "currentLineIndex": 0,
                 "customOverride": false,
                 "isVisible": true,
-                "jsonPath": "../Assets/Dialogue.json",
+                "jsonPath": "C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Dialogue.json",
                 "lines": [
                 {
                     "speakerID": 0,
@@ -278,9 +278,9 @@
                 "textBox": {
                     "centered": false,
                     "color": [
-                        1.0,
-                        1.0,
-                        1.0
+                        0.0,
+                        0.0,
+                        0.0
                     ],
                     "isVisible": true,
                     "pos": [
@@ -702,7 +702,7 @@
                 ]
             },
             {
-                "ID": 60,
+                "ID": 54,
                 "centered": true,
                 "isVisible": false,
                 "pos": [
@@ -949,7 +949,7 @@
                 ],
                 "renderData": "{\"data\":\"{\\\"color\\\":[0.3019607961177826,0.3019607961177826,1.0],\\\"v0\\\":[1260.0,340.0],\\\"v1\\\":[1260.0,340.0],\\\"v2\\\":[1260.0,380.0],\\\"v3\\\":[1260.0,380.0]}\",\"type\":\"quad\"}",
                 "size": [
-                    0.0,
+                    480.0,
                     40.0
                 ]
             }
