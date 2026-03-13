@@ -167,15 +167,13 @@ void UndoSystem::EndModify(Entity e, const TransformComponent& after)
 // ============================================================
 // RecordComponentChange  (any component property)
 // ============================================================
-void UndoSystem::RecordComponentChange(std::function<void()> applyUndo,
-                                       std::function<void()> applyRedo,
-                                       const std::string&    description)
+void UndoSystem::RecordComponentChange(std::function<void()> applyUndo, std::function<void()> applyRedo, const std::string& description)
 {
     Action a;
-    a.type                       = ActionType::ComponentProperty;
-    a.propAction.applyUndo       = std::move(applyUndo);
-    a.propAction.applyRedo       = std::move(applyRedo);
-    a.propAction.description     = description;
+    a.type = ActionType::ComponentProperty;
+    a.propAction.applyUndo = std::move(applyUndo);
+    a.propAction.applyRedo = std::move(applyRedo);
+    a.propAction.description = description;
     PushAction(a);
 
     std::cout << "[Undo] Recorded ComponentProperty: " << description << "\n";
@@ -200,8 +198,8 @@ void UndoSystem::Undo()
         m_redo.erase(m_redo.begin());
     m_redo.push_back(a);
 
-    Registry&      reg = Registry::Get();
-    EntityManager& em  = EntityManager::get();
+    Registry& reg = Registry::Get();
+    EntityManager& em = EntityManager::get();
 
     switch (a.type)
     {
@@ -279,7 +277,7 @@ void UndoSystem::Redo()
     Action a = m_redo.back();
     m_redo.pop_back();
 
-    // push back onto undo stack (without clearing redo — we manage it manually)
+    // push back onto undo stack (without clearing redo)
     if (m_stack.size() >= MAX_ACTIONS)
         m_stack.erase(m_stack.begin());
     m_stack.push_back(a);
@@ -292,18 +290,14 @@ void UndoSystem::Redo()
     case ActionType::Add:
     {
         // Redo ADD: restore from snapshot (entity was removed on undo)
-        // We don't have a snapshot for Add by default; there is nothing to re-create
-        // reliably unless we also snapshot on RecordAdd. As a safe fallback,
-        // just log — the editor user can re-add manually.
-        // (Improvement: snapshot on RecordAdd as well — left as future work.)
         std::cout << "[Redo] Redo ADD not fully supported (no snapshot).\n";
         break;
     }
 
     case ActionType::Remove:
     {
-        // Redo REMOVE: delete the entity that was recreated on undo.
-        // We search by name since the entity ID may differ after restoration.
+        // Redo REMOVE: delete the entity that was recreated on undo
+        // search by name since the entity ID may differ after restoration.
         EntityManager& emgr = EntityManager::get();
         bool found = false;
         for (Entity e = 0; e < static_cast<Entity>(emgr.maxEntities()); ++e)

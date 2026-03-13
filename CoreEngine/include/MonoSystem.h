@@ -42,7 +42,7 @@ enum class MonoScriptID : unsigned int
 };
 
 
-// Forward declaration � definition is in MonoScriptComponent.h
+// Forward declaration definition is in MonoScriptComponent.h
 struct MonoScriptComponent;
 
 // ========================================================
