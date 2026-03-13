@@ -1052,7 +1052,7 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
                 {
                     temp.memberIDs.push_back(member);
                 }
-                temp.isVisible = group["isVisible"];
+				temp.isVisible = group.value("isVisible", true);
                 GuiSystem::Get().AddGroup(temp);
             }
         }
