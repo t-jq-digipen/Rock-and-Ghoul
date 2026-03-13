@@ -25,8 +25,7 @@
             "components": {
                 "Behaviour": "{\"scripts\":[\"GhoulScript\"]}",
                 "Collider": "{\"aabb_dimX\":180.0,\"aabb_dimY\":350.0,\"aabb_maxX\":2003.5860595703125,\"aabb_maxY\":599.2611083984375,\"aabb_minX\":1823.5860595703125,\"aabb_minY\":249.2611083984375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Health": "{\"currentHP\":300.0,\"maxHP\":300.0}",
-                "HealthBar": "{\"height\":25.0,\"width\":200.0,\"yOffset\":200.0}",
+                "Health": "{\"currentHP\":1.0,\"maxHP\":300.0}",
                 "Movement": "{\"moveSpeed\":300.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":1000.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.0,\\\"currentState\\\":5,\\\"frameColEnd\\\":0,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":50.0,\\\\\\\"scaleY\\\\\\\":50.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Ghoul_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":true},\\\"2\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":4,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":6,\\\"col_start\\\":5,\\\"duration\\\":0.10000000149011612,\\\"row\\\":4,\\\"willLoop\\\":true},\\\"5\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"6\\\":{\\\"col_end\\\":12,\\\"col_start\\\":0,\\\"duration\\\":2.0,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"7\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":5,\\\"willLoop\\\":false}},\\\"totalCols\\\":13,\\\"totalRows\\\":6}\",\"renderLayer\":1,\"renderType\":2}",
@@ -201,6 +200,24 @@
                     50.0
                 ],
                 "soundName": "ui_click"
+            },
+            {
+                "ID": 59,
+                "action": "",
+                "actionName": "AdvanceDialogue",
+                "actionParams": {},
+                "isVisible": false,
+                "label": "",
+                "pos": [
+                    1700.0,
+                    130.0
+                ],
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_DialogueBox_NextButton.PNG\\\"}\",\"type\":\"image\"}",
+                "size": [
+                    50.0,
+                    50.0
+                ],
+                "soundName": "ui_click"
             }
         ],
         "dialogues": [
@@ -214,7 +231,7 @@
                 ],
                 "currentLineIndex": 0,
                 "customOverride": false,
-                "isVisible": true,
+                "isVisible": false,
                 "jsonPath": "C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Dialogue.json",
                 "lines": [],
                 "profileDisplaySide": 0,
@@ -235,6 +252,153 @@
                         1.0,
                         1.0,
                         1.0
+                    ],
+                    "isVisible": true,
+                    "pos": [
+                        450.0,
+                        200.0
+                    ],
+                    "scale": 1.0,
+                    "text": ""
+                },
+                "textSpeed": 60.0,
+                "wrapWidth": 1300.0
+            },
+            {
+                "ID": 58,
+                "bgEnabled": true,
+                "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                "bgSize": [
+                    1500.0,
+                    300.0
+                ],
+                "currentLineIndex": 0,
+                "customOverride": false,
+                "isVisible": false,
+                "jsonPath": "C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Dialogue.json",
+                "lines": [
+                    {
+                        "line": "Ghoul... It's over. We don't need to fight anymore. Just... come back. We made music that mattered, remember?",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "You really think a few chords fix everything? You took the spotlight, Rock. You always did.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "I never wanted to take it from you. I just wanted us to shine together.",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "[Ghoul hesitates, her spectral form glitching softer, the anger draining into something sad.]",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "...You always were terrible at rhythm. (weak laugh) But maybe... maybe we did sound kinda good.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "The best there ever was.",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "Guess this is my final solo, huh?",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "No solos. Just... a long fade-out.",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "[Ghoul smiles faintly before disappearing in a shimmer of light. The lights dim, leaving Rock alone in the spotlight.]",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "Guess it's just me now... But the show goes on.",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "[She strums a single melancholic note.]",
+                        "speakerID": 0
+                    }
+                ],
+                "profileDisplaySide": 0,
+                "profileEnabled": true,
+                "profileOffset": [
+                    0.0,
+                    0.0
+                ],
+                "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_RockDialogue_Happy.png\\\"}\",\"type\":\"image\"}",
+                "profileSize": [
+                    300.0,
+                    300.0
+                ],
+                "sceneID": "3",
+                "speakerUI": {
+                    "0": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Happy.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "1": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Ghoul.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_GhoulDialogue_Normal.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "2": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Enemy.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_EnemyDialogue_Normal.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    }
+                },
+                "textBox": {
+                    "centered": false,
+                    "color": [
+                        0.0,
+                        0.0,
+                        0.0
                     ],
                     "isVisible": true,
                     "pos": [
@@ -903,7 +1067,7 @@
                 ],
                 "renderData": "{\"data\":\"{\\\"color\\\":[0.3019607961177826,0.3019607961177826,1.0],\\\"v0\\\":[1260.0,340.0],\\\"v1\\\":[1260.0,340.0],\\\"v2\\\":[1260.0,380.0],\\\"v3\\\":[1260.0,380.0]}\",\"type\":\"quad\"}",
                 "size": [
-                    0.0,
+                    480.0,
                     40.0
                 ]
             },
@@ -1081,7 +1245,7 @@
             },
             {
                 "ID": 10,
-                "isVisible": true,
+                "isVisible": false,
                 "members": [
                     33,
                     34,
@@ -1090,6 +1254,18 @@
                     53
                 ],
                 "name": "Level 3 Dialogue"
+            },
+            {
+                "ID": 11,
+                "isVisible": false,
+                "members": [
+                    51,
+                    52,
+                    53,
+                    58,
+                    59
+                ],
+                "name": "End Dialogue"
             }
         ],
         "textboxes": [
