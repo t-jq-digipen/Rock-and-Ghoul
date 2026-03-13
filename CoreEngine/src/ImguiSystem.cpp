@@ -2143,6 +2143,16 @@ void ImGuiSystem::Update(float dt)
         if (ImGui::Button("Clone Entity") && selectedEntity != INVALID_ENTITY)
         {
             Registry& reg = Registry::Get();
+
+            // Capture the original entity's prefab name BEFORE selectedEntity changes,
+            // so the clone inherits it and can be found by "Update All Instances".
+            std::string clonedName;
+            {
+                auto& nm = reg.Get_EntityNameMap();
+                auto it = nm.find(selectedEntity);
+                if (it != nm.end()) clonedName = it->second;
+            }
+
             SavedEntity src = reg.Save_Entity(selectedEntity);
 
             //filter out empty json data
@@ -2160,6 +2170,10 @@ void ImGuiSystem::Update(float dt)
             Entity newEntity = reg.Load_Entity(src);
             if (newEntity != INVALID_ENTITY)
             {
+                // Inherit prefab name so Update All can find this clone
+                if (!clonedName.empty())
+                    reg.Get_EntityNameMap()[newEntity] = clonedName;
+
                 selectedEntity = newEntity;
                 UndoSystem::Get().RecordAdd(newEntity);
             }
@@ -8403,6 +8417,9 @@ void ImGuiSystem::ShowPrefabControls()
                 std::string outpath = FilePath::PREFABS_FOLDER + pendingPrefabName + ".json";
                 if (JsonLoad::SaveEntity(outpath, selectedEntity))
                 {
+                    // Invalidate the prefab cache so Update All loads the freshly saved file,
+                    // not the stale pre-edit version that was cached from a previous spawn.
+                    JsonLoad::ClearPrefabCache();
                     Registry::Get().Get_EntityNameMap()[selectedEntity] = pendingPrefabName;
                     std::cout << "[Editor] Replaced prefab: " << outpath << "\n";
                     updateInstancesPopup = true;
@@ -8462,59 +8479,49 @@ void ImGuiSystem::ShowPrefabControls()
 
                 std::string prefabPath = FilePath::PREFABS_FOLDER + targetName + ".json";
 
-                // Replace old entities
+                // Replace other instances n skip the selected entity since it is
+                // already in the correct (freshly edited) state.
                 for (Entity oldEnt : replaceList)
                 {
+                    if (oldEnt == selectedEntity)
+                        continue;
 
                     // Check if transform exists
                     if (!registry.Has_Component<TransformComponent>(oldEnt))
-                    {
-                     
                         continue;
-                    }
 
-                    // Only preserve POSITION and optionally ROTATION from old entity
+                    // Preserve position and rotation from old entity
                     TransformComponent oldTransform = registry.Get_Component<TransformComponent>(oldEnt);
 
                     // Delete the old entity
                     registry.Remove_Entity(oldEnt);
 
-                    // Spawn new entity from prefab at OLD position
+                    // Spawn new entity from saved prefab at old position
                     Entity newEnt = JsonLoad::LoadEntityFromFile(prefabPath, oldTransform.pos.x, oldTransform.pos.y);
 
                     if (newEnt == INVALID_ENTITY)
-                    {
                         continue;
-                    }
 
-
-                    // Verify new entity has transform
                     if (!registry.Has_Component<TransformComponent>(newEnt))
-                    {
                         continue;
-                    }
 
-                    // Get reference to new transform
                     TransformComponent& newTransform = registry.Get_Component<TransformComponent>(newEnt);
                     newTransform.rot = oldTransform.rot;
 
-
-                    // Update collider with NEW prefab scale
                     if (registry.Has_Component<ColliderComponent>(newEnt))
                     {
                         auto& col = registry.Get_Component<ColliderComponent>(newEnt);
                         col.UpdateHitboxes(newTransform.pos, newTransform.scale);
                     }
 
-                    // Set the name
                     registry.Get_EntityNameMap()[newEnt] = targetName;
-
-                    // If the replaced entity was selected, select the new one
-                    if (oldEnt == selectedEntity)
-                        selectedEntity = newEnt;
                 }
 
                 std::cout << "[Update Instances] Finished updating " << replaceList.size() << " instances" << std::endl;
+
+                // Undo records may hold raw pointers to components on the
+                // deleted entities clear to prevent dangling-pointer crashes.
+                UndoSystem::Get().Clear();
 
                 ImGui::CloseCurrentPopup();
                 pendingPrefabName.clear();
