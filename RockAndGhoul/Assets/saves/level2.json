@@ -116,22 +116,21 @@
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
-                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1790.572021484375,\"aabb_maxY\":717.89794921875,\"aabb_minX\":1540.572021484375,\"aabb_minY\":467.89794921875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Element": "{\"baseDamage\":25.0,\"element\":4}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1009.8492431640625,\"aabb_maxY\":343.8018493652344,\"aabb_minX\":759.8492431640625,\"aabb_minY\":93.80184936523438,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
                 "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
                 "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
                 "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
                 "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":1665.572021484375,\"posY\":592.89794921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":884.8492431640625,\"posY\":218.80184936523438,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "SpiritRanged"
         },
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
-                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":2402.2529296875,\"aabb_maxY\":417.791015625,\"aabb_minX\":2152.2529296875,\"aabb_minY\":167.791015625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":2131.168701171875,\"aabb_maxY\":331.0440673828125,\"aabb_minX\":1881.168701171875,\"aabb_minY\":81.0440673828125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
                 "Element": "{\"baseDamage\":25.0,\"element\":1}",
                 "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
                 "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
@@ -139,37 +138,36 @@
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
                 "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":2277.2529296875,\"posY\":292.791015625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":2006.168701171875,\"posY\":206.0440673828125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "SpiritRanged"
         },
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
-                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1386.956787109375,\"aabb_maxY\":604.6797485351563,\"aabb_minX\":1136.956787109375,\"aabb_minY\":354.67974853515625,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Element": "{\"baseDamage\":25.0,\"element\":2}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":351.41485595703125,\"aabb_maxY\":751.0652465820313,\"aabb_minX\":101.41485595703125,\"aabb_minY\":501.06524658203125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Element": "{\"baseDamage\":25.0,\"element\":4}",
                 "Health": "{\"currentHP\":80.0,\"maxHP\":80.0}",
                 "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
                 "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
                 "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":1261.956787109375,\"posY\":479.67974853515625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":226.41485595703125,\"posY\":626.0652465820313,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "SpiritMelee"
         },
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
-                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1929.8251953125,\"aabb_maxY\":403.971923828125,\"aabb_minX\":1679.8251953125,\"aabb_minY\":153.971923828125,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
-                "Element": "{\"baseDamage\":25.0,\"element\":3}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":1528.62060546875,\"aabb_maxY\":816.0200805664063,\"aabb_minX\":1278.62060546875,\"aabb_minY\":566.0200805664063,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
                 "Health": "{\"currentHP\":80.0,\"maxHP\":80.0}",
                 "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
                 "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
                 "Tag": "{\"tagID\":2}",
-                "Transform": "{\"posX\":1804.8251953125,\"posY\":278.971923828125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+                "Transform": "{\"posX\":1403.62060546875,\"posY\":691.0200805664063,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "SpiritMelee"
         },
@@ -190,6 +188,20 @@
                 "Transform": "{\"posX\":2287.159912109375,\"posY\":814.649658203125,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "Portal"
+        },
+        {
+            "components": {
+                "Behaviour": "{\"scripts\":[\"SpiritScript\"]}",
+                "Collider": "{\"aabb_dimX\":250.0,\"aabb_dimY\":250.0,\"aabb_maxX\":2521.530029296875,\"aabb_maxY\":726.826904296875,\"aabb_minX\":2271.530029296875,\"aabb_minY\":476.826904296875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Enemy\",\"triggerEvent\":\"\"}",
+                "Health": "{\"currentHP\":50.0,\"maxHP\":50.0}",
+                "HealthBar": "{\"height\":25.0,\"width\":150.0,\"yOffset\":150.0}",
+                "Movement": "{\"moveSpeed\":200.0,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":4,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":true,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":45.0,\\\\\\\"scaleY\\\\\\\":45.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/Spirit_SpritesheetNew.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":true},\\\"1\\\":{\\\"col_end\\\":5,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":1,\\\"willLoop\\\":false},\\\"2\\\":{\\\"col_end\\\":4,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"3\\\":{\\\"col_end\\\":0,\\\"col_start\\\":0,\\\"duration\\\":0.0,\\\"row\\\":2,\\\"willLoop\\\":false},\\\"4\\\":{\\\"col_end\\\":7,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":3,\\\"willLoop\\\":false}},\\\"totalCols\\\":8,\\\"totalRows\\\":4}\",\"renderLayer\":1,\"renderType\":2}",
+                "Tag": "{\"tagID\":2}",
+                "Transform": "{\"posX\":2396.530029296875,\"posY\":601.826904296875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "SpiritRanged"
         }
     ],
     "fontConfig": "E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
