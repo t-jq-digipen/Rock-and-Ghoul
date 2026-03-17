@@ -23,7 +23,10 @@
 #include <iostream>
 #include "CollisionManager.h"
 #include "Physics.h"
+#if __has_include("CombatSystem.h")
 #include "CombatSystem.h"
+#define HAS_COMBAT_SYSTEM
+#endif
 #include "FrameRateController.h"
 #include "RenderSystem.h"
  // extern reference to frame rate controller from CoreEngine
@@ -103,7 +106,9 @@ void PhysicsSystem::Update(float dt) {
     for (Entity eID : expired)
     {
         // Clean up projectile pool data before removing entity
+#ifdef HAS_COMBAT_SYSTEM
         CombatSystem::Get().CleanupProjectilePoolData(eID);
+#endif
         m_registry.Remove_Entity(eID);
     }
     expired.clear();

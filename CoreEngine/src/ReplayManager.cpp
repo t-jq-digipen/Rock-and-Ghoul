@@ -22,12 +22,20 @@
  * The system is designed as a lightweight debugging / gameplay
  * feature and does NOT perform full ECS serialization.
  *
- * Copyright © 2026 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 
 
 #include "ReplayManager.h"
+#if __has_include("PlayerSystem.h")
+#include "PlayerSystem.h"
+#define HAS_PLAYER_SYSTEM
+#endif
+#if __has_include("CombatSystem.h")
+#include "CombatSystem.h"
+#define HAS_COMBAT_SYSTEM
+#endif
 
 
 /**
@@ -343,6 +351,7 @@ void ReplayManager::CaptureTick()
             s.lifetime = lt.lifetime;
         }
 
+#ifdef HAS_COMBAT_SYSTEM
         if (reg.Has_Component<StatusEffectComponent>(e))
         {
             auto& se = reg.Get_Component<StatusEffectComponent>(e);
@@ -353,6 +362,7 @@ void ReplayManager::CaptureTick()
             s.originalMoveSpeed = se.originalMoveSpeed;
             s.isStunned = se.isStunned;
         }
+#endif
 
 
         if (reg.Has_Component<BehaviourComponent>(e))
@@ -395,6 +405,7 @@ void ReplayManager::CaptureTick()
     }
 
     // spell slots state
+#ifdef HAS_PLAYER_SYSTEM
     for (int j = 0; j < 3; j++)
     {
         int t; float cd; int ch;
@@ -406,6 +417,7 @@ void ReplayManager::CaptureTick()
 
     //element cycle state
     frame.fretboard.currentElement = PlayerSystem::GetCurrentElement();
+#endif
 
     // advance ring
     writeIdx++;
@@ -567,6 +579,7 @@ void ReplayManager::ApplyTick()
             lt.lifetime = s.lifetime;
         }
 
+#ifdef HAS_COMBAT_SYSTEM
         if (s.hasStatus && reg.Has_Component<StatusEffectComponent>(target))
         {
             auto& se = reg.Get_Component<StatusEffectComponent>(target);
@@ -576,6 +589,7 @@ void ReplayManager::ApplyTick()
             se.originalMoveSpeed = s.originalMoveSpeed;
             se.isStunned = s.isStunned;
         }
+#endif
 
         if (reg.Has_Component<TagComponent>(target))
         {
@@ -605,6 +619,7 @@ void ReplayManager::ApplyTick()
     }
 
     //restore spell slot state (kinda need update range if add more speels in the future)
+#ifdef HAS_PLAYER_SYSTEM
     for (int i = 0; i < 3; i++)
     {
         PlayerSystem::SetSpellSlotState(
@@ -617,6 +632,7 @@ void ReplayManager::ApplyTick()
 
     //element cycle state
     PlayerSystem::SetCurrentElement(frame.fretboard.currentElement);
+#endif
 
     if (foundPlayer)
     {
@@ -626,9 +642,11 @@ void ReplayManager::ApplyTick()
     playCursor++;
 
     //make sure health is replayed correctly visually
+#ifdef HAS_PLAYER_SYSTEM
     Entity player = PlayerSystem::FindPlayer();
     if (player != INVALID_ENTITY)
     {
         PlayerSystem::RefreshPlayerHealthUI(player);
     }
+#endif
 }

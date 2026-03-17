@@ -36,7 +36,6 @@
 #include "SceneManager.h"
 #include "SimpleAtlas.h"
 #include "JsonLoad.h"
-#include "CombatSystem.h"
 #include <iostream>
 
 //need this to prevent name mangling 
@@ -405,6 +404,19 @@ void TestOpenVideo() {
 //AVFormatContext* pFormatContext = avformat_alloc_context();
 
 Render& renderInstance = Render::GetInstance();
+
+// Draws a health bar: dark background + colored fill scaled by ratio (0..1)
+static void DrawHealthBar(const Vec2& pos, float width, float height, float ratio)
+{
+    // Background
+    renderInstance.DrawRect(pos, width, height, { 0.2f, 0.2f, 0.2f });
+    // Fill — shifts left so bar depletes from right
+    float fillW = width * ratio;
+    Vec2 fillPos = { pos.x - (width - fillW) * 0.5f, pos.y };
+    float r = 1.f - ratio;
+    float g = ratio;
+    renderInstance.DrawRect(fillPos, fillW, height, { r, g, 0.f });
+}
 
 //Reorganise cutscene stuff below
 struct CutscenePlayer {

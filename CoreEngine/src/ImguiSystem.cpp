@@ -34,7 +34,7 @@
 #include "Registry.h"
 #include "glapp.h"
 #include "CoreEngine.h"
-#include "EntityCreation.h"
+//#include "EntityCreation.h"
 #include "Input.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
@@ -1673,6 +1673,7 @@ void ImGuiSystem::Update(float dt)
                 f << "int main() {\n";
                 f << "    // IMPORTANT: must be first — tells the engine where this game's assets live.\n";
                 f << "    FilePath::SetGameRoot(\"" << name << "\");\n\n";
+                f << "    GLApp::init(1920, 1080, \""<< name<< "\", true);\n";
                 f << "    CoreEngine& engine = CoreEngine::GetInstance();\n";
                 f << "    engine.Initialize();\n";
                 f << "    engine.Run();\n";
