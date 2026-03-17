@@ -1712,6 +1712,7 @@ void ImGuiSystem::Update(float dt)
                 if (std::filesystem::exists(AUDIO_MANIFEST_PATH))
                     AudioCache::Initialize(AUDIO_MANIFEST_PATH);
                 Render::GetInstance().LoadShaders();
+                CollisionLayerManager::Get().Clear();
                 CollisionLayerManager::Get().LoadCollisionSettings();
                 JsonLoad::ClearAllEntities();
                 GuiSystem::Get().Clear();
@@ -5719,6 +5720,7 @@ void ImGuiSystem::Render() {
             }
         }
 
+        CollisionLayerManager::Get().Clear();
         CollisionLayerManager::Get().LoadCollisionSettings();
         JsonLoad::ClearAllEntities();
         GuiSystem::Get().Clear();
@@ -8980,6 +8982,54 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
         // cursor to next row
         ImGui::SetCursorScreenPos(ImVec2(rowStart.x, rowStart.y + rowHeight));
     }
+
+    // ── Add / Remove layer controls ──────────────────────────────────────────
+    ImGui::Separator();
+    ImGui::SeparatorText("Manage Layers");
+
+    static char newLayerBuf[64] = {};
+    ImGui::SetNextItemWidth(160.0f);
+    ImGui::InputText("##newlayer", newLayerBuf, sizeof(newLayerBuf));
+    ImGui::SameLine();
+    if (ImGui::Button("Add Layer"))
+    {
+        std::string name(newLayerBuf);
+        // trim whitespace
+        name.erase(0, name.find_first_not_of(" \t"));
+        name.erase(name.find_last_not_of(" \t") + 1);
+        if (!name.empty())
+        {
+            clm.RegisterLayer(name);
+            newLayerBuf[0] = '\0';
+        }
+    }
+
+    // Remove layer buttons (one per row under the matrix)
+    if (!layers.empty())
+    {
+        ImGui::SameLine();
+        ImGui::TextDisabled("|");
+        ImGui::SameLine();
+        ImGui::TextDisabled("Remove:");
+        for (auto& l : layers)
+        {
+            ImGui::SameLine();
+            if (ImGui::SmallButton(("x " + l.name).c_str()))
+            {
+                clm.RemoveLayer(l.name);
+                break; // map changed — exit loop, redraw next frame
+            }
+        }
+    }
+
+    // ── Save to file ─────────────────────────────────────────────────────────
+    ImGui::Separator();
+    if (ImGui::Button("Save Collision Settings"))
+    {
+        clm.SaveCollisionSettings();
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("Saved to: %s", FilePath::COLLISIONSETTINGS_FILE.c_str());
 }
 
 void ImGuiSystem::UpdateSpawnCamera() {
