@@ -1264,7 +1264,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
                 {
                     sd.lines = comp->GetLines();
                     sd.currentLineIndex = comp->GetCurrentLineIndex();
-                    sd.textSpeed = comp->GetTextSpeed();
+                    sd.textSpeed = d.textSpeed;
                     sd.wrapWidth = d.wrapWidth;
                 }
 
@@ -1528,7 +1528,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
                         }
                         if (outLines.empty()) outLines.push_back("");
 
-                        textSpeed = sc.value("textSpeed", 30.f);
+                        textSpeed = sc.value("textSpeed", 60.f);
                         fontPath = sc.value("fontPath", std::string((FilePath::ASSETS_FOLDER + "fonts/Marker.ttf")));
                         fontSize = sc.value("fontSize", 1.0f);
 
@@ -1549,6 +1549,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
             // Load dialogue properties
             if (d.customOverride)
             {
+                comp->SetTextSpeed(d.textSpeed);
                 if (!d.savedLines.empty())
                 {
                     std::vector<std::string> text;

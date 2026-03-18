@@ -1114,7 +1114,14 @@ void GuiSystem::Update(float dt)
                     const auto& lines = comp->GetLines();
                     if (lines.empty()) continue;
                     comp->SetCurrentLineIndex(std::clamp(comp->GetCurrentLineIndex(), 0, (int)lines.size() - 1));
-                    if (comp->GetTextSpeed() <= 0.f) comp->SetTextSpeed(30.f);
+                    if (d.textSpeed <= 0.f)
+                    {
+                        comp->SetTextSpeed(60.f);
+                    }
+                    else
+                    {
+                        comp->SetTextSpeed(d.textSpeed);
+                    }
                     comp->StartTyping();
                 }
             }
@@ -1643,7 +1650,7 @@ void GuiSystem::Update(float dt)
                 }
                 else
                 {
-                    advanceBtnPosShift = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_LEFT) ? 0.f : ADVANCE_DIALOGUE_BUTTON_OFFSET_X;
+                    advanceBtnPosShift = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? ADVANCE_DIALOGUE_BUTTON_OFFSET_X : 0.f;
                 }
                 showAdvanceBtn = HandleDialogueAdvance(false);
             }
