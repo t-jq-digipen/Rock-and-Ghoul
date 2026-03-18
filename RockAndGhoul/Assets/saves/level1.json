@@ -402,9 +402,9 @@
                 "textBox": {
                     "centered": false,
                     "color": [
-                        1.0,
-                        1.0,
-                        1.0
+                        0.0,
+                        0.0,
+                        0.0
                     ],
                     "isVisible": true,
                     "pos": [

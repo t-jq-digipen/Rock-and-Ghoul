@@ -2376,7 +2376,7 @@ void ImGuiSystem::Update(float dt)
                     d.sceneID = "0";
                     d.ID = nextID();
                     d.owned = std::make_shared<TextSystem::TextComponent>();
-                    d.textSpeed = 30.f;
+                    d.textSpeed = 60.f;
                     d.wrapWidth = 1300.f;
                     if (d.owned) 
                     {
@@ -3651,7 +3651,7 @@ void ImGuiSystem::Update(float dt)
 
                             if (applyTextBoxSettings)
                             {
-                                comp->SetTextSpeed(sc.value("textSpeed", 60.f));
+                                d.wrapWidth = sc.value("textSpeed", d.textSpeed);
                                 d.wrapWidth = sc.value("wrapWidth", d.wrapWidth);
 
                                 if (applyColor && sc.contains("color") && sc["color"].is_array() && sc["color"].size() == 3)
@@ -3910,7 +3910,7 @@ void ImGuiSystem::Update(float dt)
                             ogs.tbBaseScale = d.textBox.baseScale;
                             ogs.tbColor = d.textBox.color;
                             ogs.wrapWidth = d.wrapWidth;
-                            ogs.textSpeed = comp->GetTextSpeed();
+                            ogs.textSpeed = d.textSpeed;
 
                             ogs.bgEnabled = d.bgEnabled;
                             ogs.bgBaseSize = d.bgBaseSize;
@@ -3964,8 +3964,7 @@ void ImGuiSystem::Update(float dt)
                                 d.textBox.baseScale = ogs.tbBaseScale;
                                 d.textBox.color = ogs.tbColor;
                                 d.wrapWidth = ogs.wrapWidth;
-
-                                comp->SetTextSpeed(ogs.textSpeed);
+                                d.textSpeed = ogs.textSpeed;
                                 comp->SetColor({ ogs.tbColor.r, ogs.tbColor.g, ogs.tbColor.b });
 
                                 d.bgEnabled = ogs.bgEnabled;
@@ -4039,12 +4038,7 @@ void ImGuiSystem::Update(float dt)
                         }
 
                         ImGui::DragFloat("Wrap Width", &d.wrapWidth, 1.f);
-
-                        float spd = comp->GetTextSpeed();
-                        if (ImGui::DragFloat("Text Speed", &spd, 1.f))
-                        {
-                            comp->SetTextSpeed(spd);
-                        }
+                        ImGui::DragFloat("Text Speed", &d.textSpeed, 1.f);
                     }
 
                     // Lines
