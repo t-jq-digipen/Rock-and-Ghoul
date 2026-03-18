@@ -1650,7 +1650,7 @@ void GuiSystem::Update(float dt)
                 }
                 else
                 {
-                    advanceBtnPosShift = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_LEFT) ? 0.f : ADVANCE_DIALOGUE_BUTTON_OFFSET_X;
+                    advanceBtnPosShift = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_RIGHT) ? ADVANCE_DIALOGUE_BUTTON_OFFSET_X : 0.f;
                 }
                 showAdvanceBtn = HandleDialogueAdvance(false);
             }
