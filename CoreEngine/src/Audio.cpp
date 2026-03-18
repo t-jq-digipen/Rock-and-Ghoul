@@ -26,7 +26,6 @@
 #include "AudioCache.h"
 #include "AudioComponent.h"
 #include "CoreEngine.h"
-#include "PlayerSystem.h"
 #include "Camera.h"
 #include <iostream>
 #include "SceneManager.h"

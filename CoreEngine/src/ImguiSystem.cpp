@@ -34,7 +34,7 @@
 #include "Registry.h"
 #include "glapp.h"
 #include "CoreEngine.h"
-#include "EntityCreation.h"
+//#include "EntityCreation.h"
 #include "Input.h"
 #include "JsonLoad.h"
 #include "FilePath.h"
@@ -579,7 +579,8 @@ static ImVec2 UIBaseToPanel(float ux, float uy, ImVec2 panelPos, float panelW, f
 // outDragStartPos receives the position at the moment the drag began (valid when return is true).
 static bool DrawUIGizmo(ImVec2 panelPos, float panelW, float panelH,
                         Vec2& basePos, Vec2* baseSize,
-                        bool isCentered, Vec2& outDragStartPos, Vec2& outDragStartSize)
+                        bool isCentered, Vec2& outDragStartPos, Vec2& outDragStartSize,
+                        bool& outIsHot)
 {
     // Center in UI space
     float cx = basePos.x;
@@ -763,6 +764,9 @@ static bool DrawUIGizmo(ImVec2 panelPos, float panelW, float panelH,
                  ? IM_COL32(255, 255, 80, 255) : IM_COL32(255, 200, 0, 200);
     dl->AddCircleFilled(center, MR, dotCol);
     dl->AddCircle      (center, MR, IM_COL32(255,255,255,255), 16, 2.f);
+
+    // hot = any handle hovered, body hovered, or currently dragging
+    outIsHot = anyResizeHovered || inBounds || (s_dragMode != 0);
 
     return moved;
 }
@@ -1673,6 +1677,7 @@ void ImGuiSystem::Update(float dt)
                 f << "int main() {\n";
                 f << "    // IMPORTANT: must be first — tells the engine where this game's assets live.\n";
                 f << "    FilePath::SetGameRoot(\"" << name << "\");\n\n";
+                f << "    GLApp::init(1920, 1080, \""<< name<< "\", true);\n";
                 f << "    CoreEngine& engine = CoreEngine::GetInstance();\n";
                 f << "    engine.Initialize();\n";
                 f << "    engine.Run();\n";
@@ -1707,6 +1712,7 @@ void ImGuiSystem::Update(float dt)
                 if (std::filesystem::exists(AUDIO_MANIFEST_PATH))
                     AudioCache::Initialize(AUDIO_MANIFEST_PATH);
                 Render::GetInstance().LoadShaders();
+                CollisionLayerManager::Get().Clear();
                 CollisionLayerManager::Get().LoadCollisionSettings();
                 JsonLoad::ClearAllEntities();
                 GuiSystem::Get().Clear();
@@ -5225,6 +5231,7 @@ void ImGuiSystem::Update(float dt)
             DrawSelectionOutline(selectedEntity, cursor, newWidth, newHeight);
 
         // UI gizmo overlay for selected UI element
+        bool g_uiGizmoIsHot = false; // true when mouse is over any UI gizmo handle this frame
         if (!isPlaying && g_uiGizmoSelType != SelectedType::None && g_uiGizmoSelLocal >= 0)
         {
             auto& gui = GuiSystem::Get();
@@ -5283,7 +5290,7 @@ void ImGuiSystem::Update(float dt)
                 static int          s_uiGizmoDragLocal   = -1;
 
                 Vec2 gizmoDragStartPos{}, gizmoDragStartSize{};
-                bool moved = DrawUIGizmo(cursor, newWidth, newHeight, *pBasePos, pBaseSize, centered, gizmoDragStartPos, gizmoDragStartSize);
+                bool moved = DrawUIGizmo(cursor, newWidth, newHeight, *pBasePos, pBaseSize, centered, gizmoDragStartPos, gizmoDragStartSize, g_uiGizmoIsHot);
 
                 // Capture "before" on the first frame of a drag
                 if (moved && !s_uiGizmoDragStarted)
@@ -5352,10 +5359,16 @@ void ImGuiSystem::Update(float dt)
 
         static glm::vec3 lastScale(1.0f);
         static bool wasGizmoUsing = false;
-        if (selectedEntity != INVALID_ENTITY &&
-            reg.Has_Component<TransformComponent>(selectedEntity))
+        static Entity gizmoEntity = INVALID_ENTITY; // entity locked for the duration of a drag
+
+        // While a drag is in progress keep using the locked entity,
+        // otherwise follow the current selection.
+        Entity activeGizmoEntity = wasGizmoUsing ? gizmoEntity : selectedEntity;
+
+        if (activeGizmoEntity != INVALID_ENTITY &&
+            reg.Has_Component<TransformComponent>(activeGizmoEntity))
         {
-            TransformComponent& t = reg.Get_Component<TransformComponent>(selectedEntity);
+            TransformComponent& t = reg.Get_Component<TransformComponent>(activeGizmoEntity);
 
             // Build model matrix TRSSSS
             glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(t.pos.x, t.pos.y, 0.0f));
@@ -5380,10 +5393,12 @@ void ImGuiSystem::Update(float dt)
             //check if using gizmo
             bool isUsingNow = ImGuizmo::IsUsing();
 
-            //UNDOOOOO
+            //UNDOOOOO — lock entity at drag start so selection changes mid-drag
+            // don't corrupt the wrong object or break the undo entry
             if (isUsingNow && !wasGizmoUsing)
             {
-                UndoSystem::Get().BeginModify(selectedEntity, t);
+                gizmoEntity = activeGizmoEntity;
+                UndoSystem::Get().BeginModify(gizmoEntity, t);
                 lastScale = glm::vec3(1.0f);
             }
 
@@ -5424,19 +5439,25 @@ void ImGuiSystem::Update(float dt)
                 t.scale.y = scaleAbs.y;
 
                 //collider nid to sync
-                if (reg.Has_Component<ColliderComponent>(selectedEntity))
+                if (reg.Has_Component<ColliderComponent>(activeGizmoEntity))
                 {
-                    auto& col = reg.Get_Component<ColliderComponent>(selectedEntity);
+                    auto& col = reg.Get_Component<ColliderComponent>(activeGizmoEntity);
                     col.UpdateHitboxes(t.pos, t.scale);
                 }
             }
 
             if (!isUsingNow && wasGizmoUsing)
             {
-                UndoSystem::Get().EndModify(selectedEntity, t);
+                UndoSystem::Get().EndModify(gizmoEntity, t);
+                gizmoEntity = INVALID_ENTITY;
             }
             //track prev frame state
             wasGizmoUsing = isUsingNow;
+        }
+        else if (!wasGizmoUsing)
+        {
+            // No valid entity and not mid-drag — make sure lock is clear
+            gizmoEntity = INVALID_ENTITY;
         }
         } // end !g_uiEditorTabActive
 
@@ -5444,7 +5465,7 @@ void ImGuiSystem::Update(float dt)
 
         if (!isPlaying && ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         {
-            if (!ImGuizmo::IsUsing())
+            if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !g_uiGizmoIsHot)
             {
                 ImVec2 mousePos = ImGui::GetMousePos();
 
@@ -5700,6 +5721,7 @@ void ImGuiSystem::Render() {
             }
         }
 
+        CollisionLayerManager::Get().Clear();
         CollisionLayerManager::Get().LoadCollisionSettings();
         JsonLoad::ClearAllEntities();
         GuiSystem::Get().Clear();
@@ -8961,6 +8983,54 @@ void ImGuiSystem::ShowLayerCollisionMatrix()
         // cursor to next row
         ImGui::SetCursorScreenPos(ImVec2(rowStart.x, rowStart.y + rowHeight));
     }
+
+    // ── Add / Remove layer controls ──────────────────────────────────────────
+    ImGui::Separator();
+    ImGui::SeparatorText("Manage Layers");
+
+    static char newLayerBuf[64] = {};
+    ImGui::SetNextItemWidth(160.0f);
+    ImGui::InputText("##newlayer", newLayerBuf, sizeof(newLayerBuf));
+    ImGui::SameLine();
+    if (ImGui::Button("Add Layer"))
+    {
+        std::string name(newLayerBuf);
+        // trim whitespace
+        name.erase(0, name.find_first_not_of(" \t"));
+        name.erase(name.find_last_not_of(" \t") + 1);
+        if (!name.empty())
+        {
+            clm.RegisterLayer(name);
+            newLayerBuf[0] = '\0';
+        }
+    }
+
+    // Remove layer buttons (one per row under the matrix)
+    if (!layers.empty())
+    {
+        ImGui::SameLine();
+        ImGui::TextDisabled("|");
+        ImGui::SameLine();
+        ImGui::TextDisabled("Remove:");
+        for (auto& l : layers)
+        {
+            ImGui::SameLine();
+            if (ImGui::SmallButton(("x " + l.name).c_str()))
+            {
+                clm.RemoveLayer(l.name);
+                break; // map changed — exit loop, redraw next frame
+            }
+        }
+    }
+
+    // ── Save to file ─────────────────────────────────────────────────────────
+    ImGui::Separator();
+    if (ImGui::Button("Save Collision Settings"))
+    {
+        clm.SaveCollisionSettings();
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("Saved to: %s", FilePath::COLLISIONSETTINGS_FILE.c_str());
 }
 
 void ImGuiSystem::UpdateSpawnCamera() {

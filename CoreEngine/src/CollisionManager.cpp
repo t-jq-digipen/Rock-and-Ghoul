@@ -59,6 +59,24 @@ uint32_t CollisionLayerManager::RegisterLayer(const std::string& name) {
     return bit;
 }
 
+void CollisionLayerManager::RemoveLayer(const std::string& name) {
+    auto it = layerBits.find(name);
+    if (it == layerBits.end()) {
+        std::cerr << "RemoveLayer: layer \"" << name << "\" not registered.\n";
+        return;
+    }
+    uint32_t bit = it->second;
+
+    // Strip this bit from every other layer's mask
+    for (auto& [lb, mask] : layerMasks)
+        mask &= ~bit;
+
+    layerBits.erase(it);
+    layerNames.erase(bit);
+    layerMasks.erase(bit);
+    // Note: nextBit is NOT decremented — bits are never reused to avoid collisions
+}
+
 void CollisionLayerManager::LoadCollisionSettings() {
 
     std::string settings;
@@ -186,10 +204,9 @@ std::string CollisionLayerManager::GetLayerName(uint32_t bit) const {
 }
 
 bool CollisionLayerManager::ShouldCollide(uint32_t layerA, uint32_t maskA, uint32_t layerB, uint32_t maskB) const {
-    // If either entity has no layer set (0), don't collide
-    // This prevents entities without proper collision setup from affecting the system
+    // layer == 0 means "no layer assigned" — treat as unfiltered, collide with everything
     if (layerA == 0 || layerB == 0) {
-        return false;
+        return true;
     }
 
     // Both have layers set, use mask filtering
@@ -209,10 +226,9 @@ bool CollisionLayerManager::ShouldCollide(uint32_t layerA, uint32_t maskA, uint3
 }
 
 bool CollisionLayerManager::ShouldCollide(uint32_t layerA, uint32_t layerB) const {
-    // If either entity has no layer set (0), don't collide
-    // This prevents entities without proper collision setup from affecting the system
+    // layer == 0 means "no layer assigned" — treat as unfiltered, collide with everything
     if (layerA == 0 || layerB == 0) {
-        return false;
+        return true;
     }
 
     // Both have layers set, use mask filtering
@@ -228,6 +244,7 @@ bool CollisionLayerManager::ShouldCollide(uint32_t layerA, uint32_t layerB) cons
 void CollisionLayerManager::Clear() {
     layerBits.clear();
     layerNames.clear();
+    layerMasks.clear();
     nextBit = 0;
 }
 

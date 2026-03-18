@@ -26,7 +26,7 @@
  * - Provides a lightweight replay pipeline suited for transient combat,
  *   spell visuals, and short-term debugging of gameplay events.
  *
- * Copyright © 2026 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -40,12 +40,10 @@
 #include "Registry.h"
 #include "Component.h" 
 #include <unordered_set>
-#include "CombatSystem.h"
 #include "BehaviourComponent.h"
 #include "MonoScriptComponent.h"
 #include <SceneManager.h>
 #include "Camera.h"
-#include "PlayerSystem.h"
 #include "GuiSystem.h"
 #include "JsonLoad.h"
 

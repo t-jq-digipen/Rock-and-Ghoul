@@ -82,6 +82,8 @@ public:
 
     bool ShouldCollide(uint32_t layerA, uint32_t layerB) const;
 
+    void RemoveLayer(const std::string& name);
+
     void Clear();
 };
 
