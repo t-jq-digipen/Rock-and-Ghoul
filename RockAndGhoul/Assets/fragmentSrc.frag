@@ -34,7 +34,7 @@ void main() {
         // Sample single-channel font atlas
         float alpha = texture(uTexture, TexCoord).r;
         //FragColor = vec4(uTextColor, 1.0) * vec4(1.0, 1.0, 1.0, alpha);
-	FragColor = vec4(uTextColor, alpha); 
+	FragColor = vec4(uTextColor, alpha * uAlpha); 
     }
     else if (uUseTexture) {
     	vec4 texColor = texture(uTexture, TexCoord);
@@ -46,7 +46,7 @@ void main() {
 	tinted = mix(tinted, vec3(1.0), uBrightness);
 
 	//final color
-    	FragColor = vec4(tinted, texColor.a);
+    	FragColor = vec4(tinted, texColor.a * uAlpha);
 	
     }
     else{

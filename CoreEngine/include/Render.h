@@ -188,7 +188,7 @@ public:
      * @param color The RGB color of the square.
      * @param rotation Rotation angle in radians (default = 0.0f).
     */
-    void DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color, float rotation = 0.0f); 
+    void DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color, float rotation = 0.0f, float alpha = 1.0f);
 
 
     /**
@@ -209,7 +209,7 @@ public:
      * @param texture The OpenGL texture ID to apply to the quad.
      * @param rotation Rotation angle in radians to apply (default = 0.0f, no rotation).
      */
-    void DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture, float rotation = 0.0f);
+    void DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture, float rotation = 0.0f, float alpha = 1.0f);
 
 
     /**
@@ -218,7 +218,7 @@ public:
      * @param end The ending point of the line (x, y).
      * @param color The RGB color of the line.
      */
-    void DrawLine(const Vec2& start, const Vec2& end, const Colour3& color);
+    void DrawLine(const Vec2& start, const Vec2& end, const Colour3& color, float alpha = 1.0f);
 
 
     /**
@@ -229,7 +229,7 @@ public:
     * @param segments Number of line segments to approximate the circle.
     * @param rotation Rotation applied to the circle (default = 0.0f).
     */
-    void DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments);
+    void DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments, float alpha = 1.0f);
 
 
     //Image/Texture
@@ -239,7 +239,7 @@ public:
     * @param x The x position of the image.
     * @param y The y position of the image.
     */
-    void DrawImage(const Image& image, float x, float y);
+    void DrawImage(const Image& image, float x, float y, float alpha = 1.0f);
 
 
     /**
@@ -251,7 +251,7 @@ public:
     * @param h The desired height of the drawn image.
     * @param rotation Rotation angle in radians (default = 0.0f).
     */
-    void Draw_SpecImage(const Image& image, float x, float y, float w, float h, float rotation = 0.0f);
+    void Draw_SpecImage(const Image& image, float x, float y, float w, float h, float rotation = 0.0f, float alpha = 1.0f);
 
 
     /**
@@ -263,7 +263,7 @@ public:
      * @param u1, v1 Bottom-right corner of the sub-region in pixels.
      * @param rotation Rotation angle in radians (default = 0.0f).
      */
-    void DrawImageSub(const Image& image, float x, float y, float w, float h, float u0, float v0, float u1, float v1, float rotation = 0.0f, float brightness = 0.f);
+    void DrawImageSub(const Image& image, float x, float y, float w, float h, float u0, float v0, float u1, float v1, float rotation = 0.0f, float brightness = 0.f, float alpha = 1.0f);
 
 
     /**
@@ -275,7 +275,7 @@ public:
      * @param scaleY The vertical scale factor to apply.
      * @param rotation Rotation angle in radians to apply to the image.
      */
-    void DrawImageScaled(const Image& image, float x, float y, float scaleX, float scaleY, float rotation); 
+    void DrawImageScaled(const Image& image, float x, float y, float scaleX, float scaleY, float rotation, float alpha = 1.0f); 
 
 
     /**
@@ -285,7 +285,7 @@ public:
         * @param y The y position of the image's origin.
         * @param angle The rotation angle in radians.
         */
-    void DrawImageRotated(const Image& image, float x, float y, float w, float h, float rotation = 0.0f, float brightness = 0.f);
+    void DrawImageRotated(const Image& image, float x, float y, float w, float h, float rotation = 0.0f, float brightness = 0.f, float alpha = 1.0f);
 
 
     /**
@@ -358,7 +358,7 @@ public:
     * @param color The RGB color of the text.
     */
     //void DrawText(std::string text, float x, float y, float scale, const Colour3& color); //need edit, add one more param for fonttype
-    void DrawText(std::string text, float x, float y, float scale, const Colour3& color, const std::string& fontKey);
+    void DrawText(std::string text, float x, float y, float scale, const Colour3& color, const std::string& fontKey, float alpha = 1.0f);
 
     /**
     * @brief Draws text on screen bounded by a textbox using a loaded FreeType font.
@@ -370,7 +370,7 @@ public:
     * @param color The RGB color of the text.
     */
     //void DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color); //for dialogue, need edit, add one more param for fonttype
-    void DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color, const std::string& fontKey);
+    void DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color, const std::string& fontKey, float alpha = 1.0f);
 
 
     //Extra functions for font loading
@@ -598,7 +598,7 @@ public:
     * @param color   Fill color of the rectangle.
     *
     */
-    void DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color);
+    void DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color, float alpha = 1.0f);
 
 
 
@@ -690,7 +690,7 @@ public:
     * @note This function does not issue a draw call immediately.
     * The sprite will be rendered only after EndBatch() and FlushBatch() are called.
     */
-    void SubmitSpriteBatch(const Image& image, const Vec2& pos, const Vec2& size, float rotation = 0.0f);
+    void SubmitSpriteBatch(const Image& image, const Vec2& pos, const Vec2& size, float rotation = 0.0f, float alpha = 1.0f);
 
 
 
@@ -709,7 +709,7 @@ public:
     *
     * @note This does not immediately draw, sprites are collected until FlushBatch() is called.
     */
-    void SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2& size, const glm::vec4& uvRect, float rotation = 0.0f);
+    void SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2& size, const glm::vec4& uvRect, float rotation = 0.0f, float alpha = 1.0f);
 
 
 
@@ -890,7 +890,7 @@ public:
     *          
     */
 
-    void DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3, const Colour3& color);
+    void DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3, const Colour3& color, float alpha = 1.0f);
 
 private:
     glm::vec2 uiScale = { 1.0f, 1.0f };

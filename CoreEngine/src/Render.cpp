@@ -243,7 +243,7 @@ void Render::SetProjectionType(ProjectionType type)
 
 
 
-void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color, float rotation) {
+void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color, float rotation, float alpha) {
     glUseProgram(shaderProgram);
 
     // upload projection
@@ -261,6 +261,7 @@ void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), size, size);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation);
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
     // no use texture
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
@@ -270,10 +271,12 @@ void Render::DrawSquare(const glm::vec2& pos, float size, const glm::vec3& color
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
 
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
+
     glUseProgram(0);
 }
 
-void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture, float rotation) {
+void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture, float rotation, float alpha) {
     glUseProgram(shaderProgram);
 
     // upload ortho projection
@@ -295,6 +298,7 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), scale.x, scale.y);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation); //added rotation
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0, 1.0, 1.0);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
     // enable texture
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_TRUE);
@@ -309,10 +313,12 @@ void Render::DrawTexturedQuad(const Vec2& pos, const Vec2& scale, GLuint texture
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
 
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
+
     glUseProgram(0);
 }
 
-void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) {
+void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color, float alpha) {
     glUseProgram(shaderProgram);
 
     // Set line width FIRST
@@ -329,7 +335,7 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
-    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
 
@@ -372,7 +378,7 @@ void Render::DrawLine(const Vec2& start, const Vec2& end, const Colour3& color) 
     glUseProgram(0);
 }
 
-void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments) {
+void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, int segments, float alpha) {
     // vertices for a circle
     std::vector<GLfloat> vertices;
     vertices.reserve((segments + 2) * 2);
@@ -414,6 +420,7 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), 0.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
     // Unbind texture
     glActiveTexture(GL_TEXTURE0);
@@ -437,6 +444,7 @@ void Render::DrawCircle(const Vec2& center, float radius, const Colour3& color, 
 
     // Reset color so next sprite draw isn't tinted
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 
 
     glUseProgram(0);
@@ -478,7 +486,7 @@ void Render::DrawRect(const Vec2& pos, float width, float height, const Colour3&
 }
 
 
-void Render::DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3, const Colour3& color)
+void Render::DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, const Vec2& v3, const Colour3& color, float alpha)
 {
     glUseProgram(shaderProgram);
 
@@ -492,7 +500,7 @@ void Render::DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, cons
 
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"),
         color.r, color.g, color.b);
-    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseTexture"), GL_FALSE);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseCustomVerts"), GL_TRUE);
@@ -536,6 +544,7 @@ void Render::DrawCustomQuad(const Vec2& v0, const Vec2& v1, const Vec2& v2, cons
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseCustomVerts"), GL_FALSE);
     // Reset color so next sprite draw isn't tinted
     glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 
     glUseProgram(0);
 }
@@ -765,37 +774,37 @@ Image CreateImage(const std::string& path) {
     return temp;
 }
 
-void Render::DrawImage(const Image& image, float x, float y) {
+void Render::DrawImage(const Image& image, float x, float y, float alpha) {
     if (!image.IsValid()) {
         return;
     }
 
     Vec2 pos(x, y);
     Vec2 scale(static_cast<float>(image.widthPixels), static_cast<float>(image.heightPixels));
-    DrawTexturedQuad(pos, scale, image.textureID);
+    DrawTexturedQuad(pos, scale, image.textureID, 0.0f, alpha);
 }
 
-void Render::Draw_SpecImage(const Image& image, float x, float y, float w, float h, float rotation) {
+void Render::Draw_SpecImage(const Image& image, float x, float y, float w, float h, float rotation, float alpha) {
     if (!image.IsValid()) {
         return;
     }
 
     Vec2 pos(x, y);
     Vec2 scale(w, h);
-    DrawTexturedQuad(pos, scale, image.textureID, rotation);
+    DrawTexturedQuad(pos, scale, image.textureID, rotation, alpha);
 }
 
-void Render::DrawImageScaled(const Image& image, float x, float y, float scaleX, float scaleY, float rotation) {
+void Render::DrawImageScaled(const Image& image, float x, float y, float scaleX, float scaleY, float rotation, float alpha) {
     if (!image.IsValid()) {
         return;
     }
 
     float w = image.widthPixels * scaleX;
     float h = image.heightPixels * scaleY;
-    Draw_SpecImage(image, x, y, w, h, rotation);
+    Draw_SpecImage(image, x, y, w, h, rotation, alpha);
 }
 
-void Render::DrawImageRotated(const Image& image, float x, float y, float w, float h, float angleRad, float brightness) {
+void Render::DrawImageRotated(const Image& image, float x, float y, float w, float h, float angleRad, float brightness, float alpha) {
     if (!image.IsValid()) {
         return;
     }
@@ -813,6 +822,7 @@ void Render::DrawImageRotated(const Image& image, float x, float y, float w, flo
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), w, h);
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), angleRad);
     glUniform1f(glGetUniformLocation(shaderProgram, "uBrightness"), brightness);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
     // bind texture + draw
     glActiveTexture(GL_TEXTURE0);
@@ -824,13 +834,14 @@ void Render::DrawImageRotated(const Image& image, float x, float y, float w, flo
     glBindVertexArray(0);
 
     glUniform1f(glGetUniformLocation(shaderProgram, "uBrightness"), 0.f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 
     glUseProgram(0);
 }
 
 void Render::DrawImageSub(const Image& Image,
     float x, float y, float w, float h,
-    float u0, float v0, float u1, float v1, float rotation, float brightness)
+    float u0, float v0, float u1, float v1, float rotation, float brightness, float alpha)
 {
     glUseProgram(shaderProgram);
 
@@ -863,6 +874,7 @@ void Render::DrawImageSub(const Image& Image,
     glUniform4f(glGetUniformLocation(shaderProgram, "uUVRect"), u0n, v0n, u1n, v1n); //sub mode uses this uniform
     glUniform1f(glGetUniformLocation(shaderProgram, "uRotation"), rotation);
     glUniform1f(glGetUniformLocation(shaderProgram, "uBrightness"), brightness);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
     //Texture binding
     glActiveTexture(GL_TEXTURE0);
@@ -880,6 +892,7 @@ void Render::DrawImageSub(const Image& Image,
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseSubImage"), false); //tell shader ok i am done using sub image mode*
     glUniform1f(glGetUniformLocation(shaderProgram, "uBrightness"), 0.f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 }
 
 
@@ -1251,7 +1264,7 @@ void Render::UnloadAllFonts() {
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
 }*/
-void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color, const std::string& fontkey) {
+void Render::DrawText(std::string text, float x, float y, float scale, const Colour3& color, const std::string& fontkey, float alpha) {
 
     auto it = fontCache.find(fontkey);
     if (it == fontCache.end()) {
@@ -1272,6 +1285,7 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
     glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
     glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
     //text no need, so set them transform uniforms to defaults
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
@@ -1325,6 +1339,7 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
+    glUniform1i(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 }
 
 
@@ -1417,7 +1432,7 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
 }*/
 
 
-void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color, const std::string& fontKey)
+void Render::DrawTextBox(const std::string& text, float x, float y, float rowWidth, float scale, const Colour3& color, const std::string& fontKey, float alpha)
 {
     auto it = fontCache.find(fontKey);
     if (it == fontCache.end()) {
@@ -1435,6 +1450,7 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
     glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
     glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
@@ -1498,6 +1514,7 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE);
+    glUniform1i(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 
 }
 
@@ -1813,10 +1830,10 @@ void Render::FlushIfFull(size_t quadCountNeeded, GLuint textureID)
     }
 }
 
-void Render::SubmitSpriteBatch(const Image& image, const Vec2& pos, const Vec2& size, float rotation)
+void Render::SubmitSpriteBatch(const Image& image, const Vec2& pos, const Vec2& size, float rotation, float alpha)
 {
     // full texture
-    SubmitSpriteBatchUV(image, pos, size, glm::vec4(0.f, 1.f, 1.f, 0.f), rotation);
+    SubmitSpriteBatchUV(image, pos, size, glm::vec4(0.f, 1.f, 1.f, 0.f), rotation, alpha);
 
     /*std::cout << "SpriteBatch: texID=" << image.textureID
         << ", size=(" << size.x << "," << size.y << ")"
@@ -1825,7 +1842,7 @@ void Render::SubmitSpriteBatch(const Image& image, const Vec2& pos, const Vec2& 
 
 }
 
-void Render::SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2& size, const glm::vec4& uvRect, float rotation)
+void Render::SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2& size, const glm::vec4& uvRect, float rotation, float alpha)
 {
     if (!image.IsValid()) {
         return;
@@ -1874,7 +1891,9 @@ void Render::SubmitSpriteBatchUV(const Image& image, const Vec2& pos, const Vec2
 
     // Push 4 vertices
     BatchVertex v;
-    v.color = kWhite;
+    //v.color = kWhite;
+    alpha = glm::clamp(alpha, 0.0f, 1.0f);
+    v.color = glm::vec4(1.0f, 1.0f, 1.0f, alpha);
     v.texIndex = texIndex;
 
     for (int i = 0; i < 4; ++i) {
@@ -1999,10 +2018,10 @@ Vec2 Render::CalculateTextSize(const std::string& text, float scale, const std::
 }
 
 
-void Render::DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color) {
+void Render::DrawRoundedRect(const Vec2& pos, float width, float height, float radius, const Colour3& color, float alpha) {
     // base rectangle
-    DrawRect(pos, width - 2 * radius, height, color);
-    DrawRect(pos, width, height - 2 * radius, color);
+    DrawRect(pos, width - 2 * radius, height, color, 0.0f, alpha);
+    DrawRect(pos, width, height - 2 * radius, color, 0.0f, alpha);
 
     // 4 quarter-circles for corners
     Vec2 corners[] = {
@@ -2012,7 +2031,7 @@ void Render::DrawRoundedRect(const Vec2& pos, float width, float height, float r
         { pos.x + width / 2 - radius, pos.y - height / 2 + radius }  // bottom-right
     };
     for (auto& c : corners)
-        DrawCircle(c, radius, color, 16);
+        DrawCircle(c, radius, color, 16, alpha);
 }
 void Render::DrawFullscreenTexture(GLuint texture, bool cover)
 {
