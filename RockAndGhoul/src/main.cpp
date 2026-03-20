@@ -134,6 +134,35 @@ int main(int argc, char* argv[]) {
             engine.RegisterGameSystem(new EnemySystem());
             engine.RegisterGameSystem(&CombatSystem::Get(), false); // singleton — don't delete
 
+            // Register RockAndGhoul-specific behaviour scripts.
+            // LogicSystem::Initialize() will call this after engine-level scripts are registered.
+            // To add a new script: write a namespace with Start/Update/End, then add it here.
+            LogicSystem::Get().SetScriptRegistrar([]()
+            {
+                LogicSystem& ls = LogicSystem::Get();
+                {
+                    BehaviourFCT player;
+                    player.Init   = [](Entity e)           { PlayerMove::Start(e); };
+                    player.Update = [](Entity e, float dt) { PlayerMove::Update(e, dt); };
+                    player.End    = [](Entity e)            { PlayerMove::End(e); };
+                    ls.RegisterScript("PlayerMovement", player, "RockAndGhoul");
+                }
+                {
+                    BehaviourFCT rock;
+                    rock.Init   = [](Entity e)           { RockScript::Start(e); };
+                    rock.Update = [](Entity e, float dt) { RockScript::Update(e, dt); };
+                    rock.End    = [](Entity e)            { RockScript::End(e); };
+                    ls.RegisterScript("RockScript", rock, "RockAndGhoul");
+                }
+                {
+                    BehaviourFCT tutorial;
+                    tutorial.Init   = [](Entity e)           { TutorialScript::Start(e); };
+                    tutorial.Update = [](Entity e, float dt) { TutorialScript::Update(e, dt); };
+                    tutorial.End    = [](Entity e)            { TutorialScript::End(e); };
+                    ls.RegisterScript("TutorialScript", tutorial, "RockAndGhoul");
+                }
+            });
+
             // initialize all systems (FMOD, OpenGL, etc.)
             engine.Initialize();
             CrashHandler::Log("Engine initialized");

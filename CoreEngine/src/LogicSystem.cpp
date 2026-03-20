@@ -36,6 +36,10 @@ void LogicSystem::Initialize()
     std::cout << "[LogicSystem] Initialized" << std::endl;
     // Register all engine-level C++ behaviour scripts hm
     RegisterAllGameScripts();
+
+    // Register game-specific scripts (set by the game project before Initialize())
+    if (m_gameScriptRegistrar)
+        m_gameScriptRegistrar();
 }
 
 void LogicSystem::Update(float dt)
@@ -98,12 +102,13 @@ void LogicSystem::Shutdown()
 }
 
 
-void LogicSystem::RegisterScript(const std::string& name, const BehaviourFCT& script)
+void LogicSystem::RegisterScript(const std::string& name, const BehaviourFCT& script, const std::string& gameTag)
 {
     //Adds a new script to the system
     m_behaviours[name] = script;
     m_nameToID[name] = s_nextScriptID;
     m_idToName[s_nextScriptID] = name;
+    m_scriptGameTag[name] = gameTag;
 
     std::cout << "[LogicSystem] Registered script: " << name << " (ID=" << s_nextScriptID << ")\n";
     s_nextScriptID++;

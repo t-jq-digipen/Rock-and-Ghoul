@@ -107,7 +107,7 @@ namespace PlayerMove {
 
 	}
 
-	inline void Start(Entity eID)
+	void Start(Entity eID)
 	{
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
 			if (ReplayManager::Get().IsPlaying()) return;
@@ -127,7 +127,7 @@ namespace PlayerMove {
 			});
 	}
 
-	inline void Update(Entity eID, float) {
+	void Update(Entity eID, float) {
 
 		if (ReplayManager::Get().IsPlaying()) return;
 
@@ -164,7 +164,7 @@ namespace PlayerMove {
 		spriteSheet.SetState(animstate);
 	}
 
-	inline void End(Entity e)
+	void End(Entity e)
 	{
 		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID[e]);
 		subscriberID.erase(e);
@@ -1199,7 +1199,7 @@ namespace RockScript {
 		isVulnerable = true; //Is Rock vulnerable
 	}
 
-	inline void Start(Entity eID)
+	void Start(Entity eID)
 	{
 		subscriberID[eID] = EventBus::Get().Subscribe<KeyPressedEvent>([eID](const KeyPressedEvent& e) {
 			if (ReplayManager::Get().IsPlaying()) return;
@@ -1335,7 +1335,7 @@ namespace RockScript {
 
 	}
 
-	inline void Update(Entity eID, float dt) {
+	void Update(Entity eID, float dt) {
 		if (ReplayManager::Get().IsPlaying()) return;
 		Registry& registry = Registry::Get();
 		// Update active spells
@@ -1751,7 +1751,7 @@ namespace RockScript {
 		}
 	}
 
-	inline void End(Entity e)
+	void End(Entity e)
 	{
 		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID[e]);
 		subscriberID.erase(e);
@@ -1868,7 +1868,7 @@ namespace TutorialScript {
 	size_t subscriberID{};
 
 
-	inline void Start(Entity)
+	void Start(Entity)
 	{
 		page = 1;
 		subscriberID = EventBus::Get().Subscribe<KeyPressedEvent>([](const KeyPressedEvent& e) {
@@ -1881,7 +1881,7 @@ namespace TutorialScript {
 
 
 
-	inline void Update(Entity eID, float dt)
+	void Update(Entity eID, float dt)
 	{
 		unsigned int animState = page;
 
@@ -1899,7 +1899,7 @@ namespace TutorialScript {
 		
 	}
 
-	inline void End(Entity)
+	void End(Entity)
 	{
 		page = 1;
 		EventBus::Get().Unsubscribe<KeyPressedEvent>(subscriberID);
@@ -1912,28 +1912,6 @@ void PlayerSystem::Initialize()
 	auto& mono = MonoSystem::Get();
 	mono.RegisterScript("Rotator", MonoScriptID::ROTATOR);
 	mono.RegisterScript("Mover", MonoScriptID::MOVER);
-	{
-		BehaviourFCT player;
-		player.Init = [](Entity e) { PlayerMove::Start(e); };
-		player.Update = [](Entity e, float dt) { PlayerMove::Update(e, dt); };
-		player.End = [](Entity e) { PlayerMove::End(e); };
-		LogicSystem::Get().RegisterScript("PlayerMovement", player);
-	}
-	{
-		BehaviourFCT player;
-		player.Init = [](Entity e) { RockScript::Start(e); };
-		player.Update = [](Entity e, float dt) { RockScript::Update(e, dt); };
-		player.End = [](Entity e) { RockScript::End(e); };
-		LogicSystem::Get().RegisterScript("RockScript", player);
-	}
-	{
-		BehaviourFCT tutorial;
-		tutorial.Init = [](Entity e) { TutorialScript::Start(e); };
-		tutorial.Update = [](Entity e, float dt) { TutorialScript::Update(e, dt); };
-		tutorial.End = [](Entity e) { TutorialScript::End(e); };
-		LogicSystem::Get().RegisterScript("TutorialScript", tutorial);
-	}
-
 
 	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
 			// Reset player variables on game scene load

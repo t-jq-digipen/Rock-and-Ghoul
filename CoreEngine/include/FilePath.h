@@ -43,6 +43,9 @@ public:
     // Returns true if a game folder has been selected (SetGameRoot was called).
     static bool IsGameLoaded() { return !GAME_ROOT.empty(); }
 
+    // Returns the active game folder name (e.g. "RockAndGhoul", "new game").
+    static const std::string& GetGameRoot() { return GAME_ROOT; }
+
     // Converts any asset path from a JSON file to a valid path on this machine.
     // Handles three cases:
     //   1. Old relative prefix  "../Assets/..."      (legacy format)
