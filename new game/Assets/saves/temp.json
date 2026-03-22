@@ -10,10 +10,21 @@
         {
             "components": {
                 "Behaviour": "{\"scripts\":[\"BasicPlayerInput\"]}",
+                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":200.0,\"aabb_maxX\":1123.614501953125,\"aabb_maxY\":715.9036254882813,\"aabb_minX\":923.6144409179688,\"aabb_minY\":515.9036254882813,\"isActive\":true,\"isTrigger\":false,\"layer\":\"player\",\"triggerEvent\":\"\"}",
                 "Movement": "{\"moveSpeed\":213.6999969482422,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
                 "Render": "{\"renderData\":\"{\\\"colorX\\\":1.0,\\\"colorY\\\":1.0,\\\"colorZ\\\":1.0,\\\"dimX\\\":100.0,\\\"dimY\\\":100.0,\\\"shapeType\\\":0}\",\"renderLayer\":1,\"renderType\":0}",
                 "Transform": "{\"posX\":1023.6144409179688,\"posY\":615.9036254882813,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "New Entity 0"
+        },
+        {
+            "components": {
+                "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":200.0,\"aabb_maxX\":1407.7109375,\"aabb_maxY\":702.8914794921875,\"aabb_minX\":1207.7109375,\"aabb_minY\":502.8914794921875,\"isActive\":true,\"isTrigger\":false,\"layer\":\"\",\"triggerEvent\":\"\"}",
+                "Movement": "{\"moveSpeed\":213.6999969482422,\"moveType\":0}",
+                "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
+                "Render": "{\"renderData\":\"{\\\"colorX\\\":1.0,\\\"colorY\\\":1.0,\\\"colorZ\\\":1.0,\\\"dimX\\\":100.0,\\\"dimY\\\":100.0,\\\"shapeType\\\":0}\",\"renderLayer\":1,\"renderType\":0}",
+                "Transform": "{\"posX\":1307.7109375,\"posY\":602.8914794921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "New Entity 0"
         }

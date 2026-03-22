@@ -31,11 +31,11 @@ enum PlayerState : unsigned int {
 
 namespace PlayerMove {
 
-    inline void Start(Entity e);
+    void Start(Entity e);
 
-    inline void Update(Entity e, float dt);
+    void Update(Entity e, float dt);
 
-    inline void End(Entity e);
+    void End(Entity e);
 }
 
 namespace RockScript {
@@ -57,19 +57,19 @@ namespace RockScript {
     enum class SpellType { SOUNDWAVE, AOE, SHIELD, HEAL };
 
 
-    inline void Start(Entity e);
+    void Start(Entity e);
 
-    inline void Update(Entity e, float dt);
+    void Update(Entity e, float dt);
 
-    inline void End(Entity e);
+    void End(Entity e);
 
     void Knockback(Entity eID, bool left, float damage);
 }
 
 namespace TutorialScript {
-    inline void Start(Entity e);
-    inline void Update(Entity e, float dt);
-	inline void End(Entity e);
+    void Start(Entity e);
+    void Update(Entity e, float dt);
+	void End(Entity e);
 }
 
 

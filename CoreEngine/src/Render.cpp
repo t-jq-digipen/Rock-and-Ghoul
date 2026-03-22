@@ -1268,8 +1268,12 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
 
     auto it = fontCache.find(fontkey);
     if (it == fontCache.end()) {
-        std::cerr << "This font type does not exists: " << fontkey << std::endl;
-        return;
+        // Font not found — fall back to first available font
+        if (fontCache.empty()) {
+            std::cerr << "This font type does not exists: " << fontkey << " (no fonts loaded)\n";
+            return;
+        }
+        it = fontCache.begin();
     }
 
     const Font& font = it->second;
@@ -1436,8 +1440,12 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
 {
     auto it = fontCache.find(fontKey);
     if (it == fontCache.end()) {
-        std::cerr << "This font type does not exists: " << fontKey << std::endl;
-        return;
+        // Font not found — fall back to first available font
+        if (fontCache.empty()) {
+            std::cerr << "This font type does not exists: " << fontKey << " (no fonts loaded)\n";
+            return;
+        }
+        it = fontCache.begin();
     }
 
     const Font& font = it->second;
@@ -1995,8 +2003,12 @@ Vec2 Render::CalculateTextSize(const std::string& text, float scale, const std::
     //check if font exists
     auto it = fontCache.find(fontKey);
     if (it == fontCache.end()) {
-        std::cerr << "CalculateTextSize: font not found: " << fontKey << "\n";
-        return TextDimensions;
+        // Font not found — fall back to first available font
+        if (fontCache.empty()) {
+            std::cerr << "CalculateTextSize: font not found: " << fontKey << " (no fonts loaded)\n";
+            return TextDimensions;
+        }
+        it = fontCache.begin();
     }
     const Font& font = it->second;
 

@@ -1666,6 +1666,20 @@ void ImGuiSystem::Update(float dt)
                        << "}\n";
                 }
 
+                // Copy default font and create fontAssets.json
+                {
+                    std::string fontSrc = FilePath::REPO_ROOT + "RockAndGhoul/Assets/PermanentMarker-Regular.ttf";
+                    std::string fontDst = root + "Assets/PermanentMarker-Regular.ttf";
+                    if (fs::exists(fontSrc))
+                        fs::copy_file(fontSrc, fontDst, fs::copy_options::skip_existing);
+                    std::ofstream ff(root + "Assets/fontAssets.json");
+                    ff << "{\n"
+                       << "  \"fonts\": [\n"
+                       << "    { \"name\": \"Marker\", \"path\": \"../Assets/PermanentMarker-Regular.ttf\", \"size\": 48 }\n"
+                       << "  ]\n"
+                       << "}\n";
+                }
+
                 // Generate a starter main.cpp with SetGameRoot already wired up
                 std::ofstream f(root + "src/main.cpp");
                 f << "// main.cpp - " << name << "\n";
@@ -1717,6 +1731,8 @@ void ImGuiSystem::Update(float dt)
                 JsonLoad::ClearAllEntities();
                 GuiSystem::Get().Clear();
                 RenderSystem::ClearBackgroundTextures();
+                RefreshImageAssets();
+                Render::GetInstance().LoadFontAssetsFromJSON(FilePath::ASSETS_FOLDER + "fontAssets.json");
                 SceneManager::Get().EnterEditMode();
                 // Load first scene if it already exists
                 if (std::filesystem::exists(FilePath::LEVEL1_SCENE))
@@ -1967,6 +1983,20 @@ void ImGuiSystem::Update(float dt)
 
                 { std::ofstream mf(newRoot + "Assets/audio_manifest.json");
                   mf << "{\n  \"music\": {},\n  \"sfx\": {},\n  \"ui\": {},\n  \"ambience\": {},\n  \"banks\": {}\n}\n"; }
+
+                // Copy default font and create fontAssets.json
+                {
+                    std::string fontSrc = FilePath::REPO_ROOT + "RockAndGhoul/Assets/PermanentMarker-Regular.ttf";
+                    std::string fontDst = newRoot + "Assets/PermanentMarker-Regular.ttf";
+                    if (fs::exists(fontSrc))
+                        fs::copy_file(fontSrc, fontDst, fs::copy_options::skip_existing);
+                    std::ofstream ff(newRoot + "Assets/fontAssets.json");
+                    ff << "{\n"
+                       << "  \"fonts\": [\n"
+                       << "    { \"name\": \"Marker\", \"path\": \"../Assets/PermanentMarker-Regular.ttf\", \"size\": 48 }\n"
+                       << "  ]\n"
+                       << "}\n";
+                }
 
                 //simple file
                 { std::ofstream mf(newRoot + "src/main.cpp");
@@ -5720,6 +5750,8 @@ void ImGuiSystem::Render() {
         JsonLoad::ClearAllEntities();
         GuiSystem::Get().Clear();
         RenderSystem::ClearBackgroundTextures();
+        RefreshImageAssets();
+        Render::GetInstance().LoadFontAssetsFromJSON(FilePath::ASSETS_FOLDER + "fontAssets.json");
         SceneManager::Get().EnterEditMode();
 
         if (!s_pendingLoadScene.empty())
@@ -6630,10 +6662,29 @@ void ImGuiSystem::ShowInspectorWindow()
                     return;
                 }
 
+                // Only show engine-level scripts ("") and scripts for the active game.
+                // GAME_ROOT is a full path ending with "/", so extract just the folder name.
+                const std::string& gameRoot = FilePath::GetGameRoot();
+                std::string activeGame;
+                if (!gameRoot.empty())
+                {
+                    // gameRoot ends with '/' — get the last non-empty segment
+                    std::string trimmed = gameRoot;
+                    if (trimmed.back() == '/' || trimmed.back() == '\\')
+                        trimmed.pop_back();
+                    auto pos = trimmed.find_last_of("/\\");
+                    activeGame = (pos != std::string::npos) ? trimmed.substr(pos + 1) : trimmed;
+                }
+                std::vector<std::string> filteredNames;
+                for (auto& [scriptname, scriptID] : logicSys.GetNameToIDMap())
+                {
+                    const std::string& tag = logicSys.GetScriptGameTag(scriptname);
+                    if (tag.empty() || tag == activeGame)
+                        filteredNames.push_back(scriptname);
+                }
                 std::vector<const char*> items;
-                size_t optSize = logicSys.GetIDToNameMap().size();
-                items.reserve(optSize);
-                for (auto& [scriptname, scriptID] : logicSys.GetNameToIDMap()) items.push_back(scriptname.c_str());
+                items.reserve(filteredNames.size());
+                for (auto& name : filteredNames) items.push_back(name.c_str());
 
                 static int currentIndex = 0;
                 // Clamp index in case the script list shrank (e.g. after switching games)

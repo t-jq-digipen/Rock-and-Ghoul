@@ -20,6 +20,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <functional>
 #include "BehaviourFCT.h"
 #include "System.h"
 
@@ -102,12 +103,43 @@ public:
     /**
     * @brief Registers a script into the LogicSystem.
     *
-    * @param name Name of the script
-    * @param script BehaviourFCT of the script
-    * @param id ScriptID of the script
-    * 
+    * @param name     Name of the script
+    * @param script   BehaviourFCT of the script
+    * @param gameTag  Game folder name this script belongs to (e.g. "RockAndGhoul").
+    *                 Leave empty ("") for engine-level scripts that appear in all games.
     */
-    void RegisterScript(const std::string& name, const BehaviourFCT& script);
+    void RegisterScript(const std::string& name, const BehaviourFCT& script, const std::string& gameTag = "");
+
+    // Returns the game tag registered for a script name ("" = engine-level, shown in all games).
+    const std::string& GetScriptGameTag(const std::string& name) const
+    {
+        static const std::string empty;
+        auto it = m_scriptGameTag.find(name);
+        return (it != m_scriptGameTag.end()) ? it->second : empty;
+    }
+
+    /**
+     * @brief Sets a game-specific script registrar callback.
+     *
+     * Call this before engine.Initialize() to register game-specific
+     * behaviour scripts. The callback is invoked during LogicSystem::Initialize()
+     * after all engine-level scripts have been registered.
+     *
+     * Example (in your game's main/app init):
+     * @code
+     *   LogicSystem::Get().SetScriptRegistrar([]() {
+     *       LogicSystem& ls = LogicSystem::Get();
+     *       BehaviourFCT myScript;
+     *       myScript.Init   = [](Entity e) { MyScript::Start(e); };
+     *       myScript.Update = [](Entity e, float dt) { MyScript::Update(e, dt); };
+     *       myScript.End    = [](Entity e) { MyScript::End(e); };
+     *       ls.RegisterScript("MyScript", myScript);
+     *   });
+     * @endcode
+     *
+     * @param fn Callback that registers all game-specific scripts.
+     */
+    void SetScriptRegistrar(std::function<void()> fn) { m_gameScriptRegistrar = std::move(fn); }
 
     /**
     * @brief Retrieves behaviour using script name.
@@ -133,7 +165,9 @@ public:
 
 private:
     LogicSystem() = default;  // Private constructor for singleton
-    std::unordered_map<std::string, BehaviourFCT> m_behaviours; // various behaviours (contain scripts)
-    std::unordered_map<std::string, unsigned int> m_nameToID;   // name to ID map
-    std::unordered_map<unsigned int, std::string> m_idToName;   // ID to name map
+    std::unordered_map<std::string, BehaviourFCT> m_behaviours;  // various behaviours (contain scripts)
+    std::unordered_map<std::string, unsigned int> m_nameToID;    // name to ID map
+    std::unordered_map<unsigned int, std::string> m_idToName;    // ID to name map
+    std::unordered_map<std::string, std::string>  m_scriptGameTag; // script name -> game tag ("" = engine)
+    std::function<void()> m_gameScriptRegistrar;                  // game-specific script registration callback
 };
