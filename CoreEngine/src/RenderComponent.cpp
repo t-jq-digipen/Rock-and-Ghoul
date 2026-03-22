@@ -7,7 +7,8 @@ RenderComponent::RenderComponent() : m_layer{ LAYER_GAMEOBJECT } {
 }
 
 RenderComponent::RenderComponent(const RenderComponent& rhs)
-	: m_layer(rhs.m_layer)
+	: m_layer(rhs.m_layer),
+	  alpha(rhs.alpha)
 {
 	m_renderData = nullptr;
 
@@ -18,6 +19,7 @@ RenderComponent::RenderComponent(const RenderComponent& rhs)
 RenderComponent& RenderComponent::operator=(const RenderComponent& rhs) {
 	if (this != &rhs) {
 		m_layer = rhs.m_layer;
+		alpha = rhs.alpha;
 		m_renderData = rhs.m_renderData ? rhs.m_renderData->Clone() : nullptr;
 	}
 	return *this;
@@ -128,6 +130,7 @@ std::string RenderComponent::Serialize() const {
 	json j;
 
 	j["renderLayer"] = static_cast<int>(m_layer);
+	j["alpha"] = alpha;
 	j["renderType"] = static_cast<int>(GetRenderType());
 
 	std::string renderDataString{};
@@ -149,6 +152,8 @@ RenderComponent RenderComponent::DeSerialize(Entity eID, const std::string& data
 	RenderComponent rc;
 
 	rc.m_layer = static_cast<RenderLayer>(static_cast<int>(j["renderLayer"]));
+
+	rc.alpha = j.value("alpha", 1.f);
 
 	RenderType type = static_cast<RenderType>(static_cast<int>(j["renderType"]));
 
@@ -194,6 +199,8 @@ Editor::ComponentData RenderComponent::EditorData() {
 		dropdown.Add_Option("UI", LAYER_UI);
 		ret.Add_Data("Layer", dropdown);
 	}
+
+	ret.Add_Data("Alpha", Editor::Widget_Float{ &alpha, true, 0.f, 1.f });
 
 	// RenderType dropdown
 	//{

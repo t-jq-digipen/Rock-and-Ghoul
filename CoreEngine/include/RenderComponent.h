@@ -84,7 +84,9 @@ private:
 	// For rendering layers
 	RenderLayer m_layer;
 
+
 public:
+	float alpha{ 1.f };
 	// Actual render data
 	//std::variant<Sprite::SpriteComponent, Sprite::SpriteSheet, ShapeComponent> m_renderData;
 	std::unique_ptr<IRenderData> m_renderData;
@@ -107,6 +109,10 @@ public:
 	const RenderLayer GetRenderLayer() const { return m_layer; }
 
 	void SetRenderLayer(RenderLayer rl) { m_layer = rl; }
+
+	const float GetAlpha() const { return alpha; }
+
+	void SetAlpha(float a) { alpha = a; }
 
 	void UpdateData(float dt);
 

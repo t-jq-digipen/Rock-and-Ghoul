@@ -789,7 +789,7 @@ std::string RenderSystem::GetNextScene() {
 //Camera& mainCamera = Camera::GetInstance();
 
 // NEW RENDERCOMPONENT draw overloads
-void DrawItem(const Sprite::SpriteComponent& spriteComp, const TransformComponent& transComp) {
+void DrawItem(const Sprite::SpriteComponent& spriteComp, const TransformComponent& transComp, const float& alpha) {
     const Image& img = spriteComp.Get_Image();
 
     Vec2 worldSize = { img.widthPixels * RenderSystem::unitsPerPixel, img.heightPixels * RenderSystem::unitsPerPixel };
@@ -802,12 +802,14 @@ void DrawItem(const Sprite::SpriteComponent& spriteComp, const TransformComponen
     if (spriteComp.GetFlipX()) { std::swap(uv.x, uv.z); }
     if (spriteComp.GetFlipY()) { std::swap(uv.y, uv.w); }
 
+
     renderInstance.SubmitSpriteBatchUV(
         img,
         transComp.pos,
         scale,
         uv,
-        transComp.rot + spriteComp.Get_Rotation()
+        transComp.rot + spriteComp.Get_Rotation(),
+        alpha
     );
 
     //renderInstance.SubmitSpriteBatch(
@@ -818,7 +820,7 @@ void DrawItem(const Sprite::SpriteComponent& spriteComp, const TransformComponen
     //);
 }
 
-void DrawItem(const Sprite::SpriteSheet& spriteSheet, const TransformComponent& transComp) {
+void DrawItem(const Sprite::SpriteSheet& spriteSheet, const TransformComponent& transComp, const float& alpha) {
     const Image& img = spriteSheet.Sprite().Get_Image();
 
     Vec2 frameSize = { spriteSheet.u1 - spriteSheet.u0, spriteSheet.v1 - spriteSheet.v0 };
@@ -840,12 +842,13 @@ void DrawItem(const Sprite::SpriteSheet& spriteSheet, const TransformComponent& 
         transComp.pos,
         scale,
         uv,
-        transComp.rot + spriteSheet.Sprite().Get_Rotation()
+        transComp.rot + spriteSheet.Sprite().Get_Rotation(),
+        alpha
     );
 
 }
 
-void DrawItem(const ShapeComponent& shapeComp, const TransformComponent& transComp) {
+void DrawItem(const ShapeComponent& shapeComp, const TransformComponent& transComp, const float& alpha) {
     Colour3 color = { shapeComp.color.x, shapeComp.color.y, shapeComp.color.z };
     switch (shapeComp.shape)
     {
@@ -856,7 +859,8 @@ void DrawItem(const ShapeComponent& shapeComp, const TransformComponent& transCo
             shapeComp.dimensions.x * transComp.scale.x,
             shapeComp.dimensions.y * transComp.scale.y,
             color,
-            transComp.rot
+            transComp.rot,
+            alpha
         );
     }
     break; // end SHAPE_RECTANGLE
@@ -868,7 +872,8 @@ void DrawItem(const ShapeComponent& shapeComp, const TransformComponent& transCo
             transComp.pos,
             radius * transComp.scale.x,
             color,
-            32
+            32,
+            alpha
         );
     }
     break; // end SHAPE_CIRCLE
@@ -1448,24 +1453,26 @@ void RenderSystem::Update(float dt) {
                 if (!m_registry.Has_Component<TransformComponent>(entID)) { continue; }
                 TransformComponent& transComp = m_registry.Get_Component<TransformComponent>(entID);
 
+                if (renderComp.alpha != 1.f) { std::cout << "wtf why not working"; }
+
                 // update rendercomponent
                 switch (renderComp.GetRenderType())
                 {
                 case RT_SHAPE:
                 {
-                    DrawItem(renderComp.GetShape(), transComp);
+                    DrawItem(renderComp.GetShape(), transComp, renderComp.alpha);
                 }
                 break; // end RT_SHAPE
 
                 case RT_IMAGE:
                 {
-                    DrawItem(renderComp.GetSprite(), transComp);
+                    DrawItem(renderComp.GetSprite(), transComp, renderComp.alpha);
                 }
                 break; // end RT_IMAGE
 
                 case RT_SPRITESHEET:
                 {
-                    DrawItem(renderComp.GetSpriteSheet(), transComp);
+                    DrawItem(renderComp.GetSpriteSheet(), transComp, renderComp.alpha);
                 }
                 break; // end RT_SPRITESHEET
 
