@@ -611,6 +611,9 @@ void CombatSystem::Update(float dt) {
 	toRemove.clear();
 	UpdateElementEffects(dt);
 
+	static constexpr int PORTAL_PROMPT_TEXTBOX_ID = 61;
+	bool showPortalPrompt = false;
+
 	// check portal
 	for (auto& [eID, portal] : m_registry.Get_ComponentMap<PortalComponent>())
 	{
@@ -628,6 +631,7 @@ void CombatSystem::Update(float dt) {
 
 		if (portal.state == PortalState::ACTIVE )
 		{
+			showPortalPrompt = true;
 			if (Input::IsKeyPressed(GLFW_KEY_SPACE) || Input::IsKeyHeld(GLFW_KEY_SPACE))
 				SceneManager::Get().QueueLoadScene(FilePath::Resolve(portal.nextScene)); //idk maybe is just my device but i need call resolve or the scene wont load
 		}
@@ -636,6 +640,16 @@ void CombatSystem::Update(float dt) {
 	}
 	activePortal = INVALID_ENTITY;
 
+	// toggle "click space" textbox prompt if portal is active
+	auto& gui = GuiSystem::Get();
+	if (showPortalPrompt)
+	{
+		gui.ShowTextBox(PORTAL_PROMPT_TEXTBOX_ID);
+	}
+	else
+	{
+		gui.HideTextBox(PORTAL_PROMPT_TEXTBOX_ID);
+	}
 }
 
 void CombatSystem::Shutdown() {

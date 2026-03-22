@@ -1326,6 +1326,22 @@
                 ],
                 "scale": 1.0,
                 "text": "PRESS ESC TO SKIP"
+            },
+            {
+                "ID": 61,
+                "centered": false,
+                "color": [
+                    0.0,
+                    1.0,
+                    0.0
+                ],
+                "isVisible": false,
+                "pos": [
+                    650.0,
+                    200.0
+                ],
+                "scale": 1.2000000476837158,
+                "text": "PRESS SPACE TO ENTER!!!"
             }
         ]
     },
