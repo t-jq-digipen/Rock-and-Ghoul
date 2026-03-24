@@ -592,6 +592,21 @@ void GuiSystem::Initialize() {
             SceneManager::Get().SetTransitionTime(0.f);
         });
 
+    // Load stored scene (restarts the current level)
+    RegisterAction("RestartToStoredScene",
+        [](const json&)
+        {
+            const std::string& path = GuiSystem::GetStoredRestartScene();
+            if (path.empty())
+            {
+                std::cerr << "[GuiSystem] RestartToStoredScene: stored scene path is empty!" << std::endl;
+                return;
+            }
+
+            SceneManager::Get().QueueLoadScene(path);
+            SceneManager::Get().SetTransitionTime(1.f);
+        });
+
     // Controls page 1: show the first page of textboxes
     RegisterAction("ControlsPage1",
         [](const json&)
@@ -865,6 +880,20 @@ void GuiSystem::ApplyGroupVisibilityOverrides(GuiSystem& gui, int grpID, bool vi
             }
         }
     }
+}
+
+// Store scene path to restart to
+static std::string g_storedRestartScenePath;
+
+// Store current scene to restart to when game goes to fail screen
+void GuiSystem::SetStoredRestartScene(const std::string& scenePath)
+{
+    g_storedRestartScenePath = scenePath;
+}
+
+const std::string& GuiSystem::GetStoredRestartScene()
+{
+    return g_storedRestartScenePath;
 }
 
 static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 2.f; // duration until active dialogue can be skipped

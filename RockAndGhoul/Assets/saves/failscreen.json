@@ -14,11 +14,8 @@
         "buttons": [
             {
                 "ID": 1,
-                "actionName": "LoadScene",
-                "actionParams": {
-                    "duration": 0.5,
-                    "scene": "level1"
-                },
+                "actionName": "RestartToStoredScene",
+                "actionParams": {},
                 "isVisible": true,
                 "label": "",
                 "pos": [
