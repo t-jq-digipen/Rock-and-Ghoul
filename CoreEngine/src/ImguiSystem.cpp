@@ -1165,6 +1165,8 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
                     float* ref        = w.ref;
                     float  valBefore  = state.floatBefore;
                     float  valAfter   = *w.ref;
+
+                    //HERE6
                     UndoSystem::Get().RecordComponentChange(
                         [ref, valBefore]() { *ref = valBefore; },
                         [ref, valAfter]()  { *ref = valAfter;  },
@@ -1489,7 +1491,7 @@ void ImGuiSystem::Update(float dt)
     if (guiEnabled && sm.inEditMode)   // must be in editor mode
     {
         ImGuiIO& io = ImGui::GetIO();
-
+        //HERE4
         // Ctrl+Z  — Undo
         if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z))
         {
@@ -5426,6 +5428,7 @@ void ImGuiSystem::Update(float dt)
             // don't corrupt the wrong object or break the undo entry
             if (isUsingNow && !wasGizmoUsing)
             {
+                //HERE5
                 gizmoEntity = activeGizmoEntity;
                 UndoSystem::Get().BeginModify(gizmoEntity, t);
                 lastScale = glm::vec3(1.0f);
