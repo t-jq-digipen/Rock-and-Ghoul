@@ -250,7 +250,8 @@ void CoreEngine::Run()
 
         frameRate.StartFrame();
         glfwPollEvents();
-        
+        Input::PollGamepad(); // Poll gamepad alongside keyboard events
+
         float dt = static_cast<float>(frameRate.GetDeltaTime());
         dt = std::clamp(dt, 0.0f, 0.05f); // clamp variable dt
 

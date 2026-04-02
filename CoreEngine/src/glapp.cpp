@@ -153,6 +153,15 @@ bool GLApp::init(GLint w, GLint h, std::string t, bool enable) {
   glfwSetMouseButtonCallback(GLApp::ptr_window, Input::MouseButtonCallback);
   glfwSetCursorPosCallback(GLApp::ptr_window, Input::MousePosCallback);
   glfwSetScrollCallback(GLApp::ptr_window, Input::MouseScrollCallback);
+  glfwSetJoystickCallback(Input::JoystickCallback);
+
+  // Detect controllers already connected before the game started
+  for (int jid = GLFW_JOYSTICK_1; jid <= GLFW_JOYSTICK_LAST; ++jid) {
+      if (glfwJoystickPresent(jid) && glfwJoystickIsGamepad(jid)) {
+          Input::JoystickCallback(jid, GLFW_CONNECTED);
+          break;
+      }
+  }
 
   // this is the default setting ...
   glfwSetInputMode(GLApp::ptr_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
