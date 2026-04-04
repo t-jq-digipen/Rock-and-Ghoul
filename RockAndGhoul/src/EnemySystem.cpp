@@ -638,9 +638,8 @@ namespace SpiritScript {
 
 		if (Registry::Get().Has_Component<ElementComponent>(eID)) {
 			auto& elemComp = Registry::Get().Get_Component<ElementComponent>(eID);
-			auto& transformComp = Registry::Get().Get_Component<TransformComponent>(eID);
 
-			Entity barrier = CreateBarrier(eID, elemComp.element);
+			CreateBarrier(eID, elemComp.element);
 
 
 		}
@@ -1028,11 +1027,9 @@ namespace ObstacleScript
 		const bool canOverrideAnimState =
 			(rt.state != ObstacleState::OBSTACLE_EXPLODE) &&
 			(rt.state != ObstacleState::OBSTACLE_DESTROYED);
-		const bool enteredState = (prevObstacleState[eID] != rt.state);
 		prevObstacleState[eID] = rt.state;
 
 		auto& hp = registry.Get_Component<HealthComponent>(eID);
-		auto& sheet = registry.Get_Component<RenderComponent>(eID).GetSpriteSheet();
 
 		// MakeObstacleStationary(eID);
 
@@ -1176,11 +1173,10 @@ namespace ObstacleScript
 		}
 		}
 
-		unsigned& prev = prevAnimState[eID];
-		/*if (prev != animState)
+		/*if (prevAnimState[eID] != animState)
 		{
 			registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
-			prev = animState;
+			prevAnimState[eID] = animState;
 		}*/
 		registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
 	}

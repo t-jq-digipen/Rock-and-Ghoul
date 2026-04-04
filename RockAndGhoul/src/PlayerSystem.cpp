@@ -1897,7 +1897,7 @@ namespace TutorialScript {
 
 
 
-	void Update(Entity eID, float dt)
+	void Update(Entity eID, float /*dt*/)
 	{
 		unsigned int animState = page;
 
