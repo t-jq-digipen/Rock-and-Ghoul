@@ -30,6 +30,9 @@ constexpr float MOVE_FORCE = 1000.f;    // Acceleration force
 constexpr float MAX_SPEED = 200.f;      // Top speed cap
 constexpr float DASH_IMPULSE = 2000.f;   // Dash boost
 
+// godmode
+static bool godMode = false;
+
 // spatial footstep sfx
 std::unordered_map<Entity, float> footstepTimers;  // Timer per player
 float footstepInterval = 0.70f;  // Time between footsteps (in seconds)
@@ -319,6 +322,7 @@ namespace RockScript {
 	static bool aoeHitboxSpawned = false;
 
 	static bool diedSequenceStarted = false;
+
 
 	//INPUT SEQUENCE SYSTEM
 	static std::vector<int> inputBuffer; //Stores arrow key presses
@@ -999,7 +1003,9 @@ namespace RockScript {
 			// Register with combat system
 			SOUNDWAVE_PROPERTIES.owner = wave;
 			SOUNDWAVE_PROPERTIES.element = currentElement;
-			CombatSystem::Get().RegisterProjectile(wave, SOUNDWAVE_PROPERTIES, SOUNDWAVE_RUNTIME);
+			AttackProperties properties = SOUNDWAVE_PROPERTIES;
+			properties.damage = (godMode) ? properties.damage * 2.f : properties.damage; // double damage if god mode active
+			CombatSystem::Get().RegisterProjectile(wave, properties, SOUNDWAVE_RUNTIME);
 
 			// Handle flipping
 			if (!faceRight && registry.Has_Component<Physics::PhysicsComponent>(wave)) {
@@ -1466,6 +1472,11 @@ namespace RockScript {
 
 		auto& healthComp = registry.Get_Component<HealthComponent>(eID);
 
+		if (godMode) {
+			healthComp.currhp = healthComp.maxhp;
+			healthComp.isVulnerable = false;
+			isVulnerable = false;
+		}
 
 		//Shield Timer
 		UpdateShield(healthComp, dt, transComp.pos.x, transComp.pos.y);
@@ -1604,9 +1615,11 @@ namespace RockScript {
 				// auto& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
 				Vec2 offset = MELEE_HITBOX_OFFSET;
 				if (!faceRight) offset.x = -offset.x;
+				AttackProperties properties = MELEE_PROPERTIES;
+				properties.damage = (godMode) ? properties.damage * 2.f : properties.damage; // if godmode, do double damage
 
 				CombatSystem::Get().SpawnHitBox(
-					MELEE_PROPERTIES,
+					properties,
 					offset,
 					MELEE_HITBOX_SIZE
 				);
@@ -1655,8 +1668,11 @@ namespace RockScript {
 				AOE_PROPERTIES.owner = eID;
 				AOE_PROPERTIES.lifetime = 0.2f;
 
+				AttackProperties properties = AOE_PROPERTIES;
+				properties.damage = (godMode) ? properties.damage * 2.f : properties.damage; // if godmode, do double damage
+
 				CombatSystem::Get().SpawnHitBox(
-					AOE_PROPERTIES,
+					properties,
 					aoeOffset,
 					aoeSize
 				);
@@ -1666,6 +1682,12 @@ namespace RockScript {
 				aoeHitboxSpawned = true;
 			}
 		}	// end AOE CAST
+
+		if (godMode) {
+			healthComp.currhp = healthComp.maxhp;
+			healthComp.isVulnerable = false;
+			isVulnerable = false;
+		}
 
 		// Healthbar
 		if (registry.Has_Component<HealthComponent>(eID))
@@ -1694,10 +1716,6 @@ namespace RockScript {
 					SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/FailCutscene.json"));
 					SceneManager::Get().SetTransitionTime(1.f);
 					GuiSystem::SetStoredRestartScene(SceneManager::Get().GetCurrentScene());
-					std::cout << std::setprecision(2) << std::fixed;
-					std::cout << "Player die\n" <<
-						"[PLAYER DIED] Cam pos :" << Camera::GetInstance().GetPosition().x << "," << Camera::GetInstance().GetPosition().y << "\n"
-						"[PLAYER DIED] Player pos: " << transComp.pos.x << ',' << transComp.pos.y << '\n';
 				}
 				//float zoom = 1.2 + SceneManager::Get().GetTransitionProgress() * 0.8f;
 				//Camera::GetInstance().SetZoom(zoom);
@@ -1954,7 +1972,8 @@ void PlayerSystem::Initialize()
 	mono.RegisterScript("Rotator", MonoScriptID::ROTATOR);
 	mono.RegisterScript("Mover", MonoScriptID::MOVER);
 
-	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>([](const SceneLoadEvent& e) {
+	SceneSubscriberID = EventBus::Get().Subscribe<SceneLoadEvent>(
+		[](const SceneLoadEvent& e) {
 			// Reset player variables on game scene load
 			if (e.sceneType == SceneType::ST_GAME) {
 				RockScript::ResetPlayerVariables();
@@ -1964,33 +1983,29 @@ void PlayerSystem::Initialize()
 		}
 	);
 
+	GodmodeSubscriberID = EventBus::Get().Subscribe<KeyPressedEvent>(
+		[](const KeyPressedEvent& e) {
+		if (e.key == GLFW_KEY_G) {
+			godMode = !godMode;
+		}
+		}
+	);
+
 }
 
-void PlayerSystem::Update(float dt)
+void PlayerSystem::Update(float)
 {
-	(void)dt;
 	SceneManager& sm = SceneManager::Get();
 	// check if game paused
 	if (sm.IsPaused()) {
 		return;  // Don't update player movement or footsteps when paused
 	}
 
-	//for (auto& [entity, comp] : m_registry.Get_ComponentMap<TagComponent>())
-	//{
-	//	if (!m_registry.Has_Component<TransformComponent>(entity))
-	//		continue;
-	//	if (comp.tag == T_PLAYER)
-	//	{
-	//		// THIS IS A PLAYER, DO PLAYER THINGS
-	//		WASD_Movement(entity, dt);
-	//		UpdateFootsteps(entity, dt);
-	//	}
-
-	//}
 }
 
 void PlayerSystem::Shutdown()
 {
 	EventBus::Get().Unsubscribe<SceneLoadEvent>(SceneSubscriberID);
+	EventBus::Get().Unsubscribe<SceneLoadEvent>(GodmodeSubscriberID);
 	std::cout << "PlayerSystem Shutdown!\n";
 }

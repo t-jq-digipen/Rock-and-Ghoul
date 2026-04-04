@@ -509,6 +509,18 @@ void CombatSystem::Initialize() {
 		}
 	);
 
+	killAllSubscriberID = EventBus::Get().Subscribe<KeyPressedEvent>([&](const KeyPressedEvent& e) {
+		if (e.key == GLFW_KEY_K) {
+			if (!SceneManager::Get().IsPlaying()) { return; }
+			for (auto& [entity, health] : m_registry.Get_ComponentMap<HealthComponent>()) {
+				if (m_registry.Has_Component<TagComponent>(entity)) {
+					TagComponent& tag = m_registry.Get_Component<TagComponent>(entity);
+					if (tag.tag == T_ENEMY) { health.currhp = 0; }
+				}
+			}
+		}
+		}
+	);
 	
 
 	// maybe assign player entity? player health stuff?
@@ -669,4 +681,5 @@ void CombatSystem::Shutdown() {
 	std::cout << "CombatSystem Shutdown!\n";
 	EventBus::Get().Unsubscribe<SceneLoadEvent>(sceneSubscriberID);
 	EventBus::Get().Unsubscribe<TriggerEvent>(triggerSubscriberID);
+	EventBus::Get().Unsubscribe<KeyPressedEvent>(killAllSubscriberID);
 }

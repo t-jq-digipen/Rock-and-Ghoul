@@ -244,6 +244,7 @@ private:
 
 	size_t sceneSubscriberID{ 0 };
 	size_t triggerSubscriberID{ 0 };
+	size_t killAllSubscriberID{ 0 };
 
 	Entity DamageArea(const AttackProperties& properties, const Vec2& pos_offset, const Vec2& size);
 	void ApplyDamage(Entity target, const AttackProperties& properties, Entity damageArea);

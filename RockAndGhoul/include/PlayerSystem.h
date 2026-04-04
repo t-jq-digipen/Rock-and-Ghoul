@@ -77,6 +77,7 @@ namespace TutorialScript {
 class PlayerSystem : public ISystem {
 private:
     size_t SceneSubscriberID{};
+	size_t GodmodeSubscriberID{};
 
     // static inline Movement::InputDirection VelToDir(float x, float y);
     std::vector<PooledEntity> activeProjectiles;
