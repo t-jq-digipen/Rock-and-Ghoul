@@ -247,7 +247,7 @@
                     },
                     {
                         "line": "Uh... What-",
-                        "speakerID": 0
+                        "speakerID": 5
                     },
                     {
                         "line": "Yeah, I realised I prefer flying solo. And I want that record deal.",
@@ -259,7 +259,7 @@
                     },
                     {
                         "line": "What's going on, Ghoul? I thought we were in this together?",
-                        "speakerID": 0
+                        "speakerID": 5
                     },
                     {
                         "line": "Look, if you wanna hear it so bad: You're the best guitarist I've ever had.",
@@ -275,7 +275,7 @@
                     },
                     {
                         "line": "W-wait, hold o-.",
-                        "speakerID": 0
+                        "speakerID": 4
                     }
                 ],
                 "profileDisplaySide": 0,
@@ -347,6 +347,101 @@
                             300.0
                         ],
                         "speakerName": ""
+                    },
+                    "3": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Angry.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "4": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Frightened.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "5": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Shocked.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "6": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Victory.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "7": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Ghoul.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_GhoulDialogue.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
                     }
                 },
                 "textBox": {
@@ -382,39 +477,39 @@
                 "lines": [
                     {
                         "line": "Ghoul... It's over. We don't need to fight anymore. Just... come back. We made music that mattered, remember?",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "You really think a few chords fix everything? You took the spotlight, Rock. You always did.",
-                        "speakerID": 1
+                        "speakerID": 7
                     },
                     {
                         "line": "I never wanted to take it from you. I just wanted us to shine together.",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "And... and maybe we still can.",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "What?",
-                        "speakerID": 1
+                        "speakerID": 7
                     },
                     {
                         "line": "If you just... tell me right now that the past 3 years weren't for nothing and that you still care about me...",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "You'll forgive me?",
-                        "speakerID": 1
+                        "speakerID": 7
                     },
                     {
                         "line": "No!",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "Not now.",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "But I wouldn't mind jamming together some time.",
@@ -422,13 +517,13 @@
                     },
                     {
                         "line": "Rock...",
-                        "speakerID": 1
+                        "speakerID": 7
                     },
                     {
                         "line": "I'm sorry.",
                         "speakerID": 1
                     },
-                                        {
+                    {
                         "line": "Let's make a new playlist.",
                         "speakerID": 1
                     }
@@ -497,6 +592,101 @@
                             0.0
                         ],
                         "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_EnemyDialogue_Normal.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "3": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Angry.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "4": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Frightened.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "5": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Shocked.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "6": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Rock.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_RockDialogue_Victory.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
+                    },
+                    "7": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Ghoul.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_GhoulDialogue.png\\\"}\",\"type\":\"image\"}",
                         "profileSize": [
                             300.0,
                             300.0

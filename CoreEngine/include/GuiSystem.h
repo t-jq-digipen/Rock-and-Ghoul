@@ -1031,6 +1031,9 @@ public:
 
     void ApplyGroupVisibilityOverrides(GuiSystem& gui, int grpId, bool visible);
 
+    static void SetStoredRestartScene(const std::string& scenePath);
+    static const std::string& GetStoredRestartScene();
+
 private:
 
     std::vector<ButtonConfig> buttons;

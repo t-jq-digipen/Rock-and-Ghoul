@@ -49,10 +49,10 @@ static float settingsVolume = 0.5f;
 static const float volStep = 0.05f;
 
 // ID for the display ID as loaded from the settings scene
-static const int settingsBarFillID = 6; // to match display ID in settings.json
+static const int settingsBarFillID = 8; // to match display ID in settings.json
 
 // Maximum width of the settings volume bar fill
-static const float settingsBarMaxW = 600.f;
+static const float settingsBarMaxW = 620.f;
 
 // Flag to sync settings volume bar fill size after scene loads
 bool settingsNeedSync = false;
@@ -391,6 +391,32 @@ void GuiSystem::Initialize() {
             std::string scene = FilePath::SAVES_FOLDER + std::string(p.at("scene")) + ".json";
             SceneManager::Get().LoadScene(scene);
             SceneManager::Get().SetTransitionTime(p.at("duration"));
+
+            // Ensure current volume follows settings
+            float newVolume01 = 1.0f;
+            try
+            {
+                std::ifstream ifs(FilePath::SETTINGS_FILE);
+                if (ifs)
+                {
+                    json j;
+                    ifs >> j;
+
+                    if (j.contains("settings") && j["settings"].is_object())
+                    {
+                        const auto& js = j["settings"];
+                        if (js.contains("volume"))
+                        {
+                            float volPct = js["volume"].get<float>();
+                            newVolume01 = std::clamp(volPct / 100.0f, 0.0f, 1.0f);
+                        }
+                    }
+                }
+            }
+            catch (...) {
+            }
+            settingsVolume = newVolume01;
+            AudioManager::Get().SetMasterVolume(settingsVolume); // sets master volume than channel vol
         });
 
     // Quit the application :(
@@ -507,10 +533,10 @@ void GuiSystem::Initialize() {
                     const float newRightX = leftX + v.baseSize.x;
 
                     gui.SetDisplayQuad(v.ID,
-                        { leftX,     botY },
-                        { newRightX, botY },
-                        { newRightX, topY },
-                        { leftX,     topY }
+                        { leftX + 20.f, botY },
+                        { newRightX,    botY },
+                        { newRightX,    topY },
+                        { leftX,        topY }
                     );
                 }
 
@@ -546,10 +572,10 @@ void GuiSystem::Initialize() {
                     const float newRightX = leftX + v.baseSize.x;
 
                     gui.SetDisplayQuad(v.ID,
-                        { leftX,     botY },
-                        { newRightX, botY },
-                        { newRightX, topY },
-                        { leftX,     topY }
+                        { leftX + 20.f, botY },
+                        { newRightX,    botY },
+                        { newRightX,    topY },
+                        { leftX,        topY }
                     );
                 }
 
@@ -590,6 +616,21 @@ void GuiSystem::Initialize() {
         {
             SceneManager::Get().LoadScene(FilePath::CONTROLS_FILE);
             SceneManager::Get().SetTransitionTime(0.f);
+        });
+
+    // Load stored scene (restarts the current level)
+    RegisterAction("RestartToStoredScene",
+        [](const json&)
+        {
+            const std::string& path = GuiSystem::GetStoredRestartScene();
+            if (path.empty())
+            {
+                std::cerr << "[GuiSystem] RestartToStoredScene: stored scene path is empty!" << std::endl;
+                return;
+            }
+
+            SceneManager::Get().QueueLoadScene(path);
+            SceneManager::Get().SetTransitionTime(1.f);
         });
 
     // Controls page 1: show the first page of textboxes
@@ -865,6 +906,20 @@ void GuiSystem::ApplyGroupVisibilityOverrides(GuiSystem& gui, int grpID, bool vi
             }
         }
     }
+}
+
+// Store scene path to restart to
+static std::string g_storedRestartScenePath;
+
+// Store current scene to restart to when game goes to fail screen
+void GuiSystem::SetStoredRestartScene(const std::string& scenePath)
+{
+    g_storedRestartScenePath = scenePath;
+}
+
+const std::string& GuiSystem::GetStoredRestartScene()
+{
+    return g_storedRestartScenePath;
 }
 
 static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 2.f; // duration until active dialogue can be skipped
@@ -1643,7 +1698,7 @@ void GuiSystem::Update(float dt)
             }
 
             bool autoFromSpeaker = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER);
-            bool notRock = (effectiveSpeakerID == 1 || effectiveSpeakerID == 2);
+            bool notRock = (effectiveSpeakerID == 1 || effectiveSpeakerID == 2 || effectiveSpeakerID == 7);
             float profDir = notRock ? +1.f : -1.f;
             float posLeftShift = notRock ? DIALOGUE_BACKGROUND_OFFSET_X : 0.f;
 

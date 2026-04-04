@@ -1683,6 +1683,7 @@ namespace RockScript {
 					deathSoundPlayed = true;
 				}
 				SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/failscreen.json"));
+				GuiSystem::SetStoredRestartScene(SceneManager::Get().GetCurrentScene());
 			}
 
 
