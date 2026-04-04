@@ -1409,6 +1409,18 @@ void GuiSystem::Update(float dt)
     auto drawList = BuildSortedDrawList();
 
     // Draw UI elements per type
+
+    // To ensure only one button can be hovered over at a time
+    static int s_activeHoverButtonID = -1;
+    static std::unordered_map<int, bool> s_prevInsideByButtonID;
+    static int s_lastEnteredButtonThisFrame = -1;
+    static int s_lastInsideButtonThisFrame = -1;
+    static bool s_activeStillInsideButtonThisFrame = false;
+
+    // Reset per-frame trackers
+    s_lastEnteredButtonThisFrame = -1;
+    s_lastInsideButtonThisFrame = -1;
+    s_activeStillInsideButtonThisFrame = false;
     
     // Draw button
     // --------------------------------------------------
@@ -1431,18 +1443,42 @@ void GuiSystem::Update(float dt)
             // cfg.pos.x = cfg.basePos.x * scaleX;
             // cfg.pos.y = cfg.basePos.y * scaleY;
 
-            bool hover = false;
+            // Button hover check logic
+            bool inside = false;
             if (cfg.m_renderData.GetRenderType() == UIRenderType::Shape &&
                 cfg.m_renderData.GetShapeData().shape == ButtonShape::Circle)
             {
                 float radius = std::min(cfg.size.x, cfg.size.y) * 0.5f;
                 float dist = RG_Distance(mouse, cfg.pos);
-                hover = dist <= radius;
+                inside = dist <= radius;
             }
-            else 
+            else
             {
-                hover = render.IsAreaTouched(mouse, cfg.pos, cfg.size.x, cfg.size.y);
+                inside = render.IsAreaTouched(mouse, cfg.pos, cfg.size.x, cfg.size.y);
             }
+
+            // Track last inside for fallback selection
+            if (inside) s_lastInsideButtonThisFrame = cfg.ID;
+
+            // Detect "enter" this frame
+            bool& prevInside = s_prevInsideByButtonID[cfg.ID];
+            const bool entered = inside && !prevInside;
+            prevInside = inside;
+
+            if (entered)
+            {
+                s_activeHoverButtonID = cfg.ID;
+                s_lastEnteredButtonThisFrame = cfg.ID;
+            }
+
+            // Check whether active hover is still inside
+            if (cfg.ID == s_activeHoverButtonID && inside)
+            {
+                s_activeStillInsideButtonThisFrame = true;
+            }
+
+            // Exclusive hover: only active hover owner can be hovered
+            const bool hover = inside && (cfg.ID == s_activeHoverButtonID);
 
             bool focused = (i == focusedButtonIndex);
             cfg.DrawButton(hover || focused);
@@ -2113,6 +2149,20 @@ void GuiSystem::Update(float dt)
             break;
         default: break;
         }
+    }
+
+    // If active hover button is no longer under mouse, pick a new hover owner or clear
+    if (s_activeHoverButtonID != -1 && !s_activeStillInsideButtonThisFrame)
+    {
+        if (s_lastEnteredButtonThisFrame != -1)      s_activeHoverButtonID = s_lastEnteredButtonThisFrame;
+        else if (s_lastInsideButtonThisFrame != -1)  s_activeHoverButtonID = s_lastInsideButtonThisFrame;
+        else                                  s_activeHoverButtonID = -1;
+    }
+    else if (s_activeHoverButtonID == -1)
+    {
+        // If nothing active but mouse is inside something, adopt it
+        if (s_lastEnteredButtonThisFrame != -1)      s_activeHoverButtonID = s_lastEnteredButtonThisFrame;
+        else if (s_lastInsideButtonThisFrame != -1)  s_activeHoverButtonID = s_lastInsideButtonThisFrame;
     }
 
     // --- State window over UI ---
