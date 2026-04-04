@@ -1222,7 +1222,7 @@ namespace RockScript {
 			audioComp.spatial = true;
 			audioComp.volume = 1.0f;
 			audioComp.minDistance = 50.0f;
-			audioComp.maxDistance = 1000.0f;
+			audioComp.maxDistance = 1000.0f;  // large enough to stay audible when camera follows boss
 
 			// Add sounds in specific order
 			audioComp.AddSound("player_footstep_wood");        // 0  - SFX_FOOTSTEP
