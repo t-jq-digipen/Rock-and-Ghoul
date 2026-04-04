@@ -12,100 +12,25 @@
     "entities": [
         {
             "components": {
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
-                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-            },
-            "name": "MainMenu_Rock&Ghoul"
-        },
-        {
-            "components": {
                 "Behaviour": "{\"scripts\":[\"Movey\"]}",
                 "Movement": "{\"moveSpeed\":50.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/MainMenu_Dots.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
+                "Render": "{\"alpha\":1.0,\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/MainMenu_Dots.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
                 "Transform": "{\"posX\":1682.5478515625,\"posY\":-177.76971435546875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "MainMenu_Dots"
+        },
+        {
+            "components": {
+                "Render": "{\"alpha\":1.0,\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
+                "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+            },
+            "name": "MainMenu_Rock&Ghoul"
         }
     ],
     "fontConfig": "E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
     "gui": {
         "buttons": [
-            {
-                "ID": 1,
-                "actionName": "LoadScene",
-                "actionParams": {
-                    "duration": 2.0,
-                    "scene": "level1"
-                },
-                "isVisible": true,
-                "label": "PLAY",
-                "pos": [
-                    1650.0,
-                    600.0
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkNewGame.png\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    400.0,
-                    150.0
-                ],
-                "soundName": "ui_click",
-                "textScale": 0.8
-            },
-            {
-                "ID": 2,
-                "actionName": "LoadSettings",
-                "actionParams": {},
-                "isVisible": true,
-                "label": "SETTINGS",
-                "pos": [
-                    1650.0,
-                    450.0
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkSettings.png\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    400.0,
-                    150.0
-                ],
-                "soundName": "ui_click",
-                "textScale": 0.8
-            },
-            {
-                "ID": 3,
-                "actionName": "LoadControls",
-                "actionParams": {},
-                "isVisible": true,
-                "label": "CONTROLS",
-                "pos": [
-                    1650.0,
-                    300.0
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkControls.png\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    400.0,
-                    150.0
-                ],
-                "soundName": "ui_click",
-                "textScale": 0.8
-            },
-            {
-                "ID": 4,
-                "actionName": "Quit",
-                "actionParams": {},
-                "isVisible": true,
-                "label": "QUIT",
-                "pos": [
-                    1650.0,
-                    150.0
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkQuit.PNG\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    400.0,
-                    150.0
-                ],
-                "soundName": "ui_click",
-                "textScale": 0.8
-            },
             {
                 "ID": 8,
                 "actionName": "Quit",
@@ -174,6 +99,62 @@
                 "size": [
                     3000.0,
                     2000.0
+                ]
+            },
+            {
+                "ID": 1,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1650.0,
+                    600.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_Play.png\\\",\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    377.80218505859375,
+                    180.0
+                ]
+            },
+            {
+                "ID": 2,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1650.0,
+                    437.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_Settings.png\\\",\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    377.80218505859375,
+                    180.0
+                ]
+            },
+            {
+                "ID": 3,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1650.0,
+                    275.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_Controls.png\\\",\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    377.80218505859375,
+                    180.0
+                ]
+            },
+            {
+                "ID": 4,
+                "centered": true,
+                "isVisible": true,
+                "pos": [
+                    1650.0,
+                    100.0
+                ],
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_Quit.png\\\",\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
+                "size": [
+                    377.80218505859375,
+                    180.0
                 ]
             }
         ],

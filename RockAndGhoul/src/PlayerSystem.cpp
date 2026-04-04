@@ -318,6 +318,8 @@ namespace RockScript {
 	static bool shot = false;
 	static bool aoeHitboxSpawned = false;
 
+	static bool diedSequenceStarted = false;
+
 	//INPUT SEQUENCE SYSTEM
 	static std::vector<int> inputBuffer; //Stores arrow key presses
 	static const int MAX_COMBO = 3; //Longest input sequence length
@@ -1170,6 +1172,7 @@ namespace RockScript {
 	void ResetPlayerVariables()
 	{
 		deathSoundPlayed = false; // for die sound
+		diedSequenceStarted = false; // for death sequence
 		stunnedtimer = STAGGER_DURATION;
 
 		dashtimer = DASH_COOLDOWN;
@@ -1502,6 +1505,9 @@ namespace RockScript {
 
 
 		int animstate = (faceRight) ? 0 : 1; //idle
+		if (dashtimer < DASH_INVULN_DURATION) {
+			animstate += 12;
+		}
 
 		// MOVEMENT
 		// ================================================================================
@@ -1514,12 +1520,12 @@ namespace RockScript {
 			int ver = 0;
 			if (Input::IsKeyHeld(GLFW_KEY_W)) ver += 1;
 			if (Input::IsKeyHeld(GLFW_KEY_S)) ver -= 1;
-			if (Input::IsKeyHeld(GLFW_KEY_A)) 
+			if (Input::IsKeyHeld(GLFW_KEY_A))
 			{
 				hor -= 1;
 				faceRight = false;
 			}
-			if (Input::IsKeyHeld(GLFW_KEY_D)) 
+			if (Input::IsKeyHeld(GLFW_KEY_D))
 			{
 				hor += 1;
 				faceRight = true;
@@ -1537,8 +1543,11 @@ namespace RockScript {
 			moveComp.SetInputDirection(VelToDir(fx, fy));
 			moveComp.SetMovementDirection({ fx, fy });
 
-			if (moving) { 
-				animstate = (faceRight) ? 2 : 3; 
+			if (moving) {
+				animstate = (faceRight) ? 2 : 3;
+				if (dashtimer < DASH_INVULN_DURATION) {
+					animstate += 10;
+				}
 			}
 
 			// Reset timer when not moving
@@ -1558,7 +1567,7 @@ namespace RockScript {
 					footstepTimers[eID] = 0.0f;  // Reset timer
 				}
 			}
-		}	
+		}
 		else if (gui.GetDialogueGate())
 		{
 			moveComp.ResetFrameIntent();
@@ -1569,7 +1578,7 @@ namespace RockScript {
 		// ================================================================================
 		// STUNNED
 		// ================================================================================
-		else if (stunnedtimer < STAGGER_DURATION)
+		else if (stunnedtimer < STAGGER_DURATION && healthComp.currhp > 0.f)
 		{
 			isVulnerable = false;
 			healthComp.isVulnerable = false;
@@ -1656,18 +1665,11 @@ namespace RockScript {
 			}
 		}	// end AOE CAST
 
-		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
-		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
-
-		Sprite::SpriteSheet& spriteSheet = renderComp.GetSpriteSheet();
-
-		spriteSheet.SetState(animstate);
-
 		// Healthbar
 		if (registry.Has_Component<HealthComponent>(eID))
 		{
 			HealthComponent& hpComp = registry.Get_Component<HealthComponent>(eID);
-			if (hpComp.maxhp == 0) return;
+			if (hpComp.maxhp == 0) return; //failsafe bc dev screw up
 
 			if (Input::IsKeyHeld(GLFW_KEY_Y)) hpComp.currhp -= 20 * dt;
 
@@ -1677,13 +1679,27 @@ namespace RockScript {
 
 			if (hpComp.currhp <= 0.f)
 			{
+
 				if (!deathSoundPlayed)
 				{
 					PlayAudio(SFX_DIE);
 					deathSoundPlayed = true;
 				}
-				SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/failscreen.json"));
-				GuiSystem::SetStoredRestartScene(SceneManager::Get().GetCurrentScene());
+				if (!diedSequenceStarted)
+				{
+					diedSequenceStarted = true;
+					stunnedtimer = 0.f;
+					SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/FailCutscene.json"));
+					SceneManager::Get().SetTransitionTime(1.f);
+					GuiSystem::SetStoredRestartScene(SceneManager::Get().GetCurrentScene());
+					std::cout << std::setprecision(2) << std::fixed;
+					std::cout << "Player die\n" <<
+						"[PLAYER DIED] Cam pos :" << Camera::GetInstance().GetPosition().x << "," << Camera::GetInstance().GetPosition().y << "\n"
+						"[PLAYER DIED] Player pos: " << transComp.pos.x << ',' << transComp.pos.y << '\n';
+				}
+				//float zoom = 1.2 + SceneManager::Get().GetTransitionProgress() * 0.8f;
+				//Camera::GetInstance().SetZoom(zoom);
+				animstate = 14;
 			}
 
 
@@ -1764,6 +1780,14 @@ namespace RockScript {
 
 			
 		}
+
+		// Render
+		if (!registry.Has_Component<RenderComponent>(eID)) { return; }
+		RenderComponent& renderComp = Registry::Get().Get_Component<RenderComponent>(eID);
+
+		Sprite::SpriteSheet& spriteSheet = renderComp.GetSpriteSheet();
+
+		spriteSheet.SetState(animstate);
 	}
 
 	void End(Entity e)

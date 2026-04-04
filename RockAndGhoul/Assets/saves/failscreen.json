@@ -9,7 +9,7 @@
     ],
     "cameraZoom": 1.0,
     "entities": [],
-    "fontConfig": "../Assets/fontAssets.json",
+    "fontConfig": "E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
     "gui": {
         "buttons": [
             {
@@ -19,19 +19,19 @@
                 "isVisible": true,
                 "label": "",
                 "pos": [
-                    1300.0,
-                    260.0
+                    1281.5662841796875,
+                    270.8433532714844
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_PinkYesLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_Failed_Yes_Button.PNG\\\",\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
-                    250.0,
-                    180.0
+                    306.8674621582031,
+                    204.57830810546875
                 ],
-                "soundType": 2,
+                "soundName": "ui_click",
                 "textScale": 1.0
             },
             {
-                "ID": 3,
+                "ID": 2,
                 "actionName": "LoadScene",
                 "actionParams": {
                     "duration": 0.5,
@@ -40,49 +40,20 @@
                 "isVisible": true,
                 "label": "",
                 "pos": [
-                    1250.0,
-                    145.0
+                    1208.795166015625,
+                    155.8433837890625
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_PinkNoLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"currCol\\\":0,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_Failed_No_Button.PNG\\\",\\\"totalCols\\\":2,\\\"totalRows\\\":1}\",\"type\":\"imagesheet\"}",
                 "size": [
                     200.0,
-                    180.0
+                    201.81817626953125
                 ],
-                "soundType": 2,
+                "soundName": "ui_click",
                 "textScale": 1.0
             }
         ],
         "dialogues": [],
-        "displays": [
-            {
-                "ID": 2,
-                "centered": true,
-                "isVisible": true,
-                "pos": [
-                    1280.0,
-                    270.0
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_YesLogo.PNG\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    270.0,
-                    180.0
-                ]
-            },
-            {
-                "ID": 4,
-                "centered": true,
-                "isVisible": true,
-                "pos": [
-                    1230.0,
-                    155.0
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_FailedPage_NoLogo.PNG\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    200.0,
-                    180.0
-                ]
-            }
-        ],
+        "displays": [],
         "textboxes": []
     },
     "sceneName": "failscreen",

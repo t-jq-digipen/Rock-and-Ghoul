@@ -308,21 +308,27 @@ void ButtonConfig::DrawButton(bool hovered) {
     {
         UIImageSheetRender data = m_renderData.GetImageSheetData();
 
-        float brightness = hovered ? .25f : 0.f;
+        // should have 2 col 1 row
+        // default: img 0
+        // hover:   img 1
+
+        //float brightness = hovered ? .25f : 0.f;
 
         int tileW = data.m_image.widthPixels / data.total_cols;
         int tileH = data.m_image.heightPixels / data.total_rows;
 
-        int col = data.frame_index.curr_col;
+        //int col = data.frame_index.curr_col;
         int row = data.frame_index.curr_row;
         row = data.total_rows - 1 - row;
+
+        int col = hovered ? 1 : 0;
 
         float u0 = static_cast<float>(col * tileW);
         float v0 = static_cast<float>(row * tileH);
         float u1 = static_cast<float>(u0 + tileW);
         float v1 = static_cast<float>(v0 + tileH);
 
-        render.DrawImageSub(data.m_image, pos.x, pos.y, size.x, size.y, u0, v0, u1, v1, 0.f, brightness);
+        render.DrawImageSub(data.m_image, pos.x, pos.y, size.x, size.y, u0, v0, u1, v1, 0.f);
     }
     break;
 

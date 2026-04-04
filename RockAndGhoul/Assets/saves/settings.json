@@ -10,6 +10,7 @@
     "cameraZoom": 1.0,
     "entities": [],
     "fontConfig": "C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
+    "fullscreen": true,
     "gui": {
         "buttons": [
             {
@@ -290,8 +291,13 @@
             }
         ]
     },
+    "resolutionHeight": 1080,
+    "resolutionWidth": 1920,
     "sceneName": "settings",
     "sceneType": 0,
+    "settings": {
+        "volume": 50.0
+    },
     "worldMax": [
         1920.0,
         1080.0

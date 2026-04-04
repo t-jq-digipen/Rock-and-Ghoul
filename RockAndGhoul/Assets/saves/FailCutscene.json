@@ -1,0 +1,31 @@
+{
+    "backgrounds": [
+        "E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/FailScreenTransition.mp4",
+        "24.000000",
+        "failscreen"
+    ],
+    "bgmAssetName": "cutscene_music",
+    "cameraSpawn": [
+        960.0,
+        540.0
+    ],
+    "cameraZoom": 1.0,
+    "entities": [],
+    "fontConfig": "E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
+    "gui": {
+        "buttons": [],
+        "dialogues": [],
+        "displays": [],
+        "textboxes": []
+    },
+    "sceneName": "FailCutscene",
+    "sceneType": 2,
+    "worldMax": [
+        1920.0,
+        1080.0
+    ],
+    "worldMin": [
+        0.0,
+        0.0
+    ]
+}
