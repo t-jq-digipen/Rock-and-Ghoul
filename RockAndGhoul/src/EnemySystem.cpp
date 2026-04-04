@@ -213,8 +213,7 @@ Entity CreateBarrier(Entity eID, Element elem)
 
 	if (barrier != INVALID_ENTITY) {
 		g_elemBarriers[eID] = ElemBarrier{ barrier, elem, true };
-		Vec2 pos = GetPos(eID);
-		AudioSystem::PlaySoundAt("barrier_create", pos.x, pos.y, 0.5f);
+		AudioSystem::PlaySoundAt("barrier_create", transComp.pos.x, transComp.pos.y, 0.5f);
 	}
 	return barrier;
 }
@@ -245,8 +244,8 @@ bool BreakBarrier(Entity eID, Element elem)
 	// Queue remove barrier, let system destroy later
 	barrier.active = false;
 	Registry::Get().Remove_Component<ElementComponent>(eID);
-	Vec2 pos = GetPos(eID);
-	AudioSystem::PlaySoundAt("barrier_broken", pos.x, pos.y, 0.5f);
+	const TransformComponent& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
+	AudioSystem::PlaySoundAt("barrier_broken", transComp.pos.x, transComp.pos.y, 0.5f);
 	return true;
 }
 
