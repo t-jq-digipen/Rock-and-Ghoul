@@ -223,6 +223,12 @@ void CoreEngine::Initialize()
     // Only load a scene if game has been selected
     // In editor mode user is prompted to pick a game first
     if (FilePath::IsGameLoaded())
+/*
+#ifdef NO_IMGUI
+        Render::GetInstance().LoadShaders(); //is it like this, load all at once first? but it takes hella long at startup though
+        Render::GetInstance().PreloadAllTextures();
+#endif
+*/
         sm.LoadScene(FilePath::MAIN_MENU_SCENE);
 
     // Legacy GSM init – can be removed once all GSM users are gone
@@ -250,7 +256,8 @@ void CoreEngine::Run()
 
         frameRate.StartFrame();
         glfwPollEvents();
-        
+        Input::PollGamepad(); // Poll gamepad alongside keyboard events
+
         float dt = static_cast<float>(frameRate.GetDeltaTime());
         dt = std::clamp(dt, 0.0f, 0.05f); // clamp variable dt
 

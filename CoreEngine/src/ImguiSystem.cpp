@@ -98,6 +98,93 @@ static bool s_openGameSuccess            = false;
 static bool s_openLoadingPopup  = false;
 static int  s_loadingStep       = 0;
 static std::string s_pendingLoadGame;
+
+// ===== Build Size Analyzer state =====
+struct BuildAssetEntry {
+    std::string relPath;
+    std::string fullPath;
+    uintmax_t   byteSize = 0;
+    bool        selected = true;
+};
+static std::vector<BuildAssetEntry> s_buildAssets;
+static bool s_buildLoaded = false;
+static bool s_buildWindowOpen = false;
+static char s_buildExportDir[512] = {};
+static std::string s_buildExportStatus;
+
+static std::string BSA_SelectionsPath() {
+    return FilePath::ASSETS_FOLDER + ".build_selections.json";
+}
+
+static std::string BSA_FormatSize(uintmax_t bytes) {
+    char buf[64];
+    if (bytes >= 1024ULL * 1024 * 1024) {
+        snprintf(buf, sizeof(buf), "%.2f GB", bytes / (1024.0 * 1024 * 1024));
+    }
+    else if (bytes >= 1024ULL * 1024) {
+        snprintf(buf, sizeof(buf), "%.2f MB", bytes / (1024.0 * 1024));
+    }
+    else if (bytes >= 1024) {
+        snprintf(buf, sizeof(buf), "%.2f KB", bytes / 1024.0);
+    }
+    else {
+        snprintf(buf, sizeof(buf), "%llu B", (unsigned long long)bytes);
+    }
+    return buf;
+}
+
+static void BSA_SaveSelections() {
+    nlohmann::json j;
+    j["selected"] = nlohmann::json::array();
+    for (auto& a : s_buildAssets)
+        if (a.selected) j["selected"].push_back(a.relPath);
+    std::ofstream f(BSA_SelectionsPath());
+    if (f) f << j.dump(2);
+}
+
+static void BSA_LoadAssets() {
+    namespace fs = std::filesystem;
+    s_buildAssets.clear();
+
+    // Load previously saved selections
+    std::unordered_set<std::string> savedSelected;
+    bool hasSaved = false;
+    {
+        std::ifstream f(BSA_SelectionsPath());
+        if (f) {
+            try {
+                nlohmann::json j; f >> j;
+                if (j.contains("selected")) {
+                    for (auto& v : j["selected"])
+                        savedSelected.insert(v.get<std::string>());
+                    hasSaved = true;
+                }
+            } catch (...) {}
+        }
+    }
+
+    const std::string& root = FilePath::ASSETS_FOLDER;
+    if (root.empty() || !fs::exists(root)) { s_buildLoaded = true; return; }
+
+    for (auto& entry : fs::recursive_directory_iterator(root, fs::directory_options::skip_permission_denied)) {
+        if (!entry.is_regular_file()) continue;
+        std::string fullPath = entry.path().string();
+        std::string relPath  = fullPath.substr(root.size());
+        for (char& c : relPath) if (c == '\\') c = '/';
+        if (relPath == ".build_selections.json") continue;
+
+        BuildAssetEntry e;
+        e.relPath  = relPath;
+        e.fullPath = fullPath;
+        try { e.byteSize = fs::file_size(entry); } catch (...) { e.byteSize = 0; }
+        e.selected = hasSaved ? (savedSelected.count(relPath) > 0) : true;
+        s_buildAssets.push_back(std::move(e));
+    }
+
+    std::sort(s_buildAssets.begin(), s_buildAssets.end(), [](const BuildAssetEntry& a, const BuildAssetEntry& b){ return a.relPath < b.relPath; });
+
+    s_buildLoaded = true;
+}
 static std::string s_pendingLoadScene;
 
 // Delete Game confirmation state
@@ -1165,6 +1252,8 @@ static void MakeWidget(Editor::Widget_Float& w, const std::string& label) {
                     float* ref        = w.ref;
                     float  valBefore  = state.floatBefore;
                     float  valAfter   = *w.ref;
+
+                    //HERE6
                     UndoSystem::Get().RecordComponentChange(
                         [ref, valBefore]() { *ref = valBefore; },
                         [ref, valAfter]()  { *ref = valAfter;  },
@@ -1489,7 +1578,7 @@ void ImGuiSystem::Update(float dt)
     if (guiEnabled && sm.inEditMode)   // must be in editor mode
     {
         ImGuiIO& io = ImGui::GetIO();
-
+        //HERE4
         // Ctrl+Z  — Undo
         if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z))
         {
@@ -1599,6 +1688,18 @@ void ImGuiSystem::Update(float dt)
                     std::sort(s_openGameList.begin(), s_openGameList.end());
                 }
                 s_openOpenGamePopup = true;
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Tools"))
+        {
+            if (ImGui::MenuItem("Build Size Analyzer", nullptr, s_buildWindowOpen))
+            {
+                s_buildWindowOpen = !s_buildWindowOpen;
+                if (s_buildWindowOpen) {
+                    s_buildLoaded = false;   // force fresh scan on open
+                    s_buildExportStatus = "";
+                }
             }
             ImGui::EndMenu();
         }
@@ -1722,6 +1823,7 @@ void ImGuiSystem::Update(float dt)
                 std::string name = s_newGameName;
                 FilePath::SetGameRoot(name);
                 AUDIO_MANIFEST_PATH = FilePath::AUDIO_MANIFEST;
+                s_buildLoaded = false;
                 AudioCache::Shutdown();
                 if (std::filesystem::exists(AUDIO_MANIFEST_PATH))
                     AudioCache::Initialize(AUDIO_MANIFEST_PATH);
@@ -2108,6 +2210,7 @@ void ImGuiSystem::Update(float dt)
         ImGui::DockBuilderDockWindow("Collision", dock_bottom);
         ImGui::DockBuilderDockWindow("Scene Manager", dock_bottom);
         ImGui::DockBuilderDockWindow("Assets", dock_bottom);
+        ImGui::DockBuilderDockWindow("Build Size Analyzer", dock_bottom);
         ImGui::DockBuilderDockWindow("Game View", dockspaceID);
         ImGui::DockBuilderFinish(dockspaceID);
     }
@@ -5225,6 +5328,12 @@ void ImGuiSystem::Update(float dt)
     }
     ImGui::End();
 
+    if (s_buildWindowOpen) {
+        if (ImGui::Begin("Build Size Analyzer", &s_buildWindowOpen)) {
+            ShowBuildSizeAnalyzer();
+        }
+        ImGui::End();
+    }
 
     // game view panel
     if (ImGui::Begin("Game View")) {
@@ -5421,6 +5530,7 @@ void ImGuiSystem::Update(float dt)
             // don't corrupt the wrong object or break the undo entry
             if (isUsingNow && !wasGizmoUsing)
             {
+                //HERE5
                 gizmoEntity = activeGizmoEntity;
                 UndoSystem::Get().BeginModify(gizmoEntity, t);
                 lastScale = glm::vec3(1.0f);
@@ -5725,6 +5835,7 @@ void ImGuiSystem::Render() {
         std::string name = s_pendingLoadGame;
         FilePath::SetGameRoot(name);
         AUDIO_MANIFEST_PATH = FilePath::AUDIO_MANIFEST;
+        s_buildLoaded = false;
         AudioCache::Shutdown();
         if (fs::exists(AUDIO_MANIFEST_PATH))
             AudioCache::Initialize(AUDIO_MANIFEST_PATH);
@@ -8896,6 +9007,118 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     {
         ImGui::TextDisabled("Replay: IDLE");
     }
+}
+
+void ImGuiSystem::ShowBuildSizeAnalyzer()
+{
+    namespace fs = std::filesystem;
+
+    if (!s_buildLoaded)
+        BSA_LoadAssets();
+
+    // --- Toolbar ---
+    if (ImGui::Button("Refresh"))
+    {
+        s_buildLoaded = false;
+        BSA_LoadAssets();
+        s_buildExportStatus = "";
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Select All"))
+    {
+        for (auto& a : s_buildAssets) a.selected = true;
+        BSA_SaveSelections();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Deselect All"))
+    {
+        for (auto& a : s_buildAssets) a.selected = false;
+        BSA_SaveSelections();
+    }
+
+    ImGui::Separator();
+
+    // --- Summary ---
+    uintmax_t totalSelected = 0;
+    size_t selectedCount = 0;
+    for (auto& a : s_buildAssets)
+    {
+        if (a.selected) { totalSelected += a.byteSize; ++selectedCount; }
+    }
+    ImGui::Text("Selected: %s  (%zu / %zu files)",
+        BSA_FormatSize(totalSelected).c_str(), selectedCount, s_buildAssets.size());
+
+    ImGui::Separator();
+
+    // --- Asset list ---
+    float listHeight = ImGui::GetContentRegionAvail().y - 58.0f;
+    if (listHeight < 80.0f) listHeight = 80.0f;
+
+    ImGui::BeginChild("BuildAssetList", ImVec2(0, listHeight), true);
+    if (s_buildAssets.empty())
+    {
+        ImGui::TextDisabled("No assets found. Make sure a game is loaded.");
+    }
+    else
+    {
+        for (auto& asset : s_buildAssets)
+        {
+            ImGui::PushID(asset.relPath.c_str());
+            bool changed = ImGui::Checkbox("##chk", &asset.selected);
+            if (changed) BSA_SaveSelections();
+            ImGui::SameLine();
+            ImGui::TextUnformatted(asset.relPath.c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("[%s]", BSA_FormatSize(asset.byteSize).c_str());
+            ImGui::PopID();
+        }
+    }
+    ImGui::EndChild();
+
+    ImGui::Separator();
+
+    // --- Export section ---
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 85.0f);
+    ImGui::InputText("##exportdir", s_buildExportDir, sizeof(s_buildExportDir));
+    ImGui::SameLine();
+    if (ImGui::Button("Export", ImVec2(80, 0)))
+    {
+        s_buildExportStatus = "";
+        std::string dest = s_buildExportDir;
+        if (dest.empty())
+        {
+            s_buildExportStatus = "Enter a destination folder path first.";
+        }
+        else
+        {
+            try
+            {
+                fs::create_directories(dest);
+                int copied = 0, failed = 0;
+                for (auto& a : s_buildAssets)
+                {
+                    if (!a.selected) continue;
+                    fs::path dst = fs::path(dest) / a.relPath;
+                    try
+                    {
+                        fs::create_directories(dst.parent_path());
+                        fs::copy_file(a.fullPath, dst, fs::copy_options::overwrite_existing);
+                        ++copied;
+                    }
+                    catch (...) { ++failed; }
+                }
+                s_buildExportStatus = "Exported " + std::to_string(copied) + " file(s).";
+                if (failed > 0)
+                    s_buildExportStatus += "  " + std::to_string(failed) + " failed.";
+            }
+            catch (const std::exception& ex)
+            {
+                s_buildExportStatus = std::string("Export error: ") + ex.what();
+            }
+        }
+    }
+    if (!s_buildExportStatus.empty())
+        ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "%s", s_buildExportStatus.c_str());
 }
 
 void ImGuiSystem::ShowLayerCollisionMatrix()

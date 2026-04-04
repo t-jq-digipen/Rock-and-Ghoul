@@ -2623,3 +2623,25 @@ void Render::PresentScene()
     // Draw the scaled, centered scene in screen space
     DrawScreenQuad(tex, offsetX, offsetY, renderW, renderH);
 }*/
+
+void Render::PreloadAllTextures()
+{
+    namespace fs = std::filesystem;
+
+    if (!fs::exists(FilePath::ASSETS_FOLDER))
+        return;
+
+    for (auto& entry :
+        fs::recursive_directory_iterator(FilePath::ASSETS_FOLDER,
+            fs::directory_options::skip_permission_denied))
+    {
+        if (!entry.is_regular_file()) continue;
+
+        std::string ext = entry.path().extension().string();
+        std::transform(ext.begin(), ext.end(), ext.begin(),
+            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+            LoadTexture(entry.path().string());
+    }
+}

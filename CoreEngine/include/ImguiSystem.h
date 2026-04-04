@@ -168,9 +168,18 @@ private:
      * @brief Displays component management.
      *
      * Allows adding or removing components while respecting dependency rules.
-     * 
+     *
      */
     void ShowAddRemoveComponents();
+
+    /**
+     * @brief Displays the Build Size Analyzer panel.
+     *
+     * Lists all assets in the project with file sizes, allows checkbox
+     * selection, shows a running total, and exports selected assets to
+     * a chosen destination folder.
+     */
+    void ShowBuildSizeAnalyzer();
 };
 
 #endif
