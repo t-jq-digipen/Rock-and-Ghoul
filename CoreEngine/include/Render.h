@@ -1189,4 +1189,7 @@ public:
     * changes should be made after this call if u want the custom behavior 
     */
     void ApplyLetterboxViewport();
+
+
+    void PreloadAllTextures();
 };
