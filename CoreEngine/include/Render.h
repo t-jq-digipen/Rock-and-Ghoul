@@ -1191,7 +1191,39 @@ public:
     void ApplyLetterboxViewport();
 
 
+    //A flag to set preloaded state once
+    bool m_texturesPreloaded = false;
+
+
+
+
+    /**
+    * @brief Loads all textures from the Assets folder.
+    *
+    * Goes through the Assets directory and loads every image file into the
+    * renderer before the game starts. A loading message is shown and updated
+    * as textures are being loaded.
+    *
+    * This helps avoid stuttering later since textures are already in memory.
+    *
+    * @note This function blocks while loading and can take some time depending
+    * on how many assets there are.
+    */
     void PreloadAllTextures();
 
+
+    /**
+    * @brief Displays a simple loading screen.
+    *
+    * Clears the screen and shows a message while the game is loading assets.
+    * This is used during startup so the screen doesn’t look frozen while work
+    * is being done in the background.
+    *
+    * @param message Text to display on screen.
+    *
+    * @note This function draws directly to the screen and swaps buffers
+    * immediately, so it should only be used during loading and not during
+    * normal rendering.
+    */
     void ShowLoadingScreen(const std::string& message);
 };

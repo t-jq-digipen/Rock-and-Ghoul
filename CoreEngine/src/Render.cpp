@@ -1289,7 +1289,7 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
     glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
     glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
-    glUniform1i(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
     //text no need, so set them transform uniforms to defaults
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
@@ -1343,7 +1343,7 @@ void Render::DrawText(std::string text, float x, float y, float scale, const Col
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE); //Remember tell shader ok im done using text
-    glUniform1i(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 }
 
 
@@ -1458,7 +1458,7 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
     glUniform3f(glGetUniformLocation(shaderProgram, "uTextColor"), color.r, color.g, color.b);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_TRUE);
     glUniform1i(glGetUniformLocation(shaderProgram, "uTexture"), 0);
-    glUniform1i(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), alpha);
 
     glUniform2f(glGetUniformLocation(shaderProgram, "uPos"), 0.0f, 0.0f);
     glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), 1.0f, 1.0f);
@@ -1522,7 +1522,7 @@ void Render::DrawTextBox(const std::string& text, float x, float y, float rowWid
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glUniform1i(glGetUniformLocation(shaderProgram, "uUseText"), GL_FALSE);
-    glUniform1i(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
+    glUniform1f(glGetUniformLocation(shaderProgram, "uAlpha"), 1.0f);
 
 }
 
@@ -2627,62 +2627,61 @@ void Render::PresentScene()
 void Render::ShowLoadingScreen(const std::string& message)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glDrawBuffer(GL_BACK);
+    glViewport(0, 0, GLApp::width, GLApp::height);
 
-    int w = 0, h = 0;
-    glfwGetFramebufferSize(GLApp::ptr_window, &w, &h);
-    glViewport(0, 0, w, h);
+    //match UI rendering path
+    useCamera = false;
+    SetProjectionType(ProjectionType::UI);
+    UpdateProjection(false);
 
-    // Reset state needed for 2D text drawing
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_SCISSOR_TEST);
-    glDepthMask(GL_FALSE);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    glClearColor(0.f, 0.f, 0.f, 1.f); // black screen
+    glClear(GL_COLOR_BUFFER_BIT);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    projection = glm::ortho(0.0f, static_cast<float>(w),
-        0.0f, static_cast<float>(h));
+    // Manually upload the projection to the text shader (try)
+    glUseProgram(shaderProgram);
+    glUniformMatrix4fv(
+        glGetUniformLocation(shaderProgram, "uProjection"),
+        1, GL_FALSE,
+        glm::value_ptr(projection)   // projection just set via UpdateProjection()
+    );
 
-    glClearColor(1.f, 1.f, 1.f, 1.f); //make the loading screen white first so more obvious lol... set to 0,0,0,1 if wan black
-    glClear(GL_COLOR_BUFFER_BIT);
+    float textWidth = message.size() * 13.0f * 2.0f;
 
-    if (!fontCache.empty())
-    {
-        DrawText(
-            message,
-            100.0f,
-            h * 0.5f,
-            2.0f,
-            Colour3{ 0.0f, 0.0f, 0.0f }, //make text white, 1,1,1 if wan black
-            "Marker",
-            1.0f
-        );
-    }
-
-    glUseProgram(0);
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    DrawText(message, GLApp::width - textWidth, 50.0f, 1.0f, Colour3{1.0f, 1.0f, 1.0f}, "Marker", 1.0f);
 
     glfwSwapBuffers(GLApp::ptr_window);
     glfwPollEvents();
-
-    //restore defaults for later code
-    glDepthMask(GL_TRUE);
 }
 
-/*void Render::PreloadAllTextures()
+
+void Render::PreloadAllTextures()
 {
+
+    if (m_texturesPreloaded) {
+        return;
+    }
+
     namespace fs = std::filesystem;
+
+    ShowLoadingScreen("Loading all assets...");
 
     if (!fs::exists(FilePath::ASSETS_FOLDER))
         return;
 
+    //count total
+    int totalTextures = 0;
+
     for (auto& entry :
-        fs::recursive_directory_iterator(FilePath::ASSETS_FOLDER,
+        fs::recursive_directory_iterator(
+            FilePath::ASSETS_FOLDER,
             fs::directory_options::skip_permission_denied))
     {
         if (!entry.is_regular_file()) continue;
@@ -2692,25 +2691,12 @@ void Render::ShowLoadingScreen(const std::string& message)
             [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
         if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
-            LoadTexture(entry.path().string());
+            ++totalTextures;
     }
-}*/
-
-void Render::PreloadAllTextures()
-{
-    namespace fs = std::filesystem;
-
-    ShowLoadingScreen("Loading all assets...");
-
-    if (!fs::exists(FilePath::ASSETS_FOLDER))
-        return;
 
     int loadedCount = 0;
 
-    for (auto& entry :
-        fs::recursive_directory_iterator(
-            FilePath::ASSETS_FOLDER,
-            fs::directory_options::skip_permission_denied))
+    for (auto& entry : fs::recursive_directory_iterator(FilePath::ASSETS_FOLDER, fs::directory_options::skip_permission_denied))
     {
         if (!entry.is_regular_file()) continue;
 
@@ -2725,11 +2711,18 @@ void Render::PreloadAllTextures()
 
             if (loadedCount % 10 == 0)
             {
+                float percent = (totalTextures > 0)
+                    ? (static_cast<float>(loadedCount) / totalTextures) * 100.0f
+                    : 100.0f;
+
                 ShowLoadingScreen(
-                    "Loading all assets... " + std::to_string(loadedCount));
+                    "Loading all assets... " + std::to_string((int)percent) + "%");
             }
         }
     }
 
-    ShowLoadingScreen("Loading complete");
+    //ShowLoadingScreen("Loading complete 100%");
+
+    m_texturesPreloaded = true;
 }
+
