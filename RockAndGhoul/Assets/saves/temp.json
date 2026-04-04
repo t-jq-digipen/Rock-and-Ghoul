@@ -15,20 +15,20 @@
                 "Behaviour": "{\"scripts\":[\"Movey\"]}",
                 "Movement": "{\"moveSpeed\":50.0,\"moveType\":0}",
                 "Physics": "{\"decay\":0.014999999664723873,\"friction\":0.10000000149011612,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-                "Render": "{\"alpha\":1.0,\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"C:/Users/yasmi/source/repos/aviddivas/csd2401f25_team_aviddivas/RockAndGhoul/Assets/MainMenu_Dots.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
+                "Render": "{\"alpha\":1.0,\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/MainMenu_Dots.PNG\\\"}\",\"renderLayer\":1,\"renderType\":1}",
                 "Transform": "{\"posX\":1682.5478515625,\"posY\":-177.76971435546875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "MainMenu_Dots"
         },
         {
             "components": {
-                "Render": "{\"alpha\":1.0,\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"C:/Users/yasmi/source/repos/aviddivas/csd2401f25_team_aviddivas/RockAndGhoul/Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
+                "Render": "{\"alpha\":1.0,\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":100.0,\\\"scaleY\\\":100.0,\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/MainMenu_Rock&Ghoul.PNG\\\"}\",\"renderLayer\":2,\"renderType\":1}",
                 "Transform": "{\"posX\":960.0,\"posY\":540.0,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
             },
             "name": "MainMenu_Rock&Ghoul"
         }
     ],
-    "fontConfig": "C:/Users/yasmi/source/repos/aviddivas/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
+    "fontConfig": "E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
     "gui": {
         "buttons": [
             {
@@ -44,7 +44,7 @@
                     1650.0,
                     600.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/yasmi/source/repos/aviddivas/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkNewGame.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkNewGame.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     140.0
@@ -62,7 +62,7 @@
                     1650.0,
                     450.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/yasmi/source/repos/aviddivas/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkSettings.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkSettings.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     140.0
@@ -83,7 +83,7 @@
                     1650.0,
                     300.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/yasmi/source/repos/aviddivas/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkControls.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkControls.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     400.0,
                     130.0
@@ -104,7 +104,7 @@
                     1650.0,
                     150.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/Users/yasmi/source/repos/aviddivas/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkQuit.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkQuit.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     380.0,
                     130.0
