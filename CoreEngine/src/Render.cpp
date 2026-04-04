@@ -2624,7 +2624,57 @@ void Render::PresentScene()
     DrawScreenQuad(tex, offsetX, offsetY, renderW, renderH);
 }*/
 
-void Render::PreloadAllTextures()
+void Render::ShowLoadingScreen(const std::string& message)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDrawBuffer(GL_BACK);
+
+    int w = 0, h = 0;
+    glfwGetFramebufferSize(GLApp::ptr_window, &w, &h);
+    glViewport(0, 0, w, h);
+
+    // Reset state needed for 2D text drawing
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_STENCIL_TEST);
+    glDisable(GL_SCISSOR_TEST);
+    glDepthMask(GL_FALSE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    projection = glm::ortho(0.0f, static_cast<float>(w),
+        0.0f, static_cast<float>(h));
+
+    glClearColor(1.f, 1.f, 1.f, 1.f); //make the loading screen white first so more obvious lol... set to 0,0,0,1 if wan black
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    if (!fontCache.empty())
+    {
+        DrawText(
+            message,
+            100.0f,
+            h * 0.5f,
+            2.0f,
+            Colour3{ 0.0f, 0.0f, 0.0f }, //make text white, 1,1,1 if wan black
+            "Marker",
+            1.0f
+        );
+    }
+
+    glUseProgram(0);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glfwSwapBuffers(GLApp::ptr_window);
+    glfwPollEvents();
+
+    //restore defaults for later code
+    glDepthMask(GL_TRUE);
+}
+
+/*void Render::PreloadAllTextures()
 {
     namespace fs = std::filesystem;
 
@@ -2644,4 +2694,42 @@ void Render::PreloadAllTextures()
         if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
             LoadTexture(entry.path().string());
     }
+}*/
+
+void Render::PreloadAllTextures()
+{
+    namespace fs = std::filesystem;
+
+    ShowLoadingScreen("Loading all assets...");
+
+    if (!fs::exists(FilePath::ASSETS_FOLDER))
+        return;
+
+    int loadedCount = 0;
+
+    for (auto& entry :
+        fs::recursive_directory_iterator(
+            FilePath::ASSETS_FOLDER,
+            fs::directory_options::skip_permission_denied))
+    {
+        if (!entry.is_regular_file()) continue;
+
+        std::string ext = entry.path().extension().string();
+        std::transform(ext.begin(), ext.end(), ext.begin(),
+            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg")
+        {
+            LoadTexture(entry.path().string());
+            ++loadedCount;
+
+            if (loadedCount % 10 == 0)
+            {
+                ShowLoadingScreen(
+                    "Loading all assets... " + std::to_string(loadedCount));
+            }
+        }
+    }
+
+    ShowLoadingScreen("Loading complete");
 }

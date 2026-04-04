@@ -1192,4 +1192,6 @@ public:
 
 
     void PreloadAllTextures();
+
+    void ShowLoadingScreen(const std::string& message);
 };
