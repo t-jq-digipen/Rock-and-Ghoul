@@ -3,13 +3,14 @@
         "../Assets/UI_SettingsPage_Background.PNG"
     ],
     "bgmAssetName": "main_menu",
+    "bgmLayerAssetName": "",
     "cameraSpawn": [
         0.0,
         0.0
     ],
     "cameraZoom": 1.0,
     "entities": [],
-    "fontConfig": "C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
+    "fontConfig": "E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
     "fullscreen": true,
     "gui": {
         "buttons": [
@@ -23,7 +24,7 @@
                     280.0,
                     550.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlueLeft.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     80.0,
                     80.0
@@ -41,7 +42,7 @@
                     1100.0,
                     550.0
                 ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlueRight.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     80.0,
                     80.0
@@ -59,7 +60,7 @@
                     660.0,
                     264.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkContinueButton.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_MainMenu_DarkContinueButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     300.0,
                     142.1052703857422
@@ -80,7 +81,7 @@
                     120.0,
                     940.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_SettingsPage_BackButton.png\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_SettingsPage_BackButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
                     270.0,
                     270.0
@@ -113,7 +114,7 @@
                     700.0,
                     550.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_HealthBarTransparent.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_HealthBarTransparent.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     1100.0,
                     1150.0
@@ -127,7 +128,7 @@
                     280.0,
                     660.0
                 ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_SettingsPage_AmbienceLogo.PNG\\\"}\",\"type\":\"image\"}",
+                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_SettingsPage_AmbienceLogo.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     150.0,
                     150.0
@@ -189,7 +190,7 @@
     "sceneName": "settings",
     "sceneType": 0,
     "settings": {
-        "volume": 55.0
+        "volume": 50.0
     },
     "worldMax": [
         1920.0,
