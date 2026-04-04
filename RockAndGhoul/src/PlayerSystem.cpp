@@ -916,6 +916,7 @@ namespace RockScript {
 			if (shieldy != INVALID_ENTITY) {
 				Registry::Get().Remove_Entity(shieldy);
 				shieldy = INVALID_ENTITY;
+				AudioSystem::PlaySoundAt("barrier_broken", x, y, 0.5f);
 			}
 			return;
 		}
@@ -1076,6 +1077,7 @@ namespace RockScript {
 			RockScript::shieldTimer = 0.f;
 			wavetimer = 0.f;
 			std::cout << "Shield activated!\n";
+			AudioSystem::PlaySoundAt("barrier_create", trans.pos.x, trans.pos.y, 0.5f);
 
 			// Clean up old shield if exists
 			if (shieldy != INVALID_ENTITY) {

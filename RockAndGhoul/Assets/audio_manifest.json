@@ -293,6 +293,12 @@
       "group": "SFX",
       "spatial": false
     },
+    "barrier_create": {
+      "path": "../Assets/audio/SFX/Enemy/Mob Enemy/BarrierCreate.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
     "barrier_broken": {
       "path": "../Assets/audio/SFX/Enemy/Mob Enemy/SmashGlass.wav",
       "loop": false,

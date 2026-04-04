@@ -213,6 +213,8 @@ Entity CreateBarrier(Entity eID, Element elem)
 
 	if (barrier != INVALID_ENTITY) {
 		g_elemBarriers[eID] = ElemBarrier{ barrier, elem, true };
+		Vec2 pos = GetPos(eID);
+		AudioSystem::PlaySoundAt("barrier_create", pos.x, pos.y, 0.5f);
 	}
 	return barrier;
 }
