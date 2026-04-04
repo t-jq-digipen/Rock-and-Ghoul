@@ -55,14 +55,15 @@ public:
 
     /**
      * A generic property change stores apply/revert lambdas so it works for
-     * any type (float, int, bool, unsigned int, …) without adding more union
-     * members.
+     * any type without adding more union members.
      */
+
+    //HERE1
     struct ComponentPropertyAction
     {
         std::function<void()> applyRedo;   // restore "after"  value
         std::function<void()> applyUndo;   // restore "before" value
-        std::string description;           // e.g. "Health.maxHP"
+        std::string description;           
     };
 
     struct Action
@@ -134,6 +135,8 @@ private:
     void ApplyTransformState(Entity e, const TransformState& s);
 
 private:
+
+    //HERE2
     std::vector<Action> m_stack;   // undo stack (back = most recent)
     std::vector<Action> m_redo;    // redo stack (back = most recent undo)
 
