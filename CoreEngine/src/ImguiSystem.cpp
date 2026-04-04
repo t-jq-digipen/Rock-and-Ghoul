@@ -133,20 +133,30 @@ static std::string BSA_FormatSize(uintmax_t bytes) {
     return buf;
 }
 
+// Persists the current checkbox selections to .build_selections.json inside
+// the active game's Assets folder so they survive editor restarts.
 static void BSA_SaveSelections() {
     nlohmann::json j;
     j["selected"] = nlohmann::json::array();
+
+    // Only write entries that are checked
     for (auto& a : s_buildAssets)
         if (a.selected) j["selected"].push_back(a.relPath);
+
     std::ofstream f(BSA_SelectionsPath());
     if (f) f << j.dump(2);
 }
+
+// Scans Assets folder and populates s_buildAssets.
+// Each entry stores the relative path, absolute path, file size, and whether
+// the asset is selected for inclusion in the build.
 
 static void BSA_LoadAssets() {
     namespace fs = std::filesystem;
     s_buildAssets.clear();
 
-    // Load previously saved selections
+    // --- Restore previous selections -----------------------------------
+    // Read the saved JSON so we can restore checkbox states after the scan.
     std::unordered_set<std::string> savedSelected;
     bool hasSaved = false;
     {
@@ -163,25 +173,36 @@ static void BSA_LoadAssets() {
         }
     }
 
+    // --- Scan Assets folder --------------------------------------------
     const std::string& root = FilePath::ASSETS_FOLDER;
     if (root.empty() || !fs::exists(root)) { s_buildLoaded = true; return; }
 
     for (auto& entry : fs::recursive_directory_iterator(root, fs::directory_options::skip_permission_denied)) {
         if (!entry.is_regular_file()) continue;
+
         std::string fullPath = entry.path().string();
-        std::string relPath  = fullPath.substr(root.size());
+
+        
+        std::string relPath = fullPath.substr(root.size());
         for (char& c : relPath) if (c == '\\') c = '/';
+
+        // Skip the selections file itself so it never appears in the list
         if (relPath == ".build_selections.json") continue;
 
         BuildAssetEntry e;
         e.relPath  = relPath;
         e.fullPath = fullPath;
         try { e.byteSize = fs::file_size(entry); } catch (...) { e.byteSize = 0; }
+
+        // Restore saved state if available.else default to selected
         e.selected = hasSaved ? (savedSelected.count(relPath) > 0) : true;
+
         s_buildAssets.push_back(std::move(e));
     }
 
-    std::sort(s_buildAssets.begin(), s_buildAssets.end(), [](const BuildAssetEntry& a, const BuildAssetEntry& b){ return a.relPath < b.relPath; });
+    // Sort alphabetically by relative path for stable display order
+    std::sort(s_buildAssets.begin(), s_buildAssets.end(),
+        [](const BuildAssetEntry& a, const BuildAssetEntry& b){ return a.relPath < b.relPath; });
 
     s_buildLoaded = true;
 }
@@ -9009,14 +9030,31 @@ void ImGuiSystem::ShowSimulationControls(bool& isPlaying)
     }
 }
 
+/* ========================================================
+ * @brief   Renders the Build Size Analyzer panel content.
+ *
+ *
+ *   1. Toolbar     — Refresh, Select All, and Deselect All buttons.
+ *   2. Summary     — Running total of selected bytes and
+ *                    file count out of the full asset list.
+ *   3. Asset list  — each row shows a checkbox, relative path, and
+ *                    file size.
+ *   4. Export      — Text field for the destination folder
+ *                    and an Export button that copies every
+ *                    selected file, mirroring the relative
+ *                    directory structure under the target.
+ *
+ * ======================================================== */
 void ImGuiSystem::ShowBuildSizeAnalyzer()
 {
     namespace fs = std::filesystem;
 
+   
     if (!s_buildLoaded)
         BSA_LoadAssets();
 
     // --- Toolbar ---
+    // Refresh: clears the cached list and reloads from disk.
     if (ImGui::Button("Refresh"))
     {
         s_buildLoaded = false;
@@ -9024,12 +9062,14 @@ void ImGuiSystem::ShowBuildSizeAnalyzer()
         s_buildExportStatus = "";
     }
     ImGui::SameLine();
+    // Select All: marks every asset as selected and persists immediately.
     if (ImGui::Button("Select All"))
     {
         for (auto& a : s_buildAssets) a.selected = true;
         BSA_SaveSelections();
     }
     ImGui::SameLine();
+    // Deselect All: clears every selection and persists immediately.
     if (ImGui::Button("Deselect All"))
     {
         for (auto& a : s_buildAssets) a.selected = false;
@@ -9039,35 +9079,42 @@ void ImGuiSystem::ShowBuildSizeAnalyzer()
     ImGui::Separator();
 
     // --- Summary ---
+    // total byte size and count of currently selected assets.
     uintmax_t totalSelected = 0;
     size_t selectedCount = 0;
     for (auto& a : s_buildAssets)
     {
-        if (a.selected) { totalSelected += a.byteSize; ++selectedCount; }
+        if (a.selected) { 
+            totalSelected += a.byteSize; 
+            ++selectedCount; 
+        }
     }
-    ImGui::Text("Selected: %s  (%zu / %zu files)",
-        BSA_FormatSize(totalSelected).c_str(), selectedCount, s_buildAssets.size());
+    // Display total and ratio (e.g. "3 / 47 files").
+    ImGui::Text("Selected: %s  (%zu / %zu files)", BSA_FormatSize(totalSelected).c_str(), selectedCount, s_buildAssets.size());
 
     ImGui::Separator();
 
     // --- Asset list ---
+    // All remaining vertical space minus fixed-height export bar.
     float listHeight = ImGui::GetContentRegionAvail().y - 58.0f;
-    if (listHeight < 80.0f) listHeight = 80.0f;
+    if (listHeight < 80.0f) listHeight = 80.0f;  // scroll area
 
     ImGui::BeginChild("BuildAssetList", ImVec2(0, listHeight), true);
     if (s_buildAssets.empty())
     {
+        // Shown when no game is loaded or the Assets folder is empty.
         ImGui::TextDisabled("No assets found. Make sure a game is loaded.");
     }
     else
     {
+        // One row per asset: [checkbox]  relative/path/to/file.ext  [size]
         for (auto& asset : s_buildAssets)
         {
-            ImGui::PushID(asset.relPath.c_str());
+            ImGui::PushID(asset.relPath.c_str());  // unique ID per row
             bool changed = ImGui::Checkbox("##chk", &asset.selected);
-            if (changed) BSA_SaveSelections();
+            if (changed) BSA_SaveSelections();     // persist on every toggle
             ImGui::SameLine();
-            ImGui::TextUnformatted(asset.relPath.c_str());
+            ImGui::TextUnformatted(asset.relPath.c_str());  // relative path label
             ImGui::SameLine();
             ImGui::TextDisabled("[%s]", BSA_FormatSize(asset.byteSize).c_str());
             ImGui::PopID();
@@ -9078,6 +9125,7 @@ void ImGuiSystem::ShowBuildSizeAnalyzer()
     ImGui::Separator();
 
     // --- Export section ---
+    // Text input for the destination folder path (width leaves room for button).
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 85.0f);
     ImGui::InputText("##exportdir", s_buildExportDir, sizeof(s_buildExportDir));
     ImGui::SameLine();
@@ -9087,21 +9135,25 @@ void ImGuiSystem::ShowBuildSizeAnalyzer()
         std::string dest = s_buildExportDir;
         if (dest.empty())
         {
+            //require the user to enter a destination before exporting.
             s_buildExportStatus = "Enter a destination folder path first.";
         }
         else
         {
             try
             {
+                // Ensure the top-level destination directory exists.
                 fs::create_directories(dest);
                 int copied = 0, failed = 0;
                 for (auto& a : s_buildAssets)
                 {
                     if (!a.selected) continue;
+
+                    // Mirror the relative sub-directory structure under dest.
                     fs::path dst = fs::path(dest) / a.relPath;
                     try
                     {
-                        fs::create_directories(dst.parent_path());
+                        fs::create_directories(dst.parent_path());  // create sub-dirs as needed
                         fs::copy_file(a.fullPath, dst, fs::copy_options::overwrite_existing);
                         ++copied;
                     }
@@ -9113,6 +9165,7 @@ void ImGuiSystem::ShowBuildSizeAnalyzer()
             }
             catch (const std::exception& ex)
             {
+              
                 s_buildExportStatus = std::string("Export error: ") + ex.what();
             }
         }
