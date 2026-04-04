@@ -94,6 +94,8 @@ namespace PlayerMove {
 		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
 		float fx = static_cast<float>(hor);
 		float fy = static_cast<float>(ver);
+		fx += Input::GetGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X);
+		fy -= Input::GetGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y); // GLFW Y is positive-down
 
 		Vec2 dashDir{ fx, fy };
 
@@ -144,6 +146,8 @@ namespace PlayerMove {
 		if (Input::IsKeyHeld(GLFW_KEY_D)) hor += 1;
 		float fx = static_cast<float>(hor);
 		float fy = static_cast<float>(ver);
+		fx += Input::GetGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X);
+		fy -= Input::GetGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y); // GLFW Y is positive-down
 		NormalizeDiagonalMovement(fx, fy);
 
 		const bool moving = (fx != 0.f || fy != 0.f);
@@ -1522,6 +1526,10 @@ namespace RockScript {
 			}
 			float fx = static_cast<float>(hor);
 			float fy = static_cast<float>(ver);
+			const float gx = Input::GetGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X);
+			const float gy = Input::GetGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y);
+			if (gx != 0.f) { fx += gx; faceRight = (gx > 0.f); }
+			fy -= gy; // GLFW gamepad Y is positive-down
 			NormalizeDiagonalMovement(fx, fy);
 
 			const bool moving = (fx != 0.f || fy != 0.f);
@@ -1675,6 +1683,7 @@ namespace RockScript {
 					deathSoundPlayed = true;
 				}
 				SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/failscreen.json"));
+				GuiSystem::SetStoredRestartScene(SceneManager::Get().GetCurrentScene());
 			}
 
 

@@ -49,10 +49,10 @@ static float settingsVolume = 0.5f;
 static const float volStep = 0.05f;
 
 // ID for the display ID as loaded from the settings scene
-static const int settingsBarFillID = 6; // to match display ID in settings.json
+static const int settingsBarFillID = 8; // to match display ID in settings.json
 
 // Maximum width of the settings volume bar fill
-static const float settingsBarMaxW = 600.f;
+static const float settingsBarMaxW = 620.f;
 
 // Flag to sync settings volume bar fill size after scene loads
 bool settingsNeedSync = false;
@@ -391,6 +391,32 @@ void GuiSystem::Initialize() {
             std::string scene = FilePath::SAVES_FOLDER + std::string(p.at("scene")) + ".json";
             SceneManager::Get().LoadScene(scene);
             SceneManager::Get().SetTransitionTime(p.at("duration"));
+
+            // Ensure current volume follows settings
+            float newVolume01 = 1.0f;
+            try
+            {
+                std::ifstream ifs(FilePath::SETTINGS_FILE);
+                if (ifs)
+                {
+                    json j;
+                    ifs >> j;
+
+                    if (j.contains("settings") && j["settings"].is_object())
+                    {
+                        const auto& js = j["settings"];
+                        if (js.contains("volume"))
+                        {
+                            float volPct = js["volume"].get<float>();
+                            newVolume01 = std::clamp(volPct / 100.0f, 0.0f, 1.0f);
+                        }
+                    }
+                }
+            }
+            catch (...) {
+            }
+            settingsVolume = newVolume01;
+            AudioManager::Get().SetMasterVolume(settingsVolume); // sets master volume than channel vol
         });
 
     // Quit the application :(
@@ -507,10 +533,10 @@ void GuiSystem::Initialize() {
                     const float newRightX = leftX + v.baseSize.x;
 
                     gui.SetDisplayQuad(v.ID,
-                        { leftX,     botY },
-                        { newRightX, botY },
-                        { newRightX, topY },
-                        { leftX,     topY }
+                        { leftX + 20.f, botY },
+                        { newRightX,    botY },
+                        { newRightX,    topY },
+                        { leftX,        topY }
                     );
                 }
 
@@ -546,10 +572,10 @@ void GuiSystem::Initialize() {
                     const float newRightX = leftX + v.baseSize.x;
 
                     gui.SetDisplayQuad(v.ID,
-                        { leftX,     botY },
-                        { newRightX, botY },
-                        { newRightX, topY },
-                        { leftX,     topY }
+                        { leftX + 20.f, botY },
+                        { newRightX,    botY },
+                        { newRightX,    topY },
+                        { leftX,        topY }
                     );
                 }
 
@@ -590,6 +616,21 @@ void GuiSystem::Initialize() {
         {
             SceneManager::Get().LoadScene(FilePath::CONTROLS_FILE);
             SceneManager::Get().SetTransitionTime(0.f);
+        });
+
+    // Load stored scene (restarts the current level)
+    RegisterAction("RestartToStoredScene",
+        [](const json&)
+        {
+            const std::string& path = GuiSystem::GetStoredRestartScene();
+            if (path.empty())
+            {
+                std::cerr << "[GuiSystem] RestartToStoredScene: stored scene path is empty!" << std::endl;
+                return;
+            }
+
+            SceneManager::Get().QueueLoadScene(path);
+            SceneManager::Get().SetTransitionTime(1.f);
         });
 
     // Controls page 1: show the first page of textboxes
@@ -865,6 +906,20 @@ void GuiSystem::ApplyGroupVisibilityOverrides(GuiSystem& gui, int grpID, bool vi
             }
         }
     }
+}
+
+// Store scene path to restart to
+static std::string g_storedRestartScenePath;
+
+// Store current scene to restart to when game goes to fail screen
+void GuiSystem::SetStoredRestartScene(const std::string& scenePath)
+{
+    g_storedRestartScenePath = scenePath;
+}
+
+const std::string& GuiSystem::GetStoredRestartScene()
+{
+    return g_storedRestartScenePath;
 }
 
 static constexpr float DIALOGUE_SKIP_DELAY_DURATION = 2.f; // duration until active dialogue can be skipped
@@ -1301,9 +1356,22 @@ void GuiSystem::Update(float dt)
 
         if (!visibleBtns.empty())
         {
-            const bool navNext  = Input::IsKeyPressed(GLFW_KEY_DOWN)  || Input::IsKeyPressed(GLFW_KEY_RIGHT);
-            const bool navPrev  = Input::IsKeyPressed(GLFW_KEY_UP)    || Input::IsKeyPressed(GLFW_KEY_LEFT);
-            const bool navEnter = Input::IsKeyPressed(GLFW_KEY_ENTER) || Input::IsKeyPressed(GLFW_KEY_KP_ENTER);
+            // Left stick debounce for UI nav: one trigger per push
+            static bool uiStickUsed = false;
+            const float uiStickY = Input::GetGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y);
+            const bool uiStickNext = (!uiStickUsed && uiStickY >  0.5f);
+            const bool uiStickPrev = (!uiStickUsed && uiStickY < -0.5f);
+            if (uiStickNext || uiStickPrev) uiStickUsed = true;
+            else if (uiStickY > -0.3f && uiStickY < 0.3f) uiStickUsed = false;
+
+            const bool navNext  = Input::IsKeyPressed(GLFW_KEY_DOWN)  || Input::IsKeyPressed(GLFW_KEY_RIGHT)
+                                || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_DPAD_DOWN) || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT)
+                                || uiStickNext;
+            const bool navPrev  = Input::IsKeyPressed(GLFW_KEY_UP)    || Input::IsKeyPressed(GLFW_KEY_LEFT)
+                                || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_DPAD_UP)   || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_DPAD_LEFT)
+                                || uiStickPrev;
+            const bool navEnter = Input::IsKeyPressed(GLFW_KEY_ENTER) || Input::IsKeyPressed(GLFW_KEY_KP_ENTER)
+                                || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_A) || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_B);
 
             if (navNext || navPrev)
             {
@@ -1630,7 +1698,7 @@ void GuiSystem::Update(float dt)
             }
 
             bool autoFromSpeaker = (d.profileDisplaySide == DialogueConfig::ProfileDisplaySide::PROFILE_AUTOFROMSPEAKER);
-            bool notRock = (effectiveSpeakerID == 1 || effectiveSpeakerID == 2);
+            bool notRock = (effectiveSpeakerID == 1 || effectiveSpeakerID == 2 || effectiveSpeakerID == 7);
             float profDir = notRock ? +1.f : -1.f;
             float posLeftShift = notRock ? DIALOGUE_BACKGROUND_OFFSET_X : 0.f;
 
@@ -2061,6 +2129,7 @@ void GuiSystem::Update(float dt)
     static bool opencontrol = false;
     static int controlpage = 0;
     static float baseTextScale = 0.f;
+    static int pauseMenuSel = 0; // 0=Controls, 1=Quit, 2=Resume (top-to-bottom order)
 
     // When gameplay is paused
 
@@ -2073,6 +2142,32 @@ void GuiSystem::Update(float dt)
         // PAUSE MENU
         if (!opencontrol)
         {
+
+        // Controller / keyboard navigation
+        {
+            // Left stick debounce: one nav trigger per stick push
+            static bool pauseStickUsed = false;
+            const float stickY = Input::GetGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y);
+            const bool stickDown = (!pauseStickUsed && stickY >  0.5f);
+            const bool stickUp   = (!pauseStickUsed && stickY < -0.5f);
+            if (stickDown || stickUp) pauseStickUsed = true;
+            else if (stickY > -0.3f && stickY < 0.3f) pauseStickUsed = false;
+
+            const bool navDown  = Input::IsKeyPressed(GLFW_KEY_DOWN)  || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_DPAD_DOWN)  || stickDown;
+            const bool navUp    = Input::IsKeyPressed(GLFW_KEY_UP)    || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_DPAD_UP)    || stickUp;
+            const bool navEnter = Input::IsKeyPressed(GLFW_KEY_ENTER) || Input::IsKeyPressed(GLFW_KEY_SPACE)
+                                || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_A) || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_B);
+            // Items top-to-bottom: Resume(y=720)=2, Quit(y=520)=1, Controls(y=320)=0 in OpenGL coords
+            // Down on screen = decreasing index
+            if (navDown) pauseMenuSel = (pauseMenuSel + 2) % 3;
+            if (navUp)   pauseMenuSel = (pauseMenuSel + 1) % 3;
+            if (navEnter)
+            {
+                if (pauseMenuSel == 0) { AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK); opencontrol = true; controlpage = 0; }
+                else if (pauseMenuSel == 1) { ReplayManager::Get().StopPlayback(); AudioSystem::PlayButtonSound(AudioSystem::ButtonType::QUIT); SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE); SceneManager::Get().SetTransitionTime(2.f); }
+                else if (pauseMenuSel == 2) { AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK); SceneManager::Get().TogglePause(); }
+            }
+        }
 
         // Background overlay
         renderer.DrawRect({ 960.f * scaleX, 540.f * scaleY }, 3000.f * scaleX, 2000.f * scaleY, { 0.f,0.f,0.f }, 0.f, 0.5f);
@@ -2088,7 +2183,7 @@ void GuiSystem::Update(float dt)
         // How to play button
         {
             hovercontrol = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 320 * scaleY }, 380 * scaleX, 180 * scaleY));
-            float brightness = hovercontrol ? 0.2f : 0.f;
+            float brightness = (hovercontrol || pauseMenuSel == 0) ? 0.2f : 0.f;
             Image btnimg = CreateImage((FilePath::ASSETS_FOLDER + "UI_MainMenu_DarkControls.PNG"));
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 320.f * scaleY, 400.f * scaleX, 180.f * scaleY, 0.f, brightness);
 
@@ -2104,7 +2199,7 @@ void GuiSystem::Update(float dt)
         // Quit button
         {
             hoverexit = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 520 * scaleY}, 380 * scaleX, 180 * scaleY));
-            float brightness = hoverexit ? 0.2f : 0.f;
+            float brightness = (hoverexit || pauseMenuSel == 1) ? 0.2f : 0.f;
             Image btnimg = CreateImage((FilePath::ASSETS_FOLDER + "UI_MainMenu_DarkQuit.PNG"));
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 520.f * scaleY, 380.f * scaleX, 180.f * scaleY, 0.f, brightness);
 
@@ -2120,7 +2215,7 @@ void GuiSystem::Update(float dt)
         // Resume button
         {
             hoverresume = (renderer.IsAreaTouched(mouse, { 960 * scaleX, 720 * scaleY }, 380 * scaleX, 180 * scaleY));
-            float brightness = hoverresume ? 0.2f : 0.f;
+            float brightness = (hoverresume || pauseMenuSel == 2) ? 0.2f : 0.f;
             Image btnimg = CreateImage((FilePath::ASSETS_FOLDER + "UI_MainMenu_DarkNewGame.PNG"));
             renderer.DrawImageRotated(btnimg, 960.f * scaleX, 720.f * scaleY, 400.f * scaleX, 180.f * scaleY, 0.f, brightness);
 
@@ -2176,8 +2271,12 @@ void GuiSystem::Update(float dt)
                 renderer.DrawImageRotated(exitbtn, 150.f * scaleX, 950.f * scaleY, 200.f * scaleX, 180.f * scaleY, 0.f, brightness);
             }
 
-            // Click to exit controls page / return to pause menu
-            if (hoverleave && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+            // Click or controller B/Back to exit controls page / return to pause menu
+            const bool leaveControls = (hoverleave && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
+                                     || Input::IsKeyPressed(GLFW_KEY_ESCAPE)
+                                     || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_B)
+                                     || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_BACK);
+            if (leaveControls)
             {
                 controlpage = 0;
                 opencontrol = false;

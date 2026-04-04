@@ -182,6 +182,8 @@ void UndoSystem::RecordComponentChange(std::function<void()> applyUndo, std::fun
 // ============================================================
 // Undo
 // ============================================================
+
+//HERE3
 void UndoSystem::Undo()
 {
     if (m_stack.empty())

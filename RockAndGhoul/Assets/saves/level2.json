@@ -448,6 +448,25 @@
                             300.0
                         ],
                         "speakerName": ""
+                    },
+                    "7": {
+                        "bgEnabled": true,
+                        "bgRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_DialogueBox_Ghoul.png\\\"}\",\"type\":\"image\"}",
+                        "bgSize": [
+                            1500.0,
+                            300.0
+                        ],
+                        "profileEnabled": true,
+                        "profileOffset": [
+                            0.0,
+                            0.0
+                        ],
+                        "profileRenderData": "{\"data\":\"{\\\"texturePath\\\":\\\"../Assets/UI_GhoulDialogue.png\\\"}\",\"type\":\"image\"}",
+                        "profileSize": [
+                            300.0,
+                            300.0
+                        ],
+                        "speakerName": ""
                     }
                 },
                 "textBox": {

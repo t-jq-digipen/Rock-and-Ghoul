@@ -81,7 +81,8 @@
                 "../Assets/UI_DialogueBox_Rock.png",
                 "../Assets/UI_DialogueBox_Rock.png",
                 "../Assets/UI_DialogueBox_Rock.png",
-                "../Assets/UI_DialogueBox_Rock.png"
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png"
             ],
             "speakerProfiles": [
                 "../Assets/UI_RockDialogue_Happy.png",
@@ -90,7 +91,8 @@
                 "../Assets/UI_RockDialogue_Angry.png",
                 "../Assets/UI_RockDialogue_Frightened.png",
                 "../Assets/UI_RockDialogue_Shocked.png",
-                "../Assets/UI_RockDialogue_Victory.png"
+                "../Assets/UI_RockDialogue_Victory.png",
+                "../Assets/UI_GhoulDialogue.png"
             ]
         },
         {
@@ -162,7 +164,8 @@
                 "../Assets/UI_DialogueBox_Rock.png",
                 "../Assets/UI_DialogueBox_Rock.png",
                 "../Assets/UI_DialogueBox_Rock.png",
-                "../Assets/UI_DialogueBox_Rock.png"
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png"
             ],
             "speakerProfiles": [
                 "../Assets/UI_RockDialogue_Happy.png",
@@ -171,7 +174,8 @@
                 "../Assets/UI_RockDialogue_Angry.png",
                 "../Assets/UI_RockDialogue_Frightened.png",
                 "../Assets/UI_RockDialogue_Shocked.png",
-                "../Assets/UI_RockDialogue_Victory.png"
+                "../Assets/UI_RockDialogue_Victory.png",
+                "../Assets/UI_GhoulDialogue.png"
             ]
         },
         {
@@ -181,7 +185,7 @@
                     "line": "Hey, Rock-Star."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 5,
                     "line": "Uh... What-"
                 },
                 {
@@ -193,7 +197,7 @@
                     "line": "So, surrender or meet your doom. Or whatever they say."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 5,
                     "line": "What's going on, Ghoul? I thought we were in this together?"
                 },
                 {
@@ -209,7 +213,7 @@
                     "line": "I've got something to prove and YOU are the last person I want in my way."
                 },
                 {
-                    "speakerID": 0,
+                    "speakerID": 4,
                     "line": "W-wait, hold o-."
                 }
           ],
@@ -239,51 +243,61 @@
             "speakerBGs": [
                 "../Assets/UI_DialogueBox_Rock.png",
                 "../Assets/UI_DialogueBox_Ghoul.png",
-                "../Assets/UI_DialogueBox_Enemy.png"
+                "../Assets/UI_DialogueBox_Enemy.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png"
             ],
             "speakerProfiles": [
                 "../Assets/UI_RockDialogue_Happy.png",
                 "../Assets/UI_GhoulDialogue_Normal.png",
-                "../Assets/UI_EnemyDialogue_Normal.png"
+                "../Assets/UI_EnemyDialogue_Normal.png",
+                "../Assets/UI_RockDialogue_Angry.png",
+                "../Assets/UI_RockDialogue_Frightened.png",
+                "../Assets/UI_RockDialogue_Shocked.png",
+                "../Assets/UI_RockDialogue_Victory.png",
+                "../Assets/UI_GhoulDialogue.png"
             ]
         },
         {
           "script": [
                     {
                         "line": "Ghoul... It's over. We don't need to fight anymore. Just... come back. We made music that mattered, remember?",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "You really think a few chords fix everything? You took the spotlight, Rock. You always did.",
-                        "speakerID": 1
+                        "speakerID": 7
                     },
                     {
                         "line": "I never wanted to take it from you. I just wanted us to shine together.",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "And... and maybe we still can.",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "What?",
-                        "speakerID": 1
+                        "speakerID": 7
                     },
                     {
                         "line": "If you just... tell me right now that the past 3 years weren't for nothing and that you still care about me...",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "You'll forgive me?",
-                        "speakerID": 1
+                        "speakerID": 7
                     },
                     {
                         "line": "No!",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "Not now.",
-                        "speakerID": 0
+                        "speakerID": 3
                     },
                     {
                         "line": "But I wouldn't mind jamming together some time.",
@@ -291,7 +305,7 @@
                     },
                     {
                         "line": "Rock...",
-                        "speakerID": 1
+                        "speakerID": 7
                     },
                     {
                         "line": "I'm sorry.",
@@ -328,12 +342,22 @@
             "speakerBGs": [
                 "../Assets/UI_DialogueBox_Rock.png",
                 "../Assets/UI_DialogueBox_Ghoul.png",
-                "../Assets/UI_DialogueBox_Enemy.png"
+                "../Assets/UI_DialogueBox_Enemy.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png"
             ],
             "speakerProfiles": [
                 "../Assets/UI_RockDialogue_Happy.png",
                 "../Assets/UI_GhoulDialogue_Normal.png",
-                "../Assets/UI_EnemyDialogue_Normal.png"
+                "../Assets/UI_EnemyDialogue_Normal.png",
+                "../Assets/UI_RockDialogue_Angry.png",
+                "../Assets/UI_RockDialogue_Frightened.png",
+                "../Assets/UI_RockDialogue_Shocked.png",
+                "../Assets/UI_RockDialogue_Victory.png",
+                "../Assets/UI_GhoulDialogue.png"
             ]
         }
     ]

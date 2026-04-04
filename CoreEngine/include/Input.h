@@ -16,7 +16,7 @@
  * Key inputs now push events to EventBus.
  *
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #ifndef INPUT_H
@@ -120,8 +120,32 @@ public:
      * @param yoffset Vertical scroll offset.
      */
     static void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-    
+
+    // Gamepad query functions
+    // axis = GLFW_GAMEPAD_AXIS_LEFT_X/Y, RIGHT_X/Y, LEFT_TRIGGER, RIGHT_TRIGGER
+    static float GetGamepadAxis(int axis);
+    static bool  IsGamepadConnected();
+    // btn = GLFW_GAMEPAD_BUTTON_* (raw per-button state, independent of keyboard emulation)
+    static bool IsGamepadButtonPressed(int btn);
+    static bool IsGamepadButtonHeld(int btn);
+    static bool IsGamepadButtonReleased(int btn);
+
+    // Called after glfwPollEvents() each frame to update gamepad state
+    static void PollGamepad();
+
+    // GLFW joystick hot-plug callback (set in GLApp::init)
+    static void JoystickCallback(int jid, int event);
+
 private:
+
+    // Active joystick ID for gamepad (-1 if none connected)
+    static int   activeJoystickId;
+    // Current gamepad axis values [GLFW_GAMEPAD_AXIS_LAST + 1], deadzone applied
+    static float gamepadAxes[6];
+    // Button states from previous frame (GLFW_PRESS / GLFW_RELEASE)
+    static unsigned char prevGamepadButtons[15];
+    // Per-button KeyState for direct queries (GLFW_GAMEPAD_BUTTON_*)
+    static KeyState gamepadButtonStates[15];
 
     // Map of key codes (GLFW_KEY_*) to their current KeyState.
     static std::unordered_map<int, KeyState> keys;
