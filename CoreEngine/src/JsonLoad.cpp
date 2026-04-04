@@ -1375,6 +1375,11 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         SceneManager::Get().SetSceneType(scene.sceneType);
 
+        // attempt to preload textures when loading game scene
+        if (scene.sceneType == ST_GAME)
+        {
+            Render::GetInstance().PreloadAllTextures();
+        }
 
 
         // Load entities

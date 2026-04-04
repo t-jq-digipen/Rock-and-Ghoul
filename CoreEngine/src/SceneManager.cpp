@@ -97,6 +97,7 @@ void SceneManager::Update(float dt, float, int)
         {
             currentScenePath = path;
 
+
 #ifndef NO_IMGUI
             ImGuiSystem::UpdateSpawnCamera();
 #else
