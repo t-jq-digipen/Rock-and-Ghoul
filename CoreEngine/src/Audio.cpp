@@ -140,6 +140,7 @@ void AudioSystem::PlaySoundByName(const std::string& name) {
     if (sound && mSystem) {
         FMOD::Channel* channel = nullptr;
         mSystem->playSound(sound, nullptr, false, &channel);
+        if (channel) channel->setVolume(masterVolume);
     }
 }
 
@@ -431,30 +432,39 @@ void AudioManager::UpdateFade(float dt) {
     float t = fadeTime / fadeDuration;
     if (t > 1.0f) t = 1.0f;
 
-    // Fade out using BOTH volume
+    // Fade out both channels together
     if (currentChannel) {
         float newVolume = musicVol * masterVolume * (1.0f - t);
         currentChannel->setVolume(newVolume);
     }
+    if (layerChannel) {
+        float newVolume = musicVol * masterVolume * (1.0f - t);
+        layerChannel->setVolume(newVolume);
+    }
 
     if (t >= 1.0f) {
-        // Fade out complete aka stop old music
         if (currentChannel) {
             currentChannel->stop();
             currentChannel = nullptr;
         }
-
-        // Start new music using StartBGM (which handles paused start properly)
-        if (!pendingBGM.empty()) {
-            // Save the pending BGM before clearing it
-            std::string nextBGM = pendingBGM;
-            pendingBGM = "";
-
-            // Use StartBGM which handles the paused-unpause technique
-            StartBGM(nextBGM);
+        if (layerChannel) {
+            layerChannel->stop();
+            layerChannel = nullptr;
         }
 
-        // Reset fade state
+        // Start new music
+        if (!pendingBGM.empty()) {
+            std::string nextBGM = pendingBGM;
+            pendingBGM = "";
+            StartBGM(nextBGM);
+        }
+        // Start layer alongside main BGM
+        if (!pendingBGMLayer.empty()) {
+            std::string nextLayer = pendingBGMLayer;
+            pendingBGMLayer = "";
+            StartBGMLayer(nextLayer);
+        }
+
         fadeActive = false;
         fadeTime = 0.0f;
     }
@@ -475,6 +485,22 @@ void AudioManager::TransitionToBGM(const std::string& bgmAssetName, float durati
     fadeTime = 0.0f;
     fadeActive = true;
     pendingBGM = bgmAssetName;
+}
+
+void AudioManager::TransitionToBGMWithLayer(const std::string& bgmAssetName, const std::string& layerAssetName, float duration) {
+    if (fadeActive) {
+        // A fade is already running (e.g. FadeOutAndStop from RenderSystem).
+        // Just queue the new BGM — don't reset the timer so the old audio
+        // doesn't get an extra second of life.
+        pendingBGM = bgmAssetName;
+        pendingBGMLayer = layerAssetName;
+        return;
+    }
+    fadeDuration = duration;
+    fadeTime = 0.0f;
+    fadeActive = true;
+    pendingBGM = bgmAssetName;
+    pendingBGMLayer = layerAssetName;
 }
 
 /**
@@ -498,9 +524,26 @@ void AudioManager::StartBGM(const std::string& bgmAssetName) {
 
     currentChannel = PlayGetChannel(bgm, true);
     if (currentChannel) {
-        // Apply BOTH base musicVol AND masterVolume
         currentChannel->setVolume(musicVol * masterVolume);
         currentChannel->setPaused(false);
+    }
+}
+
+void AudioManager::StartBGMLayer(const std::string& layerAssetName) {
+    if (layerAssetName.empty()) return;
+
+    FMOD::Sound* snd = AudioCache::GetSound(layerAssetName);
+    if (!snd) return;
+
+    if (layerChannel) {
+        layerChannel->stop();
+        layerChannel = nullptr;
+    }
+
+    layerChannel = PlayGetChannel(snd, true);
+    if (layerChannel) {
+        layerChannel->setVolume(musicVol * masterVolume);
+        layerChannel->setPaused(false);
     }
 }
 
@@ -512,12 +555,13 @@ void AudioManager::StartBGM(const std::string& bgmAssetName) {
  * @param duration Duration in seconds for the fade-out.
  */
 void AudioManager::FadeOutAndStop(float duration) {
-    if (!currentChannel) return;
+    if (!currentChannel && !layerChannel) return;
 
     fadeDuration = duration;
     fadeTime = 0.0f;
     fadeActive = true;
-    pendingBGM = "";  // just stop, don't play new music
+    pendingBGM = "";
+    pendingBGMLayer = "";
 }
 
 
@@ -527,29 +571,30 @@ void AudioManager::FadeOutAndStop(float duration) {
  * Stores the current playback position and pauses the music channel.
  */
 void AudioManager::PauseMusic() {
-    if (!currentChannel || musicPaused) return;
+    if (musicPaused) return;
 
-    bool isPlaying = false;
-    currentChannel->isPlaying(&isPlaying);
-
-    if (isPlaying) {
-        // Store current position
-        currentChannel->getPosition(&pausedPosition, FMOD_TIMEUNIT_MS);
-
-        // Pause the channel
-        currentChannel->setPaused(true);
-        musicPaused = true;
+    if (currentChannel) {
+        bool isPlaying = false;
+        currentChannel->isPlaying(&isPlaying);
+        if (isPlaying) {
+            currentChannel->getPosition(&pausedPosition, FMOD_TIMEUNIT_MS);
+            currentChannel->setPaused(true);
+        }
     }
+    if (layerChannel) {
+        layerChannel->setPaused(true);
+    }
+    musicPaused = true;
 }
 
 /**
  * @brief Resumes paused music from where it was stopped.
  */
 void AudioManager::ResumeMusic() {
-    if (!currentChannel || !musicPaused) return;
+    if (!musicPaused) return;
 
-    // Resume from paused position
-    currentChannel->setPaused(false);
+    if (currentChannel) currentChannel->setPaused(false);
+    if (layerChannel)   layerChannel->setPaused(false);
     musicPaused = false;
 }
 
@@ -730,44 +775,54 @@ void AudioManager::Update(float dt) {
         fadeActive = false;
         fadeTime = 0.0f;
         pendingBGM = "";
+        pendingBGMLayer = "";
 
         // Apply saved volume BEFORE starting BGM
         auto settings = JsonLoad::LoadSettings(FilePath::SETTINGS_FILE);
         if (settings.has_value()) {
-            //std::cout << "[AudioManager] Loaded volume: " << settings->volume << std::endl;
             SetMasterVolume(settings->volume / 100.f);
         }
         else {
             std::cout << "[AudioManager] Settings load FAILED - path: " << FilePath::SETTINGS_FILE << std::endl;
         }
-        //std::cout << "[AudioManager] masterVolume after load: " << masterVolume << std::endl;
 
         std::string bgmAssetName = sm.GetCurrentSceneBGM();
+        std::string bgmLayerName = sm.GetCurrentSceneBGMLayer();
 
         if (!bgmAssetName.empty()) {
             StartBGM(bgmAssetName);
         }
+        if (!bgmLayerName.empty()) {
+            StartBGMLayer(bgmLayerName);
+        }
 
         lastBGM = bgmAssetName;
+        lastBGMLayer = bgmLayerName;
         lastScene = sm.GetCurrentSceneName();
 
         wasInEditMode = sm.IsInEditMode();
         return;
     }
 
-    // ENTERING EDIT MODE (play to edit)
+    // ENTERING EDIT MODE (play → edit)
     if (sm.IsInEditMode() && !wasInEditMode) {
         if (currentChannel) {
             currentChannel->stop();
             currentChannel = nullptr;
         }
+        if (layerChannel) {
+            layerChannel->stop();
+            layerChannel = nullptr;
+        }
 
         fadeActive = false;
         fadeTime = 0.0f;
         pendingBGM = "";
+        pendingBGMLayer = "";
 
         lastScene = "";
         lastBGM = "";
+        lastBGMLayer = "";
 
         wasInEditMode = sm.IsInEditMode();
     }
@@ -779,75 +834,76 @@ void AudioManager::Update(float dt) {
     // HANDLE SCENE TRANSITIONS (ONLY IN PLAY MODE)
     // ============================================================
     if (!sm.IsInEditMode()) {
-        std::string currentBGM = sm.GetCurrentSceneBGM();
-        std::string currentScene = sm.GetCurrentSceneName();
+        std::string currentBGM      = sm.GetCurrentSceneBGM();
+        std::string currentBGMLayer = sm.GetCurrentSceneBGMLayer();
+        std::string currentScene    = sm.GetCurrentSceneName();
 
         float transitionProgress = sm.GetTransitionProgress();
 
         static bool wasTransitioning = false;
         bool isTransitioning = (transitionProgress > 0.0f && transitionProgress < 1.0f);
 
-        // If we're in a transition, fade out BGM volume
+        // If we're in a transition, fade out both channels with screen
         if (isTransitioning) {
-            if (currentChannel) {
-                float fadeOutVolume = musicVol * masterVolume * (1.0f - transitionProgress);
-                currentChannel->setVolume(fadeOutVolume);
-            }
+            float fadeOutVolume = musicVol * masterVolume * (1.0f - transitionProgress);
+            if (currentChannel) currentChannel->setVolume(fadeOutVolume);
+            if (layerChannel)   layerChannel->setVolume(fadeOutVolume);
             wasTransitioning = true;
         }
 
-        // Transition completed - DON'T start music immediately, wait for fade to finish
+        // Transition completed — queue new music
         if (wasTransitioning && !isTransitioning) {
-            // Stop old music
-            if (currentChannel) {
-                currentChannel->stop();
-                currentChannel = nullptr;
-            }
+            if (currentChannel) { currentChannel->stop(); currentChannel = nullptr; }
+            if (layerChannel)   { layerChannel->stop();   layerChannel = nullptr; }
 
-            // Queue the new BGM to start after audio fade completes
-            // If new scene has BGM, transition to it
-            if (!currentBGM.empty() && currentBGM != lastBGM) {
-                // Set a very short fade (0.5s) so music starts quickly after screen fade
-                TransitionToBGM(currentBGM, 0.5f);
+            bool bgmChanged   = !currentBGM.empty()      && currentBGM      != lastBGM;
+            bool layerChanged = !currentBGMLayer.empty()  && currentBGMLayer != lastBGMLayer;
+
+            if (bgmChanged || layerChanged) {
+                TransitionToBGMWithLayer(currentBGM, currentBGMLayer, 0.5f);
             }
-            // If new scene has no BGM, just clear state
-            else if (currentBGM.empty()) {
+            else if (currentBGM.empty() && currentBGMLayer.empty()) {
                 fadeActive = false;
                 fadeTime = 0.0f;
                 pendingBGM = "";
+                pendingBGMLayer = "";
             }
 
-            lastBGM = currentBGM;
-            lastScene = currentScene;
+            lastBGM      = currentBGM;
+            lastBGMLayer = currentBGMLayer;
+            lastScene    = currentScene;
             wasTransitioning = false;
         }
 
-        // Scene changed without transition (e.g., cutscene auto-transition)
+        // Scene changed without a screen transition (portal, cutscene auto-load, etc.)
         if (!isTransitioning && !wasTransitioning && currentScene != lastScene) {
-            // Check if BGM changed
-            if (currentBGM != lastBGM) {
-                // If current scene has no BGM, fade out
-                if (currentBGM.empty() && currentChannel) {
+            bool bgmChanged   = currentBGM      != lastBGM;
+            bool layerChanged = currentBGMLayer != lastBGMLayer;
+
+            if (bgmChanged || layerChanged) {
+                bool hasAnyNewAudio = !currentBGM.empty() || !currentBGMLayer.empty();
+                bool hadAnyOldAudio = currentChannel || layerChannel;
+
+                if (!hasAnyNewAudio) {
+                    // New scene has no audio at all — fade out whatever is playing
                     FadeOutAndStop(1.0f);
                 }
-                // If we have BGM and it's different, ALWAYS fade between them
-                else if (!currentBGM.empty()) {
-                    // Fade from old to new music
-                    if (currentChannel && !lastBGM.empty()) {
-                        TransitionToBGM(currentBGM, 1.0f);  // 1 second fade
-                    }
-                    // No music playing, just start new BGM
-                    else {
-                        // Clear fade state
-                        fadeActive = false;
-                        fadeTime = 0.0f;
-                        pendingBGM = "";
-
-                        StartBGM(currentBGM);
-                    }
+                else if (hadAnyOldAudio) {
+                    // Crossfade to new BGM + layer
+                    TransitionToBGMWithLayer(currentBGM, currentBGMLayer, 1.0f);
+                }
+                else {
+                    // Nothing was playing — start immediately
+                    fadeActive = false;
+                    fadeTime = 0.0f;
+                    pendingBGM = "";
+                    pendingBGMLayer = "";
+                    if (!currentBGM.empty())      StartBGM(currentBGM);
+                    if (!currentBGMLayer.empty()) StartBGMLayer(currentBGMLayer);
                 }
 
-                lastBGM = currentBGM;
+                lastBGM      = currentBGM;
+                lastBGMLayer = currentBGMLayer;
             }
 
             lastScene = currentScene;

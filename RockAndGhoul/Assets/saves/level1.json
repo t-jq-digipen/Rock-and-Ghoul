@@ -3,6 +3,7 @@
         "../Assets/Env02_NormalWorld.PNG"
     ],
     "bgmAssetName": "level_1",
+    "bgmLayerAssetName": "roomtone_level_1",
     "cameraSpawn": [
         542.2343139648438,
         485.50408935546875

@@ -85,7 +85,8 @@ struct SavedScene {
     std::vector<SavedEntity> entities; 
     std::vector<std::string> backgroundTextures;
     std::string fontConfigPath;
-    std::string bgmAssetName;  // name of BGM asset from AudioCache i.e. "main_menu", "level_1"
+    std::string bgmAssetName;       // name of BGM asset from AudioCache i.e. "main_menu", "level_1"
+    std::string bgmLayerAssetName;  // optional second BGM layer played on top
 
 /**
  * @struct SavedButton

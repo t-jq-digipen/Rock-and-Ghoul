@@ -691,7 +691,8 @@ void JsonLoad::to_json(json& j, const SavedScene& s) {
         {"sceneName", s.sceneName},
         {"backgrounds", s.backgroundTextures},
         {"fontConfig", s.fontConfigPath},
-        {"bgmAssetName", s.bgmAssetName}, // for audio to stop during edit mode
+        {"bgmAssetName", s.bgmAssetName},
+        {"bgmLayerAssetName", s.bgmLayerAssetName},
 
          {"gui", {
              {"buttons", json::array()},
@@ -857,7 +858,13 @@ void JsonLoad::from_json(const json& j, SavedScene& s) {
         s.bgmAssetName = j["bgmAssetName"];
     }
     else {
-        s.bgmAssetName = "";  // NO BGM FOR THIS SCENE
+        s.bgmAssetName = "";
+    }
+    if (j.contains("bgmLayerAssetName")) {
+        s.bgmLayerAssetName = j["bgmLayerAssetName"];
+    }
+    else {
+        s.bgmLayerAssetName = "";
     }
     if (j.contains("backgrounds")) {
         s.backgroundTextures = j["backgrounds"].get<std::vector<std::string>>();
@@ -1183,6 +1190,7 @@ bool JsonLoad::SaveCurrentScene(const std::string& filepath, const std::string& 
 
         // PRESERVE BGM PLEASE
         scene.bgmAssetName = SceneManager::Get().GetCurrentSceneBGM();
+        scene.bgmLayerAssetName = SceneManager::Get().GetCurrentSceneBGMLayer();
         std::cout << "[SaveCurrentScene] Saving BGM: '" << scene.bgmAssetName << "'\n";
 
         // GUI Buttons
@@ -1656,6 +1664,7 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         // set bgm before entering...
         SceneManager::Get().SetCurrentSceneBGM(scene.bgmAssetName);
+        SceneManager::Get().SetCurrentSceneBGMLayer(scene.bgmLayerAssetName);
         std::cout << "[LoadScene] Scene BGM set to: '" << scene.bgmAssetName << "'\n";
 
         if (scene.sceneName == "Controls")

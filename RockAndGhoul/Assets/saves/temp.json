@@ -4,6 +4,7 @@
         "../Assets/MainMenu_Rock&Ghoul.PNG"
     ],
     "bgmAssetName": "main_menu",
+    "bgmLayerAssetName": "",
     "cameraSpawn": [
         0.0,
         0.0

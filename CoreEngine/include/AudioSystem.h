@@ -14,7 +14,7 @@
  * game-specific audio management features such as automatic music
  * transitions based on game state.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once
@@ -100,6 +100,9 @@ public:
      */
     void TransitionToBGM(const std::string& bgmAssetName, float duration);
 
+    /** Fades out both channels then starts bgmAssetName + layerAssetName together. */
+    void TransitionToBGMWithLayer(const std::string& bgmAssetName, const std::string& layerAssetName, float duration);
+
     /**
      * @brief Starts background music instantly at full volume.
      *
@@ -108,6 +111,9 @@ public:
      * @param bgmAssetName The name of the BGM asset in AudioCache.
      */
     void StartBGM(const std::string& bgmAssetName);
+
+    /** Starts an optional second BGM layer on top of the main BGM. */
+    void StartBGMLayer(const std::string& layerAssetName);
 
     /**
      * @brief Pauses the currently playing music.
@@ -242,10 +248,8 @@ public:
     void SetMasterVolume(float vol) {
         masterVolume = std::clamp(vol, 0.f, 1.f);
         AudioSystem::SetMasterVolume(masterVolume);
-        // update current channel NOW
-        if (currentChannel) {
-            currentChannel->setVolume(musicVol * masterVolume);
-        }
+        if (currentChannel) currentChannel->setVolume(musicVol * masterVolume);
+        if (layerChannel)   layerChannel->setVolume(musicVol * masterVolume);
     }
 
     /**
@@ -262,12 +266,14 @@ private:
 
     // Channel management
     FMOD::Channel* currentChannel = nullptr;
+    FMOD::Channel* layerChannel = nullptr;   ///< Optional second BGM layer (plays on top of main BGM)
 
     // Fade system variables (fade-out only)
     bool fadeActive = false;       ///< Whether a fade is currently active
     float fadeTime = 0.0f;         ///< Current time in fade transition
     float fadeDuration = 2.0f;     ///< Duration of fade-out effect in seconds
     std::string pendingBGM = "";   ///< BGM to play instantly after fade out completes
+    std::string pendingBGMLayer = "";  ///< BGM layer to play after fade out completes
 
     // Pause state
     bool musicPaused = false;
@@ -279,4 +285,5 @@ private:
 
     // State tracking
     std::string lastScene = "";
+    std::string lastBGMLayer = "";
 };

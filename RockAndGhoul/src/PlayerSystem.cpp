@@ -32,7 +32,7 @@ constexpr float DASH_IMPULSE = 2000.f;   // Dash boost
 
 // spatial footstep sfx
 std::unordered_map<Entity, float> footstepTimers;  // Timer per player
-float footstepInterval = 0.35f;  // Time between footsteps (in seconds)
+float footstepInterval = 0.70f;  // Time between footsteps (in seconds)
 
 void PlayerSystem::RefreshPlayerHealthUI(Entity eID)
 {

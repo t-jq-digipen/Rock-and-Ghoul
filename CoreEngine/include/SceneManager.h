@@ -74,6 +74,8 @@ public:
     bool IsInEditMode() const { return inEditMode; } // to stop music in edit mode
     void SetCurrentSceneBGM(const std::string& bgmAssetName) { currentSceneBGM = bgmAssetName; }
     std::string GetCurrentSceneBGM() const { return currentSceneBGM; }
+    void SetCurrentSceneBGMLayer(const std::string& name) { currentSceneBGMLayer = name; }
+    std::string GetCurrentSceneBGMLayer() const { return currentSceneBGMLayer; }
 
     void SetTransitionTime(float duration) { sceneFadeDuration = duration; }
     float GetTransitionProgress() const { return (sceneFadeDuration == 0.f) ? 1.f : sceneTransitionTime / sceneFadeDuration; }
@@ -88,7 +90,8 @@ private:
 
     std::string currentScenePath;      // Which .json is currently loaded
     std::string tempScenePath = (FilePath::ASSETS_FOLDER + "saves/temp.json");
-    std::string currentSceneBGM;  // BGM asset name for current scene
+    std::string currentSceneBGM;       // BGM asset name for current scene
+    std::string currentSceneBGMLayer;  // optional second BGM layer
     std::string pendingScene = "";
     float sceneTransitionTime = 0.f; // goes from 1.f to 0.f
     float sceneFadeDuration = 0.f;

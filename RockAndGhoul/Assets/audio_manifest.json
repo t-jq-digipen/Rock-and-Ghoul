@@ -16,7 +16,7 @@
       "group": "Music"
     },
     "level_2": {
-      "path": "../Assets/audio/BGM/Ambience/SCI-FI-AMBIENCE.wav",
+      "path": "../Assets/audio/BGM/Ambience/Level2bgm.wav",
       "loop": true,
       "group": "Music"
     },
