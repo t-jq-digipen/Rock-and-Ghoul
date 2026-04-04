@@ -243,6 +243,8 @@ bool BreakBarrier(Entity eID, Element elem)
 	// Queue remove barrier, let system destroy later
 	barrier.active = false;
 	Registry::Get().Remove_Component<ElementComponent>(eID);
+	Vec2 pos = GetPos(eID);
+	AudioSystem::PlaySoundAt("barrier_broken", pos.x, pos.y, 0.5f);
 	return true;
 }
 
@@ -1906,6 +1908,8 @@ namespace GhoulScript {
 			if (ghoulRuntime.state != GHOUL_DEAD) {
 				ghoulRuntime.state = GhoulState::GHOUL_DEAD;
 				ghoulRuntime.stateTime = 0.f;
+				Vec2 deathPos = GetPos(eID);
+				AudioSystem::PlaySoundAt("ghoul_die", deathPos.x, deathPos.y, 0.5f);
 			}
 			animState = 7;
 			registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
@@ -1983,6 +1987,9 @@ namespace GhoulScript {
 			// stagger this fella
 			ghoulRuntime.staggerCount++;
 			CombatSystem::Get().SetCombatantStagger(eID, false);
+			Vec2 hitPos = GetPos(eID);
+			const char* attackedSounds[] = { "ghoul_attacked1", "ghoul_attacked2" };
+			AudioSystem::PlaySoundAt(attackedSounds[std::rand() % 2], hitPos.x, hitPos.y, 0.5f);
 
 			if (ghoulRuntime.staggerCount >= 3) {
 				// after 3 hits, stagger ghoul
@@ -2040,6 +2047,8 @@ namespace GhoulScript {
 					inCombat = true;
 					animState = 6;
 					ghoulRuntime.state = GhoulState::GHOUL_TRANSFORM;
+					const char* spawnSounds[] = { "ghoul_spawn1", "ghoul_spawn2" };
+					AudioSystem::PlaySoundAt(spawnSounds[std::rand() % 2], selfPos.x, selfPos.y, 0.5f);
 					ghoulRuntime.stateTime = 0.f;
 					health.willHit = false;
 					health.isVulnerable = false;

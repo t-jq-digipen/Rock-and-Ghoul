@@ -293,7 +293,7 @@
       "group": "SFX",
       "spatial": false
     },
-    "enemy_smash": {
+    "barrier_broken": {
       "path": "../Assets/audio/SFX/Enemy/Mob Enemy/SmashGlass.wav",
       "loop": false,
       "group": "SFX",
