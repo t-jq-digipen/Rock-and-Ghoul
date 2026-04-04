@@ -403,6 +403,20 @@ void AudioManager::Initialize() {
     AudioSystem::Configure2DSpatialAudio();
     AudioSystem::SetListenerPosition(0.0f, 0.0f);
 
+    // Create BGM channel group so DSPs apply to both main and layer channels
+    if (AudioSystem::GetSystem()) {
+        AudioSystem::GetSystem()->createChannelGroup("bgm", &bgmGroup);
+        if (bgmGroup) {
+            AudioSystem::GetSystem()->createDSPByType(FMOD_DSP_TYPE_LOWPASS, &lowPassDSP);
+            if (lowPassDSP) {
+                lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_CUTOFF, 600.0f);
+                lowPassDSP->setParameterFloat(FMOD_DSP_LOWPASS_RESONANCE, 1.0f);
+                lowPassDSP->setBypass(true);  // inactive until pause
+                bgmGroup->addDSP(0, lowPassDSP);
+            }
+        }
+    }
+
     AudioCache::LoadBank("init");
 
     // Preload music tracks
@@ -524,6 +538,7 @@ void AudioManager::StartBGM(const std::string& bgmAssetName) {
 
     currentChannel = PlayGetChannel(bgm, true);
     if (currentChannel) {
+        if (bgmGroup) currentChannel->setChannelGroup(bgmGroup);
         currentChannel->setVolume(musicVol * masterVolume);
         currentChannel->setPaused(false);
     }
@@ -542,6 +557,7 @@ void AudioManager::StartBGMLayer(const std::string& layerAssetName) {
 
     layerChannel = PlayGetChannel(snd, true);
     if (layerChannel) {
+        if (bgmGroup) layerChannel->setChannelGroup(bgmGroup);
         layerChannel->setVolume(musicVol * masterVolume);
         layerChannel->setPaused(false);
     }
@@ -607,6 +623,10 @@ void AudioManager::Shutdown() {
         currentChannel->stop();
         currentChannel = nullptr;
     }
+
+    // release DSP and channel group
+    if (lowPassDSP) { lowPassDSP->release(); lowPassDSP = nullptr; }
+    if (bgmGroup)   { bgmGroup->release();   bgmGroup = nullptr; }
 
     // clear references to sounds in cache
     mainMenuMusic = nullptr;
@@ -859,7 +879,9 @@ void AudioManager::Update(float dt) {
             bool bgmChanged   = !currentBGM.empty()      && currentBGM      != lastBGM;
             bool layerChanged = !currentBGMLayer.empty()  && currentBGMLayer != lastBGMLayer;
 
-            if (bgmChanged || layerChanged) {
+            // Always restart BGM after a screen fade — channels were stopped above,
+            // so even if BGM name didn't change, nothing is playing and it must restart.
+            if (!currentBGM.empty() || !currentBGMLayer.empty()) {
                 TransitionToBGMWithLayer(currentBGM, currentBGMLayer, 0.5f);
             }
             else if (currentBGM.empty() && currentBGMLayer.empty()) {
@@ -907,6 +929,20 @@ void AudioManager::Update(float dt) {
             }
 
             lastScene = currentScene;
+        }
+    }
+
+    // *** Apply / remove low-pass filter based on in-game pause state ***
+    if (!sm.IsInEditMode()) {
+        static bool wasPauseFiltered = false;
+        const bool gameIsPaused = sm.IsPaused();
+        if (gameIsPaused && !wasPauseFiltered) {
+            if (lowPassDSP) lowPassDSP->setBypass(false);
+            wasPauseFiltered = true;
+        }
+        else if (!gameIsPaused && wasPauseFiltered) {
+            if (lowPassDSP) lowPassDSP->setBypass(true);
+            wasPauseFiltered = false;
         }
     }
 

@@ -267,6 +267,8 @@ private:
     // Channel management
     FMOD::Channel* currentChannel = nullptr;
     FMOD::Channel* layerChannel = nullptr;   ///< Optional second BGM layer (plays on top of main BGM)
+    FMOD::ChannelGroup* bgmGroup = nullptr;  ///< Channel group shared by both BGM channels — DSPs here apply to both
+    FMOD::DSP* lowPassDSP = nullptr;         ///< Low-pass filter applied to BGM when game is paused
 
     // Fade system variables (fade-out only)
     bool fadeActive = false;       ///< Whether a fade is currently active
