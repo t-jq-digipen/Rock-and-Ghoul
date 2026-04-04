@@ -5203,7 +5203,7 @@ void ImGuiSystem::Update(float dt)
                 // Displays
                 for (int i = (int)displays.size() - 1; i >= 0; --i)
                 {
-                    if (std::find(grp.memberIDs.begin(), grp.memberIDs.end(), dialogues[i].ID) != grp.memberIDs.end())
+                    if (std::find(grp.memberIDs.begin(), grp.memberIDs.end(), displays[i].ID) != grp.memberIDs.end())
                         displays.erase(displays.begin() + i);
                 }
 

@@ -10,6 +10,7 @@
     "cameraZoom": 1.0,
     "entities": [],
     "fontConfig": "C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/fontAssets.json",
+    "fullscreen": true,
     "gui": {
         "buttons": [
             {
@@ -20,12 +21,12 @@
                 "label": "",
                 "pos": [
                     280.0,
-                    650.0
+                    550.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
-                    100.0,
-                    100.0
+                    80.0,
+                    80.0
                 ],
                 "soundName": "ui_click",
                 "textScale": 1.0
@@ -38,12 +39,12 @@
                 "label": "",
                 "pos": [
                     1100.0,
-                    650.0
+                    550.0
                 ],
                 "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
                 "size": [
-                    100.0,
-                    100.0
+                    80.0,
+                    80.0
                 ],
                 "soundName": "ui_click",
                 "textScale": 1.0
@@ -76,49 +77,13 @@
                 "isVisible": true,
                 "label": "",
                 "pos": [
-                    660.0,
-                    100.0
+                    120.0,
+                    940.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_SettingsPage_BackButton.png\\\"}\",\"type\":\"image\"}",
                 "size": [
-                    200.0,
-                    180.0
-                ],
-                "soundName": "ui_click",
-                "textScale": 1.0
-            },
-            {
-                "ID": 12,
-                "actionName": "VolDown",
-                "actionParams": {},
-                "isVisible": true,
-                "label": "",
-                "pos": [
-                    280.0,
-                    400.0
-                ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":1,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
-                "size": [
-                    100.0,
-                    100.0
-                ],
-                "soundName": "ui_click",
-                "textScale": 1.0
-            },
-            {
-                "ID": 13,
-                "actionName": "VolUp",
-                "actionParams": {},
-                "isVisible": true,
-                "label": "",
-                "pos": [
-                    1100.0,
-                    400.0
-                ],
-                "renderData": "{\"data\":\"{\\\"currCol\\\":1,\\\"currFrame\\\":0,\\\"currRow\\\":0,\\\"frames\\\":{},\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_ControlPage_ArrowKBlue.PNG\\\",\\\"totalCols\\\":3,\\\"totalRows\\\":2}\",\"type\":\"imagesheet\"}",
-                "size": [
-                    100.0,
-                    100.0
+                    270.0,
+                    270.0
                 ],
                 "soundName": "ui_click",
                 "textScale": 1.0
@@ -132,9 +97,9 @@
                 "isVisible": true,
                 "pos": [
                     700.0,
-                    650.0
+                    550.0
                 ],
-                "renderData": "{\"data\":\"{\\\"color\\\":[0.9921568632125854,0.0,0.29411765933036804],\\\"v0\\\":[410.0,625.0],\\\"v1\\\":[1010.0,625.0],\\\"v2\\\":[1010.0,675.0],\\\"v3\\\":[390.0,675.0]}\",\"type\":\"quad\"}",
+                "renderData": "{\"data\":\"{\\\"color\\\":[0.9921568632125854,0.0,0.29411765933036804],\\\"v0\\\":[410.0,525.0],\\\"v1\\\":[1010.0,525.0],\\\"v2\\\":[1010.0,575.0],\\\"v3\\\":[390.0,575.0]}\",\"type\":\"quad\"}",
                 "size": [
                     620.0,
                     50.0
@@ -146,7 +111,7 @@
                 "isVisible": true,
                 "pos": [
                     700.0,
-                    650.0
+                    550.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_HealthBarTransparent.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
@@ -160,54 +125,12 @@
                 "isVisible": true,
                 "pos": [
                     280.0,
-                    760.0
+                    660.0
                 ],
                 "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_SettingsPage_AmbienceLogo.PNG\\\"}\",\"type\":\"image\"}",
                 "size": [
                     150.0,
                     150.0
-                ]
-            },
-            {
-                "ID": 10,
-                "centered": true,
-                "isVisible": true,
-                "pos": [
-                    280.0,
-                    510.0
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_SettingsPage_SFXLogo.PNG\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    150.0,
-                    150.0
-                ]
-            },
-            {
-                "ID": 14,
-                "centered": true,
-                "isVisible": true,
-                "pos": [
-                    700.0,
-                    400.0
-                ],
-                "renderData": "{\"data\":\"{\\\"color\\\":[0.9921568632125854,0.0,0.29411765933036804],\\\"v0\\\":[410.0,375.0],\\\"v1\\\":[1010.0,375.0],\\\"v2\\\":[1010.0,425.0],\\\"v3\\\":[390.0,425.0]}\",\"type\":\"quad\"}",
-                "size": [
-                    620.0,
-                    50.0
-                ]
-            },
-            {
-                "ID": 15,
-                "centered": true,
-                "isVisible": true,
-                "pos": [
-                    700.0,
-                    400.0
-                ],
-                "renderData": "{\"data\":\"{\\\"texturePath\\\":\\\"C:/GitRepos/csd2401f25_team_aviddivas/RockAndGhoul/Assets/UI_HealthBarTransparent.PNG\\\"}\",\"type\":\"image\"}",
-                "size": [
-                    1100.0,
-                    1150.0
                 ]
             }
         ],
@@ -223,20 +146,7 @@
                     8,
                     9
                 ],
-                "name": "BGM Toggle"
-            },
-            {
-                "ID": 2,
-                "isVisible": true,
-                "members": [
-                    10,
-                    11,
-                    12,
-                    13,
-                    14,
-                    15
-                ],
-                "name": "SFX Toggle"
+                "name": "MASTER VOLUME Toggle"
             }
         ],
         "textboxes": [
@@ -267,31 +177,20 @@
                 "isVisible": true,
                 "pos": [
                     400.0,
-                    740.0
+                    640.0
                 ],
-                "scale": 1.2000000476837158,
-                "text": "BGM"
-            },
-            {
-                "ID": 11,
-                "centered": false,
-                "color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "isVisible": true,
-                "pos": [
-                    400.0,
-                    490.0
-                ],
-                "scale": 1.2000000476837158,
-                "text": "SFX"
+                "scale": 1.0,
+                "text": "MASTER VOLUME"
             }
         ]
     },
+    "resolutionHeight": 1080,
+    "resolutionWidth": 1920,
     "sceneName": "settings",
     "sceneType": 0,
+    "settings": {
+        "volume": 55.0
+    },
     "worldMax": [
         1920.0,
         1080.0
