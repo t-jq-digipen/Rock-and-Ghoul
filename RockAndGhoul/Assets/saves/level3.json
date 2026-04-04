@@ -8,6 +8,7 @@
         "../Assets/Env03Props_Enemy_StageProps.PNG"
     ],
     "bgmAssetName": "level_3",
+    "bgmLayerAssetName": "roomtone_boss",
     "cameraSpawn": [
         98.0,
         509.0

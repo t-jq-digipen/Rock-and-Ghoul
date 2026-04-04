@@ -16,7 +16,7 @@
       "group": "Music"
     },
     "level_2": {
-      "path": "../Assets/audio/BGM/Ambience/SCI-FI-AMBIENCE.wav",
+      "path": "../Assets/audio/BGM/Ambience/Level2bgm.wav",
       "loop": true,
       "group": "Music"
     },
@@ -276,19 +276,67 @@
       "spatial": false
     },
     "enemyattack": {
-      "path": "../Assets/audio/SFX/Enemy/EnemyAttack.wav",
+      "path": "../Assets/audio/SFX/Enemy/Mob Enemy/EnemyAttack.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "enemyhit": {
-      "path": "../Assets/audio/SFX/Enemy/EnemyHit.wav",
+      "path": "../Assets/audio/SFX/Enemy/Mob Enemy/EnemyHit.wav",
       "loop": false,
       "group": "SFX",
       "spatial": false
     },
     "enemydie": {
-      "path": "../Assets/audio/SFX/Enemy/EnemyDie.wav",
+      "path": "../Assets/audio/SFX/Enemy/Mob Enemy/EnemyDie.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "barrier_create": {
+      "path": "../Assets/audio/SFX/Enemy/Mob Enemy/BarrierCreate.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "barrier_broken": {
+      "path": "../Assets/audio/SFX/Enemy/Mob Enemy/SmashGlass.wav",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "ghoul_attacked1": {
+      "path": "../Assets/audio/SFX/Enemy/Ghoul/attacked.mp3",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "ghoul_attacked2": {
+      "path": "../Assets/audio/SFX/Enemy/Ghoul/ough.mp3",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "ghoul_die": {
+      "path": "../Assets/audio/SFX/Enemy/Ghoul/defeat.mp3",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "ghoul_spawn1": {
+      "path": "../Assets/audio/SFX/Enemy/Ghoul/Miss me already.mp3",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "ghoul_spawn2": {
+      "path": "../Assets/audio/SFX/Enemy/Ghoul/Serves you right.mp3",
+      "loop": false,
+      "group": "SFX",
+      "spatial": false
+    },
+    "guitar_riff": {
+      "path": "../Assets/audio/SFX/Player/Guitar/Melee Attack/Guitar Riff.mp3",
       "loop": false,
       "group": "SFX",
       "spatial": false

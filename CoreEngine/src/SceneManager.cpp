@@ -22,7 +22,7 @@
  * - Ensures scene loading happens only at safe points in the frame.
  * - Restores default scene camera and renderer settings.
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright ï¿½ 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 
@@ -63,6 +63,7 @@ void SceneManager::Update(float dt, float, int)
 {
     
     if (Input::IsKeyPressed(GLFW_KEY_ESCAPE) && IsPlaying() && sceneType != ST_CUTSCENE && !GuiSystem::Get().GetDialogueGate()) {
+        AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK);
         TogglePause();
         std::cout << (IsPaused() ? "[SceneManager] Game paused\n" : "[SceneManager] Game resumed\n");
     }

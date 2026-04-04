@@ -232,6 +232,7 @@ public:
      * a 2D coordinate system.
      */
     static void Configure2DSpatialAudio();
+    static FMOD::System* GetSystem() { return mSystem; }
 
 private:
     static FMOD::System* mSystem;

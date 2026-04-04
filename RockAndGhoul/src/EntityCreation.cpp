@@ -155,7 +155,6 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
 
             //Registry::Get().Add_Component<RenderLayerComponent>(player, RenderLayerComponent{ LAYER_BACKGROUND });
             AudioComponent playerAudio;
-            // JQ CHECK HERE
             // Configure spatial properties
             playerAudio.spatial = true;
             playerAudio.volume = 0.8f;
@@ -163,11 +162,10 @@ void GenerateInitialPrefabs(bool forceRegenerate) {
             playerAudio.maxDistance = 100.0f;
 
             // Add sounds using the vector-based system
-            playerAudio.AddSound("player_footstep_wood");  // Index 0 not working
+            playerAudio.AddSound("player_footstep_wood");  // Index 0
             playerAudio.AddSound("player_dodge");          // Index 1
-            playerAudio.AddSound("player_spawnSound");     // Index 2 not working
+            playerAudio.AddSound("player_spawnSound");     // Index 2
             playerAudio.AddSound("guitar_strum_heavy");    // Index 3
-            // NO MORE TO CHECK
 
             Registry::Get().Add_Component<AudioComponent>(player, playerAudio);
 

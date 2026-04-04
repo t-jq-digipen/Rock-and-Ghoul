@@ -32,7 +32,7 @@ constexpr float DASH_IMPULSE = 2000.f;   // Dash boost
 
 // spatial footstep sfx
 std::unordered_map<Entity, float> footstepTimers;  // Timer per player
-float footstepInterval = 0.35f;  // Time between footsteps (in seconds)
+float footstepInterval = 0.70f;  // Time between footsteps (in seconds)
 
 void PlayerSystem::RefreshPlayerHealthUI(Entity eID)
 {
@@ -918,6 +918,7 @@ namespace RockScript {
 			if (shieldy != INVALID_ENTITY) {
 				Registry::Get().Remove_Entity(shieldy);
 				shieldy = INVALID_ENTITY;
+				AudioSystem::PlaySoundAt("barrier_broken", x, y, 0.5f);
 			}
 			return;
 		}
@@ -1078,6 +1079,7 @@ namespace RockScript {
 			RockScript::shieldTimer = 0.f;
 			wavetimer = 0.f;
 			std::cout << "Shield activated!\n";
+			AudioSystem::PlaySoundAt("barrier_create", trans.pos.x, trans.pos.y, 0.5f);
 
 			// Clean up old shield if exists
 			if (shieldy != INVALID_ENTITY) {
@@ -1223,7 +1225,7 @@ namespace RockScript {
 			audioComp.spatial = true;
 			audioComp.volume = 1.0f;
 			audioComp.minDistance = 50.0f;
-			audioComp.maxDistance = 1000.0f;
+			audioComp.maxDistance = 1000.0f;  // large enough to stay audible when camera follows boss
 
 			// Add sounds in specific order
 			audioComp.AddSound("player_footstep_wood");        // 0  - SFX_FOOTSTEP
@@ -1920,7 +1922,7 @@ namespace TutorialScript {
 
 
 
-	void Update(Entity eID, float dt)
+	void Update(Entity eID, float /*dt*/)
 	{
 		unsigned int animState = page;
 

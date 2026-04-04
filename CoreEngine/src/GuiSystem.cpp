@@ -1093,6 +1093,7 @@ void GuiSystem::Update(float dt)
     // Trigger dialogue skip when esc hold progress is complete
     if (skipAvailable && escHoldTimer >= DIALOGUE_SKIP_HOLD_ESC_DURATION)
     {
+        AudioSystem::PlaySoundByName("ui_click"); //ari added this
         // Hide all dialogue UI
         for (auto& d : dialogues)
         {
@@ -1241,6 +1242,7 @@ void GuiSystem::Update(float dt)
                 if (comp->CheckIfTyping())
                 {
                     comp->StopTyping();
+                    AudioSystem::PlaySoundByName("ui_click"); //use playsoundbyname for stuff in pause menu so that it bypasses the thingy
                 }
                 else
                 {
@@ -1250,11 +1252,11 @@ void GuiSystem::Update(float dt)
                     {
                         comp->SetCurrentLineIndex(idx + 1);
                         comp->StartTyping();
-                        AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK);
-                            
+                        AudioSystem::PlaySoundByName("ui_click");
                     }
                     else
                     {
+                        AudioSystem::PlaySoundByName("ui_click");
                         d.isVisible = false;
                     }
                 }
@@ -2135,12 +2137,16 @@ void GuiSystem::Update(float dt)
     static bool opencontrol = false;
     static int controlpage = 0;
     static float baseTextScale = 0.f;
-    static int pauseMenuSel = 0; // 0=Controls, 1=Quit, 2=Resume (top-to-bottom order)
+    static int pauseMenuSel = -1; // 0=Controls, 1=Quit, 2=Resume; -1=no keyboard selection
+    static bool prevPaused = false;
 
     // When gameplay is paused
 
     if (SceneManager::Get().IsPaused())
     {
+        // Reset to no selection each time the pause menu opens (mouse-hover only until user navigates)
+        if (!prevPaused) pauseMenuSel = -1;
+
         // Title text (scaled like UI text)
         const float textScale = baseTextScale * uiScale;
         Render& renderer = Render::GetInstance();
@@ -2165,13 +2171,13 @@ void GuiSystem::Update(float dt)
                                 || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_A) || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_B);
             // Items top-to-bottom: Resume(y=720)=2, Quit(y=520)=1, Controls(y=320)=0 in OpenGL coords
             // Down on screen = decreasing index
-            if (navDown) pauseMenuSel = (pauseMenuSel + 2) % 3;
-            if (navUp)   pauseMenuSel = (pauseMenuSel + 1) % 3;
-            if (navEnter)
+            if (navDown) { pauseMenuSel = (pauseMenuSel < 0) ? 2 : (pauseMenuSel + 2) % 3; AudioSystem::PlaySoundByName("ui_click"); }
+            if (navUp)   { pauseMenuSel = (pauseMenuSel < 0) ? 0 : (pauseMenuSel + 1) % 3; AudioSystem::PlaySoundByName("ui_click"); }
+            if (navEnter && pauseMenuSel >= 0)
             {
-                if (pauseMenuSel == 0) { AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK); opencontrol = true; controlpage = 0; }
-                else if (pauseMenuSel == 1) { ReplayManager::Get().StopPlayback(); AudioSystem::PlayButtonSound(AudioSystem::ButtonType::QUIT); SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE); SceneManager::Get().SetTransitionTime(2.f); }
-                else if (pauseMenuSel == 2) { AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK); SceneManager::Get().TogglePause(); }
+                if (pauseMenuSel == 0) { AudioSystem::PlaySoundByName("ui_click"); opencontrol = true; controlpage = 0; }
+                else if (pauseMenuSel == 1) { ReplayManager::Get().StopPlayback(); AudioSystem::PlaySoundByName("button_quit"); SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE); SceneManager::Get().SetTransitionTime(2.f); } //ari come back here
+                else if (pauseMenuSel == 2) { AudioSystem::PlaySoundByName("ui_click"); SceneManager::Get().TogglePause(); }
             }
         }
 
@@ -2185,6 +2191,11 @@ void GuiSystem::Update(float dt)
         bool hoverexit = false;
         bool hoverresume = false;
         baseTextScale = 0.9f;
+
+        // Track hover transitions for hover-enter sound
+        static bool prevHoverControl = false;
+        static bool prevHoverExit    = false;
+        static bool prevHoverResume  = false;
 
         // How to play button
         {
@@ -2234,11 +2245,18 @@ void GuiSystem::Update(float dt)
 
         }
 
+        // Play hover sound on first frame mouse enters a button
+        if (hovercontrol && !prevHoverControl) AudioSystem::PlaySoundByName("ui_click");
+        if (hoverexit    && !prevHoverExit)    AudioSystem::PlaySoundByName("ui_click");
+        if (hoverresume  && !prevHoverResume)  AudioSystem::PlaySoundByName("ui_click");
+        prevHoverControl = hovercontrol;
+        prevHoverExit    = hoverexit;
+        prevHoverResume  = hoverresume;
 
         // Click to open controls page
         if (hovercontrol && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK); // ari added this
+            AudioSystem::PlaySoundByName("ui_click"); // ari added this
             opencontrol = true;
             controlpage = 0;
         }
@@ -2247,7 +2265,7 @@ void GuiSystem::Update(float dt)
         if (hoverexit && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
             ReplayManager::Get().StopPlayback(); //stop the playback if quit to main menu (to fix buggy main menu visuals)
-            AudioSystem::PlayButtonSound(AudioSystem::ButtonType::QUIT); // ari added this
+            AudioSystem::PlaySoundByName("button_quit"); // ari added this
             SceneManager::Get().QueueLoadScene(FilePath::MAIN_MENU_SCENE);
             SceneManager::Get().SetTransitionTime(2.f);
         }
@@ -2255,7 +2273,7 @@ void GuiSystem::Update(float dt)
         // Click to resume game level
         if (hoverresume && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            AudioSystem::PlayButtonSound(AudioSystem::ButtonType::CLICK); // ari added this
+            AudioSystem::PlaySoundByName("ui_click"); // ari added this
             SceneManager::Get().TogglePause();
         }
 
@@ -2284,6 +2302,7 @@ void GuiSystem::Update(float dt)
                                      || Input::IsGamepadButtonPressed(GLFW_GAMEPAD_BUTTON_BACK);
             if (leaveControls)
             {
+                AudioSystem::PlaySoundByName("ui_click");
                 controlpage = 0;
                 opencontrol = false;
             }
@@ -2467,6 +2486,7 @@ void GuiSystem::Update(float dt)
                 // Click to go to controls page 2
                 if (hoverpage && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
                 {
+                    AudioSystem::PlaySoundByName("ui_click"); // ari added this
                     controlpage = 1;
                 }
             }
@@ -2692,6 +2712,7 @@ void GuiSystem::Update(float dt)
                 // Click to go to controls page 1
                 if (hoverpage && Input::IsMousePressed(GLFW_MOUSE_BUTTON_LEFT))
                 {
+                    AudioSystem::PlaySoundByName("ui_click");
                     controlpage = 0;
                 }
             }
@@ -2704,6 +2725,7 @@ void GuiSystem::Update(float dt)
         opencontrol = false;
         controlpage = 0;
     }
+    prevPaused = SceneManager::Get().IsPaused();
 
 #ifndef NO_IMGUI
     }

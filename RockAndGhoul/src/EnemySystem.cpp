@@ -213,6 +213,7 @@ Entity CreateBarrier(Entity eID, Element elem)
 
 	if (barrier != INVALID_ENTITY) {
 		g_elemBarriers[eID] = ElemBarrier{ barrier, elem, true };
+		AudioSystem::PlaySoundAt("barrier_create", transComp.pos.x, transComp.pos.y, 0.5f);
 	}
 	return barrier;
 }
@@ -243,6 +244,8 @@ bool BreakBarrier(Entity eID, Element elem)
 	// Queue remove barrier, let system destroy later
 	barrier.active = false;
 	Registry::Get().Remove_Component<ElementComponent>(eID);
+	const TransformComponent& transComp = Registry::Get().Get_Component<TransformComponent>(eID);
+	AudioSystem::PlaySoundAt("barrier_broken", transComp.pos.x, transComp.pos.y, 0.5f);
 	return true;
 }
 
@@ -635,9 +638,8 @@ namespace SpiritScript {
 
 		if (Registry::Get().Has_Component<ElementComponent>(eID)) {
 			auto& elemComp = Registry::Get().Get_Component<ElementComponent>(eID);
-			auto& transformComp = Registry::Get().Get_Component<TransformComponent>(eID);
 
-			Entity barrier = CreateBarrier(eID, elemComp.element);
+			CreateBarrier(eID, elemComp.element);
 
 
 		}
@@ -1025,11 +1027,9 @@ namespace ObstacleScript
 		const bool canOverrideAnimState =
 			(rt.state != ObstacleState::OBSTACLE_EXPLODE) &&
 			(rt.state != ObstacleState::OBSTACLE_DESTROYED);
-		const bool enteredState = (prevObstacleState[eID] != rt.state);
 		prevObstacleState[eID] = rt.state;
 
 		auto& hp = registry.Get_Component<HealthComponent>(eID);
-		auto& sheet = registry.Get_Component<RenderComponent>(eID).GetSpriteSheet();
 
 		// MakeObstacleStationary(eID);
 
@@ -1173,11 +1173,10 @@ namespace ObstacleScript
 		}
 		}
 
-		unsigned& prev = prevAnimState[eID];
-		/*if (prev != animState)
+		/*if (prevAnimState[eID] != animState)
 		{
 			registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
-			prev = animState;
+			prevAnimState[eID] = animState;
 		}*/
 		registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
 	}
@@ -1906,6 +1905,8 @@ namespace GhoulScript {
 			if (ghoulRuntime.state != GHOUL_DEAD) {
 				ghoulRuntime.state = GhoulState::GHOUL_DEAD;
 				ghoulRuntime.stateTime = 0.f;
+				Vec2 deathPos = GetPos(eID);
+				AudioSystem::PlaySoundAt("ghoul_die", deathPos.x, deathPos.y, 0.5f);
 			}
 			animState = 7;
 			registry.Get_Component<RenderComponent>(eID).GetSpriteSheet().SetState(animState);
@@ -1983,6 +1984,9 @@ namespace GhoulScript {
 			// stagger this fella
 			ghoulRuntime.staggerCount++;
 			CombatSystem::Get().SetCombatantStagger(eID, false);
+			Vec2 hitPos = GetPos(eID);
+			const char* attackedSounds[] = { "ghoul_attacked1", "ghoul_attacked2" };
+			AudioSystem::PlaySoundAt(attackedSounds[std::rand() % 2], hitPos.x, hitPos.y, 0.5f);
 
 			if (ghoulRuntime.staggerCount >= 3) {
 				// after 3 hits, stagger ghoul
@@ -2040,6 +2044,8 @@ namespace GhoulScript {
 					inCombat = true;
 					animState = 6;
 					ghoulRuntime.state = GhoulState::GHOUL_TRANSFORM;
+					const char* spawnSounds[] = { "ghoul_spawn1", "ghoul_spawn2" };
+					AudioSystem::PlaySoundAt(spawnSounds[std::rand() % 2], selfPos.x, selfPos.y, 0.5f);
 					ghoulRuntime.stateTime = 0.f;
 					health.willHit = false;
 					health.isVulnerable = false;
