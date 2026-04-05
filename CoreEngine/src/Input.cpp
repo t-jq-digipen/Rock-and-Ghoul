@@ -2,7 +2,8 @@
  * @file        Input.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
- * @date        04 NOV 2025
+ * @co-author   Yasmin Tazi         | yasmin.t@digipen.edu
+ * @date        05 APR 2026
  *
  * @brief
  * 
@@ -209,7 +210,7 @@ void Input::PollGamepad() {
     const bool ltMod = (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0.3f);
 
     if (ltMod) {
-        // LT + face buttons = directional spell combo (arrow keys)
+        // LT + face buttons = spell combo (arrow keys)
         // Y=Up, X=Left, B=Right, A=Down  (matches physical button positions)
         emitKey(GLFW_GAMEPAD_BUTTON_Y, GLFW_KEY_UP);
         emitKey(GLFW_GAMEPAD_BUTTON_X, GLFW_KEY_LEFT);
@@ -226,13 +227,13 @@ void Input::PollGamepad() {
         emitKey(GLFW_GAMEPAD_BUTTON_B, GLFW_KEY_SPACE);
     }
 
-    // Fixed button mappings (not affected by LT modifier)
+    // Fixed button mappings (not affected by LT)
     emitKey(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER, GLFW_KEY_E);      // Melee attack
     emitKey(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER,  GLFW_KEY_Q);      // Cycle element
     emitKey(GLFW_GAMEPAD_BUTTON_START,        GLFW_KEY_ESCAPE); // Pause
     emitKey(GLFW_GAMEPAD_BUTTON_BACK,         GLFW_KEY_ESCAPE); // Back
 
-    // D-pad: raw state only (queried directly via IsGamepadButtonPressed — no key events fired,
+    // D-pad: raw state only (queried directly via IsGamepadButtonPressed and no key events fired
     //         so D-pad never accidentally triggers spell combos or character movement)
 
     // Save button states for next-frame transition detection
