@@ -931,7 +931,7 @@ static constexpr float OBSTACLE_DEATH_LIFETIME = 0.05f;
 static constexpr float OBSTACLE_EXPLOSION_DAMAGE = 50.f;
 static constexpr float OBSTACLE_EXPLOSION_DURATION = .75f;
 static constexpr float OBSTACLE_EXPLOSION_RANGE = 200.f;
-static const Vec2 OBSTACLE_EXPLOSION_HITBOX_SIZE = { 200.f, 200.f };
+static const Vec2 OBSTACLE_EXPLOSION_HITBOX_SIZE = { 500.f, 500.f };
 
 AttackProperties OBSTACLE_EXPLOSION_PROPERTIES{
 	INVALID_ENTITY,
@@ -1146,23 +1146,11 @@ namespace ObstacleScript
 
 		case ObstacleState::OBSTACLE_EXPLODE:
 		{
-			//SetObstacleAnim(eID, OBSTACLE_ANIM_STATE::OBS_EXPLODE);
 			rt.stateTime += std::max(0.f, dt);
-			//sheet.Sprite().Update_ImageSize();
-			//const auto& img = sheet.Sprite().Get_Image();
+
 			animState = 3;
-			/*if (enteredState)
-			{
-				sheet.SetState(animState);
-				sheet.EditFrames(1, 0, 7, 0.2f, false);
-				sheet.ResetTimer();
-			}*/
-			/*sheet.UpdateFrame(dt);
-			sheet.UpdateUV(img.widthPixels, img.heightPixels);*/
 
 			// Make the explosion hitbox
-			// Spawn explosion hitbox ONCE when we ENTER explode state,
-			// but only if at least one T_ENEMY is within range.
 			if (enteredState)
 			{
 				const Vec2 selfPos = GetPos(eID);
@@ -1171,40 +1159,49 @@ namespace ObstacleScript
 				float bestD2 = std::numeric_limits<float>::infinity();
 				const float range2 = OBSTACLE_EXPLOSION_RANGE * OBSTACLE_EXPLOSION_RANGE;
 
-				// Find nearest enemy in range
-				for (auto& [ent, tag] : registry.Get_ComponentMap<TagComponent>())
-				{
-					if (tag.tag != T_ENEMY) continue;
-					if (!registry.Has_Component<TransformComponent>(ent)) continue;
-					if (ent == eID) continue;
+				AttackProperties props = OBSTACLE_EXPLOSION_PROPERTIES;
+				props.owner = eID;
 
-					const Vec2 enemyPos = GetPos(ent);
-					const float d2 = DistSq(selfPos, enemyPos);
-					if (d2 <= range2 && d2 < bestD2)
-					{
-						bestD2 = d2;
-						nearestEnemy = ent;
-					}
-				}
+				CombatSystem::Get().SpawnHitBox(
+					props,
+					{0.f,0.f},
+					OBSTACLE_EXPLOSION_HITBOX_SIZE
+				);
 
-				if (nearestEnemy != INVALID_ENTITY)
-				{
-					const Vec2 enemyPos = GetPos(nearestEnemy);
-					const Vec2 dirToEnemy = { enemyPos.x - selfPos.x, enemyPos.y - selfPos.y };
-					const bool faceRight = dirToEnemy.x >= 0.f;
+				//// Find nearest enemy in range
+				//for (auto& [ent, tag] : registry.Get_ComponentMap<TagComponent>())
+				//{
+				//	if (tag.tag != T_ENEMY) continue;
+				//	if (!registry.Has_Component<TransformComponent>(ent)) continue;
+				//	if (ent == eID) continue;
 
-					Vec2 offset{ 0.f, 0.f };
-					offset.x += faceRight ? (OBSTACLE_EXPLOSION_RANGE * 0.5f) : -(OBSTACLE_EXPLOSION_RANGE * 0.5f);
+				//	const Vec2 enemyPos = GetPos(ent);
+				//	const float d2 = DistSq(selfPos, enemyPos);
+				//	if (d2 <= range2 && d2 < bestD2)
+				//	{
+				//		bestD2 = d2;
+				//		nearestEnemy = ent;
+				//	}
+				//}
 
-					AttackProperties props = OBSTACLE_EXPLOSION_PROPERTIES;
-					props.owner = eID;
+				//if (nearestEnemy != INVALID_ENTITY)
+				//{
+				//	const Vec2 enemyPos = GetPos(nearestEnemy);
+				//	const Vec2 dirToEnemy = { enemyPos.x - selfPos.x, enemyPos.y - selfPos.y };
+				//	const bool faceRight = dirToEnemy.x >= 0.f;
 
-					CombatSystem::Get().SpawnHitBox(
-						props,
-						offset,
-						OBSTACLE_EXPLOSION_HITBOX_SIZE
-					);
-				}
+				//	Vec2 offset{ 0.f, 0.f };
+				//	offset.x += faceRight ? (OBSTACLE_EXPLOSION_RANGE * 0.5f) : -(OBSTACLE_EXPLOSION_RANGE * 0.5f);
+
+				//	AttackProperties props = OBSTACLE_EXPLOSION_PROPERTIES;
+				//	props.owner = eID;
+
+				//	CombatSystem::Get().SpawnHitBox(
+				//		props,
+				//		offset,
+				//		OBSTACLE_EXPLOSION_HITBOX_SIZE
+				//	);
+				//}
 			}
 			if (rt.stateTime >= OBSTACLE_EXPLOSION_DURATION)
 			{
