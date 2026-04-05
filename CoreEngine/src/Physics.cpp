@@ -1,7 +1,7 @@
 /* ========================================================
  * @file		Physics.cpp
- * @author		Yasmin Tazi  | yasmin.t@digipen.edu
- * @co-author	Tan Jun Quan | t.junquan@digipen.edu
+ * @author		Yasmin Tazi  | yasmin.t@digipen.edu 80%
+ * @co-author	Tan Jun Quan | t.junquan@digipen.edu 20%
  * @date		19 NOV 2025
  *
  * @brief	Physics component for ECS

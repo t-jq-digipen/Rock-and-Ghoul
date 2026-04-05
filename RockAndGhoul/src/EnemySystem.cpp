@@ -1,8 +1,8 @@
 /* ========================================================
  * @file	    EnemySystem.cpp
- * @author	    Manfred Sim         | manfred.sim@digipen.edu
- * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
- * @co-author	Yasmin Tazi			| yasmin.t@digipen.edu
+ * @author	    Manfred Sim         | manfred.sim@digipen.edu 20%
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu 50%
+ * @co-author	Yasmin Tazi			| yasmin.t@digipen.edu 30%
  * @date	    28 JAN 2026
  *
  * @brief	Enemy System for handling enemy behaviour.

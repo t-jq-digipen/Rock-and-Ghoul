@@ -1,13 +1,13 @@
 /* ========================================================
  * @file		Fretboard.cpp
- * @author		Yasmin Tazi | yasmin.t@digipen.edu
+ * @author		Yasmin Tazi | yasmin.t@digipen.edu 100%
  * @date		01 OCT 2025
  *
  * @brief	FIXTHISSHIT
  *
  * FIXTHISSHIT (or delete?)
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 

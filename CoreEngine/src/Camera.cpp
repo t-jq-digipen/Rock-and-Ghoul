@@ -9,7 +9,7 @@
 /**************************************************************************/
 /*!
 \file       Camera.cpp
-\author     Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+\author     Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu 100%
 \date       29 OCT 2025
 \brief
 Defines the Camera class and define functions used for 2D/2.5D rendering

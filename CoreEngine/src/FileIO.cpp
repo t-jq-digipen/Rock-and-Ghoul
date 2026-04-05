@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        FileIO.cpp
- * @author      Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @author      Tan Ying Clarissa | t.yingclarissa@digipen.edu 100%
  * @date        26 SEP 2025
  *
  * @brief   Implementation file for FileIO utility class

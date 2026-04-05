@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        MonoManager.cpp
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu 100%
  * @date        07 NOV 2025
  *
  * @brief
@@ -11,7 +11,7 @@
  * The MonoManager initialize and configure the Mono environment, load C# assembly,
  * invoke script methods, and shutdown the runtime.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ======================================================== 
  */
 

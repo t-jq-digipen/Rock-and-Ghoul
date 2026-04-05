@@ -1,6 +1,6 @@
 /* ========================================================
  * @file	    BehaviourComponent.h
- * @author	    Tan Jun Quan | t.junquan@digipen.edu
+ * @author	    Tan Jun Quan | t.junquan@digipen.edu 100%
  * @date	    07 NOV 2025
  *
  * @brief	Behaviour Component

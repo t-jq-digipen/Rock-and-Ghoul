@@ -1,6 +1,6 @@
 /* ========================================================
  * @file    AudioCache.cpp
- * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu 100%
  * @date    15 OCT 2025
  *
  * @brief   Implementation file for the AudioCache asset management system
@@ -11,7 +11,7 @@
  * (music, sfx, ui, ambience). The cache implements a bank system for batch
  * loading/unloading of related audio assets.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #include "AudioCache.h"

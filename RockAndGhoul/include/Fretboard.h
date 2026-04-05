@@ -1,6 +1,6 @@
 /* ========================================================
 * @file		Fretboard.h
-* @author	Yasmin Tazi | yasmin.t@digipen.edu
+* @author	Yasmin Tazi | yasmin.t@digipen.edu 100%
 * @date		03 OCT 2025
 *
 * @brief	Spell casting system for fretboard using arrow key inputs.

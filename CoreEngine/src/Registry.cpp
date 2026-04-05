@@ -1,7 +1,7 @@
 /* ========================================================
  * @file		Registry.cpp
- * @author		Tan Jun Quan | t.junquan@digipen.edu
- * @co-author   Yasmin Tazi  | yasmin.t@digipen.edu
+ * @author		Tan Jun Quan | t.junquan@digipen.edu 60%
+ * @co-author   Yasmin Tazi  | yasmin.t@digipen.edu 40%
 
  * @date		01 OCT 2025
  *

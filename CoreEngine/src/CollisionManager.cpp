@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        CollisionManager.cpp
- * @author      Yasmin Tazi        | yasmin.t@digipen.edu
- * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Yasmin Tazi        | yasmin.t@digipen.edu 70%
+ * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu 30%
  * @date        28 NOV 2025
  *
  * @brief

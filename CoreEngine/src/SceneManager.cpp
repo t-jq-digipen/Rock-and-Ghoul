@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        SceneManager.cpp
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu 60%
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu 40%
  * @date        29 NOV 2025
  *
  * @brief
@@ -22,7 +22,7 @@
  * - Ensures scene loading happens only at safe points in the frame.
  * - Restores default scene camera and renderer settings.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 

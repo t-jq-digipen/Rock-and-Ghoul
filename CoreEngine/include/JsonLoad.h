@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        JsonLoad.h
- * @author      Yasmin Tazi | yasmin.t@digipen.edu
- * @co-author   Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @author      Yasmin Tazi | yasmin.t@digipen.edu 30%
+ * @co-author   Tan Ying Clarissa | t.yingclarissa@digipen.edu 70%
  * @date        04 NOV SEP 2025
  *
  * @brief   Header file declaring the JSON serialization system

@@ -1,6 +1,6 @@
 /* ========================================================
  * @file    AudioComponent.h
- * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu 100%
  * @date    4 NOV 2025
  *
  * @brief   Header file for entity-based audio component system

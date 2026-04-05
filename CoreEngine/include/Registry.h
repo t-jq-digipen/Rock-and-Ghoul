@@ -1,6 +1,6 @@
 /* ========================================================
  * @file		Registry.h
- * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @author		Tan Jun Quan | t.junquan@digipen.edu 100%
 
  * @date		30 OCT 2025
  *

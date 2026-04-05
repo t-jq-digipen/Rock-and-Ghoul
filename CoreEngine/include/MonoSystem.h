@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        MonoSystem.h
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu 100%
  * @date        07 NOV 2025
  *
  * @brief
@@ -14,7 +14,7 @@
  *
  * This mirrors the LogicSystem + BehaviourComponent pattern.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 

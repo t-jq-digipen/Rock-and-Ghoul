@@ -1,9 +1,9 @@
 ﻿/* ========================================================
  * @file	    PlayerSystem.cpp
- * @author	    Tan Jun Quan	   | t.junquan@digipen.edu
- * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu
- * @co-author   Manfred Sim		   | manfred.sim@digipen.edu
+ * @author	    Tan Jun Quan	   | t.junquan@digipen.edu 40%
+ * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu 20%
+ * @co-author   Yasmin Tazi		   | yasmin.t@digipen.edu 20%
+ * @co-author   Manfred Sim		   | manfred.sim@digipen.edu 20%
  * @date	    12 MAR 2026
  *
  * @brief	Player System for handling player behaviour.

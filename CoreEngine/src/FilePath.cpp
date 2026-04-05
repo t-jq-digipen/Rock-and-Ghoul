@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        FilePath.cpp
- * @author      Yasmin Tazi | yasmin.t@digipen.edu
- * @co-author   Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @author      Yasmin Tazi | yasmin.t@digipen.edu 30%
+ * @co-author   Tan Ying Clarissa | t.yingclarissa@digipen.edu 70%
  * @date        04 NOV 2025
  *
  * @brief   Implementation file for FilePath class

@@ -1,8 +1,8 @@
 /* ========================================================
  * @file        DataDefs.h
- * @author      Yasmin Tazi         | yasmin.t@digipen.edu
- * @co-author   Tan Ying Clarissa   | t.yingclarissa@digipen.edu
- * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @author      Yasmin Tazi         | yasmin.t@digipen.edu 30%
+ * @co-author   Tan Ying Clarissa   | t.yingclarissa@digipen.edu 30%
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu 40%
  * @date        26 OCT 2025
  *
  * @brief   Data structures for game serialization
@@ -17,7 +17,7 @@
  * For each component, developer MUST provide an interface function to
  * acquire this data in order to use the editor.
  * 
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once

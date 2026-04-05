@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        SpatialGrid.cpp
- * @author      Yasmin Tazi | yasmin.t@digipen.edu
+ * @author      Yasmin Tazi | yasmin.t@digipen.edu 100%
  * @date        30 OCT 2025
  *
  * @brief   Implementation of spatial partitioning system

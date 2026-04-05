@@ -1,7 +1,8 @@
 /* ========================================================
  * @file        ImguiSystem.h
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu 50%
+ * @co-author   Tan Jun Quan       | t.junquan@digipen.edu 30%
+ * @co-author   Manfred Sim        | manfred.sim@digipen.edu 20%
  * @date        06 NOV 2025
  *
  * @brief

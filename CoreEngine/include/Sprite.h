@@ -1,6 +1,6 @@
 ﻿/* ========================================================
  * @file		Sprite.h
- * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @author		Tan Jun Quan | t.junquan@digipen.edu 100%
  * @date		26 OCT 2025
  *
  * @brief	Sprite component for ECS
@@ -101,7 +101,7 @@ namespace Sprite {
 
 		/**
 		 * @brief Get the sprite's image.
-		 * @return Constant reference to the sprite�s Image.
+		 * @return Constant reference to the sprite's Image.
 		 */
 		const Image& Get_Image() const;
 		/**

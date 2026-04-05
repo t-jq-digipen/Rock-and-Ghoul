@@ -1,6 +1,6 @@
 /* ========================================================
  * @file	    MovementSystem.h
- * @author	    Manfred Sim | manfred.sim@digipen.edu
+ * @author	    Manfred Sim | manfred.sim@digipen.edu 100%
  * @date	    30 OCT 2025
  *
  * @brief	Movement system for ECS

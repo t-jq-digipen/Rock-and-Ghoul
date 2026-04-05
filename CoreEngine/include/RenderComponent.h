@@ -1,7 +1,7 @@
 /* ========================================================
  * @file	    RenderComponent.h
- * @author	    Tan Jun Quan          | t.junquan@digipen.edu
- * @co-author   Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+ * @author	    Tan Jun Quan          | t.junquan@digipen.edu 60%
+ * @co-author   Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu 40%
  * @date	    19 NOV 2025
  *
  * @brief	Render Component for rendering logic

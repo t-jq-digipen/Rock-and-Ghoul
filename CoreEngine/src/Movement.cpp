@@ -1,6 +1,6 @@
 /* ========================================================
  * @file		Movement.cpp
- * @author		Manfred Sim | manfred.sim@digipen.edu
+ * @author		Manfred Sim | manfred.sim@digipen.edu 100%
  * @date		30 OCT 2025
  *
  * @brief	Movement component for ECS
@@ -11,7 +11,7 @@
  *
  * The bulk of the updates happen in PhysicsSystem.cpp
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 

@@ -1,8 +1,8 @@
 /* ========================================================
  * @file		Component.h
- * @author		Tan Jun Quan		| t.junquan@digipen.edu
- * @co-author	Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
- * @co-author	Yasmin Tazi			| yasmin.t@digipen.edu
+ * @author		Tan Jun Quan		| t.junquan@digipen.edu 60%
+ * @co-author	Wong Shi Yu Regine  | w.shiyuregine@digipen.edu 20%
+ * @co-author	Yasmin Tazi			| yasmin.t@digipen.edu 20%
  * @date		19 NOV 2025
  *
  * @brief	Declaration of ECS component type IDs and minor

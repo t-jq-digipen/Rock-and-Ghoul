@@ -1,7 +1,8 @@
 /* ========================================================
  * @file        GuiSystem.h
- * @author		Manfred Sim     | manfred.sim@digipen.edu
- * @co-author   Tan Jun Quan    | t.junquan@digipen.edu
+ * @author      Manfred Sim        | manfred.sim@digipen.edu 50%
+ * @co-author	Tan Jun Quan       | t.junquan@digipen.edu 20%
+ * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu 30%
  * @date        30 NOV 2025
  *
  * @brief
@@ -11,7 +12,7 @@
  * declares the functions and enumerations to be defined in
  * GuiSystem.cpp.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 

@@ -1,6 +1,7 @@
 /* ========================================================
  * @file        Debug.h
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu 80%
+ * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu 20%
  * @date        01 OCT 2025
  *
  * @brief
@@ -15,7 +16,7 @@
  * - DrawHotspot:        Marks a point of interest (e.g., collider center).
  * - DrawVelocity:       Renders a velocity vector for an entity.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 

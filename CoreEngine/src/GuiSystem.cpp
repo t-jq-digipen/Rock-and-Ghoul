@@ -1,8 +1,8 @@
 /* ========================================================
  * @file        GuiSystem.cpp
- * @author      Manfred Sim        | manfred.sim@digipen.edu
- * @co-author	Tan Jun Quan       | t.junquan@digipen.edu
- * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Manfred Sim        | manfred.sim@digipen.edu 50%
+ * @co-author	Tan Jun Quan       | t.junquan@digipen.edu 20%
+ * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu 30%
  * @date        06 FEB 2026
  *
  * @brief

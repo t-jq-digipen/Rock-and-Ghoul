@@ -1,7 +1,7 @@
 /* ========================================================
  * @file		Entity.h
- * @author		Tan Jun Quan		| t.junquan@digipen.edu
- * @co-author	Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
+ * @author		Tan Jun Quan		| t.junquan@digipen.edu 50%
+ * @co-author	Wong Shi Yu Regine  | w.shiyuregine@digipen.edu 50%
  * @date		29 SEP 2025
  *
  * @brief	Entity type declaration for ECS

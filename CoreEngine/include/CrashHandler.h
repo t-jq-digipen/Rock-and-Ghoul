@@ -1,6 +1,6 @@
 /* ========================================================
  * @file	Crash Handler
- * @author	Manfred Sim
+ * @author	Manfred Sim         | manfred.sim@digipen.edu 100%
  * @date	29 SEP 2025
  *
  * @brief	Crash Handler for writing crash logs to a text file

@@ -1,6 +1,6 @@
 /* ========================================================
  * @file    AudioComponent.cpp
- * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu 100%
  * @date    4 FEB 2026
  *
  * @brief   Implementation file for entity-based audio component system

@@ -1,6 +1,6 @@
 /* ========================================================
  * @file    Audio.cpp
- * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu 100%
  * @date    5 FEB 2025
  *
  * @brief   Implementation file for AudioSystem and AudioManager classes

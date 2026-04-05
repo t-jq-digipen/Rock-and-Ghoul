@@ -1,6 +1,6 @@
 /* ========================================================
  * @file    AudioSystem.h
- * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu 100%
  * @date    26 SEP 2025
  *
  * @brief   Header file declaring the AudioManager class
@@ -14,7 +14,7 @@
  * game-specific audio management features such as automatic music
  * transitions based on game state.
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once

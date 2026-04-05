@@ -1,7 +1,7 @@
 /* ========================================================
    * @file        CombatSystem.h
-   * @author      Yasmin Tazi        | yasmin.t@digipen.edu
-   * @co-author   Tan Jun Quan       | t.junquan@digipen.edu
+ * @author      Yasmin Tazi        | yasmin.t@digipen.edu 20%
+ * @co-author   Tan Jun Quan       | t.junquan@digipen.edu 80%
    * @date        06 FEB 2026
    *
    * @brief       Combat System header

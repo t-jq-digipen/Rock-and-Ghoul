@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        Collision.cpp
- * @author      Yasmin Tazi | yasmin.t@digipen.edu
+ * @author      Yasmin Tazi | yasmin.t@digipen.edu 100%
  * @date        01 OCT 2025
  *
  * @brief       Collision detection system for 2D/3D shapes.

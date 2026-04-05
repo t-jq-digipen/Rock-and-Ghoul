@@ -1,6 +1,6 @@
 /* ========================================================
  * @file		ComponentManager.h
- * @author		Tan Jun Quan | t.junquan@digipen.edu
+ * @author		Tan Jun Quan | t.junquan@digipen.edu 100%
  * @date		26 OCT 2025
  *
  * @brief	Component Manager template for ECS

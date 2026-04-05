@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        Debug.cpp
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu 80%
+ * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu 20%
  * @date        07 NOV 2025
  *
  * @brief 

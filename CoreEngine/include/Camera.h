@@ -7,7 +7,7 @@
 /**************************************************************************/
 /*!
 \file       Camera.h
-\author     Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+\author     Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu 100%
 \date       29 OCT 2025
 \brief
 Defines the Camera class and declare functions used for 2D/2.5D rendering
@@ -29,7 +29,7 @@ Key functionalities include:
 - Restricts camera movement to specified world-space boundaries
 - Provides world-to-screen and screen-to-world conversions
 
-Copyright � 2025 DigiPen, All rights reserved.
+Copyright © 2025 DigiPen, All rights reserved.
 */
 /**************************************************************************/
 

@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        Spells.cpp
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu 100%
  * @date        01 OCT 2025
  *
  * @brief

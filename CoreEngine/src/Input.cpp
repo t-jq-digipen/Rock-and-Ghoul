@@ -1,7 +1,7 @@
 ﻿/* ========================================================
  * @file        Input.cpp
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu 90%
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu 10%
  * @date        04 NOV 2025
  *
  * @brief

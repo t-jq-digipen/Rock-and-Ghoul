@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        Input.h
- * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
- * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu 90%
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu 10%
  * @date        04 NOV 2025
  *
  * @brief
@@ -16,7 +16,7 @@
  * Key inputs now push events to EventBus.
  *
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #ifndef INPUT_H
@@ -42,16 +42,28 @@ enum class KeyState {
     NONE
 };
 
+/**
+ * @struct KeyPressedEvent
+ * @brief Event published to the EventBus when a key transitions to PRESSED state.
+ */
 struct KeyPressedEvent : public IEvent {
-    int key;
+    int key; // GLFW key token that was pressed.
 };
 
+/**
+ * @struct KeyHeldEvent
+ * @brief Event published to the EventBus each frame a key remains in HELD state.
+ */
 struct KeyHeldEvent : public IEvent {
-    int key;
+    int key; // GLFW key token that is being held.
 };
 
+/**
+ * @struct KeyReleasedEvent
+ * @brief Event published to the EventBus when a key transitions to RELEASED state.
+ */
 struct KeyReleasedEvent : public IEvent {
-    int key;
+    int key; // GLFW key token that was released.
 };
 
 
@@ -74,18 +86,76 @@ public:
     static void Update();
 
     // Query functions
+    /**
+     * @brief Returns true if the key was pressed this frame.
+     * @param key GLFW key token (e.g. GLFW_KEY_SPACE).
+     * @return True if the key state is PRESSED.
+     */
     static bool IsKeyPressed(int key);
+
+    /**
+     * @brief Returns true if the key is being held down.
+     * @param key GLFW key token.
+     * @return True if the key state is HELD.
+     */
     static bool IsKeyHeld(int key);
+
+    /**
+     * @brief Returns true if the key was released this frame.
+     * @param key GLFW key token.
+     * @return True if the key state is RELEASED.
+     */
     static bool IsKeyReleased(int key);
 
+    /**
+     * @brief Returns true if the mouse button was pressed this frame.
+     * @param button GLFW mouse button token (e.g. GLFW_MOUSE_BUTTON_LEFT).
+     * @return True if the button state is PRESSED.
+     */
     static bool IsMousePressed(int button);
+
+    /**
+     * @brief Returns true if the mouse button is being held down.
+     * @param button GLFW mouse button token.
+     * @return True if the button state is HELD.
+     */
     static bool IsMouseHeld(int button);
+
+    /**
+     * @brief Returns true if the mouse button was released this frame.
+     * @param button GLFW mouse button token.
+     * @return True if the button state is RELEASED.
+     */
     static bool IsMouseReleased(int button);
 
+    /**
+     * @brief Returns the current cursor X position in window coordinates.
+     * @return Cursor X as a double.
+     */
     static double GetMouseX();
+
+    /**
+     * @brief Returns the current cursor Y position in window coordinates.
+     * @return Cursor Y as a double.
+     */
     static double GetMouseY();
+
+    /**
+     * @brief Returns the horizontal scroll offset since the last frame.
+     * @return Horizontal scroll delta as a double.
+     */
     static double GetScrollX();
+
+    /**
+     * @brief Returns the vertical scroll offset since the last frame.
+     * @return Vertical scroll delta as a double.
+     */
     static double GetScrollY();
+
+    /**
+     * @brief Returns the current cursor position as a Vec2.
+     * @return Vec2 containing (mouseX, mouseY) in window coordinates.
+     */
     static Vec2 GetMousePosition();
     // GLFW callbacks (set in GLApp::init)
     /**
@@ -123,17 +193,53 @@ public:
 
     // Gamepad query functions
     // axis = GLFW_GAMEPAD_AXIS_LEFT_X/Y, RIGHT_X/Y, LEFT_TRIGGER, RIGHT_TRIGGER
+    /**
+     * @brief Returns the current value of a gamepad axis with deadzone applied.
+     * @param axis GLFW gamepad axis token (e.g. GLFW_GAMEPAD_AXIS_LEFT_X).
+     * @return Axis value in [-1, 1], or 0 if no gamepad is connected.
+     */
     static float GetGamepadAxis(int axis);
+
+    /**
+     * @brief Returns whether a gamepad is currently connected.
+     * @return True if an active joystick/gamepad is detected.
+     */
     static bool  IsGamepadConnected();
+
     // btn = GLFW_GAMEPAD_BUTTON_* (raw per-button state, independent of keyboard emulation)
+    /**
+     * @brief Returns true if the gamepad button was pressed this frame.
+     * @param btn GLFW gamepad button token (e.g. GLFW_GAMEPAD_BUTTON_A).
+     * @return True if the button state is PRESSED.
+     */
     static bool IsGamepadButtonPressed(int btn);
+
+    /**
+     * @brief Returns true if the gamepad button is being held down.
+     * @param btn GLFW gamepad button token.
+     * @return True if the button state is HELD.
+     */
     static bool IsGamepadButtonHeld(int btn);
+
+    /**
+     * @brief Returns true if the gamepad button was released this frame.
+     * @param btn GLFW gamepad button token.
+     * @return True if the button state is RELEASED.
+     */
     static bool IsGamepadButtonReleased(int btn);
 
-    // Called after glfwPollEvents() each frame to update gamepad state
+    /**
+     * @brief Polls the active gamepad and updates axis values and button states.
+     *        Call once per frame after glfwPollEvents().
+     */
     static void PollGamepad();
 
-    // GLFW joystick hot-plug callback (set in GLApp::init)
+    /**
+     * @brief GLFW joystick connection/disconnection callback.
+     *        Updates the active joystick ID when a gamepad is plugged in or removed.
+     * @param jid   Joystick ID that triggered the event.
+     * @param event GLFW_CONNECTED or GLFW_DISCONNECTED.
+     */
     static void JoystickCallback(int jid, int event);
 
 private:

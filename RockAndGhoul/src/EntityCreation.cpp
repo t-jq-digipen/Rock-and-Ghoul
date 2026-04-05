@@ -1,8 +1,8 @@
 /* ========================================================
  * @file        EntityCreation.cpp
- * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
- * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
- * @co-author   Yasmin Tazi         | yasmin.t@digipen.edu
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu 50%
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu 30%
+ * @co-author   Yasmin Tazi         | yasmin.t@digipen.edu 20%
  * @date        28 NOV 2025
  *
  * @brief

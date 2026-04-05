@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        UndoSystem.h
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu 100%
  * @date        21 NOV 2025
  *
  * @brief

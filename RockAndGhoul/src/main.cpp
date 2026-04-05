@@ -1,7 +1,7 @@
 ﻿/* ========================================================
  * @file        main.cpp
- * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
- * @co-author   Manfred Sim         | manfred.sim@digipen.edu
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu 80%
+ * @co-author   Manfred Sim         | manfred.sim@digipen.edu 20%
  * @date        01 OCT 2025
  *
  * @brief       

@@ -1,6 +1,6 @@
 /* ========================================================
 * @file     ForcesManager.cpp
-* @author   Yasmin Tazi | yasmin.t@digipen.edu
+* @author   Yasmin Tazi | yasmin.t@digipen.edu 100%
 * @date     04 NOV 2025
 *
 * @brief    Centralized force application system

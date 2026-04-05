@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        ReplayManager.h
- * @author      Kervin Ong Guan Cheng  | kervinguancheng.ong@digipen.edu
+ * @author      Kervin Ong Guan Cheng  | kervinguancheng.ong@digipen.edu 100%
  * @date        11 MAR 2026
  *
  * @brief
@@ -26,7 +26,7 @@
  * - Provides a lightweight replay pipeline suited for transient combat,
  *   spell visuals, and short-term debugging of gameplay events.
  *
- * Copyright � 2026 DigiPen, All rights reserved.
+ * Copyright © 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 

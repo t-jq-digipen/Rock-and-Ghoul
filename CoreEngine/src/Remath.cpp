@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        Remath.cpp
- * @author      Yasmin Tazi         | yasmin.t@digipen.edu
- * @co-author   Tan Ying Clarissa   | t.yingclarissa@digipen.edu
+ * @author      Yasmin Tazi         | yasmin.t@digipen.edu 50%
+ * @co-author   Tan Ying Clarissa   | t.yingclarissa@digipen.edu 50%
  * @date        06 NOV 2025
  *
  * @brief

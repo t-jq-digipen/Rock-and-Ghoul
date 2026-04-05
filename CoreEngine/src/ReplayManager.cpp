@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        ReplayManager.cpp
- * @author      Kervin Ong Guan Cheng  | kervinguancheng.ong@digipen.edu
+ * @author      Kervin Ong Guan Cheng  | kervinguancheng.ong@digipen.edu 100%
  * @date        11 MAR 2026
  *
  * @brief
@@ -22,7 +22,7 @@
  * The system is designed as a lightweight debugging / gameplay
  * feature and does NOT perform full ECS serialization.
  *
- * Copyright � 2026 DigiPen, All rights reserved.
+ * Copyright © 2026 DigiPen, All rights reserved.
  * ========================================================
  */
 

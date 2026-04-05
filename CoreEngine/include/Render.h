@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        Render.h
- * @author      Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
- * @co-author   Tan Jun Quan          | t.junquan@digipen.edu
+ * @author      Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu 90%
+ * @co-author   Tan Jun Quan          | t.junquan@digipen.edu 10%
  * @date        28 NOV 2025
  *
  * @brief   Rendering system class, consisting function declarations for drawing 2D
@@ -22,7 +22,7 @@
  * - Off-screen rendering via scene framebuffer (for ImGui or post-processing)
  * - Screen-to-world coordinate conversion utilities
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #pragma once

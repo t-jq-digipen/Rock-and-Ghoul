@@ -1,6 +1,6 @@
 /* ========================================================
  * @function    GameScripts.h
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu 100%
  * @date        07 NOV 2025
  *
  * @brief
@@ -11,7 +11,7 @@
  * unique ScriptID and registered into the LogicSystem behaviour map.
 
  *
- * Copyright � 2025 DigiPen, All rights reserved.
+ * Copyright © 2025 DigiPen, All rights reserved.
  * ======================================================== */
 
 
@@ -45,7 +45,7 @@
 //     * @brief Rotates the entity at 45 degrees per second.
 //     *
 //     * Retrieves the TransformComponent and updates its rotation value
-//     * each frame. Keeps the rotation angle clamped between 0�360 degrees.
+//     * each frame. Keeps the rotation angle clamped between 0 - 360 degrees.
 //     *
 //     */
 //    inline void Update(Entity gob, float dt)

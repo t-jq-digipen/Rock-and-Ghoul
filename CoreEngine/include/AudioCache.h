@@ -1,6 +1,6 @@
 /* ========================================================
  * @file    AudioCache.h
- * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu
+ * @author  Tan Ying Clarissa | t.yingclarissa@digipen.edu 100%
  * @date    15 OCT 2025
  *
  * @brief   Header file for centralized audio asset management system

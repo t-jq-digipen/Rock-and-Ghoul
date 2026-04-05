@@ -1,7 +1,7 @@
 /* ========================================================
  * @file        Remath.h
- * @author      Yasmin Tazi			| yasmin.t@digipen.edu
- * @co-author   Tan Ying Clarissa	| t.yingclarissa@digipen.edu
+ * @author      Yasmin Tazi			| yasmin.t@digipen.edu 50%
+ * @co-author   Tan Ying Clarissa	| t.yingclarissa@digipen.edu 50%
  * @date        06 NOV 2025
  *
  * @brief
@@ -477,7 +477,7 @@ float RG_LengthSquared(const Vec3& v);
  *
  * @param a The first vector.
  * @param b The second vector.
- * @return Vec3 The cross product vector (a � b).
+ * @return Vec3 The cross product vector (a dot b).
  */
 Vec3 RG_CrossProduct(const Vec3& a, const Vec3& b);
 

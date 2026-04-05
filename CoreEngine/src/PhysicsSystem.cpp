@@ -1,8 +1,8 @@
 /* ========================================================
  * @file	    PhysicsSystem.cpp
- * @author	    Tan Jun Quan       | t.junquan@digipen.edu
- * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu
- * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu
+ * @author	    Tan Jun Quan       | t.junquan@digipen.edu 20%
+ * @co-author   Wong Shi Yu Regine | w.shiyuregine@digipen.edu 10%
+ * @co-author   Yasmin Tazi        | yasmin.t@digipen.edu 70%
  * @date	    19 NOV 2025
  *
  * @brief	Physics system for ECS

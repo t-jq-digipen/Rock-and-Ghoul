@@ -1,6 +1,8 @@
 /* ========================================================
  * @file        RenderSystem.h
- * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
+ * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu 20%
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu 20%
+ * @co-author   Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu 60%
  * @date        01 OCT 2025
  *
  * @brief

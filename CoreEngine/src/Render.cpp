@@ -1,6 +1,6 @@
 /* ========================================================
  * @file        Render.cpp
- * @author      Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+ * @author      Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu 100%
  * @date        05 NOV 2025
  *
  * @brief   Rendering system class, consisting function definitions for drawing 2D
