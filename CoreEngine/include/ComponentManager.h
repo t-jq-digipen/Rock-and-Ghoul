@@ -152,37 +152,3 @@ public:
 	}
 
 };
-
-// Class for serialization of components
-//class ComponentSerializer {
-//public:
-//	// Save function pointer, returns a string
-//	using SaveFn = std::function<std::string(void*)>;
-//	// Load function pointer, returns void and takes const std::string&
-//	using LoadFn = std::function<void(void*, const std::string&)>;
-//
-//private:
-//	ComponentSerializer() {}
-//	ComponentSerializer(const ComponentSerializer&) = delete;
-//
-//	// Map of functions keyed with type_index
-//	std::unordered_map<std::type_index, SaveFn> saveFunctions;
-//	std::unordered_map<std::type_index, LoadFn> loadFunctions;
-//
-//public:
-//	// Singleton access
-//	static ComponentSerializer& Get() {
-//		static ComponentSerializer instance;
-//		return instance;
-//	}
-//
-//	template<typename Component>
-//	void Register() {
-//		std::type_index typeIndex(typeid(Component));
-//
-//		saveFunctions[typeIndex] = 
-//	}
-//
-//
-//
-//};

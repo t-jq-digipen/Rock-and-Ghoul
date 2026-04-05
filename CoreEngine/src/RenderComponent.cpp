@@ -1,3 +1,21 @@
+/* ========================================================
+ * @file	    RenderComponent.cpp
+ * @author	    Tan Jun Quan          | t.junquan@digipen.edu
+ * @co-author   Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+ * @date	    19 NOV 2025
+ *
+ * @brief	Render Component for rendering logic
+ *
+ * This file implements the RenderComponent, which encapsulates rendering
+ * data and logic for entities in the ECS.
+ * This file contains handling for different render types (shapes, sprites, sprite sheets), 
+ * layer management, alpha transparency, and serialization/deserialization of render data.
+ * 
+ *
+ *
+ * Copyright © 2026 DigiPen, All rights reserved.
+ * ========================================================
+ */
 #include "RenderComponent.h"
 
 
