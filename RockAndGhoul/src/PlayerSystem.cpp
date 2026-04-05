@@ -1713,6 +1713,7 @@ namespace RockScript {
 				{
 					diedSequenceStarted = true;
 					stunnedtimer = 0.f;
+					AudioManager::Get().FadeOutAndStop(0.5f); // come back here ari test this on yasm laptop
 					SceneManager::Get().QueueLoadScene((FilePath::ASSETS_FOLDER + "saves/FailCutscene.json"));
 					SceneManager::Get().SetTransitionTime(1.f);
 					GuiSystem::SetStoredRestartScene(SceneManager::Get().GetCurrentScene());

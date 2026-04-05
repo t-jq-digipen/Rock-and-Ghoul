@@ -876,9 +876,6 @@ void AudioManager::Update(float dt) {
             if (currentChannel) { currentChannel->stop(); currentChannel = nullptr; }
             if (layerChannel)   { layerChannel->stop();   layerChannel = nullptr; }
 
-            bool bgmChanged   = !currentBGM.empty()      && currentBGM      != lastBGM;
-            bool layerChanged = !currentBGMLayer.empty()  && currentBGMLayer != lastBGMLayer;
-
             // Always restart BGM after a screen fade — channels were stopped above,
             // so even if BGM name didn't change, nothing is playing and it must restart.
             if (!currentBGM.empty() || !currentBGMLayer.empty()) {
