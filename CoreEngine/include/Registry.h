@@ -212,18 +212,10 @@ public:
 	void Add_Component(Entity eID, const Component& component = {})
 	{
 		if (!HasDependencies(eID, typeid(Component)))
-		{
-			return;
-		}
+		{ return; }
+
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 		// Check if this component has dependencies
-		//auto deplist = componentDependencies.find(typeid(Component));
-		/*if (deplist != componentDependencies.end())
-		{
-			for (std::type_index dep : deplist->second)
-			{
-			}
-		}*/
 		manager->addComponent(eID, component);
 	}
 
@@ -242,9 +234,8 @@ public:
 	{
 		IsComponentRegistered(typeID);
 		if (!HasDependencies(eID, typeID))
-		{
-			return;
-		}
+		{ return; }
+
 		componentManagers[typeID]->addComponent(eID);
 	}
 
@@ -260,9 +251,7 @@ public:
 	void Remove_Component(Entity eID)
 	{
 		if (HasDependents(eID, typeid(Component)))
-		{
-			return;
-		}
+		{ return; }
 
 		ComponentManager<Component>* manager = Get_Manager<Component>();
 
@@ -280,9 +269,7 @@ public:
 	{
 		IsComponentRegistered(typeID);
 		if (HasDependents(eID, typeID))
-		{
-			return;
-		}
+		{ return; }
 
 		componentManagers[typeID]->removeComponent(eID);
 	}

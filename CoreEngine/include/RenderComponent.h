@@ -1,3 +1,19 @@
+/* ========================================================
+ * @file	    RenderComponent.h
+ * @author	    Tan Jun Quan          | t.junquan@digipen.edu
+ * @co-author   Kervin Ong Guan Cheng | kervinguancheng.ong@digipen.edu
+ * @date	    19 NOV 2025
+ *
+ * @brief	Render Component for rendering logic
+ * 
+ * This file implements the RenderComponent, which encapsulates rendering 
+ * data and logic for entities in the ECS.
+ * 
+ *
+ * Copyright © 2026 DigiPen, All rights reserved.
+ * ========================================================
+ */
+
 #pragma once
 #include "DataDefs.h"	// For rendertype, renderlayer, IRenderData
 #include "Animator.h"

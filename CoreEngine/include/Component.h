@@ -89,8 +89,6 @@
 //};
 
 
-// basically for faster reading, consider implementing later
-using ComponentMask = std::bitset<32>;
 
 
 // BASE

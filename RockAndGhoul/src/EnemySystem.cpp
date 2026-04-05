@@ -1,6 +1,7 @@
 /* ========================================================
  * @file	    EnemySystem.cpp
  * @author	    Manfred Sim         | manfred.sim@digipen.edu
+ * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
  * @co-author	Yasmin Tazi			| yasmin.t@digipen.edu
  * @date	    28 JAN 2026
  *
