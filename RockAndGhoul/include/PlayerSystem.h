@@ -39,8 +39,6 @@ namespace PlayerMove {
 }
 
 namespace RockScript {
-	// maybe wanna shift into combatsystem later EDIT: it got shifted lol yippie
-    void Knockback(Entity eID, bool left, float damage);
 
     //enum class Element : int
     //{

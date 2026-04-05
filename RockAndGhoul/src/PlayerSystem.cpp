@@ -1484,12 +1484,14 @@ namespace RockScript {
 		//Dash Timer
 		if (dashtimer < DASH_COOLDOWN)
 		{
+			if (dashtimer < DASH_INVULN_DURATION) {
+				healthComp.willHit = false;
+			}
+			else
+			{
+				healthComp.willHit = true;
+			}
 			dashtimer += dt;
-			healthComp.willHit = false;
-		}
-		else
-		{
-			healthComp.willHit = true;
 		}
 
 		for (auto& spell : spellSlots)
