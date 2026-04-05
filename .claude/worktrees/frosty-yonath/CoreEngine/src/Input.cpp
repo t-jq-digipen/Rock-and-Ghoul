@@ -217,13 +217,13 @@ void Input::PollGamepad() {
         emitKey(GLFW_GAMEPAD_BUTTON_A, GLFW_KEY_DOWN);
     } else {
         // Normal face button functions
-        emitKey(GLFW_GAMEPAD_BUTTON_X, GLFW_KEY_1);          // Spell slot 1
-        emitKey(GLFW_GAMEPAD_BUTTON_Y, GLFW_KEY_2);          // Spell slot 2
-        emitKey(GLFW_GAMEPAD_BUTTON_B, GLFW_KEY_3);          // Spell slot 3
-        emitKey(GLFW_GAMEPAD_BUTTON_A, GLFW_KEY_LEFT_SHIFT); // Dash
-        // A also acts as confirm/advance in menus and stage transitions
-        emitKey(GLFW_GAMEPAD_BUTTON_A, GLFW_KEY_ENTER);
-        emitKey(GLFW_GAMEPAD_BUTTON_A, GLFW_KEY_SPACE);
+        emitKey(GLFW_GAMEPAD_BUTTON_Y, GLFW_KEY_1);          // Spell slot 1
+        emitKey(GLFW_GAMEPAD_BUTTON_X, GLFW_KEY_2);          // Spell slot 2
+        emitKey(GLFW_GAMEPAD_BUTTON_A, GLFW_KEY_3);          // Spell slot 3
+        emitKey(GLFW_GAMEPAD_BUTTON_B, GLFW_KEY_LEFT_SHIFT); // Dash
+        // B also acts as confirm/advance in menus and stage transitions
+        emitKey(GLFW_GAMEPAD_BUTTON_B, GLFW_KEY_ENTER);
+        emitKey(GLFW_GAMEPAD_BUTTON_B, GLFW_KEY_SPACE);
     }
 
     // Fixed button mappings (not affected by LT modifier)

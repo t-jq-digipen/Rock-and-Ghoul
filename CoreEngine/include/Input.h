@@ -2,8 +2,7 @@
  * @file        Input.h
  * @author      Wong Shi Yu Regine  | w.shiyuregine@digipen.edu
  * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
- * @co-author   Yasmin Tazi         | yasmin.t@digipen.edu
- * @date        05 APR 2026
+ * @date        04 NOV 2025
  *
  * @brief
  *
@@ -17,7 +16,7 @@
  * Key inputs now push events to EventBus.
  *
  *
- * Copyright © 2025 DigiPen, All rights reserved.
+ * Copyright � 2025 DigiPen, All rights reserved.
  * ========================================================
  */
 #ifndef INPUT_H

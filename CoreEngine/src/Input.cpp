@@ -2,8 +2,7 @@
  * @file        Input.cpp
  * @author      Wong Shi Yu Regine | w.shiyuregine@digipen.edu
  * @co-author   Tan Jun Quan        | t.junquan@digipen.edu
- * @co-author   Yasmin Tazi         | yasmin.t@digipen.edu
- * @date        05 APR 2026
+ * @date        04 NOV 2025
  *
  * @brief
  * 
@@ -210,7 +209,7 @@ void Input::PollGamepad() {
     const bool ltMod = (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0.3f);
 
     if (ltMod) {
-        // LT + face buttons = spell combo (arrow keys)
+        // LT + face buttons = directional spell combo (arrow keys)
         // Y=Up, X=Left, B=Right, A=Down  (matches physical button positions)
         emitKey(GLFW_GAMEPAD_BUTTON_Y, GLFW_KEY_UP);
         emitKey(GLFW_GAMEPAD_BUTTON_X, GLFW_KEY_LEFT);
@@ -218,22 +217,22 @@ void Input::PollGamepad() {
         emitKey(GLFW_GAMEPAD_BUTTON_A, GLFW_KEY_DOWN);
     } else {
         // Normal face button functions
-        emitKey(GLFW_GAMEPAD_BUTTON_Y, GLFW_KEY_1);          // Spell slot 1
-        emitKey(GLFW_GAMEPAD_BUTTON_X, GLFW_KEY_2);          // Spell slot 2
-        emitKey(GLFW_GAMEPAD_BUTTON_A, GLFW_KEY_3);          // Spell slot 3
-        emitKey(GLFW_GAMEPAD_BUTTON_B, GLFW_KEY_LEFT_SHIFT); // Dash
-        // B also acts as confirm/advance in menus and stage transitions
-        emitKey(GLFW_GAMEPAD_BUTTON_B, GLFW_KEY_ENTER);
-        emitKey(GLFW_GAMEPAD_BUTTON_B, GLFW_KEY_SPACE);
+        emitKey(GLFW_GAMEPAD_BUTTON_X, GLFW_KEY_1);          // Spell slot 1
+        emitKey(GLFW_GAMEPAD_BUTTON_Y, GLFW_KEY_2);          // Spell slot 2
+        emitKey(GLFW_GAMEPAD_BUTTON_B, GLFW_KEY_3);          // Spell slot 3
+        emitKey(GLFW_GAMEPAD_BUTTON_A, GLFW_KEY_LEFT_SHIFT); // Dash
+        // A also acts as confirm/advance in menus and stage transitions
+        emitKey(GLFW_GAMEPAD_BUTTON_A, GLFW_KEY_ENTER);
+        emitKey(GLFW_GAMEPAD_BUTTON_A, GLFW_KEY_SPACE);
     }
 
-    // Fixed button mappings (not affected by LT)
+    // Fixed button mappings (not affected by LT modifier)
     emitKey(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER, GLFW_KEY_E);      // Melee attack
     emitKey(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER,  GLFW_KEY_Q);      // Cycle element
     emitKey(GLFW_GAMEPAD_BUTTON_START,        GLFW_KEY_ESCAPE); // Pause
     emitKey(GLFW_GAMEPAD_BUTTON_BACK,         GLFW_KEY_ESCAPE); // Back
 
-    // D-pad: raw state only (queried directly via IsGamepadButtonPressed and no key events fired
+    // D-pad: raw state only (queried directly via IsGamepadButtonPressed — no key events fired,
     //         so D-pad never accidentally triggers spell combos or character movement)
 
     // Save button states for next-frame transition detection
