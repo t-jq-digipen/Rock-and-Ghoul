@@ -228,7 +228,7 @@ void CoreEngine::Initialize()
 #ifdef NO_IMGUI
         Render::GetInstance().LoadShaders(); //is it like this, load all at once first? but it takes hella long at startup though
         Render::GetInstance().LoadFontAssetsFromJSON(FilePath::ASSETS_FOLDER + "fontAssets.json");
-        Render::GetInstance().PreloadAllTextures();
+        //Render::GetInstance().PreloadAllTextures();
 #endif
 
         sm.LoadScene(FilePath::MAIN_MENU_SCENE);
