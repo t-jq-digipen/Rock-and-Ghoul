@@ -4,7 +4,7 @@
         "24.000000",
         "failscreen"
     ],
-    "bgmAssetName": "cutscene_music",
+    "bgmAssetName": "level_lose",
     "cameraSpawn": [
         960.0,
         540.0

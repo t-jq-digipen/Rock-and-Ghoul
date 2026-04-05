@@ -362,8 +362,18 @@
       "path": "../Assets/audio/SFX/UI/Level_Lose.wav",
       "loop": false,
       "group": "UI"
+    },
+    "whip": {
+      "path": "../Assets/audio/SFX/UI/Whip.wav",
+      "loop": false,
+      "group": "UI"
+    },
+    "slice": {
+      "path": "../Assets/audio/SFX/UI/Slice.wav",
+      "loop": false,
+      "group": "UI"
     }
-  },
+  },    
   "banks": {
     "init": [
       "main_menu",

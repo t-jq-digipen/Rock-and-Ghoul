@@ -443,9 +443,14 @@ struct CutscenePlayer {
     // Playback timing
     // start with hardcode (i follow the intro2 mp4 fps, 24fps)
     // see first if ltr on need use av_q2d(pFormatCtx->streams[videoStreamIndx]->r_frame_rate);
-    double fps = 24.0;        
+    double fps = 24.0;
     double acc = 0.0;
+    double playTime = 0.0;  // total elapsed seconds since Init, for SFX cues
     bool finished = false;
+
+    // Per-cutscene SFX trigger flags (reset on Init)
+    bool sfxWhipPlayed = false;
+    bool sfxSlicePlayed = false;
 
     std::string nextScene = "";
 
@@ -553,6 +558,9 @@ bool CutscenePlayer::Init(const char* path)
 
     finished = false;
     texInited = false;
+    playTime = 0.0;
+    sfxWhipPlayed = false;
+    sfxSlicePlayed = false;
 
     return true;
 }
@@ -565,6 +573,7 @@ void CutscenePlayer::Update(double dt) {
     }
 
     acc += dt;
+    playTime += dt;
     const double frameTime = 1.0 / fps;
 
     while (acc >= frameTime) {
@@ -713,6 +722,9 @@ void CutscenePlayer::Shutdown() {
 
     tex = 0;
     texInited = false;
+    playTime = 0.0;
+    sfxWhipPlayed = false;
+    sfxSlicePlayed = false;
     //nextScene = "";
 }
 
@@ -1082,6 +1094,20 @@ void RenderSystem::Update(float dt) {
         if (!gCutscene.finished)
         {
             gCutscene.Update(dt);
+
+            if (s_cutscenePath.find("FailScreen") != std::string::npos)
+            {
+                if (!gCutscene.sfxWhipPlayed && gCutscene.playTime >= 0.1)
+                {
+                    AudioSystem::PlaySoundByName("whip");
+                    gCutscene.sfxWhipPlayed = true;
+                }
+                if (!gCutscene.sfxSlicePlayed && gCutscene.playTime >= 0.5)
+                {
+                    AudioSystem::PlaySoundByName("slice");
+                    gCutscene.sfxSlicePlayed = true;
+                }
+            }
 
             if (captureScene) {
                 renderer.BeginSceneCapture();
