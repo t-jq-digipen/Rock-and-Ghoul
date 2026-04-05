@@ -1,0 +1,30 @@
+{
+    "backgrounds": [
+        "../Assets/IntroCutscene.mp4",
+        "24.000000",
+        "level1"
+    ],
+    "bgmAssetName": "cutscene_music",
+    "cameraSpawn": [
+        0.0,
+        0.0
+    ],
+    "cameraZoom": 1.0,
+    "entities": [],
+    "fontConfig": "../Assets/fontAssets.json",
+    "gui": {
+        "buttons": [],
+        "dialogues": [],
+        "textboxes": []
+    },
+    "sceneName": "cut scene",
+    "sceneType": 2,
+    "worldMax": [
+        1920.0,
+        1080.0
+    ],
+    "worldMin": [
+        0.0,
+        0.0
+    ]
+}

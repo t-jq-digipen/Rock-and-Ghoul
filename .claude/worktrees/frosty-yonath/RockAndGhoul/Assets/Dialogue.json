@@ -1,0 +1,340 @@
+{
+    "scenes": [
+        {
+            "script": [
+                {
+                    "speakerID": 0,
+                    "line": "Jam Out SG! We made it! We're gonna rock their socks off. Or whatever they say."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Record deal, here we come."
+                },
+                {
+                    "speakerID": 6,
+                    "line": "Crazy bummer that so many acts forfeited! I wouldn't be surprised if they pit US against each other for content."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "I'd like to see them try. (SMIRK)"
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Yeah, we're so winning this thing. 'Kay, I need to pee. See ya, Rock-Star."
+                },
+                {
+                    "speakerID": 5,
+                    "line": "Spooky..."
+                },
+                {
+                    "speakerID": 2,
+                    "line": "Groooowl..."
+                },
+                {
+                    "speakerID": 4,
+                    "line": "MEGA SPOOKY!"
+                },
+                {
+                    "speakerID": 4,
+                    "line": "I gotta find Ghoul, and fast!"
+                },
+                {
+                    "speakerID": 5,
+                    "line": "But first, I gotta fight off...whatever these are..."
+                },
+                {
+                    "speakerID": 4,
+                    "line": "I get the feeling they won't let me get past if I don't do something about these creeps..."
+                },
+                {
+                    "speakerID": 3,
+                    "line": "Alright then, foul spirits! BRING IT ON!!!"
+                }
+            ],
+            "textSpeed": 60.0,
+            "wrapWidth": 1300.0,
+            "customSpeaker": false,
+            "customSpeakerName": "Beberd",
+            "speakerUI": {
+                "pos": [300.0, 150.0],
+                "scale": 1.2,
+                "color": [0.0, 0.0, 0.0],
+                "centered": false
+            },
+            "speakers": [
+                "Rock",
+                "Ghoul",
+                "Spirit"
+            ],
+            "fontPath": "../Assets/fonts/Marker.ttf",
+            "fontSize": 1.0,
+            "color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "sceneID": "0",
+            "speakerBGs": [
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png",
+                "../Assets/UI_DialogueBox_Enemy.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png"
+            ],
+            "speakerProfiles": [
+                "../Assets/UI_RockDialogue_Happy.png",
+                "../Assets/UI_GhoulDialogue_Normal.png",
+                "../Assets/UI_EnemyDialogue_Normal.png",
+                "../Assets/UI_RockDialogue_Angry.png",
+                "../Assets/UI_RockDialogue_Frightened.png",
+                "../Assets/UI_RockDialogue_Shocked.png",
+                "../Assets/UI_RockDialogue_Victory.png"
+            ]
+        },
+        {
+          "script": [
+                {
+                    "speakerID": 6,
+                    "line": "Phew! That took a while to get through."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Ghoul said she went to the toilet, so it should be this way."
+                },
+                {
+                    "speakerID": 2,
+                    "line": "Grooooooowl... Hissssss..."
+                },
+                {
+                    "speakerID": 4,
+                    "line": "WOW!"
+                },
+                {
+                    "speakerID": 5,
+                    "line": "Wait a minute, something seems off about these spirits?"
+                },
+                {
+                    "speakerID": 2,
+                    "line": "Ziiing..."
+                },
+                {
+                    "speakerID": 5,
+                    "line": "They have elemental barriers now?!?!"
+                },
+                {
+                    "speakerID": 5,
+                    "line": "Ugh great, just as I thought everything was going a little too easy."
+                },
+                {
+                    "speakerID": 3,
+                    "line": "Alright spirit, game on!"
+                }
+          ],
+            "textSpeed": 60.0,
+            "wrapWidth": 1300.0,
+            "customSpeaker": false,
+            "customSpeakerName": "Beberd",
+            "speakerUI": {
+                "pos": [300.0, 150.0],
+                "scale": 1.2,
+                "color": [0.0, 0.0, 0.0],
+                "centered": false
+            },
+            "speakers": [
+                "Rock",
+                "Ghoul",
+                "Spirit"
+            ],
+            "fontPath": "../Assets/fonts/Marker.ttf",
+            "fontSize": 1.0,
+            "color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "sceneID": "1",
+            "speakerBGs": [
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png",
+                "../Assets/UI_DialogueBox_Enemy.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Rock.png"
+            ],
+            "speakerProfiles": [
+                "../Assets/UI_RockDialogue_Happy.png",
+                "../Assets/UI_GhoulDialogue_Normal.png",
+                "../Assets/UI_EnemyDialogue_Normal.png",
+                "../Assets/UI_RockDialogue_Angry.png",
+                "../Assets/UI_RockDialogue_Frightened.png",
+                "../Assets/UI_RockDialogue_Shocked.png",
+                "../Assets/UI_RockDialogue_Victory.png"
+            ]
+        },
+        {
+          "script": [
+                {
+                    "speakerID": 1,
+                    "line": "Hey, Rock-Star."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "Uh... What-"
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Yeah, I realised I prefer flying solo. And I want that record deal."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "So, surrender or meet your doom. Or whatever they say."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "What's going on, Ghoul? I thought we were in this together?"
+                },
+                {
+                    "speakerID": 1,
+                    "line": "Look, if you wanna hear it so bad: You're the best guitarist I've ever had."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "But I'm so sick of being your little bassist."
+                },
+                {
+                    "speakerID": 1,
+                    "line": "I've got something to prove and YOU are the last person I want in my way."
+                },
+                {
+                    "speakerID": 0,
+                    "line": "W-wait, hold o-."
+                }
+          ],
+            "textSpeed": 60.0,
+            "wrapWidth": 1300.0,
+            "customSpeaker": false,
+            "customSpeakerName": "Beberd",
+            "speakerUI": {
+                "pos": [300.0, 150.0],
+                "scale": 1.2,
+                "color": [0.0, 0.0, 0.0],
+                "centered": false
+            },
+            "speakers": [
+                "Rock",
+                "Ghoul",
+                "Spirit"
+            ],
+            "fontPath": "../Assets/fonts/Marker.ttf",
+            "fontSize": 1.0,
+            "color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "sceneID": "2",
+            "speakerBGs": [
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png",
+                "../Assets/UI_DialogueBox_Enemy.png"
+            ],
+            "speakerProfiles": [
+                "../Assets/UI_RockDialogue_Happy.png",
+                "../Assets/UI_GhoulDialogue_Normal.png",
+                "../Assets/UI_EnemyDialogue_Normal.png"
+            ]
+        },
+        {
+          "script": [
+                    {
+                        "line": "Ghoul... It's over. We don't need to fight anymore. Just... come back. We made music that mattered, remember?",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "You really think a few chords fix everything? You took the spotlight, Rock. You always did.",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "I never wanted to take it from you. I just wanted us to shine together.",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "And... and maybe we still can.",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "What?",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "If you just... tell me right now that the past 3 years weren't for nothing and that you still care about me...",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "You'll forgive me?",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "No!",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "Not now.",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "But I wouldn't mind jamming together some time.",
+                        "speakerID": 0
+                    },
+                    {
+                        "line": "Rock...",
+                        "speakerID": 1
+                    },
+                    {
+                        "line": "I'm sorry.",
+                        "speakerID": 1
+                    },
+                                        {
+                        "line": "Let's make a new playlist.",
+                        "speakerID": 1
+                    }           
+          ],
+            "textSpeed": 60.0,
+            "wrapWidth": 1300.0,
+            "customSpeaker": false,
+            "customSpeakerName": "Beberd",
+            "speakerUI": {
+                "pos": [300.0, 150.0],
+                "scale": 1.2,
+                "color": [0.0, 0.0, 0.0],
+                "centered": false
+            },
+            "speakers": [
+                "Rock",
+                "Ghoul",
+                "Spirit"
+            ],
+            "fontPath": "../Assets/fonts/Marker.ttf",
+            "fontSize": 1.0,
+            "color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "sceneID": "3",
+            "speakerBGs": [
+                "../Assets/UI_DialogueBox_Rock.png",
+                "../Assets/UI_DialogueBox_Ghoul.png",
+                "../Assets/UI_DialogueBox_Enemy.png"
+            ],
+            "speakerProfiles": [
+                "../Assets/UI_RockDialogue_Happy.png",
+                "../Assets/UI_GhoulDialogue_Normal.png",
+                "../Assets/UI_EnemyDialogue_Normal.png"
+            ]
+        }
+    ]
+}

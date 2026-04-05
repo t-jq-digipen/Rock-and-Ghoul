@@ -1,0 +1,10 @@
+{
+    "components": {
+        "Collider": "{\"aabb_dimX\":200.0,\"aabb_dimY\":200.0,\"aabb_maxX\":1185.7344970703125,\"aabb_maxY\":677.2742919921875,\"aabb_minX\":985.7344970703125,\"aabb_minY\":477.2742919921875,\"isActive\":true,\"isTrigger\":true,\"layer\":\"Projectile\",\"triggerEvent\":\"ProjectileHitEnemy\"}",
+        "Physics": "{\"decay\":0.0,\"friction\":0.0,\"isStatic\":false,\"mass\":1.0,\"maxSpeed\":800.0,\"restitution\":0.30000001192092896,\"velX\":800.0,\"velY\":0.0}",
+        "Render": "{\"renderData\":\"{\\\"animDuration\\\":0.5,\\\"currentState\\\":0,\\\"frameColEnd\\\":6,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":30.0,\\\\\\\"scaleY\\\\\\\":30.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"../Assets/SoundWave_Normal.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":0,\\\"willLoop\\\":false},\\\"1\\\":{\\\"col_end\\\":2,\\\"col_start\\\":0,\\\"duration\\\":0.30000001192092896,\\\"row\\\":1,\\\"willLoop\\\":true},\\\"2\\\":{\\\"col_end\\\":6,\\\"col_start\\\":0,\\\"duration\\\":0.5,\\\"row\\\":2,\\\"willLoop\\\":false}},\\\"totalCols\\\":7,\\\"totalRows\\\":3}\",\"renderLayer\":2,\"renderType\":2}",
+        "Tag": "{\"tagID\":2}",
+        "Transform": "{\"posX\":1085.7344970703125,\"posY\":577.2742919921875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
+    },
+    "name": "SoundWave_Normal"
+}
