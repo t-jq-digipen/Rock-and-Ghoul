@@ -366,7 +366,7 @@ void CoreEngine::Run()
         frameRate.EndFrame();
 
         // ---------------------------------------------
-        // FPS in window title
+        // FPS counter (internal only, not shown in title)
         // ---------------------------------------------
         m_fpsFrames++;
         double now = glfwGetTime();
@@ -374,11 +374,6 @@ void CoreEngine::Run()
         if (now - m_fpsLastUpdate >= 1.0)
         {
             m_fps = m_fpsFrames / (now - m_fpsLastUpdate);
-
-            // optional: keep updating window title
-            std::string title = "Rock & Ghoul - FPS: " + std::to_string(static_cast<int>(m_fps));
-            glfwSetWindowTitle(GLApp::ptr_window, title.c_str());
-
             m_fpsFrames = 0;
             m_fpsLastUpdate = now;
         }

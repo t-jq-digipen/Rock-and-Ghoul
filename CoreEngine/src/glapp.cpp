@@ -221,12 +221,7 @@ For now, there is nothing to do except to write appropriate information
 to window title bar.
 */
 void GLApp::update() {
-  // write window title with current fps ...
-  std::stringstream sstr;
-  sstr << std::fixed << std::setprecision(2) << GLApp::title << " | " << GLApp::fps;
-  glfwSetWindowTitle(GLApp::ptr_window, sstr.str().c_str());
-
-
+  glfwSetWindowTitle(GLApp::ptr_window, GLApp::title.c_str());
 }
 
 /*  _________________________________________________________________________ */
