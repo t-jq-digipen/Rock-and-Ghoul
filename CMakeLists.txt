@@ -198,6 +198,18 @@ elseif(MSVC)
 endif()
 
 
+# ======================= Release: Hide Win32 Console =========================
+# Switches subsystem to Windows in Release so no cmd window appears
+if(WIN32)
+    set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+        WIN32_EXECUTABLE $<CONFIG:Release>
+    )
+    target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Release>:/ENTRY:mainCRTStartup>
+    )
+endif()
+
+
 # ======================= Post-build: Copy DLLs =========================
 # FMOD DLL
 if(WIN32 AND EXISTS "${FMOD_LIB_DIR}/fmod.dll")
