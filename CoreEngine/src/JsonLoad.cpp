@@ -1375,12 +1375,13 @@ bool JsonLoad::LoadScene(const std::string& filepath) {
 
         SceneManager::Get().SetSceneType(scene.sceneType);
 
+#ifdef NO_IMGUI
         // attempt to preload textures when loading game scene
         if (scene.sceneType == ST_GAME)
         {
             Render::GetInstance().PreloadAllTextures();
         }
-
+#endif
 
         // Load entities
         for (const auto& savedEntity : scene.entities) {
