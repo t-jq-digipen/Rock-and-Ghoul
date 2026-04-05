@@ -1,8 +1,0 @@
-{
-  "Enemymask": [ "Projectile", "Wall" ],
-  "Playermask": [ "Projectile", "Wall" , "Portal" ],
-  "Projectilemask": [ "Player", "Enemy" ],
-  "Wallmask": [ "Player", "Enemy", "Projectile", "Wall" ],
-  "Portalmask": [ "Player" ],
-  "layers": [ "Player", "Enemy", "Projectile", "Wall" , "Portal"]
-}

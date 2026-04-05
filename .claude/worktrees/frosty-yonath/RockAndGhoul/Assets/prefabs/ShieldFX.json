@@ -1,8 +1,0 @@
-{
-    "components": {
-        "Lifetime": "{\"age\":0.0,\"lifetime\":5.0}",
-        "Render": "{\"renderData\":\"{\\\"animDuration\\\":1.0,\\\"currentState\\\":0,\\\"frameColEnd\\\":12,\\\"frameColStart\\\":0,\\\"frameRow\\\":0,\\\"loop\\\":false,\\\"sprite\\\":\\\"{\\\\\\\"flipX\\\\\\\":false,\\\\\\\"flipY\\\\\\\":false,\\\\\\\"rot\\\\\\\":0.0,\\\\\\\"scaleX\\\\\\\":40.0,\\\\\\\"scaleY\\\\\\\":40.0,\\\\\\\"texturePath\\\\\\\":\\\\\\\"E:/School/CSD2401/GIT/csd2401f25_team_aviddivas/RockAndGhoul/Assets/NormalShield_SpriteSheet.png\\\\\\\"}\\\",\\\"states\\\":{\\\"0\\\":{\\\"col_end\\\":12,\\\"col_start\\\":0,\\\"duration\\\":1.0,\\\"row\\\":0,\\\"willLoop\\\":false}},\\\"totalCols\\\":13,\\\"totalRows\\\":1}\",\"renderLayer\":2,\"renderType\":2}",
-        "Transform": "{\"posX\":583.5164794921875,\"posY\":472.74725341796875,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-    },
-    "name": "ShieldFX"
-}

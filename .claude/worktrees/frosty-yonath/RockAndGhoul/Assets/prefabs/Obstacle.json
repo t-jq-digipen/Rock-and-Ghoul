@@ -1,9 +1,0 @@
-{
-    "components": {
-        "Collider": "{\"aabb_dimX\":100.0,\"aabb_dimY\":100.0,\"aabb_maxX\":-207.79193115234375,\"aabb_maxY\":399.17034912109375,\"aabb_minX\":-307.79193115234375,\"aabb_minY\":299.17034912109375,\"isActive\":true,\"isTrigger\":false,\"layer\":\"Wall\",\"triggerEvent\":\"\"}",
-        "Physics": "{\"decay\":0.0,\"friction\":0.10000000149011612,\"isStatic\":true,\"mass\":1.0,\"maxSpeed\":500.0,\"restitution\":0.30000001192092896,\"velX\":0.0,\"velY\":0.0}",
-        "Tag": "{\"tagID\":4}",
-        "Transform": "{\"posX\":-257.79193115234375,\"posY\":349.17034912109375,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-    },
-    "name": "Obstacle"
-}

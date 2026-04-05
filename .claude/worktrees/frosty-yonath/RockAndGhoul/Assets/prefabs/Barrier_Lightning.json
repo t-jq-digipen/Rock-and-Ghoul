@@ -1,7 +1,0 @@
-{
-    "components": {
-        "Render": "{\"renderData\":\"{\\\"flipX\\\":false,\\\"flipY\\\":false,\\\"rot\\\":0.0,\\\"scaleX\\\":45.0,\\\"scaleY\\\":45.0,\\\"texturePath\\\":\\\"../Assets/Barrier_Lightning.png\\\"}\",\"renderLayer\":1,\"renderType\":1}",
-        "Transform": "{\"posX\":1645.1932373046875,\"posY\":426.45758056640625,\"rot\":0.0,\"scaleX\":1.0,\"scaleY\":1.0}"
-    },
-    "name": "Barrier_Lightning"
-}
