@@ -1040,14 +1040,18 @@ namespace ObstacleScript
 		bool isBurning = false;
 		bool isFrozen = false;
 		bool isPushed = false;
-		if (registry.Has_Component<StatusEffectComponent>(eID))
+		if (!registry.Has_Component<StatusEffectComponent>(eID) || hp.currhp <= 0.f)
+		{
+			registry.Get_Component<RenderComponent>(obstacleStatusEffects[eID]).GetSpriteSheet().SetState(0);
+		}
+		else
 		{
 			StatusEffectComponent& statusEffect = registry.Get_Component<StatusEffectComponent>(eID);
 			isStunned = statusEffect.activeEffect == Element::LIGHTNING;
 			isBurning = statusEffect.activeEffect == Element::FIRE;
 			isFrozen = statusEffect.activeEffect == Element::ICE;
 			isPushed = statusEffect.activeEffect == Element::WIND;
-
+			
 			switch (statusEffect.activeEffect)
 			{
 			case Element::FIRE:
@@ -1065,16 +1069,12 @@ namespace ObstacleScript
 				break;
 			}
 		}
-		else
-		{
-			registry.Get_Component<RenderComponent>(obstacleStatusEffects[eID]).GetSpriteSheet().SetState(0);
-		}
 
 		if (canOverrideAnimState)
 		{
 			if (isBurning)					animState = 2;	// Burning
 			else if (hp.currhp < hp.maxhp)	animState = 1;	// Damaged
-			else							animState = 0;	// Idle
+			else if (hp.currhp == hp.maxhp) animState = 0;	// Idle
 		}
 
 		switch (rt.state)
