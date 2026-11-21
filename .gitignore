@@ -17,6 +17,7 @@ Makefile
 /deps/mono/
 # ===================== Visual Studio =====================
 .vs/
+build/.vs/
 *.sln
 *.vcxproj*
 *.vcxproj.filters
@@ -29,6 +30,8 @@ Makefile
 *.VC.opendb
 /.vs/
 .\vs
+# ===================== ImGui window ======================
+imgui.ini
 # ===================== Xcode (macOS) =====================
 *.xcworkspace/
 *.xcuserstate
